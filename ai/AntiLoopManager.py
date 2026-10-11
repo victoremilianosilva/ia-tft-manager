@@ -728,11 +728,15 @@ class AntiLoopManager:
         ):
             return "reverse"
 
-        # 🔁 Oscilação repetitiva
+        # 🔁 Oscilação, considerando o tipo de movimento
         if self.is_oscillating(
-            unit, source, target
+            unit,
+            source,
+            target,
+            move_type=move_type,
         ):
             return "oscillation"
+
 
         # 🪑 Ciclo entre banco e tabuleiro
         if self.is_bench_board_loop(unit):
