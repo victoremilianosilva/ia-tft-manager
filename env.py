@@ -782,15 +782,23 @@ class MiniTFTEnv:
             return -0.10
 
         # --------------------------------------------------------
-        # 🚫 ANTI LOOP
+        # 🚫 ANTI LOOP + MÉTRICAS
         # --------------------------------------------------------
 
-        if self.anti_loop_manager.should_block_move(
+        self.anti_loop_manager.record_execution_attempt()
+
+        block_reason = self.anti_loop_manager.get_block_reason(
             move_type="bench_to_board",
             source=bench_slot,
             target=target,
             unit=unit,
-        ):
+        )
+
+        if block_reason is not None:
+            self.anti_loop_manager.record_execution_block(
+                block_reason
+            )
+            info["anti_loop_blocked"] = block_reason
             return -0.10
 
         # --------------------------------------------------------
@@ -828,6 +836,11 @@ class MiniTFTEnv:
             source=bench_slot,
             target=target,
             unit=removed,
+        )
+
+        # ✅ Movimento realmente executado
+        self.anti_loop_manager.record_successful_move(
+            "bench_to_board"
         )
 
         info["action_success"] = True
@@ -892,16 +905,37 @@ class MiniTFTEnv:
         )
 
         # --------------------------------------------------------
-        # 🚫 ANTI LOOP
+        # 🚫 ANTI-LOOP + MÉTRICAS
         # --------------------------------------------------------
 
-        if self.anti_loop_manager.should_block_move(
+        self.anti_loop_manager.record_execution_attempt()
+
+        should_block = self.anti_loop_manager.should_block_move(
             move_type=move_type,
             source=source,
             target=target,
             unit=unit,
-        ):
+        )
+
+        if should_block:
+            block_reason = self.anti_loop_manager.get_block_reason(
+                move_type=move_type,
+                source=source,
+                target=target,
+                unit=unit,
+            )
+
+            # 📊 Evita registrar objetos Mock como motivos de bloqueio.
+            if not isinstance(block_reason, str):
+                block_reason = "unknown"
+
+            self.anti_loop_manager.record_execution_block(
+                block_reason
+            )
+
+            info["anti_loop_blocked"] = block_reason
             return -0.10
+
 
         # --------------------------------------------------------
         # 🔄 MOVE / SWAP
@@ -929,6 +963,11 @@ class MiniTFTEnv:
             source=source,
             target=target,
             unit=unit,
+        )
+
+        # ✅ Movimento de tabuleiro executado
+        self.anti_loop_manager.record_successful_move(
+            move_type
         )
 
         info["action_success"] = True
@@ -2298,3 +2337,7 @@ class MiniTFTEnv:
         print(
             "=========================================="
         )
+
+    def get_anti_loop_metrics(self):
+        """Expõe as métricas do jogador para a lobby."""
+        return self.anti_loop_manager.get_metrics()

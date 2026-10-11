@@ -402,7 +402,28 @@ class TFTLobby:
             player.env.get_strategy()
             for player in self.players
         ]
-   
+
+    def get_anti_loop_metrics(self):
+        """
+        Soma as métricas dos jogadores desta lobby.
+        Os contadores são cumulativos entre partidas.
+        """
+
+        metrics_by_player = [
+            player.env.get_anti_loop_metrics()
+            for player in self.players
+        ]
+
+        totals = {}
+
+        for player_metrics in metrics_by_player:
+            for key, value in player_metrics.items():
+                totals[key] = (
+                    totals.get(key, 0) + value
+                )
+
+        return totals
+
     # ============================================================
     # 🎮 STEP
     # ============================================================
@@ -1314,7 +1335,6 @@ class TFTLobby:
 
         return rewards
 
-
     # ============================================================
     # 📦 GET BOARD UNITS
     # ============================================================
@@ -1352,7 +1372,6 @@ class TFTLobby:
     # ============================================================
     # ☠️ ELIMINATION
     # ============================================================
-
     def eliminate_players(self):
 
         for player in self.players:
@@ -1468,7 +1487,6 @@ class TFTLobby:
         # O último eliminado fica em 2º.
         # O primeiro eliminado fica em 8º.
         return self.PLAYERS_PER_LOBBY - eliminated + 1
-
 
     # ============================================================
     # 🏆 UPDATE RANKING

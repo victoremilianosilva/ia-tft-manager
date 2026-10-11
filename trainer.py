@@ -922,6 +922,15 @@ class Trainer:
         # 🔁 UPDATE LOOP
         # ============================================================
 
+        # 📊 Métricas das máscaras durante este update
+        mask_valid_type_sum = 0.0
+        mask_valid_board_move_sum = 0.0
+        mask_valid_bench_move_sum = 0.0
+        mask_samples = 0
+
+        # 📊 Último snapshot acumulado da lobby
+        anti_loop_totals = {}
+
         for update in range(
             start,
             end
@@ -966,6 +975,33 @@ class Trainer:
                 masks = self._flatten_masks(
                     gym_masks
                 )
+
+                # 📊 Quantas opções permaneceram válidas após as máscaras?
+                mask_valid_type_sum += (
+                    masks["type_mask"]
+                    .sum(dim=1)
+                    .float()
+                    .mean()
+                    .item()
+                )
+
+                mask_valid_board_move_sum += (
+                    masks["board_move_target_masks"]
+                    .sum(dim=(1, 2))
+                    .float()
+                    .mean()
+                    .item()
+                )
+
+                mask_valid_bench_move_sum += (
+                    masks["bench_to_board_target_masks"]
+                    .sum(dim=(1, 2))
+                    .float()
+                    .mean()
+                    .item()
+                )
+
+                mask_samples += 1
 
                 # ====================================================
                 # 🧠 STRATEGIES
@@ -1059,6 +1095,21 @@ class Trainer:
                 ) = self.vec_env.step(
                     lobby_actions
                 )
+
+                # 📊 Captura os contadores reais de todas as lobbies
+                metrics_by_lobby = (
+                    self.vec_env.env_method(
+                        "get_anti_loop_metrics"
+                    )
+                )
+
+                anti_loop_totals = {}
+
+                for lobby_metrics in metrics_by_lobby:
+                    for key, value in lobby_metrics.items():
+                        anti_loop_totals[key] = (
+                            anti_loop_totals.get(key, 0) + value
+                        )
 
                 # ====================================================
                 # 👀 NEXT OBS
@@ -1397,6 +1448,59 @@ class Trainer:
                     valid_advantages.mean().item(),
                     update
                 )
+
+                # ========================================================
+                # 🔄 ANTI-LOOP — TENSORBOARD
+                # ========================================================
+
+                # Contadores cumulativos desde o início dos ambientes
+                for key, value in anti_loop_totals.items():
+                    self.writer.add_scalar(
+                        f"anti_loop/{key}",
+                        value,
+                        update,
+                    )
+
+                # 📉 Proporção cumulativa de tentativas bloqueadas
+                attempts = anti_loop_totals.get(
+                    "execution_attempts", 0
+                )
+
+                blocks = anti_loop_totals.get(
+                    "execution_blocks", 0
+                )
+
+                block_rate = (
+                    blocks / attempts
+                    if attempts > 0
+                    else 0.0
+                )
+
+                self.writer.add_scalar(
+                    "anti_loop/block_rate",
+                    block_rate,
+                    update,
+                )
+
+                # 🎭 Médias das máscaras neste update
+                if mask_samples > 0:
+                    self.writer.add_scalar(
+                        "anti_loop/valid_action_types_mean",
+                        mask_valid_type_sum / mask_samples,
+                        update,
+                    )
+
+                    self.writer.add_scalar(
+                        "anti_loop/valid_board_moves_mean",
+                        mask_valid_board_move_sum / mask_samples,
+                        update,
+                    )
+
+                    self.writer.add_scalar(
+                        "anti_loop/valid_bench_to_board_moves_mean",
+                        mask_valid_bench_move_sum / mask_samples,
+                        update,
+                    )
 
             # ========================================================
             # 👥 AGENTS

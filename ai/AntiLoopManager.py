@@ -36,12 +36,25 @@ class AntiLoopManager:
         )
         self.loop_threshold = loop_threshold
 
+        # 📊 Métricas acumuladas durante a vida do ambiente.
+        # Não são apagadas quando o histórico de movimentos é resetado.
+        self.execution_metrics = {
+            "execution_attempts": 0,
+            "execution_blocks": 0,
+            "blocked_reverse": 0,
+            "blocked_oscillation": 0,
+            "blocked_explicit": 0,
+            "blocked_bench_board_loop": 0,
+            "board_moves_executed": 0,
+            "bench_to_board_executed": 0,
+            "blocked_cycle": 0,
+        }
+
         self.reset()
 
     # =============================================================
     # 🔄 RESET
     # =============================================================
-
     def reset(self):
         """Reseta todo o histórico."""
 
@@ -66,7 +79,6 @@ class AntiLoopManager:
     # =============================================================
     # 📸 BOARD SIGNATURE
     # =============================================================
-
     def make_board_signature(
         self,
         board,
@@ -167,7 +179,6 @@ class AntiLoopManager:
     # =============================================================
     # 📥 REGISTRAR ESTADO
     # =============================================================
-
     def register_state(
         self,
         board,
@@ -225,7 +236,6 @@ class AntiLoopManager:
     # =============================================================
     # 🔄 REGISTRAR MOVIMENTO
     # =============================================================
-
     def register_move(
         self,
         move_type,
@@ -263,7 +273,6 @@ class AntiLoopManager:
     # =============================================================
     # 🚫 MOVIMENTO BLOQUEADO
     # =============================================================
-
     def block_move(
         self,
         move_type,
@@ -291,7 +300,6 @@ class AntiLoopManager:
     # =============================================================
     # 🔑 MOVE KEY
     # =============================================================
-
     def make_move_key(
         self,
         move_type,
@@ -313,7 +321,6 @@ class AntiLoopManager:
     # =============================================================
     # 🚫 VERIFICAR BLOQUEIO
     # =============================================================
-
     def is_move_blocked(
         self,
         move_type,
@@ -337,7 +344,6 @@ class AntiLoopManager:
     # =============================================================
     # 🔁 MOVIMENTO INVERSO
     # =============================================================
-
     def is_reverse_move(
         self,
         move_type,
@@ -346,12 +352,10 @@ class AntiLoopManager:
         unit=None,
     ):
         """
-        Detecta:
+        Detecta movimentos inversos.
 
-            A -> B
-            B -> A
-
-        para a mesma unidade.
+        Para board_swap, identifica a mesma dupla de posições
+        independentemente de qual unidade ficou na origem.
         """
 
         if not self.last_move:
@@ -361,11 +365,20 @@ class AntiLoopManager:
             self.last_move
         )
 
-        current_unit = (
-            self._unit_identity(
-                unit
+        # Uma troca entre as mesmas duas posições pode ser
+        # desfeita com a mesma origem/destino, pois as unidades
+        # trocaram de lugar. Por isso, não depende da identidade.
+        if (
+            move_type == "board_swap"
+            and last_type == "board_swap"
+        ):
+            return (
+                {last_source, last_target}
+                == {source, target}
             )
-        )
+
+        # Para movimentos normais, mantém a validação original.
+        current_unit = self._unit_identity(unit)
 
         if last_unit != current_unit:
             return False
@@ -378,101 +391,85 @@ class AntiLoopManager:
             and last_target == source
         )
 
+
     # =============================================================
     # 🔄 OSCILAÇÃO
-    # =============================================================
-
+    # =============================================================      
     def is_oscillating(
         self,
         unit,
         source,
         target,
+        move_type=None,
     ):
         """
-        Detecta padrões como:
+        Detecta movimentos inversos e ciclos recentes de posições.
 
-            A -> B
-            B -> A
-            A -> B
-
+        Para board_move, acompanha a mesma unidade.
+        Para board_swap, considera que as duas unidades mudam
+        de posição e examina a sequência de swaps.
         """
 
-        identity = (
-            self._unit_identity(
-                unit
-            )
-        )
+        identity = self._unit_identity(unit)
+        recent = list(self.move_history)[-6:]
 
-        if len(
-            self.move_history
-        ) < 2:
+        if identity is None or not recent:
             return False
 
-        recent = list(
-            self.move_history
-        )[-4:]
+        # ---------------------------------------------------------
+        # 🔀 Selecionar movimentos relevantes
+        # ---------------------------------------------------------
 
-        movement_pairs = []
-
-        for move in recent:
-
-            move_type, src, dst, move_unit = (
-                move
-            )
-
-            if move_unit != identity:
-                continue
-
-            movement_pairs.append(
-                (
-                    src,
-                    dst,
+        if move_type == "board_swap":
+            relevant = [
+                (src, dst)
+                for recorded_type, src, dst, _ in recent
+                if recorded_type in ("board_swap", "board_move")
+            ]
+        else:
+            relevant = [
+                (src, dst)
+                for recorded_type, src, dst, move_unit in recent
+                if (
+                    move_unit == identity
+                    and recorded_type == "board_move"
                 )
-            )
+            ]
 
-        if len(
-            movement_pairs
-        ) < 2:
+        if not relevant:
             return False
 
         # ---------------------------------------------------------
-        # Último movimento
+        # 🔗 Reconstruir a sequência contínua
         # ---------------------------------------------------------
 
-        if movement_pairs[-1] != (
-            source,
-            target,
-        ):
+        # O último movimento registrado deve chegar à origem atual.
+        if relevant[-1][1] != source:
             return False
 
-        # ---------------------------------------------------------
-        # Procura A -> B -> A
-        # ---------------------------------------------------------
+        chain = [
+            relevant[-1][0],
+            relevant[-1][1],
+        ]
 
-        for index in range(
-            len(movement_pairs) - 1
+        for previous_source, previous_target in reversed(
+            relevant[:-1]
         ):
+            if previous_target != chain[0]:
+                break
 
-            first = (
-                movement_pairs[index]
-            )
+            chain.insert(0, previous_source)
 
-            second = (
-                movement_pairs[index + 1]
-            )
+        # ---------------------------------------------------------
+        # 🚫 O destino fecharia um ciclo?
+        # ---------------------------------------------------------
 
-            if (
-                first[0] == second[1]
-                and first[1] == second[0]
-            ):
-                return True
+        return target in chain[:-1]
 
-        return False
 
     # =============================================================
     # 🔁 BENCH <-> BOARD
     # =============================================================
-    
     def is_bench_board_loop(self, unit):
         """
         Detecta alternância entre banco e tabuleiro
@@ -527,7 +524,6 @@ class AntiLoopManager:
     # =============================================================
     # 🧠 ESTADO JÁ VISITADO
     # =============================================================
-
     def was_state_seen(
         self,
         board,
@@ -570,7 +566,6 @@ class AntiLoopManager:
     # =============================================================
     # 🧮 AVALIAÇÃO DE MOVIMENTO
     # =============================================================
-
     def evaluate_move_risk(
         self,
         move_type,
@@ -619,6 +614,7 @@ class AntiLoopManager:
             unit,
             source,
             target,
+            move_type=move_type,
         ):
             risk += 0.8
 
@@ -639,7 +635,6 @@ class AntiLoopManager:
     # =============================================================
     # 🚦 DEVE BLOQUEAR?
     # =============================================================
-
     def should_block_move(
         self,
         move_type,
@@ -650,75 +645,20 @@ class AntiLoopManager:
         bench=None,
     ):
         """
-        Decide se o movimento deve ser bloqueado.
-
-        Esta é a função principal que o
-        ActionMaskManager poderá consultar.
+        Consulta sem efeitos colaterais.
+        Não incrementa métricas durante a construção das máscaras.
         """
 
-        # ---------------------------------------------------------
-        # 🚫 Movimento explicitamente bloqueado
-        # ---------------------------------------------------------
-
-        if self.is_move_blocked(
-            move_type,
-            source,
-            target,
-            unit,
-        ):
-            return True
-
-        # ---------------------------------------------------------
-        # 🔄 Movimento inverso
-        # ---------------------------------------------------------
-
-        if self.is_reverse_move(
-            move_type,
-            source,
-            target,
-            unit,
-        ):
-            return True
-
-        # ---------------------------------------------------------
-        # 🔁 Oscilação
-        # ---------------------------------------------------------
-
-        if self.is_oscillating(
-            unit,
-            source,
-            target,
-        ):
-            return True
-
-        # ---------------------------------------------------------
-        # ↔️ Bench / Board loop
-        # ---------------------------------------------------------
-
-        if self.is_bench_board_loop(
-            unit
-        ):
-            return True
-
-        # ---------------------------------------------------------
-        # 📸 Estado futuro
-        # ---------------------------------------------------------
-
-        if (
-            board is not None
-            and bench is not None
-        ):
-
-            # Não simulamos o movimento aqui.
-            # Isso será responsabilidade do Env/BoardManager.
-            pass
-
-        return False
-
+        return self.get_block_reason(
+            move_type=move_type,
+            source=source,
+            target=target,
+            unit=unit,
+        ) is not None
+    
     # =============================================================
     # 🧹 LIMPEZA
     # =============================================================
-
     def clear_old_blocks(self):
         """
         Limpa bloqueios antigos.
@@ -736,7 +676,6 @@ class AntiLoopManager:
     # =============================================================
     # 📊 ESTADO
     # =============================================================
-
     def get_state(self):
         """Retorna informações úteis para debug."""
 
@@ -761,9 +700,132 @@ class AntiLoopManager:
         }
 
     # =============================================================
+    # 📊 MÉTRICAS PARA TENSORBOARD
+    # =============================================================    
+    def get_block_reason(
+        self,
+        move_type,
+        source,
+        target,
+        unit=None,
+    ):
+        """
+        Retorna o motivo do bloqueio ou None.
+
+        Não altera histórico nem contadores.
+        Pode ser consultado durante a criação das máscaras.
+        """
+
+        # 🚫 Bloqueio explícito
+        if self.is_move_blocked(
+            move_type, source, target, unit
+        ):
+            return "explicit"
+
+        # 🔄 Movimento inverso
+        if self.is_reverse_move(
+            move_type, source, target, unit
+        ):
+            return "reverse"
+
+        # 🔁 Oscilação repetitiva
+        if self.is_oscillating(
+            unit, source, target
+        ):
+            return "oscillation"
+
+        # 🪑 Ciclo entre banco e tabuleiro
+        if self.is_bench_board_loop(unit):
+            return "bench_board_loop"
+
+        # ♻️ Ciclo envolvendo múltiplos movimentos no tabuleiro
+        if self.is_cycle_move(
+            move_type, source, target, unit
+        ):
+            return "cycle"
+
+        return None
+
+
+
+    def record_execution_attempt(self):
+        """Registra uma tentativa real de movimentação."""
+        self.execution_metrics["execution_attempts"] += 1
+
+
+    def record_execution_block(self, reason):
+        """
+        Registra um bloqueio ocorrido durante a execução.
+        Não chamar para candidatos descartados pela máscara.
+        """
+
+        self.execution_metrics["execution_blocks"] += 1
+
+        key = f"blocked_{reason}"
+
+        if key in self.execution_metrics:
+            self.execution_metrics[key] += 1
+
+
+    def record_successful_move(self, move_type):
+        """Registra uma movimentação concluída com sucesso."""
+
+        if move_type in ("board_move", "board_swap"):
+            self.execution_metrics["board_moves_executed"] += 1
+
+        elif move_type == "bench_to_board":
+            self.execution_metrics["bench_to_board_executed"] += 1
+
+
+    def get_metrics(self):
+        """Devolve uma cópia segura dos contadores."""
+        return dict(self.execution_metrics)
+
+    def is_cycle_move(
+        self,
+        move_type,
+        source,
+        target,
+        unit=None,
+    ):
+        """
+        Detecta quando um movimento fecha um ciclo de posições
+        da mesma unidade, por exemplo:
+            3 -> 10 -> 12 -> 3
+
+        Considera somente o histórico recente da unidade.
+        """
+
+        if move_type not in ("board_move", "board_swap"):
+            return False
+
+        identity = self._unit_identity(unit)
+
+        recent = [
+            (src, dst)
+            for kind, src, dst, move_unit in self.move_history
+            if (
+                kind in ("board_move", "board_swap")
+                and move_unit == identity
+            )
+        ][-8:]
+
+        if not recent:
+            return False
+
+        # Procura um caminho recente que comece no destino
+        # proposto e termine na origem proposta.
+        reachable = {target}
+
+        for src, dst in recent:
+            if src in reachable:
+                reachable.add(dst)
+
+        return source in reachable
+
+    # =============================================================
     # 🐛 DEBUG
     # =============================================================
-
     def debug_print(self):
         """Imprime estado do AntiLoop."""
 
