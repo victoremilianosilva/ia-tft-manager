@@ -173,3 +173,39 @@ def test_bench_board_loop_detects_repeated_transition():
         target=10,
         unit=nasus,
     )
+
+
+def test_explicit_block_remains_active_without_state_change():
+    manager, board, bench, anti_loop = create_manager()
+
+    unit = {"uuid": "nasus-1", "id": "Nasus", "star": 1}
+    bench.bench[2] = unit
+
+    anti_loop.register_state(board.board, bench.bench)
+    anti_loop.block_move("bench_to_board", 2, 12, unit)
+
+    # O estado não mudou: o bloqueio continua válido.
+    assert not manager._is_valid_bench_board_move(2, 12)
+
+
+def test_explicit_block_is_released_after_state_change():
+    manager, board, bench, anti_loop = create_manager()
+
+    nasus = {"uuid": "nasus-1", "id": "Nasus", "star": 1}
+    teemo = {"uuid": "teemo-1", "id": "Teemo", "star": 1}
+
+    bench.bench[2] = nasus
+
+    # Registra o estado em que o movimento foi bloqueado.
+    anti_loop.register_state(board.board, bench.bench)
+    anti_loop.block_move("bench_to_board", 2, 12, nasus)
+
+    assert not manager._is_valid_bench_board_move(2, 12)
+
+    # Outro posicionamento altera a assinatura do estado.
+    board.board[0] = teemo
+    anti_loop.register_state(board.board, bench.bench)
+
+    # O movimento voltou a ser considerado válido.
+    assert manager._is_valid_bench_board_move(2, 12)
+

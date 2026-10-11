@@ -73,7 +73,7 @@ class AntiLoopManager:
         self.state_visits = {}
 
         self.last_board_signature = None
-
+        self.blocked_move_states = {}
         self.last_move = None
 
     # =============================================================
@@ -269,7 +269,7 @@ class AntiLoopManager:
         self.last_move = move
 
         return move
-
+   
     # =============================================================
     # 🚫 MOVIMENTO BLOQUEADO
     # =============================================================
@@ -281,9 +281,11 @@ class AntiLoopManager:
         unit=None,
     ):
         """
-        Bloqueia um movimento específico.
-        """
+        Bloqueia um movimento no estado atual do tabuleiro/banco.
 
+        O bloqueio deixa de valer quando register_state()
+        registra uma assinatura de estado diferente.
+        """
         key = self.make_move_key(
             move_type,
             source,
@@ -291,11 +293,48 @@ class AntiLoopManager:
             unit,
         )
 
-        self.blocked_moves.append(
-            key
-        )
+        # Evita entradas duplicadas para a mesma chave.
+        if key in self.blocked_moves:
+            self.blocked_moves.remove(key)
+
+        # Controla a remoção da assinatura associada quando
+        # o histórico atingir o limite.
+        elif len(self.blocked_moves) >= self.blocked_move_size:
+            expired_key = self.blocked_moves.popleft()
+            self.blocked_move_states.pop(expired_key, None)
+
+        self.blocked_moves.append(key)
+        self.blocked_move_states[key] = self.last_board_signature
 
         return key
+
+    # =============================================================
+    # 🚫 VERIFICAR BLOQUEIO
+    # =============================================================
+    def is_move_blocked(
+        self,
+        move_type,
+        source,
+        target,
+        unit=None,
+    ):
+        """
+        Retorna True somente se o movimento estiver bloqueado
+        no estado de posicionamento atualmente registrado.
+        """
+        key = self.make_move_key(
+            move_type,
+            source,
+            target,
+            unit,
+        )
+
+        if key not in self.blocked_moves:
+            return False
+
+        blocked_state = self.blocked_move_states.get(key)
+
+        return blocked_state == self.last_board_signature
 
     # =============================================================
     # 🔑 MOVE KEY
@@ -391,7 +430,6 @@ class AntiLoopManager:
             and last_target == source
         )
 
-
     # =============================================================
     # 🔄 OSCILAÇÃO
     # =============================================================      
@@ -469,7 +507,6 @@ class AntiLoopManager:
 
         return target in chain[:-1]
 
-
     # =============================================================
     # 🔁 BENCH <-> BOARD
     # ============================================================= 
@@ -539,7 +576,6 @@ class AntiLoopManager:
             and source == previous_source
             and target == previous_target
         )
-
 
     # =============================================================
     # 🧠 ESTADO JÁ VISITADO
@@ -784,12 +820,9 @@ class AntiLoopManager:
 
         return None
 
-
-
     def record_execution_attempt(self):
         """Registra uma tentativa real de movimentação."""
         self.execution_metrics["execution_attempts"] += 1
-
 
     def record_execution_block(self, reason):
         """
@@ -804,7 +837,6 @@ class AntiLoopManager:
         if key in self.execution_metrics:
             self.execution_metrics[key] += 1
 
-
     def record_successful_move(self, move_type):
         """Registra uma movimentação concluída com sucesso."""
 
@@ -813,7 +845,6 @@ class AntiLoopManager:
 
         elif move_type == "bench_to_board":
             self.execution_metrics["bench_to_board_executed"] += 1
-
 
     def get_metrics(self):
         """Devolve uma cópia segura dos contadores."""
@@ -873,7 +904,6 @@ class AntiLoopManager:
         # Só bloqueia se o histórico contínuo terminar
         # exatamente na origem do movimento candidato.
         return started and expected_position == source
-
 
     # =============================================================
     # 🐛 DEBUG

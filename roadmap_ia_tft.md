@@ -74,7 +74,7 @@
 - [x] Revisar `is_cycle_move()` para garantir que a detecção respeite a sequência cronológica dos movimentos e não identifique ciclos a partir de transições desconexas.
 - [x] Validar a detecção de oscilações envolvendo `board_swap`, garantindo que trocas úteis não sejam bloqueadas apenas pelo histórico de outras unidades.
 - [x] Investigar e corrigir o possível bloqueio de `MOVE_BOARD` quando há apenas uma unidade no tabuleiro e existem destinos vazios válidos.
-- [ ] Revisar o tratamento de exceções nas consultas ao `AntiLoopManager` dentro do `ActionMaskManager`, garantindo que falhas sejam diagnosticáveis sem comprometer a validade das máscaras.
+- [x] Revisar o tratamento de exceções nas consultas ao `AntiLoopManager` dentro do `ActionMaskManager`, garantindo que falhas sejam diagnosticáveis sem comprometer a validade das máscaras.
 - [x] Adicionar testes de regressão para os bloqueios indevidos identificados na auditoria, preservando os testes existentes.
 - [ ] Confirmar que movimentos válidos continuam disponíveis após um bloqueio, inclusive quando o estado do jogo muda e o movimento anteriormente bloqueado passa a ser útil.
 - [ ] Separar restrições de legalidade de heurísticas estratégicas.
@@ -109,7 +109,7 @@
 
 ### 4.5 — Decisão sobre C++ adicional
 
-- [ ] Avaliar se vale migrar outras rotinas para C++.
+- [ ] Avaliar se vale migrar outras rotinas para C++, e se migra so mask, ou o antiloop tb.
 - [ ] Só implementar novas migrações depois de medir o gargalo real.
 - [ ] Preservar a lógica Python quando a migração não oferecer ganho comprovado.
 
