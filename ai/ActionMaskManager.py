@@ -17,9 +17,9 @@
 # 5 = conditioned board target
 
 from enum import IntEnum
-
+import logging
 import numpy as np
-
+logger = logging.getLogger(__name__)
 
 class ActionType(IntEnum):
     BUY = 0
@@ -56,7 +56,8 @@ class ActionMaskManager:
         self.board_size = 28
         self.bench_size = 9
         self.shop_size = 5
-
+        # Diagnóstico de falhas nas consultas ao AntiLoopManager.
+        self._anti_loop_error_count = 0
     # ============================================================
     # 🔹 API PRINCIPAL
     # ============================================================
@@ -352,17 +353,13 @@ class ActionMaskManager:
         if not self._is_valid_board_position(target):
             return False
 
-        # 🚫 Anti-loop
-        try:
-            if self.anti_loop_manager.should_block_move(
-                move_type="bench_to_board",
-                source=bench_slot,
-                target=target,
-                unit=unit,
-            ):
-                return False
-        except Exception:
-            pass
+        if self._should_block_anti_loop(
+            move_type="bench_to_board",
+            source=bench_slot,
+            target=target,
+            unit=unit,
+        ):
+            return False
 
         return True
 
@@ -459,16 +456,13 @@ class ActionMaskManager:
 
         if target_unit is not None:
 
-            try:
-                if self.anti_loop_manager.should_block_move(
-                    move_type="board_swap",
-                    source=source,
-                    target=target,
-                    unit=source_unit,
-                ):
-                    return False
-            except Exception:
-                pass
+            if self._should_block_anti_loop(
+                move_type="board_swap",
+                source=source,
+                target=target,
+                unit=source_unit,
+            ):
+                return False
 
             return True
 
@@ -476,16 +470,13 @@ class ActionMaskManager:
         # 📦 Movimento para espaço vazio
         # ========================================================
 
-        try:
-            if self.anti_loop_manager.should_block_move(
-                move_type="board_move",
-                source=source,
-                target=target,
-                unit=source_unit,
-            ):
-                return False
-        except Exception:
-            pass
+        if self._should_block_anti_loop(
+            move_type="board_move",
+            source=source,
+            target=target,
+            unit=source_unit,
+        ):
+            return False
 
         return True
 
@@ -632,6 +623,55 @@ class ActionMaskManager:
         except Exception:
             return 0 <= position < self.board_size
 
+    def _should_block_anti_loop(
+        self,
+        move_type,
+        source,
+        target,
+        unit,
+    ):
+        """
+        Consulta o AntiLoopManager sem permitir que uma falha
+        de diagnóstico invalide a construção da máscara.
+
+        Em caso de exceção, permite o candidato nesta camada,
+        preservando o comportamento atual, e registra a falha.
+        As regras básicas de legalidade continuam sendo verificadas
+        pelos métodos chamadores.
+        """
+        try:
+            return bool(
+                self.anti_loop_manager.should_block_move(
+                    move_type=move_type,
+                    source=source,
+                    target=target,
+                    unit=unit,
+                )
+            )
+        except Exception:
+            self._anti_loop_error_count = (
+                getattr(self, "_anti_loop_error_count", 0) + 1
+            )
+
+            # Registra a primeira ocorrência com traceback.
+            # Evita repetir o mesmo traceback para cada candidato.
+            if self._anti_loop_error_count == 1:
+                logger.exception(
+                    "Falha ao consultar AntiLoopManager.should_block_move. "
+                    "O candidato será permitido nesta camada. "
+                    "Verifique a legalidade no ambiente. "
+                    "Falhas registradas: %d",
+                    self._anti_loop_error_count,
+                )
+            elif self._anti_loop_error_count % 100 == 0:
+                logger.warning(
+                    "AntiLoopManager continua falhando durante a "
+                    "construção das máscaras. Total de falhas: %d",
+                    self._anti_loop_error_count,
+                )
+
+            return False
+    
     # ============================================================
     # 🧪 DEBUG
     # ============================================================
