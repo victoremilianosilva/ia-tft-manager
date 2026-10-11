@@ -419,12 +419,6 @@ class ActionMaskManager:
             if unit is not None
         ]
 
-        # Precisa existir pelo menos 2 unidades
-        # para fazer uma troca significativa.
-        if len(occupied) < 2:
-            mask[0] = 1.0
-            return mask
-
         for source in occupied:
 
             for target in range(self.board_size):
@@ -512,9 +506,6 @@ class ActionMaskManager:
             for index, unit in enumerate(board)
             if unit is not None
         ]
-
-        if len(occupied) < 2:
-            return False
 
         for source in occupied:
 

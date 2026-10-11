@@ -68,14 +68,14 @@
 
 **Status: próxima etapa.**
 
-- [ ] Auditar as regras atuais do `AntiLoopManager.py`.
-- [ ] Auditar a aplicação das regras no `ActionMaskManager.py`.
+- [x] Auditar as regras atuais do `AntiLoopManager.py`.
+- [x] Auditar a aplicação das regras no `ActionMaskManager.py`.
 - [ ] Validar se `is_bench_board_loop()` bloqueia apenas movimentos que efetivamente perpetuam o ciclo, sem impedir outras ações úteis da unidade.
-- [ ] Revisar `is_cycle_move()` para garantir que a detecção respeite a sequência cronológica dos movimentos e não identifique ciclos a partir de transições desconexas.
-- [ ] Validar a detecção de oscilações envolvendo `board_swap`, garantindo que trocas úteis não sejam bloqueadas apenas pelo histórico de outras unidades.
-- [ ] Investigar e corrigir o possível bloqueio de `MOVE_BOARD` quando há apenas uma unidade no tabuleiro e existem destinos vazios válidos.
+- [x] Revisar `is_cycle_move()` para garantir que a detecção respeite a sequência cronológica dos movimentos e não identifique ciclos a partir de transições desconexas.
+- [x] Validar a detecção de oscilações envolvendo `board_swap`, garantindo que trocas úteis não sejam bloqueadas apenas pelo histórico de outras unidades.
+- [x] Investigar e corrigir o possível bloqueio de `MOVE_BOARD` quando há apenas uma unidade no tabuleiro e existem destinos vazios válidos.
 - [ ] Revisar o tratamento de exceções nas consultas ao `AntiLoopManager` dentro do `ActionMaskManager`, garantindo que falhas sejam diagnosticáveis sem comprometer a validade das máscaras.
-- [ ] Adicionar testes de regressão para os bloqueios indevidos identificados na auditoria, preservando os testes existentes.
+- [x] Adicionar testes de regressão para os bloqueios indevidos identificados na auditoria, preservando os testes existentes.
 - [ ] Confirmar que movimentos válidos continuam disponíveis após um bloqueio, inclusive quando o estado do jogo muda e o movimento anteriormente bloqueado passa a ser útil.
 - [ ] Separar restrições de legalidade de heurísticas estratégicas.
 - [ ] Evitar bloquear um movimento apenas por parecer estrategicamente ruim.
@@ -83,8 +83,8 @@
 - [ ] Bloquear ciclos persistentes sem impedir movimentos para estados novos.
 - [ ] Verificar o tratamento de ciclos envolvendo swaps, nos quais duas unidades trocam de posição.
 - [ ] Garantir que consultas de máscara não alterem contadores de execução.
-- [ ] Reutilizar os testes de regressão existentes.
-- [ ] Adicionar testes apenas para comportamentos relevantes ainda não cobertos.
+- [x] Reutilizar os testes de regressão existentes.
+- [x] Adicionar testes apenas para comportamentos relevantes ainda não cobertos.
 
 **Critério de conclusão:** o anti-loop impede repetições indesejadas sem assumir o papel do agente na escolha estratégica das ações.
 

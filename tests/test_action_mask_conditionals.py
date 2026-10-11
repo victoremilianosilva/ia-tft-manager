@@ -2,8 +2,7 @@
 import numpy as np
 import pytest
 
-from ai.ActionMaskManager import ActionMaskManager
-
+from ai.ActionMaskManager import ActionMaskManager, ActionType
 
 class FakeBoardManager:
     def __init__(self, board=None):
@@ -154,3 +153,27 @@ def test_board_swap_respects_anti_loop(setup_manager):
 
     assert mask[6] == 0
     assert mask[7] == 1
+
+
+def test_move_board_remains_available_with_one_unit_and_empty_targets(
+    setup_manager, monkeypatch
+):
+    manager, board, _, _ = setup_manager
+    board.board[5] = {"uuid": "nasus-1", "name": "Nasus"}
+
+    # Isola a máscara de movimento das outras ações.
+    monkeypatch.setattr(manager, "_has_valid_buy", lambda: False)
+    monkeypatch.setattr(manager, "_has_valid_reroll", lambda: False)
+    monkeypatch.setattr(manager, "_has_valid_buy_xp", lambda: False)
+    monkeypatch.setattr(manager, "_has_valid_bench_move", lambda: False)
+    monkeypatch.setattr(manager, "_has_valid_sell", lambda: False)
+
+    target_mask = manager.get_board_move_target_mask(5)
+    type_mask = manager.get_type_mask()
+
+    # Há destinos vazios válidos para a unidade.
+    assert target_mask[6] == 1
+
+    # MOVE_BOARD não deve ser desabilitado por exigir
+    # duas unidades quando um movimento para espaço vazio é legal.
+    assert type_mask[ActionType.MOVE_BOARD] == 1

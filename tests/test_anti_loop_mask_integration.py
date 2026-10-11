@@ -124,3 +124,19 @@ def test_board_mask_excludes_reverse_destination():
     assert mask[12] == 1
     assert np.isfinite(mask).all()
 
+def test_bench_board_loop_does_not_block_unrelated_board_move():
+    anti_loop = AntiLoopManager()
+    unit = {"uuid": "nasus-1", "id": "Nasus", "star": 1}
+
+    anti_loop.register_move("bench_to_board", 2, 10, unit)
+    anti_loop.register_move("board_to_bench", 10, 2, unit)
+
+    # O histórico indica alternância banco/tabuleiro.
+    # Isso não significa que qualquer movimento posterior
+    # da unidade no tabuleiro perpetue o mesmo ciclo.
+    assert not anti_loop.should_block_move(
+        move_type="board_move",
+        source=10,
+        target=12,
+        unit=unit,
+    )

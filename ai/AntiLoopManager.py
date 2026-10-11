@@ -423,8 +423,11 @@ class AntiLoopManager:
         if move_type == "board_swap":
             relevant = [
                 (src, dst)
-                for recorded_type, src, dst, _ in recent
-                if recorded_type in ("board_swap", "board_move")
+                for recorded_type, src, dst, move_unit in recent
+                if (
+                    move_unit == identity
+                    and recorded_type in ("board_swap", "board_move")
+                )
             ]
         else:
             relevant = [
@@ -738,8 +741,13 @@ class AntiLoopManager:
             return "oscillation"
 
 
-        # 🪑 Ciclo entre banco e tabuleiro
-        if self.is_bench_board_loop(unit):
+        # 🪑 O histórico banco ↔ tabuleiro só deve
+        # bloquear candidatos que envolvam esse ciclo.
+        if (
+            move_type in ("bench_to_board", "board_to_bench",
+                        "MOVE_BENCH_TO_BOARD", "MOVE_BOARD_TO_BENCH")
+            and self.is_bench_board_loop(unit)
+        ):
             return "bench_board_loop"
 
         # ♻️ Ciclo envolvendo múltiplos movimentos no tabuleiro
@@ -814,18 +822,32 @@ class AntiLoopManager:
             )
         ][-8:]
 
+
         if not recent:
             return False
 
-        # Procura um caminho recente que comece no destino
-        # proposto e termine na origem proposta.
-        reachable = {target}
+        # 🔗 Reconstrói uma sequência cronológica contínua
+        # iniciada na posição para a qual o movimento tentaria voltar.
+        started = False
+        expected_position = None
 
         for src, dst in recent:
-            if src in reachable:
-                reachable.add(dst)
+            if not started:
+                if src == target:
+                    started = True
+                    expected_position = dst
+                continue
 
-        return source in reachable
+            # Uma transição desconexa invalida a sequência.
+            if src != expected_position:
+                return False
+
+            expected_position = dst
+
+        # Só bloqueia se o histórico contínuo terminar
+        # exatamente na origem do movimento candidato.
+        return started and expected_position == source
+
 
     # =============================================================
     # 🐛 DEBUG

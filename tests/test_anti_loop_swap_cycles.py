@@ -33,3 +33,23 @@ def test_allows_swap_cycle_candidate_to_new_position():
         target=15,
         unit=nasus,
     )
+
+
+def test_board_swap_for_one_unit_is_not_blocked_by_another_units_moves():
+    anti_loop = AntiLoopManager()
+
+    nasus = {"uuid": "nasus-1", "id": "Nasus", "star": 1}
+    teemo = {"uuid": "teemo-1", "id": "Teemo", "star": 1}
+
+    # Apenas Teemo percorreu este histórico.
+    anti_loop.register_move("board_move", 3, 10, teemo)
+    anti_loop.register_move("board_move", 10, 12, teemo)
+
+    # O swap de Nasus não deve ser bloqueado pelo histórico
+    # de movimentação exclusiva de Teemo.
+    assert not anti_loop.should_block_move(
+        move_type="board_swap",
+        source=12,
+        target=3,
+        unit=nasus,
+    )
