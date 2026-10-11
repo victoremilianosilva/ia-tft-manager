@@ -472,23 +472,24 @@ class AntiLoopManager:
 
     # =============================================================
     # 🔁 BENCH <-> BOARD
-    # =============================================================
-    def is_bench_board_loop(self, unit):
+    # ============================================================= 
+    def is_bench_board_loop(
+        self,
+        unit,
+        move_type=None,
+        source=None,
+        target=None,
+    ):
         """
-        Detecta alternância entre banco e tabuleiro
-        para a mesma unidade, independentemente do
-        padrão de nomenclatura utilizado.
+        Detecta se a ação candidata repete uma transição
+        banco <-> tabuleiro que acabou de ser desfeita.
         """
 
         identity = self._unit_identity(unit)
 
-        recent = list(self.move_history)[-6:]
-
-        if len(recent) < 2:
+        if identity is None or move_type is None:
             return False
 
-        # Normaliza os nomes usados pelo ambiente e
-        # os nomes alternativos usados pelo AntiLoopManager.
         move_aliases = {
             "MOVE_BENCH_TO_BOARD": "bench_to_board",
             "bench_to_board": "bench_to_board",
@@ -496,33 +497,49 @@ class AntiLoopManager:
             "board_to_bench": "board_to_bench",
         }
 
-        relevant = []
+        candidate_type = move_aliases.get(move_type)
 
-        for move in recent:
-            move_type, source, target, move_unit = move
+        if candidate_type is None:
+            return False
 
-            # Considera somente a mesma unidade.
+        recent = []
+
+        for recorded_type, src, dst, move_unit in self.move_history:
             if move_unit != identity:
                 continue
 
-            normalized_type = move_aliases.get(move_type)
+            normalized_type = move_aliases.get(recorded_type)
 
-            # Ignora movimentos que não envolvem banco/tabuleiro.
-            if normalized_type is None:
-                continue
+            if normalized_type is not None:
+                recent.append((normalized_type, src, dst))
 
-            relevant.append(normalized_type)
-
-        if len(relevant) < 2:
+        # Precisamos dos dois últimos movimentos da unidade.
+        if len(recent) < 2:
             return False
 
-        # Detecta movimentos alternados:
-        # banco -> tabuleiro -> banco, ou vice-versa.
-        for previous, current in zip(relevant, relevant[1:]):
-            if previous != current:
-                return True
+        previous, last = recent[-2], recent[-1]
 
-        return False
+        previous_type, previous_source, previous_target = previous
+        last_type, last_source, last_target = last
+
+        # O histórico precisa representar uma ida e uma volta
+        # pelas mesmas posições, em sequência cronológica.
+        reversed_transition = (
+            previous_type != last_type
+            and previous_source == last_target
+            and previous_target == last_source
+        )
+
+        if not reversed_transition:
+            return False
+
+        # Bloqueia somente a repetição da transição anterior.
+        return (
+            candidate_type == previous_type
+            and source == previous_source
+            and target == previous_target
+        )
+
 
     # =============================================================
     # 🧠 ESTADO JÁ VISITADO
@@ -626,9 +643,13 @@ class AntiLoopManager:
         # ---------------------------------------------------------
 
         if self.is_bench_board_loop(
-            unit
+            unit,
+            move_type=move_type,
+            source=source,
+            target=target,
         ):
             risk += 0.9
+
 
         return min(
             1.0,
@@ -746,7 +767,12 @@ class AntiLoopManager:
         if (
             move_type in ("bench_to_board", "board_to_bench",
                         "MOVE_BENCH_TO_BOARD", "MOVE_BOARD_TO_BENCH")
-            and self.is_bench_board_loop(unit)
+                        and self.is_bench_board_loop(
+                unit,
+                move_type=move_type,
+                source=source,
+                target=target,
+            )
         ):
             return "bench_board_loop"
 

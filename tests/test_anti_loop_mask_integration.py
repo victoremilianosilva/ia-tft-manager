@@ -140,3 +140,36 @@ def test_bench_board_loop_does_not_block_unrelated_board_move():
         target=12,
         unit=unit,
     )
+
+
+def test_bench_board_loop_does_not_block_different_destination():
+    anti_loop = AntiLoopManager()
+    nasus = {"uuid": "nasus-1", "id": "Nasus", "star": 1}
+
+    anti_loop.register_move("bench_to_board", 2, 10, nasus)
+    anti_loop.register_move("board_to_bench", 10, 2, nasus)
+
+    # O histórico contém alternância, mas o candidato
+    # utiliza outra origem e outro destino.
+    assert not anti_loop.should_block_move(
+        move_type="bench_to_board",
+        source=4,
+        target=12,
+        unit=nasus,
+    )
+
+
+def test_bench_board_loop_detects_repeated_transition():
+    anti_loop = AntiLoopManager()
+    nasus = {"uuid": "nasus-1", "id": "Nasus", "star": 1}
+
+    anti_loop.register_move("bench_to_board", 2, 10, nasus)
+    anti_loop.register_move("board_to_bench", 10, 2, nasus)
+
+    # Repetir a mesma transição fecha o ciclo.
+    assert anti_loop.should_block_move(
+        move_type="bench_to_board",
+        source=2,
+        target=10,
+        unit=nasus,
+    )

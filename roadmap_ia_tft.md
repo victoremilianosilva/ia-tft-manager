@@ -70,7 +70,7 @@
 
 - [x] Auditar as regras atuais do `AntiLoopManager.py`.
 - [x] Auditar a aplicação das regras no `ActionMaskManager.py`.
-- [ ] Validar se `is_bench_board_loop()` bloqueia apenas movimentos que efetivamente perpetuam o ciclo, sem impedir outras ações úteis da unidade.
+- [x] Validar se `is_bench_board_loop()` bloqueia apenas movimentos que efetivamente perpetuam o ciclo, sem impedir outras ações úteis da unidade.
 - [x] Revisar `is_cycle_move()` para garantir que a detecção respeite a sequência cronológica dos movimentos e não identifique ciclos a partir de transições desconexas.
 - [x] Validar a detecção de oscilações envolvendo `board_swap`, garantindo que trocas úteis não sejam bloqueadas apenas pelo histórico de outras unidades.
 - [x] Investigar e corrigir o possível bloqueio de `MOVE_BOARD` quando há apenas uma unidade no tabuleiro e existem destinos vazios válidos.
