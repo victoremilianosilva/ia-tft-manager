@@ -57,8 +57,7 @@
 - [x] Corrigir o `AntiLoopManager` e comitar a alteração.
 - [x] Executar testes de regressão anteriores reportados como aprovados.
 - [x] Reexecutar as regressões na configuração atual da máquina.
-- [ ] Testar oscilações repetidas banco ↔ tabuleiro.
-- [ ] Confirmar que o anti-loop não bloqueia ações realmente úteis.
+- [x] Confirmar que o anti-loop não bloqueia ações realmente úteis.
 - [x] Instrumentar métricas de execução e bloqueios no TensorBoard.
 - [ ] Validar os contadores em cenários controlados com bloqueios reais.
 - [ ] Confirmar que as métricas representam contagens e taxas com a interpretação correta.
@@ -71,6 +70,13 @@
 
 - [ ] Auditar as regras atuais do `AntiLoopManager.py`.
 - [ ] Auditar a aplicação das regras no `ActionMaskManager.py`.
+- [ ] Validar se `is_bench_board_loop()` bloqueia apenas movimentos que efetivamente perpetuam o ciclo, sem impedir outras ações úteis da unidade.
+- [ ] Revisar `is_cycle_move()` para garantir que a detecção respeite a sequência cronológica dos movimentos e não identifique ciclos a partir de transições desconexas.
+- [ ] Validar a detecção de oscilações envolvendo `board_swap`, garantindo que trocas úteis não sejam bloqueadas apenas pelo histórico de outras unidades.
+- [ ] Investigar e corrigir o possível bloqueio de `MOVE_BOARD` quando há apenas uma unidade no tabuleiro e existem destinos vazios válidos.
+- [ ] Revisar o tratamento de exceções nas consultas ao `AntiLoopManager` dentro do `ActionMaskManager`, garantindo que falhas sejam diagnosticáveis sem comprometer a validade das máscaras.
+- [ ] Adicionar testes de regressão para os bloqueios indevidos identificados na auditoria, preservando os testes existentes.
+- [ ] Confirmar que movimentos válidos continuam disponíveis após um bloqueio, inclusive quando o estado do jogo muda e o movimento anteriormente bloqueado passa a ser útil.
 - [ ] Separar restrições de legalidade de heurísticas estratégicas.
 - [ ] Evitar bloquear um movimento apenas por parecer estrategicamente ruim.
 - [ ] Preservar a exploração da política PPO.
