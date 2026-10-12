@@ -89,8 +89,6 @@ class ActionMaskManager:
             bench_move_available=bench_move_available,
         )
 
-        bench_mask = self.get_bench_source_mask()
-
         if include_board_target:
             board_target_mask = self.get_board_target_mask()
         else:
