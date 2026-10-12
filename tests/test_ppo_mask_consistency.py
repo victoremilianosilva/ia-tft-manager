@@ -555,3 +555,36 @@ def test_full_ppo_update_with_conditional_masks():
         not torch.equal(before, after.detach())
         for before, after in zip(params_before, params_after)
     )
+
+import pytest
+
+
+def test_empty_action_mask_raises_error():
+    logits = torch.zeros(2, 5)
+    mask = torch.zeros(2, 5, dtype=torch.bool)
+
+    with pytest.raises(ValueError, match="sem opções válidas"):
+        TFTPolicy._mask_logits(logits, mask)
+
+
+def test_evaluate_actions_rejects_masked_action():
+    obs, masks, _ = create_test_batch()
+
+    policy = TFTPolicy(
+        obs_dim=obs.shape[-1],
+        action_dims=Trainer.ACTION_DIMS,
+        hidden_size=32,
+    )
+
+    with torch.no_grad():
+        actions, _, _, _ = policy.get_action_and_value(
+            obs,
+            masks=masks,
+            deterministic=True,
+        )
+
+    # 🛒 O slot 2 é permitido; o slot 1 não.
+    actions[0, 1] = 1
+
+    with pytest.raises(ValueError, match="shop_slot"):
+        policy.evaluate_actions(obs, actions, masks)

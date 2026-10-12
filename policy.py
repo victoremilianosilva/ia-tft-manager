@@ -104,7 +104,74 @@ class TFTPolicy(nn.Module):
 
     @staticmethod
     def _mask_logits(logits, mask):
-        return logits.masked_fill(mask == 0, -1e9)
+        """🛡️ Valida máscaras antes de criar uma distribuição."""
+        mask = torch.as_tensor(mask, device=logits.device)
+
+        if mask.shape != logits.shape:
+            raise ValueError(
+                f"Shape de máscara inválido: {tuple(mask.shape)}; "
+                f"esperado: {tuple(logits.shape)}"
+            )
+
+        if mask.dtype != torch.bool:
+            if mask.is_floating_point() and not torch.isfinite(mask).all():
+                raise ValueError("A máscara contém NaN ou infinito.")
+
+            if not ((mask == 0) | (mask == 1)).all():
+                raise ValueError("A máscara deve conter somente 0 e 1.")
+
+            mask = mask.bool()
+
+        # 🚫 Não permitir distribuições sem nenhuma opção válida.
+        invalid_rows = ~mask.any(dim=-1)
+
+        if invalid_rows.any():
+            rows = invalid_rows.nonzero().flatten().tolist()
+            raise ValueError(
+                f"Máscara sem opções válidas nas linhas: {rows}"
+            )
+
+        if not torch.isfinite(logits).all():
+            raise FloatingPointError(
+                "Os logits contêm NaN ou infinito."
+            )
+
+        return logits.masked_fill(
+            ~mask,
+            torch.finfo(logits.dtype).min,
+        )
+
+    @staticmethod
+    def _validate_selected_actions(actions, mask, name):
+        """🔎 Rejeita ações registradas que a máscara proíbe."""
+        actions = actions.long()
+
+        if actions.ndim != 1 or mask.ndim != 2:
+            raise ValueError(
+                f"Formato inválido ao validar ação '{name}'."
+            )
+
+        if actions.shape[0] != mask.shape[0]:
+            raise ValueError(
+                f"Batch incompatível ao validar ação '{name}'."
+            )
+
+        if ((actions < 0) | (actions >= mask.shape[1])).any():
+            raise ValueError(
+                f"Índice fora dos limites para a ação '{name}'."
+            )
+
+        selected_valid = mask.to(
+            device=actions.device,
+            dtype=torch.bool,
+        ).gather(1, actions.unsqueeze(1)).squeeze(1)
+
+        if not selected_valid.all():
+            rows = (~selected_valid).nonzero().flatten().tolist()
+            raise ValueError(
+                f"Ação '{name}' bloqueada pela máscara "
+                f"nas linhas: {rows}"
+            )
 
     @staticmethod
     def _sample_categorical(logits, deterministic):
@@ -285,6 +352,14 @@ class TFTPolicy(nn.Module):
         type_logits = self._mask_logits(type_logits, masks["type_mask"])
         type_dist = Categorical(logits=type_logits)
         action_type = actions[:, 0]
+
+        # 🛡️ Validar se o tipo escolhido é permitido
+        self._validate_selected_actions(
+            action_type,
+            masks["type_mask"],
+            "type",
+        )
+
         total_logprob = type_dist.log_prob(action_type)
         total_entropy = type_dist.entropy()
 
@@ -296,7 +371,16 @@ class TFTPolicy(nn.Module):
         buy_mask = action_type == 0
         if buy_mask.any():
             logits = self.shop_head(conditioned[buy_mask])
-            logits = self._mask_logits(logits, masks["shop_mask"][buy_mask])
+            shop_mask = masks["shop_mask"][buy_mask]
+            logits = self._mask_logits(logits, shop_mask)
+
+            # 🛡️ Validar o slot selecionado
+            self._validate_selected_actions(
+                actions[buy_mask, 1],
+                shop_mask,
+                "shop_slot",
+            )
+
             dist = Categorical(logits=logits)
             total_logprob[buy_mask] += dist.log_prob(actions[buy_mask, 1])
             total_entropy[buy_mask] += dist.entropy()
@@ -311,14 +395,22 @@ class TFTPolicy(nn.Module):
                 "bench_move_source_mask",
                 masks["bench_source_mask"]
             )
-            logits = self._mask_logits(
-                logits,
-                source_mask[move_bench_mask]
+            source_mask = source_mask[move_bench_mask]
+
+            logits = self._mask_logits(logits, source_mask)
+
+            # 🛡️ Validar a origem escolhida
+            selected_bench_slots = actions[move_bench_mask, 2]
+            self._validate_selected_actions(
+                selected_bench_slots,
+                source_mask,
+                "bench_source",
             )
 
             dist = Categorical(logits=logits)
-            selected_bench_slots = actions[move_bench_mask, 2]
-            total_logprob[move_bench_mask] += dist.log_prob(selected_bench_slots)
+            total_logprob[move_bench_mask] += dist.log_prob(
+                selected_bench_slots
+            )
             total_entropy[move_bench_mask] += dist.entropy()
 
             # Target condicionado ao slot selecionado no banco
@@ -337,6 +429,13 @@ class TFTPolicy(nn.Module):
                 target_mask = masks["board_target_mask"][move_bench_mask]
 
             logits = self._mask_logits(logits, target_mask)
+
+            # 🛡️ Validar o destino escolhido
+            self._validate_selected_actions(
+                actions[move_bench_mask, 3],
+                target_mask,
+                "bench_target",
+            )
 
             dist = Categorical(logits=logits)
             total_logprob[move_bench_mask] += dist.log_prob(
@@ -361,6 +460,14 @@ class TFTPolicy(nn.Module):
 
             # Target condicionado à origem selecionada
             source_action = actions[move_board_mask, 4]
+
+            # 🛡️ Validar a origem escolhida
+            self._validate_selected_actions(
+                source_action,
+                masks["board_source_mask"][move_board_mask],
+                "board_source",
+            )
+
             source_onehot = F.one_hot(
                 source_action,
                 num_classes=self.action_dims[4]
@@ -382,6 +489,13 @@ class TFTPolicy(nn.Module):
             ]
             target_logits = self._mask_logits(target_logits, target_mask)
 
+            # 🛡️ Validar o destino escolhido
+            self._validate_selected_actions(
+                actions[move_board_mask, 5],
+                target_mask,
+                "board_move_target",
+            )
+
             target_dist = Categorical(logits=target_logits)
             total_logprob[move_board_mask] += target_dist.log_prob(
                 actions[move_board_mask, 5]
@@ -392,10 +506,16 @@ class TFTPolicy(nn.Module):
         sell_mask = action_type == 5
         if sell_mask.any():
             logits = self.bench_head(conditioned[sell_mask])
-            logits = self._mask_logits(
-                logits,
-                masks["bench_source_mask"][sell_mask]
+            sell_source_mask = masks["bench_source_mask"][sell_mask]
+            logits = self._mask_logits(logits, sell_source_mask)
+
+            # 🛡️ Validar o slot que será vendido
+            self._validate_selected_actions(
+                actions[sell_mask, 2],
+                sell_source_mask,
+                "sell_source",
             )
+
             dist = Categorical(logits=logits)
             total_logprob[sell_mask] += dist.log_prob(actions[sell_mask, 2])
             total_entropy[sell_mask] += dist.entropy()
