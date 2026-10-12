@@ -200,6 +200,8 @@ A migração deverá preservar o comportamento atual da IA, incluindo todas as r
 
 **Critério de conclusão:** o validador C++ produz os mesmos resultados que o Python para os cenários de referência, sem modificar o estado do ambiente.
 
+**Validação pós-migração:** criar e executar testes unitários em C++ para a classe migrada e executar os testes Python correspondentes à implementação original, verificando equivalência de comportamento e ausência de regressões. Validar também a integração entre Python e C++ quando aplicável.
+
 ##### Fase 4 — Migração do AntiLoop
 
 **Objetivo:** reproduzir em C++ o comportamento completo das proteções contra movimentos repetitivos, reversões, oscilações e ciclos.
@@ -231,6 +233,8 @@ A migração deverá preservar o comportamento atual da IA, incluindo todas as r
 - Contrato documentado para estado e histórico.
 
 **Critério de conclusão:** o AntiLoop C++ reproduz as decisões de bloqueio da implementação Python nos cenários de referência, preservando as regras e a evolução do histórico.
+
+**Validação pós-migração:** criar e executar testes unitários em C++ para a classe migrada e executar os testes Python correspondentes à implementação original, verificando equivalência de comportamento e ausência de regressões. Validar também a integração entre Python e C++ quando aplicável.
 
 ##### Fase 5 — Migração do gerador de Action Masks
 
@@ -264,6 +268,8 @@ A migração deverá preservar o comportamento atual da IA, incluindo todas as r
 
 **Critério de conclusão:** o módulo C++ gera máscaras equivalentes às máscaras Python para os cenários de referência, preservando dimensões, índices, dependências condicionais e restrições de ações.
 
+**Validação pós-migração:** criar e executar testes unitários em C++ para a classe migrada e executar os testes Python correspondentes à implementação original, verificando equivalência de comportamento e ausência de regressões. Validar também a integração entre Python e C++ quando aplicável.
+
 ##### Fase 6 — Integração Python/C++ e execução paralela de validação
 
 **Objetivo:** integrar o módulo nativo sem remover nem desativar o caminho Python existente.
@@ -296,6 +302,8 @@ A migração deverá preservar o comportamento atual da IA, incluindo todas as r
 - Fallback funcional.
 
 **Critério de conclusão:** o C++ pode ser executado em paralelo para validação sem alterar o comportamento do fluxo Python, sem efeitos colaterais duplicados e sem comprometer o estado do ambiente.
+
+**Validação pós-migração:** criar e executar testes unitários em C++ para a classe migrada e executar os testes Python correspondentes à implementação original, verificando equivalência de comportamento e ausência de regressões. Validar também a integração entre Python e C++ quando aplicável.
 
 ##### Fase 7 — Equivalência comportamental e regressão completa
 
