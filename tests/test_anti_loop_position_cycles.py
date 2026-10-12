@@ -2,14 +2,14 @@
 from ai.AntiLoopManager import AntiLoopManager
 
 
-def test_allows_first_closure_of_three_position_cycle():
+def test_allows_first_closure_of_three_position_cycle_should_block_move():
     anti_loop = AntiLoopManager()
     nasus = {"uuid": "nasus-1", "id": "Nasus", "star": 1}
 
     anti_loop.register_move("board_move", 3, 10, nasus)
     anti_loop.register_move("board_move", 10, 12, nasus)
 
-    assert anti_loop.should_block_move(
+    assert not anti_loop.should_block_move(
         move_type="board_move",
         source=12,
         target=3,
@@ -126,4 +126,25 @@ def test_cycle_history_of_another_unit_does_not_block():
     # 🧍 O histórico do Nasus não bloqueia o Teemo.
     assert not anti_loop.is_cycle_move(
         "board_move", 12, 3, teemo
+    )
+
+def test_should_block_persistent_three_position_cycle():
+    anti_loop = AntiLoopManager()
+    nasus = {"uuid": "nasus-1", "id": "Nasus", "star": 1}
+
+    # 🔄 Primeira volta completa.
+    anti_loop.register_move("board_move", 3, 10, nasus)
+    anti_loop.register_move("board_move", 10, 12, nasus)
+    anti_loop.register_move("board_move", 12, 3, nasus)
+
+    # 🔄 Repetição do percurso.
+    anti_loop.register_move("board_move", 3, 10, nasus)
+    anti_loop.register_move("board_move", 10, 12, nasus)
+
+    # 🚫 O segundo fechamento deve ser bloqueado no fluxo completo.
+    assert anti_loop.should_block_move(
+        move_type="board_move",
+        source=12,
+        target=3,
+        unit=nasus,
     )

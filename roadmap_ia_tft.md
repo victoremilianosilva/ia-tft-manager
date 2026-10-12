@@ -77,9 +77,6 @@
 - [x] Revisar o tratamento de exceções nas consultas ao `AntiLoopManager` dentro do `ActionMaskManager`, garantindo que falhas sejam diagnosticáveis sem comprometer a validade das máscaras.
 - [x] Adicionar testes de regressão para os bloqueios indevidos identificados na auditoria, preservando os testes existentes.
 - [x] Confirmar que movimentos válidos continuam disponíveis após um bloqueio, inclusive quando o estado do jogo muda e o movimento anteriormente bloqueado passa a ser útil.
-- [ ] Separar restrições de legalidade de heurísticas estratégicas.
-- [ ] Evitar bloquear um movimento apenas por parecer estrategicamente ruim.
-- [ ] Preservar a exploração da política PPO.
 - [ ] Bloquear ciclos persistentes sem impedir movimentos para estados novos.
 - [ ] Verificar o tratamento de ciclos envolvendo swaps, nos quais duas unidades trocam de posição.
 - [ ] Garantir que consultas de máscara não alterem contadores de execução.
@@ -199,7 +196,9 @@
 - [ ] Integrar a ação às máscaras e ao PPO.
 - [ ] Testar ciclos banco ↔ tabuleiro e preservar movimentos úteis.
 - [ ] Avaliar compatibilidade com dimensões de ações e checkpoints.
-
+- [ ] Separar restrições de legalidade de heurísticas estratégicas.
+- [ ] Evitar bloquear um movimento apenas por parecer estrategicamente ruim.
+- [ ] Preservar a exploração da política PPO.
 **Status:** fora do escopo atual; não bloqueia a Fase 4.2.
 
 ## Próximo passo oficial
