@@ -1823,11 +1823,17 @@ class MiniTFTEnv:
         self,
         include_conditioned_board_target=True,
         include_board_target=True,
+        board_source_mask=None,
+        board_move_available=None,
+        bench_move_available=None,
     ):
         return self.action_mask_manager.get_action_masks(
             is_alive=not self.done,
             include_conditioned_board_target=include_conditioned_board_target,
             include_board_target=include_board_target,
+            board_source_mask=board_source_mask,
+            board_move_available=board_move_available,
+            bench_move_available=bench_move_available,
         )
 
 

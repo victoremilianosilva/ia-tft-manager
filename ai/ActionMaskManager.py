@@ -66,33 +66,42 @@ class ActionMaskManager:
         is_alive=True,
         include_conditioned_board_target=True,
         include_board_target=True,
+        board_source_mask=None,
+        board_move_available=None,
+        bench_move_available=None,
     ):
-        type_mask = self.get_type_mask(is_alive=is_alive)
+        # ♻️ Reutiliza os resultados calculados pela lobby, quando fornecidos.
+        type_mask = self.get_type_mask(
+            is_alive=is_alive,
+            board_move_available=board_move_available,
+            bench_move_available=bench_move_available,
+        )
+
         shop_mask = self.get_shop_mask()
         bench_mask = self.get_bench_source_mask()
 
-        # ⚡ A lobby usa a matriz de destinos por unidade do banco.
-        # Mantemos a máscara genérica para os outros chamadores.
         if include_board_target:
             board_target_mask = self.get_board_target_mask()
         else:
             board_target_mask = np.zeros(
-                self.board_size,
-                dtype=np.float32,
+                self.board_size, dtype=np.float32
             )
             board_target_mask[0] = 1.0
 
-        board_source_mask = self.get_board_source_mask()
+        if board_source_mask is None:
+            board_source_mask = self.get_board_source_mask()
+        else:
+            board_source_mask = np.asarray(
+                board_source_mask, dtype=np.float32
+            )
 
-        # ⚡ A lobby calcula os destinos condicionados por origem.
         if include_conditioned_board_target:
             conditioned_target_mask = (
                 self.get_conditioned_board_target_mask()
             )
         else:
             conditioned_target_mask = np.zeros(
-                self.board_size,
-                dtype=np.float32,
+                self.board_size, dtype=np.float32
             )
             conditioned_target_mask[0] = 1.0
 
@@ -105,55 +114,51 @@ class ActionMaskManager:
             conditioned_target_mask,
         ]
 
-
-
     # ============================================================
     # 🔹 ACTION TYPE
     # ============================================================
 
-    def get_type_mask(self, is_alive=True):
+    def get_type_mask(
+        self,
+        is_alive=True,
+        board_move_available=None,
+        bench_move_available=None,
+    ):
+        """Máscara: BUY, REROLL, BUY_XP, MOVE_BENCH,
+        MOVE_BOARD, SELL e PASS.
         """
-        Máscara da primeira cabeça:
-
-        [BUY, REROLL, BUY_XP, MOVE_BENCH,
-         MOVE_BOARD, SELL, PASS]
-        """
-
         mask = np.zeros(7, dtype=np.float32)
 
-        # ☠️ Jogador morto não pode executar ações.
-        # PASS continua válido para evitar distribuição inválida.
         if not is_alive:
             mask[ActionType.PASS] = 1.0
             return mask
 
-        # 🛒 BUY
         if self._has_valid_buy():
             mask[ActionType.BUY] = 1.0
 
-        # 🔄 REROLL
         if self._has_valid_reroll():
             mask[ActionType.REROLL] = 1.0
 
-        # ⭐ BUY XP
         if self._has_valid_buy_xp():
             mask[ActionType.BUY_XP] = 1.0
 
-        # ↔️ BENCH -> BOARD
-        if self._has_valid_bench_move():
+        # ⚡ Usa o resultado pré-calculado quando disponível.
+        if bench_move_available is None:
+            bench_move_available = self._has_valid_bench_move()
+
+        if bench_move_available:
             mask[ActionType.MOVE_BENCH] = 1.0
 
-        # 🔀 BOARD -> BOARD
-        if self._has_valid_board_move():
+        if board_move_available is None:
+            board_move_available = self._has_valid_board_move()
+
+        if board_move_available:
             mask[ActionType.MOVE_BOARD] = 1.0
 
-        # 💰 SELL
         if self._has_valid_sell():
             mask[ActionType.SELL] = 1.0
 
-        # ⏭️ PASS SEMPRE disponível
         mask[ActionType.PASS] = 1.0
-
         return mask
 
     # ============================================================
@@ -357,8 +362,9 @@ class ActionMaskManager:
         return False
 
 
-    def _is_valid_bench_board_move(self, bench_slot, target):
-        bench = self._get_bench()
+    def _is_valid_bench_board_move(self, bench_slot, target, bench=None):
+        if bench is None:
+            bench = self._get_bench()
 
         if bench_slot < 0 or bench_slot >= len(bench):
             return False
@@ -447,8 +453,9 @@ class ActionMaskManager:
 
         return mask
 
-    def _is_valid_board_move(self, source, target):
-        board = self._get_board()
+    def _is_valid_board_move(self, source, target, board=None):
+        if board is None:
+            board = self._get_board()
 
         if source < 0 or source >= len(board):
             return False
@@ -687,7 +694,103 @@ class ActionMaskManager:
                 )
 
             return False
-    
+
+    def get_board_move_masks(self):
+        """
+        ⚡ Calcula a matriz de destinos e a máscara de origens
+        em uma única passagem pelos pares origem/destino.
+
+        Retorna:
+            source_mask: (28,)
+            target_masks: (28, 28)
+            has_valid_move: bool
+        """
+        board = self._get_board()
+
+        source_mask = np.zeros(self.board_size, dtype=np.float32)
+        target_masks = np.zeros(
+            (self.board_size, self.board_size),
+            dtype=np.float32,
+        )
+
+        has_valid_move = False
+
+        for source in range(self.board_size):
+            if source >= len(board) or board[source] is None:
+                target_masks[source, 0] = 1.0
+                continue
+
+            for target in range(self.board_size):
+                if source == target:
+                    continue
+
+                # ♻️ Cada par é validado uma vez nesta geração.
+                if self._is_valid_board_move(
+                    source, target, board=board
+                ):
+                    target_masks[source, target] = 1.0
+                    source_mask[source] = 1.0
+                    has_valid_move = True
+
+            # 🎯 Fallback para a distribuição categórica.
+            if not target_masks[source].any():
+                target_masks[source, 0] = 1.0
+
+        # ⚠️ Fallback não deve habilitar MOVE_BOARD.
+        if not has_valid_move:
+            source_mask[0] = 1.0
+
+        return source_mask, target_masks, has_valid_move
+
+
+    def get_bench_move_masks(self):
+        """
+        ⚡ Calcula as origens do bench e seus destinos válidos
+        em uma única passagem.
+
+        Retorna:
+            source_mask: (9,)
+            target_masks: (9, 28)
+            has_valid_move: bool
+        """
+        bench = self._get_bench()
+
+        source_mask = np.zeros(self.bench_size, dtype=np.float32)
+        target_masks = np.zeros(
+            (self.bench_size, self.board_size),
+            dtype=np.float32,
+        )
+
+        # ⚡ Obtém as posições vazias uma única vez.
+        if self._has_free_board_slot():
+            empty_positions = self.board_manager.get_empty_positions()
+        else:
+            empty_positions = []
+
+        has_valid_move = False
+
+        for slot, unit in enumerate(bench[:self.bench_size]):
+            if unit is None:
+                target_masks[slot, 0] = 1.0
+                continue
+
+            for target in empty_positions:
+                if self._is_valid_bench_board_move(
+                    slot, target, bench=bench
+                ):
+                    target_masks[slot, target] = 1.0
+                    source_mask[slot] = 1.0
+                    has_valid_move = True
+
+            # 🎯 Fallback técnico; não indica movimento real.
+            if not target_masks[slot].any():
+                target_masks[slot, 0] = 1.0
+
+        if not has_valid_move:
+            source_mask[0] = 1.0
+
+        return source_mask, target_masks, has_valid_move
+        
     # ============================================================
     # 🧪 DEBUG
     # ============================================================

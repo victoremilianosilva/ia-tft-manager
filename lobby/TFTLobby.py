@@ -313,39 +313,32 @@ class TFTLobby:
                 masks.append(self._dead_player_mask())
                 continue
 
-            # ⚡ A lobby monta a matriz condicionada por origem abaixo.
-            # Não precisamos calcular a máscara genérica novamente.
-            
-            # ⚡ A lobby constrói suas próprias máscaras condicionadas.
+            # ⚡ Geramos as máscaras condicionadas primeiro.
+            manager = player.env.action_mask_manager
+
+            # 🔀 Uma passagem para origens e destinos do tabuleiro.
+            (
+                board_source_mask,
+                move_target_masks,
+                has_board_move,
+            ) = manager.get_board_move_masks()
+
+            # 🪑 Uma passagem para origens e destinos do bench.
+            (
+                bench_move_source_mask,
+                bench_to_board_target_masks,
+                has_bench_move,
+            ) = manager.get_bench_move_masks()
+
+            # ♻️ Reutiliza os resultados para montar a máscara de tipos.
+            # Evita que get_type_mask repita as buscas de movimentos.
             raw = player.env.get_action_masks(
                 include_conditioned_board_target=False,
                 include_board_target=False,
+                board_source_mask=board_source_mask,
+                board_move_available=has_board_move,
+                bench_move_available=has_bench_move,
             )
-
-            manager = player.env.action_mask_manager
-
-            # Cada linha representa uma origem do tabuleiro.
-            # Cada coluna representa um destino válido para essa origem.
-            move_target_masks = np.stack([
-                np.asarray(
-                    manager.get_board_move_target_mask(source),
-                    dtype=np.bool_,
-                )
-                for source in range(28)
-            ])
-
-            bench_move_source_mask = np.asarray(
-                manager.get_bench_move_source_mask(),
-                dtype=np.bool_,
-            )
-
-            bench_to_board_target_masks = np.stack([
-                np.asarray(
-                    manager.get_bench_to_board_target_mask(slot),
-                    dtype=np.bool_,
-                )
-                for slot in range(9)
-            ])
 
             masks.append({
                 "type_mask": np.asarray(raw[0], dtype=np.bool_),
@@ -353,9 +346,15 @@ class TFTLobby:
                 "bench_source_mask": np.asarray(raw[2], dtype=np.bool_),
                 "board_target_mask": np.asarray(raw[3], dtype=np.bool_),
                 "board_source_mask": np.asarray(raw[4], dtype=np.bool_),
-                "board_move_target_masks": move_target_masks,           
-                "bench_move_source_mask": bench_move_source_mask,
-                "bench_to_board_target_masks": bench_to_board_target_masks,
+                "board_move_target_masks": np.asarray(
+                    move_target_masks, dtype=np.bool_
+                ),
+                "bench_move_source_mask": np.asarray(
+                    bench_move_source_mask, dtype=np.bool_
+                ),
+                "bench_to_board_target_masks": np.asarray(
+                    bench_to_board_target_masks, dtype=np.bool_
+                ),
             })
 
         return masks
