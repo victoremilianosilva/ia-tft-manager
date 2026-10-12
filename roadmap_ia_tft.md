@@ -66,8 +66,6 @@
 
 ### 4.2.1 — Alinhar o anti-loop ao aprendizado
 
-**Status: próxima etapa.**
-
 - [x] Auditar as regras atuais do `AntiLoopManager.py`.
 - [x] Auditar a aplicação das regras no `ActionMaskManager.py`.
 - [x] Validar se `is_bench_board_loop()` bloqueia apenas movimentos que efetivamente perpetuam o ciclo, sem impedir outras ações úteis da unidade.
@@ -168,6 +166,7 @@
 
 ## Fase 9 — Inteligência tática de combate
 
+- [ ] Implementar mana, habilidades, buffs de sinergia, etc
 - [ ] Melhorar seleção de alvos.
 - [ ] Avaliar pathfinding e movimentação até alvos.
 - [ ] Refinar inferência de papéis: tank, carry, support, fighter e assassin.

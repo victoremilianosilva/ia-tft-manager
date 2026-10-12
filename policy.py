@@ -5,8 +5,19 @@ from torch.distributions import Categorical
 
 
 class TFTPolicy(nn.Module):
+  
     def __init__(self, obs_dim, action_dims, hidden_size=512):
         super().__init__()
+
+        # 🛡️ Valida o contrato das seis dimensões antes de criar as camadas.
+        expected_dims = [7, 5, 9, 28, 28, 28]
+
+        if list(action_dims) != expected_dims:
+            raise ValueError(
+                f"Dimensões de ação inválidas: {action_dims}. "
+                f"Esperado: {expected_dims}"
+            )
+
         self.obs_dim = obs_dim
         self.action_dims = action_dims
         self.num_action_types = action_dims[0]

@@ -149,3 +149,55 @@ def test_sampled_actions_respect_masks():
     assert torch.isfinite(logprobs).all()
     assert torch.isfinite(entropy).all()
     assert torch.isfinite(values).all()
+
+
+def test_reroll_and_buy_xp_logprobs_match():
+    torch.manual_seed(42)
+
+    # 🔄 REROLL, ⭐ BUY_XP e ⏭️ PASS
+    expected_types = [1, 2, 6]
+    batch_size = len(expected_types)
+
+    obs = torch.randn(batch_size, 162)
+
+    masks = {
+        "type_mask": torch.zeros(batch_size, 7, dtype=torch.bool),
+        "shop_mask": torch.zeros(batch_size, 5, dtype=torch.bool),
+        "bench_source_mask": torch.zeros(batch_size, 9, dtype=torch.bool),
+        "board_target_mask": torch.zeros(batch_size, 28, dtype=torch.bool),
+        "board_source_mask": torch.zeros(batch_size, 28, dtype=torch.bool),
+        "board_move_target_masks": torch.zeros(
+            batch_size, 28, 28, dtype=torch.bool
+        ),
+        "bench_move_source_mask": torch.zeros(
+            batch_size, 9, dtype=torch.bool
+        ),
+        "bench_to_board_target_masks": torch.zeros(
+            batch_size, 9, 28, dtype=torch.bool
+        ),
+    }
+
+    for i, action_type in enumerate(expected_types):
+        masks["type_mask"][i, action_type] = True
+
+    policy = TFTPolicy(
+        obs_dim=162,
+        action_dims=Trainer.ACTION_DIMS,
+        hidden_size=32,
+    )
+    policy.eval()
+
+    with torch.no_grad():
+        actions, logprobs, _, values = policy.get_action_and_value(
+            obs, masks=masks, deterministic=True
+        )
+
+        evaluated_logprobs, entropy, evaluated_values = (
+            policy.evaluate_actions(obs, actions, masks)
+        )
+
+    assert actions[:, 0].tolist() == expected_types
+    assert torch.allclose(logprobs, evaluated_logprobs, atol=1e-5)
+    assert torch.allclose(values, evaluated_values, atol=1e-5)
+    assert torch.isfinite(logprobs).all()
+    assert torch.isfinite(entropy).all()
