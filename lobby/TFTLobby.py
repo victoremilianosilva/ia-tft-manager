@@ -313,7 +313,15 @@ class TFTLobby:
                 masks.append(self._dead_player_mask())
                 continue
 
-            raw = player.env.get_action_masks()
+            # ⚡ A lobby monta a matriz condicionada por origem abaixo.
+            # Não precisamos calcular a máscara genérica novamente.
+            
+            # ⚡ A lobby constrói suas próprias máscaras condicionadas.
+            raw = player.env.get_action_masks(
+                include_conditioned_board_target=False,
+                include_board_target=False,
+            )
+
             manager = player.env.action_mask_manager
 
             # Cada linha representa uma origem do tabuleiro.

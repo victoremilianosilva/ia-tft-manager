@@ -1819,15 +1819,18 @@ class MiniTFTEnv:
     # ============================================================
     # 🎯 ACTION MASKS
     # ============================================================
-
-    def get_action_masks(self):
-
-        return (
-            self.action_mask_manager
-            .get_action_masks(
-                is_alive=not self.done
-            )
+    def get_action_masks(
+        self,
+        include_conditioned_board_target=True,
+        include_board_target=True,
+    ):
+        return self.action_mask_manager.get_action_masks(
+            is_alive=not self.done,
+            include_conditioned_board_target=include_conditioned_board_target,
+            include_board_target=include_board_target,
         )
+
+
 
     # ============================================================
     # 🧠 STRATEGY

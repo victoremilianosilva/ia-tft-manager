@@ -61,28 +61,40 @@ class ActionMaskManager:
     # ============================================================
     # 🔹 API PRINCIPAL
     # ============================================================
-
-    def get_action_masks(self, is_alive=True):
-        """
-        Retorna as 6 máscaras usadas pela política.
-
-        Formato:
-            [
-                type_mask,
-                shop_mask,
-                bench_mask,
-                board_target_mask,
-                board_source_mask,
-                conditioned_board_target_mask
-            ]
-        """
-
+    def get_action_masks(
+        self,
+        is_alive=True,
+        include_conditioned_board_target=True,
+        include_board_target=True,
+    ):
         type_mask = self.get_type_mask(is_alive=is_alive)
         shop_mask = self.get_shop_mask()
         bench_mask = self.get_bench_source_mask()
-        board_target_mask = self.get_board_target_mask()
+
+        # ⚡ A lobby usa a matriz de destinos por unidade do banco.
+        # Mantemos a máscara genérica para os outros chamadores.
+        if include_board_target:
+            board_target_mask = self.get_board_target_mask()
+        else:
+            board_target_mask = np.zeros(
+                self.board_size,
+                dtype=np.float32,
+            )
+            board_target_mask[0] = 1.0
+
         board_source_mask = self.get_board_source_mask()
-        conditioned_target_mask = self.get_conditioned_board_target_mask()
+
+        # ⚡ A lobby calcula os destinos condicionados por origem.
+        if include_conditioned_board_target:
+            conditioned_target_mask = (
+                self.get_conditioned_board_target_mask()
+            )
+        else:
+            conditioned_target_mask = np.zeros(
+                self.board_size,
+                dtype=np.float32,
+            )
+            conditioned_target_mask[0] = 1.0
 
         return [
             type_mask,
@@ -92,6 +104,8 @@ class ActionMaskManager:
             board_source_mask,
             conditioned_target_mask,
         ]
+
+
 
     # ============================================================
     # 🔹 ACTION TYPE
@@ -315,6 +329,7 @@ class ActionMaskManager:
 
         return mask
     
+
     def _has_valid_bench_move(self):
         """
         Existe alguma unidade no bench que possa entrar no board?
@@ -325,12 +340,14 @@ class ActionMaskManager:
 
         bench = self._get_bench()
 
+        # ⚡ Calcula as posições vazias uma única vez.
+        empty_positions = self.board_manager.get_empty_positions()
+
         for slot, unit in enumerate(bench):
             if unit is None:
                 continue
 
-            for target in self.board_manager.get_empty_positions():
-
+            for target in empty_positions:
                 if self._is_valid_bench_board_move(
                     bench_slot=slot,
                     target=target,
@@ -338,6 +355,7 @@ class ActionMaskManager:
                     return True
 
         return False
+
 
     def _is_valid_bench_board_move(self, bench_slot, target):
         bench = self._get_bench()
@@ -375,8 +393,6 @@ class ActionMaskManager:
         mask = np.zeros(self.board_size, dtype=np.float32)
 
         for source in range(self.board_size):
-            board_target_mask = self.get_board_move_target_mask(source)
-
             # O fallback [0] não conta como destino real
             # quando a origem não possui movimento válido.
             board = self._get_board()
