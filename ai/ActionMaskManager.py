@@ -771,10 +771,9 @@ class ActionMaskManager:
         )
 
         # ⚡ Obtém as posições vazias uma única vez.
-        if self._has_free_board_slot():
-            empty_positions = self.board_manager.get_empty_positions()
-        else:
-            empty_positions = []
+        # ⚡ Uma consulta basta: sem posições vazias,
+        # não existe movimento possível do banco para o tabuleiro.
+        empty_positions = self.board_manager.get_empty_positions()
 
         has_valid_move = False
 
