@@ -122,22 +122,22 @@ A migração deverá preservar o comportamento atual da IA, incluindo todas as r
 - [x] Inspecionar `lobby/TFTLobby.py`.
 - [x] Inspecionar `env.py` e os pontos de integração com as máscaras.
 - [x] Inspecionar `trainer.py`, `policy.py` e os testes relacionados à consistência das ações.
-- [ ] Mapear todas as funções responsáveis por gerar, validar e bloquear ações.
-- [ ] Identificar todas as dependências entre Action Masks, AntiLoop, estado do jogador, unidades, posições e histórico de movimentos.
-- [ ] Documentar todas as regras atuais de validação de movimentos do tabuleiro e do banco.
-- [ ] Documentar regras de bloqueio de reversões, oscilações, ciclos, movimentos repetidos e demais proteções existentes.
-- [ ] Mapear a identidade das unidades e os critérios usados para detectar movimentos equivalentes.
-- [ ] Documentar a ordem de geração e aplicação das máscaras condicionais da política autoregressiva.
-- [ ] Confirmar o formato, as dimensões e os significados dos índices das máscaras atuais.
-- [ ] Identificar os estados que precisam ser transferidos do Python para o C++ e os dados que precisam retornar.
-- [ ] Identificar os efeitos colaterais e as atualizações de histórico que não podem ser perdidos durante a migração.
-- [ ] Registrar casos representativos e casos extremos para comparação entre as implementações.
-- [ ] Definir o contrato de entrada e saída do módulo nativo.
-- [ ] Definir a estratégia de fallback e ativação controlada.
--[ ] Mapear todas as regras de precedência e conflitos: determinar o que acontece quando diferentes regras de bloqueio se aplicam simultaneamente e qual motivo de bloqueio prevalece.
--[ ] Documentar determinismo e estado mutável: identificar quais funções apenas consultam o estado e quais modificam históricos, caches, contadores ou outras estruturas.
--[ ] Definir critérios objetivos de equivalência: especificar como comparar as saídas Python/C++, incluindo máscaras, motivos de bloqueio, atualizações de estado e resultados em casos extremos.
--[ ] Registrar a linha de base de desempenho e o ambiente de referência: guardar as medições atuais, configurações, versões e metodologia para comparar o ganho após a migração.
+- [x] Mapear todas as funções responsáveis por gerar, validar e bloquear ações.
+- [x] Identificar todas as dependências entre Action Masks, AntiLoop, estado do jogador, unidades, posições e histórico de movimentos.
+- [x] Documentar todas as regras atuais de validação de movimentos do tabuleiro e do banco.
+- [x] Documentar regras de bloqueio de reversões, oscilações, ciclos, movimentos repetidos e demais proteções existentes.
+- [x] Mapear a identidade das unidades e os critérios usados para detectar movimentos equivalentes.
+- [x] Documentar a ordem de geração e aplicação das máscaras condicionais da política autoregressiva.
+- [x] Confirmar o formato, as dimensões e os significados dos índices das máscaras atuais.
+- [x] Identificar os estados que precisam ser transferidos do Python para o C++ e os dados que precisam retornar.
+- [x] Identificar os efeitos colaterais e as atualizações de histórico que não podem ser perdidos durante a migração.
+- [x] Registrar casos representativos e casos extremos para comparação entre as implementações.
+- [x] Definir o contrato de entrada e saída do módulo nativo.
+- [x] Definir a estratégia de fallback e ativação controlada.
+- [x] Mapear todas as regras de precedência e conflitos: determinar o que acontece quando diferentes regras de bloqueio se aplicam simultaneamente e qual motivo de bloqueio prevalece.
+- [x] Documentar determinismo e estado mutável: identificar quais funções apenas consultam o estado e quais modificam históricos, caches, contadores ou outras estruturas.
+- [x] Definir critérios objetivos de equivalência: especificar como comparar as saídas Python/C++, incluindo máscaras, motivos de bloqueio, atualizações de estado e resultados em casos extremos.
+- [x] Registrar a linha de base de desempenho e o ambiente de referência: guardar as medições atuais, configurações, versões e metodologia para comparar o ganho após a migração.
 
 **Entregáveis:**
 - Mapa de dependências.
