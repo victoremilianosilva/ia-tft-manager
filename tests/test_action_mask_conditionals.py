@@ -177,3 +177,42 @@ def test_move_board_remains_available_with_one_unit_and_empty_targets(
     # MOVE_BOARD não deve ser desabilitado por exigir
     # duas unidades quando um movimento para espaço vazio é legal.
     assert type_mask[ActionType.MOVE_BOARD] == 1
+
+def test_board_move_matrix_matches_selected_source(setup_manager):
+    manager, board, _, _ = setup_manager
+    board.board[5] = {"name": "Unit A"}
+
+    source_mask, target_masks, has_move = (
+        manager.get_board_move_masks()
+    )
+
+    # A origem ocupada precisa permitir movimentos válidos.
+    assert has_move
+    assert source_mask[5] == 1
+
+    # A unidade não pode mover para a própria posição.
+    assert target_masks[5, 5] == 0
+
+    # O destino vazio deve estar disponível na linha da origem 5.
+    assert target_masks[5, 6] == 1
+
+
+def test_bench_move_matrix_matches_selected_source(setup_manager):
+    manager, board, bench, _ = setup_manager
+    bench.bench[2] = {"name": "Unit A"}
+    board.board[4] = {"name": "Unit B"}
+
+    source_mask, target_masks, has_move = (
+        manager.get_bench_move_masks()
+    )
+
+    # A origem 2 deve ter pelo menos um destino válido.
+    assert has_move
+    assert source_mask[2] == 1
+
+    # Não pode colocar a unidade em uma posição ocupada.
+    assert target_masks[2, 4] == 0
+
+    # A linha 2 deve conter destinos vazios válidos.
+    assert target_masks[2, 0] == 1
+    assert target_masks[2, 1] == 1

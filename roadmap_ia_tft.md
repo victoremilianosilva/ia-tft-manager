@@ -87,7 +87,7 @@
 
 - [x] Auditar as seis dimensões da ação: `[7, 5, 9, 28, 28, 28]`.
 - [x] Otimizar Maks
-- [ ] Conferir as máscaras condicionais para cada cabeça da política.
+- [x] Conferir as máscaras condicionais para cada cabeça da política.
 - [ ] Verificar cálculo de probabilidades e log-probabilidades com máscaras.
 - [x] Testar a consistência das máscaras entre `get_action_and_value` e `evaluate_actions` para os tipos de ação cobertos pelos testes reportados.
 - [ ] Testar `evaluate_actions` durante a atualização do PPO em treinamento.
