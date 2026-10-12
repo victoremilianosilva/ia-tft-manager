@@ -125,4 +125,29 @@ if(BUILD_TESTING)
             ENVIRONMENT
                 "PYTHONPATH=$<TARGET_FILE_DIR:decision_engine>"
     )
+
+    
+    add_executable(
+        test_move_validator
+        tests/test_move_validator.cpp
+        src/decision/MoveValidator.cpp
+    )
+
+    target_include_directories(
+        test_move_validator
+        PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )
+
+    target_compile_features(
+        test_move_validator
+        PRIVATE
+            cxx_std_20
+    )
+
+    add_test(
+        NAME move_validator
+        COMMAND test_move_validator
+    )
+
 endif()

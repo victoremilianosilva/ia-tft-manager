@@ -179,11 +179,11 @@ A migração deverá preservar o comportamento atual da IA, incluindo todas as r
 **Objetivo:** reproduzir em C++ as regras de validade de movimentos utilizadas pela geração das máscaras.
 
 **Tarefas:**
-- [ ] Mapear as condições de `_is_valid_board_move()`.
-- [ ] Mapear as condições de `_is_valid_bench_board_move()`.
-- [ ] Migrar as regras de origem e destino no tabuleiro.
-- [ ] Migrar as regras de ocupação e disponibilidade de posições.
-- [ ] Migrar as restrições de movimentação entre banco e tabuleiro.
+- [x] Mapear as condições de `_is_valid_board_move()`.
+- [x] Mapear as condições de `_is_valid_bench_board_move()`.
+- [x] Migrar as regras de origem e destino no tabuleiro.
+- [x] Migrar as regras de ocupação e disponibilidade de posições.
+- [x] Migrar as restrições de movimentação entre banco e tabuleiro.
 - [ ] Preservar as condições especiais e as exceções existentes.
 - [ ] Preservar as regras relacionadas à identidade e à posição das unidades.
 - [ ] Reproduzir a interação entre validação de movimentos e AntiLoop.
