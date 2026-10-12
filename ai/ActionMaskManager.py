@@ -70,14 +70,16 @@ class ActionMaskManager:
         board_move_available=None,
         bench_move_available=None,
     ):
-        # ♻️ Reutiliza os resultados calculados pela lobby, quando fornecidos.
+        # 🛒 Calcula a loja uma vez e reutiliza o resultado.
+        shop_mask, buy_available = self._get_shop_mask_and_availability()
+
         type_mask = self.get_type_mask(
             is_alive=is_alive,
+            buy_available=buy_available,
             board_move_available=board_move_available,
             bench_move_available=bench_move_available,
         )
 
-        shop_mask = self.get_shop_mask()
         bench_mask = self.get_bench_source_mask()
 
         if include_board_target:
@@ -121,6 +123,7 @@ class ActionMaskManager:
     def get_type_mask(
         self,
         is_alive=True,
+        buy_available=None,
         board_move_available=None,
         bench_move_available=None,
     ):
@@ -133,7 +136,11 @@ class ActionMaskManager:
             mask[ActionType.PASS] = 1.0
             return mask
 
-        if self._has_valid_buy():
+        # 🛒 Usa o resultado pré-calculado, se disponível.
+        if buy_available is None:
+            buy_available = self._has_valid_buy()
+
+        if buy_available:
             mask[ActionType.BUY] = 1.0
 
         if self._has_valid_reroll():
@@ -164,65 +171,53 @@ class ActionMaskManager:
     # ============================================================
     # 🛒 BUY
     # ============================================================
-
-    def get_shop_mask(self):
+    def _get_shop_mask_and_availability(self):
         """
-        Máscara dos 5 slots da loja.
+        🛒 Gera a máscara da loja e informa se existe compra real.
+        O fallback técnico não conta como compra válida.
         """
-
         mask = np.zeros(self.shop_size, dtype=np.float32)
 
         shop = self._get_shop()
 
-        for slot in range(min(len(shop), self.shop_size)):
-            unit = shop[slot]
+        # ⚡ Verifica espaço no banco apenas uma vez.
+        has_bench_space = self.bench_manager.has_free_slot()
+        buy_available = False
 
-            if unit is None:
-                continue
+        if has_bench_space:
+            for slot in range(min(len(shop), self.shop_size)):
+                unit = shop[slot]
 
-            cost = unit.get("cost", 1)
+                if unit is None:
+                    continue
 
-            # 💰 Precisa ter ouro
-            if not self.economy_manager.can_spend(cost):
-                continue
+                if not self.economy_manager.can_spend(
+                    unit.get("cost", 1)
+                ):
+                    continue
 
-            # 🪑 Precisa ter espaço no bench
-            if not self.bench_manager.has_free_slot():
-                continue
+                mask[slot] = 1.0
+                buy_available = True
 
-            mask[slot] = 1.0
-
-        # Nunca deixar a máscara completamente inválida.
+        # ⚠️ Fallback para manter a distribuição categórica válida.
         if not mask.any():
             mask[0] = 1.0
 
+        return mask, buy_available
+
+    def get_shop_mask(self):
+        """Máscara dos cinco slots da loja."""
+        mask, _ = self._get_shop_mask_and_availability()
         return mask
 
     def _has_valid_buy(self):
-        shop_mask = self.get_shop_mask()
-
-        # Se não existe espaço no bench, nenhum BUY é possível.
-        if not self.bench_manager.has_free_slot():
-            return False
-
-        shop = self._get_shop()
-
-        for slot in range(min(len(shop), self.shop_size)):
-            if shop[slot] is None:
-                continue
-
-            unit = shop[slot]
-            cost = unit.get("cost", 1)
-
-            if self.economy_manager.can_spend(cost):
-                return True
-
-        return False
-
+        """Informa se existe uma compra real disponível."""
+        _, buy_available = self._get_shop_mask_and_availability()
+        return buy_available
+    
     # ============================================================
     # 🔄 REROLL
     # ============================================================
-
     def _has_valid_reroll(self):
         try:
             return self.economy_manager.can_spend(2)
