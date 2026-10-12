@@ -76,7 +76,7 @@
 - [x] Investigar e corrigir o possível bloqueio de `MOVE_BOARD` quando há apenas uma unidade no tabuleiro e existem destinos vazios válidos.
 - [x] Revisar o tratamento de exceções nas consultas ao `AntiLoopManager` dentro do `ActionMaskManager`, garantindo que falhas sejam diagnosticáveis sem comprometer a validade das máscaras.
 - [x] Adicionar testes de regressão para os bloqueios indevidos identificados na auditoria, preservando os testes existentes.
-- [ ] Confirmar que movimentos válidos continuam disponíveis após um bloqueio, inclusive quando o estado do jogo muda e o movimento anteriormente bloqueado passa a ser útil.
+- [x] Confirmar que movimentos válidos continuam disponíveis após um bloqueio, inclusive quando o estado do jogo muda e o movimento anteriormente bloqueado passa a ser útil.
 - [ ] Separar restrições de legalidade de heurísticas estratégicas.
 - [ ] Evitar bloquear um movimento apenas por parecer estrategicamente ruim.
 - [ ] Preservar a exploração da política PPO.

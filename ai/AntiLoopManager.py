@@ -309,34 +309,6 @@ class AntiLoopManager:
         return key
 
     # =============================================================
-    # 🚫 VERIFICAR BLOQUEIO
-    # =============================================================
-    def is_move_blocked(
-        self,
-        move_type,
-        source,
-        target,
-        unit=None,
-    ):
-        """
-        Retorna True somente se o movimento estiver bloqueado
-        no estado de posicionamento atualmente registrado.
-        """
-        key = self.make_move_key(
-            move_type,
-            source,
-            target,
-            unit,
-        )
-
-        if key not in self.blocked_moves:
-            return False
-
-        blocked_state = self.blocked_move_states.get(key)
-
-        return blocked_state == self.last_board_signature
-
-    # =============================================================
     # 🔑 MOVE KEY
     # =============================================================
     def make_move_key(
@@ -368,9 +340,9 @@ class AntiLoopManager:
         unit=None,
     ):
         """
-        Verifica se determinado movimento foi bloqueado.
+        Retorna True somente se o movimento estiver bloqueado
+        no estado de posicionamento atualmente registrado.
         """
-
         key = self.make_move_key(
             move_type,
             source,
@@ -378,7 +350,13 @@ class AntiLoopManager:
             unit,
         )
 
-        return key in self.blocked_moves
+        if key not in self.blocked_moves:
+            return False
+
+        blocked_state = self.blocked_move_states.get(key)
+
+        return blocked_state == self.last_board_signature
+
 
     # =============================================================
     # 🔁 MOVIMENTO INVERSO
