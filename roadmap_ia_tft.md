@@ -152,19 +152,19 @@ A migração deverá preservar o comportamento atual da IA, incluindo todas as r
 **Objetivo:** criar uma base nativa independente, compilável e integrável ao projeto Python.
 
 **Tarefas:**
-- [ ] Definir a estrutura de diretórios do módulo `decision_engine`.
+- [x] Definir a estrutura de diretórios do módulo `decision_engine`.
 - [x] Configurar o sistema de build com CMake.
 - [x] Selecionar e configurar uma versão compatível do C++.
 - [x] Configurar os bindings Python/C++ com pybind11, caso confirmada a compatibilidade com o ambiente do projeto.
 - [x] Configurar a compilação para os sistemas operacionais utilizados no desenvolvimento e treinamento.
-- [ ] Definir os tipos compartilhados entre os componentes nativos.
-- [ ] Definir estruturas explícitas para estado do jogador, unidades, posições, histórico e resultado.
-- [ ] Definir convenções para índices, enums, valores ausentes e dimensões das máscaras.
-- [ ] Definir tratamento de erros, validação de entradas e retorno de diagnósticos.
-- [ ] Evitar dependências externas desnecessárias.
-- [ ] Configurar testes nativos automatizados.
-- [ ] Configurar a compilação do módulo a partir do ambiente Python utilizado pelo projeto.
-- [ ] Documentar como compilar, importar e executar os testes do módulo.
+- [x] Definir os tipos compartilhados entre os componentes nativos.
+- [x] Definir estruturas explícitas para estado do jogador, unidades, posições, histórico e resultado.
+- [x] Definir convenções para índices, enums, valores ausentes e dimensões das máscaras.
+- [x] Definir tratamento de erros, validação de entradas e retorno de diagnósticos.
+- [x] Evitar dependências externas desnecessárias.
+- [x] Configurar testes nativos automatizados.
+- [x] Configurar a compilação do módulo a partir do ambiente Python utilizado pelo projeto.
+- [x] Documentar como compilar, importar e executar os testes do módulo.
 
 **Entregáveis:**
 - Estrutura inicial do módulo C++.
