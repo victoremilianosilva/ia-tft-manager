@@ -483,7 +483,10 @@ class AntiLoopManager:
         # 🚫 O destino fecharia um ciclo?
         # ---------------------------------------------------------
 
-        return target in chain[:-1]
+        # 🔄 Só considera oscilação quando o destino já foi
+        # visitado pelo menos duas vezes antes do movimento candidato.
+        # Assim, o primeiro fechamento de um ciclo continua permitido.
+        return chain[:-1].count(target) >= 2
 
     # =============================================================
     # 🔁 BENCH <-> BOARD
@@ -836,13 +839,16 @@ class AntiLoopManager:
         unit=None,
     ):
         """
-        Detecta quando um movimento fecha um ciclo de posições
-        da mesma unidade, por exemplo:
-            3 -> 10 -> 12 -> 3
+        Detecta ciclos persistentes da mesma unidade.
 
-        Considera somente o histórico recente da unidade.
+        O primeiro fechamento do ciclo é permitido.
+        O fechamento seguinte é bloqueado se o histórico
+        confirmar que a sequência já foi repetida.
+
+        Exemplo:
+            3 -> 10 -> 12 -> 3       # permite
+            3 -> 10 -> 12 -> 3       # bloqueia a repetição
         """
-
         if move_type not in ("board_move", "board_swap"):
             return False
 
@@ -857,14 +863,12 @@ class AntiLoopManager:
             )
         ][-8:]
 
-
         if not recent:
             return False
 
-        # 🔗 Reconstrói uma sequência cronológica contínua
-        # iniciada na posição para a qual o movimento tentaria voltar.
         started = False
         expected_position = None
+        cycle_completed = False
 
         for src, dst in recent:
             if not started:
@@ -873,15 +877,23 @@ class AntiLoopManager:
                     expected_position = dst
                 continue
 
-            # Uma transição desconexa invalida a sequência.
+            # A sequência precisa ser contínua.
             if src != expected_position:
                 return False
 
             expected_position = dst
 
-        # Só bloqueia se o histórico contínuo terminar
-        # exatamente na origem do movimento candidato.
-        return started and expected_position == source
+            # O histórico já voltou ao destino do movimento candidato.
+            if dst == target:
+                cycle_completed = True
+
+        # Só bloqueia se o histórico já fechou o ciclo anteriormente
+        # e terminou na origem do movimento candidato.
+        return (
+            started
+            and cycle_completed
+            and expected_position == source
+        )
 
     # =============================================================
     # 🐛 DEBUG

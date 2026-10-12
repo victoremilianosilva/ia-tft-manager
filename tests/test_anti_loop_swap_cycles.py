@@ -2,16 +2,16 @@
 from ai.AntiLoopManager import AntiLoopManager
 
 
-def test_detects_cycle_across_multiple_swaps():
+def test_allows_first_closure_of_swap_cycle():
     anti_loop = AntiLoopManager()
     nasus = {"uuid": "nasus-1", "id": "Nasus", "star": 1}
 
-    # Nasus passa pelas posições 3 -> 10 -> 12.
+    # 🔄 Nasus passa pelas posições 3 → 10 → 12.
     anti_loop.register_move("board_swap", 3, 10, nasus)
     anti_loop.register_move("board_swap", 10, 12, nasus)
 
-    # Tentar voltar à posição 3 fecha o ciclo.
-    assert anti_loop.should_block_move(
+    # ✅ O primeiro fechamento do ciclo deve ser permitido.
+    assert not anti_loop.should_block_move(
         move_type="board_swap",
         source=12,
         target=3,
@@ -48,6 +48,27 @@ def test_board_swap_for_one_unit_is_not_blocked_by_another_units_moves():
     # O swap de Nasus não deve ser bloqueado pelo histórico
     # de movimentação exclusiva de Teemo.
     assert not anti_loop.should_block_move(
+        move_type="board_swap",
+        source=12,
+        target=3,
+        unit=nasus,
+    )
+
+def test_blocks_repeated_swap_cycle():
+    anti_loop = AntiLoopManager()
+    nasus = {"uuid": "nasus-1", "id": "Nasus", "star": 1}
+
+    # 🔄 Primeiro ciclo completo.
+    anti_loop.register_move("board_swap", 3, 10, nasus)
+    anti_loop.register_move("board_swap", 10, 12, nasus)
+    anti_loop.register_move("board_swap", 12, 3, nasus)
+
+    # 🔄 A unidade repete o percurso.
+    anti_loop.register_move("board_swap", 3, 10, nasus)
+    anti_loop.register_move("board_swap", 10, 12, nasus)
+
+    # 🚫 O segundo fechamento deve ser bloqueado.
+    assert anti_loop.should_block_move(
         move_type="board_swap",
         source=12,
         target=3,

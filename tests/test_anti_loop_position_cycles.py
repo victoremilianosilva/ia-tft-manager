@@ -2,7 +2,7 @@
 from ai.AntiLoopManager import AntiLoopManager
 
 
-def test_blocks_three_position_cycle():
+def test_allows_first_closure_of_three_position_cycle():
     anti_loop = AntiLoopManager()
     nasus = {"uuid": "nasus-1", "id": "Nasus", "star": 1}
 
@@ -63,4 +63,67 @@ def test_does_not_detect_cycle_from_disconnected_transitions():
         source=15,
         target=3,
         unit=nasus,
+    )
+
+def test_allows_first_closure_of_three_position_cycle():
+    anti_loop = AntiLoopManager()
+    unit = {"uuid": "nasus-1"}
+
+    anti_loop.register_move("board_move", 3, 10, unit)
+    anti_loop.register_move("board_move", 10, 12, unit)
+
+    # 🔓 Primeiro fechamento: ainda permite o movimento.
+    assert not anti_loop.is_cycle_move(
+        "board_move", 12, 3, unit
+    )
+
+
+def test_blocks_persistent_three_position_cycle():
+    anti_loop = AntiLoopManager()
+    unit = {"uuid": "nasus-1"}
+
+    # 🔁 Primeira volta completa.
+    anti_loop.register_move("board_move", 3, 10, unit)
+    anti_loop.register_move("board_move", 10, 12, unit)
+    anti_loop.register_move("board_move", 12, 3, unit)
+
+    # 🔁 A unidade começa a repetir a mesma sequência.
+    anti_loop.register_move("board_move", 3, 10, unit)
+    anti_loop.register_move("board_move", 10, 12, unit)
+
+    # 🚫 O segundo fechamento deve ser detectado.
+    assert anti_loop.is_cycle_move(
+        "board_move", 12, 3, unit
+    )
+
+
+def test_allows_move_to_new_position_after_cycle():
+    anti_loop = AntiLoopManager()
+    unit = {"uuid": "nasus-1"}
+
+    anti_loop.register_move("board_move", 3, 10, unit)
+    anti_loop.register_move("board_move", 10, 12, unit)
+    anti_loop.register_move("board_move", 12, 3, unit)
+    anti_loop.register_move("board_move", 3, 10, unit)
+    anti_loop.register_move("board_move", 10, 12, unit)
+
+    # 🆕 Uma posição nova não deve ser bloqueada como ciclo.
+    assert not anti_loop.is_cycle_move(
+        "board_move", 12, 15, unit
+    )
+
+def test_cycle_history_of_another_unit_does_not_block():
+    anti_loop = AntiLoopManager()
+    nasus = {"uuid": "nasus-1"}
+    teemo = {"uuid": "teemo-1"}
+
+    anti_loop.register_move("board_move", 3, 10, nasus)
+    anti_loop.register_move("board_move", 10, 12, nasus)
+    anti_loop.register_move("board_move", 12, 3, nasus)
+    anti_loop.register_move("board_move", 3, 10, nasus)
+    anti_loop.register_move("board_move", 10, 12, nasus)
+
+    # 🧍 O histórico do Nasus não bloqueia o Teemo.
+    assert not anti_loop.is_cycle_move(
+        "board_move", 12, 3, teemo
     )
