@@ -205,7 +205,7 @@ A migração deverá preservar o comportamento atual da IA, incluindo todas as r
 **Objetivo:** reproduzir em C++ o comportamento completo das proteções contra movimentos repetitivos, reversões, oscilações e ciclos.
 
 **Tarefas:**
-- [ ] Mapear as funções públicas e privadas de `AntiLoopManager`.
+- [x] Mapear as funções públicas e privadas de `AntiLoopManager`.
 - [ ] Migrar a geração das chaves de movimentos.
 - [ ] Migrar a identificação das unidades.
 - [ ] Migrar a detecção de movimentos inversos.

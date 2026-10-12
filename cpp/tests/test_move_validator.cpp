@@ -156,4 +156,60 @@ int main() {
     ));
 
     return 0;
+
+        // --------------------------------------------------------
+    // Restrições adicionais: banco -> tabuleiro
+    // --------------------------------------------------------
+
+    // Destino negativo.
+    assert(!MoveValidator::validate_bench_to_board_move(
+        board, bench, 0, -1
+    ).is_valid());
+
+    // Banco sem nenhuma unidade.
+    std::array<Slot, 2> empty_bench{};
+
+    assert(!MoveValidator::validate_bench_to_board_move(
+        board, empty_bench, 0, 3
+    ).is_valid());
+
+    // Tabuleiro completamente ocupado.
+    std::array<Slot, 4> completely_full_board{
+        make_unit(401),
+        make_unit(402),
+        make_unit(403),
+        make_unit(404)
+    };
+
+    assert(!MoveValidator::has_free_board_position(
+        completely_full_board
+    ));
+
+    // Nenhuma unidade do banco pode entrar num tabuleiro cheio.
+    assert(!MoveValidator::validate_bench_to_board_move(
+        completely_full_board, bench, 0, 0
+    ).is_valid());
+
+    assert(!MoveValidator::validate_bench_to_board_move(
+        completely_full_board, bench, 0, 3
+    ).is_valid());
+
+    // Uma tentativa inválida não pode alterar o estado.
+    const auto invalid_move =
+        MoveValidator::validate_bench_to_board_move(
+            completely_full_board, bench, 0, 0
+        );
+
+    assert(!invalid_move.is_valid());
+
+    for (std::size_t i = 0; i < completely_full_board.size(); ++i) {
+        assert(completely_full_board[i].has_value());
+        assert(
+            completely_full_board[i]->identity.id
+            == static_cast<std::int64_t>(401 + i)
+        );
+    }
+
+    assert(bench[0].has_value());
+    assert(bench[0]->identity.id == 300);
 }
