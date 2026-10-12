@@ -70,12 +70,21 @@ class ActionMaskManager:
         board_move_available=None,
         bench_move_available=None,
     ):
-        # 🛒 Calcula a loja uma vez e reutiliza o resultado.
-        shop_mask, buy_available = self._get_shop_mask_and_availability()
+        # 🛒 Calcula a loja uma vez.
+        shop_mask, buy_available = (
+            self._get_shop_mask_and_availability()
+        )
+
+        # 🪑 Calcula a máscara do banco e verifica SELL
+        # na mesma passagem pela lista de unidades.
+        bench_mask, sell_available = (
+            self._get_bench_source_mask_and_sell_availability()
+        )
 
         type_mask = self.get_type_mask(
             is_alive=is_alive,
             buy_available=buy_available,
+            sell_available=sell_available,
             board_move_available=board_move_available,
             bench_move_available=bench_move_available,
         )
@@ -124,6 +133,7 @@ class ActionMaskManager:
         self,
         is_alive=True,
         buy_available=None,
+        sell_available=None,  # 🪙 Resultado pré-calculado
         board_move_available=None,
         bench_move_available=None,
     ):
@@ -162,7 +172,11 @@ class ActionMaskManager:
         if board_move_available:
             mask[ActionType.MOVE_BOARD] = 1.0
 
-        if self._has_valid_sell():
+        # 🪙 Reutiliza a verificação do banco quando disponível.
+        if sell_available is None:
+            sell_available = self._has_valid_sell()
+
+        if sell_available:
             mask[ActionType.SELL] = 1.0
 
         mask[ActionType.PASS] = 1.0
@@ -237,43 +251,45 @@ class ActionMaskManager:
     # ============================================================
     # 🪑 BENCH
     # ============================================================
-
-    def get_bench_source_mask(self):
+    def _get_bench_source_mask_and_sell_availability(self):
         """
-        Máscara dos 9 slots do bench.
+        🪑 Gera a máscara do banco e verifica SELL
+        em uma única passagem.
 
-        Usada principalmente para:
-            MOVE_BENCH
-            SELL
+        O fallback técnico da máscara não habilita SELL.
         """
-
         mask = np.zeros(self.bench_size, dtype=np.float32)
-
         bench = self._get_bench()
+        sell_available = False
 
-        for slot in range(min(len(bench), self.bench_size)):
-            unit = bench[slot]
-
+        for slot, unit in enumerate(
+            bench[:self.bench_size]
+        ):
             if unit is None:
                 continue
 
             mask[slot] = 1.0
+            sell_available = True
 
-        # Evita máscara inválida.
+        # ⚠️ Fallback técnico: não representa unidade real.
         if not mask.any():
             mask[0] = 1.0
 
+        return mask, sell_available
+
+    def get_bench_source_mask(self):
+        """Máscara dos slots ocupados do banco."""
+        mask, _ = (
+            self._get_bench_source_mask_and_sell_availability()
+        )
         return mask
 
     def _has_valid_sell(self):
-        bench = self._get_bench()
-
-        for unit in bench:
-            if unit is not None:
-                return True
-
-        return False
-
+        """Informa se existe alguma unidade real para vender."""
+        _, sell_available = (
+            self._get_bench_source_mask_and_sell_availability()
+        )
+        return sell_available
     # ============================================================
     # 🪑 -> BOARD
     # ============================================================
