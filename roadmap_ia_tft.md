@@ -12,8 +12,6 @@
 - [x] Integrar `UnitManager` e `UnitPool` compartilhados.
 - [x] Conferir contratos de observação, ação, recompensa e reset.
 
-**Estado:** componentes principais existentes; alguns contratos ainda precisam de revisão integrada.
-
 ## Fase 2 — Lobby completo com 8 jogadores
 
 - [x] Criar o lobby com oito jogadores.
@@ -22,8 +20,6 @@
 - [x] Validar partidas completas, incluindo reset e eliminação.
 - [x] Garantir que nenhum jogador eliminado continue influenciando o fluxo da partida.
 - [x] Testar diferentes sequências de pareamento e situações-limite.
-
-**Status:** implementação principal existente; validação ponta a ponta pendente.
 
 ## Fase 3 — Combate PvP e motor C++
 
@@ -37,8 +33,6 @@
 - [x] Confirmar que a simulação é determinística quando configurada para isso.
 - [x] Medir tempo médio de combate e eventos processados.
 
-**Status:** integração direta Python → C++ confirmada; regressão completa e desempenho ainda precisam ser validados.
-
 ## Fase 4 — Máscaras de ação, anti-loop e desempenho
 
 ### 4.1 — Auditoria das máscaras
@@ -50,8 +44,6 @@
 - [x] Garantir que sempre exista uma ação válida para o PPO.
 - [x] Confirmar que a máscara usada na coleta é compatível com a usada na atualização do PPO.
 
-**Status:** concluída conforme os testes reportados.
-
 ### 4.2 — Anti-loop e regressões
 
 - [x] Corrigir o `AntiLoopManager` e comitar a alteração.
@@ -61,8 +53,6 @@
 - [x] Instrumentar métricas de execução e bloqueios no TensorBoard.
 - [ ] Validar os contadores em cenários controlados com bloqueios reais.
 - [ ] Confirmar que as métricas representam contagens e taxas com a interpretação correta.
-
-**Status:** testes de regressão aprovados; os itens pendentes continuam abertos.
 
 ### 4.2.1 — Alinhar o anti-loop ao aprendizado
 
@@ -81,19 +71,15 @@
 - [x] Reutilizar os testes de regressão existentes.
 - [x] Adicionar testes apenas para comportamentos relevantes ainda não cobertos.
 
-**Critério de conclusão:** o anti-loop impede repetições indesejadas sem assumir o papel do agente na escolha estratégica das ações.
-
 ### 4.3 — Integração com PPO
 
 - [x] Auditar as seis dimensões da ação: `[7, 5, 9, 28, 28, 28]`.
 - [x] Otimizar Maks
 - [x] Conferir as máscaras condicionais para cada cabeça da política.
-- [ ] Verificar cálculo de probabilidades e log-probabilidades com máscaras.
+- [x] Verificar cálculo de probabilidades e log-probabilidades com máscaras.
 - [x] Testar a consistência das máscaras entre `get_action_and_value` e `evaluate_actions` para os tipos de ação cobertos pelos testes reportados.
-- [ ] Testar `evaluate_actions` durante a atualização do PPO em treinamento.
-- [ ] Confirmar que não há NaN, distribuições inválidas ou ações impossíveis.
-
-**Observação:** a consistência básica já foi testada. Os itens restantes são validações mais abrangentes.
+- [x] Testar `evaluate_actions` durante a atualização do PPO em treinamento.
+- [x] Confirmar que não há NaN, distribuições inválidas ou ações impossíveis.
 
 ### 4.4 — Desempenho e avaliação controlada
 
@@ -123,7 +109,6 @@
 - [ ] Validar o fluxo completo de término e truncamento de episódios.
 - [ ] Comparar execução sequencial e subprocessos quanto à estabilidade e desempenho.
 
-**Atualização:** um treino curto foi executado, retomando do update 41 e chegando ao update 42. O carregamento do checkpoint foi confirmado. Salvamento e demais contratos ainda precisam de validação própria.
 
 ## Fase 6 — Recompensas e qualidade das decisões
 
@@ -199,8 +184,3 @@
 - [ ] Separar restrições de legalidade de heurísticas estratégicas.
 - [ ] Evitar bloquear um movimento apenas por parecer estrategicamente ruim.
 - [ ] Preservar a exploração da política PPO.
-**Status:** fora do escopo atual; não bloqueia a Fase 4.2.
-
-## Próximo passo oficial
-
-O foco imediato é a **Fase 4.2.1**: auditar `AntiLoopManager.py` e `ActionMaskManager.py`, distinguir restrições de legalidade de heurísticas estratégicas e preservar a exploração do PPO. Os testes de regressão já aprovados não precisam ser repetidos sem motivo.
