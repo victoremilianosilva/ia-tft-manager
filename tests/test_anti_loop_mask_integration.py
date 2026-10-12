@@ -209,3 +209,66 @@ def test_explicit_block_is_released_after_state_change():
     # O movimento voltou a ser considerado válido.
     assert manager._is_valid_bench_board_move(2, 12)
 
+def test_mask_blocks_persistent_cycle_but_keeps_new_destination():
+    manager, board, _, anti_loop = create_manager()
+
+    nasus = {"uuid": "nasus-1", "id": "Nasus", "star": 1}
+    board.board[12] = nasus
+
+    # Primeira volta completa: 3 -> 10 -> 12 -> 3
+    anti_loop.register_move("board_move", 3, 10, nasus)
+    anti_loop.register_move("board_move", 10, 12, nasus)
+    anti_loop.register_move("board_move", 12, 3, nasus)
+
+    # A unidade repete o percurso até antes do segundo fechamento.
+    anti_loop.register_move("board_move", 3, 10, nasus)
+    anti_loop.register_move("board_move", 10, 12, nasus)
+
+    mask = manager.get_board_move_target_mask(12)
+
+    # O ciclo persistente deve ser bloqueado na máscara.
+    assert mask[3] == 0
+
+    # Uma posição nova deve continuar disponível.
+    assert mask[15] == 1
+
+def test_mask_queries_do_not_change_execution_metrics():
+    manager, board, _, anti_loop = create_manager()
+
+    nasus = {
+        "uuid": "nasus-1",
+        "id": "Nasus",
+        "star": 1,
+    }
+    teemo = {
+        "uuid": "teemo-1",
+        "id": "Teemo",
+        "star": 1,
+    }
+
+    board.board[10] = nasus
+    board.board[12] = teemo
+
+    # Cria um histórico que faz algumas consultas
+    # de movimento passarem pelas regras anti-loop.
+    anti_loop.register_move(
+        "board_move", 3, 10, nasus
+    )
+
+    metrics_before = anti_loop.execution_metrics.copy()
+
+    # Consultas típicas durante a criação das máscaras.
+    manager.get_board_move_target_mask(10)
+    manager.get_board_source_mask()
+    manager.get_conditioned_board_target_mask()
+
+    # Consultar diretamente também não deve registrar
+    # uma tentativa nem um bloqueio de execução.
+    anti_loop.should_block_move(
+        move_type="board_move",
+        source=10,
+        target=3,
+        unit=nasus,
+    )
+
+    assert anti_loop.execution_metrics == metrics_before

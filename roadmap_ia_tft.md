@@ -77,9 +77,9 @@
 - [x] Revisar o tratamento de exceções nas consultas ao `AntiLoopManager` dentro do `ActionMaskManager`, garantindo que falhas sejam diagnosticáveis sem comprometer a validade das máscaras.
 - [x] Adicionar testes de regressão para os bloqueios indevidos identificados na auditoria, preservando os testes existentes.
 - [x] Confirmar que movimentos válidos continuam disponíveis após um bloqueio, inclusive quando o estado do jogo muda e o movimento anteriormente bloqueado passa a ser útil.
-- [ ] Bloquear ciclos persistentes sem impedir movimentos para estados novos.
-- [ ] Verificar o tratamento de ciclos envolvendo swaps, nos quais duas unidades trocam de posição.
-- [ ] Garantir que consultas de máscara não alterem contadores de execução.
+- [x] Bloquear ciclos persistentes sem impedir movimentos para estados novos.
+- [x] Verificar o tratamento de ciclos envolvendo swaps, nos quais duas unidades trocam de posição.
+- [x] Garantir que consultas de máscara não alterem contadores de execução.
 - [x] Reutilizar os testes de regressão existentes.
 - [x] Adicionar testes apenas para comportamentos relevantes ainda não cobertos.
 
