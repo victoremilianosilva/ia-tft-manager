@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "decision/DecisionTypes.hpp"
@@ -7,15 +6,26 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <variant>
 
 namespace tft::decision {
 
+// Valores escalares preservados pelo contrato Python de identidade.
+// O Python pode usar IDs textuais (ex.: "Nasus") ou numéricos.
+using IdentityScalar = std::variant<
+    std::monostate,
+    bool,
+    std::int64_t,
+    double,
+    std::string
+>;
+
 // Identidade estável para comparação de unidades no histórico.
-// Se uuid existir, ele tem prioridade sobre id + star.
+// Se uuid existir e não for None, ele tem prioridade sobre id + star.
 struct UnitIdentity {
-    std::optional<std::string> uuid;
-    std::optional<std::int64_t> id;
-    std::uint8_t star = 1;
+    std::optional<IdentityScalar> uuid;
+    std::optional<IdentityScalar> id;
+    IdentityScalar star = std::int64_t{1};
 
     [[nodiscard]] bool has_identity() const noexcept {
         return uuid.has_value() || id.has_value();
