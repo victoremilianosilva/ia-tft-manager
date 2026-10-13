@@ -612,3 +612,9 @@ Eu faria as correções nesta ordem:
 4. Definir e testar o contrato de eventos, incluindo data, registros opcionais e limites.
 5. Completar a integração da lobby, com testes para vitória, derrota, empate, equipe vazia, erro de entrada e timeout.
 6. Implementar habilidades, mana, itens e traits conforme as regras pretendidas para o jogo, em vez de expor esses dados sem que tenham efeito.
+
+Implementar TftEngine.cpp. Reproduzir o comportamento do ambiente Python sem alterar as regras do jogo.
+
+
+
+Executar os testes. Compilar os módulos, importar combat_engine e tft_engine e comparar observações, máscaras, recompensas e resultados de combate com o Python.
