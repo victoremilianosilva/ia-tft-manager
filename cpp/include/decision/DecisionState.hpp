@@ -12,6 +12,8 @@ namespace tft::decision {
 
 // Identidade estável para comparação de unidades no histórico.
 // Se uuid existir, ele tem prioridade sobre id + star.
+// Identidade estável para comparação de unidades no histórico.
+// Se uuid existir, ele tem prioridade sobre id + star.
 struct UnitIdentity {
     std::optional<std::string> uuid;
     std::optional<std::int64_t> id;
@@ -21,7 +23,17 @@ struct UnitIdentity {
         return uuid.has_value() || id.has_value();
     }
 
-    bool operator==(const UnitIdentity&) const = default;
+    bool operator==(const UnitIdentity& other) const noexcept {
+        // Se qualquer uma possuir UUID, compara exclusivamente UUID.
+        if (uuid.has_value() || other.uuid.has_value()) {
+            return uuid.has_value()
+                && other.uuid.has_value()
+                && uuid == other.uuid;
+        }
+
+        // Sem UUID, compara id + star.
+        return id == other.id && star == other.star;
+    }
 };
 
 // Snapshot mínimo da unidade necessário ao motor de decisões.
