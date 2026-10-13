@@ -70,6 +70,7 @@ target_include_directories(
 pybind11_add_module(
     decision_engine
     src/decision/DecisionEngine.cpp
+    src/decision/AntiLoopEngine.cpp
     src/decision/decision_bindings.cpp
 )
 

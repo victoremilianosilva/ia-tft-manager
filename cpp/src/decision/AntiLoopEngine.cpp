@@ -1,6 +1,7 @@
 #include "decision/AntiLoopEngine.hpp"
 
 #include <algorithm>
+#include <iterator>
 #include <utility>
 
 namespace tft::decision {
@@ -31,24 +32,22 @@ MoveKey AntiLoopEngine::make_move_key(
     };
 }
 
+
 PositionSignature AntiLoopEngine::make_board_signature(
     const PlayerState& state
 ) const {
     PositionSignature signature;
 
+    // Uma posição ocupada continua ocupada mesmo que a unidade
+    // não possua UUID ou ID. O Python também preserva essa unidade
+    // na assinatura usando (id, star).
     for (std::size_t i = 0; i < BOARD_SIZE; ++i) {
         if (!state.board[i].has_value()) {
             signature.board[i] = std::nullopt;
             continue;
         }
 
-        const auto& identity = state.board[i]->identity;
-
-        if (identity.has_identity()) {
-            signature.board[i] = identity;
-        } else {
-            signature.board[i] = std::nullopt;
-        }
+        signature.board[i] = state.board[i]->identity;
     }
 
     for (std::size_t i = 0; i < BENCH_SIZE; ++i) {
@@ -57,17 +56,12 @@ PositionSignature AntiLoopEngine::make_board_signature(
             continue;
         }
 
-        const auto& identity = state.bench[i]->identity;
-
-        if (identity.has_identity()) {
-            signature.bench[i] = identity;
-        } else {
-            signature.bench[i] = std::nullopt;
-        }
+        signature.bench[i] = state.bench[i]->identity;
     }
 
     return signature;
 }
+
 
 StateRegistrationResult AntiLoopEngine::register_state(
     const PositionSignature& signature
