@@ -41,6 +41,7 @@ from strategy.PositioningManager import PositioningManager
 from ai.AntiLoopManager import AntiLoopManager
 from ai.ActionMaskManager import ActionMaskManager, ActionType
 from ai.RewardManager import RewardManager
+from ai.DecisionEngineRuntime import DecisionEngineRuntime
 
 from SynergyManager import SynergyManager
 from combat.CombatProfileManager import CombatProfileManager, UnitRole
@@ -153,7 +154,9 @@ class MiniTFTEnv:
         self.strategy_manager = StrategyManager()
 
         self.anti_loop_manager = AntiLoopManager()
-
+        self.decision_engine_runtime = DecisionEngineRuntime(
+            self.anti_loop_manager
+        )
         self.reward_manager = RewardManager(
             economy_manager=self.economy_manager,
             composition_manager=self.composition_manager,
@@ -169,6 +172,8 @@ class MiniTFTEnv:
             positioning_manager=self.positioning_manager,
             anti_loop_manager=self.anti_loop_manager,
             unit_manager=self.unit_manager,
+            decision_engine_runtime=self.decision_engine_runtime,
+            env=self,
         )
 
         # --------------------------------------------------------
@@ -247,6 +252,7 @@ class MiniTFTEnv:
 
         self.strategy_manager.reset()
         self.anti_loop_manager.reset()
+        self.decision_engine_runtime.reset()
         self.reward_manager.reset()
 
         # --------------------------------------------------------
@@ -838,6 +844,13 @@ class MiniTFTEnv:
             unit=removed,
         )
 
+        self.decision_engine_runtime.register_move(
+            move_type="bench_to_board",
+            source=bench_slot,
+            target=target,
+            unit=removed,
+        )
+
         # ✅ Movimento realmente executado
         self.anti_loop_manager.record_successful_move(
             "bench_to_board"
@@ -964,6 +977,22 @@ class MiniTFTEnv:
             target=target,
             unit=unit,
         )
+
+        # Registra no motor nativo somente quando o runtime foi inicializado.
+        # Mantém a compatibilidade com testes e ambientes antigos.
+        decision_runtime = getattr(
+            self,
+            "decision_engine_runtime",
+            None,
+        )
+
+        if decision_runtime is not None and decision_runtime.is_cpp:
+            decision_runtime.register_move(
+                move_type=move_type,
+                source=source,
+                target=target,
+                unit=unit,
+            )
 
         # ✅ Movimento de tabuleiro executado
         self.anti_loop_manager.record_successful_move(
@@ -1140,29 +1169,51 @@ class MiniTFTEnv:
     # 🔄 REBUILD PLAYER STATE
     # ============================================================
     def _rebuild_player_state(self):
+        # Mantém a consulta original, mesmo que o resultado não seja
+        # utilizado diretamente neste método.
         owned_units = self._get_all_units()
 
         self.composition_manager.update(
             self.board_manager.get_units(),
-            self.bench_manager.get_units()
+            self.bench_manager.get_units(),
         )
 
         # Atualiza a estratégia com a composição já recalculada.
         self._update_strategy()
+
+        python_state_registered = False
 
         try:
             self.anti_loop_manager.register_state(
                 self.board_manager.board,
                 self.bench_manager.bench,
             )
+            python_state_registered = True
 
         except TypeError:
             try:
                 self.anti_loop_manager.register_state(
                     self.board_manager.board
                 )
+                python_state_registered = True
             except Exception:
                 pass
+
+        except Exception:
+            pass
+
+        # Mantém a ordem: primeiro registra o estado Python; depois,
+        # se esse registro funcionou, sincroniza o histórico nativo.
+        if python_state_registered:
+            try:
+                self.decision_engine_runtime.register_state(
+                    self,
+                    is_alive=not self.done,
+                )
+            except Exception:
+                # Não altera silenciosamente o backend: o erro deve ser
+                # investigado durante os testes de integração.
+                raise
 
 
     def _update_strategy(self):

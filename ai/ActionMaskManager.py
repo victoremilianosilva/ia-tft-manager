@@ -43,6 +43,8 @@ class ActionMaskManager:
         positioning_manager,
         anti_loop_manager,
         unit_manager,
+        decision_engine_runtime=None,
+        env=None,
     ):
         self.board_manager = board_manager
         self.bench_manager = bench_manager
@@ -53,10 +55,12 @@ class ActionMaskManager:
         self.anti_loop_manager = anti_loop_manager
         self.unit_manager = unit_manager
 
+        self.decision_engine_runtime = decision_engine_runtime
+        self.env = env
+
         self.board_size = 28
         self.bench_size = 9
         self.shop_size = 5
-        # Diagnóstico de falhas nas consultas ao AntiLoopManager.
         self._anti_loop_error_count = 0
     # ============================================================
     # 🔹 API PRINCIPAL
@@ -70,6 +74,27 @@ class ActionMaskManager:
         board_move_available=None,
         bench_move_available=None,
     ):
+
+        runtime = self.decision_engine_runtime
+
+        if runtime is not None and runtime.is_cpp:
+            if self.env is None:
+                raise RuntimeError(
+                    "O backend C++ precisa da referência ao ambiente."
+                )
+
+            return runtime.get_action_masks(
+                env=self.env,
+                is_alive=is_alive,
+                include_conditioned_board_target=(
+                    include_conditioned_board_target
+                ),
+                include_board_target=include_board_target,
+                board_source_mask=board_source_mask,
+                board_move_available=board_move_available,
+                bench_move_available=bench_move_available,
+            )
+
         # 🛒 Calcula a loja uma vez.
         shop_mask, buy_available = (
             self._get_shop_mask_and_availability()
