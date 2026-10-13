@@ -378,6 +378,7 @@ py::class_<ActionMaskEngine>(module, "ActionMaskEngine")
         "generate_masks",
         &ActionMaskEngine::generate_masks,
         py::arg("state"),
-        py::arg("anti_loop")
+        py::arg("anti_loop"),
+        py::arg("include_board_target") = true
     );
 }

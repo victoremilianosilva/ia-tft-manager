@@ -630,3 +630,94 @@ def test_python_mask_allows_move_when_anti_loop_raises():
     # um movimento legal e a falha do AntiLoop não o bloqueia.
     assert masks[0][4] == 1.0
     assert masks[4][4] == 1.0
+
+
+def test_movement_matrices_match_between_python_and_cpp(native_module):
+    """Compara todos os destinos condicionados dos dois motores."""
+
+    board = [None] * 28
+    bench = [None] * 9
+
+    board[4] = make_unit("BoardA")
+    board[12] = make_unit("BoardB")
+    bench[2] = make_unit("BenchA")
+    bench[6] = make_unit("BenchB")
+
+    env = make_env(board=board, bench=bench)
+
+    manager = ActionMaskManager(
+        board_manager=env.board_manager,
+        bench_manager=env.bench_manager,
+        shop_manager=env.shop_manager,
+        economy_manager=env.economy_manager,
+        composition_manager=env.composition_manager,
+        positioning_manager=env.positioning_manager,
+        anti_loop_manager=env.anti_loop_manager,
+        unit_manager=env.unit_manager,
+    )
+
+    state = build_player_state(
+        env,
+        native_module=native_module,
+    )
+
+    native_engine = native_module.ActionMaskEngine()
+    native_anti_loop = native_module.AntiLoopEngine()
+
+    batch = native_engine.generate_masks(state, native_anti_loop)
+
+    # Python: uma linha por origem do tabuleiro.
+    python_board_matrix = np.stack([
+        manager.get_board_move_target_mask(source)
+        for source in range(28)
+    ])
+
+    # C++: matriz de destinos por origem.
+    cpp_board_matrix = np.asarray(
+        batch.board_move_target_masks,
+        dtype=np.uint8,
+    )
+
+    assert python_board_matrix.shape == (28, 28)
+    assert cpp_board_matrix.shape == (28, 28)
+
+    np.testing.assert_array_equal(
+        cpp_board_matrix,
+        python_board_matrix.astype(np.uint8),
+        err_msg="A matriz board_move_target_masks divergiu.",
+    )
+
+    # Python: uma linha por slot do banco.
+    python_bench_matrix = np.stack([
+        manager.get_bench_to_board_target_mask(slot)
+        for slot in range(9)
+    ])
+
+    # C++: destinos no tabuleiro para cada slot do banco.
+    cpp_bench_matrix = np.asarray(
+        batch.bench_to_board_target_masks,
+        dtype=np.uint8,
+    )
+
+    assert python_bench_matrix.shape == (9, 28)
+    assert cpp_bench_matrix.shape == (9, 28)
+
+    np.testing.assert_array_equal(
+        cpp_bench_matrix,
+        python_bench_matrix.astype(np.uint8),
+        err_msg="A matriz bench_to_board_target_masks divergiu.",
+    )
+
+    # Compara também a máscara de origens do banco
+    # que possuem ao menos um destino válido.
+    python_bench_sources = manager.get_bench_move_source_mask()
+    cpp_bench_sources = np.asarray(
+        batch.bench_move_source_mask,
+        dtype=np.uint8,
+    )
+
+    np.testing.assert_array_equal(
+        cpp_bench_sources,
+        np.asarray(python_bench_sources, dtype=np.uint8),
+        err_msg="A máscara bench_move_source_mask divergiu.",
+    )

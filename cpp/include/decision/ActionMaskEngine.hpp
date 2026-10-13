@@ -41,7 +41,8 @@ public:
     // Não registra movimentos nem modifica o histórico anti-loop.
     [[nodiscard]] ActionMaskBatch generate_masks(
         const PlayerState& state,
-        const AntiLoopEngine& anti_loop
+        const AntiLoopEngine& anti_loop,
+        bool include_board_target = true
     ) const;
 
 private:

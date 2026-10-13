@@ -112,3 +112,65 @@ def test_board_move_masks_never_allow_self_move_for_real_sources():
                 assert not masks["board_move_target_masks"][source, source], (
                     f"Movimento próprio permitido na posição {source}"
                 )
+
+
+def test_cpp_lobby_does_not_call_python_mask_generators(monkeypatch):
+    """No backend C++, a lobby deve usar apenas o lote de máscaras nativo."""
+
+    monkeypatch.setenv("TFT_DECISION_ENGINE", "cpp")
+    pytest.importorskip(
+        "decision_engine",
+        reason="Compile a extensão C++ antes deste teste.",
+    )
+
+    lobby = TFTLobby(seed=789)
+
+    python_mask_methods = (
+        "get_action_masks",
+        "get_board_move_masks",
+        "get_bench_move_masks",
+        "get_board_target_mask",
+        "get_board_source_mask",
+        "get_conditioned_board_target_mask",
+        "get_board_move_target_mask",
+        "get_bench_move_source_mask",
+        "get_bench_to_board_target_mask",
+        "_get_shop_mask_and_availability",
+        "_get_bench_source_mask_and_sell_availability",
+        "_has_valid_board_move",
+        "_has_valid_bench_move",
+        "_is_valid_board_move",
+        "_is_valid_bench_board_move",
+    )
+
+    for player in lobby.players:
+        if not player.alive:
+            continue
+
+        manager = player.env.action_mask_manager
+        runtime = manager.decision_engine_runtime
+
+        assert runtime is not None
+        assert runtime.is_cpp, (
+            f"Jogador {player.player_id} não está usando C++."
+        )
+
+        def fail_python_mask(*args, **kwargs):
+            raise AssertionError(
+                "O backend C++ chamou um gerador de máscara Python."
+            )
+
+        for method_name in python_mask_methods:
+            monkeypatch.setattr(
+                manager,
+                method_name,
+                fail_python_mask,
+            )
+
+    masks_by_player = lobby.get_action_masks()
+
+    assert len(masks_by_player) == lobby.PLAYERS_PER_LOBBY
+
+    for masks in masks_by_player:
+        assert_mask_contract(masks)
+

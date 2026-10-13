@@ -309,29 +309,82 @@ class TFTLobby:
         masks = []
 
         for player in self.players:
+            manager = player.env.action_mask_manager
+            runtime = getattr(
+                manager,
+                "decision_engine_runtime",
+                None,
+            )
+
+            # ========================================================
+            # ⚡ BACKEND C++: todas as máscaras vêm do motor nativo
+            # ========================================================
+            if runtime is not None and runtime.is_cpp:
+                batch = runtime.get_action_mask_batch(
+                    player.env,
+                    is_alive=player.alive,
+                    include_board_target=False,
+                )
+
+                masks.append({
+                    "type_mask": np.asarray(
+                        batch.type_mask,
+                        dtype=np.bool_,
+                    ),
+                    "shop_mask": np.asarray(
+                        batch.shop_mask,
+                        dtype=np.bool_,
+                    ),
+                    "bench_source_mask": np.asarray(
+                        batch.bench_source_mask,
+                        dtype=np.bool_,
+                    ),
+                    "board_target_mask": np.asarray(
+                        batch.board_target_mask,
+                        dtype=np.bool_,
+                    ),
+                    "board_source_mask": np.asarray(
+                        batch.board_source_mask,
+                        dtype=np.bool_,
+                    ),
+                    "board_move_target_masks": np.asarray(
+                        batch.board_move_target_masks,
+                        dtype=np.bool_,
+                    ),
+                    "bench_move_source_mask": np.asarray(
+                        batch.bench_move_source_mask,
+                        dtype=np.bool_,
+                    ),
+                    "bench_to_board_target_masks": np.asarray(
+                        batch.bench_to_board_target_masks,
+                        dtype=np.bool_,
+                    ),
+                })
+
+                continue
+
+            # ========================================================
+            # 🐍 BACKEND PYTHON: fluxo original
+            # ========================================================
             if not player.alive:
                 masks.append(self._dead_player_mask())
                 continue
 
-            # ⚡ Geramos as máscaras condicionadas primeiro.
-            manager = player.env.action_mask_manager
-
-            # 🔀 Uma passagem para origens e destinos do tabuleiro.
+            # Uma passagem para origens e destinos do tabuleiro.
             (
                 board_source_mask,
                 move_target_masks,
                 has_board_move,
             ) = manager.get_board_move_masks()
 
-            # 🪑 Uma passagem para origens e destinos do bench.
+            # Uma passagem para origens e destinos do banco.
             (
                 bench_move_source_mask,
                 bench_to_board_target_masks,
                 has_bench_move,
             ) = manager.get_bench_move_masks()
 
-            # ♻️ Reutiliza os resultados para montar a máscara de tipos.
-            # Evita que get_type_mask repita as buscas de movimentos.
+            # Reutiliza os resultados para montar a máscara de tipos.
             raw = player.env.get_action_masks(
                 include_conditioned_board_target=False,
                 include_board_target=False,
@@ -341,19 +394,37 @@ class TFTLobby:
             )
 
             masks.append({
-                "type_mask": np.asarray(raw[0], dtype=np.bool_),
-                "shop_mask": np.asarray(raw[1], dtype=np.bool_),
-                "bench_source_mask": np.asarray(raw[2], dtype=np.bool_),
-                "board_target_mask": np.asarray(raw[3], dtype=np.bool_),
-                "board_source_mask": np.asarray(raw[4], dtype=np.bool_),
+                "type_mask": np.asarray(
+                    raw[0],
+                    dtype=np.bool_,
+                ),
+                "shop_mask": np.asarray(
+                    raw[1],
+                    dtype=np.bool_,
+                ),
+                "bench_source_mask": np.asarray(
+                    raw[2],
+                    dtype=np.bool_,
+                ),
+                "board_target_mask": np.asarray(
+                    raw[3],
+                    dtype=np.bool_,
+                ),
+                "board_source_mask": np.asarray(
+                    raw[4],
+                    dtype=np.bool_,
+                ),
                 "board_move_target_masks": np.asarray(
-                    move_target_masks, dtype=np.bool_
+                    move_target_masks,
+                    dtype=np.bool_,
                 ),
                 "bench_move_source_mask": np.asarray(
-                    bench_move_source_mask, dtype=np.bool_
+                    bench_move_source_mask,
+                    dtype=np.bool_,
                 ),
                 "bench_to_board_target_masks": np.asarray(
-                    bench_to_board_target_masks, dtype=np.bool_
+                    bench_to_board_target_masks,
+                    dtype=np.bool_,
                 ),
             })
 

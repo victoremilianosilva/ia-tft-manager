@@ -232,7 +232,8 @@ bool ActionMaskEngine::is_valid_bench_to_board_move(
 
 ActionMaskBatch ActionMaskEngine::generate_masks(
     const PlayerState& state,
-    const AntiLoopEngine& anti_loop
+    const AntiLoopEngine& anti_loop,
+    bool include_board_target
 ) const {
     validate_state(state);
 
@@ -315,7 +316,9 @@ ActionMaskBatch ActionMaskEngine::generate_masks(
                     MASK_ENABLED;
 
                 masks.bench_move_source_mask[source] = MASK_ENABLED;
-                masks.board_target_mask[target] = MASK_ENABLED;
+                if (include_board_target) {
+                    masks.board_target_mask[target] = MASK_ENABLED;
+                }
                 masks.bench_move_available = true;
             }
         }

@@ -198,3 +198,27 @@ class DecisionEngineRuntime:
             native_board_source_mask,
             conditioned_target_mask,
         ]
+
+    def get_action_mask_batch(
+        self,
+        env,
+        is_alive=True,
+        include_board_target=True,
+    ):
+        """Gera o lote completo de máscaras diretamente no C++."""
+        if not self.is_cpp:
+            raise RuntimeError(
+                "get_action_mask_batch() exige o backend C++."
+            )
+
+        state = build_player_state(
+            env,
+            is_alive=is_alive,
+            native_module=self.native_module,
+        )
+
+        return self.mask_engine.generate_masks(
+            state,
+            self.anti_loop_engine,
+            include_board_target,
+        )
