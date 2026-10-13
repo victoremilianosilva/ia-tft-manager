@@ -113,7 +113,8 @@ def test_shop_economy_units_strategy_integration():
         assert reroll_info["action_success"] is True
 
         reroll_spy.assert_called_once_with(
-            env.economy_manager.level
+            env.economy_manager.level,
+            copy_result=False,
         )
 
         # O reroll deve cobrar o custo configurado.

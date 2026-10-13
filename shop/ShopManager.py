@@ -235,12 +235,22 @@ class ShopManager:
     # =============================================================
     # 🔄 REROLL
     # =============================================================
+    def reroll(self, level, copy_result=True):
+        """
+        Força uma nova loja.
 
-    def reroll(self, level):
+        copy_result=True mantém o comportamento padrão:
+        retorna uma cópia independente da loja.
+
+        copy_result=False evita criar essa cópia quando o
+        chamador só precisa atualizar a loja interna.
+        """
         return self.roll(
             level,
             force=True,
+            copy_result=copy_result,
         )
+
 
     # =============================================================
     # 🔒 LOCK

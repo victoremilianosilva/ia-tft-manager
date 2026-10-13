@@ -54,6 +54,16 @@ class FakeShopManager:
         self.shop[slot] = None
         return unit
 
+    def get_unit(self, slot):
+        """Retorna a oferta de um slot sem copiar a loja inteira."""
+        if not isinstance(slot, int):
+            return None
+
+        if slot < 0 or slot >= len(self.shop):
+            return None
+
+        return self.shop[slot]
+
 
 class FakeUnitManager:
     def create_unit(self, champion):

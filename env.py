@@ -588,12 +588,9 @@ class MiniTFTEnv:
         if not self.bench_manager.has_free_slot():
             return -0.10
 
-        shop = self.shop_manager.get_shop()
-
-        if slot >= len(shop):
-            return -0.10
-
-        champion = shop[slot]
+        # 🔎 Consulta somente a oferta desejada.
+        # Evita copiar profundamente todas as unidades da loja.
+        champion = self.shop_manager.get_unit(slot)
 
         if champion is None:
             return -0.10
@@ -712,11 +709,12 @@ class MiniTFTEnv:
         if not self.economy_manager.spend_gold(cost):
             return -0.10
 
-        try:
-
+        try:            
             self.shop_manager.reroll(
-                self.economy_manager.level
+                self.economy_manager.level,
+                copy_result=False,
             )
+
 
         except Exception:
 
@@ -1170,10 +1168,6 @@ class MiniTFTEnv:
     # 🔄 REBUILD PLAYER STATE
     # ============================================================
     def _rebuild_player_state(self):
-        # Mantém a consulta original, mesmo que o resultado não seja
-        # utilizado diretamente neste método.
-        owned_units = self._get_all_units()
-
         self.composition_manager.update(
             self.board_manager.get_units(),
             self.bench_manager.get_units(),
@@ -1330,6 +1324,16 @@ class MiniTFTEnv:
 
         economy = self.economy_manager
 
+        # ⚡ Reutiliza consultas durante a construção da observação.
+        # Evita consultar as mesmas posições e copiar a loja duas vezes.
+        occupied_positions = (
+            self.board_manager.get_occupied_positions()
+        )
+        occupied_slots = (
+            self.bench_manager.get_occupied_slots()
+        )
+        shop = self.shop_manager.get_shop()
+
         core[0] = self.hp / 100.0
         core[1] = economy.gold / 50.0
         core[2] = economy.level / 9.0
@@ -1352,28 +1356,17 @@ class MiniTFTEnv:
         core[6] = self.round / (self.round + 10.0)
 
         core[7] = (
-            len(
-                self.board_manager
-                .get_occupied_positions()
-            )
-            / float(
-                max(1, economy.level)
-            )
+            len(occupied_positions)
+            / float(max(1, economy.level))
         )
 
         core[8] = (
-            len(
-                self.bench_manager
-                .get_occupied_slots()
-            )
+            len(occupied_slots)
             / float(self.max_bench)
         )
 
         core[9] = (
-            len(
-                self.shop_manager
-                .get_shop()
-            )
+            len(shop)
             / float(self.shop_size)
         )
 
@@ -1484,8 +1477,6 @@ class MiniTFTEnv:
             dtype=np.float32,
         )
 
-        shop = self.shop_manager.get_shop()
-
         for position, unit in enumerate(
             shop[:self.shop_size]
         ):
@@ -1523,18 +1514,12 @@ class MiniTFTEnv:
         )
 
         extra[0] = (
-            len(
-                self.board_manager
-                .get_occupied_positions()
-            )
+            len(occupied_positions)
             / 28.0
         )
 
         extra[1] = (
-            len(
-                self.bench_manager
-                .get_occupied_slots()
-            )
+            len(occupied_slots)
             / 9.0
         )
 
