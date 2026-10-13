@@ -257,7 +257,10 @@ ActionMaskBatch ActionMaskEngine::generate_masks(
     for (std::size_t slot = 0; slot < SHOP_SIZE; ++slot) {
         const auto& unit = state.shop[slot];
 
-        if (!bench_has_space || !unit.has_value() || !unit->available) {
+        // Preserva o comportamento Python:
+        // a máscara de compra verifica espaço no banco,
+        // presença da unidade e saldo, sem filtrar "available".
+        if (!bench_has_space || !unit.has_value()) {
             continue;
         }
 
