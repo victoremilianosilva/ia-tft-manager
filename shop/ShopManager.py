@@ -81,34 +81,30 @@ class ShopManager:
     # 🎲 ROLL
     # =============================================================
 
-    def roll(self, level, force=False):
+    def roll(self, level, force=False, copy_result=True):
         """
         Gera uma nova loja.
 
-        Cada slot faz seu próprio sorteio de custo.
+        copy_result=True:
+            Mantém o comportamento original e retorna uma cópia.
+
+        copy_result=False:
+            Atualiza a loja interna sem copiar o resultado
+            para quem chamou o método.
         """
-
         if self.locked and not force:
-            return self.get_shop()
+            return self.get_shop() if copy_result else None
 
-        # Devolve a loja antiga.
+        # Devolve ao pool as unidades da loja anterior.
         self.return_current_shop()
 
         odds = self._get_shop_odds(level)
 
         for slot in range(self.shop_size):
-
             cost = self._roll_cost(odds)
+            self.shop[slot] = self._draw_from_pool(cost)
 
-            champion = self._draw_from_pool(
-                cost
-            )
-
-            # Não substituímos o custo sorteado
-            # por outra raridade.
-            self.shop[slot] = champion
-
-        return self.get_shop()
+        return self.get_shop() if copy_result else None
 
     # =============================================================
     # 🎯 ODDS

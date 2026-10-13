@@ -25,6 +25,15 @@ class FakeUnitManager:
 
     def get_unit_id(self, champion):
         return self.ids.get(id(champion))
+    
+    def get_champion(self, champion_id):
+        """Retorna o campeão do catálogo pelo ID, sem copiar o catálogo."""
+        for champion in self.champions:
+            if self.get_unit_id(champion) == champion_id:
+                return champion
+
+        return None
+
 
 
 @pytest.fixture

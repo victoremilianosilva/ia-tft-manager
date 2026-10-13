@@ -347,14 +347,15 @@ class MiniTFTEnv:
     # ============================================================
     # 🛒 SHOP
     # ============================================================
-
     def _roll_shop(self):
-
         if self.done:
             return
 
+        # O ambiente não usa o retorno de roll().
+        # Evita a cópia extra da loja durante esta operação.
         self.shop_manager.roll(
-            self.economy_manager.level
+            self.economy_manager.level,
+            copy_result=False,
         )
 
     # ============================================================

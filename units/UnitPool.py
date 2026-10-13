@@ -47,6 +47,21 @@ class UnitPool:
         copies_by_cost=None,
     ):
         self.unit_manager = unit_manager
+        # =========================================================
+        # ⚡ ÍNDICE ESTÁTICO: IDs agrupados por custo
+        # =========================================================
+        # O catálogo é considerado estático durante a partida.
+        # O índice é reconstruído sempre que reset() é chamado.
+        #
+        # Exemplo:
+        # {
+        #     1: [0, 1, 4, 7],
+        #     2: [2, 3, 8],
+        #     3: [5, 6],
+        # }
+        #
+        # Guardamos IDs, não cópias de campeões.
+        self._champion_ids_by_cost = {}
 
         # =========================================================
         # 📦 QUANTIDADE DE CÓPIAS POR CUSTO
@@ -89,19 +104,21 @@ class UnitPool:
     # =============================================================
     # 🔄 RESET
     # =============================================================
-
     def reset(self):
         """
-        Reconstrói o pool completo.
+        Reconstrói o pool e o índice de campeões por custo.
 
-        Deve ser chamado no início de uma nova partida.
+        A cópia do catálogo acontece uma vez por reset,
+        e não a cada sorteio da loja.
         """
-
         self.available.clear()
         self.initial_counts.clear()
+        self._champion_ids_by_cost.clear()
 
-        for champion in self.unit_manager.get_all_champions():
+        # Uma única leitura segura do catálogo.
+        champions = self.unit_manager.get_all_champions()
 
+        for champion in champions:
             champion_id = self.unit_manager.get_unit_id(
                 champion
             )
@@ -109,20 +126,18 @@ class UnitPool:
             if champion_id is None:
                 continue
 
-            cost = int(
-                champion.get("cost", 1)
-            )
+            cost = int(champion.get("cost", 1))
 
             copies = int(
-                self.copies_by_cost.get(
-                    cost,
-                    0
-                )
+                self.copies_by_cost.get(cost, 0)
             )
 
             self.available[champion_id] = copies
             self.initial_counts[champion_id] = copies
 
+            self._champion_ids_by_cost.setdefault(
+                cost, []
+            ).append(champion_id)
     # =============================================================
     # 📤 DRAW
     # =============================================================
@@ -131,82 +146,46 @@ class UnitPool:
         """
         Retira uma cópia aleatória de determinado custo.
 
-        Retorna:
-            cópia do campeão base
-            ou None caso não exista.
-
-        IMPORTANTE:
-
-        O UnitPool NÃO cria uma unidade pertencente ao jogador.
-
-        Portanto:
-            - não cria UUID
-            - não define ownership
-            - não cria estado de jogador
-
-        O UnitManager cria a unidade real posteriormente.
+        Otimização:
+        - Não copia o catálogo inteiro a cada sorteio.
+        - Consulta somente os IDs do custo solicitado.
+        - Copia profundamente apenas o campeão escolhido.
         """
-
         try:
             cost = int(cost)
         except (TypeError, ValueError):
             return None
 
-        candidates = []
-
-        for champion in self.unit_manager.get_all_champions():
-
-            champion_id = self.unit_manager.get_unit_id(
-                champion
+        # ⚡ Filtra apenas IDs previamente indexados.
+        candidate_ids = [
+            champion_id
+            for champion_id in self._champion_ids_by_cost.get(
+                cost, ()
             )
+            if self.available.get(champion_id, 0) > 0
+        ]
 
-            if champion_id is None:
-                continue
-
-            champion_cost = int(
-                champion.get("cost", 1)
-            )
-
-            if champion_cost != cost:
-                continue
-
-            if self.available.get(
-                champion_id,
-                0
-            ) <= 0:
-                continue
-
-            candidates.append(
-                champion
-            )
-
-        # Nenhuma cópia disponível.
-        if not candidates:
+        if not candidate_ids:
             return None
 
-        # =========================================================
-        # 🎲 Sorteio
-        # =========================================================
+        # 🎲 Sorteia entre campeões com estoque disponível.
+        champion_id = random.choice(candidate_ids)
 
-        champion = random.choice(
-            candidates
+        # O ID interno permite localizar o registro em O(1).
+        champion = self.unit_manager.get_champion(
+            champion_id
         )
 
-        champion_id = self.unit_manager.get_unit_id(
-            champion
-        )
+        # Proteção caso o catálogo tenha sido alterado
+        # externamente depois da construção do índice.
+        if champion is None:
+            return None
 
-        # =========================================================
-        # ➖ Retira UMA cópia física
-        # =========================================================
-
+        # ➖ Retira uma cópia física do pool.
         self.available[champion_id] -= 1
 
-        # Retorna uma cópia independente do catálogo.
-        return self._copy_champion(
-            champion
-        )
-
+        # 🛡️ Preserva o isolamento do catálogo.
+        return self._copy_champion(champion)
     # =============================================================
     # 📥 RETURN UNIT
     # =============================================================
@@ -376,36 +355,20 @@ class UnitPool:
 
     def has_available_cost(self, cost):
         """
-        Verifica se existe pelo menos uma unidade de
-        determinado custo disponível no pool.
+        Verifica se existe pelo menos um campeão disponível
+        de determinado custo, sem copiar ou percorrer o catálogo.
         """
-
         try:
             cost = int(cost)
         except (TypeError, ValueError):
             return False
 
-        for champion in self.unit_manager.get_all_champions():
-
-            if int(
-                champion.get("cost", 1)
-            ) != cost:
-                continue
-
-            champion_id = self.unit_manager.get_unit_id(
-                champion
+        return any(
+            self.available.get(champion_id, 0) > 0
+            for champion_id in self._champion_ids_by_cost.get(
+                cost, ()
             )
-
-            if champion_id is None:
-                continue
-
-            if self.has_available(
-                champion_id
-            ):
-                return True
-
-        return False
-
+        )
     # =============================================================
     # 📈 ESTATÍSTICAS
     # =============================================================
