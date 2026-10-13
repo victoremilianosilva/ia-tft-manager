@@ -208,22 +208,22 @@ A migração deverá preservar o comportamento atual da IA, incluindo todas as r
 
 **Tarefas:**
 - [x] Mapear as funções públicas e privadas de `AntiLoopManager`.
-- [ ] Migrar a geração das chaves de movimentos.
-- [ ] Migrar a identificação das unidades.
-- [ ] Migrar a detecção de movimentos inversos.
-- [ ] Migrar a detecção de oscilações.
-- [ ] Migrar a detecção de ciclos.
-- [ ] Migrar as regras de bloqueio e os motivos associados.
-- [ ] Preservar os critérios de comparação entre movimentos.
-- [ ] Preservar o uso do histórico e das assinaturas de estado.
-- [ ] Preservar os mecanismos de prevenção de loops entre banco e tabuleiro.
-- [ ] Preservar todas as regras adicionais de bloqueio implementadas anteriormente.
-- [ ] Reproduzir a ordem de avaliação das condições quando ela afetar o resultado.
-- [ ] Garantir que verificações de bloqueio não atualizem o histórico indevidamente.
-- [ ] Garantir que as atualizações legítimas do histórico ocorram no momento correto.
-- [ ] Criar testes para reversões, oscilações, ciclos e movimentos repetidos.
-- [ ] Criar testes para movimentos semelhantes executados por unidades diferentes.
-- [ ] Criar testes para mudanças de estado que devem permitir novamente um movimento.
+- [x] Migrar a geração das chaves de movimentos.
+- [x] Migrar a identificação das unidades.
+- [x] Migrar a detecção de movimentos inversos.
+- [x] Migrar a detecção de oscilações.
+- [x] Migrar a detecção de ciclos.
+- [x] Migrar as regras de bloqueio e os motivos associados.
+- [x] Preservar os critérios de comparação entre movimentos.
+- [x] Preservar o uso do histórico e das assinaturas de estado.
+- [x] Preservar os mecanismos de prevenção de loops entre banco e tabuleiro.
+- [x] Preservar todas as regras adicionais de bloqueio implementadas anteriormente.
+- [x] Reproduzir a ordem de avaliação das condições quando ela afetar o resultado.
+- [x] Garantir que verificações de bloqueio não atualizem o histórico indevidamente.
+- [x] Garantir que as atualizações legítimas do histórico ocorram no momento correto.
+- [x] Criar testes para reversões, oscilações, ciclos e movimentos repetidos.
+- [x] Criar testes para movimentos semelhantes executados por unidades diferentes.
+- [x] Criar testes para mudanças de estado que devem permitir novamente um movimento.
 - [ ] Comparar decisões e motivos de bloqueio entre Python e C++.
 - [ ] Corrigir todas as divergências identificadas.
 
@@ -241,23 +241,23 @@ A migração deverá preservar o comportamento atual da IA, incluindo todas as r
 **Objetivo:** migrar a construção das máscaras para C++, integrando o validador de movimentos e o AntiLoop nativos.
 
 **Tarefas:**
-- [ ] Mapear todas as funções de geração das máscaras em `ActionMaskManager`.
-- [ ] Migrar a geração das máscaras de tipos de ação.
-- [ ] Migrar a geração das máscaras de seleção da loja.
-- [ ] Migrar a geração das máscaras do banco.
-- [ ] Migrar a geração das máscaras de origem no tabuleiro.
-- [ ] Migrar a geração das máscaras de destino no tabuleiro.
-- [ ] Migrar a geração das máscaras de movimentação entre banco e tabuleiro.
-- [ ] Migrar a geração das máscaras condicionais.
-- [ ] Preservar a dependência entre as etapas autoregressivas da política.
-- [ ] Preservar todas as restrições econômicas e de estado que influenciem as máscaras.
-- [ ] Preservar as regras especiais e os casos de borda existentes.
-- [ ] Integrar o validador de movimentos e o AntiLoop sem duplicar verificações desnecessárias.
-- [ ] Evitar chamadas individuais entre Python e C++ para cada candidato de movimento.
-- [ ] Processar os candidatos internamente em C++ e retornar os resultados em lote.
-- [ ] Definir o formato exato de saída esperado pela política atual.
-- [ ] Garantir dimensões, tipos, ordem dos índices e semântica idênticos aos atuais.
-- [ ] Tratar estados inválidos ou inconsistentes sem produzir máscaras incorretas silenciosamente.
+- [x] Mapear todas as funções de geração das máscaras em `ActionMaskManager`.
+- [x] Migrar a geração das máscaras de tipos de ação.
+- [x] Migrar a geração das máscaras de seleção da loja.
+- [x] Migrar a geração das máscaras do banco.
+- [x] Migrar a geração das máscaras de origem no tabuleiro.
+- [x] Migrar a geração das máscaras de destino no tabuleiro.
+- [x] Migrar a geração das máscaras de movimentação entre banco e tabuleiro.
+- [x] Migrar a geração das máscaras condicionais.
+- [x] Preservar a dependência entre as etapas autoregressivas da política.
+- [x] Preservar todas as restrições econômicas e de estado que influenciem as máscaras.
+- [x] Preservar as regras especiais e os casos de borda existentes.
+- [x] Integrar o validador de movimentos e o AntiLoop sem duplicar verificações desnecessárias.
+- [x] Evitar chamadas individuais entre Python e C++ para cada candidato de movimento.
+- [x] Processar os candidatos internamente em C++ e retornar os resultados em lote.
+- [x] Definir o formato exato de saída esperado pela política atual.
+- [x] Garantir dimensões, tipos, ordem dos índices e semântica idênticos aos atuais.
+- [x] Tratar estados inválidos ou inconsistentes sem produzir máscaras incorretas silenciosamente.
 - [ ] Comparar cada componente da saída C++ com a saída Python.
 - [ ] Corrigir todas as divergências antes de integrar o módulo ao fluxo principal.
 

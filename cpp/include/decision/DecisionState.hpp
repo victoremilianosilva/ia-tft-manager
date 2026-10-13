@@ -54,9 +54,11 @@ struct Position {
 };
 
 // Estado de economia usado nas futuras validações.
+
 struct EconomyState {
     std::int32_t gold = 0;
     std::int32_t level = 1;
+    std::int32_t max_level = 10;
     std::int32_t current_xp = 0;
     std::int32_t xp_to_next_level = 0;
 

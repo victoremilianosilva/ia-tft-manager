@@ -71,6 +71,8 @@ pybind11_add_module(
     decision_engine
     src/decision/DecisionEngine.cpp
     src/decision/AntiLoopEngine.cpp
+    src/decision/MoveValidator.cpp
+    src/decision/ActionMaskEngine.cpp
     src/decision/decision_bindings.cpp
 )
 
@@ -149,6 +151,29 @@ if(BUILD_TESTING)
     add_test(
         NAME move_validator
         COMMAND test_move_validator
+    )
+
+    add_executable(
+        test_anti_loop_engine
+        tests/test_anti_loop_engine.cpp
+        src/decision/AntiLoopEngine.cpp
+    )
+
+    target_include_directories(
+        test_anti_loop_engine
+        PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )
+
+    target_compile_features(
+        test_anti_loop_engine
+        PRIVATE
+            cxx_std_20
+    )
+
+    add_test(
+        NAME anti_loop_engine
+        COMMAND test_anti_loop_engine
     )
 
 endif()

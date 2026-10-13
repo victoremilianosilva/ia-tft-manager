@@ -4,6 +4,7 @@
 
 #include "decision/AntiLoopEngine.hpp"
 #include "decision/DecisionEngine.hpp"
+#include "decision/ActionMaskEngine.hpp"
 
 namespace py = pybind11;
 
@@ -34,6 +35,7 @@ PYBIND11_MODULE(decision_engine, module) {
         .def_readwrite("gold", &EconomyState::gold)
         .def_readwrite("level", &EconomyState::level)
         .def_readwrite("current_xp", &EconomyState::current_xp)
+        .def_readwrite("max_level", &EconomyState::max_level)
         .def_readwrite(
             "xp_to_next_level",
             &EconomyState::xp_to_next_level
@@ -330,4 +332,52 @@ PYBIND11_MODULE(decision_engine, module) {
     py::class_<DecisionEngine>(module, "DecisionEngine")
         .def(py::init<>())
         .def("version", &DecisionEngine::version);
+
+    
+py::class_<ActionMaskBatch>(module, "ActionMaskBatch")
+    .def_readonly("type_mask", &ActionMaskBatch::type_mask)
+    .def_readonly("shop_mask", &ActionMaskBatch::shop_mask)
+    .def_readonly(
+        "bench_source_mask",
+        &ActionMaskBatch::bench_source_mask
+    )
+    .def_readonly(
+        "board_target_mask",
+        &ActionMaskBatch::board_target_mask
+    )
+    .def_readonly(
+        "board_source_mask",
+        &ActionMaskBatch::board_source_mask
+    )
+    .def_readonly(
+        "board_move_target_masks",
+        &ActionMaskBatch::board_move_target_masks
+    )
+    .def_readonly(
+        "bench_move_source_mask",
+        &ActionMaskBatch::bench_move_source_mask
+    )
+    .def_readonly(
+        "bench_to_board_target_masks",
+        &ActionMaskBatch::bench_to_board_target_masks
+    )
+    .def_readonly("buy_available", &ActionMaskBatch::buy_available)
+    .def_readonly("sell_available", &ActionMaskBatch::sell_available)
+    .def_readonly(
+        "board_move_available",
+        &ActionMaskBatch::board_move_available
+    )
+    .def_readonly(
+        "bench_move_available",
+        &ActionMaskBatch::bench_move_available
+    );
+
+py::class_<ActionMaskEngine>(module, "ActionMaskEngine")
+    .def(py::init<>())
+    .def(
+        "generate_masks",
+        &ActionMaskEngine::generate_masks,
+        py::arg("state"),
+        py::arg("anti_loop")
+    );
 }
