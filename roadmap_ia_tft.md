@@ -577,3 +577,38 @@ A conclusão desta etapa significa que C++ assumiu a geração das Action Masks,
 - [ ] Separar restrições de legalidade de heurísticas estratégicas.
 - [ ] Evitar bloquear um movimento apenas por parecer estrategicamente ruim.
 - [ ] Preservar a exploração da política PPO.
+
+
+1. Problemas encontrados
+Crítico — o resultado pode indicar conclusão prematura
+Em CombatEngine.cpp, quando uma unidade não pode atacar, ela sai do processamento sem agendar outro evento. O mesmo pode acontecer quando não consegue se mover até um inimigo fora de alcance. Se a fila de eventos esvaziar com as duas equipes ainda vivas, o motor marca a simulação como concluída e decide o vencedor com base nos sobreviventes e no HP restante.
+Isso pode encerrar uma luta antes de ela realmente terminar.
+
+
+
+Crítico — habilidades e vários atributos não participam do combate
+O CombatInput aceita mana, habilidades, itens, traits, poder de habilidade, resistência mágica e modificadores globais. Entretanto, a simulação atual resolve principalmente ataques físicos básicos e movimentação.
+can_cast, magic_resist, ability, items, traits, global_modifiers e boa parte dos atributos relacionados a habilidades não têm efeito efetivo no resultado.
+
+
+
+Alto — campos de CombatResult ficam com valores padrão
+player_a_damage e player_b_damage nunca são calculados. CombatUnitResult.healing_done e ability_casts também não são preenchidos pela simulação atual.
+Como os campos têm valores padrão, isso não necessariamente gera exceção no Python: o problema é receber zeros que parecem resultados válidos.
+
+Alto — validação numérica incompleta
+O motor valida HP, dano de ataque, velocidade, alcance e alguns outros atributos, mas não valida de forma abrangente todos os valores numéricos recebidos. Por exemplo, poder de habilidade, mana, resistência mágica, amplificação de dano e redução de dano podem conter valores inválidos sem que a validação atual os rejeite.
+
+
+Médio — contrato de eventos incompleto
+CombatEvent possui os campos esperados (timestamp, type, source_unit_id, target_unit_id, value, data), e eles estão expostos pelo binding. Porém, data nunca é preenchido pela função genérica de eventos, e os eventos de habilidade não são gerados pelo motor atual.
+Além disso, record_events começa como false, então os eventos genéricos e os eventos de ataque/morte associados a essa opção não são registrados por padrão.
+
+5. Ordem recomendada para fechar o motor
+Eu faria as correções nesta ordem:
+1. Corrigir o ciclo de eventos e o timeout, garantindo que o combate não termine silenciosamente com equipes vivas.
+2. Completar e validar os atributos de entrada, incluindo valores finitos, limites de chance, resistências e modificadores.
+3. Fechar o contrato de CombatResult, preenchendo todos os campos prometidos ou marcando claramente os que ainda não são suportados.
+4. Definir e testar o contrato de eventos, incluindo data, registros opcionais e limites.
+5. Completar a integração da lobby, com testes para vitória, derrota, empate, equipe vazia, erro de entrada e timeout.
+6. Implementar habilidades, mana, itens e traits conforme as regras pretendidas para o jogo, em vez de expor esses dados sem que tenham efeito.
