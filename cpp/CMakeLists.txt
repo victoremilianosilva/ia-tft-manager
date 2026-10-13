@@ -176,4 +176,29 @@ if(BUILD_TESTING)
         COMMAND test_anti_loop_engine
     )
 
+
+    add_executable(
+        test_action_mask_engine
+        tests/test_action_mask_engine.cpp
+        src/decision/ActionMaskEngine.cpp
+        src/decision/MoveValidator.cpp
+        src/decision/AntiLoopEngine.cpp
+    )
+
+    target_include_directories(
+        test_action_mask_engine
+        PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )
+
+    target_compile_features(
+        test_action_mask_engine
+        PRIVATE
+            cxx_std_20
+    )
+
+    add_test(
+        NAME action_mask_engine
+        COMMAND test_action_mask_engine
+    )
 endif()
