@@ -22,7 +22,10 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
     ${CMAKE_BINARY_DIR}/lib
 )
 
+# =========================================================
 # Python do ambiente ativo
+# =========================================================
+
 find_package(Python REQUIRED COMPONENTS
     Interpreter
     Development
@@ -63,8 +66,14 @@ target_include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+target_compile_features(
+    combat_engine
+    PRIVATE
+        cxx_std_20
+)
+
 # =========================================================
-# Modulo novo: decisoes
+# Modulo existente: decisoes
 # =========================================================
 
 pybind11_add_module(
@@ -82,14 +91,53 @@ target_include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+target_compile_features(
+    decision_engine
+    PRIVATE
+        cxx_std_20
+)
 
-# ============================================================
+# =========================================================
+# Novo modulo: motor completo da lobby
+#
+# IMPORTANTE:
+# TftEngine.cpp ainda precisa implementar a API declarada
+# em include/lobby/TftEngine.hpp.
+#
+# O binding usa o caminho existente no repositorio:
+# cpp/bindings/tft_engine_bindings.cpp
+# =========================================================
+
+pybind11_add_module(
+    tft_engine
+    src/lobby/TftEngine.cpp
+    bindings/tft_engine_bindings.cpp
+)
+
+target_include_directories(
+    tft_engine
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_compile_features(
+    tft_engine
+    PRIVATE
+        cxx_std_20
+)
+
+# =========================================================
 # Testes nativos automatizados
-# ============================================================
+# =========================================================
 
 include(CTest)
 
 if(BUILD_TESTING)
+
+    # -----------------------------------------------------
+    # Contrato de erros do motor de decisoes
+    # -----------------------------------------------------
+
     add_executable(
         test_decision_error
         tests/test_decision_error.cpp
@@ -112,8 +160,10 @@ if(BUILD_TESTING)
         COMMAND test_decision_error
     )
 
-    # Confirma que o módulo Python pode ser importado
-    # pelo mesmo interpretador selecionado no CMake.
+    # -----------------------------------------------------
+    # Importacao do modulo decision_engine
+    # -----------------------------------------------------
+
     add_test(
         NAME decision_engine_import
         COMMAND
@@ -129,7 +179,10 @@ if(BUILD_TESTING)
                 "PYTHONPATH=$<TARGET_FILE_DIR:decision_engine>"
     )
 
-    
+    # -----------------------------------------------------
+    # Validacao de movimentacao
+    # -----------------------------------------------------
+
     add_executable(
         test_move_validator
         tests/test_move_validator.cpp
@@ -152,6 +205,10 @@ if(BUILD_TESTING)
         NAME move_validator
         COMMAND test_move_validator
     )
+
+    # -----------------------------------------------------
+    # Anti-loop
+    # -----------------------------------------------------
 
     add_executable(
         test_anti_loop_engine
@@ -176,6 +233,9 @@ if(BUILD_TESTING)
         COMMAND test_anti_loop_engine
     )
 
+    # -----------------------------------------------------
+    # Mascara de acoes
+    # -----------------------------------------------------
 
     add_executable(
         test_action_mask_engine
@@ -201,4 +261,24 @@ if(BUILD_TESTING)
         NAME action_mask_engine
         COMMAND test_action_mask_engine
     )
+
+    # -----------------------------------------------------
+    # Importacao do modulo tft_engine
+    # -----------------------------------------------------
+
+    add_test(
+        NAME tft_engine_import
+        COMMAND
+            ${Python_EXECUTABLE}
+            -c
+            "import tft_engine; print(tft_engine.__doc__)"
+    )
+
+    set_tests_properties(
+        tft_engine_import
+        PROPERTIES
+            ENVIRONMENT
+                "PYTHONPATH=$<TARGET_FILE_DIR:tft_engine>"
+    )
+
 endif()
