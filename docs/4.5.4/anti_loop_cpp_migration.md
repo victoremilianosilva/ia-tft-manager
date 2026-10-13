@@ -194,9 +194,41 @@ A representação fixa de 28 posições de tabuleiro e 9 posições de banco cor
 
 ## 9. Integração Python/C++
 
-O header e a implementação nativa não constituem, por si só, uma interface Python funcional.
+A `AntiLoopEngine` é exposta pelo módulo `decision_engine` por meio do `pybind11`.
 
-A integração via `pybind11` deverá ser realizada quando prevista no roadmap, respeitando o contrato do módulo `decision_engine`.
+### 9.1. Tipos disponíveis
+
+O módulo disponibiliza:
+
+* `AntiLoopEngine`: motor nativo de detecção de loops.
+* `AntiLoopConfig`: configuração dos limites do histórico.
+* `UnitIdentity`, `UnitSnapshot` e `PlayerState`: identidade e estado das unidades.
+* `PositionSignature`: assinatura do posicionamento.
+* `MoveRecord` e `MoveKey`: registro e identificação dos movimentos.
+* `StateRegistrationResult`, `AntiLoopStateSummary` e `ExecutionMetrics`: resultados, resumo e métricas.
+
+A classe `DecisionEngine` existente continua exposta pelo mesmo módulo.
+
+### 9.2. API disponível
+
+A interface Python permite acessar as operações de registro, detecção, bloqueio, avaliação de risco, consulta do histórico e métricas implementadas em C++.
+
+A conversão entre objetos Python e estruturas C++ deve respeitar os tipos e as dimensões definidos pelo ambiente: 28 posições no tabuleiro e 9 posições no banco.
+
+### 9.3. Limite da integração
+
+Disponibilizar a classe por meio do `pybind11` não substitui automaticamente `ai/AntiLoopManager.py`.
+
+O gerenciador Python atual recebe listas e dicionários, enquanto a API nativa utiliza estruturas tipadas. A adoção da implementação C++ no fluxo real da IA exige um adaptador ou uma migração explícita dos consumidores, preservando os aliases de movimentos, as regras de bloqueio e as métricas.
+
+Até essa integração ser concluída, a classe nativa pode ser importada e utilizada diretamente, mas não se deve afirmar que o ambiente Python já utiliza automaticamente o motor C++.
+
+### 9.4. Validação da exposição
+
+O teste CMake `decision_engine_import` verifica se o módulo pode ser importado e se as classes `DecisionEngine` e `AntiLoopEngine` estão disponíveis.
+
+A aprovação desse teste confirma a exposição básica das classes, mas não comprova equivalência comportamental com o gerenciador Python. Os testes unitários C++ e Python e a comparação de cenários permanecem nas tasks correspondentes.
+
 
 ## 10. Critérios de conclusão
 
