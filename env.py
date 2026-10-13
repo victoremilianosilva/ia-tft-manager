@@ -1332,7 +1332,14 @@ class MiniTFTEnv:
         occupied_slots = (
             self.bench_manager.get_occupied_slots()
         )
-        shop = self.shop_manager.get_shop()
+
+        # A observação só lê os dados da loja; não precisa de cópias profundas.
+        # get_unit() retorna a unidade interna, usada aqui somente para leitura.
+        shop = [
+            self.shop_manager.get_unit(slot)
+            for slot in range(self.shop_size)
+        ]
+
 
         core[0] = self.hp / 100.0
         core[1] = economy.gold / 50.0

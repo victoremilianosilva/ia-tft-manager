@@ -21,6 +21,7 @@ PYBIND11_MODULE(decision_engine, module) {
         .def(py::init<>())
         .def_readwrite("uuid", &UnitIdentity::uuid)
         .def_readwrite("id", &UnitIdentity::id)
+        .def_readwrite("textual_id", &UnitIdentity::textual_id)
         .def_readwrite("star", &UnitIdentity::star)
         .def("has_identity", &UnitIdentity::has_identity);
 
@@ -337,6 +338,12 @@ PYBIND11_MODULE(decision_engine, module) {
 py::class_<ActionMaskBatch>(module, "ActionMaskBatch")
     .def_readonly("type_mask", &ActionMaskBatch::type_mask)
     .def_readonly("shop_mask", &ActionMaskBatch::shop_mask)
+
+    .def_readonly(
+        "conditioned_board_target_mask",
+        &ActionMaskBatch::conditioned_board_target_mask
+    )
+
     .def_readonly(
         "bench_source_mask",
         &ActionMaskBatch::bench_source_mask

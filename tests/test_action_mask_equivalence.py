@@ -156,10 +156,11 @@ def native_masks(env, native_module):
 
     # A sexta máscara Python é a união dos destinos válidos
     # para todas as origens ocupadas do tabuleiro.
-    conditioned_board_target = np.any(
-        np.asarray(batch.board_move_target_masks, dtype=np.uint8),
-        axis=0,
-    ).astype(np.uint8)
+    
+    conditioned_board_target = np.asarray(
+        batch.conditioned_board_target_mask,
+        dtype=np.uint8,
+    )
 
     return [
         np.asarray(batch.type_mask, dtype=np.uint8),
@@ -357,13 +358,10 @@ def _assert_masks_match_with_history(
         np.asarray(actual_batch.bench_source_mask, dtype=np.uint8),
         np.asarray(actual_batch.board_target_mask, dtype=np.uint8),
         np.asarray(actual_batch.board_source_mask, dtype=np.uint8),
-        np.any(
-            np.asarray(
-                actual_batch.board_move_target_masks,
-                dtype=np.uint8,
-            ),
-            axis=0,
-        ).astype(np.uint8),
+        np.asarray(
+            actual_batch.conditioned_board_target_mask,
+            dtype=np.uint8,
+        )
     ]
 
     names = [

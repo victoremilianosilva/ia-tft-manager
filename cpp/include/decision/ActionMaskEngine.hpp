@@ -21,6 +21,11 @@ struct ActionMaskBatch {
         BOARD_SIZE
     > board_move_target_masks{};
 
+    // União dos destinos reais do tabuleiro, sem fallbacks
+    // de origens que não possuem movimentos válidos.
+    std::array<MaskValue, BOARD_SIZE>
+        conditioned_board_target_mask{};
+
     std::array<MaskValue, BENCH_SIZE> bench_move_source_mask{};
 
     std::array<

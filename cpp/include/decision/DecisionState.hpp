@@ -14,25 +14,34 @@ namespace tft::decision {
 // Se uuid existir, ele tem prioridade sobre id + star.
 // Identidade estável para comparação de unidades no histórico.
 // Se uuid existir, ele tem prioridade sobre id + star.
+// Identidade estável para comparação de unidades no histórico.
+// UUID tem prioridade; sem UUID, comparamos id + star.
+// IDs podem ser numéricos ou textuais.
 struct UnitIdentity {
     std::optional<std::string> uuid;
     std::optional<std::int64_t> id;
+    std::optional<std::string> textual_id;
     std::uint8_t star = 1;
 
     [[nodiscard]] bool has_identity() const noexcept {
-        return uuid.has_value() || id.has_value();
+        return uuid.has_value()
+            || id.has_value()
+            || textual_id.has_value();
     }
 
     bool operator==(const UnitIdentity& other) const noexcept {
-        // Se qualquer uma possuir UUID, compara exclusivamente UUID.
+        // Se qualquer unidade possui UUID, ambas precisam ter
+        // UUID igual. Não fazemos fallback para id nesse caso.
         if (uuid.has_value() || other.uuid.has_value()) {
             return uuid.has_value()
                 && other.uuid.has_value()
                 && uuid == other.uuid;
         }
 
-        // Sem UUID, compara id + star.
-        return id == other.id && star == other.star;
+        // Equivale à identidade Python: id + star.
+        return id == other.id
+            && textual_id == other.textual_id
+            && star == other.star;
     }
 };
 

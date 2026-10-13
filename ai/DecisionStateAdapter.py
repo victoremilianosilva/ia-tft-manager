@@ -99,29 +99,10 @@ def _create_unit_snapshot(
             f"recebido {type(unit).__name__}."
         )
 
-    identity = native_module.UnitIdentity()
-
-    raw_uuid = unit.get("uuid")
-    if raw_uuid is not None:
-        identity.uuid = str(raw_uuid)
-    else:
-        raw_id = unit.get("id")
-
-        # O tipo nativo usa int64 para IDs numéricos.
-        # IDs textuais do catálogo não são convertidos artificialmente.
-        if isinstance(raw_id, int) and not isinstance(raw_id, bool):
-            identity.id = _as_int_in_range(
-                raw_id,
-                f"{field}.id",
-                INT64_MIN,
-                INT64_MAX,
-            )
-
-    identity.star = _as_int_in_range(
-        unit.get("star", 1),
-        f"{field}.star",
-        1,
-        UINT8_MAX,
+    identity = _create_unit_identity(
+        native_module,
+        unit,
+        field,
     )
 
     snapshot = native_module.UnitSnapshot()
@@ -144,6 +125,104 @@ def _create_unit_snapshot(
 
     return snapshot
 
+def _create_unit_identity(
+    native_module: Any,
+    unit: Any,
+    field: str,
+):
+    """Converte somente a identidade da unidade para o tipo nativo."""
+    if unit is None:
+        return None
+
+    if not isinstance(unit, dict):
+        raise ValueError(
+            f"{field}: esperado dicionário ou None; "
+            f"recebido {type(unit).__name__}."
+        )
+
+    identity = native_module.UnitIdentity()
+
+    raw_uuid = unit.get("uuid")
+    raw_id = unit.get("id")
+
+    if raw_uuid is not None:
+        identity.uuid = str(raw_uuid)
+    elif isinstance(raw_id, int) and not isinstance(raw_id, bool):
+        identity.id = _as_int_in_range(
+            raw_id,
+            f"{field}.id",
+            INT64_MIN,
+            INT64_MAX,
+        )
+    elif isinstance(raw_id, str):
+        identity.textual_id = raw_id
+
+    identity.star = _as_int_in_range(
+        unit.get("star", 1),
+        f"{field}.star",
+        1,
+        UINT8_MAX,
+    )
+
+    return identity
+
+def build_position_signature(
+    env: Any,
+    *,
+    native_module: Any,
+):
+    """Cria a assinatura nativa sem converter loja ou economia.
+
+    O histórico anti-loop depende apenas das identidades do
+    tabuleiro e do banco. Esta função não cria UnitSnapshot,
+    não acessa a loja e não lê o estado econômico.
+    """
+    if getattr(env, "board_manager", None) is None:
+        raise ValueError(
+            "Não foi encontrado o manager obrigatório: "
+            "env.board_manager."
+        )
+
+    if getattr(env, "bench_manager", None) is None:
+        raise ValueError(
+            "Não foi encontrado o manager obrigatório: "
+            "env.bench_manager."
+        )
+
+    board = _read_slots(
+        env.board_manager,
+        "board",
+        BOARD_SIZE,
+        "board",
+    )
+    bench = _read_slots(
+        env.bench_manager,
+        "bench",
+        BENCH_SIZE,
+        "bench",
+    )
+
+    signature = native_module.PositionSignature()
+
+    signature.board = [
+        _create_unit_identity(
+            native_module,
+            unit,
+            f"board[{index}]",
+        )
+        for index, unit in enumerate(board)
+    ]
+
+    signature.bench = [
+        _create_unit_identity(
+            native_module,
+            unit,
+            f"bench[{index}]",
+        )
+        for index, unit in enumerate(bench)
+    ]
+
+    return signature
 
 def build_player_state(
     env: Any,

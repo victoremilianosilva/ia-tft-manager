@@ -5,7 +5,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from ai.DecisionStateAdapter import build_player_state
+from ai.DecisionStateAdapter import (
+    build_player_state,
+    build_position_signature,
+)
 from config.GameConfig import GameConfig
 
 
@@ -148,26 +151,173 @@ def test_converts_units_and_preserves_empty_slots(
     assert state.shop[0] is None
 
 
-def test_string_catalog_id_without_uuid_is_not_fabricated_as_numeric_id(
+def test_string_catalog_id_without_uuid_is_preserved(
     native_module,
     make_env,
 ):
-    unit = {
+    bench = [None] * 9
+    bench[0] = {
         "id": "Champion_X",
-        "star": 1,
+        "star": 2,
         "cost": 2,
     }
-    bench = [None] * 9
-    bench[0] = unit
 
     env = make_env(bench=bench)
 
-    state = build_player_state(env, native_module=native_module)
+    state = build_player_state(
+        env,
+        native_module=native_module,
+    )
 
-    assert state.bench[0] is not None
-    assert state.bench[0].identity.uuid is None
-    assert state.bench[0].identity.id is None
+    identity = state.bench[0].identity
 
+    assert identity.uuid is None
+    assert identity.id is None
+    assert identity.textual_id == "Champion_X"
+    assert identity.star == 2
+    assert identity.has_identity()
+
+def test_position_signature_does_not_require_shop_or_economy(
+    native_module,
+):
+    board = [None] * 28
+    bench = [None] * 9
+
+    board[12] = {
+        "id": "Nasus",
+        "star": 2,
+    }
+    bench[4] = {
+        "uuid": "teemo-uuid",
+        "id": "Teemo",
+        "star": 1,
+    }
+
+    # A assinatura deve funcionar sem loja ou economia.
+    env = SimpleNamespace(
+        board_manager=SimpleNamespace(board=board),
+        bench_manager=SimpleNamespace(bench=bench),
+    )
+
+    signature = build_position_signature(
+        env,
+        native_module=native_module,
+    )
+
+    assert len(signature.board) == 28
+    assert len(signature.bench) == 9
+
+    assert signature.board[12] is not None
+    assert signature.board[12].textual_id == "Nasus"
+    assert signature.board[12].star == 2
+
+    assert signature.bench[4] is not None
+    assert signature.bench[4].uuid == "teemo-uuid"
+
+    assert signature.board[0] is None
+    assert signature.bench[0] is None
+
+
+def test_position_signature_ignores_shop_and_economy(
+    native_module,
+    make_env,
+):
+    env = make_env(
+        board=[
+            {"id": "Nasus", "star": 1}
+        ] + [None] * 27,
+    )
+
+    first = build_position_signature(
+        env,
+        native_module=native_module,
+    )
+
+    # Altera dados que não devem fazer parte da assinatura.
+    env.shop_manager.shop[0] = {
+        "uuid": "shop-only",
+        "id": "Briar",
+        "star": 1,
+    }
+    env.economy_manager.gold = 99
+    env.economy_manager.level = 7
+
+    second = build_position_signature(
+        env,
+        native_module=native_module,
+    )
+
+    # As dimensões da assinatura devem permanecer iguais.
+    assert len(first.board) == len(second.board) == 28
+    assert len(first.bench) == len(second.bench) == 9
+
+    # Compara cada posição do tabuleiro.
+    for before, after in zip(first.board, second.board):
+        if before is None or after is None:
+            assert before is after
+            continue
+
+        assert before.uuid == after.uuid
+        assert before.id == after.id
+        assert before.textual_id == after.textual_id
+        assert before.star == after.star
+
+    # Compara cada posição do banco.
+    for before, after in zip(first.bench, second.bench):
+        if before is None or after is None:
+            assert before is after
+            continue
+
+        assert before.uuid == after.uuid
+        assert before.id == after.id
+        assert before.textual_id == after.textual_id
+        assert before.star == after.star
+        
+def test_numeric_id_is_preserved_in_position_signature(
+    native_module,
+    make_env,
+):
+    board = [None] * 28
+    board[3] = {
+        "id": 123,
+        "star": 2,
+    }
+
+    env = make_env(board=board)
+
+    signature = build_position_signature(
+        env,
+        native_module=native_module,
+    )
+
+    identity = signature.board[3]
+
+    assert identity.id == 123
+    assert identity.textual_id is None
+    assert identity.star == 2
+
+def test_uuid_has_priority_over_textual_id(
+    native_module,
+    make_env,
+):
+    board = [None] * 28
+    board[0] = {
+        "uuid": "unit-001",
+        "id": "Nasus",
+        "star": 1,
+    }
+
+    env = make_env(board=board)
+
+    signature = build_position_signature(
+        env,
+        native_module=native_module,
+    )
+
+    identity = signature.board[0]
+
+    assert identity.uuid == "unit-001"
+    assert identity.textual_id is None
 
 def test_preserves_unavailable_shop_unit(
     native_module,

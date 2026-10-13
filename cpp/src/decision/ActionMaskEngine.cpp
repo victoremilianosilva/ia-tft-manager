@@ -230,6 +230,7 @@ bool ActionMaskEngine::is_valid_bench_to_board_move(
     );
 }
 
+
 ActionMaskBatch ActionMaskEngine::generate_masks(
     const PlayerState& state,
     const AntiLoopEngine& anti_loop,
@@ -259,8 +260,7 @@ ActionMaskBatch ActionMaskEngine::generate_masks(
         const auto& unit = state.shop[slot];
 
         // Preserva o comportamento Python:
-        // a máscara de compra verifica espaço no banco,
-        // presença da unidade e saldo, sem filtrar "available".
+        // presença, espaço no banco e saldo determinam a compra.
         if (!bench_has_space || !unit.has_value()) {
             continue;
         }
@@ -316,9 +316,11 @@ ActionMaskBatch ActionMaskEngine::generate_masks(
                     MASK_ENABLED;
 
                 masks.bench_move_source_mask[source] = MASK_ENABLED;
+
                 if (include_board_target) {
                     masks.board_target_mask[target] = MASK_ENABLED;
                 }
+
                 masks.bench_move_available = true;
             }
         }
@@ -353,6 +355,40 @@ ActionMaskBatch ActionMaskEngine::generate_masks(
             masks.board_source_mask[source] = MASK_ENABLED;
             masks.board_move_available = true;
         }
+    }
+
+    // --------------------------------------------------------
+    // União dos destinos válidos do tabuleiro
+    // --------------------------------------------------------
+
+    bool has_conditioned_target = false;
+
+    for (std::size_t source = 0; source < BOARD_SIZE; ++source) {
+        // Ignora origens sem movimento real válido.
+        // Assim, os fallbacks técnicos não entram na união.
+        if (masks.board_source_mask[source] != MASK_ENABLED) {
+            continue;
+        }
+
+        for (std::size_t target = 0; target < BOARD_SIZE; ++target) {
+            if (
+                masks.board_move_target_masks[source][target]
+                != MASK_ENABLED
+            ) {
+                continue;
+            }
+
+            masks.conditioned_board_target_mask[target] =
+                MASK_ENABLED;
+
+            has_conditioned_target = true;
+        }
+    }
+
+    // Mantém uma distribuição categórica válida se não houver
+    // destinos reais disponíveis.
+    if (!has_conditioned_target) {
+        masks.conditioned_board_target_mask[0] = MASK_ENABLED;
     }
 
     // --------------------------------------------------------
@@ -412,5 +448,6 @@ ActionMaskBatch ActionMaskEngine::generate_masks(
     set_fallback(masks);
     return masks;
 }
+
 
 } // namespace tft::decision
