@@ -174,6 +174,27 @@ void test_buy_is_disabled_when_bench_is_full() {
     assert(masks.shop_mask[0] == MASK_DISABLED);
 }
 
+void test_bench_to_board_is_disabled_when_board_is_full() {
+    PlayerState state;
+    state.economy.gold = 0;
+    state.economy.level = 2;
+    state.bench[0] = make_unit("bench-unit");
+
+    for (std::size_t slot = 0; slot < BOARD_SIZE; ++slot) {
+        state.board[slot] = make_unit(("board-" + std::to_string(slot)).c_str());
+    }
+
+    AntiLoopEngine anti_loop;
+    ActionMaskEngine engine;
+    const auto masks = engine.generate_masks(state, anti_loop);
+
+    assert(!masks.bench_move_available);
+    assert(masks.type_mask[ActionType::MOVE_BENCH] == MASK_DISABLED);
+    for (std::size_t target = 0; target < BOARD_SIZE; ++target) {
+        assert(masks.bench_to_board_target_masks[0][target] == MASK_DISABLED);
+    }
+}
+
 void test_invalid_move_pairs_are_not_enabled() {
     PlayerState state;
     state.economy.gold = 0;
@@ -246,6 +267,7 @@ int main() {
     test_board_move_masks_respect_source_and_destination();
     test_bench_to_board_requires_empty_target();
     test_buy_is_disabled_when_bench_is_full();
+    test_bench_to_board_is_disabled_when_board_is_full();
     test_invalid_move_pairs_are_not_enabled();
     test_eliminated_player_can_only_pass();
     test_invalid_economy_is_rejected();
