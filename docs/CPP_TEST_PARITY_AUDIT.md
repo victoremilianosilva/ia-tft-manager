@@ -45,9 +45,17 @@ A pasta `tests/` contém 48 arquivos Python. A pasta `cpp/tests/` contém testes
 5. Separar divergências intencionais de bugs; cada exceção deve ter justificativa documentada.
 6. Executar testes Python e C++ em CI e publicar resultados reais. Não marcar como aprovado se o módulo C++ não tiver sido compilado ou se os testes forem ignorados por falta de binding.
 
+## Implementação inicial adicionada
+
+- `tests/fixtures/cross_language_replay.json`: cenário compartilhado com três barreiras de rodada em que os oito jogadores executam PASS.
+- `tests/test_cross_language_replay.py`: executa a sequência pela API real de `TFTLobby` Python e pelo binding `tft_engine`; compara após cada etapa round/stage/finished, HP/ouro/nível/XP/vida/vitórias/derrotas, recompensa por jogador, recompensa acumulada, conclusão da lobby e metadados da rodada. O teste verifica também finitude das recompensas e tamanho dos lotes.
+- O teste procura o módulo nativo nos diretórios atuais e no diretório Release usado por builds Windows antigos.
+
+Esse primeiro replay é intencionalmente conservador: não depende de comprar um campeão aleatório diferente em cada motor. **Ainda não cobre compra/upgrade/movimentação real, conteúdo de tabuleiro/banco/loja, máscaras campo a campo ou componentes internos separados da recompensa.** Para isso, a API nativa precisa expor snapshots equivalentes e os cenários precisam controlar a identidade das unidades, não apenas a seed.
+
 ## Próximo passo técnico
 
-Criar um formato de fixture compartilhado (JSON) e um replay determinístico de ações. O lado Python exporta snapshots e recompensas; o lado C++ executa a mesma sequência e exporta os próprios snapshots; um comparador aponta o primeiro campo divergente. Começar por recompensa/compra-posicionamento e, em seguida, máscaras, sinergias, composição e fluxo de rodada/combate.
+Expandir o contrato de snapshot compartilhado para expor loja, banco, tabuleiro, estrelas, sinergias e componentes de recompensa; permitir fixtures determinísticas com seleção de campeão controlada; então portar por cenário as asserções dos 48 testes Python. Executar build CMake, testes nativos e pytest no mesmo ambiente de CI e guardar os resultados reais.
 
 ## Limitação desta auditoria
 
