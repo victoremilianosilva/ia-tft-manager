@@ -826,8 +826,8 @@ struct TFTEngine::Impl {
                     winner_survivors = combat.player_b_survivors;
                     loser_survivors = combat.player_a_survivors;
                 } else {
-                    economy_engine.reset_streak(economies[a]);
-                    economy_engine.reset_streak(economies[b]);
+                    // TFTLobby.resolve_combat() não altera streak em empate:
+                    // apply_combat_result() só roda quando há vencedor e perdedor.
                     sync_player_economy(a);
                     sync_player_economy(b);
                     events.emplace_back("COMBAT_DRAW: jogadores " +
