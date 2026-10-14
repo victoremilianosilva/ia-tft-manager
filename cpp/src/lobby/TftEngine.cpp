@@ -705,7 +705,7 @@ struct TFTEngine::Impl {
 
     double combat_reward(bool won, int damage_dealt, int damage_taken,
                          int enemy_alive, int own_alive) const {
-        return reward::combat(
+        return reward_model::combat(
             won, damage_dealt, damage_taken, enemy_alive, own_alive);
     }
 
@@ -836,26 +836,26 @@ struct TFTEngine::Impl {
         const double positioning = positioning_score(i);
         double reward = action_reward;
 
-        reward += reward::power(power, previous_board_power[i]);
+        reward += reward_model::power(power, previous_board_power[i]);
         previous_board_power[i] = power;
 
-        reward += reward::synergy(synergy, previous_synergy_score[i]);
+        reward += reward_model::synergy(synergy, previous_synergy_score[i]);
         previous_synergy_score[i] = synergy;
 
-        reward += reward::positioning(positioning, previous_positioning_score[i]);
+        reward += reward_model::positioning(positioning, previous_positioning_score[i]);
         previous_positioning_score[i] = positioning;
 
         const auto current_level = economies[i].level;
-        reward += reward::level(current_level, previous_reward_level[i]);
+        reward += reward_model::level(current_level, previous_reward_level[i]);
         previous_reward_level[i] = current_level;
 
-        reward += reward::economy(economies[i].gold, players[i].hp);
-        reward += reward::streak(
+        reward += reward_model::economy(economies[i].gold, players[i].hp);
+        reward += reward_model::streak(
             economies[i].win_streak, economies[i].loss_streak);
 
         int occupied = 0;
         for (const auto& unit : boards[i]) if (unit) ++occupied;
-        reward += reward::board(occupied, static_cast<int>(kBoardSlots));
+        reward += reward_model::board(occupied, static_cast<int>(kBoardSlots));
         return reward;
     }
 
