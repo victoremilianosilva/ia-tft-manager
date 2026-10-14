@@ -19,10 +19,19 @@ int main(int argc,char** argv){
    require(def && (def->cost==1||def->cost==2),"Custo inválido para nível 2.");
   }
   require(occupied>0 && pool.total_available()<initial,"Loja não retirou cópias do pool.");
-  const auto* first=shop.get_unit(0); const auto uuid=first?first->uuid:std::string{};
+  std::array<std::string, tft::kShopSlots> locked_uuids{};
+  for(std::size_t i=0;i<tft::kShopSlots;++i){
+   const auto* offer=shop.get_unit(static_cast<std::int32_t>(i));
+   locked_uuids[i]=offer?offer->uuid:std::string{};
+  }
   shop.set_locked(true); const auto stock=pool.total_available(); shop.roll(10);
   require(pool.total_available()==stock,"Loja bloqueada alterou estoque.");
-  const auto* after=shop.get_unit(0); require((after?after->uuid:std::string{})==uuid,"Loja bloqueada mudou oferta.");
+  for(std::size_t i=0;i<tft::kShopSlots;++i){
+   const auto* offer=shop.get_unit(static_cast<std::int32_t>(i));
+   require((offer?offer->uuid:std::string{})==locked_uuids[i],
+           "Loja bloqueada mudou uma das ofertas.");
+  }
+  // O reroll manual força a renovação, mas não altera o estado do lock.
   shop.reroll(2); require(shop.is_locked(),"Reroll deve manter bloqueio.");
   require(pool.validate(),"Pool inválido após reroll.");
   std::int32_t slot=-1;
