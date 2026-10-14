@@ -16,7 +16,7 @@ void require_close(double actual, double expected, const std::string& name) {
 }
 
 int main() {
-    using namespace tft::reward;
+    using namespace tft::reward_model;
 
     // Golden values mirror the formula-level Python tests and let us replay
     // the same sequence of snapshots on both implementations.
