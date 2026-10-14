@@ -249,6 +249,12 @@ py::list strategies_to_list(
             item["confidence"] = 0.0f;
             item["strategy_age"] = 0;
             item["reason"] = "";
+            item["composition_focus"] = "";
+            item["composition_direction"] = "";
+            item["core_units"] = py::list();
+            item["core_traits"] = py::list();
+            item["active_traits"] = py::dict();
+            item["unit_counts"] = py::dict();
         } else {
             const auto& strategy = player_strategies.back();
 
@@ -263,6 +269,18 @@ py::list strategies_to_list(
             item["confidence"] = strategy.confidence;
             item["strategy_age"] = strategy.strategy_age;
             item["reason"] = strategy.reason;
+            item["composition_focus"] = strategy.composition_focus;
+            item["composition_direction"] = strategy.composition_direction;
+            item["core_units"] = strategy.core_units;
+            item["core_traits"] = strategy.core_traits;
+            py::dict active_traits;
+            for (const auto& [trait, count] : strategy.active_traits)
+                active_traits[py::str(trait)] = count;
+            item["active_traits"] = std::move(active_traits);
+            py::dict unit_counts;
+            for (const auto& [unit_id, count] : strategy.unit_counts)
+                unit_counts[py::str(unit_id)] = count;
+            item["unit_counts"] = std::move(unit_counts);
         }
 
         result.append(std::move(item));
