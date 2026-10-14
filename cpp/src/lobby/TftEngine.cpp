@@ -592,19 +592,15 @@ struct TFTEngine::Impl {
     // ========================================================
 
     double board_power(std::size_t player_index) const {
+        // Mesma estimativa de MiniTFTEnv._update_strategy():
+        // sum(cost * star * 2.0) para as unidades no tabuleiro.
         double power = 0.0;
         for (const auto& unit : boards[player_index]) {
             if (!unit) continue;
             const auto* def = catalog->find_by_id(unit->champion_internal_id);
             if (!def) continue;
-            const auto& s = def->stats;
-            const double raw = std::max(0.0, s.max_hp) * 0.02
-                + std::max(0.0, s.attack_damage) * 0.20
-                + std::max(0.0, s.attack_speed) * 2.0
-                + std::max(0.0, s.armor) * 0.05
-                + std::max(0.0, s.magic_resist) * 0.05
-                + std::max(0.0, s.attack_range);
-            power += raw * static_cast<double>(std::max(1, unit->star));
+            power += static_cast<double>(def->cost)
+                * static_cast<double>(unit->star) * 2.0;
         }
         return power;
     }
