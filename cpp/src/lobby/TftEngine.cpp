@@ -607,8 +607,12 @@ struct TFTEngine::Impl {
 
     double synergy_score(std::size_t player_index) const {
         std::unordered_map<std::string, int> counts;
+        // Match SynergyManager.update(): count each champion id once,
+        // even if multiple copies/stars of that champion are on the board.
+        std::unordered_set<std::int32_t> seen_champions;
         for (const auto& unit : boards[player_index]) {
-            if (!unit) continue;
+            if (!unit ||
+                !seen_champions.insert(unit->champion_internal_id).second) continue;
             const auto* def = catalog->find_by_id(unit->champion_internal_id);
             if (!def) continue;
             for (const auto& trait : def->traits) ++counts[trait];
