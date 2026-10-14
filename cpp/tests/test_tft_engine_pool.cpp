@@ -193,6 +193,19 @@ int main(int argc, char** argv) {
         require(bought.players[0].gold >= 0,
                 "Compra deixou ouro negativo.");
 
+        // CompositionManager/StrategyManager devem refletir as unidades
+        // compradas no snapshot público, sem depender de combate.
+        const auto strategy_snapshot = engine.get_strategies()[0];
+        require(!strategy_snapshot.empty(),
+                "StrategyManager não publicou estado para o jogador.");
+        require(!strategy_snapshot.back().composition_focus.empty(),
+                "CompositionManager não identificou unidade foco.");
+        require(!strategy_snapshot.back().unit_counts.empty(),
+                "CompositionManager não contabilizou cópias do jogador.");
+        require(strategy_snapshot.back().strategy >= 0 &&
+                    strategy_snapshot.back().strategy <= 6,
+                "StrategyManager publicou estratégia fora do enum válido.");
+
         // Mesmo com MOVE_BENCH habilitado por existir uma unidade no banco,
         // uma origem vazia deve rejeitar o lote sem efeitos colaterais.
         const auto round_before_invalid_move = engine.round();
