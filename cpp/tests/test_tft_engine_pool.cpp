@@ -84,6 +84,50 @@ int main(int argc, char** argv) {
             );
         }
 
+        // Ações semanticamente inválidas devem falhar antes de qualquer
+        // mutação do lote (inclusive renda/avanço de rodada).
+        const auto round_before_invalid = engine.round();
+        const auto pool_before_invalid = engine.pool_total_available();
+        const auto gold_before_invalid =
+            engine.get_public_state().players[0].gold;
+
+        std::array<tft::PlayerAction, tft::kPlayersPerLobby> invalid_actions{};
+        for (auto& action : invalid_actions) {
+            action.values = {6, 0, 0, 0, 0, 0};
+        }
+        invalid_actions[0].values = {5, 0, 0, 0, 0, 0}; // Banco vazio.
+
+        bool invalid_sell_rejected = false;
+        try {
+            (void)engine.step(invalid_actions);
+        } catch (const std::invalid_argument&) {
+            invalid_sell_rejected = true;
+        }
+        require(invalid_sell_rejected,
+                "Venda de slot vazio deveria ser rejeitada.");
+        require(engine.round() == round_before_invalid,
+                "Ação inválida avançou a rodada.");
+        require(engine.pool_total_available() == pool_before_invalid,
+                "Ação inválida alterou o estoque.");
+        require(engine.get_public_state().players[0].gold == gold_before_invalid,
+                "Ação inválida alterou o ouro.");
+
+        invalid_actions[0].values = {0, 0, 0, 0, 0, 0}; // Sem ouro.
+        bool invalid_buy_rejected = false;
+        try {
+            (void)engine.step(invalid_actions);
+        } catch (const std::invalid_argument&) {
+            invalid_buy_rejected = true;
+        }
+        require(invalid_buy_rejected,
+                "Compra sem ouro deveria ser rejeitada.");
+        require(engine.round() == round_before_invalid,
+                "Compra inválida avançou a rodada.");
+        require(engine.pool_total_available() == pool_before_invalid,
+                "Compra inválida alterou o estoque.");
+        require(engine.get_public_state().players[0].gold == gold_before_invalid,
+                "Compra inválida alterou o ouro.");
+
         // Valida renda, máscara e compra a partir da loja inicial.
         std::array<tft::PlayerAction, tft::kPlayersPerLobby> actions{};
         for (auto& action : actions) action.values = {6, 0, 0, 0, 0, 0};
