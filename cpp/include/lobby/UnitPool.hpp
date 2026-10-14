@@ -4,6 +4,8 @@
 #include "lobby/ChampionCatalog.hpp"
 
 #include <cstdint>
+#include <optional>
+#include <random>
 #include <string>
 #include <unordered_map>
 
@@ -22,6 +24,9 @@ public:
     // Tenta retirar uma cópia do estoque.
     // Retorna false se o campeão não existir ou estiver esgotado.
     bool take(std::int32_t champion_internal_id);
+
+    // Sorteia e retira uma cópia disponível de determinado custo.
+    std::optional<std::int32_t> draw_by_cost(std::int32_t cost, std::mt19937_64& rng);
 
     // Devolve uma cópia ao estoque.
     // Retorna false se o ID for inválido ou o estoque já estiver cheio.
