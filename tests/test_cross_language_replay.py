@@ -9,10 +9,16 @@ from __future__ import annotations
 import json
 import math
 from pathlib import Path
+import sys
 
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
+# CMake's current output directory is cpp/build/bin. Keep the older Windows
+# Release path supported for local builds that still use it.
+for module_dir in (ROOT / "cpp" / "build" / "bin", ROOT / "cpp" / "build" / "bin" / "Release"):
+    if module_dir.exists():
+        sys.path.insert(0, str(module_dir))
 FIXTURE_PATH = ROOT / "tests" / "fixtures" / "cross_language_replay.json"
 CATALOG_PATH = ROOT / "units_gerado.json"
 
@@ -107,6 +113,19 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
             )
             cpp_result = cpp_engine.step(step["cpp_actions"])
 
+            assert all(math.isfinite(float(value)) for value in py_rewards), (
+                f"{step['name']}: Python returned a non-finite reward"
+            )
+            assert all(math.isfinite(float(value)) for value in cpp_result["rewards"]), (
+                f"{step['name']}: C++ returned a non-finite reward"
+            )
+            assert len(py_obs) == 8, (
+                f"{step['name']}: Python observation batch must have 8 players"
+            )
+            assert cpp_result["observations"].shape[0] == 8, (
+                f"{step['name']}: C++ observation batch must have 8 players"
+            )
+
             py_state = _python_snapshot(python_lobby)
             cpp_state = _native_snapshot(cpp_engine)
             _compare_snapshots(py_state, cpp_state, step["name"])
@@ -134,6 +153,12 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
             assert int(python_lobby.stage) == int(cpp_result["stage"]), (
                 f"{step['name']}.stage result: Python={python_lobby.stage}, "
                 f"C++={cpp_result['stage']}"
+            )
+            assert py_info["round_info"].get("round_resolved") is True, (
+                f"{step['name']}: Python did not resolve the round"
+            )
+            assert int(cpp_result["round"]) >= 1, (
+                f"{step['name']}: C++ returned an invalid round number"
             )
     finally:
         close = getattr(python_lobby, "close", None)
