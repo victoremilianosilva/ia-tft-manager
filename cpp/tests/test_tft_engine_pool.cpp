@@ -345,6 +345,39 @@ int main(int argc, char** argv) {
         require(saw_round_resolved,
                 "O resultado não informou que a rodada foi resolvida.");
 
+        // Só o jogador 0 possui uma unidade no tabuleiro: contra oponente
+        // vazio deve receber vitória automática e aplicar dano base + sobreviventes.
+        require(
+            closed_round.players[0].wins >= 1,
+            "Equipe com unidades não recebeu vitória automática contra equipe vazia."
+        );
+        require(
+            closed_round.players[0].opponent_id.has_value(),
+            "Matchmaking não registrou o oponente do jogador 0."
+        );
+        const auto opponent_id = static_cast<std::size_t>(
+            *closed_round.players[0].opponent_id
+        );
+        require(opponent_id < tft::kPlayersPerLobby && opponent_id != 0,
+                "Matchmaking atribuiu um oponente inválido.");
+        require(
+            closed_round.players[opponent_id].losses >= 1,
+            "A derrota automática não foi registrada no oponente."
+        );
+        require(
+            closed_round.players[opponent_id].damage_taken >= 1.0f,
+            "Dano ao jogador não incluiu os sobreviventes da vitória automática."
+        );
+        bool saw_auto_win = false;
+        for (const auto& event : closed_round.events) {
+            if (event.find("AUTO_WIN_EMPTY_BOARD") != std::string::npos) {
+                saw_auto_win = true;
+                break;
+            }
+        }
+        require(saw_auto_win,
+                "Faltou evento de diagnóstico para vitória automática.");
+
         // Reset de episódio limpa os históricos de movimentos, mas mantém
         // as métricas acumuladas para diagnóstico entre episódios.
         const auto metrics_before_reset = engine.get_anti_loop_metrics();
