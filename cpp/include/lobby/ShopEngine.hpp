@@ -20,13 +20,16 @@ public:
     std::optional<UnitInstance> take_unit(std::int32_t slot) noexcept;
     void return_current_shop();
     void reset();
+
+    // Exposto para validação de equivalência com GameConfig.SHOP_ODDS.
+    [[nodiscard]] static const std::array<std::array<double, 5>, 10>& odds_by_level();
+
 private:
     UnitPool& pool_;
     UnitInstanceFactory& factory_;
     std::mt19937_64 rng_;
     std::array<std::optional<UnitInstance>, kShopSlots> offers_{};
     bool locked_{false};
-    static const std::array<std::array<double, 5>, 10>& odds_by_level();
     std::int32_t roll_cost(std::int32_t level);
     std::optional<UnitInstance> draw(std::int32_t cost);
 };
