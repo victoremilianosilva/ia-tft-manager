@@ -359,8 +359,26 @@ PYBIND11_MODULE(tft_engine, module) {
                 std::optional<std::uint64_t> parsed_seed;
 
                 if (!seed.is_none()) {
-                    parsed_seed =
-                        seed.cast<std::uint64_t>();
+                    // Aceita somente inteiros Python, exceto bool.
+                    if (
+                        !py::isinstance<py::int_>(seed) ||
+                        PyBool_Check(seed.ptr())
+                    ) {
+                        throw py::type_error(
+                            "seed deve ser um inteiro nao negativo ou None."
+                        );
+                    }
+
+                    try {
+                        // Converte para uint64_t.
+                        // Valores negativos ou grandes demais serão rejeitados.
+                        parsed_seed = seed.cast<std::uint64_t>();
+                    } catch (const py::cast_error&) {
+                        throw py::value_error(
+                            "seed deve estar entre 0 e "
+                            "18446744073709551615."
+                        );
+                    }
                 }
 
                 return reset_to_dict(

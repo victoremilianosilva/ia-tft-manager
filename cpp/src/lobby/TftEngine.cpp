@@ -26,13 +26,35 @@ constexpr std::uint32_t kRoundsPerStage = 7;
 
 // Cria máscaras seguras para o esqueleto.
 // Somente a ação neutra (type = 6) fica habilitada.
+
+ // Cria máscaras provisórias seguras para o contrato da Etapa 1.
+// Não representa as ações reais do jogo.
+// Índice 0 funciona como opção dummy para as dimensões
+// que não são utilizadas pela ação neutra PASS (índice 6).
 PlayerActionMasks make_default_masks() {
     PlayerActionMasks masks{};
 
+    // Tipo de ação: PASS.
     masks.type_mask[6] = 1;
+
+    // Slots dummy válidos para as demais dimensões.
+    masks.shop_mask[0] = 1;
+    masks.bench_source_mask[0] = 1;
+    masks.board_target_mask[0] = 1;
+    masks.board_source_mask[0] = 1;
+    masks.bench_move_source_mask[0] = 1;
+
+    // Destino dummy para movimentação no tabuleiro.
+    // Layout row-major: [origem, destino].
+    masks.board_move_target_masks[0] = 1;
+
+    // Destino dummy para movimentação do banco ao tabuleiro.
+    // Layout row-major: [origem do banco, destino no tabuleiro].
+    masks.bench_to_board_target_masks[0] = 1;
 
     return masks;
 }
+
 
 // Converte o estado de um jogador em uma observação provisória.
 void write_observation(

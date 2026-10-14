@@ -446,15 +446,15 @@ Arquivos principais:
 Tarefas
 - [x] Corrigir o retorno de get_strategies() para uma lista plana, com uma estratégia por jogador.
 - [x] Corrigir o retorno de get_anti_loop_metrics() para um dicionário com métricas agregadas.
-- [ ] Alinhar get_public_state() ao contrato Python, incluindo estado global da lobby e lista de jogadores.
+- [x] Alinhar get_public_state() ao contrato Python, incluindo estado global da lobby e lista de jogadores.
 - [ ] Documentar o formato de entrada e saída de reset().
 - [ ] Documentar o formato de entrada e saída de step().
-- [ ] Validar as seis dimensões da ação: [7, 5, 9, 28, 28, 28].
-- [ ] Validar os formatos das observações, recompensas, dones e máscaras.
-- [ ] Padronizar o tratamento de valores ausentes, índices inválidos e exceções.
+- [x] Validar as seis dimensões da ação: [7, 5, 9, 28, 28, 28].
+- [x] Validar os formatos das observações, recompensas, dones e máscaras.
+- [x] Padronizar o tratamento de valores ausentes, índices inválidos e exceções.
 - [ ] Implementar ou concluir a estrutura mínima de TFTEngine necessária para cumprir o contrato.
-- [ ] Compilar o módulo tft_engine.
-- [ ] Executar os testes de importação e tests/test_tft_engine_api.py.
+- [x] Compilar o módulo tft_engine.
+- [x] Executar os testes de importação e tests/test_tft_engine_api.py.
 - [ ] Comparar os contratos públicos do motor C++ com os métodos correspondentes da implementação Python.
 Critério de conclusão: o módulo compila e pode ser utilizado pelo Python com contratos consistentes para reset, step, observações, máscaras, estratégias, métricas e estado público.
 
