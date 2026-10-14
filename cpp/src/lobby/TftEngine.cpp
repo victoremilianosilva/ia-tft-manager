@@ -4,8 +4,10 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <fstream>
 #include <map>
 #include <unordered_map>
+#include <nlohmann/json.hpp>
 #include <memory>
 #include <optional>
 #include <random>
@@ -178,6 +180,7 @@ struct TFTEngine::Impl {
     std::array<double, kPlayersPerLobby> last_combat_reward{};
     std::array<double, kPlayersPerLobby> round_reward_total{};
     std::array<double, kPlayersPerLobby> total_reward{};
+    std::unordered_map<std::string, std::vector<int>> trait_milestones;
 
     explicit Impl(
         std::uint64_t initial_seed,
@@ -192,6 +195,43 @@ struct TFTEngine::Impl {
         catalog = std::make_unique<ChampionCatalog>(
             resolved_path
         );
+
+        // Usa os mesmos marcos de traits.json que SynergyManager.py,
+        // em vez de presumir níveis genéricos 2/4/6 para toda trait.
+        const auto separator = resolved_path.find_last_of("/\\");
+        const auto directory = separator == std::string::npos
+            ? std::string{}
+            : resolved_path.substr(0, separator + 1);
+        std::ifstream traits_file(directory + "traits.json");
+        if (traits_file) {
+            try {
+                nlohmann::json traits_json;
+                traits_file >> traits_json;
+                const auto& traits = traits_json.is_object() && traits_json.contains("traits")
+                    ? traits_json.at("traits") : traits_json;
+                if (traits.is_array()) {
+                    for (const auto& trait : traits) {
+                        if (!trait.is_object() || !trait.contains("name") ||
+                            !trait.contains("effects") || !trait.at("effects").is_array())
+                            continue;
+                        std::vector<int> milestones;
+                        for (const auto& effect : trait.at("effects")) {
+                            if (effect.is_object() && effect.contains("minUnits") &&
+                                effect.at("minUnits").is_number_integer())
+                                milestones.push_back(effect.at("minUnits").get<int>());
+                        }
+                        std::sort(milestones.begin(), milestones.end());
+                        milestones.erase(std::unique(milestones.begin(), milestones.end()),
+                                          milestones.end());
+                        if (!milestones.empty())
+                            trait_milestones[trait.at("name").get<std::string>()] =
+                                std::move(milestones);
+                    }
+                }
+            } catch (const std::exception&) {
+                trait_milestones.clear();
+            }
+        }
 
         pool = std::make_unique<UnitPool>(*catalog);
 
@@ -579,10 +619,15 @@ struct TFTEngine::Impl {
         }
         double score = 0.0;
         for (const auto& [trait, count] : counts) {
-            (void)trait;
-            if (count >= 2) score += 1.0;
-            if (count >= 4) score += 1.0;
-            if (count >= 6) score += 1.0;
+            const auto milestones = trait_milestones.find(trait);
+            if (milestones == trait_milestones.end()) continue;
+            int reached = 0;
+            for (const int milestone : milestones->second)
+                if (count >= milestone) ++reached;
+            if (reached > 0) score += static_cast<double>(reached);
+            else if (std::any_of(milestones->second.begin(), milestones->second.end(),
+                                 [count](int milestone) { return count == milestone - 1; }))
+                score += 0.5; // progresso parcial, faltando uma unidade
         }
         return score;
     }
