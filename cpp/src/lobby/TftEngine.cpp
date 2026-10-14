@@ -63,6 +63,9 @@ struct TFTEngine::Impl {
     std::uint32_t round{0};
     std::uint32_t stage{1};
 
+    std::optional<std::int32_t> winner_id;
+    std::vector<std::int32_t> ranking;
+
     std::int32_t alive_players{
         static_cast<std::int32_t>(kPlayersPerLobby)
     };
@@ -197,7 +200,8 @@ ResetResult TFTEngine::reset(
     impl_->round = 0;
     impl_->stage = 1;
     impl_->done = false;
-
+    impl_->winner_id = std::nullopt;
+    impl_->ranking.clear();
     impl_->initialize_players();
 
     ResetResult result{};
@@ -356,7 +360,7 @@ TFTEngine::get_anti_loop_metrics() const {
 // 🌐 ESTADO PÚBLICO DOS JOGADORES
 // ============================================================
 
-std::vector<PlayerInfo> TFTEngine::get_public_state() const {
+PublicState TFTEngine::get_public_state() const {
     if (!impl_) {
         throw std::runtime_error(
             "TFTEngine nao possui estado interno."
@@ -365,11 +369,34 @@ std::vector<PlayerInfo> TFTEngine::get_public_state() const {
 
     impl_->ensure_open();
 
-    return std::vector<PlayerInfo>(
-        impl_->players.begin(),
-        impl_->players.end()
+    PublicState state{};
+
+    state.stage = impl_->stage;
+
+    // O contrato Python começa com round=1 e round_index=0.
+    state.round = impl_->round + 1;
+    state.round_index = impl_->round;
+
+    state.finished = impl_->done;
+    state.winner_id = impl_->winner_id;
+    state.ranking = impl_->ranking;
+
+    state.players.reserve(kPlayersPerLobby);
+    state.alive_players.reserve(
+        static_cast<std::size_t>(impl_->alive_players)
     );
+
+    for (const auto& player : impl_->players) {
+        state.players.push_back(player);
+
+        if (player.alive) {
+            state.alive_players.push_back(player.player_id);
+        }
+    }
+
+    return state;
 }
+
 
 // ============================================================
 // 📏 DIMENSÃO DAS OBSERVAÇÕES

@@ -132,6 +132,20 @@ struct StepResult {
     std::vector<std::string> events;
 };
 
+struct PublicState {
+    std::uint32_t stage{1};
+    std::uint32_t round{1};
+    std::uint32_t round_index{0};
+
+    bool finished{false};
+    std::optional<std::int32_t> winner_id;
+
+    std::vector<std::int32_t> ranking;
+    std::vector<std::int32_t> alive_players;
+    std::vector<PlayerInfo> players;
+};
+
+
 class TFTEngine {
 public:
     explicit TFTEngine(std::uint64_t seed = 0);
@@ -162,7 +176,7 @@ public:
     std::array<AntiLoopMetrics, kPlayersPerLobby>
     get_anti_loop_metrics() const;
 
-    std::vector<PlayerInfo> get_public_state() const;
+    PublicState get_public_state() const;
 
     std::size_t observation_dim() const noexcept;
     std::uint64_t episode_id() const noexcept;

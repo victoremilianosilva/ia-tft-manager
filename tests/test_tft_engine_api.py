@@ -54,3 +54,51 @@ def test_lobby_step_contract():
         assert isinstance(result["lobby_done"], bool)
     finally:
         engine.close()
+
+
+def test_public_state_matches_python_lobby_contract():
+    engine = TFTLobby(seed=2026)
+
+    try:
+        engine.reset()
+        state = engine.get_public_state()
+
+        assert isinstance(state, dict)
+
+        expected_keys = {
+            "stage",
+            "round",
+            "round_index",
+            "finished",
+            "winner_id",
+            "ranking",
+            "alive_players",
+            "players",
+        }
+        assert expected_keys.issubset(state.keys())
+
+        assert state["stage"] == 1
+        assert state["round"] == 1
+        assert state["round_index"] == 0
+        assert state["finished"] is False
+        assert state["winner_id"] is None
+        assert state["ranking"] == []
+        assert state["alive_players"] == list(range(8))
+
+        players = state["players"]
+        assert isinstance(players, list)
+        assert len(players) == 8
+
+        assert [
+            player["player_id"] for player in players
+        ] == list(range(8))
+
+        expected_player_keys = {
+            "player_id", "hp", "gold", "level", "xp",
+            "alive", "eliminated", "wins", "losses",
+            "placement", "opponent_id", "damage_taken",
+        }
+        assert expected_player_keys.issubset(players[0].keys())
+
+    finally:
+        engine.close()

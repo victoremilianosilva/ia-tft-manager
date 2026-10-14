@@ -271,6 +271,33 @@ py::list strategies_to_list(
     return result;
 }
 
+
+py::dict public_state_to_dict(const tft::PublicState& state) {
+    py::dict result;
+
+    result["stage"] = state.stage;
+    result["round"] = state.round;
+    result["round_index"] = state.round_index;
+    result["finished"] = state.finished;
+
+    result["winner_id"] = state.winner_id.has_value()
+        ? py::cast(*state.winner_id)
+        : py::none();
+
+    result["ranking"] = state.ranking;
+
+    py::list alive_players;
+    for (const auto player_id : state.alive_players) {
+        alive_players.append(player_id);
+    }
+    result["alive_players"] = std::move(alive_players);
+
+    result["players"] = player_info_to_list(state.players);
+
+    return result;
+}
+
+
 py::dict anti_loop_to_dict(
     const std::array<
         tft::AntiLoopMetrics,
@@ -410,7 +437,7 @@ PYBIND11_MODULE(tft_engine, module) {
         .def(
             "get_public_state",
             [](const TFTEngine& self) {
-                return player_info_to_list(
+                return public_state_to_dict(
                     self.get_public_state()
                 );
             }
