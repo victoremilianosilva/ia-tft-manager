@@ -43,19 +43,21 @@ int main(int argc, char** argv) {
             );
 
             require(
-                engine.pool_available(champion.internal_id) ==
+                engine.pool_available(champion.internal_id) <=
                     engine.pool_initial_count(champion.internal_id),
-                "Estoque inicial incorreto no motor."
+                "Estoque ultrapassou a quantidade inicial."
             );
         }
 
-        const auto total_before = engine.pool_total_available();
+        const auto total_with_initial_shops = engine.pool_total_available();
 
-        // Reset da partida não pode duplicar nem perder cópias.
-        // Reset da partida não pode duplicar nem perder cópias.
+        // O reset devolve as ofertas antigas e gera lojas novas sem
+        // duplicar nem perder cópias do pool compartilhado.
         engine.reset(12345);
+        const auto total_after_reset = engine.pool_total_available();
+        require(total_after_reset == total_with_initial_shops,
+                "Reset mudou o estoque líquido das lojas iniciais.");
 
-        // Usamos reset_state para não redeclarar initial_state.
         const auto reset_state = engine.get_public_state();
 
         require(
@@ -82,7 +84,27 @@ int main(int argc, char** argv) {
             );
         }
 
-        std::cout << "TFTEngine + UnitPool: OK\n";
+        // Valida renda, máscara e compra a partir da loja inicial.
+        std::array<tft::PlayerAction, tft::kPlayersPerLobby> actions{};
+        for (auto& action : actions) action.values = {6, 0, 0, 0, 0, 0};
+        engine.step(actions); // rodada 1: sem renda
+        engine.step(actions); // rodada 2: +2 de ouro
+        const auto masks = engine.get_action_masks();
+        require(masks[0].type_mask[0] == 1,
+                "BUY deveria estar habilitado com ouro e espaço no banco.");
+        std::int32_t buy_slot = -1;
+        for (std::int32_t slot = 0; slot < static_cast<std::int32_t>(tft::kShopSlots); ++slot) {
+            if (masks[0].shop_mask[static_cast<std::size_t>(slot)] == 1) {
+                buy_slot = slot; break;
+            }
+        }
+        require(buy_slot >= 0, "Nenhum slot de compra válido foi mascarado.");
+        actions[0].values = {0, buy_slot, 0, 0, 0, 0};
+        const auto bought = engine.step(actions);
+        require(bought.players[0].gold == 3,
+                "Compra não consumiu 1 ouro antes da renda da rodada.");
+
+        std::cout << "TFTEngine + loja/economia: OK\n";
         return 0;
     } catch (const std::exception& e) {
         std::cerr << "TFTEngine + UnitPool: FALHOU: "
