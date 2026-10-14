@@ -53,7 +53,7 @@ std::optional<UnitInstance> ShopEngine::take_unit(std::int32_t slot) noexcept {
 void ShopEngine::return_current_shop() {
     for (auto& offer : offers_) {
         if (!offer) continue;
-        if (!pool_.give_back(offer->champion_internal_id)
+        if (!pool_.give_back(offer->champion_internal_id))
             throw std::logic_error("Falha ao devolver oferta: estoque inconsistente.");
         offer.reset();
     }
