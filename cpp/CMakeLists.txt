@@ -255,6 +255,10 @@ endif()
 include(CTest)
 
 if(BUILD_TESTING)
+    add_executable(test_synergy_counter tests/test_synergy_counter.cpp)
+    target_include_directories(test_synergy_counter PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    add_test(NAME test_synergy_counter COMMAND test_synergy_counter)
+
 
     # -----------------------------------------------------
     # Contrato de erros
