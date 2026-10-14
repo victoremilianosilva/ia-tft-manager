@@ -92,9 +92,10 @@ void ActionMaskEngine::validate_state(const PlayerState& state) {
     }
 
     for (const auto& unit : state.shop) {
-        if (unit.has_value() && unit->cost < 0) {
+        if (unit.has_value() &&
+            (unit->cost == 0 || unit->cost > 5)) {
             throw std::invalid_argument(
-                "ActionMaskEngine: custo negativo na loja."
+                "ActionMaskEngine: custo fora do intervalo valido na loja."
             );
         }
     }
@@ -259,9 +260,9 @@ ActionMaskBatch ActionMaskEngine::generate_masks(
     for (std::size_t slot = 0; slot < SHOP_SIZE; ++slot) {
         const auto& unit = state.shop[slot];
 
-        // Preserva o comportamento Python:
-        // presença, espaço no banco e saldo determinam a compra.
-        if (!bench_has_space || !unit.has_value()) {
+        // A oferta precisa existir, estar disponível, haver espaço
+        // no banco e o jogador precisa ter ouro suficiente.
+        if (!bench_has_space || !unit.has_value() || !unit->available) {
             continue;
         }
 
