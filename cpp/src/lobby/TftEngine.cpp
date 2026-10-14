@@ -1129,6 +1129,14 @@ StepResult TFTEngine::step(
     }
 
     // ========================================================
+    // COMBATE PVP DA RODADA
+    // ========================================================
+
+    std::array<float, kPlayersPerLobby> round_rewards{};
+    std::vector<std::string> round_events;
+    impl_->resolve_combats(round_events, round_rewards);
+
+    // ========================================================
     // RENDA E XP PASSIVO DA RODADA
     // ========================================================
 
@@ -1171,8 +1179,10 @@ StepResult TFTEngine::step(
     result.observations = impl_->build_observations();
     result.observation_dim = kObservationDim;
 
-    result.rewards.fill(0.0f);
-    result.dones.fill(0);
+    result.rewards = round_rewards;
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        result.dones[i] = (!impl_->players[i].alive || impl_->done) ? 1 : 0;
+    }
 
     result.action_masks = impl_->masks;
     result.players = impl_->players;
@@ -1186,6 +1196,11 @@ StepResult TFTEngine::step(
     result.events.emplace_back(
         "Acoes de loja, economia, venda e movimentacao "
         "executadas pelo TFTEngine."
+    );
+    result.events.insert(
+        result.events.end(),
+        round_events.begin(),
+        round_events.end()
     );
 
     return result;
