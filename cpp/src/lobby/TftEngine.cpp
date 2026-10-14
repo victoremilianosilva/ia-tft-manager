@@ -10,6 +10,11 @@
 #include "lobby/UnitPool.hpp"
 #include "lobby/EconomyEngine.hpp"
 #include "lobby/ShopEngine.hpp"
+#include "decision/ActionMaskEngine.hpp"
+#include "decision/DecisionState.hpp"
+#include "decision/AntiLoopEngine.hpp"
+#include "decision/MoveValidator.hpp"
+#include "decision/DecisionTypes.hpp"
 
 #ifndef TFT_DEFAULT_CATALOG_PATH
 #define TFT_DEFAULT_CATALOG_PATH "units_gerado.json"
@@ -103,6 +108,11 @@ struct TFTEngine::Impl {
     std::unique_ptr<UnitInstanceFactory> unit_factory;
     std::array<std::unique_ptr<ShopEngine>, kPlayersPerLobby> shops{};
     std::array<std::array<std::optional<UnitInstance>, kBenchSlots>, kPlayersPerLobby> benches{};
+    std::array<std::array<std::optional<UnitInstance>, kBoardSlots>, kPlayersPerLobby> boards{};
+
+    // Um histórico AntiLoop isolado por jogador evita interferência entre rivais.
+    std::array<decision::AntiLoopEngine, kPlayersPerLobby> anti_loop_engines{};
+    decision::ActionMaskEngine action_mask_engine;
 
     std::int32_t alive_players{
         static_cast<std::int32_t>(kPlayersPerLobby)
@@ -196,6 +206,8 @@ struct TFTEngine::Impl {
 
             players[i] = player;
             benches[i].fill(std::nullopt);
+            boards[i].fill(std::nullopt);
+            anti_loop_engines[i] = decision::AntiLoopEngine{};
             shops[i] = std::make_unique<ShopEngine>(
                 *pool, *unit_factory, seed + static_cast<std::uint64_t>(i) + episode_id
             );
@@ -206,50 +218,107 @@ struct TFTEngine::Impl {
             strategies[i].push_back(StrategyInfo{});
 
             anti_loop_metrics[i] = AntiLoopMetrics{};
+            register_position_state(i);
             refresh_masks(i);
         }
     }
 
-    void refresh_masks(std::size_t player_index) {
-        auto& current = masks[player_index];
-        current = make_default_masks();
-        current.type_mask.fill(0);
-        current.shop_mask.fill(0);
-        current.bench_source_mask.fill(0);
+    decision::PlayerState build_decision_state(std::size_t player_index) const {
+        decision::PlayerState state;
+        state.player_id = static_cast<std::int64_t>(player_index);
+        state.is_alive = players[player_index].alive;
+
         const auto& economy = economies[player_index];
-        const bool bench_has_space = std::any_of(
-            benches[player_index].begin(), benches[player_index].end(),
-            [](const auto& unit) { return !unit.has_value(); }
-        );
-        bool can_buy = false;
-        for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
-            const auto* offer = shops[player_index]->get_unit(static_cast<std::int32_t>(slot));
-            if (offer && bench_has_space) {
-                const auto* definition = catalog->find_by_id(offer->champion_internal_id);
-                if (definition && economy.gold >= definition->cost) {
-                    current.shop_mask[slot] = 1;
-                    can_buy = true;
-                }
+        state.economy.gold = economy.gold;
+        state.economy.level = economy.level;
+        state.economy.max_level = EconomyEngine::MAX_LEVEL;
+        state.economy.current_xp = economy.xp;
+        state.economy.xp_to_next_level = economy_engine.get_xp_to_next(economy);
+        state.economy.reroll_cost = EconomyEngine::REROLL_COST;
+        state.economy.xp_purchase_cost = EconomyEngine::BUY_XP_COST;
+
+        const auto snapshot = [this](
+            const std::optional<UnitInstance>& instance
+        ) -> std::optional<decision::UnitSnapshot> {
+            if (!instance.has_value()) {
+                return std::nullopt;
             }
+
+            decision::UnitSnapshot unit;
+            unit.identity.uuid = instance->uuid;
+            unit.identity.id = instance->champion_internal_id;
+            unit.identity.textual_id = instance->champion_id;
+            unit.identity.star = static_cast<std::uint8_t>(
+                std::clamp(instance->star, 1, 3)
+            );
+
+            const auto* definition =
+                catalog->find_by_id(instance->champion_internal_id);
+            unit.cost = static_cast<std::uint8_t>(
+                definition ? std::clamp(definition->cost, 1, 5) : 1
+            );
+            unit.available = true;
+            return unit;
+        };
+
+        for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+            state.board[slot] = snapshot(boards[player_index][slot]);
         }
-        if (can_buy) current.type_mask[0] = 1;
-        else current.shop_mask[0] = 1;
-        if (economy.gold >= EconomyEngine::REROLL_COST) current.type_mask[1] = 1;
-        if (economy_engine.can_buy_xp(economy)) current.type_mask[2] = 1;
-        current.type_mask[6] = 1;
-        bool has_bench_unit = false;
         for (std::size_t slot = 0; slot < kBenchSlots; ++slot) {
-            if (benches[player_index][slot]) {
-                current.bench_source_mask[slot] = 1;
-                has_bench_unit = true;
+            state.bench[slot] = snapshot(benches[player_index][slot]);
+        }
+        for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
+            const auto* offer = shops[player_index]->get_unit(
+                static_cast<std::int32_t>(slot)
+            );
+            if (offer) {
+                state.shop[slot] = snapshot(
+                    std::optional<UnitInstance>{*offer}
+                );
             }
         }
-        if (!has_bench_unit) current.bench_source_mask[0] = 1;
-        current.bench_move_source_mask.fill(0); current.bench_move_source_mask[0] = 1;
-        current.board_target_mask.fill(0); current.board_target_mask[0] = 1;
-        current.board_source_mask.fill(0); current.board_source_mask[0] = 1;
-        current.board_move_target_masks.fill(0); current.board_move_target_masks[0] = 1;
-        current.bench_to_board_target_masks.fill(0); current.bench_to_board_target_masks[0] = 1;
+
+        return state;
+    }
+
+    void register_position_state(std::size_t player_index) {
+        const auto state = build_decision_state(player_index);
+        const auto signature =
+            anti_loop_engines[player_index].make_board_signature(state);
+        (void)anti_loop_engines[player_index].register_state(signature);
+    }
+
+    void refresh_masks(std::size_t player_index) {
+        const auto state = build_decision_state(player_index);
+        const auto batch = action_mask_engine.generate_masks(
+            state,
+            anti_loop_engines[player_index]
+        );
+
+        auto& current = masks[player_index];
+        current = PlayerActionMasks{};
+        current.type_mask = batch.type_mask;
+        current.shop_mask = batch.shop_mask;
+        current.bench_source_mask = batch.bench_source_mask;
+        current.board_target_mask = batch.board_target_mask;
+        current.board_source_mask = batch.board_source_mask;
+        current.bench_move_source_mask = batch.bench_move_source_mask;
+
+        for (std::size_t source = 0; source < kBoardSlots; ++source) {
+            for (std::size_t target = 0; target < kBoardSlots; ++target) {
+                current.board_move_target_masks[
+                    source * kBoardSlots + target
+                ] = batch.board_move_target_masks[source][target];
+            }
+        }
+
+        for (std::size_t source = 0; source < kBenchSlots; ++source) {
+            for (std::size_t target = 0; target < kBoardSlots; ++target) {
+                current.bench_to_board_target_masks[
+                    source * kBoardSlots + target
+                ] = batch.bench_to_board_target_masks[source][target];
+            }
+        }
     }
 
     std::vector<float> build_observations() const {
@@ -423,22 +492,130 @@ StepResult TFTEngine::step(
             for (std::size_t slot = 0; slot < kBenchSlots; ++slot) {
                 if (!impl_->benches[i][slot]) { free_slot = slot; break; }
             }
+
             if (offer && free_slot < kBenchSlots) {
-                const auto* definition = impl_->catalog->find_by_id(offer->champion_internal_id);
-                if (definition && impl_->economy_engine.spend_gold(economy, definition->cost)) {
+                const auto* definition =
+                    impl_->catalog->find_by_id(offer->champion_internal_id);
+                if (definition && economy.gold >= definition->cost
+                    && impl_->economy_engine.spend_gold(economy, definition->cost)) {
                     auto purchased = shop.take_unit(shop_slot);
-                    if (purchased) impl_->benches[i][free_slot] = std::move(*purchased);
-                    else impl_->economy_engine.add_gold(economy, definition->cost);
+                    if (purchased) {
+                        impl_->benches[i][free_slot] = std::move(*purchased);
+                        impl_->register_position_state(i);
+                    } else {
+                        impl_->economy_engine.add_gold(economy, definition->cost);
+                    }
                 }
             }
         } else if (type == 1) { // REROLL
-            if (impl_->economy_engine.spend_gold(economy, EconomyEngine::REROLL_COST))
+            if (impl_->economy_engine.spend_gold(economy, EconomyEngine::REROLL_COST)) {
                 shop.reroll(economy.level);
+            }
         } else if (type == 2) { // BUY XP
             (void)impl_->economy_engine.buy_xp(economy);
+        } else if (type == 3) { // MOVE_BENCH: banco -> tabuleiro
+            auto& anti_loop = impl_->anti_loop_engines[i];
+            anti_loop.record_execution_attempt();
+
+            const auto source = action[2];
+            const auto target = action[3];
+            const auto state = impl_->build_decision_state(i);
+            const auto validation = decision::MoveValidator::validate_bench_to_board_move(
+                state.board, state.bench, source, target
+            );
+
+            if (validation.is_valid()) {
+                const auto source_index = static_cast<std::size_t>(source);
+                const auto target_index = static_cast<std::size_t>(target);
+                const auto unit_identity =
+                    std::optional<decision::UnitIdentity>{
+                        state.bench[source_index]->identity
+                    };
+                const std::string move_type = "bench_to_board";
+                const auto reason = anti_loop.get_block_reason(
+                    move_type, source, target, unit_identity
+                );
+
+                if (reason.has_value()) {
+                    (void)anti_loop.block_move(move_type, source, target, unit_identity);
+                    anti_loop.record_execution_block(*reason);
+                } else {
+                    (void)anti_loop.register_move(move_type, source, target, unit_identity);
+                    impl_->boards[i][target_index] =
+                        std::move(impl_->benches[i][source_index]);
+                    impl_->benches[i][source_index].reset();
+                    anti_loop.record_successful_move(move_type);
+                    impl_->register_position_state(i);
+                }
+            }
+        } else if (type == 4) { // MOVE_BOARD: movimento ou troca
+            auto& anti_loop = impl_->anti_loop_engines[i];
+            anti_loop.record_execution_attempt();
+
+            const auto source = action[4];
+            const auto target = action[5];
+            const auto state = impl_->build_decision_state(i);
+            const auto validation = decision::MoveValidator::validate_board_move(
+                state.board, source, target
+            );
+
+            if (validation.is_valid() && validation.move_type.has_value()) {
+                const auto source_index = static_cast<std::size_t>(source);
+                const auto target_index = static_cast<std::size_t>(target);
+                const auto unit_identity =
+                    std::optional<decision::UnitIdentity>{
+                        state.board[source_index]->identity
+                    };
+                const std::string move_type =
+                    *validation.move_type == decision::MoveType::BOARD_SWAP
+                        ? "board_swap"
+                        : "board_move";
+                const auto reason = anti_loop.get_block_reason(
+                    move_type, source, target, unit_identity
+                );
+
+                if (reason.has_value()) {
+                    (void)anti_loop.block_move(move_type, source, target, unit_identity);
+                    anti_loop.record_execution_block(*reason);
+                } else {
+                    (void)anti_loop.register_move(move_type, source, target, unit_identity);
+                    if (move_type == "board_swap") {
+                        std::swap(
+                            impl_->boards[i][source_index],
+                            impl_->boards[i][target_index]
+                        );
+                    } else {
+                        impl_->boards[i][target_index] =
+                            std::move(impl_->boards[i][source_index]);
+                        impl_->boards[i][source_index].reset();
+                    }
+                    anti_loop.record_successful_move(move_type);
+                    impl_->register_position_state(i);
+                }
+            }
+        } else if (type == 5) { // SELL: vende uma unidade do banco
+            const auto bench_slot = static_cast<std::size_t>(action[2]);
+            if (impl_->benches[i][bench_slot].has_value()) {
+                const auto& unit = *impl_->benches[i][bench_slot];
+                const auto* definition =
+                    impl_->catalog->find_by_id(unit.champion_internal_id);
+
+                if (definition) {
+                    const auto sell_value = EconomyEngine::get_sell_value(
+                        definition->cost, unit.star
+                    );
+
+                    // Só altera o estado se a cópia puder ser devolvida ao pool.
+                    if (impl_->pool->give_back(unit.champion_internal_id)) {
+                        impl_->benches[i][bench_slot].reset();
+                        (void)impl_->economy_engine.add_gold(economy, sell_value);
+                        impl_->register_position_state(i);
+                    }
+                }
+            }
         } else if (type == 6) {
             // PASS: nenhuma alteração.
-        } // MOVE_BENCH, MOVE_BOARD e SELL serão integrados na próxima tarefa.
+        }
 
         impl_->sync_player_economy(i);
         impl_->refresh_masks(i);
@@ -487,7 +664,7 @@ StepResult TFTEngine::step(
     result.alive_players = impl_->alive_players;
 
     result.events.emplace_back(
-        "Ações de loja/economia executadas; movimentação de tabuleiro e venda ainda pendentes."
+        "Ações de loja, economia, venda e movimentação executadas pelo TFTEngine."
     );
 
     return result;
@@ -508,6 +685,42 @@ TFTEngine::get_action_masks() const {
     impl_->ensure_open();
 
     return impl_->masks;
+}
+
+bool TFTEngine::set_shop_locked(
+    std::int32_t player_id,
+    bool locked
+) {
+    if (!impl_) {
+        throw std::runtime_error("TFTEngine nao possui estado interno.");
+    }
+    impl_->ensure_open();
+    if (player_id < 0 || static_cast<std::size_t>(player_id) >= kPlayersPerLobby) {
+        throw std::out_of_range("player_id invalido ao alterar bloqueio da loja.");
+    }
+    return impl_->shops[static_cast<std::size_t>(player_id)]->set_locked(locked);
+}
+
+bool TFTEngine::toggle_shop_lock(std::int32_t player_id) {
+    if (!impl_) {
+        throw std::runtime_error("TFTEngine nao possui estado interno.");
+    }
+    impl_->ensure_open();
+    if (player_id < 0 || static_cast<std::size_t>(player_id) >= kPlayersPerLobby) {
+        throw std::out_of_range("player_id invalido ao alternar bloqueio da loja.");
+    }
+    return impl_->shops[static_cast<std::size_t>(player_id)]->toggle_lock();
+}
+
+bool TFTEngine::is_shop_locked(std::int32_t player_id) const {
+    if (!impl_) {
+        throw std::runtime_error("TFTEngine nao possui estado interno.");
+    }
+    impl_->ensure_open();
+    if (player_id < 0 || static_cast<std::size_t>(player_id) >= kPlayersPerLobby) {
+        throw std::out_of_range("player_id invalido ao consultar bloqueio da loja.");
+    }
+    return impl_->shops[static_cast<std::size_t>(player_id)]->is_locked();
 }
 
 // ============================================================
@@ -559,9 +772,20 @@ TFTEngine::get_anti_loop_metrics() const {
 
     impl_->ensure_open();
 
-    // As métricas ficam zeradas até a integração com
-    // o motor real de decisão e movimentação.
-    return impl_->anti_loop_metrics;
+    std::array<AntiLoopMetrics, kPlayersPerLobby> result{};
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        const auto metrics = impl_->anti_loop_engines[i].get_metrics();
+        result[i].execution_attempts = metrics.execution_attempts;
+        result[i].execution_blocks = metrics.execution_blocks;
+        result[i].blocked_reverse = metrics.blocked_reverse;
+        result[i].blocked_oscillation = metrics.blocked_oscillation;
+        result[i].blocked_explicit = metrics.blocked_explicit;
+        result[i].blocked_bench_board_loop = metrics.blocked_bench_board_loop;
+        result[i].blocked_cycle = metrics.blocked_cycle;
+        result[i].board_moves_executed = metrics.board_moves_executed;
+        result[i].bench_to_board_executed = metrics.bench_to_board_executed;
+    }
+    return result;
 }
 
 // ============================================================

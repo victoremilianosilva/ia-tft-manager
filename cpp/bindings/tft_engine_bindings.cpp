@@ -421,6 +421,12 @@ PYBIND11_MODULE(tft_engine, module) {
             },
             py::arg("actions")
         )
+        .def("set_shop_locked", &TFTEngine::set_shop_locked,
+             py::arg("player_id"), py::arg("locked"))
+        .def("toggle_shop_lock", &TFTEngine::toggle_shop_lock,
+             py::arg("player_id"))
+        .def("is_shop_locked", &TFTEngine::is_shop_locked,
+             py::arg("player_id"))
         .def(
             "get_action_masks",
             [](const TFTEngine& self) {
