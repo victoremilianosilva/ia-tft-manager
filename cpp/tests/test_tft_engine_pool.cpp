@@ -115,8 +115,13 @@ int main(int argc, char** argv) {
         const auto sold = engine.step(actions);
         require(engine.pool_total_available() == pool_before_sale + 1,
                 "Venda não devolveu exatamente uma cópia ao pool.");
-        require(sold.players[0].gold >= bought.players[0].gold,
-                "Venda não creditou ouro ou deixou a economia inconsistente.");
+        const auto sale_and_round_income =
+            sold.players[0].gold - bought.players[0].gold;
+        require(
+            sale_and_round_income == 4 || sale_and_round_income == 5,
+            "Venda não creditou o valor esperado (campeão de custo 1/2) "
+            "além da renda-base da rodada."
+        );
 
         const auto buy_masks = engine.get_action_masks();
         std::int32_t second_buy_slot = -1;
