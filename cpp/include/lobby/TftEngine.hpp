@@ -60,14 +60,54 @@ struct ResetResult {
     std::uint64_t episode_id{0};
 };
 
+
 struct PlayerInfo {
-    bool alive{true};
-    bool eliminated{false};
-    std::int32_t placement{0};
-    float health{0.0f};
+    std::int32_t player_id{-1};
+
+    float hp{100.0f};
     std::int32_t gold{0};
     std::int32_t level{1};
+    std::int32_t xp{0};
+
+    bool alive{true};
+    bool eliminated{false};
+
+    std::int32_t wins{0};
+    std::int32_t losses{0};
+
+    std::optional<std::int32_t> placement;
+    std::optional<std::int32_t> opponent_id;
+
+    float damage_taken{0.0f};
 };
+
+struct StrategyInfo {
+    // Valores compatíveis com StrategyManager.py.
+    std::int32_t strategy{0};
+    std::string strategy_name{"ECON"};
+
+    std::optional<std::int32_t> previous_strategy;
+
+    float confidence{0.0f};
+    std::int32_t strategy_age{0};
+    std::string reason;
+};
+
+struct AntiLoopMetrics {
+    // Nomes alinhados ao AntiLoopManager.execution_metrics.
+    std::uint64_t execution_attempts{0};
+    std::uint64_t execution_blocks{0};
+
+    std::uint64_t blocked_reverse{0};
+    std::uint64_t blocked_oscillation{0};
+    std::uint64_t blocked_explicit{0};
+    std::uint64_t blocked_bench_board_loop{0};
+    std::uint64_t blocked_cycle{0};
+
+    std::uint64_t board_moves_executed{0};
+    std::uint64_t bench_to_board_executed{0};
+};
+
 
 struct StepResult {
     // Row-major: (8, observation_dim).
@@ -90,19 +130,6 @@ struct StepResult {
 
     // Diagnósticos adicionais sem acoplar o PPO às engines.
     std::vector<std::string> events;
-};
-
-struct StrategyInfo {
-    std::string name;
-    float score{0.0f};
-    bool active{false};
-};
-
-struct AntiLoopMetrics {
-    std::uint64_t repeated_states{0};
-    std::uint64_t repeated_actions{0};
-    std::uint64_t blocked_moves{0};
-    std::uint64_t prevented_loops{0};
 };
 
 class TFTEngine {

@@ -128,16 +128,35 @@ py::array_t<float> observations_to_array(
     return result;
 }
 
+
 py::dict player_info_to_dict(const tft::PlayerInfo& player) {
     py::dict result;
-    result["alive"] = player.alive;
-    result["eliminated"] = player.eliminated;
-    result["placement"] = player.placement;
-    result["health"] = player.health;
+
+    result["player_id"] = player.player_id;
+    result["hp"] = player.hp;
     result["gold"] = player.gold;
     result["level"] = player.level;
+    result["xp"] = player.xp;
+
+    result["alive"] = player.alive;
+    result["eliminated"] = player.eliminated;
+
+    result["wins"] = player.wins;
+    result["losses"] = player.losses;
+
+    result["placement"] = player.placement.has_value()
+        ? py::cast(*player.placement)
+        : py::none();
+
+    result["opponent_id"] = player.opponent_id.has_value()
+        ? py::cast(*player.opponent_id)
+        : py::none();
+
+    result["damage_taken"] = player.damage_taken;
+
     return result;
 }
+
 
 py::list player_info_to_list(
     const std::vector<tft::PlayerInfo>& players
@@ -210,9 +229,11 @@ py::dict step_to_dict(const tft::StepResult& step) {
     return result;
 }
 
+
 py::list strategies_to_list(
     const std::array<
-        std::vector<tft::StrategyInfo>, 8
+        std::vector<tft::StrategyInfo>,
+        tft::kPlayersPerLobby
     >& strategies
 ) {
     py::list result;
@@ -222,34 +243,62 @@ py::list strategies_to_list(
 
         for (const auto& strategy : player_strategies) {
             py::dict item;
-            item["name"] = strategy.name;
-            item["score"] = strategy.score;
-            item["active"] = strategy.active;
-            player_list.append(item);
+
+            item["strategy"] = strategy.strategy;
+            item["strategy_name"] = strategy.strategy_name;
+
+            item["previous_strategy"] =
+                strategy.previous_strategy.has_value()
+                    ? py::cast(*strategy.previous_strategy)
+                    : py::none();
+
+            item["confidence"] = strategy.confidence;
+            item["strategy_age"] = strategy.strategy_age;
+            item["reason"] = strategy.reason;
+
+            player_list.append(std::move(item));
         }
 
-        result.append(player_list);
+        result.append(std::move(player_list));
     }
 
     return result;
 }
 
+
+
 py::list anti_loop_to_list(
-    const std::array<tft::AntiLoopMetrics, 8>& metrics
+    const std::array<
+        tft::AntiLoopMetrics,
+        tft::kPlayersPerLobby
+    >& metrics
 ) {
     py::list result;
 
     for (const auto& metric : metrics) {
         py::dict item;
-        item["repeated_states"] = metric.repeated_states;
-        item["repeated_actions"] = metric.repeated_actions;
-        item["blocked_moves"] = metric.blocked_moves;
-        item["prevented_loops"] = metric.prevented_loops;
-        result.append(item);
+
+        item["execution_attempts"] = metric.execution_attempts;
+        item["execution_blocks"] = metric.execution_blocks;
+
+        item["blocked_reverse"] = metric.blocked_reverse;
+        item["blocked_oscillation"] = metric.blocked_oscillation;
+        item["blocked_explicit"] = metric.blocked_explicit;
+        item["blocked_bench_board_loop"] =
+            metric.blocked_bench_board_loop;
+        item["blocked_cycle"] = metric.blocked_cycle;
+
+        item["board_moves_executed"] =
+            metric.board_moves_executed;
+        item["bench_to_board_executed"] =
+            metric.bench_to_board_executed;
+
+        result.append(std::move(item));
     }
 
     return result;
 }
+
 
 }  // namespace
 
