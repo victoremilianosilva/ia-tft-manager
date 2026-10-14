@@ -1338,6 +1338,7 @@ StepResult TFTEngine::step(
         const auto old_level = economy.level;
         const auto old_xp = economy.xp;
         int old_board_count = 0, old_bench_count = 0;
+        bool sold_core_unit = false;
         for (const auto& unit : impl_->boards[i]) if (unit) ++old_board_count;
         for (const auto& unit : impl_->benches[i]) if (unit) ++old_bench_count;
 
@@ -1599,6 +1600,12 @@ StepResult TFTEngine::step(
                     );
 
                 if (definition) {
+                    if (!impl_->strategies[i].empty()) {
+                        const auto& core_units = impl_->strategies[i].back().core_units;
+                        sold_core_unit = std::find(
+                            core_units.begin(), core_units.end(), unit.champion_id
+                        ) != core_units.end();
+                    }
                     const auto sell_value =
                         EconomyEngine::get_sell_value(
                             definition->cost,
@@ -1656,14 +1663,14 @@ StepResult TFTEngine::step(
                 action_reward += std::min((economy.level - old_level) * 0.5, 1.5);
             (void)old_xp;
         } else if (type == 3 || type == 4) {
-            success = new_board_count != old_board_count ||
-                (type == 4 && new_board_count == old_board_count);
-            action_reward = success ? 0.0 : -0.10;
+            success = type == 4 ||
+                (type == 3 && new_board_count > old_board_count);
+            action_reward = success ? (type == 4 ? 0.02 : 0.0) : -0.10;
             if (type == 3 && success)
                 action_reward += impl_->positioning_score(i) * 0.05;
         } else if (type == 5) {
             success = economy.gold > old_gold;
-            action_reward = success ? 0.0 : -0.10;
+            action_reward = success ? (sold_core_unit ? -0.15 : 0.05) : -0.10;
         } else {
             success = true;
         }
