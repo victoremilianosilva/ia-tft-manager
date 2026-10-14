@@ -247,6 +247,24 @@ void test_move_queries_do_not_mutate_history() {
     assert(before.blocked_moves == after.blocked_moves);
 }
 
+void test_reset_preserves_execution_metrics_like_python() {
+    AntiLoopEngine engine;
+    const auto nasus = make_unit("nasus-1", 1);
+    engine.record_execution_attempt();
+    engine.record_execution_block("reverse");
+    engine.record_successful_move("board_move");
+    engine.reset();
+
+    const auto metrics = engine.get_metrics();
+    assert(metrics.execution_attempts == 1);
+    assert(metrics.execution_blocks == 1);
+    assert(metrics.blocked_reverse == 1);
+    assert(metrics.board_moves_executed == 1);
+    const auto state = engine.get_state();
+    assert(state.move_history_size == 0);
+    (void)nasus;
+}
+
 void test_reset_clears_move_and_state_history() {
     AntiLoopEngine engine;
     const auto nasus = make_unit("nasus-1", 1);
@@ -284,6 +302,7 @@ int main() {
     test_state_change_releases_explicit_move_block();
     test_move_queries_do_not_mutate_history();
     test_reset_clears_move_and_state_history();
+    test_reset_preserves_execution_metrics_like_python();
 
     return 0;
 }
