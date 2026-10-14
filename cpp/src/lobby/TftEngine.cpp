@@ -1335,7 +1335,13 @@ StepResult TFTEngine::step(
         const auto old_xp = economy.xp;
         int old_board_count = 0, old_bench_count = 0;
         bool sold_core_unit = false;
-        for (const auto& unit : impl_->boards[i]) if (unit) ++old_board_count;
+        std::array<std::string, kBoardSlots> old_board_layout{};
+        for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+            if (impl_->boards[i][slot]) {
+                ++old_board_count;
+                old_board_layout[slot] = impl_->boards[i][slot]->uuid;
+            }
+        }
         for (const auto& unit : impl_->benches[i]) if (unit) ++old_bench_count;
 
         if (!impl_->players[i].alive) {
@@ -1659,8 +1665,17 @@ StepResult TFTEngine::step(
                 action_reward += std::min((economy.level - old_level) * 0.5, 1.5);
             (void)old_xp;
         } else if (type == 3 || type == 4) {
-            success = type == 4 ||
-                (type == 3 && new_board_count > old_board_count);
+            bool board_layout_changed = false;
+            for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+                const std::string current_uuid = impl_->boards[i][slot]
+                    ? impl_->boards[i][slot]->uuid : std::string{};
+                if (current_uuid != old_board_layout[slot]) {
+                    board_layout_changed = true;
+                    break;
+                }
+            }
+            success = type == 4 ? board_layout_changed
+                                : new_board_count > old_board_count;
             action_reward = success ? (type == 4 ? 0.02 : 0.0) : -0.10;
             if (type == 3 && success)
                 action_reward += impl_->positioning_score(i) * 0.05;
