@@ -1,0 +1,12 @@
+{
+  "name": "all_players_pass_one_round",
+  "seed": 123,
+  "description": "Deterministic no-op preparation sequence. All eight players pass in the same batch, forcing one round-resolution boundary.",
+  "steps": [
+    {
+      "name": "pass_round_1",
+      "python_actions": [{"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}],
+      "cpp_actions": [[6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0]]
+    }
+  ]
+}
