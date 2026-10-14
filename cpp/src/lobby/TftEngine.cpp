@@ -419,6 +419,77 @@ struct TFTEngine::Impl {
         }
     }
 
+    // Preflight sem efeitos colaterais: valida a ação selecionada contra
+    // o estado atual antes que qualquer jogador seja processado.
+    void validate_action_against_masks(
+        std::size_t player_index,
+        const PlayerAction& action
+    ) const {
+        const auto& values = action.values;
+        const auto type = static_cast<std::size_t>(values[0]);
+        const auto& player_masks = masks[player_index];
+
+        if (player_masks.type_mask[type] != 1) {
+            throw std::invalid_argument(
+                "Acao indisponivel para o estado atual do jogador "
+                + std::to_string(player_index)
+                + ". Tipo: " + std::to_string(type)
+            );
+        }
+
+        if (type == 0) {
+            const auto slot = static_cast<std::size_t>(values[1]);
+            if (player_masks.shop_mask[slot] != 1) {
+                throw std::invalid_argument(
+                    "Compra invalida: oferta indisponivel, ouro insuficiente "
+                    "ou banco cheio."
+                );
+            }
+            return;
+        }
+
+        if (type == 5) {
+            const auto slot = static_cast<std::size_t>(values[2]);
+            if (player_masks.bench_source_mask[slot] != 1) {
+                throw std::invalid_argument(
+                    "Venda invalida: o slot selecionado do banco esta vazio."
+                );
+            }
+            return;
+        }
+
+        // Movimentos estruturalmente válidos que o AntiLoop bloqueia
+        // ainda devem chegar à engine para contabilizar a tentativa.
+        if (type == 3 || type == 4) {
+            const auto state = build_decision_state(player_index);
+            bool valid_move = false;
+
+            if (type == 3) {
+                valid_move =
+                    decision::MoveValidator::validate_bench_to_board_move(
+                        state.board,
+                        state.bench,
+                        values[2],
+                        values[3]
+                    ).is_valid();
+            } else {
+                valid_move =
+                    decision::MoveValidator::validate_board_move(
+                        state.board,
+                        values[4],
+                        values[5]
+                    ).is_valid();
+            }
+
+            if (!valid_move) {
+                throw std::invalid_argument(
+                    "Movimento invalido: origem vazia, destino ocupado "
+                    "ou posicoes incompatíveis."
+                );
+            }
+        }
+    }
+
     // ========================================================
     // SINCRONIZAÇÃO DA ECONOMIA
     // ========================================================
@@ -535,9 +606,14 @@ StepResult TFTEngine::step(
         );
     }
 
-    // Valida os limites de todas as ações antes de executá-las.
+    // Preflight em duas fases: valida limites e disponibilidade semântica
+    // de todas as ações antes de executar a primeira. Se qualquer ação for
+    // impossível, o lote falha sem alterar ouro, unidades ou posições.
     for (const auto& action : actions) {
         impl_->validate_action(action);
+    }
+    for (std::size_t i = 0; i < actions.size(); ++i) {
+        impl_->validate_action_against_masks(i, actions[i]);
     }
 
     // ========================================================
