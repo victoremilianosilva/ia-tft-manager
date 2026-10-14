@@ -350,8 +350,9 @@ PYBIND11_MODULE(tft_engine, module) {
 
     py::class_<TFTEngine>(module, "TFTLobby")
         .def(
-            py::init<std::uint64_t>(),
-            py::arg("seed") = 0
+            py::init<std::uint64_t, std::string>(),
+            py::arg("seed") = 0,
+            py::arg("catalog_path") = ""
         )
         .def(
             "reset",
@@ -459,6 +460,20 @@ PYBIND11_MODULE(tft_engine, module) {
                     self.get_public_state()
                 );
             }
+        )
+        .def(
+            "pool_available",
+            &TFTEngine::pool_available,
+            py::arg("champion_internal_id")
+        )
+        .def(
+            "pool_initial_count",
+            &TFTEngine::pool_initial_count,
+            py::arg("champion_internal_id")
+        )
+        .def(
+            "pool_total_available",
+            &TFTEngine::pool_total_available
         )
         .def_property_readonly(
             "observation_dim",

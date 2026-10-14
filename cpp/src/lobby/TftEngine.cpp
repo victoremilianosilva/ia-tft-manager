@@ -5,6 +5,14 @@
 #include <stdexcept>
 #include <utility>
 
+#include "lobby/ChampionCatalog.hpp"
+#include "lobby/UnitInstanceFactory.hpp"
+#include "lobby/UnitPool.hpp"
+
+#ifndef TFT_DEFAULT_CATALOG_PATH
+#define TFT_DEFAULT_CATALOG_PATH "units_gerado.json"
+#endif
+
 namespace tft {
 
 namespace {
@@ -88,6 +96,10 @@ struct TFTEngine::Impl {
     std::optional<std::int32_t> winner_id;
     std::vector<std::int32_t> ranking;
 
+    std::unique_ptr<ChampionCatalog> catalog;
+    std::unique_ptr<UnitPool> pool;
+    std::unique_ptr<UnitInstanceFactory> unit_factory;
+
     std::int32_t alive_players{
         static_cast<std::int32_t>(kPlayersPerLobby)
     };
@@ -104,7 +116,29 @@ struct TFTEngine::Impl {
     std::array<AntiLoopMetrics, kPlayersPerLobby>
         anti_loop_metrics{};
 
-    Impl() {
+   explicit Impl(
+        std::uint64_t initial_seed,
+        const std::string& catalog_path
+    ) : seed(initial_seed) {
+        const std::string resolved_path =
+            catalog_path.empty()
+                ? TFT_DEFAULT_CATALOG_PATH
+                : catalog_path;
+
+        // Um catálogo por partida.
+        catalog = std::make_unique<ChampionCatalog>(
+            resolved_path
+        );
+
+        // Um pool por partida, compartilhado pelos oito jogadores.
+        pool = std::make_unique<UnitPool>(*catalog);
+
+        // A fábrica usa o catálogo da mesma partida.
+        unit_factory = std::make_unique<UnitInstanceFactory>(
+            *catalog,
+            seed
+        );
+
         initialize_players();
     }
 
@@ -187,9 +221,13 @@ struct TFTEngine::Impl {
 // 🏗️ CONSTRUTOR E DESTRUTOR
 // ============================================================
 
-TFTEngine::TFTEngine(std::uint64_t seed)
-    : impl_(std::make_unique<Impl>()) {
-    impl_->seed = seed;
+TFTEngine::TFTEngine(
+    std::uint64_t seed,
+    std::string catalog_path
+)
+    : impl_(
+        std::make_unique<Impl>(seed, catalog_path)
+    ) {
 }
 
 TFTEngine::~TFTEngine() = default;
@@ -224,6 +262,14 @@ ResetResult TFTEngine::reset(
     impl_->done = false;
     impl_->winner_id = std::nullopt;
     impl_->ranking.clear();
+    // Restaura o estoque uma única vez para a nova partida.
+    impl_->pool->reset();
+
+    // Reinicia a sequência de geração de UUIDs para a seed atual.
+    impl_->unit_factory = std::make_unique<UnitInstanceFactory>(
+        *impl_->catalog,
+        impl_->seed
+    );
     impl_->initialize_players();
 
     ResetResult result{};
@@ -472,6 +518,34 @@ std::int32_t TFTEngine::alive_players() const noexcept {
 
 bool TFTEngine::is_done() const noexcept {
     return !impl_ || impl_->done || impl_->closed;
+}
+
+std::int32_t TFTEngine::pool_available(
+    std::int32_t champion_internal_id
+) const {
+    if (!impl_ || !impl_->pool) {
+        throw std::runtime_error("UnitPool indisponivel.");
+    }
+
+    return impl_->pool->available(champion_internal_id);
+}
+
+std::int32_t TFTEngine::pool_initial_count(
+    std::int32_t champion_internal_id
+) const {
+    if (!impl_ || !impl_->pool) {
+        throw std::runtime_error("UnitPool indisponivel.");
+    }
+
+    return impl_->pool->initial_count(champion_internal_id);
+}
+
+std::int64_t TFTEngine::pool_total_available() const {
+    if (!impl_ || !impl_->pool) {
+        throw std::runtime_error("UnitPool indisponivel.");
+    }
+
+    return impl_->pool->total_available();
 }
 
 // ============================================================

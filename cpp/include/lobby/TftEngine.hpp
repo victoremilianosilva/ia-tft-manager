@@ -275,7 +275,11 @@ struct PublicState {
 
 class TFTEngine {
 public:
-    explicit TFTEngine(std::uint64_t seed = 0);
+    explicit TFTEngine(
+        std::uint64_t seed = 0,
+        std::string catalog_path = {}
+    );
+
     ~TFTEngine();
 
     TFTEngine(const TFTEngine&) = delete;
@@ -304,6 +308,17 @@ public:
     get_anti_loop_metrics() const;
 
     PublicState get_public_state() const;
+
+    // Consultas do estoque global de campeões.
+    std::int32_t pool_available(
+        std::int32_t champion_internal_id
+    ) const;
+
+    std::int32_t pool_initial_count(
+        std::int32_t champion_internal_id
+    ) const;
+
+    std::int64_t pool_total_available() const;
 
     std::size_t observation_dim() const noexcept;
     std::uint64_t episode_id() const noexcept;

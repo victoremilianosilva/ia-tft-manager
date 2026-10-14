@@ -219,6 +219,12 @@ if(EXISTS "${TFT_LOBBY_SOURCE}")
 
     configure_tft_module(tft_engine)
 
+    target_compile_definitions(
+        tft_engine
+        PRIVATE
+            TFT_DEFAULT_CATALOG_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../units_gerado.json"
+    )
+
     target_include_directories(
         tft_engine
         PRIVATE
@@ -407,6 +413,34 @@ if(BUILD_TESTING)
     add_test(
         NAME unit_pool
         COMMAND test_unit_pool
+            "${CMAKE_CURRENT_SOURCE_DIR}/../units_gerado.json"
+    )
+
+    add_executable(
+        test_tft_engine_pool
+        tests/test_tft_engine_pool.cpp
+        src/lobby/TftEngine.cpp
+        src/lobby/ChampionCatalog.cpp
+        src/lobby/UnitInstanceFactory.cpp
+        src/lobby/UnitPool.cpp
+    )
+
+    configure_tft_module(test_tft_engine_pool)
+
+    target_link_libraries(
+        test_tft_engine_pool
+        PRIVATE nlohmann_json::nlohmann_json
+    )
+
+    target_compile_definitions(
+        test_tft_engine_pool
+        PRIVATE
+            TFT_DEFAULT_CATALOG_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../units_gerado.json"
+    )
+
+    add_test(
+        NAME tft_engine_pool
+        COMMAND test_tft_engine_pool
             "${CMAKE_CURRENT_SOURCE_DIR}/../units_gerado.json"
     )
 
