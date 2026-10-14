@@ -1316,15 +1316,19 @@ StepResult TFTEngine::step(
             economy.round_win_gold = 0;
         }
 
-        ++impl_->round;
+        // A lobby Python só avança se ainda houver pelo menos dois
+        // jogadores vivos. A partida encerrada mantém a rodada final.
+        if (!impl_->done && impl_->alive_players > 1) {
+            ++impl_->round;
 
-        const std::uint32_t public_round =
-            impl_->round + 1;
+            const std::uint32_t public_round =
+                impl_->round + 1;
 
-        impl_->stage =
-            ((public_round - 1) / kRoundsPerStage) + 1;
+            impl_->stage =
+                ((public_round - 1) / kRoundsPerStage) + 1;
 
-        impl_->reset_round_completion();
+            impl_->reset_round_completion();
+        }
     }
 
     // ========================================================
