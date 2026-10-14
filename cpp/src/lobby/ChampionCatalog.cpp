@@ -3,6 +3,9 @@
 
 #include <nlohmann/json.hpp>
 
+#include <algorithm>
+#include <array>
+#include <cctype>
 #include <cmath>
 #include <fstream>
 #include <stdexcept>
@@ -216,6 +219,108 @@ ChampionAbility parse_ability(const Json& json) {
     return ability;
 }
 
+std::pair<std::int32_t, std::string> infer_role(
+    const ChampionStats& stats,
+    const ChampionCombatProfile& profile,
+    const ChampionAbility& ability
+) {
+    // Keep enum/order aligned with CombatProfileManager.UnitRole:
+    // TANK=0, CARRY=1, SUPPORT=2, FIGHTER=3, ASSASSIN=4.
+    std::array<double, 5> scores{0.0, 0.0, 0.0, 0.0, 0.0};
+
+    const std::string description =
+        !ability.description.empty() ? ability.description : ability.name;
+    std::string text = description;
+    std::transform(text.begin(), text.end(), text.begin(),
+        [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
+
+    const std::array<std::vector<std::string>, 5> keywords{{
+        {"shield", "armor", "defense", "defensive", "taunt",
+         "damage reduction", "barrier", "protect"},
+        {"attack damage", "critical", "crit", "damage", "projectile",
+         "rapid fire", "attack speed"},
+        {"heal", "healing", "shield", "buff", "ally", "all allies",
+         "mana", "restore", "protect"},
+        {"melee", "strike", "physical damage", "attack", "damage",
+         "lifesteal"},
+        {"dash", "jump", "backline", "lowest health", "furthest", "farther"}
+    }};
+
+    for (std::size_t role = 0; role < keywords.size(); ++role) {
+        for (const auto& keyword : keywords[role]) {
+            if (text.find(keyword) != std::string::npos) scores[role] += 1.0;
+        }
+    }
+
+    const auto value_or = [](double profile_value, double stat_value) {
+        return profile_value != 0.0 ? profile_value : stat_value;
+    };
+    const double hp = value_or(profile.max_hp, stats.max_hp);
+    const double ad = value_or(profile.attack_damage, stats.attack_damage);
+    const double speed = value_or(profile.attack_speed, stats.attack_speed);
+    const double armor = value_or(profile.armor, stats.armor);
+    const double mr = value_or(profile.magic_resist, stats.magic_resist);
+    const double range = value_or(profile.attack_range, stats.attack_range);
+
+    if (hp >= 800.0) scores[0] += 2.0;
+    if (hp >= 1100.0) scores[0] += 1.0;
+    if (armor >= 40.0) scores[0] += 1.5;
+    if (mr >= 40.0) scores[0] += 1.0;
+
+    if (ad >= 70.0) scores[1] += 1.5;
+    if (speed >= 0.8) scores[1] += 1.0;
+
+    if (range > 0.0 && range <= 1.0) {
+        scores[3] += 1.0;
+        if (armor >= 30.0 || hp >= 700.0) scores[3] += 1.0;
+    }
+
+    if (range >= 3.0) {
+        scores[1] += 0.5;
+        scores[2] += 0.25;
+    }
+
+    for (const auto& keyword : keywords[4]) {
+        if (text.find(keyword) != std::string::npos) {
+            scores[4] += 2.0;
+            break;
+        }
+    }
+
+    // std::max_element preserves Python max(..., key=...) tie behavior:
+    // the first role in insertion order wins ties.
+    const auto best = std::max_element(scores.begin(), scores.end());
+    const auto role = static_cast<std::int32_t>(
+        std::distance(scores.begin(), best));
+    static const std::array<std::string, 5> names{
+        "tank", "carry", "support", "fighter", "assassin"
+    };
+    return {role, names[static_cast<std::size_t>(role)]};
+}
+
+void apply_inferred_role(ChampionDefinition& champion) {
+    const auto [role, name] = infer_role(
+        champion.stats, champion.combat_profile, champion.ability);
+    champion.role = role;
+    champion.role_name = name;
+    auto& profile = champion.combat_profile;
+    profile.role = role;
+    profile.role_name = name;
+    profile.frontline = role == 0 || role == 3;
+    profile.backline = role == 1 || role == 2 || role == 4;
+    profile.is_tank = role == 0;
+    profile.is_carry = role == 1;
+    profile.is_support = role == 2;
+    profile.is_fighter = role == 3;
+    profile.is_assassin = role == 4;
+    if (profile.max_hp == 0.0) profile.max_hp = champion.stats.max_hp;
+    if (profile.attack_damage == 0.0) profile.attack_damage = champion.stats.attack_damage;
+    if (profile.attack_speed == 0.0) profile.attack_speed = champion.stats.attack_speed;
+    if (profile.armor == 0.0) profile.armor = champion.stats.armor;
+    if (profile.magic_resist == 0.0) profile.magic_resist = champion.stats.magic_resist;
+    if (profile.attack_range == 0.0) profile.attack_range = champion.stats.attack_range;
+}
+
 ChampionDefinition parse_champion(
     const Json& json,
     std::size_t index
@@ -264,6 +369,10 @@ ChampionDefinition parse_champion(
     champion.icon = get_string(json, "icon");
     champion.square_icon = get_string(json, "squareIcon");
     champion.tile_icon = get_string(json, "tileIcon");
+
+    // Infer roles from the same ability keywords and stats as Python.
+    // Do not trust potentially stale precomputed role fields in the JSON.
+    apply_inferred_role(champion);
 
     return champion;
 }
