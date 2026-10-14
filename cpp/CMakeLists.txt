@@ -211,6 +211,9 @@ if(EXISTS "${TFT_LOBBY_SOURCE}")
         src/lobby/UnitPool.cpp
         src/lobby/ShopEngine.cpp
         src/lobby/EconomyEngine.cpp
+        src/decision/AntiLoopEngine.cpp
+        src/decision/MoveValidator.cpp
+        src/decision/ActionMaskEngine.cpp
         bindings/tft_engine_bindings.cpp
     )
 
@@ -427,6 +430,9 @@ if(BUILD_TESTING)
         src/lobby/UnitPool.cpp
         src/lobby/ShopEngine.cpp
         src/lobby/EconomyEngine.cpp
+        src/decision/AntiLoopEngine.cpp
+        src/decision/MoveValidator.cpp
+        src/decision/ActionMaskEngine.cpp
     )
 
     configure_tft_module(test_tft_engine_pool)

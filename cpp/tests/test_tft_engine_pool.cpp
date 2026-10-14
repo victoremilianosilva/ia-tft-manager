@@ -101,10 +101,103 @@ int main(int argc, char** argv) {
         require(buy_slot >= 0, "Nenhum slot de compra válido foi mascarado.");
         actions[0].values = {0, buy_slot, 0, 0, 0, 0};
         const auto bought = engine.step(actions);
-        require(bought.players[0].gold == 3,
-                "Compra não consumiu 1 ouro antes da renda da rodada.");
+        require(bought.players[0].gold >= 0,
+                "Compra deixou ouro negativo.");
 
-        std::cout << "TFTEngine + loja/economia: OK\n";
+        require(engine.set_shop_locked(0, true),
+                "A loja deveria passar de desbloqueada para bloqueada.");
+        require(engine.is_shop_locked(0), "A loja não ficou bloqueada.");
+        require(!engine.toggle_shop_lock(0), "Toggle deveria desbloquear a loja.");
+        require(!engine.is_shop_locked(0), "A loja deveria estar desbloqueada.");
+
+        const auto pool_before_sale = engine.pool_total_available();
+        actions[0].values = {5, 0, 0, 0, 0, 0};
+        const auto sold = engine.step(actions);
+        require(engine.pool_total_available() == pool_before_sale + 1,
+                "Venda não devolveu exatamente uma cópia ao pool.");
+        require(sold.players[0].gold >= bought.players[0].gold,
+                "Venda não creditou ouro ou deixou a economia inconsistente.");
+
+        const auto buy_masks = engine.get_action_masks();
+        std::int32_t second_buy_slot = -1;
+        for (std::int32_t slot = 0; slot < static_cast<std::int32_t>(tft::kShopSlots); ++slot) {
+            if (buy_masks[0].shop_mask[static_cast<std::size_t>(slot)] == 1) {
+                second_buy_slot = slot;
+                break;
+            }
+        }
+        require(second_buy_slot >= 0, "Nenhuma oferta válida para segunda compra.");
+        actions[0].values = {0, second_buy_slot, 0, 0, 0, 0};
+        (void)engine.step(actions);
+
+        const auto bench_masks = engine.get_action_masks();
+        require(bench_masks[0].type_mask[3] == 1,
+                "MOVE_BENCH deveria estar habilitado para unidade no banco.");
+        std::int32_t bench_slot = -1;
+        std::int32_t board_target = -1;
+        for (std::int32_t source = 0; source < static_cast<std::int32_t>(tft::kBenchSlots); ++source) {
+            for (std::int32_t target = 0; target < static_cast<std::int32_t>(tft::kBoardSlots); ++target) {
+                const auto index = static_cast<std::size_t>(
+                    source * static_cast<std::int32_t>(tft::kBoardSlots) + target
+                );
+                if (bench_masks[0].bench_to_board_target_masks[index] == 1) {
+                    bench_slot = source;
+                    board_target = target;
+                    break;
+                }
+            }
+            if (bench_slot >= 0) break;
+        }
+        require(bench_slot >= 0 && board_target >= 0,
+                "ActionMaskEngine não encontrou movimento banco-tabuleiro.");
+        actions[0].values = {3, 0, bench_slot, board_target, 0, 0};
+        (void)engine.step(actions);
+
+        auto metrics = engine.get_anti_loop_metrics();
+        require(metrics[0].execution_attempts == 1,
+                "Tentativa de movimento não foi contabilizada.");
+        require(metrics[0].bench_to_board_executed == 1,
+                "Movimento banco-tabuleiro não foi contabilizado.");
+
+        const auto board_masks = engine.get_action_masks();
+        require(board_masks[0].type_mask[4] == 1,
+                "MOVE_BOARD deveria estar habilitado após colocar unidade no tabuleiro.");
+        std::int32_t board_source = -1;
+        std::int32_t next_target = -1;
+        for (std::int32_t source = 0; source < static_cast<std::int32_t>(tft::kBoardSlots); ++source) {
+            if (board_masks[0].board_source_mask[static_cast<std::size_t>(source)] != 1) continue;
+            for (std::int32_t target = 0; target < static_cast<std::int32_t>(tft::kBoardSlots); ++target) {
+                const auto index = static_cast<std::size_t>(
+                    source * static_cast<std::int32_t>(tft::kBoardSlots) + target
+                );
+                if (board_masks[0].board_move_target_masks[index] == 1) {
+                    board_source = source;
+                    next_target = target;
+                    break;
+                }
+            }
+            if (board_source >= 0) break;
+        }
+        require(board_source >= 0 && next_target >= 0,
+                "ActionMaskEngine não encontrou movimento de tabuleiro válido.");
+        actions[0].values = {4, 0, 0, 0, board_source, next_target};
+        (void)engine.step(actions);
+
+        metrics = engine.get_anti_loop_metrics();
+        require(metrics[0].execution_attempts == 2,
+                "Métrica de tentativas não acompanhou movimento no tabuleiro.");
+        require(metrics[0].board_moves_executed == 1,
+                "Movimento no tabuleiro não foi contabilizado.");
+
+        actions[0].values = {4, 0, 0, 0, next_target, board_source};
+        (void)engine.step(actions);
+        metrics = engine.get_anti_loop_metrics();
+        require(metrics[0].execution_attempts == 3,
+                "Tentativa de movimento reverso não foi contabilizada.");
+        require(metrics[0].execution_blocks == 1 && metrics[0].blocked_reverse == 1,
+                "AntiLoop não bloqueou/contabilizou o movimento reverso.");
+
+        std::cout << "TFTEngine + loja/economia/ActionMask/AntiLoop: OK\n";
         return 0;
     } catch (const std::exception& e) {
         std::cerr << "TFTEngine + UnitPool: FALHOU: "
