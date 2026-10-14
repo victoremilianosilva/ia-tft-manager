@@ -1,10 +1,20 @@
 {
-  "name": "all_players_pass_one_round",
+  "name": "all_players_pass_three_rounds",
   "seed": 123,
-  "description": "Deterministic no-op preparation sequence. All eight players pass in the same batch, forcing one round-resolution boundary.",
+  "description": "Three deterministic round-boundary replays with no board units, exercising state transitions, economy, combat-draw handling and rewards without depending on shop RNG.",
   "steps": [
     {
       "name": "pass_round_1",
+      "python_actions": [{"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}],
+      "cpp_actions": [[6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0]]
+    },
+    {
+      "name": "pass_round_2",
+      "python_actions": [{"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}],
+      "cpp_actions": [[6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0]]
+    },
+    {
+      "name": "pass_round_3",
       "python_actions": [{"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}],
       "cpp_actions": [[6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0]]
     }
