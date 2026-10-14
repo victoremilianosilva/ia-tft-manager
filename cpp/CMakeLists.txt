@@ -425,6 +425,7 @@ if(BUILD_TESTING)
         src/lobby/ChampionCatalog.cpp
         src/lobby/UnitInstanceFactory.cpp
         src/lobby/UnitPool.cpp
+        src/lobby/ShopEngine.cpp
         src/lobby/EconomyEngine.cpp
     )
 
