@@ -4,7 +4,7 @@
 #include <cmath>
 #include <cstddef>
 
-namespace tft::reward {
+namespace tft::reward_model {
 
 // Formula-compatible counterparts of ai/RewardManager.py.
 // State is passed explicitly so both implementations can replay the same
@@ -75,4 +75,4 @@ inline double clamp_total(double total) noexcept {
     return std::clamp(total, -5.0, 5.0);
 }
 
-} // namespace tft::reward
+} // namespace tft::reward_model
