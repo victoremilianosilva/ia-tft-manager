@@ -452,10 +452,10 @@ Tarefas
 - [x] Validar as seis dimensões da ação: [7, 5, 9, 28, 28, 28].
 - [x] Validar os formatos das observações, recompensas, dones e máscaras.
 - [x] Padronizar o tratamento de valores ausentes, índices inválidos e exceções.
-- [ ] Implementar ou concluir a estrutura mínima de TFTEngine necessária para cumprir o contrato.
+- [x] Implementar ou concluir a estrutura mínima de TFTEngine necessária para cumprir o contrato.
 - [x] Compilar o módulo tft_engine.
 - [x] Executar os testes de importação e tests/test_tft_engine_api.py.
-- [ ] Comparar os contratos públicos do motor C++ com os métodos correspondentes da implementação Python.
+- [x] Comparar os contratos públicos do motor C++ com os métodos correspondentes da implementação Python.
 Critério de conclusão: o módulo compila e pode ser utilizado pelo Python com contratos consistentes para reset, step, observações, máscaras, estratégias, métricas e estado público.
 
 Etapa 2 — Catálogo e pool de unidades em C++

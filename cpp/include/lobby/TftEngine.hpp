@@ -20,6 +20,89 @@ inline constexpr std::size_t kActionComponents = 6;
 inline constexpr std::array<std::size_t, kActionComponents>
     kActionDims{7, 5, 9, 28, 28, 28};
 
+
+ // ============================================================
+ // 🧩 CATÁLOGO ESTÁTICO DE CAMPEÕES
+ // ============================================================
+
+// Atributos-base normalizados pelo UnitManager.py.
+struct ChampionStats {
+    double max_hp{0.0};
+    double attack_damage{0.0};
+    double attack_speed{0.0};
+    double armor{0.0};
+    double magic_resist{0.0};
+    double attack_range{0.0};
+};
+
+// Perfil de combate já calculado pelo gerador Python.
+struct ChampionCombatProfile {
+    std::int32_t role{3};
+    std::string role_name{"fighter"};
+
+    bool frontline{false};
+    bool backline{false};
+
+    bool is_tank{false};
+    bool is_carry{false};
+    bool is_support{false};
+    bool is_fighter{false};
+    bool is_assassin{false};
+
+    double attack_range{0.0};
+    double attack_speed{0.0};
+    double attack_damage{0.0};
+    double armor{0.0};
+    double magic_resist{0.0};
+    double max_hp{0.0};
+    double max_mana{0.0};
+};
+
+// Variável da habilidade, preservando os valores por nível.
+struct ChampionAbilityVariable {
+    std::string name;
+    std::vector<double> values;
+};
+
+// Dados estáticos da habilidade.
+struct ChampionAbility {
+    std::string name;
+    std::string description;
+    std::string icon;
+    std::vector<ChampionAbilityVariable> variables;
+};
+
+// Registro estático de um campeão do units_gerado.json.
+//
+// internal_id:
+//   Índice interno usado pelo UnitManager Python.
+//
+// api_name / character_name:
+//   Identificadores originais do catálogo.
+//
+// Esta estrutura NÃO representa uma cópia comprada por jogador.
+struct ChampionDefinition {
+    std::int32_t internal_id{-1};
+
+    std::string api_name;
+    std::string character_name;
+    std::string name;
+
+    std::int32_t cost{1};
+    std::int32_t role{3};
+    std::string role_name{"fighter"};
+
+    std::vector<std::string> traits;
+
+    ChampionStats stats;
+    ChampionCombatProfile combat_profile;
+    ChampionAbility ability;
+
+    std::string icon;
+    std::string square_icon;
+    std::string tile_icon;
+};
+
 // Ordem da policy atual.
 // type, shop_slot, bench_slot, board_target,
 // board_source, board_move_target.

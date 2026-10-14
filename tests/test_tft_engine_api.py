@@ -396,3 +396,60 @@ def test_default_action_masks_have_valid_fallbacks():
 
     finally:
         engine.close()
+
+
+def test_step_rejects_none_without_advancing_round():
+    """Entrada ausente deve gerar erro sem alterar o estado."""
+    engine = TFTLobby(seed=2026)
+
+    try:
+        engine.reset()
+
+        with pytest.raises(TypeError):
+            engine.step(None)
+
+        state = engine.get_public_state()
+        assert state["round"] == 1
+        assert state["round_index"] == 0
+    finally:
+        engine.close()
+
+
+@pytest.mark.parametrize(
+    ("seed", "expected_error"),
+    [
+        ("2026", TypeError),  # Texto não é aceito.
+        (True, TypeError),    # Booleano não é aceito.
+        (-1, ValueError),     # Seed negativa.
+        (2**64, ValueError),  # Acima do limite de uint64.
+    ],
+)
+def test_reset_rejects_invalid_seed(seed, expected_error):
+    """O reset deve rejeitar seeds inválidas."""
+    engine = TFTLobby(seed=2026)
+
+    try:
+        engine.reset()
+
+        with pytest.raises(expected_error):
+            engine.reset(seed=seed)
+
+        # O reset inválido não deve iniciar outra rodada.
+        state = engine.get_public_state()
+        assert state["round"] == 1
+        assert state["round_index"] == 0
+    finally:
+        engine.close()
+
+
+def test_operations_after_close_raise_runtime_error():
+    """O motor fechado não deve aceitar novas operações."""
+    engine = TFTLobby(seed=2026)
+    engine.reset()
+    engine.close()
+
+    with pytest.raises(RuntimeError):
+        engine.reset()
+
+    with pytest.raises(RuntimeError):
+        engine.step([[6, 0, 0, 0, 0, 0] for _ in range(8)])
