@@ -218,6 +218,14 @@ struct StrategyInfo {
     float confidence{0.0f};
     std::int32_t strategy_age{0};
     std::string reason;
+
+    // Snapshot de CompositionManager: foco/direção e elementos core.
+    std::string composition_focus;
+    std::string composition_direction;
+    std::vector<std::string> core_units;
+    std::vector<std::string> core_traits;
+    std::vector<std::pair<std::string, std::int32_t>> active_traits;
+    std::vector<std::pair<std::string, std::int32_t>> unit_counts;
 };
 
 struct AntiLoopMetrics {
