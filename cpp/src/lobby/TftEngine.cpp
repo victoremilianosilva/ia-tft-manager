@@ -832,6 +832,11 @@ StepResult TFTEngine::step(
             );
 
             impl_->sync_player_economy(i);
+
+            // Prepara a loja da próxima rodada. ShopEngine respeita o
+            // bloqueio: ofertas permanecem iguais quando a loja está locked.
+            impl_->shops[i]->roll(impl_->economies[i].level);
+
             impl_->refresh_masks(i);
         }
     }
