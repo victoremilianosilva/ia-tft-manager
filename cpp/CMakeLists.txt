@@ -477,6 +477,14 @@ if(BUILD_TESTING)
 
     configure_tft_module(test_tft_combat_anti_loop_soak)
 
+    # CombatEngine.cpp usa #include "CombatEngine.hpp" sem prefixo.
+    # O teste de integração precisa também do diretório específico de combate.
+    target_include_directories(
+        test_tft_combat_anti_loop_soak
+        PRIVATE
+            "${CMAKE_CURRENT_SOURCE_DIR}/include/combat"
+    )
+
     target_link_libraries(
         test_tft_combat_anti_loop_soak
         PRIVATE nlohmann_json::nlohmann_json
