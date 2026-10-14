@@ -148,6 +148,37 @@ int main(int argc, char** argv) {
         require(bought.players[0].gold >= 0,
                 "Compra deixou ouro negativo.");
 
+        // Mesmo com MOVE_BENCH habilitado por existir uma unidade no banco,
+        // uma origem vazia deve rejeitar o lote sem efeitos colaterais.
+        const auto round_before_invalid_move = engine.round();
+        const auto gold_before_invalid_move =
+            engine.get_public_state().players[0].gold;
+        const auto pool_before_invalid_move = engine.pool_total_available();
+        const auto metrics_before_invalid_move =
+            engine.get_anti_loop_metrics()[0];
+
+        actions[0].values = {3, 0, 8, 27, 0, 0}; // Slot 8 vazio.
+        bool invalid_move_rejected = false;
+        try {
+            (void)engine.step(actions);
+        } catch (const std::invalid_argument&) {
+            invalid_move_rejected = true;
+        }
+        require(invalid_move_rejected,
+                "Movimento a partir de slot vazio deveria ser rejeitado.");
+        require(engine.round() == round_before_invalid_move,
+                "Movimento inválido avançou a rodada.");
+        require(engine.get_public_state().players[0].gold ==
+                    gold_before_invalid_move,
+                "Movimento inválido alterou o ouro.");
+        require(engine.pool_total_available() == pool_before_invalid_move,
+                "Movimento inválido alterou o estoque.");
+        require(engine.get_anti_loop_metrics()[0].execution_attempts ==
+                    metrics_before_invalid_move.execution_attempts,
+                "Movimento inválido alterou as métricas anti-loop.");
+
+        actions[0].values = {6, 0, 0, 0, 0, 0};
+
         require(engine.set_shop_locked(0, true),
                 "A loja deveria passar de desbloqueada para bloqueada.");
         require(engine.is_shop_locked(0), "A loja não ficou bloqueada.");
