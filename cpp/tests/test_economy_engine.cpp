@@ -121,6 +121,54 @@ int main() {
     assert(!engine.add_round_xp(economy));
     assert(engine.get_xp_to_next(economy) == 0);
 
+    // 11. Equivalência de streak nos limites configurados pelo Python.
+    engine.reset(economy);
+    for (int streak = 0; streak <= 7; ++streak) {
+        economy.win_streak = streak;
+        economy.loss_streak = 0;
+        const int expected = streak < 2 ? 0 : streak <= 4 ? 1 : streak == 5 ? 2 : 3;
+        assert(engine.get_streak_gold(economy) == expected);
+        economy.win_streak = 0;
+        economy.loss_streak = streak;
+        assert(engine.get_streak_gold(economy) == expected);
+    }
+
+    // 12. Progressão de XP por compra e limite máximo de nível.
+    engine.reset(economy);
+    economy.gold = 40;
+    economy.level = 3;
+    economy.xp = 0;
+    auto xp_purchase = engine.buy_xp(economy);
+    assert(xp_purchase.success && economy.gold == 36 && economy.xp == 4);
+    xp_purchase = engine.buy_xp(economy);
+    assert(xp_purchase.success && economy.gold == 32 && economy.level == 4);
+    assert(economy.xp == 2); // 8 XP menos os 6 necessários para subir.
+    economy.level = tft::EconomyEngine::MAX_LEVEL;
+    economy.xp = 0;
+    const auto gold_at_max_level = economy.gold;
+    xp_purchase = engine.buy_xp(economy);
+    assert(!xp_purchase.success);
+    assert(economy.gold == gold_at_max_level && economy.xp == 0);
+
+    // 13. Renda base por rodada deve corresponder à configuração Python.
+    engine.reset(economy);
+    const int expected_income[] = {0, 2, 2, 3, 4, 5, 5};
+    for (int round = 1; round <= 7; ++round) {
+        const auto income = engine.resolve_round(economy, round);
+        assert(income.base_gold == expected_income[round - 1]);
+        assert(income.passive_gold == expected_income[round - 1]);
+    }
+
+    // 14. Juros são calculados antes de renda/streak e limitados a 5.
+    engine.reset(economy);
+    economy.gold = 50;
+    economy.loss_streak = 6;
+    const auto max_interest_round = engine.resolve_round(economy, 6);
+    assert(max_interest_round.interest_gold == 5);
+    assert(max_interest_round.streak_gold == 3);
+    assert(max_interest_round.base_gold == 5);
+    assert(max_interest_round.new_gold == 63);
+
     std::cout << "EconomyEngine: todos os testes passaram.\n";
     return 0;
 }
