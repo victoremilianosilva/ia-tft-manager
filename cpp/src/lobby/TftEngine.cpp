@@ -5,6 +5,8 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <random>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -33,6 +35,33 @@ namespace {
 
 constexpr std::size_t kObservationDim = 8;
 constexpr std::uint32_t kRoundsPerStage = 7;
+
+std::int32_t stage_damage(std::uint32_t stage) noexcept {
+    switch (stage) {
+        case 1: return 0;
+        case 2: return 2;
+        case 3: return 6;
+        case 4: return 7;
+        case 5: return 10;
+        case 6: return 12;
+        case 7: return 17;
+        default: return 17;
+    }
+}
+
+std::int32_t star_copies(std::int32_t star) noexcept {
+    switch (star) {
+        case 2: return 3;
+        case 3: return 9;
+        default: return 1;
+    }
+}
+
+std::uint64_t matchup_key(std::size_t a, std::size_t b) noexcept {
+    const auto low = static_cast<std::uint32_t>(std::min(a, b));
+    const auto high = static_cast<std::uint32_t>(std::max(a, b));
+    return (static_cast<std::uint64_t>(low) << 32U) | high;
+}
 
 // Máscaras provisórias utilizadas como fallback.
 PlayerActionMasks make_default_masks() {
@@ -74,6 +103,8 @@ void write_observation(
 struct TFTEngine::Impl {
     std::uint64_t seed{0};
     std::uint64_t episode_id{0};
+    std::mt19937_64 matchmaking_rng{0};
+    std::set<std::uint64_t> previous_matchups;
 
     std::uint32_t round{0};
     std::uint32_t stage{1};
@@ -139,7 +170,8 @@ struct TFTEngine::Impl {
     explicit Impl(
         std::uint64_t initial_seed,
         const std::string& catalog_path
-    ) : seed(initial_seed) {
+    ) : seed(initial_seed),
+        matchmaking_rng(initial_seed) {
         const std::string resolved_path =
             catalog_path.empty()
                 ? TFT_DEFAULT_CATALOG_PATH
@@ -327,6 +359,8 @@ struct TFTEngine::Impl {
             static_cast<std::int32_t>(kPlayersPerLobby);
         round_actions.fill(0);
         round_finished.fill(false);
+        previous_matchups.clear();
+        matchmaking_rng.seed(seed + episode_id);
 
         for (std::size_t i = 0;
              i < kPlayersPerLobby;
@@ -638,6 +672,68 @@ struct TFTEngine::Impl {
         }
     }
 
+    void return_eliminated_player_units(std::size_t player_index) {
+        if (shops[player_index]) shops[player_index]->return_current_shop();
+
+        auto return_unit_copies = [this](const std::optional<UnitInstance>& unit) {
+            if (!unit) return;
+            for (std::int32_t copy = 0; copy < star_copies(unit->star); ++copy)
+                (void)pool->give_back(unit->champion_internal_id);
+        };
+        for (auto& unit : boards[player_index]) {
+            return_unit_copies(unit);
+            unit.reset();
+        }
+        for (auto& unit : benches[player_index]) {
+            return_unit_copies(unit);
+            unit.reset();
+        }
+        register_position_state(player_index);
+    }
+
+    void eliminate_players(std::vector<std::string>& events) {
+        // Python define as colocações após todos os combates, em ordem de ID.
+        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+            auto& player = players[i];
+            if (!player.alive || player.hp > 0.0f) continue;
+            player.hp = 0.0f;
+            player.alive = false;
+            player.eliminated = true;
+            player.placement = alive_players;
+            ranking.push_back(static_cast<std::int32_t>(i));
+            --alive_players;
+            round_finished[i] = true;
+            return_eliminated_player_units(i);
+            events.emplace_back("ELIMINATED: jogador " + std::to_string(i));
+        }
+    }
+
+    void finish_if_one_player_left() {
+        if (alive_players > 1) return;
+        done = true;
+        winner_id.reset();
+        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+            if (players[i].alive) {
+                winner_id = static_cast<std::int32_t>(i);
+                players[i].placement = 1;
+                if (std::find(ranking.begin(), ranking.end(),
+                              static_cast<std::int32_t>(i)) == ranking.end())
+                    ranking.insert(ranking.begin(), static_cast<std::int32_t>(i));
+                break;
+            }
+        }
+        if (!winner_id && ranking.size() < kPlayersPerLobby) {
+            for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+                if (std::find(ranking.begin(), ranking.end(),
+                              static_cast<std::int32_t>(i)) == ranking.end()) {
+                    players[i].placement = static_cast<std::int32_t>(
+                        kPlayersPerLobby - ranking.size());
+                    ranking.push_back(static_cast<std::int32_t>(i));
+                }
+            }
+        }
+    }
+
     void resolve_combats(
         std::vector<std::string>& events,
         std::array<float, kPlayersPerLobby>& rewards
@@ -645,146 +741,119 @@ struct TFTEngine::Impl {
         std::vector<std::size_t> alive;
         alive.reserve(kPlayersPerLobby);
         for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
-            if (players[i].alive) {
-                alive.push_back(i);
-            }
+            players[i].opponent_id.reset();
+            if (players[i].alive) alive.push_back(i);
         }
-
         if (alive.size() < 2) {
-            if (alive.size() == 1) {
-                done = true;
-                winner_id = static_cast<std::int32_t>(alive.front());
-                players[alive.front()].placement = 1;
-                if (ranking.empty() ||
-                    ranking.front() != static_cast<std::int32_t>(alive.front())) {
-                    ranking.insert(
-                        ranking.begin(),
-                        static_cast<std::int32_t>(alive.front()));
-                }
-            }
+            finish_if_one_player_left();
             return;
         }
 
-        // Rotação determinística para evitar que os mesmos jogadores se
-        // enfrentem em todas as rodadas.
-        const auto offset = static_cast<std::ptrdiff_t>(
-            round % alive.size());
-        std::rotate(alive.begin(), alive.begin() + offset, alive.end());
-
-        auto apply_damage = [&](std::size_t player_index, int damage) {
-            auto& player = players[player_index];
-            if (!player.alive || damage <= 0) {
-                return;
+        std::shuffle(alive.begin(), alive.end(), matchmaking_rng);
+        std::vector<std::pair<std::size_t, std::size_t>> matchups;
+        for (std::size_t i = 0; i + 1 < alive.size(); i += 2) {
+            const auto a = alive[i];
+            auto b = alive[i + 1];
+            if (alive.size() > 2 && previous_matchups.contains(matchup_key(a, b))) {
+                for (std::size_t j = i + 2; j < alive.size(); ++j) {
+                    if (!previous_matchups.contains(matchup_key(a, alive[j]))) {
+                        std::swap(alive[i + 1], alive[j]);
+                        b = alive[i + 1];
+                        break;
+                    }
+                }
             }
+            matchups.emplace_back(a, b);
+            players[a].opponent_id = static_cast<std::int32_t>(b);
+            players[b].opponent_id = static_cast<std::int32_t>(a);
+            previous_matchups.insert(matchup_key(a, b));
+        }
 
-            const float applied = std::min(
-                player.hp, static_cast<float>(damage));
+        auto apply_damage = [&](std::size_t player_index, std::int32_t damage) {
+            auto& player = players[player_index];
+            if (!player.alive || damage <= 0) return;
+            const float applied = std::min(player.hp, static_cast<float>(damage));
             player.hp = std::max(0.0f, player.hp - applied);
             player.damage_taken += applied;
-
-            if (player.hp <= 0.0f) {
-                player.alive = false;
-                player.eliminated = true;
-                player.placement = alive_players;
-                ranking.push_back(static_cast<std::int32_t>(player_index));
-                --alive_players;
-                events.emplace_back(
-                    "ELIMINATED: jogador " +
-                    std::to_string(player_index));
-            }
         };
 
-        for (std::size_t pair = 0; pair + 1 < alive.size(); pair += 2) {
-            const auto a = alive[pair];
-            const auto b = alive[pair + 1];
-            if (!players[a].alive || !players[b].alive) {
-                continue;
-            }
-
+        for (const auto& [a, b] : matchups) {
+            if (!players[a].alive || !players[b].alive) continue;
             CombatInput input{};
             input.context = CombatContext::PVP;
-            input.seed = seed
-                + static_cast<std::uint64_t>(round + 1) * 1000003ULL
+            input.seed = seed + static_cast<std::uint64_t>(round + 1) * 1000003ULL
                 + static_cast<std::uint64_t>(a) * 101ULL
                 + static_cast<std::uint64_t>(b) * 1009ULL;
             input.config.seed = input.seed;
             input.config.deterministic = true;
-
             append_combat_team(a, UnitTeam::PLAYER_A, input.player_a);
             append_combat_team(b, UnitTeam::PLAYER_B, input.player_b);
 
-            // Jogadores sem unidades no tabuleiro ainda estão montando a
-            // composição; não devem perder vida por um combate inexistente.
-            if (input.player_a.units.empty() || input.player_b.units.empty()) {
-                events.emplace_back(
-                    "COMBAT_SKIPPED: jogador " + std::to_string(a) +
-                    " vs " + std::to_string(b) +
-                    " (um dos tabuleiros está vazio).");
+            const bool empty_a = input.player_a.units.empty();
+            const bool empty_b = input.player_b.units.empty();
+            if (empty_a && empty_b) {
+                // Igual ao Python: empate sem recompensa e sem alterar streak.
+                events.emplace_back("COMBAT_DRAW_EMPTY: jogadores " +
+                    std::to_string(a) + " e " + std::to_string(b));
                 continue;
             }
 
-            const auto combat = combat_engine.simulate(input);
-            if (!combat.success || !combat.completed) {
-                throw std::runtime_error(
-                    "CombatEngine falhou no confronto " +
-                    std::to_string(a) + " vs " + std::to_string(b) +
-                    ": " + combat.error_code + " - " +
-                    combat.error_message);
-            }
-
-            events.emplace_back(
-                "COMBAT: jogador " + std::to_string(a) +
-                " vs " + std::to_string(b) +
-                ", eventos=" + std::to_string(combat.events_processed));
-
-            if (combat.winner == CombatWinner::PLAYER_A) {
-                ++players[a].wins;
-                ++players[b].losses;
-                economy_engine.register_pvp_win(economies[a]);
-                economy_engine.register_loss(economies[b]);
-                rewards[a] += 1.0f;
-                rewards[b] -= 1.0f;
-                apply_damage(b, std::max(1, combat.player_a_survivors));
-                events.emplace_back(
-                    "COMBAT_WIN: jogador " + std::to_string(a));
-            } else if (combat.winner == CombatWinner::PLAYER_B) {
-                ++players[b].wins;
-                ++players[a].losses;
-                economy_engine.register_pvp_win(economies[b]);
-                economy_engine.register_loss(economies[a]);
-                rewards[b] += 1.0f;
-                rewards[a] -= 1.0f;
-                apply_damage(a, std::max(1, combat.player_b_survivors));
-                events.emplace_back(
-                    "COMBAT_WIN: jogador " + std::to_string(b));
+            std::size_t winner = 0, loser = 0;
+            std::int32_t winner_survivors = 0;
+            std::int32_t loser_survivors = 0;
+            if (empty_a || empty_b) {
+                winner = empty_a ? b : a;
+                loser = empty_a ? a : b;
+                winner_survivors = static_cast<std::int32_t>(
+                    empty_a ? input.player_b.units.size() : input.player_a.units.size());
+                events.emplace_back("AUTO_WIN_EMPTY_BOARD: jogador " +
+                    std::to_string(winner) + " venceu jogador " + std::to_string(loser));
             } else {
-                economy_engine.reset_streak(economies[a]);
-                economy_engine.reset_streak(economies[b]);
-                events.emplace_back(
-                    "COMBAT_DRAW: jogadores " + std::to_string(a) +
-                    " e " + std::to_string(b));
-            }
-
-            sync_player_economy(a);
-            sync_player_economy(b);
-        }
-
-        if (alive_players <= 1) {
-            done = true;
-            for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
-                if (players[i].alive) {
-                    winner_id = static_cast<std::int32_t>(i);
-                    players[i].placement = 1;
-                    ranking.insert(ranking.begin(),
-                                   static_cast<std::int32_t>(i));
-                    break;
+                const auto combat = combat_engine.simulate(input);
+                if (!combat.success || !combat.completed)
+                    throw std::runtime_error("CombatEngine falhou no confronto " +
+                        std::to_string(a) + " vs " + std::to_string(b) +
+                        ": " + combat.error_code + " - " + combat.error_message);
+                events.emplace_back("COMBAT: jogador " + std::to_string(a) +
+                    " vs " + std::to_string(b) + ", eventos=" +
+                    std::to_string(combat.events_processed));
+                if (combat.winner == CombatWinner::PLAYER_A) {
+                    winner = a; loser = b;
+                    winner_survivors = combat.player_a_survivors;
+                    loser_survivors = combat.player_b_survivors;
+                } else if (combat.winner == CombatWinner::PLAYER_B) {
+                    winner = b; loser = a;
+                    winner_survivors = combat.player_b_survivors;
+                    loser_survivors = combat.player_a_survivors;
+                } else {
+                    economy_engine.reset_streak(economies[a]);
+                    economy_engine.reset_streak(economies[b]);
+                    sync_player_economy(a);
+                    sync_player_economy(b);
+                    events.emplace_back("COMBAT_DRAW: jogadores " +
+                        std::to_string(a) + " e " + std::to_string(b));
+                    continue;
                 }
             }
+
+            ++players[winner].wins;
+            ++players[loser].losses;
+            economy_engine.register_pvp_win(economies[winner]);
+            economy_engine.register_loss(economies[loser]);
+            const auto damage = stage_damage(stage) + std::max(0, winner_survivors);
+            apply_damage(loser, damage);
+            rewards[winner] += 1.0f;
+            rewards[loser] -= 1.0f;
+            events.emplace_back("COMBAT_WIN: jogador " + std::to_string(winner) +
+                ", dano=" + std::to_string(damage) +
+                ", sobreviventes=" + std::to_string(winner_survivors));
+            sync_player_economy(winner);
+            sync_player_economy(loser);
         }
 
-        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
-            refresh_masks(i);
-        }
+        eliminate_players(events);
+        finish_if_one_player_left();
+        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) refresh_masks(i);
     }
 };
 
@@ -833,6 +902,8 @@ ResetResult TFTEngine::reset(
     impl_->done = false;
     impl_->winner_id = std::nullopt;
     impl_->ranking.clear();
+    impl_->previous_matchups.clear();
+    impl_->matchmaking_rng.seed(impl_->seed + impl_->episode_id);
 
     // Devolve as ofertas antes de restaurar o pool.
     for (auto& shop : impl_->shops) {
@@ -946,9 +1017,38 @@ StepResult TFTEngine::step(
                         shop.take_unit(shop_slot);
 
                     if (purchased) {
-                        impl_->benches[i][free_slot] =
-                            std::move(*purchased);
+                        impl_->benches[i][free_slot] = std::move(*purchased);
 
+                        // Auto-upgrade 3x1★ -> 2★ e 3x2★ -> 3★.
+                        // O pool não muda: as cópias continuam pertencendo ao jogador.
+                        auto& bought_unit = impl_->benches[i][free_slot];
+                        while (bought_unit && bought_unit->star < 3) {
+                            const auto champion_id = bought_unit->champion_internal_id;
+                            const auto star = bought_unit->star;
+                            std::vector<std::pair<bool, std::size_t>> matches;
+                            matches.emplace_back(false, free_slot);
+                            for (std::size_t slot = 0; slot < kBenchSlots; ++slot) {
+                                if (slot != free_slot && impl_->benches[i][slot] &&
+                                    impl_->benches[i][slot]->champion_internal_id == champion_id &&
+                                    impl_->benches[i][slot]->star == star)
+                                    matches.emplace_back(false, slot);
+                            }
+                            for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+                                if (impl_->boards[i][slot] &&
+                                    impl_->boards[i][slot]->champion_internal_id == champion_id &&
+                                    impl_->boards[i][slot]->star == star)
+                                    matches.emplace_back(true, slot);
+                            }
+                            if (matches.size() < 3) break;
+                            std::size_t removed = 0;
+                            for (const auto& [on_board, slot] : matches) {
+                                if (!on_board && slot == free_slot) continue;
+                                if (on_board) impl_->boards[i][slot].reset();
+                                else impl_->benches[i][slot].reset();
+                                if (++removed == 2) break;
+                            }
+                            bought_unit->star = star + 1;
+                        }
                         impl_->register_position_state(i);
                     } else {
                         impl_->economy_engine.add_gold(
@@ -1147,17 +1247,22 @@ StepResult TFTEngine::step(
 
                     // Só confirma a venda se a devolução ao pool
                     // for aceita.
-                    if (impl_->pool->give_back(
-                            unit.champion_internal_id
-                        )) {
+                    bool returned_all_copies = true;
+                    const auto copies = star_copies(unit.star);
+                    std::int32_t returned = 0;
+                    for (; returned < copies; ++returned) {
+                        if (!impl_->pool->give_back(unit.champion_internal_id)) {
+                            returned_all_copies = false;
+                            break;
+                        }
+                    }
+                    if (returned_all_copies) {
                         impl_->benches[i][bench_slot].reset();
-
-                        (void)impl_->economy_engine.add_gold(
-                            economy,
-                            sell_value
-                        );
-
+                        (void)impl_->economy_engine.add_gold(economy, sell_value);
                         impl_->register_position_state(i);
+                    } else {
+                        for (std::int32_t copy = 0; copy < returned; ++copy)
+                            (void)impl_->pool->take(unit.champion_internal_id);
                     }
                 }
             }
