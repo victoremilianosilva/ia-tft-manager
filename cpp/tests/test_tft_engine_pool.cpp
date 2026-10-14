@@ -378,6 +378,47 @@ int main(int argc, char** argv) {
         require(saw_auto_win,
                 "Faltou evento de diagnóstico para vitória automática.");
 
+        // Validação integrada de REROLL: custo 2, nova oferta e rodada
+        // continua aberta até o jogador enviar PASS.
+        const auto gold_before_reroll = engine.get_public_state().players[0].gold;
+        require(gold_before_reroll >= 2,
+                "Pré-condição econômica inesperada para testar reroll.");
+        const auto masks_before_reroll = engine.get_action_masks();
+        require(masks_before_reroll[0].type_mask[1] == 1,
+                "REROLL deveria estar habilitado com ouro suficiente.");
+        actions[0].values = {1, 0, 0, 0, 0, 0};
+        const auto rerolled = engine.step(actions);
+        require(rerolled.players[0].gold == gold_before_reroll - 2,
+                "REROLL não descontou exatamente 2 de ouro.");
+        require(engine.round() == round_before_pass + 1,
+                "REROLL encerrou a rodada sem PASS.");
+        actions[0].values = {6, 0, 0, 0, 0, 0};
+        const auto next_round = engine.step(actions);
+        require(engine.round() == round_before_pass + 2,
+                "PASS não encerrou a rodada após o reroll.");
+
+        // Com renda da rodada e bônus de vitória, deve haver ouro suficiente
+        // para comprar XP. O nível/XP são verificados no estado público.
+        const auto gold_before_xp = next_round.players[0].gold;
+        require(gold_before_xp >= 4,
+                "Pré-condição econômica inesperada para testar compra de XP.");
+        const auto masks_before_xp = engine.get_action_masks();
+        require(masks_before_xp[0].type_mask[2] == 1,
+                "BUY_XP deveria estar habilitado com ouro suficiente.");
+        const auto level_before_xp = next_round.players[0].level;
+        const auto xp_before_xp = next_round.players[0].xp;
+        actions[0].values = {2, 0, 0, 0, 0, 0};
+        const auto bought_xp = engine.step(actions);
+        require(bought_xp.players[0].gold == gold_before_xp - 4,
+                "BUY_XP não descontou exatamente 4 de ouro.");
+        require(
+            bought_xp.players[0].level > level_before_xp ||
+            bought_xp.players[0].xp == xp_before_xp + 4 -
+                (bought_xp.players[0].level > level_before_xp ? 6 : 0),
+            "BUY_XP não atualizou XP/nível conforme a progressão.");
+        require(engine.round() == round_before_pass + 2,
+                "BUY_XP encerrou a rodada sem PASS.");
+
         // Reset de episódio limpa os históricos de movimentos, mas mantém
         // as métricas acumuladas para diagnóstico entre episódios.
         const auto metrics_before_reset = engine.get_anti_loop_metrics();
