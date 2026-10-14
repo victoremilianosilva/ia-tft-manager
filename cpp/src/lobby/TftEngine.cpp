@@ -1718,6 +1718,8 @@ StepResult TFTEngine::step(
             if (!impl_->players[i].alive) continue;
             round_rewards[i] += static_cast<float>(
                 std::clamp(impl_->state_reward(i, 0.0), -5.0, 5.0));
+            // RewardManager.calculate_total_reward limita o total a [-5, 5].
+            round_rewards[i] = std::clamp(round_rewards[i], -5.0f, 5.0f);
             impl_->round_reward_total[i] = round_rewards[i];
             // As recompensas de ação já foram acumuladas no processamento
             // acima; aqui somamos apenas combate + avaliação pós-combate.
