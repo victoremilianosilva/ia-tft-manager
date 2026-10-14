@@ -21,6 +21,19 @@ int main(int argc, char** argv) {
         tft::ChampionCatalog catalog(json_path);
         tft::TFTEngine engine(12345, json_path);
 
+        const auto initial_state = engine.get_public_state();
+
+        require(
+            initial_state.players.size() == tft::kPlayersPerLobby,
+            "Quantidade inicial de jogadores incorreta."
+        );
+
+        for (const auto& player : initial_state.players) {
+            require(player.gold == 0, "Ouro inicial deveria ser zero.");
+            require(player.level == 2, "Nivel inicial deveria ser 2.");
+            require(player.xp == 0, "XP inicial deveria ser zero.");
+        }
+
         require(catalog.size() > 0, "Catálogo vazio.");
 
         for (const auto& champion : catalog.all()) {
@@ -40,6 +53,19 @@ int main(int argc, char** argv) {
 
         // Reset da partida não pode duplicar nem perder cópias.
         engine.reset(12345);
+
+        const auto initial_state = engine.get_public_state();
+
+        require(
+            initial_state.players.size() == tft::kPlayersPerLobby,
+            "Quantidade inicial de jogadores incorreta."
+        );
+
+        for (const auto& player : initial_state.players) {
+            require(player.gold == 0, "Ouro inicial deveria ser zero.");
+            require(player.level == 2, "Nivel inicial deveria ser 2.");
+            require(player.xp == 0, "XP inicial deveria ser zero.");
+        }
 
         require(
             engine.pool_total_available() == total_before,

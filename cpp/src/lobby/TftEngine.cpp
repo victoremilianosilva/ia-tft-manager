@@ -8,6 +8,7 @@
 #include "lobby/ChampionCatalog.hpp"
 #include "lobby/UnitInstanceFactory.hpp"
 #include "lobby/UnitPool.hpp"
+#include "lobby/EconomyEngine.hpp"
 
 #ifndef TFT_DEFAULT_CATALOG_PATH
 #define TFT_DEFAULT_CATALOG_PATH "units_gerado.json"
@@ -116,6 +117,17 @@ struct TFTEngine::Impl {
     std::array<AntiLoopMetrics, kPlayersPerLobby>
         anti_loop_metrics{};
 
+    // ============================================================
+    // 💰 ESTADO ECONÔMICO
+    // ============================================================
+
+    // Motor sem estado próprio: as operações recebem o jogador
+    // econômico que devem consultar ou modificar.
+    EconomyEngine economy_engine;
+
+    // Um estado econômico independente por jogador.
+    std::array<PlayerEconomy, kPlayersPerLobby> economies{};
+
    explicit Impl(
         std::uint64_t initial_seed,
         const std::string& catalog_path
@@ -159,9 +171,14 @@ struct TFTEngine::Impl {
 
             player.player_id = static_cast<std::int32_t>(i);
             player.hp = 100.0f;
-            player.gold = 0;
-            player.level = 1;
-            player.xp = 0;
+
+            // Inicializa a economia conforme GameConfig.py.
+            economy_engine.reset(economies[i]);
+
+            // Mantém PlayerInfo sincronizado desde o primeiro frame.
+            player.gold = economies[i].gold;
+            player.level = economies[i].level;
+            player.xp = economies[i].xp;
 
             player.alive = true;
             player.eliminated = false;
@@ -214,6 +231,29 @@ struct TFTEngine::Impl {
                 );
             }
         }
+    }
+
+    // ============================================================
+    // 🔄 SINCRONIZAÇÃO DA ECONOMIA
+    // ============================================================
+
+    // PlayerInfo continua sendo a representação pública usada
+    // pelas observações e pelos bindings Python.
+    //
+    // PlayerEconomy é a fonte interna para ouro, nível e XP.
+    void sync_player_economy(std::size_t player_index) {
+        if (player_index >= kPlayersPerLobby) {
+            throw std::out_of_range(
+                "Indice de jogador invalido ao sincronizar economia."
+            );
+        }
+
+        const auto& economy = economies[player_index];
+        auto& player = players[player_index];
+
+        player.gold = economy.gold;
+        player.level = economy.level;
+        player.xp = economy.xp;
     }
 };
 
