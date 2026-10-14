@@ -62,18 +62,6 @@ tft::PlayerAction choose_action(
         }
     }
 
-    // Compra uma oferta permitida pela máscara.
-    if (masks.type_mask[0] == 1) {
-        for (std::int32_t slot = 0;
-             slot < static_cast<std::int32_t>(tft::kShopSlots);
-             ++slot) {
-            if (masks.shop_mask[static_cast<std::size_t>(slot)] == 1) {
-                action.values = {0, slot, 0, 0, 0, 0};
-                return action;
-            }
-        }
-    }
-
     // Move uma unidade no tabuleiro para provocar tentativas reversas
     // controladas e exercitar a proteção anti-loop durante a simulação.
     if (masks.type_mask[4] == 1) {
@@ -95,6 +83,18 @@ tft::PlayerAction choose_action(
                     pending_reverse = {true, source, target};
                     return action;
                 }
+            }
+        }
+    }
+
+    // Compra uma oferta permitida pela máscara.
+    if (masks.type_mask[0] == 1) {
+        for (std::int32_t slot = 0;
+             slot < static_cast<std::int32_t>(tft::kShopSlots);
+             ++slot) {
+            if (masks.shop_mask[static_cast<std::size_t>(slot)] == 1) {
+                action.values = {0, slot, 0, 0, 0, 0};
+                return action;
             }
         }
     }
