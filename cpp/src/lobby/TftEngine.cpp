@@ -14,6 +14,7 @@
 #include "lobby/UnitInstanceFactory.hpp"
 #include "lobby/UnitPool.hpp"
 #include "lobby/EconomyEngine.hpp"
+#include "combat/CombatEngine.hpp"
 #include "lobby/ShopEngine.hpp"
 
 #include "decision/ActionMaskEngine.hpp"
@@ -125,6 +126,7 @@ struct TFTEngine::Impl {
 
     // Economia independente por jogador.
     EconomyEngine economy_engine;
+    CombatEngine combat_engine;
     std::array<PlayerEconomy, kPlayersPerLobby> economies{};
 
     explicit Impl(
@@ -507,6 +509,241 @@ struct TFTEngine::Impl {
         player.gold = economy.gold;
         player.level = economy.level;
         player.xp = economy.xp;
+    }
+
+    // Converte a formação atual da lobby para a entrada da engine de combate.
+    // A engine de combate permanece independente: recebe equipes e devolve o resultado.
+    void append_combat_team(
+        std::size_t player_index,
+        UnitTeam team,
+        CombatTeam& output
+    ) const {
+        output.team = team;
+        output.player_id = static_cast<std::int32_t>(player_index);
+        output.player_hp = players[player_index].hp;
+
+        for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+            if (!boards[player_index][slot]) {
+                continue;
+            }
+
+            const auto& instance = *boards[player_index][slot];
+            const auto* definition =
+                catalog->find_by_id(instance.champion_internal_id);
+            if (!definition) {
+                continue;
+            }
+
+            const auto& stats = definition->stats;
+            const auto& profile = definition->combat_profile;
+
+            CombatUnit unit{};
+            unit.id = static_cast<int>(player_index * 100 + slot);
+            unit.api_name = definition->api_name;
+            unit.name = definition->name;
+            unit.star = std::clamp(instance.star, 1, 3);
+            unit.team = team;
+
+            const auto role_value = std::clamp(profile.role, 0, 4);
+            unit.role = static_cast<UnitRole>(role_value);
+
+            unit.position.x = static_cast<int>(slot % 7);
+            unit.position.y = static_cast<int>(slot / 7);
+            // Os tabuleiros ficam frente a frente durante o combate.
+            if (team == UnitTeam::PLAYER_B) {
+                unit.position.y = 3 - unit.position.y;
+            }
+            unit.source_board_position = static_cast<int>(slot);
+
+            const double max_hp =
+                profile.max_hp > 0.0 ? profile.max_hp : stats.max_hp;
+            unit.max_hp = static_cast<float>(max_hp > 0.0 ? max_hp : 100.0);
+            unit.hp = unit.max_hp;
+
+            const double attack_damage =
+                profile.attack_damage > 0.0
+                    ? profile.attack_damage
+                    : stats.attack_damage;
+            unit.attack_damage = static_cast<float>(
+                std::max(0.0, attack_damage));
+
+            const double attack_speed =
+                profile.attack_speed > 0.0
+                    ? profile.attack_speed
+                    : stats.attack_speed;
+            unit.attack_speed = static_cast<float>(
+                attack_speed > 0.0 ? attack_speed : 1.0);
+
+            const double attack_range =
+                profile.attack_range > 0.0
+                    ? profile.attack_range
+                    : stats.attack_range;
+            unit.attack_range = static_cast<float>(
+                attack_range > 0.0 ? attack_range : 1.0);
+
+            unit.armor = static_cast<float>(
+                profile.armor > 0.0 ? profile.armor : stats.armor);
+            unit.magic_resist = static_cast<float>(
+                profile.magic_resist > 0.0
+                    ? profile.magic_resist
+                    : stats.magic_resist);
+
+            unit.alive = true;
+            unit.can_move = true;
+            unit.can_attack = true;
+            unit.can_cast = true;
+
+            output.units.push_back(std::move(unit));
+        }
+    }
+
+    void resolve_combats(
+        std::vector<std::string>& events,
+        std::array<float, kPlayersPerLobby>& rewards
+    ) {
+        std::vector<std::size_t> alive;
+        alive.reserve(kPlayersPerLobby);
+        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+            if (players[i].alive) {
+                alive.push_back(i);
+            }
+        }
+
+        if (alive.size() < 2) {
+            if (alive.size() == 1) {
+                done = true;
+                winner_id = static_cast<std::int32_t>(alive.front());
+                players[alive.front()].placement = 1;
+                if (ranking.empty() ||
+                    ranking.front() != static_cast<std::int32_t>(alive.front())) {
+                    ranking.insert(
+                        ranking.begin(),
+                        static_cast<std::int32_t>(alive.front()));
+                }
+            }
+            return;
+        }
+
+        // Rotação determinística para evitar que os mesmos jogadores se
+        // enfrentem em todas as rodadas.
+        const auto offset = static_cast<std::ptrdiff_t>(
+            round % alive.size());
+        std::rotate(alive.begin(), alive.begin() + offset, alive.end());
+
+        auto apply_damage = [&](std::size_t player_index, int damage) {
+            auto& player = players[player_index];
+            if (!player.alive || damage <= 0) {
+                return;
+            }
+
+            const float applied = std::min(
+                player.hp, static_cast<float>(damage));
+            player.hp = std::max(0.0f, player.hp - applied);
+            player.damage_taken += applied;
+
+            if (player.hp <= 0.0f) {
+                player.alive = false;
+                player.eliminated = true;
+                player.placement = alive_players;
+                ranking.push_back(static_cast<std::int32_t>(player_index));
+                --alive_players;
+                events.emplace_back(
+                    "ELIMINATED: jogador " +
+                    std::to_string(player_index));
+            }
+        };
+
+        for (std::size_t pair = 0; pair + 1 < alive.size(); pair += 2) {
+            const auto a = alive[pair];
+            const auto b = alive[pair + 1];
+            if (!players[a].alive || !players[b].alive) {
+                continue;
+            }
+
+            CombatInput input{};
+            input.context = CombatContext::PVP;
+            input.seed = seed
+                + static_cast<std::uint64_t>(round + 1) * 1000003ULL
+                + static_cast<std::uint64_t>(a) * 101ULL
+                + static_cast<std::uint64_t>(b) * 1009ULL;
+            input.config.seed = input.seed;
+            input.config.deterministic = true;
+
+            append_combat_team(a, UnitTeam::PLAYER_A, input.player_a);
+            append_combat_team(b, UnitTeam::PLAYER_B, input.player_b);
+
+            // Jogadores sem unidades no tabuleiro ainda estão montando a
+            // composição; não devem perder vida por um combate inexistente.
+            if (input.player_a.units.empty() || input.player_b.units.empty()) {
+                events.emplace_back(
+                    "COMBAT_SKIPPED: jogador " + std::to_string(a) +
+                    " vs " + std::to_string(b) +
+                    " (um dos tabuleiros está vazio).");
+                continue;
+            }
+
+            const auto combat = combat_engine.simulate(input);
+            if (!combat.success || !combat.completed) {
+                throw std::runtime_error(
+                    "CombatEngine falhou no confronto " +
+                    std::to_string(a) + " vs " + std::to_string(b) +
+                    ": " + combat.error_code + " - " +
+                    combat.error_message);
+            }
+
+            events.emplace_back(
+                "COMBAT: jogador " + std::to_string(a) +
+                " vs " + std::to_string(b) +
+                ", eventos=" + std::to_string(combat.events_processed));
+
+            if (combat.winner == CombatWinner::PLAYER_A) {
+                ++players[a].wins;
+                ++players[b].losses;
+                economy_engine.register_pvp_win(economies[a]);
+                economy_engine.register_loss(economies[b]);
+                rewards[a] += 1.0f;
+                rewards[b] -= 1.0f;
+                apply_damage(b, std::max(1, combat.player_a_survivors));
+                events.emplace_back(
+                    "COMBAT_WIN: jogador " + std::to_string(a));
+            } else if (combat.winner == CombatWinner::PLAYER_B) {
+                ++players[b].wins;
+                ++players[a].losses;
+                economy_engine.register_pvp_win(economies[b]);
+                economy_engine.register_loss(economies[a]);
+                rewards[b] += 1.0f;
+                rewards[a] -= 1.0f;
+                apply_damage(a, std::max(1, combat.player_b_survivors));
+                events.emplace_back(
+                    "COMBAT_WIN: jogador " + std::to_string(b));
+            } else {
+                economy_engine.reset_streak(economies[a]);
+                economy_engine.reset_streak(economies[b]);
+                events.emplace_back(
+                    "COMBAT_DRAW: jogadores " + std::to_string(a) +
+                    " e " + std::to_string(b));
+            }
+
+            sync_player_economy(a);
+            sync_player_economy(b);
+        }
+
+        if (alive_players <= 1) {
+            done = true;
+            for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+                if (players[i].alive) {
+                    winner_id = static_cast<std::int32_t>(i);
+                    players[i].placement = 1;
+                    ranking.insert(ranking.begin(),
+                                   static_cast<std::int32_t>(i));
+                    break;
+                }
+            }
+        }
+
+        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+            refresh_masks(i);
+        }
     }
 };
 
