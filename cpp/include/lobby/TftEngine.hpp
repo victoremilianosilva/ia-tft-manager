@@ -103,6 +103,50 @@ struct ChampionDefinition {
     std::string tile_icon;
 };
 
+
+ // ============================================================
+// 🧍 INSTÂNCIA INDIVIDUAL DE UMA UNIDADE
+// ============================================================
+//
+// ChampionDefinition = dados estáticos do campeão.
+// UnitInstance      = identidade e estado de uma cópia.
+//
+// Exemplo:
+//   ChampionDefinition: Teemo, custo 2, atributos-base.
+//   UnitInstance A: Teemo, UUID A, 1 estrela.
+//   UnitInstance B: Teemo, UUID B, 2 estrelas.
+//
+// As duas instâncias apontam para o mesmo campeão do catálogo,
+// mas podem ter estados diferentes.
+
+struct UnitInstance {
+    // 🆔 Referência ao catálogo estático.
+    // Corresponde ao ID interno usado pelo UnitManager.py.
+    std::int32_t champion_internal_id{-1};
+
+    // Identificador original do campeão, normalmente apiName.
+    std::string champion_id;
+
+    // Identidade única desta cópia.
+    // A geração efetiva do UUID será implementada posteriormente.
+    std::string uuid;
+
+    // ⭐ Estado mutável da unidade.
+    std::int32_t star{1};
+
+    // Retorna se a instância possui uma referência válida.
+    bool is_valid() const noexcept {
+        return champion_internal_id >= 0 && !uuid.empty();
+    }
+
+    // Verifica se a quantidade de estrelas está dentro do
+    // intervalo atualmente suportado pelo jogo.
+    bool has_valid_star() const noexcept {
+        return star >= 1 && star <= 3;
+    }
+};
+
+
 // Ordem da policy atual.
 // type, shop_slot, bench_slot, board_target,
 // board_source, board_move_target.
