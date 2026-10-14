@@ -1,8 +1,12 @@
 
 #include "decision/ActionMaskEngine.hpp"
 
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
 #include <cassert>
 #include <stdexcept>
+#include <string>
 
 using namespace tft::decision;
 
@@ -151,6 +155,44 @@ void test_bench_to_board_requires_empty_target() {
     assert(masks.bench_to_board_target_masks[2][10] == MASK_DISABLED);
 }
 
+void test_buy_is_disabled_when_bench_is_full() {
+    PlayerState state;
+    state.economy.gold = 20;
+    state.economy.level = 2;
+    state.shop[0] = make_unit("shop-unit", 1);
+
+    for (std::size_t slot = 0; slot < BENCH_SIZE; ++slot) {
+        state.bench[slot] = make_unit(("bench-" + std::to_string(slot)).c_str());
+    }
+
+    AntiLoopEngine anti_loop;
+    ActionMaskEngine engine;
+    const auto masks = engine.generate_masks(state, anti_loop);
+
+    assert(!masks.buy_available);
+    assert(masks.type_mask[ActionType::BUY] == MASK_DISABLED);
+    assert(masks.shop_mask[0] == MASK_DISABLED);
+}
+
+void test_invalid_move_pairs_are_not_enabled() {
+    PlayerState state;
+    state.economy.gold = 0;
+    state.economy.level = 2;
+    state.board[3] = make_unit("board-unit");
+    state.bench[2] = make_unit("bench-unit");
+
+    AntiLoopEngine anti_loop;
+    ActionMaskEngine engine;
+    const auto masks = engine.generate_masks(state, anti_loop);
+
+    // Não permite origem vazia, origem==destino nem destino ocupado
+    // para o movimento banco -> tabuleiro.
+    assert(masks.board_move_target_masks[4][3] == MASK_DISABLED);
+    assert(masks.board_move_target_masks[3][3] == MASK_DISABLED);
+    assert(masks.bench_to_board_target_masks[2][3] == MASK_DISABLED);
+    assert(masks.bench_to_board_target_masks[2][4] == MASK_ENABLED);
+}
+
 void test_eliminated_player_can_only_pass() {
     PlayerState state;
     state.is_alive = false;
@@ -203,6 +245,8 @@ int main() {
     test_sell_uses_real_bench_units_not_fallback();
     test_board_move_masks_respect_source_and_destination();
     test_bench_to_board_requires_empty_target();
+    test_buy_is_disabled_when_bench_is_full();
+    test_invalid_move_pairs_are_not_enabled();
     test_eliminated_player_can_only_pass();
     test_invalid_economy_is_rejected();
 
