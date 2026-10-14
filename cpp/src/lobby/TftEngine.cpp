@@ -115,6 +115,13 @@ struct TFTEngine::Impl {
     bool done{false};
     bool closed{false};
 
+    // O PASS encerra a fase de preparação daquele jogador.
+    // A rodada só é resolvida quando todos os jogadores vivos terminaram,
+    // ou quando atingem o limite de ações da rodada (igual à lobby Python).
+    static constexpr std::uint32_t kMaxActionsPerRound = 20;
+    std::array<std::uint32_t, kPlayersPerLobby> round_actions{};
+    std::array<bool, kPlayersPerLobby> round_finished{};
+
     std::array<PlayerInfo, kPlayersPerLobby> players{};
     std::array<PlayerActionMasks, kPlayersPerLobby> masks{};
 
@@ -318,6 +325,8 @@ struct TFTEngine::Impl {
     void initialize_players() {
         alive_players =
             static_cast<std::int32_t>(kPlayersPerLobby);
+        round_actions.fill(0);
+        round_finished.fill(false);
 
         for (std::size_t i = 0;
              i < kPlayersPerLobby;
@@ -509,6 +518,38 @@ struct TFTEngine::Impl {
         player.gold = economy.gold;
         player.level = economy.level;
         player.xp = economy.xp;
+    }
+
+    bool all_alive_players_finished_round() const {
+        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+            if (players[i].alive && !round_finished[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    void mark_round_completion(std::size_t player_index, std::int32_t action_type) {
+        if (!players[player_index].alive) {
+            return;
+        }
+
+        ++round_actions[player_index];
+        if (action_type == 6 ||
+            round_actions[player_index] >= kMaxActionsPerRound) {
+            round_finished[player_index] = true;
+        }
+    }
+
+    void reset_round_completion() {
+        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+            if (players[i].alive) {
+                round_actions[i] = 0;
+                round_finished[i] = false;
+            } else {
+                round_finished[i] = true;
+            }
+        }
     }
 
     // Converte a formação atual da lobby para a entrada da engine de combate.
@@ -1126,49 +1167,60 @@ StepResult TFTEngine::step(
 
         impl_->sync_player_economy(i);
         impl_->refresh_masks(i);
+        impl_->mark_round_completion(i, type);
     }
 
     // ========================================================
-    // COMBATE PVP DA RODADA
+    // RESOLUÇÃO CONDICIONAL DA RODADA
     // ========================================================
 
     std::array<float, kPlayersPerLobby> round_rewards{};
     std::vector<std::string> round_events;
-    impl_->resolve_combats(round_events, round_rewards);
+    bool round_resolved = false;
 
-    // ========================================================
-    // RENDA E XP PASSIVO DA RODADA
-    // ========================================================
+    if (impl_->all_alive_players_finished_round()) {
+        round_resolved = true;
 
-    const auto resolving_round =
-        static_cast<std::int32_t>(impl_->round + 1);
+        // A ordem acompanha TFTLobby._resolve_round(): primeiro a renda/XP
+        // da rodada e a preparação das lojas; depois os confrontos PVP.
+        const auto resolving_round =
+            static_cast<std::int32_t>(impl_->round + 1);
 
-    for (std::size_t i = 0;
-         i < kPlayersPerLobby;
-         ++i) {
-        if (impl_->players[i].alive) {
+        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+            if (!impl_->players[i].alive) {
+                continue;
+            }
+
             (void)impl_->economy_engine.resolve_round(
                 impl_->economies[i],
                 resolving_round
             );
-
             impl_->sync_player_economy(i);
 
-            // Prepara a loja da próxima rodada. ShopEngine respeita o
-            // bloqueio: ofertas permanecem iguais quando a loja está locked.
+            // A loja da próxima rodada só é preparada quando a rodada
+            // realmente fecha, nunca em cada ação individual.
             impl_->shops[i]->roll(impl_->economies[i].level);
-
             impl_->refresh_masks(i);
         }
+
+        impl_->resolve_combats(round_events, round_rewards);
+
+        // O bônus de vitória já foi creditado no ouro pelo combate.
+        // Limpa apenas o acumulador do relatório desta rodada.
+        for (auto& economy : impl_->economies) {
+            economy.round_win_gold = 0;
+        }
+
+        ++impl_->round;
+
+        const std::uint32_t public_round =
+            impl_->round + 1;
+
+        impl_->stage =
+            ((public_round - 1) / kRoundsPerStage) + 1;
+
+        impl_->reset_round_completion();
     }
-
-    ++impl_->round;
-
-    const std::uint32_t public_round =
-        impl_->round + 1;
-
-    impl_->stage =
-        ((public_round - 1) / kRoundsPerStage) + 1;
 
     // ========================================================
     // RESULTADO
@@ -1197,6 +1249,14 @@ StepResult TFTEngine::step(
         "Acoes de loja, economia, venda e movimentacao "
         "executadas pelo TFTEngine."
     );
+    if (!round_resolved) {
+        result.events.emplace_back(
+            "ROUND_WAITING: aguardando PASS ou limite de acoes "
+            "de todos os jogadores vivos."
+        );
+    } else {
+        result.events.emplace_back("ROUND_RESOLVED");
+    }
     result.events.insert(
         result.events.end(),
         round_events.begin(),
