@@ -137,7 +137,7 @@ struct TFTEngine::Impl {
         for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
             write_observation(
                 players[i],
-                round,
+                round + 1,
                 observations.data() + i * kObservationDim
             );
         }
@@ -251,10 +251,15 @@ StepResult TFTEngine::step(
     // Nenhuma ação de jogo é executada nesta etapa.
     // --------------------------------------------------------
 
+    // O contador interno representa as rodadas já avançadas.
     ++impl_->round;
 
+    // A rodada pública seguinte é impl_->round + 1.
+    // O estágio deve corresponder a essa rodada pública.
+    const std::uint32_t public_round = impl_->round + 1;
+
     impl_->stage =
-        ((impl_->round - 1) / kRoundsPerStage) + 1;
+        ((public_round - 1) / kRoundsPerStage) + 1;
 
     // --------------------------------------------------------
     // 3. Montar o resultado
@@ -273,7 +278,8 @@ StepResult TFTEngine::step(
 
     result.lobby_done = impl_->done;
     result.episode_id = impl_->episode_id;
-    result.round = impl_->round;
+    // Mantém StepResult alinhado com get_public_state().
+    result.round = impl_->round + 1;
     result.stage = impl_->stage;
     result.alive_players = impl_->alive_players;
 

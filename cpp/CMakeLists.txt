@@ -1,4 +1,3 @@
-```cmake
 cmake_minimum_required(VERSION 3.20)
 
 project(tft_combat_engine
@@ -359,4 +358,3 @@ if(BUILD_TESTING)
     endif()
 
 endif()
-```

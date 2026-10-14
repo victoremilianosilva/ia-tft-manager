@@ -52,6 +52,17 @@ def test_lobby_step_contract():
         assert result["dones"].shape == (8,)
         assert len(result["action_masks"]) == 8
         assert isinstance(result["lobby_done"], bool)
+
+                # O estado público deve refletir o resultado do step.
+        state = engine.get_public_state()
+
+        assert state["round"] == 2
+        assert state["round_index"] == 1
+        assert state["stage"] == 1
+
+        # A última posição da observação provisória representa a rodada.
+        assert np.all(result["observations"][:, -1] == 2)
+        
     finally:
         engine.close()
 
@@ -99,6 +110,26 @@ def test_public_state_matches_python_lobby_contract():
             "placement", "opponent_id", "damage_taken",
         }
         assert expected_player_keys.issubset(players[0].keys())
+
+    finally:
+        engine.close()
+
+def test_public_round_and_stage_remain_consistent():
+    engine = TFTLobby(seed=2026)
+
+    try:
+        engine.reset()
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+
+        # Sete avanços levam a partida para a rodada pública 8.
+        for _ in range(7):
+            engine.step(actions)
+
+        state = engine.get_public_state()
+
+        assert state["round"] == 8
+        assert state["round_index"] == 7
+        assert state["stage"] == 2
 
     finally:
         engine.close()
