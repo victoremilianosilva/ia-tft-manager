@@ -52,19 +52,21 @@ int main(int argc, char** argv) {
         const auto total_before = engine.pool_total_available();
 
         // Reset da partida não pode duplicar nem perder cópias.
+        // Reset da partida não pode duplicar nem perder cópias.
         engine.reset(12345);
 
-        const auto initial_state = engine.get_public_state();
+        // Usamos reset_state para não redeclarar initial_state.
+        const auto reset_state = engine.get_public_state();
 
         require(
-            initial_state.players.size() == tft::kPlayersPerLobby,
-            "Quantidade inicial de jogadores incorreta."
+            reset_state.players.size() == tft::kPlayersPerLobby,
+            "Quantidade de jogadores incorreta apos reset."
         );
 
-        for (const auto& player : initial_state.players) {
-            require(player.gold == 0, "Ouro inicial deveria ser zero.");
-            require(player.level == 2, "Nivel inicial deveria ser 2.");
-            require(player.xp == 0, "XP inicial deveria ser zero.");
+        for (const auto& player : reset_state.players) {
+            require(player.gold == 0, "Reset nao restaurou o ouro.");
+            require(player.level == 2, "Reset nao restaurou o nivel.");
+            require(player.xp == 0, "Reset nao restaurou o XP.");
         }
 
         require(
