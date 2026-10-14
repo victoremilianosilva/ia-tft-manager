@@ -9,6 +9,7 @@
 #include "lobby/UnitInstanceFactory.hpp"
 #include "lobby/UnitPool.hpp"
 #include "lobby/EconomyEngine.hpp"
+#include "lobby/ShopEngine.hpp"
 
 #ifndef TFT_DEFAULT_CATALOG_PATH
 #define TFT_DEFAULT_CATALOG_PATH "units_gerado.json"
@@ -100,6 +101,8 @@ struct TFTEngine::Impl {
     std::unique_ptr<ChampionCatalog> catalog;
     std::unique_ptr<UnitPool> pool;
     std::unique_ptr<UnitInstanceFactory> unit_factory;
+    std::array<std::unique_ptr<ShopEngine>, kPlayersPerLobby> shops{};
+    std::array<std::array<std::optional<UnitInstance>, kBenchSlots>, kPlayersPerLobby> benches{};
 
     std::int32_t alive_players{
         static_cast<std::int32_t>(kPlayersPerLobby)
@@ -192,13 +195,61 @@ struct TFTEngine::Impl {
             player.damage_taken = 0.0f;
 
             players[i] = player;
+            benches[i].fill(std::nullopt);
+            shops[i] = std::make_unique<ShopEngine>(
+                *pool, *unit_factory, seed + static_cast<std::uint64_t>(i) + episode_id
+            );
+            shops[i]->roll(player.level);
             masks[i] = make_default_masks();
 
             strategies[i].clear();
             strategies[i].push_back(StrategyInfo{});
 
             anti_loop_metrics[i] = AntiLoopMetrics{};
+            refresh_masks(i);
         }
+    }
+
+    void refresh_masks(std::size_t player_index) {
+        auto& current = masks[player_index];
+        current = make_default_masks();
+        current.type_mask.fill(0);
+        current.shop_mask.fill(0);
+        current.bench_source_mask.fill(0);
+        const auto& economy = economies[player_index];
+        const bool bench_has_space = std::any_of(
+            benches[player_index].begin(), benches[player_index].end(),
+            [](const auto& unit) { return !unit.has_value(); }
+        );
+        bool can_buy = false;
+        for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
+            const auto* offer = shops[player_index]->get_unit(static_cast<std::int32_t>(slot));
+            if (offer && bench_has_space) {
+                const auto* definition = catalog->find_by_id(offer->champion_internal_id);
+                if (definition && economy.gold >= definition->cost) {
+                    current.shop_mask[slot] = 1;
+                    can_buy = true;
+                }
+            }
+        }
+        if (can_buy) current.type_mask[0] = 1;
+        else current.shop_mask[0] = 1;
+        if (economy.gold >= EconomyEngine::REROLL_COST) current.type_mask[1] = 1;
+        if (economy_engine.can_buy_xp(economy)) current.type_mask[2] = 1;
+        current.type_mask[6] = 1;
+        bool has_bench_unit = false;
+        for (std::size_t slot = 0; slot < kBenchSlots; ++slot) {
+            if (benches[player_index][slot]) {
+                current.bench_source_mask[slot] = 1;
+                has_bench_unit = true;
+            }
+        }
+        if (!has_bench_unit) current.bench_source_mask[0] = 1;
+        current.bench_move_source_mask.fill(0); current.bench_move_source_mask[0] = 1;
+        current.board_target_mask.fill(0); current.board_target_mask[0] = 1;
+        current.board_source_mask.fill(0); current.board_source_mask[0] = 1;
+        current.board_move_target_masks.fill(0); current.board_move_target_masks[0] = 1;
+        current.bench_to_board_target_masks.fill(0); current.bench_to_board_target_masks[0] = 1;
     }
 
     std::vector<float> build_observations() const {
@@ -302,7 +353,11 @@ ResetResult TFTEngine::reset(
     impl_->done = false;
     impl_->winner_id = std::nullopt;
     impl_->ranking.clear();
-    // Restaura o estoque uma única vez para a nova partida.
+    // Devolve ofertas antes de restaurar o pool.
+    for (auto& shop : impl_->shops) {
+        if (shop) shop->return_current_shop();
+        shop.reset();
+    }
     impl_->pool->reset();
 
     // Reinicia a sequência de geração de UUIDs para a seed atual.
@@ -352,12 +407,52 @@ StepResult TFTEngine::step(
     }
 
     // --------------------------------------------------------
-    // 2. Avançar o estado provisório
+    // 2. Executar ações de loja e economia
     // --------------------------------------------------------
-    //
-    // Este é apenas um avanço de contrato.
-    // Nenhuma ação de jogo é executada nesta etapa.
-    // --------------------------------------------------------
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        const auto& action = actions[i].values;
+        const auto type = action[0];
+        const auto shop_slot = action[1];
+        auto& economy = impl_->economies[i];
+        auto& shop = *impl_->shops[i];
+        if (!impl_->players[i].alive) { impl_->refresh_masks(i); continue; }
+
+        if (type == 0) { // BUY
+            const auto* offer = shop.get_unit(shop_slot);
+            std::size_t free_slot = kBenchSlots;
+            for (std::size_t slot = 0; slot < kBenchSlots; ++slot) {
+                if (!impl_->benches[i][slot]) { free_slot = slot; break; }
+            }
+            if (offer && free_slot < kBenchSlots) {
+                const auto* definition = impl_->catalog->find_by_id(offer->champion_internal_id);
+                if (definition && impl_->economy_engine.spend_gold(economy, definition->cost)) {
+                    auto purchased = shop.take_unit(shop_slot);
+                    if (purchased) impl_->benches[i][free_slot] = std::move(*purchased);
+                    else impl_->economy_engine.add_gold(economy, definition->cost);
+                }
+            }
+        } else if (type == 1) { // REROLL
+            if (impl_->economy_engine.spend_gold(economy, EconomyEngine::REROLL_COST))
+                shop.reroll(economy.level);
+        } else if (type == 2) { // BUY XP
+            (void)impl_->economy_engine.buy_xp(economy);
+        } else if (type == 6) {
+            // PASS: nenhuma alteração.
+        } // MOVE_BENCH, MOVE_BOARD e SELL serão integrados na próxima tarefa.
+
+        impl_->sync_player_economy(i);
+        impl_->refresh_masks(i);
+    }
+
+    // Renda e XP passivo da rodada.
+    const auto resolving_round = static_cast<std::int32_t>(impl_->round + 1);
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        if (impl_->players[i].alive) {
+            (void)impl_->economy_engine.resolve_round(impl_->economies[i], resolving_round);
+            impl_->sync_player_economy(i);
+            impl_->refresh_masks(i);
+        }
+    }
 
     // O contador interno representa as rodadas já avançadas.
     ++impl_->round;
@@ -392,8 +487,7 @@ StepResult TFTEngine::step(
     result.alive_players = impl_->alive_players;
 
     result.events.emplace_back(
-        "Etapa 1: step executado em modo esqueleto; "
-        "as acoes ainda nao alteram o jogo."
+        "Ações de loja/economia executadas; movimentação de tabuleiro e venda ainda pendentes."
     );
 
     return result;
