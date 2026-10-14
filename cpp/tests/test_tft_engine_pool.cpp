@@ -197,6 +197,22 @@ int main(int argc, char** argv) {
         require(metrics[0].execution_blocks == 1 && metrics[0].blocked_reverse == 1,
                 "AntiLoop não bloqueou/contabilizou o movimento reverso.");
 
+        // Reset de episódio limpa os históricos de movimentos, mas mantém
+        // as métricas acumuladas para diagnóstico entre episódios.
+        const auto metrics_before_reset = engine.get_anti_loop_metrics();
+        engine.reset(12345);
+        const auto metrics_after_reset = engine.get_anti_loop_metrics();
+        require(
+            metrics_after_reset[0].execution_attempts ==
+                metrics_before_reset[0].execution_attempts,
+            "Reset apagou as métricas acumuladas do AntiLoop."
+        );
+        require(
+            metrics_after_reset[0].execution_blocks ==
+                metrics_before_reset[0].execution_blocks,
+            "Reset apagou os bloqueios acumulados do AntiLoop."
+        );
+
         std::cout << "TFTEngine + loja/economia/ActionMask/AntiLoop: OK\n";
         return 0;
     } catch (const std::exception& e) {
