@@ -173,31 +173,40 @@ ChampionAbility parse_ability(const Json& json) {
             );
         }
 
+        
         if (variable_json.contains("value")) {
             const auto& values = variable_json["value"];
 
-            if (!values.is_array()) {
-                throw std::runtime_error(
-                    "ability.variables[].value deve ser uma lista."
-                );
-            }
-
-            for (const auto& value : values) {
-                if (!value.is_number()) {
+            // Alguns campeões possuem value=null no JSON.
+            // Nesse caso, a variável existe, mas não possui valores
+            // numéricos para armazenar.
+            if (values.is_null()) {
+                // Mantém a variável e seu nome, com values vazio.
+            } else {
+                if (!values.is_array()) {
                     throw std::runtime_error(
-                        "Valor nao numerico em habilidade."
+                        "ability.variables[].value deve ser uma lista "
+                        "ou null."
                     );
                 }
 
-                const double number = value.get<double>();
+                for (const auto& value : values) {
+                    if (!value.is_number()) {
+                        throw std::runtime_error(
+                            "Valor nao numerico em habilidade."
+                        );
+                    }
 
-                if (!std::isfinite(number)) {
-                    throw std::runtime_error(
-                        "Valor nao finito em habilidade."
-                    );
+                    const double number = value.get<double>();
+
+                    if (!std::isfinite(number)) {
+                        throw std::runtime_error(
+                            "Valor nao finito em habilidade."
+                        );
+                    }
+
+                    variable.values.push_back(number);
                 }
-
-                variable.values.push_back(number);
             }
         }
 

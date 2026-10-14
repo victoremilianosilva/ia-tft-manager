@@ -207,6 +207,7 @@ if(EXISTS "${TFT_LOBBY_SOURCE}")
         tft_engine
         src/lobby/TftEngine.cpp
         src/lobby/ChampionCatalog.cpp
+        src/lobby/UnitInstanceFactory.cpp
         bindings/tft_engine_bindings.cpp
     )
 
@@ -361,6 +362,26 @@ if(BUILD_TESTING)
         PROPERTIES
             ENVIRONMENT
                 "PYTHONPATH=$<TARGET_FILE_DIR:decision_engine>"
+    )
+
+    add_executable(
+        test_unit_instance_factory
+        tests/test_unit_instance_factory.cpp
+        src/lobby/ChampionCatalog.cpp
+        src/lobby/UnitInstanceFactory.cpp
+    )
+
+    configure_tft_module(test_unit_instance_factory)
+
+    target_link_libraries(
+        test_unit_instance_factory
+        PRIVATE nlohmann_json::nlohmann_json
+    )
+
+    add_test(
+        NAME unit_instance_factory
+        COMMAND test_unit_instance_factory
+            "${CMAKE_SOURCE_DIR}/../units_gerado.json"
     )
 
     # O teste da lobby só existe quando seu módulo é criado.
