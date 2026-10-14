@@ -105,6 +105,8 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
     try:
         python_lobby.reset()
         cpp_engine.reset(fixture["seed"])
+        python_reward_totals = [0.0] * 8
+        cpp_reward_totals = [0.0] * 8
 
         for step in fixture["steps"]:
             # Execute identical semantic actions through the two public APIs.
@@ -138,6 +140,14 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
                     py_reward, cpp_reward,
                     f"{step['name']}.rewards[{player_id}]",
                     abs_tol=2e-4,
+                )
+                python_reward_totals[player_id] += float(py_reward)
+                cpp_reward_totals[player_id] += float(cpp_reward)
+                _assert_close(
+                    python_reward_totals[player_id],
+                    cpp_reward_totals[player_id],
+                    f"{step['name']}.cumulative_rewards[{player_id}]",
+                    abs_tol=5e-4,
                 )
 
             # Public round metadata is compared too; rewards alone can hide
