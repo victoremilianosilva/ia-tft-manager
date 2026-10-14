@@ -424,6 +424,7 @@ if(BUILD_TESTING)
         src/lobby/ChampionCatalog.cpp
         src/lobby/UnitInstanceFactory.cpp
         src/lobby/UnitPool.cpp
+        src/lobby/EconomyEngine.cpp
     )
 
     configure_tft_module(test_tft_engine_pool)
