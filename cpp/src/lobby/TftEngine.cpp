@@ -350,8 +350,8 @@ struct TFTEngine::Impl {
 
             // Impede que o histórico de uma partida anterior
             // interfira no novo episódio.
-            anti_loop_engines[i] =
-                decision::AntiLoopEngine{};
+            // Limpa o histórico da partida, preservando as métricas acumuladas.
+            anti_loop_engines[i].reset();
 
             shops[i] = std::make_unique<ShopEngine>(
                 *pool,
