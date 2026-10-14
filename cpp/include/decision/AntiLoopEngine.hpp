@@ -41,8 +41,9 @@ struct AntiLoopStateSummary {
 
 class AntiLoopEngine {
 public:
-    explicit AntiLoopEngine(AntiLoopConfig config = {});
-
+    AntiLoopEngine();
+    explicit AntiLoopEngine(AntiLoopConfig config);
+    
     // Reset limpa os históricos, mas preserva as métricas acumuladas.
     void reset();
 

@@ -6,6 +6,10 @@
 
 namespace tft::decision {
 
+AntiLoopEngine::AntiLoopEngine()
+    : AntiLoopEngine(AntiLoopConfig{}) {
+}
+
 AntiLoopEngine::AntiLoopEngine(AntiLoopConfig config)
     : config_(config) {
 }
