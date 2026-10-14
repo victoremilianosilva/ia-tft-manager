@@ -211,6 +211,7 @@ if(EXISTS "${TFT_LOBBY_SOURCE}")
         src/lobby/UnitPool.cpp
         src/lobby/ShopEngine.cpp
         src/lobby/EconomyEngine.cpp
+        src/combat/CombatEngine.cpp
         src/decision/AntiLoopEngine.cpp
         src/decision/MoveValidator.cpp
         src/decision/ActionMaskEngine.cpp
@@ -430,6 +431,7 @@ if(BUILD_TESTING)
         src/lobby/UnitPool.cpp
         src/lobby/ShopEngine.cpp
         src/lobby/EconomyEngine.cpp
+        src/combat/CombatEngine.cpp
         src/decision/AntiLoopEngine.cpp
         src/decision/MoveValidator.cpp
         src/decision/ActionMaskEngine.cpp
