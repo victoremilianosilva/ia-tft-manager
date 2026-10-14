@@ -299,6 +299,11 @@ public:
     std::array<PlayerActionMasks, kPlayersPerLobby>
     get_action_masks() const;
 
+    // Controla o bloqueio da loja sem alterar as dimensões da policy PPO.
+    bool set_shop_locked(std::int32_t player_id, bool locked);
+    bool toggle_shop_lock(std::int32_t player_id);
+    bool is_shop_locked(std::int32_t player_id) const;
+
     std::vector<float> get_observations() const;
 
     std::array<std::vector<StrategyInfo>, kPlayersPerLobby>
