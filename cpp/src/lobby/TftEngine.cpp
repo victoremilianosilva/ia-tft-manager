@@ -103,7 +103,12 @@ struct TFTEngine::Impl {
     std::unique_ptr<UnitInstanceFactory> unit_factory;
     std::array<std::unique_ptr<ShopEngine>, kPlayersPerLobby> shops{};
     std::array<std::array<std::optional<UnitInstance>, kBenchSlots>, kPlayersPerLobby> benches{};
-
+    // Tabuleiro independente para cada jogador.
+    // Cada posição contém uma unidade ou está vazia.
+    std::array<
+        std::array<std::optional<UnitInstance>, kBoardSlots>,
+        kPlayersPerLobby
+    > boards{};
     std::int32_t alive_players{
         static_cast<std::int32_t>(kPlayersPerLobby)
     };
@@ -196,6 +201,7 @@ struct TFTEngine::Impl {
 
             players[i] = player;
             benches[i].fill(std::nullopt);
+            boards[i].fill(std::nullopt);
             shops[i] = std::make_unique<ShopEngine>(
                 *pool, *unit_factory, seed + static_cast<std::uint64_t>(i) + episode_id
             );
@@ -212,44 +218,181 @@ struct TFTEngine::Impl {
 
     void refresh_masks(std::size_t player_index) {
         auto& current = masks[player_index];
-        current = make_default_masks();
-        current.type_mask.fill(0);
-        current.shop_mask.fill(0);
-        current.bench_source_mask.fill(0);
+
+        current = PlayerActionMasks{};
         const auto& economy = economies[player_index];
-        const bool bench_has_space = std::any_of(
-            benches[player_index].begin(), benches[player_index].end(),
-            [](const auto& unit) { return !unit.has_value(); }
-        );
+        const auto& bench = benches[player_index];
+        const auto& board = boards[player_index];
+        const auto& shop = *shops[player_index];
+
+        // PASS é sempre permitido para jogadores ativos.
+        current.type_mask[6] = 1;
+
+        bool bench_has_space = false;
+        bool bench_has_unit = false;
+        bool board_has_unit = false;
+        bool board_has_empty = false;
         bool can_buy = false;
+        bool can_move_bench_to_board = false;
+        bool can_move_board = false;
+
+        for (const auto& unit : bench) {
+            if (unit) {
+                bench_has_unit = true;
+            } else {
+                bench_has_space = true;
+            }
+        }
+
+        for (const auto& unit : board) {
+            if (unit) {
+                board_has_unit = true;
+            } else {
+                board_has_empty = true;
+            }
+        }
+
+        // --------------------------------------------------------
+        // BUY: oferta existente + espaço no banco + ouro suficiente
+        // --------------------------------------------------------
         for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
-            const auto* offer = shops[player_index]->get_unit(static_cast<std::int32_t>(slot));
-            if (offer && bench_has_space) {
-                const auto* definition = catalog->find_by_id(offer->champion_internal_id);
-                if (definition && economy.gold >= definition->cost) {
-                    current.shop_mask[slot] = 1;
-                    can_buy = true;
+            const auto* offer =
+                shop.get_unit(static_cast<std::int32_t>(slot));
+
+            if (!offer || !bench_has_space) {
+                continue;
+            }
+
+            const auto* definition =
+                catalog->find_by_id(offer->champion_internal_id);
+
+            if (definition && economy.gold >= definition->cost) {
+                current.shop_mask[slot] = 1;
+                can_buy = true;
+            }
+        }
+
+        if (can_buy) {
+            current.type_mask[0] = 1;
+        }
+
+        // Mantém uma opção válida na dimensão condicionada quando
+        // nenhuma compra estiver disponível.
+        if (!can_buy) {
+            current.shop_mask[0] = 1;
+        }
+
+        // --------------------------------------------------------
+        // REROLL e BUY XP
+        // --------------------------------------------------------
+        if (economy.gold >= EconomyEngine::REROLL_COST) {
+            current.type_mask[1] = 1;
+        }
+
+        if (economy_engine.can_buy_xp(economy)) {
+            current.type_mask[2] = 1;
+        }
+
+        // --------------------------------------------------------
+        // SELL: vende uma unidade que esteja no banco
+        // --------------------------------------------------------
+        for (std::size_t slot = 0; slot < kBenchSlots; ++slot) {
+            if (bench[slot]) {
+                current.bench_source_mask[slot] = 1;
+                current.bench_move_source_mask[slot] = 1;
+                current.type_mask[5] = 1;
+            }
+        }
+
+        if (!bench_has_unit) {
+            current.bench_source_mask[0] = 1;
+            current.bench_move_source_mask[0] = 1;
+        }
+
+        // --------------------------------------------------------
+        // MOVE_BENCH: banco -> posição vazia do tabuleiro
+        // --------------------------------------------------------
+        if (bench_has_unit && board_has_empty) {
+            for (std::size_t source = 0; source < kBenchSlots; ++source) {
+                if (!bench[source]) {
+                    continue;
+                }
+
+                for (std::size_t target = 0; target < kBoardSlots; ++target) {
+                    if (!board[target]) {
+                        const auto index =
+                            source * kBoardSlots + target;
+
+                        current.bench_to_board_target_masks[index] = 1;
+                        current.board_target_mask[target] = 1;
+                        can_move_bench_to_board = true;
+                    }
                 }
             }
         }
-        if (can_buy) current.type_mask[0] = 1;
-        else current.shop_mask[0] = 1;
-        if (economy.gold >= EconomyEngine::REROLL_COST) current.type_mask[1] = 1;
-        if (economy_engine.can_buy_xp(economy)) current.type_mask[2] = 1;
-        current.type_mask[6] = 1;
-        bool has_bench_unit = false;
-        for (std::size_t slot = 0; slot < kBenchSlots; ++slot) {
-            if (benches[player_index][slot]) {
-                current.bench_source_mask[slot] = 1;
-                has_bench_unit = true;
+
+        if (can_move_bench_to_board) {
+            current.type_mask[3] = 1;
+        }
+
+        // --------------------------------------------------------
+        // MOVE_BOARD: mover ou trocar duas unidades do tabuleiro
+        // --------------------------------------------------------
+        if (board_has_unit) {
+            for (std::size_t source = 0; source < kBoardSlots; ++source) {
+                if (!board[source]) {
+                    continue;
+                }
+
+                current.board_source_mask[source] = 1;
+
+                for (std::size_t target = 0; target < kBoardSlots; ++target) {
+                    if (source == target) {
+                        continue;
+                    }
+
+                    // Pode mover para posição vazia ou trocar com
+                    // uma unidade que já esteja no destino.
+                    const auto index = source * kBoardSlots + target;
+                    current.board_move_target_masks[index] = 1;
+                    can_move_board = true;
+                }
             }
         }
-        if (!has_bench_unit) current.bench_source_mask[0] = 1;
-        current.bench_move_source_mask.fill(0); current.bench_move_source_mask[0] = 1;
-        current.board_target_mask.fill(0); current.board_target_mask[0] = 1;
-        current.board_source_mask.fill(0); current.board_source_mask[0] = 1;
-        current.board_move_target_masks.fill(0); current.board_move_target_masks[0] = 1;
-        current.bench_to_board_target_masks.fill(0); current.bench_to_board_target_masks[0] = 1;
+
+        if (can_move_board) {
+            current.type_mask[4] = 1;
+        }
+
+        // Valores dummy para cabeças condicionais que não serão usadas
+        // pela ação selecionada. A ação efetiva ainda deve ser validada.
+        if (std::none_of(
+                current.board_target_mask.begin(),
+                current.board_target_mask.end(),
+                [](std::uint8_t value) { return value != 0; })) {
+            current.board_target_mask[0] = 1;
+        }
+
+        if (std::none_of(
+                current.board_source_mask.begin(),
+                current.board_source_mask.end(),
+                [](std::uint8_t value) { return value != 0; })) {
+            current.board_source_mask[0] = 1;
+        }
+
+        if (std::none_of(
+                current.board_move_target_masks.begin(),
+                current.board_move_target_masks.end(),
+                [](std::uint8_t value) { return value != 0; })) {
+            current.board_move_target_masks[0] = 1;
+        }
+
+        if (std::none_of(
+                current.bench_to_board_target_masks.begin(),
+                current.bench_to_board_target_masks.end(),
+                [](std::uint8_t value) { return value != 0; })) {
+            current.bench_to_board_target_masks[0] = 1;
+        }
     }
 
     std::vector<float> build_observations() const {
@@ -436,9 +579,77 @@ StepResult TFTEngine::step(
                 shop.reroll(economy.level);
         } else if (type == 2) { // BUY XP
             (void)impl_->economy_engine.buy_xp(economy);
-        } else if (type == 6) {
-            // PASS: nenhuma alteração.
-        } // MOVE_BENCH, MOVE_BOARD e SELL serão integrados na próxima tarefa.
+        } else if (type == 3) { // MOVE_BENCH: banco -> tabuleiro
+            const auto bench_slot = static_cast<std::size_t>(action[2]);
+            const auto target = static_cast<std::size_t>(action[3]);
+
+            if (bench_slot < kBenchSlots && target < kBoardSlots &&
+                impl_->benches[i][bench_slot] &&
+                !impl_->boards[i][target]) {
+
+                impl_->boards[i][target] =
+                    std::move(impl_->benches[i][bench_slot]);
+
+                impl_->benches[i][bench_slot].reset();
+            }
+
+        } else if (type == 4) { // MOVE_BOARD: mover ou trocar
+            const auto source = static_cast<std::size_t>(action[4]);
+            const auto target = static_cast<std::size_t>(action[5]);
+
+            if (source < kBoardSlots && target < kBoardSlots &&
+                source != target && impl_->boards[i][source]) {
+
+                // Se o destino estiver ocupado, troca as unidades.
+                // Se estiver vazio, a unidade apenas se move.
+                std::swap(
+                    impl_->boards[i][source],
+                    impl_->boards[i][target]
+                );
+            }
+
+        } else if (type == 5) { // SELL: vender unidade do banco
+            const auto bench_slot = static_cast<std::size_t>(action[2]);
+
+            if (bench_slot < kBenchSlots &&
+                impl_->benches[i][bench_slot]) {
+
+                const auto& unit = *impl_->benches[i][bench_slot];
+                const auto* definition =
+                    impl_->catalog->find_by_id(
+                        unit.champion_internal_id
+                    );
+
+                if (definition) {
+                    const auto sell_value =
+                        EconomyEngine::get_sell_value(
+                            definition->cost,
+                            unit.star
+                        );
+
+                    // Remove a unidade e devolve a cópia ao estoque.
+                    auto sold = std::move(
+                        impl_->benches[i][bench_slot]
+                    );
+                    impl_->benches[i][bench_slot].reset();
+
+                    if (impl_->pool->give_back(
+                            sold->champion_internal_id)) {
+                        impl_->economy_engine.add_gold(
+                            economy,
+                            sell_value
+                        );
+                    } else {
+                        // Se o pool rejeitar a devolução, desfaz a venda.
+                        impl_->benches[i][bench_slot] =
+                            std::move(sold);
+                    }
+                }
+            }
+
+        } else if (type == 6) { // PASS
+            // Nenhuma alteração.
+        }
 
         impl_->sync_player_economy(i);
         impl_->refresh_masks(i);

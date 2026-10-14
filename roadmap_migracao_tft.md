@@ -515,6 +515,8 @@ Tarefas
 - [ ] Comparar estados finais e efeitos econômicos com o ambiente Python.
 Critério de conclusão: as ações são executadas integralmente no C++, com estado consistente, máscaras corretas e regras econômicas equivalentes às da implementação Python.
 
+Atenção: esse método gera máscaras de validade estrutural. As regras anti-loop ainda precisam ser integradas ao C++ para reproduzir integralmente o comportamento do AntiLoopManager.py.
+
 Etapa 4 — Combate, recompensas e observações
 Objetivo: completar o ciclo de jogo em C++, preservando a semântica das partidas, as recompensas e os dados consumidos pelo PPO.
 Arquivos principais:
