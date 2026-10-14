@@ -1679,7 +1679,7 @@ StepResult TFTEngine::step(
 
         action_reward_values[i] = action_reward;
         round_rewards[i] += static_cast<float>(
-            std::clamp(impl_->state_reward(i, action_reward), -5.0, 5.0));
+            reward_model::clamp_total(impl_->state_reward(i, action_reward)));
         impl_->round_reward_total[i] = round_rewards[i];
         impl_->total_reward[i] += round_rewards[i];
         impl_->update_strategy(i);
@@ -1726,9 +1726,9 @@ StepResult TFTEngine::step(
         for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
             if (!impl_->players[i].alive) continue;
             round_rewards[i] += static_cast<float>(
-                std::clamp(impl_->state_reward(i, 0.0), -5.0, 5.0));
+                reward_model::clamp_total(impl_->state_reward(i, 0.0)));
             // RewardManager.calculate_total_reward limita o total a [-5, 5].
-            round_rewards[i] = std::clamp(round_rewards[i], -5.0f, 5.0f);
+            round_rewards[i] = static_cast<float>(reward_model::clamp_total(round_rewards[i]));
             impl_->round_reward_total[i] = round_rewards[i];
             // As recompensas de ação já foram acumuladas no processamento
             // acima; aqui somamos apenas combate + avaliação pós-combate.
