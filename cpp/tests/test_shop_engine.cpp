@@ -31,6 +31,28 @@ int main(int argc,char** argv){
    require((offer?offer->uuid:std::string{})==locked_uuids[i],
            "Loja bloqueada mudou uma das ofertas.");
   }
+  // As probabilidades por nível devem espelhar GameConfig.SHOP_ODDS.
+  const std::array<std::array<double, 5>, 10> expected_odds{{
+   {{1.00,0.00,0.00,0.00,0.00}}, {{1.00,0.00,0.00,0.00,0.00}},
+   {{0.75,0.25,0.00,0.00,0.00}}, {{0.55,0.30,0.15,0.00,0.00}},
+   {{0.45,0.33,0.20,0.02,0.00}}, {{0.30,0.40,0.25,0.05,0.00}},
+   {{0.16,0.30,0.43,0.10,0.01}}, {{0.15,0.20,0.32,0.30,0.03}},
+   {{0.10,0.17,0.25,0.33,0.15}}, {{0.05,0.10,0.20,0.40,0.25}}
+  }};
+  require(tft::ShopEngine::odds_by_level() == expected_odds,
+          "Odds da loja divergem de GameConfig.SHOP_ODDS.");
+  for (int level=1; level<=10; ++level) {
+   shop.reroll(level);
+   require(pool.validate(),"Pool inválido após reroll por nível.");
+   for (const auto& offer: shop.offers()) if (offer) {
+    const auto* def=catalog.find_by_id(offer->champion_internal_id);
+    require(def!=nullptr,"Oferta referencia campeão ausente.");
+    const auto cost_index=static_cast<std::size_t>(def->cost-1);
+    require(cost_index<5 && expected_odds[static_cast<std::size_t>(level-1)][cost_index]>0.0,
+            "Loja gerou custo com probabilidade zero para o nível.");
+   }
+  }
+
   // O reroll manual força a renovação, mas não altera o estado do lock.
   shop.reroll(2); require(shop.is_locked(),"Reroll deve manter bloqueio.");
   require(pool.validate(),"Pool inválido após reroll.");
