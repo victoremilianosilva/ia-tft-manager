@@ -209,6 +209,7 @@ if(EXISTS "${TFT_LOBBY_SOURCE}")
         src/lobby/ChampionCatalog.cpp
         src/lobby/UnitInstanceFactory.cpp
         src/lobby/UnitPool.cpp
+        src/lobby/ShopEngine.cpp
         src/lobby/EconomyEngine.cpp
         bindings/tft_engine_bindings.cpp
     )
@@ -444,6 +445,24 @@ if(BUILD_TESTING)
         NAME tft_engine_pool
         COMMAND test_tft_engine_pool
             "${CMAKE_CURRENT_SOURCE_DIR}/../units_gerado.json"
+    )
+
+    # -----------------------------------------------------
+    # Loja C++ e pool compartilhado
+    # -----------------------------------------------------
+    add_executable(
+        test_shop_engine
+        tests/test_shop_engine.cpp
+        src/lobby/ShopEngine.cpp
+        src/lobby/ChampionCatalog.cpp
+        src/lobby/UnitInstanceFactory.cpp
+        src/lobby/UnitPool.cpp
+    )
+    configure_tft_module(test_shop_engine)
+    target_link_libraries(test_shop_engine PRIVATE nlohmann_json::nlohmann_json)
+    add_test(
+        NAME shop_engine
+        COMMAND test_shop_engine "${CMAKE_CURRENT_SOURCE_DIR}/../units_gerado.json"
     )
 
     # -----------------------------------------------------
