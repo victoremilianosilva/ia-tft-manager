@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <fstream>
 #include <map>
+#include <limits>
 #include <unordered_map>
 #include <nlohmann/json.hpp>
 #include <memory>
@@ -761,12 +762,21 @@ struct TFTEngine::Impl {
         std::unordered_map<std::string, int> trait_counts;
         std::unordered_map<std::string, int> copies_by_unit;
         std::unordered_map<std::string, double> focus_scores;
+        // Preserve Python dict/Counter insertion order for tie-breaking.
+        std::vector<std::string> trait_order;
+        std::vector<std::string> unit_order;
         const auto add_owned_unit = [&](const UnitInstance& unit) {
             const auto* def = catalog->find_by_id(unit.champion_internal_id);
             if (!def) return;
             const std::string id = def->api_name;
+            if (copies_by_unit.find(id) == copies_by_unit.end())
+                unit_order.push_back(id);
             copies_by_unit[id] += star_copies(unit.star);
-            for (const auto& trait : def->traits) ++trait_counts[trait];
+            for (const auto& trait : def->traits) {
+                if (trait_counts.find(trait) == trait_counts.end())
+                    trait_order.push_back(trait);
+                ++trait_counts[trait];
+            }
         };
         for (const auto& unit : boards[i]) if (unit) add_owned_unit(*unit);
         for (const auto& unit : benches[i]) if (unit) add_owned_unit(*unit);
@@ -789,41 +799,48 @@ struct TFTEngine::Impl {
         info.active_traits.clear();
         info.unit_counts.clear();
 
-        for (const auto& [trait, count] : trait_counts) {
+        for (const auto& trait : trait_order) {
+            const auto count = trait_counts.at(trait);
             info.active_traits.emplace_back(trait, count);
             if (info.composition_direction.empty() ||
-                count > trait_counts[info.composition_direction])
+                count > trait_counts.at(info.composition_direction))
                 info.composition_direction = trait;
         }
-        for (const auto& [unit_id, count] : copies_by_unit)
-            info.unit_counts.emplace_back(unit_id, count);
+        for (const auto& unit_id : unit_order)
+            info.unit_counts.emplace_back(unit_id, copies_by_unit.at(unit_id));
 
         if (!focus_scores.empty()) {
-            const auto focus = std::max_element(
-                focus_scores.begin(), focus_scores.end(),
-                [](const auto& lhs, const auto& rhs) {
-                    if (lhs.second != rhs.second) return lhs.second < rhs.second;
-                    return lhs.first > rhs.first;
-                });
-            info.composition_focus = focus->first;
+            auto best_score = -std::numeric_limits<double>::infinity();
+            for (const auto& unit_id : unit_order) {
+                const auto found = focus_scores.find(unit_id);
+                if (found != focus_scores.end() && found->second > best_score) {
+                    best_score = found->second;
+                    info.composition_focus = unit_id;
+                }
+            }
         }
 
-        std::vector<std::pair<std::string, double>> ordered_units(
-            focus_scores.begin(), focus_scores.end());
-        std::sort(ordered_units.begin(), ordered_units.end(),
+        std::vector<std::pair<std::string, double>> ordered_units;
+        ordered_units.reserve(focus_scores.size());
+        for (const auto& unit_id : unit_order) {
+            const auto found = focus_scores.find(unit_id);
+            if (found != focus_scores.end())
+                ordered_units.emplace_back(unit_id, found->second);
+        }
+        std::stable_sort(ordered_units.begin(), ordered_units.end(),
             [](const auto& lhs, const auto& rhs) {
-                if (lhs.second != rhs.second) return lhs.second > rhs.second;
-                return lhs.first < rhs.first;
+                return lhs.second > rhs.second;
             });
         for (std::size_t index = 0; index < std::min<std::size_t>(3, ordered_units.size()); ++index)
             info.core_units.push_back(ordered_units[index].first);
 
-        std::vector<std::pair<std::string, int>> ordered_traits(
-            trait_counts.begin(), trait_counts.end());
-        std::sort(ordered_traits.begin(), ordered_traits.end(),
+        std::vector<std::pair<std::string, int>> ordered_traits;
+        ordered_traits.reserve(trait_order.size());
+        for (const auto& trait : trait_order)
+            ordered_traits.emplace_back(trait, trait_counts.at(trait));
+        std::stable_sort(ordered_traits.begin(), ordered_traits.end(),
             [](const auto& lhs, const auto& rhs) {
-                if (lhs.second != rhs.second) return lhs.second > rhs.second;
-                return lhs.first < rhs.first;
+                return lhs.second > rhs.second;
             });
         for (const auto& [trait, count] : ordered_traits) {
             if (count >= 2 && info.core_traits.size() < 3)
