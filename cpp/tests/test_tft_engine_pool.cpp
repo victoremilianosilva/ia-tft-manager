@@ -411,10 +411,10 @@ int main(int argc, char** argv) {
         const auto bought_xp = engine.step(actions);
         require(bought_xp.players[0].gold == gold_before_xp - 4,
                 "BUY_XP não descontou exatamente 4 de ouro.");
-        require(level_before_xp == 3 && xp_before_xp == 2,
+        require(level_before_xp == 4 && xp_before_xp == 0,
                 "Progressão de XP passivo divergiu antes da compra de XP.");
-        require(bought_xp.players[0].level == 4 && bought_xp.players[0].xp == 0,
-                "BUY_XP deveria completar o nível 3 e carregar o excedente de XP.");
+        require(bought_xp.players[0].level == 4 && bought_xp.players[0].xp == 4,
+                "BUY_XP deveria adicionar exatamente 4 XP sem subir de nível neste estado.");
         require(engine.round() == round_before_pass + 2,
                 "BUY_XP encerrou a rodada sem PASS.");
 
