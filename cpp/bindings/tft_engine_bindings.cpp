@@ -238,11 +238,19 @@ py::list strategies_to_list(
 ) {
     py::list result;
 
+    // Uma estratégia atual por jogador.
     for (const auto& player_strategies : strategies) {
-        py::list player_list;
+        py::dict item;
 
-        for (const auto& strategy : player_strategies) {
-            py::dict item;
+        if (player_strategies.empty()) {
+            item["strategy"] = 0;
+            item["strategy_name"] = "ECON";
+            item["previous_strategy"] = py::none();
+            item["confidence"] = 0.0f;
+            item["strategy_age"] = 0;
+            item["reason"] = "";
+        } else {
+            const auto& strategy = player_strategies.back();
 
             item["strategy"] = strategy.strategy;
             item["strategy_name"] = strategy.strategy_name;
@@ -255,46 +263,53 @@ py::list strategies_to_list(
             item["confidence"] = strategy.confidence;
             item["strategy_age"] = strategy.strategy_age;
             item["reason"] = strategy.reason;
-
-            player_list.append(std::move(item));
         }
 
-        result.append(std::move(player_list));
+        result.append(std::move(item));
     }
 
     return result;
 }
 
-
-
-py::list anti_loop_to_list(
+py::dict anti_loop_to_dict(
     const std::array<
         tft::AntiLoopMetrics,
         tft::kPlayersPerLobby
     >& metrics
 ) {
-    py::list result;
+    py::dict result;
+
+    std::uint64_t execution_attempts = 0;
+    std::uint64_t execution_blocks = 0;
+    std::uint64_t blocked_reverse = 0;
+    std::uint64_t blocked_oscillation = 0;
+    std::uint64_t blocked_explicit = 0;
+    std::uint64_t blocked_bench_board_loop = 0;
+    std::uint64_t blocked_cycle = 0;
+    std::uint64_t board_moves_executed = 0;
+    std::uint64_t bench_to_board_executed = 0;
 
     for (const auto& metric : metrics) {
-        py::dict item;
-
-        item["execution_attempts"] = metric.execution_attempts;
-        item["execution_blocks"] = metric.execution_blocks;
-
-        item["blocked_reverse"] = metric.blocked_reverse;
-        item["blocked_oscillation"] = metric.blocked_oscillation;
-        item["blocked_explicit"] = metric.blocked_explicit;
-        item["blocked_bench_board_loop"] =
-            metric.blocked_bench_board_loop;
-        item["blocked_cycle"] = metric.blocked_cycle;
-
-        item["board_moves_executed"] =
-            metric.board_moves_executed;
-        item["bench_to_board_executed"] =
-            metric.bench_to_board_executed;
-
-        result.append(std::move(item));
+        execution_attempts += metric.execution_attempts;
+        execution_blocks += metric.execution_blocks;
+        blocked_reverse += metric.blocked_reverse;
+        blocked_oscillation += metric.blocked_oscillation;
+        blocked_explicit += metric.blocked_explicit;
+        blocked_bench_board_loop += metric.blocked_bench_board_loop;
+        blocked_cycle += metric.blocked_cycle;
+        board_moves_executed += metric.board_moves_executed;
+        bench_to_board_executed += metric.bench_to_board_executed;
     }
+
+    result["execution_attempts"] = execution_attempts;
+    result["execution_blocks"] = execution_blocks;
+    result["blocked_reverse"] = blocked_reverse;
+    result["blocked_oscillation"] = blocked_oscillation;
+    result["blocked_explicit"] = blocked_explicit;
+    result["blocked_bench_board_loop"] = blocked_bench_board_loop;
+    result["blocked_cycle"] = blocked_cycle;
+    result["board_moves_executed"] = board_moves_executed;
+    result["bench_to_board_executed"] = bench_to_board_executed;
 
     return result;
 }
@@ -384,11 +399,10 @@ PYBIND11_MODULE(tft_engine, module) {
                     self.get_strategies()
                 );
             }
-        )
-        .def(
+        ).def(
             "get_anti_loop_metrics",
             [](const TFTEngine& self) {
-                return anti_loop_to_list(
+                return anti_loop_to_dict(
                     self.get_anti_loop_metrics()
                 );
             }
