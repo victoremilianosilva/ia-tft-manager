@@ -759,6 +759,80 @@ struct TFTEngine::Impl {
         info.strategy_name = names[static_cast<std::size_t>(chosen)];
         info.confidence = confidence;
         info.reason = reason;
+
+        // Equivalente ao CompositionManager.update(board, bench).
+        std::unordered_map<std::string, int> trait_counts;
+        std::unordered_map<std::string, int> copies_by_unit;
+        std::unordered_map<std::string, double> focus_scores;
+        const auto add_owned_unit = [&](const UnitInstance& unit) {
+            const auto* def = catalog->find_by_id(unit.champion_internal_id);
+            if (!def) return;
+            const std::string id = def->api_name;
+            copies_by_unit[id] += star_copies(unit.star);
+            for (const auto& trait : def->traits) ++trait_counts[trait];
+        };
+        for (const auto& unit : boards[i]) if (unit) add_owned_unit(*unit);
+        for (const auto& unit : benches[i]) if (unit) add_owned_unit(*unit);
+
+        const auto score_owned_unit = [&](const UnitInstance& unit) {
+            const auto* def = catalog->find_by_id(unit.champion_internal_id);
+            if (!def) return;
+            const std::string id = def->api_name;
+            const double score = (unit.star - 1) * 3.0 + def->cost * 1.5
+                + def->traits.size() + std::min(copies_by_unit[id], 9) * 0.5;
+            focus_scores[id] = std::max(focus_scores[id], score);
+        };
+        for (const auto& unit : boards[i]) if (unit) score_owned_unit(*unit);
+        for (const auto& unit : benches[i]) if (unit) score_owned_unit(*unit);
+
+        info.composition_focus.clear();
+        info.composition_direction.clear();
+        info.core_units.clear();
+        info.core_traits.clear();
+        info.active_traits.clear();
+        info.unit_counts.clear();
+
+        for (const auto& [trait, count] : trait_counts) {
+            info.active_traits.emplace_back(trait, count);
+            if (info.composition_direction.empty() ||
+                count > trait_counts[info.composition_direction])
+                info.composition_direction = trait;
+        }
+        for (const auto& [unit_id, count] : copies_by_unit)
+            info.unit_counts.emplace_back(unit_id, count);
+
+        if (!focus_scores.empty()) {
+            const auto focus = std::max_element(
+                focus_scores.begin(), focus_scores.end(),
+                [](const auto& lhs, const auto& rhs) {
+                    if (lhs.second != rhs.second) return lhs.second < rhs.second;
+                    return lhs.first > rhs.first;
+                });
+            info.composition_focus = focus->first;
+        }
+
+        std::vector<std::pair<std::string, double>> ordered_units(
+            focus_scores.begin(), focus_scores.end());
+        std::sort(ordered_units.begin(), ordered_units.end(),
+            [](const auto& lhs, const auto& rhs) {
+                if (lhs.second != rhs.second) return lhs.second > rhs.second;
+                return lhs.first < rhs.first;
+            });
+        for (std::size_t index = 0; index < std::min<std::size_t>(3, ordered_units.size()); ++index)
+            info.core_units.push_back(ordered_units[index].first);
+
+        std::vector<std::pair<std::string, int>> ordered_traits(
+            trait_counts.begin(), trait_counts.end());
+        std::sort(ordered_traits.begin(), ordered_traits.end(),
+            [](const auto& lhs, const auto& rhs) {
+                if (lhs.second != rhs.second) return lhs.second > rhs.second;
+                return lhs.first < rhs.first;
+            });
+        for (const auto& [trait, count] : ordered_traits) {
+            if (count >= 2 && info.core_traits.size() < 3)
+                info.core_traits.push_back(trait);
+        }
+
         if (list.empty()) list.push_back(info);
         else list.back() = info;
     }
