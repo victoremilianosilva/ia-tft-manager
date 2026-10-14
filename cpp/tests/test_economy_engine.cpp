@@ -1,6 +1,10 @@
 
 #include "lobby/EconomyEngine.hpp"
 
+// Keep assertions active even when CMake builds the tests with Release/NDEBUG.
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
 #include <cassert>
 #include <iostream>
 #include <algorithm>
