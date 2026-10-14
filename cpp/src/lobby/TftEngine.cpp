@@ -1542,13 +1542,16 @@ StepResult TFTEngine::step(
             impl_->refresh_masks(i);
         }
 
+        const auto rewards_before_combat = round_rewards;
         impl_->resolve_combats(round_events, round_rewards);
         for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
             if (!impl_->players[i].alive) continue;
             round_rewards[i] += static_cast<float>(
                 std::clamp(impl_->state_reward(i, 0.0), -5.0, 5.0));
             impl_->round_reward_total[i] = round_rewards[i];
-            impl_->total_reward[i] += round_rewards[i];
+            // As recompensas de ação já foram acumuladas no processamento
+            // acima; aqui somamos apenas combate + avaliação pós-combate.
+            impl_->total_reward[i] += round_rewards[i] - rewards_before_combat[i];
             impl_->update_strategy(i);
         }
 
