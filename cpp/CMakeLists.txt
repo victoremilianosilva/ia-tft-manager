@@ -135,7 +135,7 @@ endfunction()
 # Estrutura:
 #   src/combat/CombatEngine.cpp
 #   bindings/combat_engine_bindings.cpp
-#   include/combat/*.hpp
+#   include/combat/.hpp
 # =========================================================
 
 pybind11_add_module(
