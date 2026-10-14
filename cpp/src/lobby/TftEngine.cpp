@@ -633,20 +633,71 @@ struct TFTEngine::Impl {
     }
 
     double positioning_score(std::size_t player_index) const {
+        const auto role_at = [&](std::size_t slot) {
+            if (!boards[player_index][slot]) return UnitRole::FIGHTER;
+            const auto* def = catalog->find_by_id(
+                boards[player_index][slot]->champion_internal_id);
+            if (!def) return UnitRole::FIGHTER;
+            return static_cast<UnitRole>(std::clamp(def->combat_profile.role, 0, 4));
+        };
+        const auto center_score = [](int col) {
+            constexpr double center = 3.0;
+            return std::max(0.0, 1.0 - std::abs(col - center) / 3.0);
+        };
+        const auto edge_score = [](int col) {
+            const int distance = std::min(col, 6 - col);
+            return std::max(0.0, 1.0 - distance / 3.0);
+        };
+        const auto frontline_score = [](int row) { return (3.0 - row) / 3.0; };
+        const auto backline_score = [](int row) { return row / 3.0; };
+        const auto assassin_score = [](int row) {
+            return std::max(0.0, 1.0 - std::abs(row - 1.65) / 3.0);
+        };
+
         double score = 0.0;
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
-            const auto& unit = boards[player_index][slot];
-            if (!unit) continue;
-            const auto* def = catalog->find_by_id(unit->champion_internal_id);
+            if (!boards[player_index][slot]) continue;
+            const auto* def = catalog->find_by_id(
+                boards[player_index][slot]->champion_internal_id);
             if (!def) continue;
-            const auto row = static_cast<int>(slot / 7);
-            const auto& profile = def->combat_profile;
-            const bool frontline = profile.frontline || profile.is_tank || profile.is_fighter;
-            const bool backline = profile.backline || profile.is_carry || profile.is_support;
-            // Tabuleiro 4x7: linhas 0-1 são frontline; 2-3 backline.
-            if (frontline) score += row <= 1 ? 1.0 : -0.5;
-            else if (backline) score += row >= 2 ? 1.0 : -0.5;
-            if (profile.is_assassin && row <= 1) score -= 0.25;
+            const int row = static_cast<int>(slot / 7);
+            const int col = static_cast<int>(slot % 7);
+            const auto role = role_at(slot);
+
+            // Réplica da pontuação de evaluate_unit_placement do Python.
+            if (role == UnitRole::TANK) {
+                score += frontline_score(row) * 4.0 + center_score(col) * 1.5;
+            } else if (role == UnitRole::FIGHTER) {
+                score += frontline_score(row) * 2.5 + center_score(col);
+            } else if (role == UnitRole::ASSASSIN) {
+                score += assassin_score(row) * 3.0 + edge_score(col);
+            } else if (role == UnitRole::SUPPORT) {
+                score += backline_score(row) * 3.0 + center_score(col) * 1.5;
+            } else if (role == UnitRole::CARRY) {
+                score += backline_score(row) * 4.0 + center_score(col) * 2.0;
+                if (col == 0 || col == 6) score -= 0.5;
+            }
+
+            int occupied_neighbors = 0;
+            int tank_neighbors = 0;
+            for (int dr = -1; dr <= 1; ++dr) {
+                for (int dc = -1; dc <= 1; ++dc) {
+                    if (dr == 0 && dc == 0) continue;
+                    const int nr = row + dr, nc = col + dc;
+                    if (nr < 0 || nr >= 4 || nc < 0 || nc >= 7) continue;
+                    const auto neighbor = static_cast<std::size_t>(nr * 7 + nc);
+                    if (!boards[player_index][neighbor]) continue;
+                    ++occupied_neighbors;
+                    if (role_at(neighbor) == UnitRole::TANK) ++tank_neighbors;
+                }
+            }
+            // Réplica de evaluate_protection do Python.
+            if (role == UnitRole::CARRY)
+                score += occupied_neighbors * 0.8 + tank_neighbors * 1.5;
+            else if (role == UnitRole::SUPPORT)
+                score += occupied_neighbors * 0.6 + tank_neighbors;
+            else if (role == UnitRole::TANK)
+                score += occupied_neighbors * 0.2;
         }
         return score;
     }
