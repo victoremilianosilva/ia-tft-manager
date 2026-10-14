@@ -133,6 +133,51 @@ int main(int argc, char** argv) {
         for (auto& action : actions) action.values = {6, 0, 0, 0, 0, 0};
         engine.step(actions); // rodada 1: sem renda
         engine.step(actions); // rodada 2: +2 de ouro
+
+        // Uma ação inválida do jogador 0 não pode permitir que uma compra
+        // válida do jogador 1 seja executada parcialmente no mesmo lote.
+        const auto state_before_atomic_batch = engine.get_public_state();
+        const auto pool_before_atomic_batch = engine.pool_total_available();
+        const auto masks_before_atomic_batch = engine.get_action_masks();
+        std::int32_t player1_buy_slot = -1;
+        for (std::int32_t slot = 0;
+             slot < static_cast<std::int32_t>(tft::kShopSlots);
+             ++slot) {
+            if (masks_before_atomic_batch[1].shop_mask[
+                    static_cast<std::size_t>(slot)] == 1) {
+                player1_buy_slot = slot;
+                break;
+            }
+        }
+        require(player1_buy_slot >= 0,
+                "Jogador 1 deveria ter uma compra válida para testar atomicidade.");
+
+        for (auto& action : actions) {
+            action.values = {6, 0, 0, 0, 0, 0};
+        }
+        actions[0].values = {5, 0, 0, 0, 0, 0}; // Venda inválida.
+        actions[1].values = {0, player1_buy_slot, 0, 0, 0, 0}; // Compra válida.
+
+        bool mixed_batch_rejected = false;
+        try {
+            (void)engine.step(actions);
+        } catch (const std::invalid_argument&) {
+            mixed_batch_rejected = true;
+        }
+        require(mixed_batch_rejected,
+                "Lote com uma ação inválida deveria ser rejeitado.");
+        const auto state_after_atomic_batch = engine.get_public_state();
+        require(engine.round() == 2,
+                "Lote inválido avançou a rodada.");
+        require(engine.pool_total_available() == pool_before_atomic_batch,
+                "Compra de outro jogador foi executada apesar do lote inválido.");
+        require(state_after_atomic_batch.players[1].gold ==
+                    state_before_atomic_batch.players[1].gold,
+                "Lote inválido alterou o ouro de outro jogador.");
+
+        for (auto& action : actions) {
+            action.values = {6, 0, 0, 0, 0, 0};
+        }
         const auto masks = engine.get_action_masks();
         require(masks[0].type_mask[0] == 1,
                 "BUY deveria estar habilitado com ouro e espaço no banco.");
