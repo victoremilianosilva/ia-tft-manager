@@ -23,6 +23,7 @@
 #include "lobby/EconomyEngine.hpp"
 #include "combat/CombatEngine.hpp"
 #include "lobby/ShopEngine.hpp"
+#include "strategy/SynergyCounter.hpp"
 
 #include "decision/ActionMaskEngine.hpp"
 #include "decision/DecisionState.hpp"
@@ -606,17 +607,16 @@ struct TFTEngine::Impl {
     }
 
     double synergy_score(std::size_t player_index) const {
-        std::unordered_map<std::string, int> counts;
-        // Match SynergyManager.update(): count each champion id once,
-        // even if multiple copies/stars of that champion are on the board.
-        std::unordered_set<std::int32_t> seen_champions;
+        std::vector<strategy::ChampionTraitEntry> entries;
+        entries.reserve(kBoardSlots);
         for (const auto& unit : boards[player_index]) {
-            if (!unit ||
-                !seen_champions.insert(unit->champion_internal_id).second) continue;
+            if (!unit) continue;
             const auto* def = catalog->find_by_id(unit->champion_internal_id);
             if (!def) continue;
-            for (const auto& trait : def->traits) ++counts[trait];
+            entries.emplace_back(unit->champion_internal_id, def->traits);
         }
+        // Keep the same unique-by-unit["id"] semantics as Python.
+        const auto counts = strategy::count_unique_champion_traits(entries);
         double score = 0.0;
         for (const auto& [trait, count] : counts) {
             const auto milestones = trait_milestones.find(trait);
