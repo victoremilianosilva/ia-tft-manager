@@ -120,6 +120,8 @@ int main(int argc, char** argv) {
         for (const std::uint64_t seed : {17ULL, 2026ULL, 99173ULL}) {
             tft::TFTEngine engine(seed, catalog_path);
             std::array<PendingReverse, tft::kPlayersPerLobby> pending{};
+            std::array<std::int32_t, tft::kPlayersPerLobby> previous_wins{};
+            std::array<std::int32_t, tft::kPlayersPerLobby> previous_losses{};
 
             for (std::uint32_t turn = 0;
                  turn < 60 && !engine.is_done();
@@ -152,10 +154,16 @@ int main(int argc, char** argv) {
                     require(std::isfinite(result.rewards[player]),
                             "Recompensa não finita após combate.");
 
+                    require(result.players[player].wins >= previous_wins[player],
+                            "Contador de vitórias regrediu durante a partida.");
+                    require(result.players[player].losses >= previous_losses[player],
+                            "Contador de derrotas regrediu durante a partida.");
                     total_wins += static_cast<std::uint64_t>(
-                        result.players[player].wins);
+                        result.players[player].wins - previous_wins[player]);
                     total_losses += static_cast<std::uint64_t>(
-                        result.players[player].losses);
+                        result.players[player].losses - previous_losses[player]);
+                    previous_wins[player] = result.players[player].wins;
+                    previous_losses[player] = result.players[player].losses;
                 }
             }
 
