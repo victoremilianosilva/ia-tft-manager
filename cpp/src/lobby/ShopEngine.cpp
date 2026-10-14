@@ -1,6 +1,7 @@
 #include "lobby/ShopEngine.hpp"
 #include <algorithm>
 #include <stdexcept>
+#include <utility>
 #include "lobby/ChampionCatalog.hpp"
 namespace tft {
 ShopEngine::ShopEngine(UnitPool& pool, UnitInstanceFactory& factory, std::uint64_t seed)
