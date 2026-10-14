@@ -1,7 +1,10 @@
 
 #include "lobby/UnitPool.hpp"
 
+#include <algorithm>
+#include <random>
 #include <stdexcept>
+#include <vector>
 
 namespace tft {
 
@@ -79,6 +82,22 @@ bool UnitPool::take(std::int32_t champion_internal_id) {
 
     --it->second;
     return true;
+}
+
+std::optional<std::int32_t> UnitPool::draw_by_cost(
+    std::int32_t cost, std::mt19937_64& rng
+) {
+    std::vector<std::int32_t> candidates;
+    candidates.reserve(catalog_.size());
+    for (const auto& champion : catalog_.all()) {
+        if (champion.cost == cost && has_available(champion.internal_id))
+            candidates.push_back(champion.internal_id);
+    }
+    if (candidates.empty()) return std::nullopt;
+    std::uniform_int_distribution<std::size_t> choose(0, candidates.size() - 1);
+    const auto id = candidates[choose(rng)];
+    if (!take(id)) return std::nullopt;
+    return id;
 }
 
 bool UnitPool::give_back(std::int32_t champion_internal_id) {
