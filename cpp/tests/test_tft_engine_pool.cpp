@@ -235,12 +235,16 @@ int main(int argc, char** argv) {
         const auto sold = engine.step(actions);
         require(engine.pool_total_available() == pool_before_sale + 1,
                 "Venda não devolveu exatamente uma cópia ao pool.");
-        const auto sale_and_round_income =
+        const auto sale_gold_delta =
             sold.players[0].gold - bought.players[0].gold;
         require(
-            sale_and_round_income == 4 || sale_and_round_income == 5,
-            "Venda não creditou o valor esperado (campeão de custo 1/2) "
-            "além da renda-base da rodada."
+            sale_gold_delta == 1 || sale_gold_delta == 2,
+            "Venda deveria creditar somente o valor do campeão; "
+            "a renda da rodada ainda não deve ser aplicada antes do PASS."
+        );
+        require(
+            engine.round() == 2,
+            "A rodada avançou antes de o jogador 0 terminar a preparação."
         );
 
         const auto buy_masks = engine.get_action_masks();
@@ -321,6 +325,25 @@ int main(int argc, char** argv) {
                 "Tentativa de movimento reverso não foi contabilizada.");
         require(metrics[0].execution_blocks == 1 && metrics[0].blocked_reverse == 1,
                 "AntiLoop não bloqueou/contabilizou o movimento reverso.");
+
+        // A rodada permanece aberta durante ações de preparação. Um PASS
+        // do jogador 0 fecha a rodada porque os demais já enviaram PASS.
+        const auto round_before_pass = engine.round();
+        actions[0].values = {6, 0, 0, 0, 0, 0};
+        const auto closed_round = engine.step(actions);
+        require(
+            engine.round() == round_before_pass + 1,
+            "PASS do último jogador não resolveu/avançou a rodada."
+        );
+        bool saw_round_resolved = false;
+        for (const auto& event : closed_round.events) {
+            if (event == "ROUND_RESOLVED") {
+                saw_round_resolved = true;
+                break;
+            }
+        }
+        require(saw_round_resolved,
+                "O resultado não informou que a rodada foi resolvida.");
 
         // Reset de episódio limpa os históricos de movimentos, mas mantém
         // as métricas acumuladas para diagnóstico entre episódios.
