@@ -36,6 +36,8 @@ int main() {
     assert(engine.get_interest(0) == 0);
     assert(engine.get_interest(9) == 0);
     assert(engine.get_interest(10) == 1);
+    assert(engine.get_interest(19) == 1);
+    assert(engine.get_interest(20) == 2);
     assert(engine.get_interest(49) == 4);
     assert(engine.get_interest(50) == 5);
     assert(engine.get_interest(100) == 5);
@@ -67,18 +69,46 @@ int main() {
     assert(economy.level == 3);
     assert(economy.xp == 2);
 
-    // 7. Vitória PvP dá +1 ouro e aumenta a streak.
+    // 7. Renda da rodada usa o saldo anterior à renda para calcular juros.
+    engine.reset(economy);
+    economy.gold = 19;
+    economy.win_streak = 2;
+    const auto income_round = engine.resolve_round(economy, 3);
+    assert(income_round.old_gold == 19);
+    assert(income_round.base_gold == 2);
+    assert(income_round.interest_gold == 1);
+    assert(income_round.streak_gold == 1);
+    assert(income_round.new_gold == 23);
+    assert(income_round.total_gold == 4);
+    assert(economy.round_gold == 4);
+    assert(economy.round_interest == 1);
+    assert(economy.round_base_gold == 2);
+    assert(economy.round_streak_gold == 1);
+
+    // 8. Vitória PvP credita +1 imediatamente e registra o bônus
+    // para o relatório da próxima resolução, sem duplicar o crédito.
+    engine.reset(economy);
+    economy.gold = 2;
     engine.register_pvp_win(economy);
     assert(economy.gold == 3);
     assert(economy.round_win_gold == 1);
     assert(economy.win_streak == 1);
 
-    // 8. Valores de venda conforme custo e estrelas.
+    const auto win_round = engine.resolve_round(economy, 3);
+    assert(win_round.win_gold == 1);
+    assert(win_round.base_gold == 2);
+    assert(win_round.interest_gold == 0);
+    assert(win_round.streak_gold == 0);
+    assert(win_round.new_gold == 5);
+    assert(win_round.total_gold == 3); // Renda base + bônus de vitória já creditado.
+    assert(economy.round_win_gold == 0); // Não pode ser contabilizado duas vezes.
+
+    // 9. Valores de venda conforme custo e estrelas.
     assert(tft::EconomyEngine::get_sell_value(2, 1) == 2);
     assert(tft::EconomyEngine::get_sell_value(2, 2) == 6);
     assert(tft::EconomyEngine::get_sell_value(2, 3) == 18);
 
-    // 9. O nível máximo impede compra e ganho de XP grátis.
+    // 10. O nível máximo impede compra e ganho de XP grátis.
     economy.level = tft::EconomyEngine::MAX_LEVEL;
     economy.xp = 0;
     engine.add_gold(economy, 100);
