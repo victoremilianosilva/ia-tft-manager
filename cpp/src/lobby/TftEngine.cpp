@@ -411,6 +411,10 @@ struct TFTEngine::Impl {
     void initialize_players() {
         alive_players =
             static_cast<std::int32_t>(kPlayersPerLobby);
+
+        // RewardManager.py starts with previous_level = 1.
+        // Initialize this on first construction as well as on reset.
+        previous_reward_level.fill(1);
         round_actions.fill(0);
         round_finished.fill(false);
         previous_matchups.clear();
@@ -846,8 +850,10 @@ struct TFTEngine::Impl {
         previous_positioning_score[i] = positioning;
 
         const auto current_level = economies[i].level;
-        reward += reward_model::level(current_level, previous_reward_level[i]);
-        previous_reward_level[i] = current_level;
+        if (current_level > previous_reward_level[i]) {
+            reward += reward_model::level(current_level, previous_reward_level[i]);
+            previous_reward_level[i] = current_level;
+        }
 
         reward += reward_model::economy(economies[i].gold, players[i].hp);
         reward += reward_model::streak(
