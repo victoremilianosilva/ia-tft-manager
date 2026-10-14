@@ -70,6 +70,24 @@ find_package(pybind11 CONFIG REQUIRED
     NO_DEFAULT_PATH
 )
 
+# =========================================================
+# 📦 JSON para o catálogo de campeões
+# =========================================================
+
+include(FetchContent)
+
+find_package(nlohmann_json 3.11 CONFIG QUIET)
+
+if(NOT nlohmann_json_FOUND)
+    FetchContent_Declare(
+        nlohmann_json
+        URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+    )
+
+    FetchContent_MakeAvailable(nlohmann_json)
+endif()
+
+
 message(STATUS "Python: ${Python_EXECUTABLE}")
 message(STATUS "pybind11: ${PYBIND11_CMAKE_DIR}")
 
@@ -188,7 +206,13 @@ if(EXISTS "${TFT_LOBBY_SOURCE}")
     pybind11_add_module(
         tft_engine
         src/lobby/TftEngine.cpp
+        src/lobby/ChampionCatalog.cpp
         bindings/tft_engine_bindings.cpp
+    )
+
+    target_link_libraries(
+        tft_engine
+        PRIVATE nlohmann_json::nlohmann_json
     )
 
     configure_tft_module(tft_engine)
