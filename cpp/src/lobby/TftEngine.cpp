@@ -2,7 +2,10 @@
 #include "lobby/TftEngine.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
+#include <map>
+#include <unordered_map>
 #include <memory>
 #include <optional>
 #include <random>
@@ -166,6 +169,15 @@ struct TFTEngine::Impl {
     EconomyEngine economy_engine;
     CombatEngine combat_engine;
     std::array<PlayerEconomy, kPlayersPerLobby> economies{};
+
+    // Estado incremental do RewardManager Python.
+    std::array<double, kPlayersPerLobby> previous_board_power{};
+    std::array<double, kPlayersPerLobby> previous_synergy_score{};
+    std::array<double, kPlayersPerLobby> previous_positioning_score{};
+    std::array<std::int32_t, kPlayersPerLobby> previous_reward_level{};
+    std::array<double, kPlayersPerLobby> last_combat_reward{};
+    std::array<double, kPlayersPerLobby> round_reward_total{};
+    std::array<double, kPlayersPerLobby> total_reward{};
 
     explicit Impl(
         std::uint64_t initial_seed,
@@ -539,6 +551,163 @@ struct TFTEngine::Impl {
     // SINCRONIZAÇÃO DA ECONOMIA
     // ========================================================
 
+    double board_power(std::size_t player_index) const {
+        double power = 0.0;
+        for (const auto& unit : boards[player_index]) {
+            if (!unit) continue;
+            const auto* def = catalog->find_by_id(unit->champion_internal_id);
+            if (!def) continue;
+            const auto& s = def->stats;
+            const double raw = std::max(0.0, s.max_hp) * 0.02
+                + std::max(0.0, s.attack_damage) * 0.20
+                + std::max(0.0, s.attack_speed) * 2.0
+                + std::max(0.0, s.armor) * 0.05
+                + std::max(0.0, s.magic_resist) * 0.05
+                + std::max(0.0, s.attack_range);
+            power += raw * static_cast<double>(std::max(1, unit->star));
+        }
+        return power;
+    }
+
+    double synergy_score(std::size_t player_index) const {
+        std::unordered_map<std::string, int> counts;
+        for (const auto& unit : boards[player_index]) {
+            if (!unit) continue;
+            const auto* def = catalog->find_by_id(unit->champion_internal_id);
+            if (!def) continue;
+            for (const auto& trait : def->traits) ++counts[trait];
+        }
+        double score = 0.0;
+        for (const auto& [trait, count] : counts) {
+            (void)trait;
+            if (count >= 2) score += 1.0;
+            if (count >= 4) score += 1.0;
+            if (count >= 6) score += 1.0;
+        }
+        return score;
+    }
+
+    double positioning_score(std::size_t player_index) const {
+        double score = 0.0;
+        for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+            const auto& unit = boards[player_index][slot];
+            if (!unit) continue;
+            const auto* def = catalog->find_by_id(unit->champion_internal_id);
+            if (!def) continue;
+            const auto row = static_cast<int>(slot / 7);
+            const auto& profile = def->combat_profile;
+            const bool frontline = profile.frontline || profile.is_tank || profile.is_fighter;
+            const bool backline = profile.backline || profile.is_carry || profile.is_support;
+            // Tabuleiro 4x7: linhas 0-1 são frontline; 2-3 backline.
+            if (frontline) score += row <= 1 ? 1.0 : -0.5;
+            else if (backline) score += row >= 2 ? 1.0 : -0.5;
+            if (profile.is_assassin && row <= 1) score -= 0.25;
+        }
+        return score;
+    }
+
+    double combat_reward(bool won, int damage_dealt, int damage_taken,
+                         int enemy_alive, int own_alive) const {
+        double reward = won ? 2.0 : -2.0;
+        if (damage_dealt > 0)
+            reward += std::min(std::tanh(static_cast<double>(damage_dealt) / 10.0), 1.0);
+        if (own_alive > 0)
+            reward += std::min(static_cast<double>(own_alive) * 0.05, 0.25);
+        if (enemy_alive > 0)
+            reward -= std::min(static_cast<double>(enemy_alive) * 0.05, 0.25);
+        if (damage_taken > 0)
+            reward -= std::min(std::tanh(static_cast<double>(damage_taken) / 15.0), 0.75);
+        return reward;
+    }
+
+    void update_strategy(std::size_t i) {
+        auto& list = strategies[i];
+        StrategyInfo info = list.empty() ? StrategyInfo{} : list.back();
+        const auto& player = players[i];
+        const auto& economy = economies[i];
+        const double power = board_power(i);
+        std::int32_t chosen = 0;
+        float confidence = 0.50f;
+        std::string reason = "Estado econômico neutro";
+
+        // Mesma ordem de prioridade de StrategyManager.decide_strategy().
+        if (player.hp <= 15.0f) {
+            chosen = 4; confidence = 0.95f; reason = "HP crítico";
+        } else if (player.hp <= 30.0f) {
+            chosen = 1; confidence = 0.85f; reason = "HP baixo";
+        } else if (economy.loss_streak >= 5) {
+            chosen = 6; confidence = 0.80f; reason = "Loss streak prolongada";
+        } else if (economy.win_streak >= 4 && player.hp >= 60.0f) {
+            chosen = 5; confidence = 0.80f; reason = "Win streak + HP saudável";
+        } else if (economy.gold >= 40 && economy.level <= 7 && player.hp >= 50.0f) {
+            chosen = 0; confidence = 0.85f; reason = "Economia forte";
+        } else if (economy.level >= 7 && economy.gold >= 30 && player.hp >= 50.0f) {
+            chosen = 2; confidence = 0.75f; reason = "Economia suficiente para acelerar nível";
+        } else if (economy.level <= 6 && economy.gold >= 30 && power >= 40.0) {
+            chosen = 3; confidence = 0.70f; reason = "Board estável + economia para rolagem";
+        } else if (power < 25.0) {
+            chosen = 1; confidence = 0.70f; reason = "Board abaixo do esperado";
+        }
+
+        if (chosen != info.strategy) {
+            info.previous_strategy = info.strategy;
+            info.strategy_age = 0;
+        } else {
+            ++info.strategy_age;
+        }
+        static const std::array<const char*, 7> names{
+            "ECON", "STABILIZE", "FAST8", "SLOWROLL",
+            "ALL_IN", "WINSTREAK", "LOSS_STREAK"
+        };
+        info.strategy = chosen;
+        info.strategy_name = names[static_cast<std::size_t>(chosen)];
+        info.confidence = confidence;
+        info.reason = reason;
+        if (list.empty()) list.push_back(info);
+        else list.back() = info;
+    }
+
+    double state_reward(std::size_t i, double action_reward) {
+        const double power = board_power(i);
+        const double synergy = synergy_score(i);
+        const double positioning = positioning_score(i);
+        double reward = action_reward;
+
+        const double power_delta = power - previous_board_power[i];
+        previous_board_power[i] = power;
+        if (std::abs(power_delta) >= 1e-6) reward += std::tanh(power_delta / 10.0);
+
+        const double synergy_delta = synergy - previous_synergy_score[i];
+        previous_synergy_score[i] = synergy;
+        reward += std::tanh(synergy_delta);
+
+        const double position_delta = positioning - previous_positioning_score[i];
+        previous_positioning_score[i] = positioning;
+        reward += std::tanh(position_delta) * 0.5;
+
+        const auto level = economies[i].level;
+        if (level > previous_reward_level[i]) {
+            reward += std::min((level - previous_reward_level[i]) * 0.5, 1.5);
+        }
+        previous_reward_level[i] = level;
+
+        const auto gold = economies[i].gold;
+        for (int threshold = 10; threshold <= 50; threshold += 10)
+            if (gold >= threshold) reward += 0.05;
+        if (players[i].hp <= 15.0f) reward -= 0.15;
+        else if (players[i].hp <= 30.0f) reward -= 0.05;
+
+        if (economies[i].win_streak >= 2)
+            reward += std::min(economies[i].win_streak * 0.03, 0.15);
+        if (economies[i].loss_streak >= 2)
+            reward += std::min(economies[i].loss_streak * 0.02, 0.10);
+
+        int occupied = 0;
+        for (const auto& unit : boards[i]) if (unit) ++occupied;
+        reward += static_cast<double>(occupied) / static_cast<double>(kBoardSlots) * 0.15;
+        return reward;
+    }
+
     void sync_player_economy(std::size_t player_index) {
         if (player_index >= kPlayersPerLobby) {
             throw std::out_of_range(
@@ -842,8 +1011,14 @@ struct TFTEngine::Impl {
             economy_engine.register_loss(economies[loser]);
             const auto damage = stage_damage(stage) + std::max(0, winner_survivors);
             apply_damage(loser, damage);
-            rewards[winner] += 1.0f;
-            rewards[loser] -= 1.0f;
+            const double winner_reward = combat_reward(
+                true, damage, 0, loser_survivors, winner_survivors);
+            const double loser_reward = combat_reward(
+                false, 0, damage, winner_survivors, loser_survivors);
+            last_combat_reward[winner] = winner_reward;
+            last_combat_reward[loser] = loser_reward;
+            rewards[winner] += static_cast<float>(winner_reward);
+            rewards[loser] += static_cast<float>(loser_reward);
             events.emplace_back("COMBAT_WIN: jogador " + std::to_string(winner) +
                 ", dano=" + std::to_string(damage) +
                 ", sobreviventes=" + std::to_string(winner_survivors));
@@ -923,6 +1098,13 @@ ResetResult TFTEngine::reset(
         );
 
     impl_->initialize_players();
+    impl_->previous_board_power.fill(0.0);
+    impl_->previous_synergy_score.fill(0.0);
+    impl_->previous_positioning_score.fill(0.0);
+    impl_->previous_reward_level.fill(1);
+    impl_->last_combat_reward.fill(0.0);
+    impl_->round_reward_total.fill(0.0);
+    impl_->total_reward.fill(0.0);
 
     ResetResult result{};
 
@@ -969,6 +1151,8 @@ StepResult TFTEngine::step(
     // AÇÕES DE LOJA, ECONOMIA E MOVIMENTAÇÃO
     // ========================================================
 
+    std::array<float, kPlayersPerLobby> round_rewards{};
+    std::array<double, kPlayersPerLobby> action_reward_values{};
     for (std::size_t i = 0;
          i < kPlayersPerLobby;
          ++i) {
@@ -980,6 +1164,12 @@ StepResult TFTEngine::step(
 
         auto& economy = impl_->economies[i];
         auto& shop = *impl_->shops[i];
+        const auto old_gold = economy.gold;
+        const auto old_level = economy.level;
+        const auto old_xp = economy.xp;
+        int old_board_count = 0, old_bench_count = 0;
+        for (const auto& unit : impl_->boards[i]) if (unit) ++old_board_count;
+        for (const auto& unit : impl_->benches[i]) if (unit) ++old_bench_count;
 
         if (!impl_->players[i].alive) {
             impl_->refresh_masks(i);
@@ -1271,6 +1461,51 @@ StepResult TFTEngine::step(
         }
 
         impl_->sync_player_economy(i);
+        int new_board_count = 0, new_bench_count = 0;
+        for (const auto& unit : impl_->boards[i]) if (unit) ++new_board_count;
+        for (const auto& unit : impl_->benches[i]) if (unit) ++new_bench_count;
+
+        // Alinhado a RewardManager.calculate_action_reward() e aos valores
+        // usados em env.py para compra, reroll e XP.
+        double action_reward = 0.0;
+        bool success = false;
+        if (type == 0) {
+            success = new_bench_count > old_bench_count || new_board_count > old_board_count ||
+                      (old_bench_count == new_bench_count && old_board_count == new_board_count &&
+                       economy.gold < old_gold);
+            action_reward = success ? 0.05 : -0.10;
+            if (success && (new_board_count < old_board_count || new_bench_count < old_bench_count))
+                action_reward = 0.30; // compra que conclui upgrade automático
+        } else if (type == 1) {
+            success = economy.gold == old_gold - EconomyEngine::REROLL_COST;
+            action_reward = success ? -0.01 : -0.10;
+        } else if (type == 2) {
+            success = economy.gold == old_gold - EconomyEngine::BUY_XP_COST;
+            action_reward = success ? 0.02 : -0.10;
+            if (success && economy.level > old_level)
+                action_reward += std::min((economy.level - old_level) * 0.5, 1.5);
+            (void)old_xp;
+        } else if (type == 3 || type == 4) {
+            success = new_board_count != old_board_count ||
+                (type == 4 && new_board_count == old_board_count);
+            action_reward = success ? 0.0 : -0.10;
+            if (type == 3 && success)
+                action_reward += impl_->positioning_score(i) * 0.05;
+        } else if (type == 5) {
+            success = economy.gold > old_gold;
+            action_reward = success ? 0.0 : -0.10;
+        } else {
+            success = true;
+        }
+
+        action_reward_values[i] = action_reward;
+        round_rewards[i] += static_cast<float>(
+            std::clamp(impl_->state_reward(i, action_reward), -5.0, 5.0));
+        impl_->round_reward_total[i] = round_rewards[i];
+        impl_->total_reward[i] += round_rewards[i];
+        impl_->update_strategy(i);
+
+        impl_->sync_player_economy(i);
         impl_->refresh_masks(i);
         impl_->mark_round_completion(i, type);
     }
@@ -1279,7 +1514,6 @@ StepResult TFTEngine::step(
     // RESOLUÇÃO CONDICIONAL DA RODADA
     // ========================================================
 
-    std::array<float, kPlayersPerLobby> round_rewards{};
     std::vector<std::string> round_events;
     bool round_resolved = false;
 
@@ -1309,6 +1543,14 @@ StepResult TFTEngine::step(
         }
 
         impl_->resolve_combats(round_events, round_rewards);
+        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+            if (!impl_->players[i].alive) continue;
+            round_rewards[i] += static_cast<float>(
+                std::clamp(impl_->state_reward(i, 0.0), -5.0, 5.0));
+            impl_->round_reward_total[i] = round_rewards[i];
+            impl_->total_reward[i] += round_rewards[i];
+            impl_->update_strategy(i);
+        }
 
         // O bônus de vitória já foi creditado no ouro pelo combate.
         // Limpa apenas o acumulador do relatório desta rodada.
