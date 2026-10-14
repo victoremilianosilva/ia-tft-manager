@@ -24,6 +24,7 @@
 #include "combat/CombatEngine.hpp"
 #include "lobby/ShopEngine.hpp"
 #include "strategy/SynergyCounter.hpp"
+#include "reward/RewardModel.hpp"
 
 #include "decision/ActionMaskEngine.hpp"
 #include "decision/DecisionState.hpp"
@@ -704,16 +705,8 @@ struct TFTEngine::Impl {
 
     double combat_reward(bool won, int damage_dealt, int damage_taken,
                          int enemy_alive, int own_alive) const {
-        double reward = won ? 2.0 : -2.0;
-        if (damage_dealt > 0)
-            reward += std::min(std::tanh(static_cast<double>(damage_dealt) / 10.0), 1.0);
-        if (own_alive > 0)
-            reward += std::min(static_cast<double>(own_alive) * 0.05, 0.25);
-        if (enemy_alive > 0)
-            reward -= std::min(static_cast<double>(enemy_alive) * 0.05, 0.25);
-        if (damage_taken > 0)
-            reward -= std::min(std::tanh(static_cast<double>(damage_taken) / 15.0), 0.75);
-        return reward;
+        return reward::combat(
+            won, damage_dealt, damage_taken, enemy_alive, own_alive);
     }
 
     void update_strategy(std::size_t i) {
@@ -843,38 +836,26 @@ struct TFTEngine::Impl {
         const double positioning = positioning_score(i);
         double reward = action_reward;
 
-        const double power_delta = power - previous_board_power[i];
+        reward += reward::power(power, previous_board_power[i]);
         previous_board_power[i] = power;
-        if (std::abs(power_delta) >= 1e-6) reward += std::tanh(power_delta / 10.0);
 
-        const double synergy_delta = synergy - previous_synergy_score[i];
+        reward += reward::synergy(synergy, previous_synergy_score[i]);
         previous_synergy_score[i] = synergy;
-        reward += std::tanh(synergy_delta);
 
-        const double position_delta = positioning - previous_positioning_score[i];
+        reward += reward::positioning(positioning, previous_positioning_score[i]);
         previous_positioning_score[i] = positioning;
-        reward += std::tanh(position_delta) * 0.5;
 
-        const auto level = economies[i].level;
-        if (level > previous_reward_level[i]) {
-            reward += std::min((level - previous_reward_level[i]) * 0.5, 1.5);
-        }
-        previous_reward_level[i] = level;
+        const auto current_level = economies[i].level;
+        reward += reward::level(current_level, previous_reward_level[i]);
+        previous_reward_level[i] = current_level;
 
-        const auto gold = economies[i].gold;
-        for (int threshold = 10; threshold <= 50; threshold += 10)
-            if (gold >= threshold) reward += 0.05;
-        if (players[i].hp <= 15.0f) reward -= 0.15;
-        else if (players[i].hp <= 30.0f) reward -= 0.05;
-
-        if (economies[i].win_streak >= 2)
-            reward += std::min(economies[i].win_streak * 0.03, 0.15);
-        if (economies[i].loss_streak >= 2)
-            reward += std::min(economies[i].loss_streak * 0.02, 0.10);
+        reward += reward::economy(economies[i].gold, players[i].hp);
+        reward += reward::streak(
+            economies[i].win_streak, economies[i].loss_streak);
 
         int occupied = 0;
         for (const auto& unit : boards[i]) if (unit) ++occupied;
-        reward += static_cast<double>(occupied) / static_cast<double>(kBoardSlots) * 0.15;
+        reward += reward::board(occupied, static_cast<int>(kBoardSlots));
         return reward;
     }
 
