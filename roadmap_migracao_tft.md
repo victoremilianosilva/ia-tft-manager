@@ -467,21 +467,21 @@ Arquivos principais:
 - cpp/src/lobby/
 - units_gerado.json
 Tarefas
-- [ ] Auditar o formato real de units_gerado.json e os dados consumidos pelo UnitManager.
-- [ ] Definir estruturas C++ para os dados estáticos dos campeões.
-- [ ] Separar os dados do catálogo do estado mutável de cada unidade.
-- [ ] Preservar IDs, UUIDs, estrelas, custo e demais atributos necessários.
-- [ ] Migrar a carga e a validação do catálogo para C++.
-- [ ] Implementar a criação de instâncias individuais de unidades.
-- [ ] Implementar o estoque global com quantidades disponíveis por campeão ou custo, conforme as regras atuais.
-- [ ] Implementar retirada de cópias do estoque.
-- [ ] Implementar devolução de cópias ao estoque.
-- [ ] Implementar o reset do pool sem duplicar ou perder unidades.
-- [ ] Garantir que os oito jogadores compartilhem uma única instância do pool.
-- [ ] Preservar as regras de disponibilidade e as quantidades definidas pela configuração atual.
-- [ ] Definir como o gerador aleatório e as seeds serão controlados.
-- [ ] Criar testes de disponibilidade, retirada, devolução, reset e compartilhamento.
-- [ ] Comparar os resultados com o UnitPool e o UnitManager Python.
+- [x] Auditar o formato real de units_gerado.json e os dados consumidos pelo UnitManager.
+- [x] Definir estruturas C++ para os dados estáticos dos campeões.
+- [x] Separar os dados do catálogo do estado mutável de cada unidade.
+- [x] Preservar IDs, UUIDs, estrelas, custo e demais atributos necessários.
+- [x] Migrar a carga e a validação do catálogo para C++.
+- [x] Implementar a criação de instâncias individuais de unidades.
+- [x] Implementar o estoque global com quantidades disponíveis por campeão ou custo, conforme as regras atuais.
+- [x] Implementar retirada de cópias do estoque.
+- [x] Implementar devolução de cópias ao estoque.
+- [x] Implementar o reset do pool sem duplicar ou perder unidades.
+- [x] Garantir que os oito jogadores compartilhem uma única instância do pool.
+- [x] Preservar as regras de disponibilidade e as quantidades definidas pela configuração atual.
+- [x] Definir como o gerador aleatório e as seeds serão controlados.
+- [x] Criar testes de disponibilidade, retirada, devolução, reset e compartilhamento.
+- [x] Comparar os resultados com o UnitPool e o UnitManager Python.
 Critério de conclusão: o catálogo é carregado em C++, as instâncias preservam sua identidade e o estoque compartilhado mantém as quantidades corretas ao longo da partida.
 
 Etapa 3 — Loja, economia e ações

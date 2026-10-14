@@ -208,8 +208,9 @@ if(EXISTS "${TFT_LOBBY_SOURCE}")
         src/lobby/TftEngine.cpp
         src/lobby/ChampionCatalog.cpp
         src/lobby/UnitInstanceFactory.cpp
-        bindings/tft_engine_bindings.cpp
         src/lobby/UnitPool.cpp
+        src/lobby/EconomyEngine.cpp
+        bindings/tft_engine_bindings.cpp
     )
 
     target_link_libraries(
@@ -442,6 +443,29 @@ if(BUILD_TESTING)
         NAME tft_engine_pool
         COMMAND test_tft_engine_pool
             "${CMAKE_CURRENT_SOURCE_DIR}/../units_gerado.json"
+    )
+
+    # -----------------------------------------------------
+    # Economia
+    # -----------------------------------------------------
+
+    add_executable(
+        test_economy_engine
+        tests/test_economy_engine.cpp
+        src/lobby/EconomyEngine.cpp
+    )
+
+    configure_tft_module(test_economy_engine)
+
+    target_include_directories(
+        test_economy_engine
+        PRIVATE
+            "${TFT_LOBBY_INCLUDE_DIR}"
+    )
+
+    add_test(
+        NAME economy_engine
+        COMMAND test_economy_engine
     )
 
     # O teste da lobby só existe quando seu módulo é criado.
