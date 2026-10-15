@@ -76,3 +76,16 @@ python -c "from trainer import Trainer; t=Trainer(num_envs=4, use_subprocess=Fal
 ```
 
 Esse override é opt-in e é aplicado depois da restauração de optimizer e scheduler. Compare `ppo/early_stop`, `ppo/approx_kl_max`, `ppo/epochs_started`, `ppo/batches_processed` e `charts/learning_rate`. Após o teste, limpe as variáveis com `Remove-Item Env:TFT_PPO_LR, Env:TFT_PPO_MIN_LR -ErrorAction SilentlyContinue`. O teste não foi executado nesta sessão.
+
+
+### Avaliar checkpoint candidato contra baseline fixo
+
+1. Antes de iniciar novo treino, copie o checkpoint que representa a política de referência para um caminho separado, por exemplo `checkpoints/baseline.pt`. Não use um caminho que o treinamento sobrescreva.
+2. Depois do treino curto, avalie o checkpoint candidato contra o baseline:
+
+```powershell
+$env:TFT_ENGINE_BACKEND = "cpp"
+python scripts/evaluate_checkpoints.py --baseline checkpoints/baseline.pt --candidate tft_checkpoint.pt --matches 40 --output reports/head_to_head.csv
+```
+
+O script usa quatro assentos para cada versão por partida, gira os assentos do candidato, mantém ambos os checkpoints congelados e exporta colocação/vitória por jogador para CSV. Compare `avg_placement`, `win_rate` e `top4_rate` impressos no resumo; rode mais partidas se a diferença for pequena. O script requer que a engine selecionada exponha colocações para os oito jogadores. Esta sessão não executou o avaliador nem confirmou os resultados.
