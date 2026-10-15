@@ -507,3 +507,135 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
         if callable(close):
             close()
         cpp_engine.close()
+
+
+def test_shared_shop_and_economy_fixtures_cover_all_seven_actions():
+    """Run every action against equal offers/economy and deterministic reroll."""
+    fixture_seed = 90421
+    python_lobby = PythonLobby(seed=fixture_seed)
+    cpp_engine = NativeTFTEngine(fixture_seed, str(CATALOG_PATH))
+    try:
+        python_lobby.reset()
+        cpp_engine.reset(fixture_seed)
+
+        env0 = python_lobby.players[0].env
+        champions = [
+            champion for champion in env0.unit_manager.get_all_champions()
+            if int(champion.get("cost", 1)) == 1
+        ]
+        assert len(champions) >= 5, "Need five distinct cost-1 champions for deterministic reroll"
+        names = [
+            champion.get("apiName") or champion.get("api_name")
+            or champion.get("champion_id")
+            for champion in champions[:5]
+        ]
+        assert all(names), "Fixture champions must have apiName"
+
+        # Normalize board/bench and economy. The C++ fixture hooks keep shop
+        # reservations consistent with the global native pool.
+        for player_id, player in enumerate(python_lobby.players):
+            env = player.env
+            env.board_manager.board[:] = [None] * len(env.board_manager.board)
+            env.bench_manager.bench[:] = [None] * len(env.bench_manager.bench)
+            env.bench_manager.bench[0] = env.unit_manager.create_unit(champions[0])
+            env.economy_manager.gold = 30
+            env.economy_manager.level = 2
+            env.economy_manager.xp = 0
+            assert cpp_engine.set_unit_for_testing(
+                player_id, False, 0, names[0], 1
+            ), "Could not configure shared bench fixture"
+            assert cpp_engine.set_player_economy_for_testing(
+                player_id, 30, 2, 0
+            ), "Could not configure native economy fixture"
+            assert env.shop_manager.set_offer_for_testing(0, names[0]), (
+                "Could not reserve Python fixture offer for player %d" % player_id
+            )
+            assert cpp_engine.set_shop_offer_for_testing(
+                player_id, 0, names[0]
+            ), "Could not reserve native fixture offer for player %d" % player_id
+
+        # MOVE_BENCH and MOVE_BOARD need independent, known source units.
+        env3 = python_lobby.players[3].env
+        env3._rebuild_player_state()
+        env4 = python_lobby.players[4].env
+        env4.board_manager.board[0] = env4.unit_manager.create_unit(champions[1])
+        assert cpp_engine.set_unit_for_testing(4, True, 0, names[1], 1)
+        env5 = python_lobby.players[5].env
+        env5._rebuild_player_state()
+        for player in python_lobby.players:
+            player.env._rebuild_player_state()
+
+        assert python_lobby.players[1].env.shop_manager.set_next_roll_for_testing(names)
+        assert cpp_engine.set_next_shop_roll_for_testing(1, names)
+
+        # One action per player, all in one preparation phase. PASS players
+        # do not resolve the round because the other six players have not passed.
+        py_actions = [
+            {"type": 0, "shop_slot": 0},                       # BUY
+            {"type": 1},                                       # REROLL
+            {"type": 2},                                       # BUY_XP
+            {"type": 3, "bench_slot": 0, "board_target": 5},   # MOVE_BENCH
+            {"type": 4, "board_source": 0, "conditioned_board_target": 1},
+            {"type": 5, "bench_slot": 0},                      # SELL
+            {"type": 6},                                       # PASS
+            {"type": 6},                                       # PASS
+        ]
+        cpp_actions = [
+            [0, 0, 0, 0, 0, 0],
+            [1, 0, 0, 0, 0, 0],
+            [2, 0, 0, 0, 0, 0],
+            [3, 0, 0, 5, 0, 0],
+            [4, 0, 0, 0, 0, 1],
+            [5, 0, 0, 0, 0, 0],
+            [6, 0, 0, 0, 0, 0],
+            [6, 0, 0, 0, 0, 0],
+        ]
+
+        # The chosen actions must be legal in both engines before execution.
+        py_masks = python_lobby.get_action_masks()
+        cpp_masks = cpp_engine.get_action_masks()
+        for player_id, action_type in enumerate([0, 1, 2, 3, 4, 5, 6, 6]):
+            assert bool(py_masks[player_id]["type_mask"][action_type]), (
+                "Python fixture action is masked: player=%d type=%d" % (player_id, action_type)
+            )
+            assert bool(cpp_masks[player_id]["type_mask"][action_type]), (
+                "C++ fixture action is masked: player=%d type=%d" % (player_id, action_type)
+            )
+
+        _, py_rewards, _, _ = python_lobby.step(py_actions)
+        cpp_result = cpp_engine.step(cpp_actions)
+
+        _compare_action_masks(python_lobby, cpp_engine, "all_seven_actions")
+        _compare_audit_snapshots(python_lobby, cpp_engine, "all_seven_actions")
+
+        assert len(py_rewards) == len(cpp_result["rewards"]) == 8
+        for player_id, (py_reward, cpp_reward) in enumerate(
+            zip(py_rewards, cpp_result["rewards"])
+        ):
+            _assert_close(py_reward, cpp_reward, "all_seven_actions.rewards[%d]" % player_id)
+
+        # The shop offer consumed by BUY disappears in both engines. The
+        # forced REROLL offers are identical by champion and slot.
+        py_shop0 = python_lobby.players[0].env.shop_manager.get_shop()
+        cpp_snapshot = cpp_engine.get_audit_snapshot()
+        assert py_shop0[0] is None
+        assert not cpp_snapshot["players"][0]["shop"][0]["occupied"]
+        py_shop1 = python_lobby.players[1].env.shop_manager.get_shop()
+        cpp_shop1 = cpp_snapshot["players"][1]["shop"]
+        for slot, name in enumerate(names):
+            py_name = py_shop1[slot].get("apiName", py_shop1[slot].get("champion_id"))
+            assert py_name == name, ("Python forced reroll mismatch", slot, py_name, name)
+            assert cpp_shop1[slot]["champion_id"] == name, (
+                "C++ forced reroll mismatch", slot, cpp_shop1[slot]["champion_id"], name
+            )
+
+        # Economy side effects are checked explicitly as a readable contract.
+        py_gold = [player.env.economy_manager.gold for player in python_lobby.players]
+        cpp_gold = [player["gold"] for player in cpp_snapshot["players"]]
+        assert py_gold == cpp_gold
+        assert py_gold[0] == 30 - int(champions[0]["cost"])
+        assert py_gold[1] == 28
+        assert py_gold[2] == 26
+    finally:
+        python_lobby.close() if hasattr(python_lobby, "close") else None
+        cpp_engine.close()
