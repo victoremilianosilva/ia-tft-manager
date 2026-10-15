@@ -946,6 +946,12 @@ struct TFTEngine::Impl {
         const auto& player = players[i];
         const auto& economy = economies[i];
         const double power = board_power(i);
+        double bench_strength = 0.0;
+        for (const auto& unit : benches[i]) {
+            if (!unit) continue;
+            const auto* def = catalog->find_by_id(unit->champion_internal_id);
+            if (def) bench_strength += static_cast<double>(def->cost) * unit->star;
+        }
         std::int32_t chosen = 0;
         float confidence = 0.50f;
         std::string reason = "Estado econômico neutro";
@@ -969,7 +975,8 @@ struct TFTEngine::Impl {
             chosen = 1; confidence = 0.70f; reason = "Board abaixo do esperado";
         }
 
-        if (chosen != info.strategy) {
+        const bool changed = chosen != info.strategy;
+        if (changed) {
             info.previous_strategy = info.strategy;
             info.strategy_age = 0;
         } else {
@@ -983,6 +990,9 @@ struct TFTEngine::Impl {
         info.strategy_name = names[static_cast<std::size_t>(chosen)];
         info.confidence = confidence;
         info.reason = reason;
+        info.changed = changed;
+        info.board_power = power;
+        info.bench_strength = bench_strength;
 
         // Equivalente ao CompositionManager.update(board, bench).
         std::unordered_map<std::string, int> trait_counts;
@@ -1072,6 +1082,71 @@ struct TFTEngine::Impl {
             if (count >= 2 && info.core_traits.size() < 3)
                 info.core_traits.push_back(trait);
         }
+
+        // Paridade com StrategyManager.compute_strategy_confidence().
+        double state_confidence = 0.5;
+        if (player.hp <= 20.0f) state_confidence += 0.25;
+        else if (player.hp >= 80.0f) state_confidence += 0.10;
+        if (economy.gold >= 40) state_confidence += 0.15;
+        else if (economy.gold < 10) state_confidence -= 0.10;
+        if (power >= 70.0) state_confidence += 0.15;
+        else if (power <= 20.0) state_confidence -= 0.15;
+        if (economy.win_streak >= 4) state_confidence += 0.10;
+        if (economy.loss_streak >= 4) state_confidence += 0.10;
+        if (economy.level >= 8) state_confidence += 0.10;
+        info.state_confidence = static_cast<float>(std::clamp(state_confidence, 0.0, 1.0));
+
+        // Paridade com get_strategy_score()/choose_best_strategy().
+        // O desempate mantém a primeira estratégia na ordem do enum Python.
+        info.strategy_scores.clear();
+        double best_score = -std::numeric_limits<double>::infinity();
+        std::int32_t best_strategy = 0;
+        for (std::int32_t strategy = 0; strategy < 7; ++strategy) {
+            double score = 0.0;
+            switch (strategy) {
+                case 0: // ECON
+                    score += std::min(economy.gold / 50.0, 1.0) * 5.0;
+                    if (player.hp >= 60.0f) score += 2.0;
+                    if (economy.loss_streak >= 3) score += 1.0;
+                    break;
+                case 1: // STABILIZE
+                    if (player.hp < 50.0f) score += 4.0;
+                    if (power < 40.0) score += 4.0;
+                    if (economy.loss_streak >= 2) score += 2.0;
+                    break;
+                case 2: // FAST8
+                    if (economy.level >= 6) score += 2.0;
+                    if (economy.gold >= 30) score += 3.0;
+                    if (player.hp >= 50.0f) score += 2.0;
+                    break;
+                case 3: // SLOWROLL
+                    if (economy.level <= 6) score += 3.0;
+                    if (economy.gold >= 30) score += 3.0;
+                    if (power >= 30.0) score += 2.0;
+                    break;
+                case 4: // ALL_IN
+                    if (player.hp <= 25.0f) score += 6.0;
+                    if (economy.loss_streak >= 5) score += 2.0;
+                    if (power < 30.0) score += 2.0;
+                    break;
+                case 5: // WINSTREAK
+                    if (economy.win_streak >= 3) score += 5.0;
+                    if (player.hp >= 60.0f) score += 2.0;
+                    if (power >= 40.0) score += 2.0;
+                    break;
+                case 6: // LOSS_STREAK
+                    if (economy.loss_streak >= 3) score += 5.0;
+                    if (player.hp >= 40.0f) score += 1.0;
+                    break;
+            }
+            info.strategy_scores.emplace_back(strategy, score);
+            if (score > best_score) {
+                best_score = score;
+                best_strategy = strategy;
+            }
+        }
+        info.best_scored_strategy = best_strategy;
+        info.active_traits_count = static_cast<std::int32_t>(info.active_traits.size());
 
         if (list.empty()) list.push_back(info);
         else list.back() = info;

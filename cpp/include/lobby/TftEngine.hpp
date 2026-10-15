@@ -219,6 +219,13 @@ struct StrategyInfo {
     float confidence{0.0f};
     std::int32_t strategy_age{0};
     std::string reason;
+    bool changed{false};
+    float state_confidence{0.0f};
+    std::int32_t best_scored_strategy{0};
+    std::vector<std::pair<std::int32_t, double>> strategy_scores;
+    double board_power{0.0};
+    double bench_strength{0.0};
+    std::int32_t active_traits_count{0};
 
     // Snapshot de CompositionManager: foco/direção e elementos core.
     std::string composition_focus;
