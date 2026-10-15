@@ -745,3 +745,175 @@ def test_shared_shop_and_economy_fixtures_cover_all_seven_actions():
     finally:
         python_lobby.close() if hasattr(python_lobby, "close") else None
         cpp_engine.close()
+
+
+def test_sell_core_and_non_core_units_match_rewards_gold_and_pool_return():
+    """SELL parity covers core penalty and non-core reward plus pool return."""
+    seed = 481205
+    python_lobby = PythonLobby(seed=seed)
+    cpp_engine = NativeTFTEngine(seed, str(CATALOG_PATH))
+    try:
+        python_lobby.reset()
+        for player in python_lobby.players:
+            player.env.action_mask_manager.decision_engine_runtime = None
+            player.env.board_manager.board[:] = [None] * len(player.env.board_manager.board)
+            player.env.bench_manager.bench[:] = [None] * len(player.env.bench_manager.bench)
+        cpp_engine.reset(seed)
+
+        unit_manager = python_lobby.players[0].env.unit_manager
+        catalog = unit_manager.get_all_champions()
+        assert len(catalog) >= 4, "SELL parity needs at least four distinct champions"
+
+        def score(unit):
+            return (
+                float(unit.get("cost", 1)) * 1.5
+                + len(unit.get("traits", []))
+            )
+
+        ordered = sorted(catalog, key=score)
+        candidate = ordered[0]
+        candidate_name = (
+            candidate.get("apiName")
+            or candidate.get("api_name")
+            or candidate.get("champion_id")
+        )
+        stronger_units = []
+        seen_names = {candidate_name}
+        for unit in sorted(catalog, key=score, reverse=True):
+            name = unit.get("apiName") or unit.get("api_name") or unit.get("champion_id")
+            if name and name not in seen_names and score(unit) > score(candidate):
+                stronger_units.append((unit, name))
+                seen_names.add(name)
+            if len(stronger_units) == 3:
+                break
+        assert candidate_name and len(stronger_units) == 3, (
+            "Catalog needs a low-score candidate and three stronger units for non-core SELL"
+        )
+
+        # Player 0 owns only the candidate, so it is core. Player 1 owns the
+        # same candidate plus three higher-scoring units, so it must be non-core.
+        python_lobby.players[0].env.bench_manager.bench[0] = (
+            unit_manager.create_unit(candidate)
+        )
+        assert cpp_engine.set_unit_for_testing(0, False, 0, candidate_name, 1)
+
+        python_lobby.players[1].env.bench_manager.bench[0] = (
+            unit_manager.create_unit(candidate)
+        )
+        assert cpp_engine.set_unit_for_testing(1, False, 0, candidate_name, 1)
+        for slot, (unit, name) in enumerate(stronger_units, start=1):
+            python_lobby.players[1].env.bench_manager.bench[slot] = (
+                unit_manager.create_unit(unit)
+            )
+            assert cpp_engine.set_unit_for_testing(1, False, slot, name, 1)
+
+        for player_id in (0, 1):
+            env = python_lobby.players[player_id].env
+            env.economy_manager.gold = 30
+            env.economy_manager.level = 2
+            env.economy_manager.xp = 0
+            env._rebuild_player_state()
+            assert cpp_engine.set_player_economy_for_testing(player_id, 30, 2, 0)
+
+        py_core = python_lobby.players[0].env.composition_manager.is_core_unit(
+            python_lobby.players[0].env.bench_manager.bench[0]
+        )
+        py_non_core = python_lobby.players[1].env.composition_manager.is_core_unit(
+            python_lobby.players[1].env.bench_manager.bench[0]
+        )
+        assert py_core is True
+        assert py_non_core is False
+        assert cpp_engine.is_core_unit(0, candidate_name) is True
+        assert cpp_engine.is_core_unit(1, candidate_name) is False
+
+        candidate_id = unit_manager.get_unit_id(candidate)
+        py_pool_before = python_lobby.unit_pool.get_available(candidate_id)
+        cpp_pool_before = cpp_engine.pool_available(candidate_id)
+
+        py_masks = python_lobby.get_action_masks()
+        cpp_masks = cpp_engine.get_action_masks()
+        assert bool(py_masks[0]["type_mask"][5]), "Python masks core SELL"
+        assert bool(py_masks[1]["type_mask"][5]), "Python masks non-core SELL"
+        assert bool(cpp_masks[0]["type_mask"][5]), "C++ masks core SELL"
+        assert bool(cpp_masks[1]["type_mask"][5]), "C++ masks non-core SELL"
+
+        py_actions = [
+            {"type": 5, "bench_slot": 0},
+            {"type": 5, "bench_slot": 0},
+            *[{"type": 6} for _ in range(6)],
+        ]
+        cpp_actions = [
+            [5, 0, 0, 0, 0, 0],
+            [5, 0, 0, 0, 0, 0],
+            *[[6, 0, 0, 0, 0, 0] for _ in range(6)],
+        ]
+        _, py_rewards, _, _ = python_lobby.step(py_actions)
+        cpp_result = cpp_engine.step(cpp_actions)
+
+        _assert_close(py_rewards[0], -0.15, "sell.core.reward")
+        _assert_close(cpp_result["rewards"][0], -0.15, "sell.core.native_reward")
+        _assert_close(py_rewards[1], 0.05, "sell.non_core.reward")
+        _assert_close(cpp_result["rewards"][1], 0.05, "sell.non_core.native_reward")
+        _assert_close(py_rewards[0], cpp_result["rewards"][0], "sell.core.parity")
+        _assert_close(py_rewards[1], cpp_result["rewards"][1], "sell.non_core.parity")
+
+        expected_gold = 30 + python_lobby.players[0].env.economy_manager.get_sell_value(candidate)
+        py_snapshot = python_lobby.get_public_state()["players"]
+        cpp_snapshot = cpp_engine.get_audit_snapshot()["players"]
+        assert python_lobby.players[0].env.economy_manager.gold == expected_gold
+        assert python_lobby.players[1].env.economy_manager.gold == expected_gold
+        assert cpp_snapshot[0]["gold"] == expected_gold
+        assert cpp_snapshot[1]["gold"] == expected_gold
+        assert py_snapshot[0]["gold"] == cpp_snapshot[0]["gold"]
+        assert py_snapshot[1]["gold"] == cpp_snapshot[1]["gold"]
+
+        assert python_lobby.players[0].env.bench_manager.bench[0] is None
+        assert python_lobby.players[1].env.bench_manager.bench[0] is None
+        assert not cpp_snapshot[0]["bench"][0]["occupied"]
+        assert not cpp_snapshot[1]["bench"][0]["occupied"]
+
+        # No shop rolls or buys occur in this test: the sold copies alone must
+        # increase this champion's available global stock by exactly two.
+        py_pool_after = python_lobby.unit_pool.get_available(candidate_id)
+        cpp_pool_after = cpp_engine.pool_available(candidate_id)
+        assert py_pool_after - py_pool_before == 2
+        assert cpp_pool_after - cpp_pool_before == 2
+    finally:
+        close = getattr(python_lobby, "close", None)
+        if callable(close):
+            close()
+        cpp_engine.close()
+
+
+def test_ppo_completes_update_with_cpp_backend(tmp_path, monkeypatch):
+    """Exercise a real PPO update through the native C++ lobby adapter."""
+    import os
+    import sys
+
+    monkeypatch.chdir(tmp_path)
+    for module_dir in (
+        ROOT / "cpp" / "build" / "bin",
+        ROOT / "cpp" / "build" / "bin" / "Release",
+    ):
+        if module_dir.exists() and str(module_dir) not in sys.path:
+            sys.path.insert(0, str(module_dir))
+
+    # The CI parity job sets REQUIRE_CPP_PARITY=1, so native modules cannot
+    # silently skip this integration test when they fail to build/import.
+    if os.environ.get("REQUIRE_CPP_PARITY") == "1":
+        import tft_engine  # noqa: F401
+        import combat_engine  # noqa: F401
+
+    from trainer import Trainer
+
+    trainer = Trainer(num_envs=1, use_subprocess=False, engine_backend="cpp")
+    assert trainer.engine_backend == "cpp"
+    try:
+        trainer.train(total_updates=1, rollout_steps=2)
+    finally:
+        vec_env = getattr(trainer, "vec_env", None)
+        if vec_env is not None:
+            vec_env.close()
+        writer = getattr(trainer, "writer", None)
+        if writer is not None:
+            writer.close()
