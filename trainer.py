@@ -5,7 +5,6 @@ import os
 
 from torch.utils.tensorboard import SummaryWriter
 
-from lobby.TFTLobby import TFTLobby
 
 from vector_lobby_env import LobbyVectorEnv
 
@@ -161,6 +160,8 @@ class Trainer:
             )
 
         if self.engine_backend == "python":
+            # Importação tardia: backend C++ não inicializa a lobby Python.
+            from lobby.TFTLobby import TFTLobby
             env_factory = TFTLobby
         else:
             # Importação tardia: o backend Python não depende do módulo nativo.
