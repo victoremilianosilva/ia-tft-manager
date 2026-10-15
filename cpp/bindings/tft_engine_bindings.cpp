@@ -606,6 +606,9 @@ PYBIND11_MODULE(tft_engine, module) {
              py::arg("player_id"), py::arg("slot"), py::arg("champion_api_name"))
         .def("set_next_shop_roll_for_testing", &TFTEngine::set_next_shop_roll_for_testing,
              py::arg("player_id"), py::arg("champion_api_names"))
+        .def("pool_available", &TFTEngine::pool_available, py::arg("champion_internal_id"))
+        .def("pool_initial_count", &TFTEngine::pool_initial_count, py::arg("champion_internal_id"))
+        .def("pool_total_available", &TFTEngine::pool_total_available)
         .def_property_readonly("observation_dim", &TFTEngine::observation_dim)
         .def_property_readonly("episode_id", &TFTEngine::episode_id)
         .def_property_readonly("round", &TFTEngine::round)
