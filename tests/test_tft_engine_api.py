@@ -390,9 +390,10 @@ def test_default_action_masks_have_valid_fallbacks():
             assert masks["bench_to_board_target_masks"].shape == (9, 28)
             assert masks["bench_to_board_target_masks"].any()
 
-            # A única ação habilitada na cabeça de tipo é PASS.
-            assert masks["type_mask"][6]
-            assert masks["type_mask"].sum() == 1
+            # A unidade inicial no banco habilita mover/vender, além de PASS.
+            assert masks["type_mask"].tolist() == [
+                False, False, False, True, False, True, True
+            ]
 
     finally:
         engine.close()
