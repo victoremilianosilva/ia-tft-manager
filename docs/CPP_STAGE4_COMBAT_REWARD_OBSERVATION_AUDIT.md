@@ -99,3 +99,12 @@ A dimensão/ordem está documentada e o replay agora verifica tipo e dimensão p
 ## Instrumentação de recompensa
 
 A API nativa agora expõe arrays separados `action_rewards`, `combat_rewards` e `placement_rewards`, além do agregado `rewards`. O replay cruzado compara cada componente por jogador e verifica que a soma dos componentes corresponde ao agregado. A lobby Python também expõe `action_reward` em `info.players` para auditoria. Isso torna omissões e duplicações detectáveis nos cenários executados; ainda falta um cenário controlado que efetivamente elimine jogadores para validar recompensa de colocação não nula em ambos os backends.
+
+
+## Atualização após replay controlado — 2026-10-15
+
+- O replay agora injeta a mesma identidade de campeão e a mesma formação de banco/tabuleiro nos dois motores por hooks explicitamente nomeados para testes. A loja continua fora da comparação campo a campo porque seus RNGs não compartilham o mesmo fluxo.
+- O replay passa por uma luta PVP real entre duas equipes controladas, além de comparar recompensas totais e componentes separados de ação, combate e colocação, dimensões/tipo da observação, estado público e progressão de rodada.
+- A comparação revelou e corrigiu dois desvios concretos: MiniTFTEnv._get_state() chamava PositioningManager.evaluate_board(), método inexistente, e convertia silenciosamente o score de posicionamento em zero; agora chama evaluate_board_positioning(). A observação C++ também retorna vetor todo-zero para jogador eliminado, como TFTLobby.get_observations().
+- CI do replay controlado: build CMake, CTest 16/16 PASS, suítes Python selecionadas 108 passed, incluindo o replay controlado (execução https://github.com/victoremilianosilva/teste-ia/actions/runs/38747122129).
+- Isso fecha um cenário de combate e recompensa real, mas NÃO prova paridade integral. Permanecem pendentes: igualdade do fluxo RNG de loja/pareamento, fixtures específicas para empate e eliminações simultâneas com ranking terminal, e validação de cada atributo de combate não consumido pelo loop atual (habilidades/itens/traits/modificadores). Não marcar a etapa inteira como concluída até esses casos terem fixtures explícitas.
