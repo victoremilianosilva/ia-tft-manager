@@ -12,6 +12,7 @@ from pathlib import Path
 import sys
 
 import pytest
+import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 # CMake's current output directory is cpp/build/bin. Keep the older Windows
@@ -127,6 +128,22 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
             assert cpp_result["observations"].shape[0] == 8, (
                 f"{step['name']}: C++ observation batch must have 8 players"
             )
+            assert np.asarray(py_obs).shape == cpp_result["observations"].shape, (
+                f"{step['name']}.observations.shape: Python={np.asarray(py_obs).shape}, "
+                f"C++={cpp_result['observations'].shape}"
+            )
+            py_obs_array = np.asarray(py_obs, dtype=np.float32)
+            cpp_obs_array = np.asarray(cpp_result["observations"], dtype=np.float32)
+            if not np.allclose(py_obs_array, cpp_obs_array, rtol=1e-5, atol=2e-5):
+                mismatches = np.argwhere(
+                    ~np.isclose(py_obs_array, cpp_obs_array, rtol=1e-5, atol=2e-5)
+                )
+                first = tuple(int(x) for x in mismatches[0])
+                pytest.fail(
+                    f"{step['name']}.observations{first}: "
+                    f"Python={py_obs_array[first]!r}, C++={cpp_obs_array[first]!r}; "
+                    f"total mismatches={len(mismatches)}"
+                )
 
             py_state = _python_snapshot(python_lobby)
             cpp_state = _native_snapshot(cpp_engine)
