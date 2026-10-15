@@ -108,3 +108,17 @@ A API nativa agora expõe arrays separados `action_rewards`, `combat_rewards` e 
 - A comparação revelou e corrigiu dois desvios concretos: MiniTFTEnv._get_state() chamava PositioningManager.evaluate_board(), método inexistente, e convertia silenciosamente o score de posicionamento em zero; agora chama evaluate_board_positioning(). A observação C++ também retorna vetor todo-zero para jogador eliminado, como TFTLobby.get_observations().
 - CI do replay controlado: build CMake, CTest 16/16 PASS, suítes Python selecionadas 108 passed, incluindo o replay controlado (execução https://github.com/victoremilianosilva/teste-ia/actions/runs/38747122129).
 - Isso fecha um cenário de combate e recompensa real, mas NÃO prova paridade integral. Permanecem pendentes: igualdade do fluxo RNG de loja/pareamento, fixtures específicas para empate e eliminações simultâneas com ranking terminal, e validação de cada atributo de combate não consumido pelo loop atual (habilidades/itens/traits/modificadores). Não marcar a etapa inteira como concluída até esses casos terem fixtures explícitas.
+
+
+## Auditoria complementar — StrategyManager.py (2026-10-15)
+
+| Método/contrato Python | Estado C++ nesta branch | Validação |
+|---|---|---|
+| `decide_strategy()` | Regras prioritárias já reproduzidas por `TFTEngine::Impl::update_strategy()`; a estratégia escolhida permanece distinta da estratégia com maior score. | Replay cruzado existente. |
+| `compute_strategy_confidence()` | Implementado como `StrategyInfo.state_confidence`, com os mesmos limiares e clamp [0, 1]. | Teste cruzado compara valor com o método Python após cada passo. |
+| `get_strategy_score()` | Implementados os sete scores ECON, STABILIZE, FAST8, SLOWROLL, ALL_IN, WINSTREAK e LOSS_STREAK. | Teste cruzado compara cada score por ID com Python. |
+| `choose_best_strategy()` | `best_scored_strategy` seleciona o score máximo; empate preserva a primeira estratégia na ordem do enum Python. Não substitui `decide_strategy()`. | Teste cruzado compara a estratégia vencedora por score. |
+| `get_state()` | Snapshot exposto por `get_strategies()`, incluindo estratégia, anterior, confiança, idade, motivo, changed, scores e métricas de contexto. | Campos acessíveis pelo binding Python. |
+| Contexto de `_update_strategy()` | C++ calcula board_power e bench_strength a partir das unidades possuídas; expõe quantidade de traits ativos do snapshot. A decisão Python atualmente recebe XP, round, bench_strength e composição, mas suas regras heurísticas não usam esses argumentos. | A força do banco e o comportamento de composição ainda precisam de fixtures específicas se a regra Python for ampliada. |
+
+**Limite explícito:** isso fecha a paridade dos cálculos atualmente implementados em `StrategyManager.py`, não a migração integral de todos os managers chamados por `env.py`. A estratégia escolhida não deve ser confundida com `choose_best_strategy()`, que é um cálculo alternativo no código Python.
