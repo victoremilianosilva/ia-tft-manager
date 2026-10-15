@@ -1952,7 +1952,7 @@ StepResult TFTEngine::step(
     StepResult result{};
 
     result.observations = impl_->build_observations();
-    result.observation_dim = kObservationDim;
+    result.observation_dim = impl_->observation_dim();
 
     result.rewards = round_rewards;
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
