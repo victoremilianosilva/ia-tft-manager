@@ -1182,29 +1182,30 @@ struct TFTEngine::Impl {
 
             const double max_hp =
                 profile.max_hp > 0.0 ? profile.max_hp : stats.max_hp;
-            unit.max_hp = static_cast<float>(max_hp > 0.0 ? max_hp : 100.0);
+            unit.max_hp = static_cast<float>(std::max(1.0, max_hp > 0.0 ? max_hp : 100.0));
             unit.hp = unit.max_hp;
 
             const double attack_damage =
                 profile.attack_damage > 0.0
                     ? profile.attack_damage
                     : stats.attack_damage;
+            // Match TFTLobby._build_cpp_combat_input() fallbacks.
             unit.attack_damage = static_cast<float>(
-                std::max(0.0, attack_damage));
+                std::max(1.0, attack_damage > 0.0 ? attack_damage : 30.0));
 
             const double attack_speed =
                 profile.attack_speed > 0.0
                     ? profile.attack_speed
                     : stats.attack_speed;
             unit.attack_speed = static_cast<float>(
-                attack_speed > 0.0 ? attack_speed : 1.0);
+                std::max(0.1, attack_speed > 0.0 ? attack_speed : 1.0));
 
             const double attack_range =
                 profile.attack_range > 0.0
                     ? profile.attack_range
                     : stats.attack_range;
             unit.attack_range = static_cast<float>(
-                attack_range > 0.0 ? attack_range : 1.0);
+                std::max(1.0, attack_range > 0.0 ? attack_range : 1.0));
 
             unit.armor = static_cast<float>(
                 profile.armor > 0.0 ? profile.armor : stats.armor);
