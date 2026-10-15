@@ -33,6 +33,7 @@ jobs:
       - name: Run combat, lobby, reward and cross-language regression suites
         env:
           PYTHONPATH: ${{ github.workspace }}/cpp/build/bin:${{ github.workspace }}
+          REQUIRE_CPP_PARITY: "1"
         run: >-
           python -m pytest -q
           tests/test_combat_engine.py
