@@ -222,10 +222,14 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
                 f"{step['name']}.stage result: Python={python_lobby.stage}, "
                 f"C++={cpp_result['stage']}"
             )
+            expected_round_resolved = step.get("expected_round_resolved", True)
             assert all(
-                item.get("round_resolved") is True
+                item.get("round_resolved", False) is expected_round_resolved
                 for item in py_info["players"]
-            ), f"{step['name']}: Python did not mark all player transitions as round-resolved"
+            ), (
+                f"{step['name']}: Python round_resolved flags do not match "
+                f"expected={expected_round_resolved}"
+            )
             assert int(cpp_result["round"]) >= 1, (
                 f"{step['name']}: C++ returned an invalid round number"
             )
