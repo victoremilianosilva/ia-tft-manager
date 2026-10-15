@@ -1,5 +1,6 @@
 #include "lobby/ShopEngine.hpp"
 #include <algorithm>
+#include <map>
 #include <stdexcept>
 #include <utility>
 #include "lobby/ChampionCatalog.hpp"
@@ -30,7 +31,49 @@ std::optional<UnitInstance> ShopEngine::draw(std::int32_t cost) {
 }
 void ShopEngine::roll(std::int32_t level, bool force) {
     if (locked_ && !force) return;
+    if (next_roll_for_testing_ && next_roll_for_testing_->size() != kShopSlots)
+        throw std::invalid_argument("Fixture de reroll deve conter exatamente cinco campeoes.");
+
+    const auto previous_offers = offers_;
     return_current_shop();
+
+    if (next_roll_for_testing_) {
+        const auto ids = *next_roll_for_testing_;
+        std::map<std::int32_t, std::int32_t> required;
+        for (const auto id : ids) ++required[id];
+        for (const auto& [id, count] : required) {
+            if (pool_.available(id) < count) {
+                for (const auto& offer : previous_offers) {
+                    if (offer && !pool_.take(offer->champion_internal_id))
+                        throw std::logic_error("Falha ao restaurar loja apos fixture invalida.");
+                }
+                offers_ = previous_offers;
+                throw std::invalid_argument("Fixture de reroll excede o estoque disponivel.");
+            }
+        }
+
+        std::vector<std::int32_t> taken;
+        try {
+            for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
+                if (!pool_.take(ids[slot]))
+                    throw std::invalid_argument("Campeao indisponivel na fixture de reroll.");
+                taken.push_back(ids[slot]);
+                offers_[slot] = factory_.create(ids[slot]);
+            }
+        } catch (...) {
+            for (const auto id : taken) (void)pool_.give_back(id);
+            offers_ = {};
+            for (const auto& offer : previous_offers) {
+                if (offer && !pool_.take(offer->champion_internal_id))
+                    throw std::logic_error("Falha ao restaurar loja apos erro na fixture.");
+            }
+            offers_ = previous_offers;
+            throw;
+        }
+        next_roll_for_testing_.reset();
+        return;
+    }
+
     for (auto& offer : offers_) offer = draw(roll_cost(level));
 }
 void ShopEngine::reroll(std::int32_t level) { roll(level, true); }
@@ -59,5 +102,37 @@ void ShopEngine::return_current_shop() {
         offer.reset();
     }
 }
-void ShopEngine::reset() { return_current_shop(); locked_ = false; }
+bool ShopEngine::set_offer_for_testing(std::int32_t slot, UnitInstance unit) {
+    if (slot < 0 || static_cast<std::size_t>(slot) >= kShopSlots ||
+        unit.champion_internal_id < 0)
+        return false;
+    const auto index = static_cast<std::size_t>(slot);
+    if (offers_[index] &&
+        offers_[index]->champion_internal_id == unit.champion_internal_id)
+        return true;
+    if (!pool_.take(unit.champion_internal_id)) return false;
+    if (offers_[index] && !pool_.give_back(offers_[index]->champion_internal_id)) {
+        (void)pool_.give_back(unit.champion_internal_id);
+        return false;
+    }
+    offers_[index] = std::move(unit);
+    return true;
+}
+
+bool ShopEngine::set_next_roll_for_testing(
+    const std::vector<std::int32_t>& champion_internal_ids
+) {
+    if (champion_internal_ids.size() != kShopSlots) return false;
+    if (std::any_of(champion_internal_ids.begin(), champion_internal_ids.end(),
+                    [](std::int32_t id) { return id < 0; }))
+        return false;
+    next_roll_for_testing_ = champion_internal_ids;
+    return true;
+}
+
+void ShopEngine::reset() {
+    return_current_shop();
+    locked_ = false;
+    next_roll_for_testing_.reset();
+}
 } // namespace tft

@@ -378,7 +378,8 @@ struct TFTEngine::Impl {
         const auto batch =
             action_mask_engine.generate_masks(
                 state,
-                player_envs[player_index].anti_loop
+                player_envs[player_index].anti_loop,
+                false
             );
 
         auto& current = player_envs[player_index].action_masks;
@@ -2172,6 +2173,58 @@ TFTEngine::get_action_masks() const {
     return result;
 }
 
+AuditSnapshot TFTEngine::get_audit_snapshot() const {
+    if (!impl_) {
+        throw std::runtime_error("TFTEngine nao possui estado interno.");
+    }
+    impl_->ensure_open();
+
+    AuditSnapshot snapshot{};
+    snapshot.round = impl_->round + 1;
+    snapshot.stage = impl_->stage;
+    snapshot.finished = impl_->done;
+
+    const auto describe_unit = [this](const UnitInstance* unit) {
+        AuditUnitSnapshot result{};
+        if (!unit) return result;
+        result.occupied = true;
+        result.champion_id = unit->champion_id;
+        result.uuid = unit->uuid;
+        result.star = unit->star;
+        const auto* definition = impl_->catalog->find_by_id(
+            unit->champion_internal_id
+        );
+        result.cost = definition ? definition->cost : 0;
+        return result;
+    };
+
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        const auto& source = impl_->player_envs[i];
+        auto& target = snapshot.players[i];
+        target.player_id = static_cast<std::int32_t>(i);
+        target.gold = source.economy.gold;
+        target.level = source.economy.level;
+        target.xp = source.economy.xp;
+        target.win_streak = source.economy.win_streak;
+        target.loss_streak = source.economy.loss_streak;
+        target.masks = source.action_masks;
+
+        for (std::size_t slot = 0; slot < kBoardSlots; ++slot)
+            target.board[slot] = describe_unit(
+                source.board[slot] ? &*source.board[slot] : nullptr
+            );
+        for (std::size_t slot = 0; slot < kBenchSlots; ++slot)
+            target.bench[slot] = describe_unit(
+                source.bench[slot] ? &*source.bench[slot] : nullptr
+            );
+        for (std::size_t slot = 0; slot < kShopSlots; ++slot)
+            target.shop[slot] = describe_unit(source.shop->get_unit(
+                static_cast<std::int32_t>(slot)
+            ));
+    }
+    return snapshot;
+}
+
 bool TFTEngine::set_unit_for_testing(
     std::int32_t player_id,
     bool on_board,
@@ -2212,6 +2265,61 @@ bool TFTEngine::set_unit_for_testing(
     impl_->register_position_state(player_index);
     impl_->refresh_masks(player_index);
     return true;
+}
+
+bool TFTEngine::set_player_economy_for_testing(
+    std::int32_t player_id, std::int32_t gold,
+    std::int32_t level, std::int32_t xp
+) {
+    if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
+    impl_->ensure_open();
+    if (player_id < 0 || static_cast<std::size_t>(player_id) >= kPlayersPerLobby ||
+        gold < 0 || level < 1 || level > EconomyEngine::MAX_LEVEL || xp < 0)
+        return false;
+    auto& player = impl_->player_envs[static_cast<std::size_t>(player_id)];
+    player.economy.gold = gold;
+    player.economy.level = level;
+    player.economy.xp = xp;
+    impl_->refresh_masks(static_cast<std::size_t>(player_id));
+    return true;
+}
+
+bool TFTEngine::set_shop_offer_for_testing(
+    std::int32_t player_id, std::int32_t slot,
+    const std::string& champion_api_name
+) {
+    if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
+    impl_->ensure_open();
+    if (player_id < 0 || static_cast<std::size_t>(player_id) >= kPlayersPerLobby ||
+        slot < 0 || static_cast<std::size_t>(slot) >= kShopSlots)
+        return false;
+    const auto* definition = impl_->catalog->find_by_api_name(champion_api_name);
+    if (!definition) return false;
+    auto& player = impl_->player_envs[static_cast<std::size_t>(player_id)];
+    auto unit = impl_->unit_factory->create(definition->internal_id);
+    if (!player.shop->set_offer_for_testing(slot, std::move(unit))) return false;
+    impl_->refresh_masks(static_cast<std::size_t>(player_id));
+    return true;
+}
+
+bool TFTEngine::set_next_shop_roll_for_testing(
+    std::int32_t player_id,
+    const std::vector<std::string>& champion_api_names
+) {
+    if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
+    impl_->ensure_open();
+    if (player_id < 0 || static_cast<std::size_t>(player_id) >= kPlayersPerLobby ||
+        champion_api_names.size() != kShopSlots)
+        return false;
+    std::vector<std::int32_t> ids;
+    ids.reserve(kShopSlots);
+    for (const auto& name : champion_api_names) {
+        const auto* definition = impl_->catalog->find_by_api_name(name);
+        if (!definition) return false;
+        ids.push_back(definition->internal_id);
+    }
+    auto& player = impl_->player_envs[static_cast<std::size_t>(player_id)];
+    return player.shop->set_next_roll_for_testing(ids);
 }
 
 bool TFTEngine::set_player_alive_for_testing(

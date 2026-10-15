@@ -523,6 +523,46 @@ PYBIND11_MODULE(tft_engine, module) {
             py::arg("actions")
         )
         .def(
+            "get_audit_snapshot",
+            [](const TFTEngine& self) {
+                const auto snapshot = self.get_audit_snapshot();
+                py::dict result;
+                result["round"] = snapshot.round;
+                result["stage"] = snapshot.stage;
+                result["finished"] = snapshot.finished;
+                py::list players;
+                const auto unit_to_dict = [](const tft::AuditUnitSnapshot& unit) {
+                    py::dict d;
+                    d["occupied"] = unit.occupied;
+                    d["champion_id"] = unit.champion_id;
+                    d["uuid"] = unit.uuid;
+                    d["star"] = unit.star;
+                    d["cost"] = unit.cost;
+                    return d;
+                };
+                for (const auto& player : snapshot.players) {
+                    py::dict p;
+                    p["player_id"] = player.player_id;
+                    p["gold"] = player.gold;
+                    p["level"] = player.level;
+                    p["xp"] = player.xp;
+                    p["win_streak"] = player.win_streak;
+                    p["loss_streak"] = player.loss_streak;
+                    py::list board, bench, shop;
+                    for (const auto& unit : player.board) board.append(unit_to_dict(unit));
+                    for (const auto& unit : player.bench) bench.append(unit_to_dict(unit));
+                    for (const auto& unit : player.shop) shop.append(unit_to_dict(unit));
+                    p["board"] = board;
+                    p["bench"] = bench;
+                    p["shop"] = shop;
+                    p["action_masks"] = masks_to_dict(player.masks);
+                    players.append(p);
+                }
+                result["players"] = players;
+                return result;
+            }
+        )
+        .def(
             "get_action_masks",
             [](const TFTEngine& self) {
                 return masks_to_list(self.get_action_masks());
@@ -560,6 +600,15 @@ PYBIND11_MODULE(tft_engine, module) {
              py::arg("champion_api_name"), py::arg("star") = 1)
         .def("set_player_alive_for_testing", &TFTEngine::set_player_alive_for_testing,
              py::arg("player_id"), py::arg("alive"))
+        .def("set_player_economy_for_testing", &TFTEngine::set_player_economy_for_testing,
+             py::arg("player_id"), py::arg("gold"), py::arg("level"), py::arg("xp"))
+        .def("set_shop_offer_for_testing", &TFTEngine::set_shop_offer_for_testing,
+             py::arg("player_id"), py::arg("slot"), py::arg("champion_api_name"))
+        .def("set_next_shop_roll_for_testing", &TFTEngine::set_next_shop_roll_for_testing,
+             py::arg("player_id"), py::arg("champion_api_names"))
+        .def("pool_available", &TFTEngine::pool_available, py::arg("champion_internal_id"))
+        .def("pool_initial_count", &TFTEngine::pool_initial_count, py::arg("champion_internal_id"))
+        .def("pool_total_available", &TFTEngine::pool_total_available)
         .def_property_readonly("observation_dim", &TFTEngine::observation_dim)
         .def_property_readonly("episode_id", &TFTEngine::episode_id)
         .def_property_readonly("round", &TFTEngine::round)

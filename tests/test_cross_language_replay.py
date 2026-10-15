@@ -84,6 +84,66 @@ def _native_snapshot(engine):
     }
 
 
+MASK_SHAPES = {
+    "type_mask": (7,), "shop_mask": (5,), "bench_source_mask": (9,),
+    "board_target_mask": (28,), "board_source_mask": (28,),
+    "board_move_target_masks": (28, 28), "bench_move_source_mask": (9,),
+    "bench_to_board_target_masks": (9, 28),
+}
+
+def _compare_action_masks(python_lobby, cpp_engine, step_name):
+    """Compara todas as máscaras nomeadas e suas matrizes condicionais."""
+    py_masks = python_lobby.get_action_masks()
+    cpp_masks = cpp_engine.get_action_masks()
+    assert len(py_masks) == len(cpp_masks) == 8, "%s: lote de máscaras inválido" % step_name
+    for player_id, (py_player, cpp_player) in enumerate(zip(py_masks, cpp_masks)):
+        for name, shape in MASK_SHAPES.items():
+            assert name in py_player and name in cpp_player, (step_name, player_id, name)
+            py_mask = np.asarray(py_player[name])
+            cpp_mask = np.asarray(cpp_player[name])
+            assert py_mask.shape == cpp_mask.shape == shape, "%s player=%d mask=%s shape" % (step_name, player_id, name)
+            assert py_mask.dtype == np.bool_ and cpp_mask.dtype == np.bool_, (step_name, player_id, name, 'dtype')
+            np.testing.assert_array_equal(py_mask, cpp_mask, err_msg='%s player=%d mask=%s divergiu' % (step_name, player_id, name))
+
+def _compare_audit_snapshots(python_lobby, cpp_engine, step_name):
+    """Compare unit slots and economy without relying on UUID or RNG."""
+    native = cpp_engine.get_audit_snapshot()
+    assert int(native["round"]) == int(python_lobby.get_public_state()["round"]), (step_name, "round audit")
+    assert int(native["stage"]) == int(python_lobby.stage), (step_name, "stage audit")
+    for player_id, player in enumerate(python_lobby.players):
+        env = player.env
+        py_economy = env.economy_manager
+        cpp_player = native["players"][player_id]
+        for field in ("gold", "level", "xp", "win_streak", "loss_streak"):
+            assert int(getattr(py_economy, field)) == int(cpp_player[field]), (
+                step_name, player_id, field, getattr(py_economy, field), cpp_player[field]
+            )
+        for py_name, cpp_name, py_units in (
+            ("board", "board", env.board_manager.board),
+            ("bench", "bench", env.bench_manager.bench),
+        ):
+            cpp_units = cpp_player[cpp_name]
+            assert len(py_units) == len(cpp_units), (step_name, player_id, py_name, "length")
+            for slot, (py_unit, cpp_unit) in enumerate(zip(py_units, cpp_units)):
+                occupied = py_unit is not None
+                assert occupied is bool(cpp_unit["occupied"]), (
+                    step_name, player_id, py_name, slot, "occupied"
+                )
+                if not occupied:
+                    continue
+                assert int(py_unit.get("star", 1)) == int(cpp_unit["star"]), (
+                    step_name, player_id, py_name, slot, "star"
+                )
+                assert int(py_unit.get("cost", 0)) == int(cpp_unit["cost"]), (
+                    step_name, player_id, py_name, slot, "cost"
+                )
+                py_id = py_unit.get("champion_id", py_unit.get("apiName"))
+                if py_id is not None:
+                    assert str(py_id) == str(cpp_unit["champion_id"]), (
+                        step_name, player_id, py_name, slot, py_id, cpp_unit["champion_id"]
+                    )
+
+
 def _compare_snapshots(py_state, cpp_state, step_name):
     for field in ("round", "stage", "finished"):
         assert py_state[field] == cpp_state[field], (
@@ -111,7 +171,15 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
     cpp_engine = NativeTFTEngine(fixture["seed"], str(CATALOG_PATH))
     try:
         python_lobby.reset()
+        # Force the reference side through the Python mask implementation;
+        # otherwise an installed decision_engine extension silently makes
+        # both sides use C++ masks and invalidates the cross-language check.
+        for player in python_lobby.players:
+            player.env.action_mask_manager.decision_engine_runtime = None
         cpp_engine.reset(fixture["seed"])
+
+        _compare_action_masks(python_lobby, cpp_engine, "reset")
+        _compare_audit_snapshots(python_lobby, cpp_engine, "reset")
 
         # Build the same owned-unit snapshot in both backends. Shop offers
         # remain random, but all board/bench/trait/combat features are controlled.
@@ -172,6 +240,9 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
                 step["python_actions"]
             )
             cpp_result = cpp_engine.step(step["cpp_actions"])
+
+            _compare_action_masks(python_lobby, cpp_engine, step["name"])
+            _compare_audit_snapshots(python_lobby, cpp_engine, step["name"])
 
             assert all(math.isfinite(float(value)) for value in py_rewards), (
                 f"{step['name']}: Python returned a non-finite reward"
@@ -440,4 +511,165 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
         close = getattr(python_lobby, "close", None)
         if callable(close):
             close()
+        cpp_engine.close()
+
+
+def test_shared_shop_and_economy_fixtures_cover_all_seven_actions():
+    """Run every action against equal offers/economy and deterministic reroll."""
+    fixture_seed = 90421
+    python_lobby = PythonLobby(seed=fixture_seed)
+    cpp_engine = NativeTFTEngine(fixture_seed, str(CATALOG_PATH))
+    try:
+        python_lobby.reset()
+        for player in python_lobby.players:
+            player.env.action_mask_manager.decision_engine_runtime = None
+        cpp_engine.reset(fixture_seed)
+
+        env0 = python_lobby.players[0].env
+        champions = [
+            champion for champion in env0.unit_manager.get_all_champions()
+            if int(champion.get("cost", 1)) == 1
+        ]
+        assert len(champions) >= 5, "Need five distinct cost-1 champions for deterministic reroll"
+        names = [
+            champion.get("apiName") or champion.get("api_name")
+            or champion.get("champion_id")
+            for champion in champions[:5]
+        ]
+        assert all(names), "Fixture champions must have apiName"
+
+        # Normalize board/bench and economy. The C++ fixture hooks keep shop
+        # reservations consistent with the global native pool.
+        for player_id, player in enumerate(python_lobby.players):
+            env = player.env
+            env.board_manager.board[:] = [None] * len(env.board_manager.board)
+            env.bench_manager.bench[:] = [None] * len(env.bench_manager.bench)
+            env.bench_manager.bench[0] = env.unit_manager.create_unit(champions[0])
+            env.economy_manager.gold = 30
+            env.economy_manager.level = 2
+            env.economy_manager.xp = 0
+            assert cpp_engine.set_unit_for_testing(
+                player_id, False, 0, names[0], 1
+            ), "Could not configure shared bench fixture"
+            assert cpp_engine.set_player_economy_for_testing(
+                player_id, 30, 2, 0
+            ), "Could not configure native economy fixture"
+            assert env.shop_manager.set_offer_for_testing(0, names[0]), (
+                "Could not reserve Python fixture offer for player %d" % player_id
+            )
+            assert cpp_engine.set_shop_offer_for_testing(
+                player_id, 0, names[0]
+            ), "Could not reserve native fixture offer for player %d" % player_id
+
+        # MOVE_BENCH and MOVE_BOARD need independent, known source units.
+        env3 = python_lobby.players[3].env
+        env3._rebuild_player_state()
+        env4 = python_lobby.players[4].env
+        env4.board_manager.board[0] = env4.unit_manager.create_unit(champions[1])
+        assert cpp_engine.set_unit_for_testing(4, True, 0, names[1], 1)
+        env5 = python_lobby.players[5].env
+        env5._rebuild_player_state()
+        for player in python_lobby.players:
+            player.env._rebuild_player_state()
+
+        # Align all five current offers for player 1 too, so reroll pool
+        # deltas are compared from the same pre-transition inventory.
+        py_old_shop = python_lobby.players[1].env.shop_manager.get_shop()
+        cpp_old_shop = cpp_engine.get_audit_snapshot()["players"][1]["shop"]
+        for slot, old_unit in enumerate(py_old_shop):
+            if old_unit is None:
+                continue
+            old_name = old_unit.get("apiName") or old_unit.get("api_name") or old_unit.get("champion_id")
+            if cpp_old_shop[slot]["occupied"] and cpp_old_shop[slot]["champion_id"] == old_name:
+                continue
+            assert cpp_engine.set_shop_offer_for_testing(1, slot, old_name), (
+                "Could not synchronize pre-reroll native offer slot %d" % slot
+            )
+
+        assert python_lobby.players[1].env.shop_manager.set_next_roll_for_testing(names)
+        assert cpp_engine.set_next_shop_roll_for_testing(1, names)
+
+        # One action per player, all in one preparation phase. PASS players
+        # do not resolve the round because the other six players have not passed.
+        py_actions = [
+            {"type": 0, "shop_slot": 0},                       # BUY
+            {"type": 1},                                       # REROLL
+            {"type": 2},                                       # BUY_XP
+            {"type": 3, "bench_slot": 0, "board_target": 5},   # MOVE_BENCH
+            {"type": 4, "board_source": 0, "conditioned_board_target": 1},
+            {"type": 5, "bench_slot": 0},                      # SELL
+            {"type": 6},                                       # PASS
+            {"type": 6},                                       # PASS
+        ]
+        cpp_actions = [
+            [0, 0, 0, 0, 0, 0],
+            [1, 0, 0, 0, 0, 0],
+            [2, 0, 0, 0, 0, 0],
+            [3, 0, 0, 5, 0, 0],
+            [4, 0, 0, 0, 0, 1],
+            [5, 0, 0, 0, 0, 0],
+            [6, 0, 0, 0, 0, 0],
+            [6, 0, 0, 0, 0, 0],
+        ]
+
+        # Capture stock deltas for the forced reroll champions. Absolute pool
+        # counts can differ from reset because the two RNG implementations are
+        # intentionally independent; transition deltas must still match.
+        unit_manager = python_lobby.players[0].env.unit_manager
+        pool_ids = [unit_manager.get_unit_id(champion) for champion in champions[:5]]
+        py_pool_before = [python_lobby.unit_pool.get_available(unit_id) for unit_id in pool_ids]
+        cpp_pool_before = [cpp_engine.pool_available(unit_id) for unit_id in pool_ids]
+
+        # The chosen actions must be legal in both engines before execution.
+        py_masks = python_lobby.get_action_masks()
+        cpp_masks = cpp_engine.get_action_masks()
+        for player_id, action_type in enumerate([0, 1, 2, 3, 4, 5, 6, 6]):
+            assert bool(py_masks[player_id]["type_mask"][action_type]), (
+                "Python fixture action is masked: player=%d type=%d" % (player_id, action_type)
+            )
+            assert bool(cpp_masks[player_id]["type_mask"][action_type]), (
+                "C++ fixture action is masked: player=%d type=%d" % (player_id, action_type)
+            )
+
+        _, py_rewards, _, _ = python_lobby.step(py_actions)
+        cpp_result = cpp_engine.step(cpp_actions)
+
+        _compare_action_masks(python_lobby, cpp_engine, "all_seven_actions")
+        _compare_audit_snapshots(python_lobby, cpp_engine, "all_seven_actions")
+
+        assert len(py_rewards) == len(cpp_result["rewards"]) == 8
+        for player_id, (py_reward, cpp_reward) in enumerate(
+            zip(py_rewards, cpp_result["rewards"])
+        ):
+            _assert_close(py_reward, cpp_reward, "all_seven_actions.rewards[%d]" % player_id)
+
+        # The shop offer consumed by BUY disappears in both engines. The
+        # forced REROLL offers are identical by champion and slot.
+        py_shop0 = python_lobby.players[0].env.shop_manager.get_shop()
+        cpp_snapshot = cpp_engine.get_audit_snapshot()
+        assert py_shop0[0] is None
+        assert not cpp_snapshot["players"][0]["shop"][0]["occupied"]
+        py_shop1 = python_lobby.players[1].env.shop_manager.get_shop()
+        cpp_shop1 = cpp_snapshot["players"][1]["shop"]
+        for slot, name in enumerate(names):
+            py_name = py_shop1[slot].get("apiName", py_shop1[slot].get("champion_id"))
+            assert py_name == name, ("Python forced reroll mismatch", slot, py_name, name)
+            assert cpp_shop1[slot]["champion_id"] == name, (
+                "C++ forced reroll mismatch", slot, cpp_shop1[slot]["champion_id"], name
+            )
+
+        # Economy side effects are checked explicitly as a readable contract.
+        py_gold = [player.env.economy_manager.gold for player in python_lobby.players]
+        cpp_gold = [player["gold"] for player in cpp_snapshot["players"]]
+        py_pool_after = [python_lobby.unit_pool.get_available(unit_id) for unit_id in pool_ids]
+        cpp_pool_after = [cpp_engine.pool_available(unit_id) for unit_id in pool_ids]
+        assert [after - before for before, after in zip(py_pool_before, py_pool_after)] == [
+            after - before for before, after in zip(cpp_pool_before, cpp_pool_after)
+        ], "Python/C++ global pool deltas diverged during deterministic reroll and sell"
+        assert py_gold == cpp_gold
+        assert py_gold[0] == 30 - int(champions[0]["cost"])
+        assert py_gold[1] == 28
+        assert py_gold[2] == 26
+    finally:
+        python_lobby.close() if hasattr(python_lobby, "close") else None
         cpp_engine.close()

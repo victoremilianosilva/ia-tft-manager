@@ -35,6 +35,7 @@ class ShopManager:
         self.shop = self._create_empty_shop()
 
         self.locked = False
+        self._next_roll_for_testing = None
 
     # =============================================================
     # 🧱 ESTRUTURA
@@ -47,6 +48,7 @@ class ShopManager:
         self.shop = self._create_empty_shop()
         self.locked = False
 
+        self._next_roll_for_testing = None
     # =============================================================
     # 🔎 CONSULTA
     # =============================================================
@@ -95,11 +97,40 @@ class ShopManager:
         if self.locked and not force:
             return self.get_shop() if copy_result else None
 
-        # Devolve ao pool as unidades da loja anterior.
+        previous_shop = self.get_shop()
         self.return_current_shop()
 
-        odds = self._get_shop_odds(level)
+        if self._next_roll_for_testing is not None:
+            names = self._next_roll_for_testing
+            if len(names) != self.shop_size:
+                raise ValueError("Fixture de reroll deve conter cinco campeoes.")
+            reserved = []
+            try:
+                for name in names:
+                    unit = self.unit_pool.take_champion_for_testing(name)
+                    if unit is None:
+                        raise ValueError("Campeao indisponivel na fixture de reroll: %s" % name)
+                    reserved.append(unit)
+            except Exception:
+                for unit in reserved:
+                    self._return_to_pool(unit)
+                restored = []
+                for old_unit in previous_shop:
+                    if old_unit is None:
+                        restored.append(None)
+                    else:
+                        name = old_unit.get("apiName", old_unit.get("champion_id"))
+                        restored_unit = self.unit_pool.take_champion_for_testing(name)
+                        if restored_unit is None:
+                            raise RuntimeError("Falha ao restaurar loja apos fixture invalida.")
+                        restored.append(restored_unit)
+                self.shop = restored
+                raise
+            self.shop = reserved
+            self._next_roll_for_testing = None
+            return self.get_shop() if copy_result else None
 
+        odds = self._get_shop_odds(level)
         for slot in range(self.shop_size):
             cost = self._roll_cost(odds)
             self.shop[slot] = self._draw_from_pool(cost)
@@ -109,6 +140,33 @@ class ShopManager:
     # =============================================================
     # 🎯 ODDS
     # =============================================================
+    def set_offer_for_testing(self, slot, champion_api_name):
+        """Substitui uma oferta reservando/devolvendo a cópia no pool."""
+        if not self.is_valid_slot(slot):
+            return False
+        previous = self.shop[slot]
+        if previous is not None and (
+            previous.get("apiName") or previous.get("api_name")
+            or previous.get("champion_id")
+        ) == champion_api_name:
+            return True
+        unit = self.unit_pool.take_champion_for_testing(champion_api_name)
+        if unit is None:
+            return False
+        if previous is not None and not self._return_to_pool(previous):
+            self._return_to_pool(unit)
+            return False
+        self.shop[slot] = unit
+        return True
+
+    def set_next_roll_for_testing(self, champion_api_names):
+        """Força a próxima loja a conter exatamente cinco campeões informados."""
+        names = list(champion_api_names)
+        if len(names) != self.shop_size or any(not isinstance(name, str) or not name for name in names):
+            return False
+        self._next_roll_for_testing = names
+        return True
+
     def _get_shop_odds(self, level):
         """
         Retorna as probabilidades configuradas para o nível.

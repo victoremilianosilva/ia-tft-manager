@@ -307,6 +307,35 @@ struct PublicState {
 };
 
 
+struct AuditUnitSnapshot {
+    bool occupied{false};
+    std::string champion_id;
+    std::string uuid;
+    std::int32_t star{0};
+    std::int32_t cost{0};
+};
+
+struct AuditPlayerSnapshot {
+    std::int32_t player_id{-1};
+    std::int32_t gold{0};
+    std::int32_t level{0};
+    std::int32_t xp{0};
+    std::int32_t win_streak{0};
+    std::int32_t loss_streak{0};
+    std::array<AuditUnitSnapshot, kBoardSlots> board{};
+    std::array<AuditUnitSnapshot, kBenchSlots> bench{};
+    std::array<AuditUnitSnapshot, kShopSlots> shop{};
+    PlayerActionMasks masks{};
+};
+
+struct AuditSnapshot {
+    std::uint32_t round{0};
+    std::uint32_t stage{1};
+    bool finished{false};
+    std::array<AuditPlayerSnapshot, kPlayersPerLobby> players{};
+};
+
+
 class TFTEngine {
 public:
     explicit TFTEngine(
@@ -332,6 +361,7 @@ public:
 
     std::array<PlayerActionMasks, kPlayersPerLobby>
     get_action_masks() const;
+    AuditSnapshot get_audit_snapshot() const;
 
     // Hooks de fixture determinística para testes de paridade Python/C++.
     // Não alteram o pool compartilhado; usar apenas em cenários de teste.
@@ -343,6 +373,18 @@ public:
         std::int32_t star = 1
     );
     bool set_player_alive_for_testing(std::int32_t player_id, bool alive);
+    bool set_player_economy_for_testing(
+        std::int32_t player_id, std::int32_t gold,
+        std::int32_t level, std::int32_t xp
+    );
+    bool set_shop_offer_for_testing(
+        std::int32_t player_id, std::int32_t slot,
+        const std::string& champion_api_name
+    );
+    bool set_next_shop_roll_for_testing(
+        std::int32_t player_id,
+        const std::vector<std::string>& champion_api_names
+    );
 
     // Controla o bloqueio da loja sem alterar as dimensões da policy PPO.
     bool set_shop_locked(std::int32_t player_id, bool locked);

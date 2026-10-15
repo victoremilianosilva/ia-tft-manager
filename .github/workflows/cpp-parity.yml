@@ -27,15 +27,22 @@ jobs:
       - name: Build native modules and tests
         run: cmake --build cpp/build --parallel 2
 
-      - name: Run native CTest suite
-        run: ctest --test-dir cpp/build --output-on-failure
+      - name: Prepare test report directory
+        if: always()
+        run: mkdir -p artifacts
 
-      - name: Run combat, lobby, reward and cross-language regression suites
+      - name: Run native CTest suite
+        run: |
+          set -o pipefail
+          ctest --test-dir cpp/build --output-on-failure 2>&1 | tee artifacts/ctest.log
+
+      - name: Run required cross-language parity suite
         env:
           PYTHONPATH: ${{ github.workspace }}/cpp/build/bin:${{ github.workspace }}
           REQUIRE_CPP_PARITY: "1"
         run: >-
           python -m pytest -q
+          --junitxml=artifacts/cross-language-parity.xml
           tests/test_combat_engine.py
           tests/test_combat_events.py
           tests/test_combat_movement.py
@@ -47,7 +54,6 @@ jobs:
           tests/test_integracao_combate_cpp.py
           tests/test_lobby_combat_regression.py
           tests/test_reward_integration.py
-          tests/test_reward_cpp_parity.py
           tests/test_round_economy_combat_flow.py
           tests/test_tft_engine_api.py
           tests/test_lobby_end_to_end.py
@@ -56,3 +62,22 @@ jobs:
           tests/test_reward_manager_parity.py
           tests/test_combat_profile_parity.py
           tests/test_synergy_manager_parity.py
+          tests/test_action_mask_equivalence.py
+          tests/test_action_mask_integration.py
+          tests/test_anti_loop_mask_integration.py
+          tests/test_anti_loop_swap_cycles.py
+          tests/test_combat_economy_integration.py
+          tests/test_self_play_economy_progression.py
+          tests/test_shop_manager_odds.py
+          tests/test_shared_pool_shop_validation.py
+          tests/test_upgrade_integration.py
+          tests/test_engine_backend_selection.py
+
+      - name: Publish native and Python test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cpp-cross-language-parity-report
+          path: artifacts/
+          if-no-files-found: warn
+          retention-days: 30
