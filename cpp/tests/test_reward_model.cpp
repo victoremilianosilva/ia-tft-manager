@@ -46,6 +46,10 @@ int main() {
                       0.10 + (1.0 / 28.0) * 0.15,
                   "second deterministic action reward");
 
+    require_close(placement(1, 8), 1.0, "first-place terminal reward");
+    require_close(placement(8, 8), -1.0, "last-place terminal reward");
+    require_close(placement(4, 8), 1.0 / 7.0, "middle-place terminal reward");
+
     require_close(level(4, 1), 1.5, "level reward cap");
     require_close(economy(50, 20), 0.25 - 0.05, "economy reward");
     require_close(streak(5, 4), 0.15 + 0.08, "streak reward");
