@@ -385,15 +385,16 @@ A tecnologia específica de frontend, comunicação e armazenamento deve ser esc
 A primeira versão completa será funcional quando:
 
 1. Carregar checkpoint treinado e executar lobby real de oito jogadores sem otimização PPO.
-2. Mostrar os oito jogadores e permitir ampliar qualquer um.
-3. Oferecer inferência determinística e estocástica selecionável.
-4. Registrar ação proposta, máscara, validação e resultado real sem confundi-los.
-5. Expor log-probabilidade, entropia, valor estimado e probabilidades relevantes, respeitando a estrutura condicional da política.
-6. Registrar ações inválidas, loops e bloqueios com contexto individual.
-7. Gravar e reabrir replay sem depender de executar novamente a política.
-8. Preservar regras, observações, máscaras e recompensas da engine.
-9. Identificar checkpoint, seed e versões necessárias para interpretar a sessão.
-10. Documentar campos indisponíveis e falhas de gravação sem fabricar dados.
+2. Mostrar os oito jogadores com o tabuleiro completo 7×4 e posição de cada peça, e permitir ampliar qualquer um.
+3. Durante combate, abrir uma visão dedicada ao clicar no jogador, mostrando todas as unidades dos dois lados e atualizando posições/HP/mana quando a engine fornecer eventos intermediários.
+4. Oferecer inferência determinística e estocástica selecionável.
+5. Registrar ação proposta, máscara, validação e resultado real sem confundi-los.
+6. Expor log-probabilidade, entropia, valor estimado e probabilidades relevantes, respeitando a estrutura condicional da política.
+7. Registrar ações inválidas, loops e bloqueios com contexto individual.
+8. Gravar e reabrir replay sem depender de executar novamente a política.
+9. Preservar regras, observações, máscaras e recompensas da engine.
+10. Identificar checkpoint, seed e versões necessárias para interpretar a sessão.
+11. Documentar campos indisponíveis e falhas de gravação sem fabricar dados.
 
 ## 15. Registro de decisões
 
