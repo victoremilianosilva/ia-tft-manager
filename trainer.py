@@ -3,9 +3,10 @@ import torch.optim as optim
 import numpy as np
 import os
 
+from engine_backend import make_lobby_factory
+
 from torch.utils.tensorboard import SummaryWriter
 
-from lobby.TFTLobby import TFTLobby
 
 from vector_lobby_env import LobbyVectorEnv
 
@@ -57,7 +58,8 @@ class Trainer:
     def __init__(
         self,
         num_envs=4,
-        use_subprocess=True
+        use_subprocess=True,
+        engine_backend=None,
     ):
 
         # ============================================================
@@ -144,13 +146,16 @@ class Trainer:
         )
 
         # ============================================================
-        # 🏭 ENV FACTORY
+        # 🏭 ENV FACTORY / ENGINE BACKEND
         # ============================================================
+
+        self.engine_backend, env_factory = make_lobby_factory(engine_backend)
+        print(f"🧩 Engine selecionada: {self.engine_backend.upper()}")
 
         def make_env():
-            return TFTLobby()
+            return env_factory()
 
-        # ============================================================
+# ============================================================
         # 🚀 VECTOR ENV
         # ============================================================
 

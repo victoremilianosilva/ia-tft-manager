@@ -464,6 +464,10 @@ PYBIND11_MODULE(tft_engine, module) {
     module.doc() =
         "API Python do motor nativo de simulacao TFT.";
 
+    // Contrato mínimo consumido pelo wrapper PPO:
+    // reset -> step -> máscaras/diagnósticos de treino -> close.
+    // Estado interno, hooks de fixture e consultas de implementação não
+    // atravessam a fronteira Python/C++.
     py::class_<TFTEngine>(module, "TFTLobby")
         .def(
             py::init<std::uint64_t, std::string>(),
@@ -474,175 +478,94 @@ PYBIND11_MODULE(tft_engine, module) {
             "reset",
             [](TFTEngine& self, py::object seed) {
                 std::optional<std::uint64_t> parsed_seed;
-
                 if (!seed.is_none()) {
-                    // Aceita somente inteiros Python, exceto bool.
-                    if (
-                        !py::isinstance<py::int_>(seed) ||
-                        PyBool_Check(seed.ptr())
-                    ) {
+                    if (!py::isinstance<py::int_>(seed) || PyBool_Check(seed.ptr())) {
                         throw py::type_error(
                             "seed deve ser um inteiro nao negativo ou None."
                         );
                     }
-
                     try {
-                        // Converte para uint64_t.
-                        // Valores negativos ou grandes demais serão rejeitados.
                         parsed_seed = seed.cast<std::uint64_t>();
                     } catch (const py::cast_error&) {
                         throw py::value_error(
-                            "seed deve estar entre 0 e "
-                            "18446744073709551615."
+                            "seed deve estar entre 0 e 18446744073709551615."
                         );
                     }
                 }
-
-                return reset_to_dict(
-                    self.reset(parsed_seed)
-                );
+                return reset_to_dict(self.reset(parsed_seed));
             },
             py::arg("seed") = py::none()
         )
         .def(
             "step",
             [](TFTEngine& self,
-               const std::vector<
-                   std::vector<std::int32_t>
-               >& raw_actions) {
-                if (raw_actions.size() != 8) {
-                    throw py::value_error(
-                        "actions deve conter 8 jogadores."
-                    );
+               const std::vector<std::vector<std::int32_t>>& raw_actions) {
+                if (raw_actions.size() != tft::kPlayersPerLobby) {
+                    throw py::value_error("actions deve conter 8 jogadores.");
                 }
 
-                std::array<tft::PlayerAction, 8> actions{};
-
-                for (std::size_t player = 0; player < 8; ++player) {
-                    if (raw_actions[player].size() != 6) {
+                std::array<tft::PlayerAction, tft::kPlayersPerLobby> actions{};
+                for (std::size_t player = 0; player < tft::kPlayersPerLobby; ++player) {
+                    if (raw_actions[player].size() != tft::kActionComponents) {
                         throw py::value_error(
                             "Cada acao deve conter 6 componentes."
                         );
                     }
-
                     for (std::size_t component = 0;
-                         component < 6;
+                         component < tft::kActionComponents;
                          ++component) {
                         actions[player].values[component] =
                             raw_actions[player][component];
                     }
                 }
-
                 return step_to_dict(self.step(actions));
             },
             py::arg("actions")
         )
-        .def("get_reward_state", [](const TFTEngine& self, std::int32_t player_id) {
-            const auto st = self.get_reward_state(player_id);
-            py::dict d;
-            d["previous_board_power"] = st.previous_board_power;
-            d["previous_positioning_score"] = st.previous_positioning_score;
-            d["previous_synergy_score"] = st.previous_synergy_score;
-            d["previous_level"] = st.previous_level;
-            d["previous_gold"] = st.previous_gold;
-            d["last_combat_reward"] = st.last_combat_reward;
-            d["round_reward"] = st.round_reward;
-            d["total_reward"] = st.total_reward;
-            return d;
-        }, py::arg("player_id"))
-        .def("set_unit_for_testing", &TFTEngine::set_unit_for_testing,
-             py::arg("player_id"), py::arg("on_board"), py::arg("slot"),
-             py::arg("champion_api_name"), py::arg("star") = 1)
-        .def("set_player_alive_for_testing", &TFTEngine::set_player_alive_for_testing,
-             py::arg("player_id"), py::arg("alive"))
-        .def("set_shop_locked", &TFTEngine::set_shop_locked,
-             py::arg("player_id"), py::arg("locked"))
-        .def("toggle_shop_lock", &TFTEngine::toggle_shop_lock,
-             py::arg("player_id"))
-        .def("is_shop_locked", &TFTEngine::is_shop_locked,
-             py::arg("player_id"))
         .def(
             "get_action_masks",
             [](const TFTEngine& self) {
-                return masks_to_list(
-                    self.get_action_masks()
-                );
-            }
-        )
-        .def(
-            "get_observations",
-            [](const TFTEngine& self) {
-                return observations_to_array(
-                    self.get_observations(),
-                    self.observation_dim()
-                );
+                return masks_to_list(self.get_action_masks());
             }
         )
         .def(
             "get_strategies",
             [](const TFTEngine& self) {
-                return strategies_to_list(
-                    self.get_strategies()
-                );
+                return strategies_to_list(self.get_strategies());
             }
-        ).def(
-            "get_unit_comp_score", &TFTEngine::get_unit_comp_score, py::arg("player_id"), py::arg("champion_api_name"), py::arg("star") = 1)
-        .def("is_core_unit", &TFTEngine::is_core_unit, py::arg("player_id"), py::arg("champion_api_name"))
-        .def("is_core_trait", &TFTEngine::is_core_trait, py::arg("player_id"), py::arg("trait"))
+        )
         .def(
             "get_anti_loop_metrics",
             [](const TFTEngine& self) {
-                return anti_loop_to_dict(
-                    self.get_anti_loop_metrics()
-                );
+                return anti_loop_to_dict(self.get_anti_loop_metrics());
             }
         )
+        // Contrato público de diagnóstico e fixtures de paridade.
+        // Não faz parte do caminho de execução normal do Trainer.
         .def(
             "get_public_state",
             [](const TFTEngine& self) {
-                return public_state_to_dict(
-                    self.get_public_state()
-                );
+                return public_state_to_dict(self.get_public_state());
             }
         )
-        .def(
-            "pool_available",
-            &TFTEngine::pool_available,
-            py::arg("champion_internal_id")
-        )
-        .def(
-            "pool_initial_count",
-            &TFTEngine::pool_initial_count,
-            py::arg("champion_internal_id")
-        )
-        .def(
-            "pool_total_available",
-            &TFTEngine::pool_total_available
-        )
-        .def_property_readonly(
-            "observation_dim",
-            &TFTEngine::observation_dim
-        )
-        .def_property_readonly(
-            "episode_id",
-            &TFTEngine::episode_id
-        )
-        .def_property_readonly(
-            "round",
-            &TFTEngine::round
-        )
-        .def_property_readonly(
-            "stage",
-            &TFTEngine::stage
-        )
-        .def_property_readonly(
-            "alive_players",
-            &TFTEngine::alive_players
-        )
-        .def_property_readonly(
-            "is_done",
-            &TFTEngine::is_done
-        )
+        .def("get_unit_comp_score", &TFTEngine::get_unit_comp_score,
+             py::arg("player_id"), py::arg("champion_api_name"),
+             py::arg("star") = 1)
+        .def("is_core_unit", &TFTEngine::is_core_unit,
+             py::arg("player_id"), py::arg("champion_api_name"))
+        .def("is_core_trait", &TFTEngine::is_core_trait,
+             py::arg("player_id"), py::arg("trait"))
+        .def("set_unit_for_testing", &TFTEngine::set_unit_for_testing,
+             py::arg("player_id"), py::arg("on_board"), py::arg("slot"),
+             py::arg("champion_api_name"), py::arg("star") = 1)
+        .def("set_player_alive_for_testing", &TFTEngine::set_player_alive_for_testing,
+             py::arg("player_id"), py::arg("alive"))
+        .def_property_readonly("observation_dim", &TFTEngine::observation_dim)
+        .def_property_readonly("episode_id", &TFTEngine::episode_id)
+        .def_property_readonly("round", &TFTEngine::round)
+        .def_property_readonly("stage", &TFTEngine::stage)
+        .def_property_readonly("alive_players", &TFTEngine::alive_players)
+        .def_property_readonly("is_done", &TFTEngine::is_done)
         .def("close", &TFTEngine::close);
 
 
