@@ -257,6 +257,13 @@ py::list strategies_to_list(
             item["confidence"] = 0.0f;
             item["strategy_age"] = 0;
             item["reason"] = "";
+            item["changed"] = false;
+            item["state_confidence"] = 0.0f;
+            item["best_scored_strategy"] = 0;
+            item["strategy_scores"] = py::dict();
+            item["board_power"] = 0.0;
+            item["bench_strength"] = 0.0;
+            item["active_traits_count"] = 0;
             item["composition_focus"] = "";
             item["composition_direction"] = "";
             item["core_units"] = py::list();
@@ -277,6 +284,16 @@ py::list strategies_to_list(
             item["confidence"] = strategy.confidence;
             item["strategy_age"] = strategy.strategy_age;
             item["reason"] = strategy.reason;
+            item["changed"] = strategy.changed;
+            item["state_confidence"] = strategy.state_confidence;
+            item["best_scored_strategy"] = strategy.best_scored_strategy;
+            py::dict strategy_scores;
+            for (const auto& [strategy_id, score] : strategy.strategy_scores)
+                strategy_scores[py::int_(strategy_id)] = score;
+            item["strategy_scores"] = std::move(strategy_scores);
+            item["board_power"] = strategy.board_power;
+            item["bench_strength"] = strategy.bench_strength;
+            item["active_traits_count"] = strategy.active_traits_count;
             item["composition_focus"] = strategy.composition_focus;
             item["composition_direction"] = strategy.composition_direction;
             item["core_units"] = strategy.core_units;
