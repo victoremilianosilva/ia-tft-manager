@@ -22,6 +22,12 @@ int main(int argc, char** argv) {
         tft::TFTEngine engine(12345, json_path);
 
         const auto initial_state = engine.get_public_state();
+        const auto initial_observations = engine.get_observations();
+        require(engine.observation_dim() > 248,
+                "Observacao PPO deve incluir o vetor de traits do catalogo.");
+        require(initial_observations.size() ==
+                    tft::kPlayersPerLobby * engine.observation_dim(),
+                "Tamanho do lote de observacoes nao corresponde a dimensao declarada.");
 
         require(
             initial_state.players.size() == tft::kPlayersPerLobby,
