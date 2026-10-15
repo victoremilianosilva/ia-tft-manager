@@ -15,6 +15,7 @@
 #include "strategy/PositioningEngine.hpp"
 #include "reward/RewardManager.hpp"
 #include "combat/CombatProfileEngine.hpp"
+#include "strategy/SynergyEngine.hpp"
 
 namespace py = pybind11;
 
@@ -399,6 +400,28 @@ py::dict anti_loop_to_dict(
 }  // namespace
 
 PYBIND11_MODULE(tft_engine, module) {
+
+    py::class_<tft::SynergyEngine>(module, "SynergyManagerNative")
+        .def(py::init<tft::TraitMilestones>(), py::arg("milestones") = tft::TraitMilestones{})
+        .def("set_state", &tft::SynergyEngine::set_state,
+             py::arg("active_traits"), py::arg("partial_traits") = tft::TraitCounts{})
+        .def("calculate_multiplier", [](const tft::SynergyEngine& self, py::object active) {
+            if (active.is_none()) return self.calculate_multiplier();
+            return self.calculate_multiplier(&active.cast<tft::TraitCounts&>());
+        }, py::arg("active_traits") = py::none())
+        .def("get_all_multipliers", [](const tft::SynergyEngine& self, py::object active) {
+            if (active.is_none()) return self.get_all_multipliers();
+            return self.get_all_multipliers(&active.cast<tft::TraitCounts&>());
+        }, py::arg("active_traits") = py::none())
+        .def("get_trait_level", &tft::SynergyEngine::get_trait_level,
+             py::arg("trait_name"), py::arg("count"))
+        .def("get_unit_synergy_bonus", [](const tft::SynergyEngine& self,
+                                          const std::vector<std::string>& traits,
+                                          py::object focus) {
+            if (focus.is_none()) return self.get_unit_synergy_bonus(traits);
+            const auto parsed = focus.cast<tft::TraitFocus>();
+            return self.get_unit_synergy_bonus(traits, &parsed);
+        }, py::arg("unit_traits"), py::arg("comp_focus") = py::none());
 
     py::class_<tft::RewardManager>(module, "RewardManager")
         .def(py::init<>())
