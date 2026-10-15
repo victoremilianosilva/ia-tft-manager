@@ -94,3 +94,8 @@ O vetor público deve ser `float32` e possui `248 + N_traits` elementos. Os inte
 | `[246 + N_traits, 248 + N_traits)` | Capacidade livre do tabuleiro e do banco | 2 |
 
 A dimensão/ordem está documentada e o replay agora verifica tipo e dimensão públicos. A igualdade de todos os valores ainda é parcial: RNG independente muda campeão inicial, loja, traits e papel derivado; esses campos não podem ser declarados equivalentes até os dois backends aceitarem o mesmo snapshot inicial.
+
+
+## Instrumentação de recompensa
+
+A API nativa agora expõe arrays separados `action_rewards`, `combat_rewards` e `placement_rewards`, além do agregado `rewards`. O replay cruzado compara cada componente por jogador e verifica que a soma dos componentes corresponde ao agregado. A lobby Python também expõe `action_reward` em `info.players` para auditoria. Isso torna omissões e duplicações detectáveis nos cenários executados; ainda falta um cenário controlado que efetivamente elimine jogadores para validar recompensa de colocação não nula em ambos os backends.
