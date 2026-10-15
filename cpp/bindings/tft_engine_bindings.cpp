@@ -510,6 +510,19 @@ PYBIND11_MODULE(tft_engine, module) {
             },
             py::arg("actions")
         )
+        .def("get_reward_state", [](const TFTEngine& self, std::int32_t player_id) {
+            const auto st = self.get_reward_state(player_id);
+            py::dict d;
+            d["previous_board_power"] = st.previous_board_power;
+            d["previous_positioning_score"] = st.previous_positioning_score;
+            d["previous_synergy_score"] = st.previous_synergy_score;
+            d["previous_level"] = st.previous_level;
+            d["previous_gold"] = st.previous_gold;
+            d["last_combat_reward"] = st.last_combat_reward;
+            d["round_reward"] = st.round_reward;
+            d["total_reward"] = st.total_reward;
+            return d;
+        }, py::arg("player_id"))
         .def("set_unit_for_testing", &TFTEngine::set_unit_for_testing,
              py::arg("player_id"), py::arg("on_board"), py::arg("slot"),
              py::arg("champion_api_name"), py::arg("star") = 1)
