@@ -5,7 +5,7 @@ import os
 
 from torch.utils.tensorboard import SummaryWriter
 
-from lobby.TFTLobby import TFTLobby
+from cpp_lobby_env import CppTFTLobbyWrapper
 
 from vector_lobby_env import LobbyVectorEnv
 
@@ -148,7 +148,9 @@ class Trainer:
         # ============================================================
 
         def make_env():
-            return TFTLobby()
+            # Cada instância é uma lobby nativa com oito jogadores C++.
+            # O Python mantém somente o adaptador para o vetor PPO.
+            return CppTFTLobbyWrapper()
 
         # ============================================================
         # 🚀 VECTOR ENV
