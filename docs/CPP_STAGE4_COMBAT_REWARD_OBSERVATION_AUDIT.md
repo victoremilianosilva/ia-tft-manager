@@ -67,3 +67,35 @@ A Etapa 4 só deve ser marcada concluída depois que:
 - os campos de combate usados pelo motor forem transferidos de forma explícita;
 - recompensas de ação, combate, economia e colocação forem comparadas após cada etapa;
 - os cenários controlados Python/C++ e as suítes nativas/Python forem executados em CI, com resultados anexados ao PR/commit.
+
+
+## Atualização de verificação — 2026-10-15
+
+- A reprodução cruzada foi tentada com uma ação real de mover unidade do banco para o tabuleiro. O teste revelou diferença de recompensa de posicionamento quando as unidades iniciais diferem entre backends: Python `-0.025`, C++ `0.125` no cenário observado. Isso é consequência conhecida da ausência de um estado inicial compartilhado/RNG compatível; não foi mascarado como paridade aprovada.
+- O cenário de movimento foi retirado do replay de recompensas comparáveis até haver uma forma de injetar o mesmo snapshot inicial nos dois backends. Os testes de movimento de cada backend continuam sendo executados separadamente.
+- O workflow agora usa `REQUIRE_CPP_PARITY=1`: falha se `tft_engine` ou `combat_engine` não puderem ser importados, em vez de marcar o replay como ignorado.
+- A execução deve continuar sendo considerada parcial até que o mesmo estado inicial controlado possa ser reproduzido em Python/C++, incluindo identidade de unidades, loja, traits e papéis, e até que combate real e recompensa terminal sejam comparados em cenários integrados.
+
+
+## Contrato de índices da observação (revisão)
+
+O vetor público deve ser `float32` e possui `248 + N_traits` elementos. Os intervalos a validar contra `MiniTFTEnv._get_state()` são:
+
+| Intervalo | Conteúdo | Dimensão |
+|---|---|---:|
+| `[0, 22)` | Core: HP, ouro, nível, XP relativo, streaks, progresso de rodada, ocupação e estratégia; os índices 17–21 são zeros reservados | 22 |
+| `[22, 162)` | Tabuleiro: 28 slots × 5 features (ocupado, custo, estrela, papel, força) | 140 |
+| `[162, 207)` | Banco: 9 slots × 5 features | 45 |
+| `[207, 232)` | Loja: 5 slots × 5 features | 25 |
+| `[232, 237)` | Extras: ocupação do tabuleiro/banco, ouro, nível e HP | 5 |
+| `[237, 242)` | Cinco primeiras traits presentes, na ordem de inserção | 5 |
+| `[242, 246)` | Score de posicionamento, proporção de frontline/backline e diversidade de papéis | 4 |
+| `[246, 246 + N_traits)` | Vetor completo de traits na ordem fixa do catálogo | `N_traits` |
+| `[246 + N_traits, 248 + N_traits)` | Capacidade livre do tabuleiro e do banco | 2 |
+
+A dimensão/ordem está documentada e o replay agora verifica tipo e dimensão públicos. A igualdade de todos os valores ainda é parcial: RNG independente muda campeão inicial, loja, traits e papel derivado; esses campos não podem ser declarados equivalentes até os dois backends aceitarem o mesmo snapshot inicial.
+
+
+## Instrumentação de recompensa
+
+A API nativa agora expõe arrays separados `action_rewards`, `combat_rewards` e `placement_rewards`, além do agregado `rewards`. O replay cruzado compara cada componente por jogador e verifica que a soma dos componentes corresponde ao agregado. A lobby Python também expõe `action_reward` em `info.players` para auditoria. Isso torna omissões e duplicações detectáveis nos cenários executados; ainda falta um cenário controlado que efetivamente elimine jogadores para validar recompensa de colocação não nula em ambos os backends.

@@ -1,7 +1,7 @@
 
 # Contrato da API Python ↔ C++ do TFT
 
-Status: interface inicial; motor ainda não implementado.
+Status (2026-10-15): a API nativa está implementada e o módulo `tft_engine` é compilado/testado no CI. A paridade funcional integral com Python ainda não foi demonstrada; ver `docs/CPP_STAGE4_COMBAT_REWARD_OBSERVATION_AUDIT.md`.
 
 ## Módulo
 
@@ -73,6 +73,10 @@ As dimensões e a semântica devem ser confirmadas contra
   completas, seeds e integração com PPO.
 
 ## Próximos passos
+
+- Não interpretar o sucesso do import/build como paridade completa.
+- Executar o replay cruzado com bindings nativos obrigatórios no CI.
+- Completar snapshots de teste controlados para loja, unidades, traits, combate e recompensas.
 
 1. Implementar `cpp/src/TFTLobbyEngine.cpp`.
 2. Integrar o módulo ao CMake.

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 from pathlib import Path
 import sys
 
@@ -23,10 +24,15 @@ for module_dir in (ROOT / "cpp" / "build" / "bin", ROOT / "cpp" / "build" / "bin
 FIXTURE_PATH = ROOT / "tests" / "fixtures" / "cross_language_replay.json"
 CATALOG_PATH = ROOT / "units_gerado.json"
 
-pytest.importorskip("tft_engine", reason="Build cpp target tft_engine to run cross-language parity")
-from tft_engine import TFTLobby as NativeTFTEngine  # noqa: E402
+if os.environ.get("REQUIRE_CPP_PARITY") == "1":
+    # CI must fail rather than silently skip parity when a native module fails to build/import.
+    from tft_engine import TFTLobby as NativeTFTEngine  # noqa: E402
+    import combat_engine  # noqa: F401,E402
+else:
+    pytest.importorskip("tft_engine", reason="Build cpp target tft_engine to run cross-language parity")
+    from tft_engine import TFTLobby as NativeTFTEngine  # noqa: E402
+    pytest.importorskip("combat_engine", reason="Python lobby combat integration requires combat_engine")
 
-pytest.importorskip("combat_engine", reason="Python lobby combat integration requires combat_engine")
 from lobby.TFTLobby import TFTLobby as PythonLobby  # noqa: E402
 
 
@@ -132,12 +138,23 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
                 f"{step['name']}.observations.shape: Python={np.asarray(py_obs).shape}, "
                 f"C++={cpp_result['observations'].shape}"
             )
-            py_obs_array = np.asarray(py_obs, dtype=np.float32)
-            cpp_obs_array = np.asarray(cpp_result["observations"], dtype=np.float32)
-            # Random-dependent features are excluded until the two backends
-            # share a random stream: bench role (the starter champion varies),
-            # shop offers, synergy counts and the trait vector. All other
-            # observation fields are compared exactly with a float tolerance.
+            # Observation ABI is float32 on both sides; do not hide a dtype
+            # regression by casting before checking the public API contract.
+            assert np.asarray(py_obs).dtype == np.dtype(np.float32), (
+                f"{step['name']}: Python observations must be float32"
+            )
+            assert cpp_result["observations"].dtype == np.dtype(np.float32), (
+                f"{step['name']}: C++ observations must be float32"
+            )
+            assert cpp_engine.observation_dim == np.asarray(py_obs).shape[1], (
+                f"{step['name']}.observation_dim: native={cpp_engine.observation_dim}, "
+                f"Python={np.asarray(py_obs).shape[1]}"
+            )
+            py_obs_array = np.asarray(py_obs)
+            cpp_obs_array = np.asarray(cpp_result["observations"])
+            # The starting champion and shop RNG are not yet shared. Compare
+            # stable fields exactly and validate random-dependent features separately
+            # until both backends can be initialized from an identical full snapshot.
             dim = py_obs_array.shape[1]
             bench_start = 22 + 28 * 5
             shop_start = bench_start + 9 * 5
@@ -146,7 +163,9 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
             synergy_end = extra_end + 5
             positioning_end = synergy_end + 4
             traits_end = dim - 2
-            excluded = set(range(bench_start + 3, bench_start + 4))
+            board_start = 22
+            # Role encoding depends on the randomly selected starter champion.
+            excluded = {board_start + 3, bench_start + 3, synergy_end}
             excluded.update(range(shop_start, shop_end))
             excluded.update(range(extra_end, synergy_end))
             excluded.update(range(positioning_end, traits_end))
@@ -172,7 +191,10 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
                     f"C++={cpp_deterministic[first]!r}; "
                     f"total mismatches={len(mismatches)}"
                 )
+            assert np.isfinite(py_obs_array).all(), f"{step['name']}: Python observation contains NaN/inf"
+            assert np.isfinite(cpp_obs_array).all(), f"{step['name']}: C++ observation contains NaN/inf"
             random_dependent = np.r_[
+                board_start + 3,
                 bench_start + 3,
                 np.arange(shop_start, shop_end),
                 np.arange(extra_end, synergy_end),
@@ -207,6 +229,60 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
                     f"{step['name']}.cumulative_rewards[{player_id}]",
                     abs_tol=5e-4,
                 )
+
+            # Compare reward components separately so an aggregate total
+            # cannot hide an omitted or duplicated action/combat/placement term.
+            py_players_info = py_info.get("players", [])
+            py_action_components = np.asarray(
+                [float(item.get("action_reward", 0.0)) for item in py_players_info],
+                dtype=np.float32,
+            )
+            py_combat_components = np.asarray(
+                [float(item.get("combat_reward", 0.0)) for item in py_players_info],
+                dtype=np.float32,
+            )
+            placement_map = py_info.get("placement_rewards", {}) or {}
+            py_placement_components = np.asarray(
+                [
+                    float(placement_map.get(pid, placement_map.get(str(pid), 0.0)))
+                    for pid in range(8)
+                ],
+                dtype=np.float32,
+            )
+            component_pairs = (
+                ("action_rewards", py_action_components, cpp_result["action_rewards"]),
+                ("combat_rewards", py_combat_components, cpp_result["combat_rewards"]),
+                ("placement_rewards", py_placement_components, cpp_result["placement_rewards"]),
+            )
+            for component_name, py_component, cpp_component in component_pairs:
+                assert np.asarray(cpp_component).shape == (8,), (
+                    f"{step['name']}.{component_name}: C++ component shape is invalid"
+                )
+                for player_id, (py_value, cpp_value) in enumerate(
+                    zip(py_component, cpp_component)
+                ):
+                    _assert_close(
+                        py_value, cpp_value,
+                        f"{step['name']}.{component_name}[{player_id}]",
+                        abs_tol=2e-4,
+                    )
+
+            _assert_close(
+                float(np.sum(cpp_result["action_rewards"] +
+                             cpp_result["combat_rewards"] +
+                             cpp_result["placement_rewards"])),
+                float(np.sum(cpp_result["rewards"])),
+                f"{step['name']}.cpp_reward_components_sum",
+                abs_tol=5e-4,
+            )
+            _assert_close(
+                float(np.sum(py_action_components +
+                             py_combat_components +
+                             py_placement_components)),
+                float(np.sum(py_rewards)),
+                f"{step['name']}.python_reward_components_sum",
+                abs_tol=5e-4,
+            )
 
             # Public round metadata is compared too; rewards alone can hide
             # a broken state transition.

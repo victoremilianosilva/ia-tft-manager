@@ -1,6 +1,14 @@
+# Status atual da migração C++ (2026-10-15)
+
+O escopo do projeto evoluiu além da migração inicial de Action Masks/AntiLoop: agora existe também uma lobby nativa `tft_engine`, integração com `CombatEngine`, observações e recompensas. Isso **não** significa paridade total. A referência Python e os critérios de equivalência continuam valendo; a auditoria atual está em `CPP_STAGE4_COMBAT_REWARD_OBSERVATION_AUDIT.md`.
+
+O replay cruzado é executado com bindings nativos obrigatórios no CI. Ele compara estado público, recompensas e campos estáveis das observações, mas ainda não cobre um snapshot inicial integralmente controlado, combate real comparável, loja/traits idênticos ou todas as recompensas terminais. Não remover o fallback Python nem declarar a etapa concluída antes de fechar essas lacunas.
+
+---
+
 # Documentação da Engine de Decisão TFT
 
-Esta pasta documenta a migração gradual de Action Masks e consultas AntiLoop de Python para C++. A política PPO, o treinamento, o estado oficial e a execução das ações permanecem em Python.
+Os documentos abaixo foram escritos durante a fase inicial da migração de Action Masks/AntiLoop e alguns descrevem a arquitetura planejada naquela época. Para a arquitetura executada atualmente, consulte também `cpp/include/lobby/TftEngine.hpp`, `cpp/src/lobby/TftEngine.cpp`, `cpp/bindings/tft_engine_bindings.cpp` e a auditoria da Etapa 4. Quando houver divergência entre documento histórico e código atual, confirme o comportamento nos testes e atualize o contrato antes de declarar paridade.
 
 ## Comece por aqui
 

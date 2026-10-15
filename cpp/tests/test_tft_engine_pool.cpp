@@ -2,6 +2,7 @@
 #include "lobby/TftEngine.hpp"
 #include "lobby/ChampionCatalog.hpp"
 
+#include <cmath>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -198,6 +199,8 @@ int main(int argc, char** argv) {
         const auto bought = engine.step(actions);
         require(bought.players[0].gold >= 0,
                 "Compra deixou ouro negativo.");
+        require(std::abs(bought.rewards[0] - 0.05f) < 1e-6f,
+                "Compra normal deve entregar exatamente +0.05 de recompensa, sem recompensa de combate em equipes vazias.");
 
         // CompositionManager/StrategyManager devem refletir as unidades
         // compradas no snapshot público, sem depender de combate.

@@ -1302,7 +1302,8 @@ struct TFTEngine::Impl {
 
     void resolve_combats(
         std::vector<std::string>& events,
-        std::array<float, kPlayersPerLobby>& rewards
+        std::array<float, kPlayersPerLobby>& rewards,
+        std::array<float, kPlayersPerLobby>& combat_rewards
     ) {
         std::vector<std::size_t> alive;
         alive.reserve(kPlayersPerLobby);
@@ -1424,6 +1425,8 @@ struct TFTEngine::Impl {
                 false, 0, damage, winner_survivors, loser_survivors);
             last_combat_reward[winner] = winner_reward;
             last_combat_reward[loser] = loser_reward;
+            combat_rewards[winner] += static_cast<float>(winner_reward);
+            combat_rewards[loser] += static_cast<float>(loser_reward);
             rewards[winner] += static_cast<float>(winner_reward);
             rewards[loser] += static_cast<float>(loser_reward);
             events.emplace_back("COMBAT_WIN: jogador " + std::to_string(winner) +
@@ -1560,6 +1563,9 @@ StepResult TFTEngine::step(
     // ========================================================
 
     std::array<float, kPlayersPerLobby> round_rewards{};
+    std::array<float, kPlayersPerLobby> action_rewards{};
+    std::array<float, kPlayersPerLobby> combat_rewards{};
+    std::array<float, kPlayersPerLobby> placement_rewards{};
     for (std::size_t i = 0;
          i < kPlayersPerLobby;
          ++i) {
@@ -1576,6 +1582,8 @@ StepResult TFTEngine::step(
         const auto old_xp = economy.xp;
         int old_board_count = 0, old_bench_count = 0;
         bool sold_core_unit = false;
+        bool bought_unit_successfully = false;
+        bool bought_upgrade = false;
         std::array<std::string, kBoardSlots> old_board_layout{};
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
             if (impl_->boards[i][slot]) {
@@ -1621,6 +1629,7 @@ StepResult TFTEngine::step(
                         shop.take_unit(shop_slot);
 
                     if (purchased) {
+                        bought_unit_successfully = true;
                         impl_->benches[i][free_slot] = std::move(*purchased);
 
                         // Auto-upgrade 3x1★ -> 2★ e 3x2★ -> 3★.
@@ -1644,6 +1653,7 @@ StepResult TFTEngine::step(
                                     matches.emplace_back(true, slot);
                             }
                             if (matches.size() < 3) break;
+                            bought_upgrade = true;
                             std::size_t removed = 0;
                             for (const auto& [on_board, slot] : matches) {
                                 if (!on_board && slot == free_slot) continue;
@@ -1890,12 +1900,12 @@ StepResult TFTEngine::step(
         double action_reward = 0.0;
         bool success = false;
         if (type == 0) {
-            success = new_bench_count > old_bench_count || new_board_count > old_board_count ||
-                      (old_bench_count == new_bench_count && old_board_count == new_board_count &&
-                       economy.gold < old_gold);
-            action_reward = success ? 0.05 : -0.10;
-            if (success && (new_board_count < old_board_count || new_bench_count < old_bench_count))
-                action_reward = 0.30; // compra que conclui upgrade automático
+            // The unit may be bought successfully while immediately consuming
+            // two copies in an automatic upgrade, so slot counts are not a
+            // reliable signal of success. Match MiniTFTEnv._execute_buy():
+            // +0.05 for a normal purchase, +0.30 for any completed upgrade.
+            success = bought_unit_successfully;
+            action_reward = !success ? -0.10 : (bought_upgrade ? 0.30 : 0.05);
         } else if (type == 1) {
             success = economy.gold == old_gold - EconomyEngine::REROLL_COST;
             action_reward = success ? -0.01 : -0.10;
@@ -1937,7 +1947,8 @@ StepResult TFTEngine::step(
         // MiniTFTEnv.step() returns the action-specific reward directly.
         // RewardManager's broader state components are not called by the
         // Python environment, so applying them here would change PPO targets.
-        round_rewards[i] += static_cast<float>(action_reward);
+        action_rewards[i] = static_cast<float>(action_reward);
+        round_rewards[i] += action_rewards[i];
         impl_->round_reward_total[i] = round_rewards[i];
         impl_->total_reward[i] += round_rewards[i];
         impl_->update_strategy(i);
@@ -1980,7 +1991,7 @@ StepResult TFTEngine::step(
         }
 
         const auto rewards_before_combat = round_rewards;
-        impl_->resolve_combats(round_events, round_rewards);
+        impl_->resolve_combats(round_events, round_rewards, combat_rewards);
 
         // TFTLobby aplica a recompensa de colocação uma única vez assim que
         // a posição do jogador é conhecida (inclusive para eliminados).
@@ -1997,7 +2008,8 @@ StepResult TFTEngine::step(
             const double placement_reward = 1.0 - 2.0 *
                 (static_cast<double>(placement - 1) /
                  static_cast<double>(kPlayersPerLobby - 1));
-            round_rewards[i] += static_cast<float>(placement_reward);
+            placement_rewards[i] = static_cast<float>(placement_reward);
+            round_rewards[i] += placement_rewards[i];
             impl_->placement_reward_given[i] = true;
             round_events.emplace_back(
                 "PLACEMENT_REWARD: jogador " + std::to_string(i) +
@@ -2047,6 +2059,9 @@ StepResult TFTEngine::step(
     result.observation_dim = impl_->observation_dim();
 
     result.rewards = round_rewards;
+    result.action_rewards = action_rewards;
+    result.combat_rewards = combat_rewards;
+    result.placement_rewards = placement_rewards;
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
         result.dones[i] = (!impl_->players[i].alive || impl_->done) ? 1 : 0;
     }

@@ -196,22 +196,30 @@ py::dict step_to_dict(const tft::StepResult& step) {
     );
 
     py::array_t<float> rewards(8);
+    py::array_t<float> action_rewards(8);
+    py::array_t<float> combat_rewards(8);
+    py::array_t<float> placement_rewards(8);
     py::array_t<bool> dones(8);
 
     auto reward_out = rewards.mutable_unchecked<1>();
+    auto action_reward_out = action_rewards.mutable_unchecked<1>();
+    auto combat_reward_out = combat_rewards.mutable_unchecked<1>();
+    auto placement_reward_out = placement_rewards.mutable_unchecked<1>();
     auto done_out = dones.mutable_unchecked<1>();
 
     for (py::ssize_t i = 0; i < 8; ++i) {
-        reward_out(i) = step.rewards[
-            static_cast<std::size_t>(i)
-        ];
-
-        done_out(i) = step.dones[
-            static_cast<std::size_t>(i)
-        ] != 0;
+        const auto index = static_cast<std::size_t>(i);
+        reward_out(i) = step.rewards[index];
+        action_reward_out(i) = step.action_rewards[index];
+        combat_reward_out(i) = step.combat_rewards[index];
+        placement_reward_out(i) = step.placement_rewards[index];
+        done_out(i) = step.dones[index] != 0;
     }
 
     result["rewards"] = std::move(rewards);
+    result["action_rewards"] = std::move(action_rewards);
+    result["combat_rewards"] = std::move(combat_rewards);
+    result["placement_rewards"] = std::move(placement_rewards);
     result["dones"] = std::move(dones);
     result["lobby_done"] = step.lobby_done;
     result["episode_id"] = step.episode_id;

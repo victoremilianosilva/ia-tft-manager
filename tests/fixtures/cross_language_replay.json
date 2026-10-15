@@ -1,7 +1,7 @@
 {
   "name": "deterministic_rounds_and_level_reward",
   "seed": 123,
-  "description": "Five-step deterministic replay: four round barriers and a shared BUY_XP action after economy income, comparing state, rewards and observation features.",
+  "description": "Deterministic replay across round barriers and BUY_XP, comparing state, rewards and stable observation features. Board-move reward parity is tested separately because starting-unit RNG is not shared yet.",
   "steps": [
     {
       "name": "pass_round_1",

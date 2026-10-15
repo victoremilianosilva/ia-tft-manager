@@ -564,6 +564,9 @@ class TFTLobby:
                 info,
             ) = player.env.step(action)
 
+            # Keep the action-only component observable even when this
+            # transition later receives combat/placement rewards.
+            info["action_reward"] = float(reward)
             rewards[pid] = float(reward)
 
             self.round_actions[pid] += 1
