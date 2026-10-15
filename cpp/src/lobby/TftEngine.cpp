@@ -118,29 +118,39 @@ float unit_strength(const ChampionDefinition& def, const UnitInstance& unit) {
 // IMPLEMENTAÇÃO INTERNA
 // ============================================================
 
-struct PlayerEnv {
-    // Estado e serviços pertencentes exclusivamente a um jogador.
-    std::unique_ptr<ShopEngine> shop;
-    std::array<std::optional<UnitInstance>, kBenchSlots> bench{};
-    std::array<std::optional<UnitInstance>, kBoardSlots> board{};
-    decision::AntiLoopEngine anti_loop;
-    PlayerInfo info{};
-    PlayerActionMasks action_masks{};
-    std::vector<StrategyInfo> strategy;
-    AntiLoopMetrics anti_loop_metrics{};
-    PlayerEconomy economy{};
-
-    double previous_board_power{0.0};
-    double previous_synergy_score{0.0};
-    double previous_positioning_score{0.0};
-    std::int32_t previous_reward_level{1};
-    double last_combat_reward{0.0};
-    double round_reward_total{0.0};
-    double total_reward{0.0};
-    bool placement_reward_given{false};
-};
-
 struct TFTEngine::Impl {
+    struct PlayerTransition {
+        float action_reward{0.0f};
+        bool acted{false};
+    };
+
+    struct PlayerEnv {
+        // Estado e serviços pertencentes exclusivamente a um jogador.
+        std::unique_ptr<ShopEngine> shop;
+        std::array<std::optional<UnitInstance>, kBenchSlots> bench{};
+        std::array<std::optional<UnitInstance>, kBoardSlots> board{};
+        decision::AntiLoopEngine anti_loop;
+        PlayerInfo info{};
+        PlayerActionMasks action_masks{};
+        std::vector<StrategyInfo> strategy;
+        AntiLoopMetrics anti_loop_metrics{};
+        PlayerEconomy economy{};
+
+        double previous_board_power{0.0};
+        double previous_synergy_score{0.0};
+        double previous_positioning_score{0.0};
+        std::int32_t previous_reward_level{1};
+        double last_combat_reward{0.0};
+        double round_reward_total{0.0};
+        double total_reward{0.0};
+        bool placement_reward_given{false};
+
+        PlayerTransition step(
+            TFTEngine::Impl& lobby,
+            std::size_t player_id,
+            const PlayerAction& player_action
+        );
+    };
     std::uint64_t seed{0};
     std::uint64_t episode_id{0};
     std::mt19937_64 matchmaking_rng{0};
@@ -1477,6 +1487,394 @@ struct TFTEngine::Impl {
     }
 };
 
+TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
+    TFTEngine::Impl& lobby,
+    std::size_t player_id,
+    const PlayerAction& player_action
+) {
+
+        const auto& action = player_action.values;
+
+        const auto type = action[0];
+
+        const auto shop_slot = action[1];
+
+        auto& economy = this->economy;
+        auto& shop = *this->shop;
+        const auto old_gold = economy.gold;
+        const auto old_level = economy.level;
+        const auto old_xp = economy.xp;
+        int old_board_count = 0, old_bench_count = 0;
+        bool sold_core_unit = false;
+        bool bought_unit_successfully = false;
+        bool bought_upgrade = false;
+        std::array<std::string, kBoardSlots> old_board_layout{};
+        for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+            if (this->board[slot]) {
+                ++old_board_count;
+                old_board_layout[slot] = this->board[slot]->uuid;
+            }
+        }
+        for (const auto& unit : this->bench) if (unit) ++old_bench_count;
+
+        if (!this->info.alive) {
+            lobby.refresh_masks(player_id);
+            return PlayerTransition{0.0f, false};
+        }
+
+        if (type == 0) {
+            // BUY
+            const auto* offer = shop.get_unit(shop_slot);
+
+            std::size_t free_slot = kBenchSlots;
+
+            for (std::size_t slot = 0;
+                 slot < kBenchSlots;
+                 ++slot) {
+                if (!this->bench[slot]) {
+                    free_slot = slot;
+                    break;
+                }
+            }
+
+            if (offer && free_slot < kBenchSlots) {
+                const auto* definition =
+                    lobby.catalog->find_by_id(
+                        offer->champion_internal_id
+                    );
+
+                if (definition &&
+                    economy.gold >= definition->cost &&
+                    lobby.economy_engine.spend_gold(
+                        economy,
+                        definition->cost
+                    )) {
+                    auto purchased =
+                        shop.take_unit(shop_slot);
+
+                    if (purchased) {
+                        bought_unit_successfully = true;
+                        this->bench[free_slot] = std::move(*purchased);
+
+                        // Auto-upgrade 3x1★ -> 2★ e 3x2★ -> 3★.
+                        // O pool não muda: as cópias continuam pertencendo ao jogador.
+                        auto& bought_unit = this->bench[free_slot];
+                        while (bought_unit && bought_unit->star < 3) {
+                            const auto champion_id = bought_unit->champion_internal_id;
+                            const auto star = bought_unit->star;
+                            std::vector<std::pair<bool, std::size_t>> matches;
+                            matches.emplace_back(false, free_slot);
+                            for (std::size_t slot = 0; slot < kBenchSlots; ++slot) {
+                                if (slot != free_slot && this->bench[slot] &&
+                                    this->bench[slot]->champion_internal_id == champion_id &&
+                                    this->bench[slot]->star == star)
+                                    matches.emplace_back(false, slot);
+                            }
+                            for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+                                if (this->board[slot] &&
+                                    this->board[slot]->champion_internal_id == champion_id &&
+                                    this->board[slot]->star == star)
+                                    matches.emplace_back(true, slot);
+                            }
+                            if (matches.size() < 3) break;
+                            bought_upgrade = true;
+                            std::size_t removed = 0;
+                            for (const auto& [on_board, slot] : matches) {
+                                if (!on_board && slot == free_slot) continue;
+                                if (on_board) this->board[slot].reset();
+                                else this->bench[slot].reset();
+                                if (++removed == 2) break;
+                            }
+                            bought_unit->star = star + 1;
+                        }
+                        lobby.register_position_state(player_id);
+                    } else {
+                        lobby.economy_engine.add_gold(
+                            economy,
+                            definition->cost
+                        );
+                    }
+                }
+            }
+        } else if (type == 1) {
+            // REROLL
+            if (lobby.economy_engine.spend_gold(
+                    economy,
+                    EconomyEngine::REROLL_COST
+                )) {
+                shop.reroll(economy.level);
+            }
+        } else if (type == 2) {
+            // BUY XP
+            (void)lobby.economy_engine.buy_xp(economy);
+        } else if (type == 3) {
+            // MOVE_BENCH: banco -> tabuleiro
+            auto& anti_loop = this->anti_loop;
+
+            anti_loop.record_execution_attempt();
+
+            const auto source = action[2];
+            const auto target = action[3];
+
+            const auto state =
+                lobby.build_decision_state(player_id);
+
+            const auto validation =
+                decision::MoveValidator::validate_bench_to_board_move(
+                    state.board,
+                    state.bench,
+                    source,
+                    target
+                );
+
+            if (validation.is_valid()) {
+                const auto source_index =
+                    static_cast<std::size_t>(source);
+
+                const auto target_index =
+                    static_cast<std::size_t>(target);
+
+                const auto unit_identity =
+                    std::optional<decision::UnitIdentity>{
+                        state.bench[source_index]->identity
+                    };
+
+                const std::string move_type =
+                    "bench_to_board";
+
+                const auto reason =
+                    anti_loop.get_block_reason(
+                        move_type,
+                        source,
+                        target,
+                        unit_identity
+                    );
+
+                if (reason.has_value()) {
+                    (void)anti_loop.block_move(
+                        move_type,
+                        source,
+                        target,
+                        unit_identity
+                    );
+
+                    anti_loop.record_execution_block(*reason);
+                } else {
+                    (void)anti_loop.register_move(
+                        move_type,
+                        source,
+                        target,
+                        unit_identity
+                    );
+
+                    this->board[target_index] =
+                        std::move(
+                            this->bench[source_index]
+                        );
+
+                    this->bench[source_index].reset();
+
+                    anti_loop.record_successful_move(move_type);
+
+                    lobby.register_position_state(player_id);
+                }
+            }
+        } else if (type == 4) {
+            // MOVE_BOARD: movimento ou troca
+            auto& anti_loop = this->anti_loop;
+
+            anti_loop.record_execution_attempt();
+
+            const auto source = action[4];
+            const auto target = action[5];
+
+            const auto state =
+                lobby.build_decision_state(player_id);
+
+            const auto validation =
+                decision::MoveValidator::validate_board_move(
+                    state.board,
+                    source,
+                    target
+                );
+
+            if (validation.is_valid() &&
+                validation.move_type.has_value()) {
+                const auto source_index =
+                    static_cast<std::size_t>(source);
+
+                const auto target_index =
+                    static_cast<std::size_t>(target);
+
+                const auto unit_identity =
+                    std::optional<decision::UnitIdentity>{
+                        state.board[source_index]->identity
+                    };
+
+                const std::string move_type =
+                    *validation.move_type ==
+                        decision::MoveType::BOARD_SWAP
+                        ? "board_swap"
+                        : "board_move";
+
+                const auto reason =
+                    anti_loop.get_block_reason(
+                        move_type,
+                        source,
+                        target,
+                        unit_identity
+                    );
+
+                if (reason.has_value()) {
+                    (void)anti_loop.block_move(
+                        move_type,
+                        source,
+                        target,
+                        unit_identity
+                    );
+
+                    anti_loop.record_execution_block(*reason);
+                } else {
+                    (void)anti_loop.register_move(
+                        move_type,
+                        source,
+                        target,
+                        unit_identity
+                    );
+
+                    if (move_type == "board_swap") {
+                        std::swap(
+                            this->board[source_index],
+                            this->board[target_index]
+                        );
+                    } else {
+                        this->board[target_index] =
+                            std::move(
+                                this->board[source_index]
+                            );
+
+                        this->board[source_index].reset();
+                    }
+
+                    anti_loop.record_successful_move(move_type);
+
+                    lobby.register_position_state(player_id);
+                }
+            }
+        } else if (type == 5) {
+            // SELL: vender unidade do banco
+            const auto bench_slot =
+                static_cast<std::size_t>(action[2]);
+
+            if (bench_slot < kBenchSlots &&
+                this->bench[bench_slot]) {
+                const auto& unit =
+                    *this->bench[bench_slot];
+
+                const auto* definition =
+                    lobby.catalog->find_by_id(
+                        unit.champion_internal_id
+                    );
+
+                if (definition) {
+                    if (!this->strategy.empty()) {
+                        const auto& core_units = this->strategy.back().core_units;
+                        sold_core_unit = std::find(
+                            core_units.begin(), core_units.end(), unit.champion_id
+                        ) != core_units.end();
+                    }
+                    const auto sell_value =
+                        EconomyEngine::get_sell_value(
+                            definition->cost,
+                            unit.star
+                        );
+
+                    // Só confirma a venda se a devolução ao pool
+                    // for aceita.
+                    bool returned_all_copies = true;
+                    const auto copies = star_copies(unit.star);
+                    std::int32_t returned = 0;
+                    for (; returned < copies; ++returned) {
+                        if (!lobby.pool->give_back(unit.champion_internal_id)) {
+                            returned_all_copies = false;
+                            break;
+                        }
+                    }
+                    if (returned_all_copies) {
+                        this->bench[bench_slot].reset();
+                        (void)lobby.economy_engine.add_gold(economy, sell_value);
+                        lobby.register_position_state(player_id);
+                    } else {
+                        for (std::int32_t copy = 0; copy < returned; ++copy)
+                            (void)lobby.pool->take(unit.champion_internal_id);
+                    }
+                }
+            }
+        } else if (type == 6) {
+            // PASS
+        }
+
+        lobby.sync_player_economy(player_id);
+        int new_board_count = 0, new_bench_count = 0;
+        for (const auto& unit : this->board) if (unit) ++new_board_count;
+        for (const auto& unit : this->bench) if (unit) ++new_bench_count;
+
+        // Alinhado a RewardManager.calculate_action_reward() e aos valores
+        // usados em env.py para compra, reroll e XP.
+        double action_reward = 0.0;
+        bool success = false;
+        if (type == 0) {
+            // The unit may be bought successfully while immediately consuming
+            // two copies in an automatic upgrade, so slot counts are not a
+            // reliable signal of success. Match MiniTFTEnv._execute_buy():
+            // +0.05 for a normal purchase, +0.30 for any completed upgrade.
+            success = bought_unit_successfully;
+            action_reward = !success ? -0.10 : (bought_upgrade ? 0.30 : 0.05);
+        } else if (type == 1) {
+            success = economy.gold == old_gold - EconomyEngine::REROLL_COST;
+            action_reward = success ? -0.01 : -0.10;
+        } else if (type == 2) {
+            success = economy.gold == old_gold - EconomyEngine::BUY_XP_COST;
+            action_reward = success ? 0.02 : -0.10;
+            // RewardManager tracks the last rewarded level, initialized to 1,
+            // not merely the level at the start of this action.
+            if (success && economy.level > old_level &&
+                economy.level > this->previous_reward_level) {
+                action_reward += reward_model::level(
+                    economy.level, this->previous_reward_level);
+                this->previous_reward_level = economy.level;
+            }
+            (void)old_level;
+            (void)old_xp;
+        } else if (type == 3 || type == 4) {
+            bool board_layout_changed = false;
+            for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+                const std::string current_uuid = this->board[slot]
+                    ? this->board[slot]->uuid : std::string{};
+                if (current_uuid != old_board_layout[slot]) {
+                    board_layout_changed = true;
+                    break;
+                }
+            }
+            success = type == 4 ? board_layout_changed
+                                : new_board_count > old_board_count;
+            action_reward = success ? (type == 4 ? 0.02 : 0.0) : -0.10;
+            if (type == 3 && success)
+                action_reward += lobby.positioning_score(player_id) * 0.05;
+        } else if (type == 5) {
+            success = economy.gold > old_gold;
+            action_reward = success ? (sold_core_unit ? -0.15 : 0.05) : -0.10;
+        } else {
+            success = true;
+        }
+
+        // MiniTFTEnv.step() returns the action-specific reward directly.
+        // RewardManager's broader state components are not called by the
+        // Python environment, so applying them here would change PPO targets.
+        lobby.update_strategy(player_id);
+        return PlayerTransition{static_cast<float>(action_reward), true};
+}
+
 // ============================================================
 // CONSTRUTOR E DESTRUTOR
 // ============================================================
@@ -1602,396 +2000,18 @@ StepResult TFTEngine::step(
     std::array<float, kPlayersPerLobby> action_rewards{};
     std::array<float, kPlayersPerLobby> combat_rewards{};
     std::array<float, kPlayersPerLobby> placement_rewards{};
-    for (std::size_t i = 0;
-         i < kPlayersPerLobby;
-         ++i) {
-        const auto& action = actions[i].values;
-
-        const auto type = action[0];
-
-        const auto shop_slot = action[1];
-
-        auto& economy = impl_->player_envs[i].economy;
-        auto& shop = *impl_->player_envs[i].shop;
-        const auto old_gold = economy.gold;
-        const auto old_level = economy.level;
-        const auto old_xp = economy.xp;
-        int old_board_count = 0, old_bench_count = 0;
-        bool sold_core_unit = false;
-        bool bought_unit_successfully = false;
-        bool bought_upgrade = false;
-        std::array<std::string, kBoardSlots> old_board_layout{};
-        for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
-            if (impl_->player_envs[i].board[slot]) {
-                ++old_board_count;
-                old_board_layout[slot] = impl_->player_envs[i].board[slot]->uuid;
-            }
-        }
-        for (const auto& unit : impl_->player_envs[i].bench) if (unit) ++old_bench_count;
-
-        if (!impl_->player_envs[i].info.alive) {
-            impl_->refresh_masks(i);
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        const auto transition = impl_->player_envs[i].step(*impl_, i, actions[i]);
+        if (!transition.acted) {
             continue;
         }
-
-        if (type == 0) {
-            // BUY
-            const auto* offer = shop.get_unit(shop_slot);
-
-            std::size_t free_slot = kBenchSlots;
-
-            for (std::size_t slot = 0;
-                 slot < kBenchSlots;
-                 ++slot) {
-                if (!impl_->player_envs[i].bench[slot]) {
-                    free_slot = slot;
-                    break;
-                }
-            }
-
-            if (offer && free_slot < kBenchSlots) {
-                const auto* definition =
-                    impl_->catalog->find_by_id(
-                        offer->champion_internal_id
-                    );
-
-                if (definition &&
-                    economy.gold >= definition->cost &&
-                    impl_->economy_engine.spend_gold(
-                        economy,
-                        definition->cost
-                    )) {
-                    auto purchased =
-                        shop.take_unit(shop_slot);
-
-                    if (purchased) {
-                        bought_unit_successfully = true;
-                        impl_->player_envs[i].bench[free_slot] = std::move(*purchased);
-
-                        // Auto-upgrade 3x1★ -> 2★ e 3x2★ -> 3★.
-                        // O pool não muda: as cópias continuam pertencendo ao jogador.
-                        auto& bought_unit = impl_->player_envs[i].bench[free_slot];
-                        while (bought_unit && bought_unit->star < 3) {
-                            const auto champion_id = bought_unit->champion_internal_id;
-                            const auto star = bought_unit->star;
-                            std::vector<std::pair<bool, std::size_t>> matches;
-                            matches.emplace_back(false, free_slot);
-                            for (std::size_t slot = 0; slot < kBenchSlots; ++slot) {
-                                if (slot != free_slot && impl_->player_envs[i].bench[slot] &&
-                                    impl_->player_envs[i].bench[slot]->champion_internal_id == champion_id &&
-                                    impl_->player_envs[i].bench[slot]->star == star)
-                                    matches.emplace_back(false, slot);
-                            }
-                            for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
-                                if (impl_->player_envs[i].board[slot] &&
-                                    impl_->player_envs[i].board[slot]->champion_internal_id == champion_id &&
-                                    impl_->player_envs[i].board[slot]->star == star)
-                                    matches.emplace_back(true, slot);
-                            }
-                            if (matches.size() < 3) break;
-                            bought_upgrade = true;
-                            std::size_t removed = 0;
-                            for (const auto& [on_board, slot] : matches) {
-                                if (!on_board && slot == free_slot) continue;
-                                if (on_board) impl_->player_envs[i].board[slot].reset();
-                                else impl_->player_envs[i].bench[slot].reset();
-                                if (++removed == 2) break;
-                            }
-                            bought_unit->star = star + 1;
-                        }
-                        impl_->register_position_state(i);
-                    } else {
-                        impl_->economy_engine.add_gold(
-                            economy,
-                            definition->cost
-                        );
-                    }
-                }
-            }
-        } else if (type == 1) {
-            // REROLL
-            if (impl_->economy_engine.spend_gold(
-                    economy,
-                    EconomyEngine::REROLL_COST
-                )) {
-                shop.reroll(economy.level);
-            }
-        } else if (type == 2) {
-            // BUY XP
-            (void)impl_->economy_engine.buy_xp(economy);
-        } else if (type == 3) {
-            // MOVE_BENCH: banco -> tabuleiro
-            auto& anti_loop = impl_->player_envs[i].anti_loop;
-
-            anti_loop.record_execution_attempt();
-
-            const auto source = action[2];
-            const auto target = action[3];
-
-            const auto state =
-                impl_->build_decision_state(i);
-
-            const auto validation =
-                decision::MoveValidator::validate_bench_to_board_move(
-                    state.board,
-                    state.bench,
-                    source,
-                    target
-                );
-
-            if (validation.is_valid()) {
-                const auto source_index =
-                    static_cast<std::size_t>(source);
-
-                const auto target_index =
-                    static_cast<std::size_t>(target);
-
-                const auto unit_identity =
-                    std::optional<decision::UnitIdentity>{
-                        state.bench[source_index]->identity
-                    };
-
-                const std::string move_type =
-                    "bench_to_board";
-
-                const auto reason =
-                    anti_loop.get_block_reason(
-                        move_type,
-                        source,
-                        target,
-                        unit_identity
-                    );
-
-                if (reason.has_value()) {
-                    (void)anti_loop.block_move(
-                        move_type,
-                        source,
-                        target,
-                        unit_identity
-                    );
-
-                    anti_loop.record_execution_block(*reason);
-                } else {
-                    (void)anti_loop.register_move(
-                        move_type,
-                        source,
-                        target,
-                        unit_identity
-                    );
-
-                    impl_->player_envs[i].board[target_index] =
-                        std::move(
-                            impl_->player_envs[i].bench[source_index]
-                        );
-
-                    impl_->player_envs[i].bench[source_index].reset();
-
-                    anti_loop.record_successful_move(move_type);
-
-                    impl_->register_position_state(i);
-                }
-            }
-        } else if (type == 4) {
-            // MOVE_BOARD: movimento ou troca
-            auto& anti_loop = impl_->player_envs[i].anti_loop;
-
-            anti_loop.record_execution_attempt();
-
-            const auto source = action[4];
-            const auto target = action[5];
-
-            const auto state =
-                impl_->build_decision_state(i);
-
-            const auto validation =
-                decision::MoveValidator::validate_board_move(
-                    state.board,
-                    source,
-                    target
-                );
-
-            if (validation.is_valid() &&
-                validation.move_type.has_value()) {
-                const auto source_index =
-                    static_cast<std::size_t>(source);
-
-                const auto target_index =
-                    static_cast<std::size_t>(target);
-
-                const auto unit_identity =
-                    std::optional<decision::UnitIdentity>{
-                        state.board[source_index]->identity
-                    };
-
-                const std::string move_type =
-                    *validation.move_type ==
-                        decision::MoveType::BOARD_SWAP
-                        ? "board_swap"
-                        : "board_move";
-
-                const auto reason =
-                    anti_loop.get_block_reason(
-                        move_type,
-                        source,
-                        target,
-                        unit_identity
-                    );
-
-                if (reason.has_value()) {
-                    (void)anti_loop.block_move(
-                        move_type,
-                        source,
-                        target,
-                        unit_identity
-                    );
-
-                    anti_loop.record_execution_block(*reason);
-                } else {
-                    (void)anti_loop.register_move(
-                        move_type,
-                        source,
-                        target,
-                        unit_identity
-                    );
-
-                    if (move_type == "board_swap") {
-                        std::swap(
-                            impl_->player_envs[i].board[source_index],
-                            impl_->player_envs[i].board[target_index]
-                        );
-                    } else {
-                        impl_->player_envs[i].board[target_index] =
-                            std::move(
-                                impl_->player_envs[i].board[source_index]
-                            );
-
-                        impl_->player_envs[i].board[source_index].reset();
-                    }
-
-                    anti_loop.record_successful_move(move_type);
-
-                    impl_->register_position_state(i);
-                }
-            }
-        } else if (type == 5) {
-            // SELL: vender unidade do banco
-            const auto bench_slot =
-                static_cast<std::size_t>(action[2]);
-
-            if (bench_slot < kBenchSlots &&
-                impl_->player_envs[i].bench[bench_slot]) {
-                const auto& unit =
-                    *impl_->player_envs[i].bench[bench_slot];
-
-                const auto* definition =
-                    impl_->catalog->find_by_id(
-                        unit.champion_internal_id
-                    );
-
-                if (definition) {
-                    if (!impl_->player_envs[i].strategy.empty()) {
-                        const auto& core_units = impl_->player_envs[i].strategy.back().core_units;
-                        sold_core_unit = std::find(
-                            core_units.begin(), core_units.end(), unit.champion_id
-                        ) != core_units.end();
-                    }
-                    const auto sell_value =
-                        EconomyEngine::get_sell_value(
-                            definition->cost,
-                            unit.star
-                        );
-
-                    // Só confirma a venda se a devolução ao pool
-                    // for aceita.
-                    bool returned_all_copies = true;
-                    const auto copies = star_copies(unit.star);
-                    std::int32_t returned = 0;
-                    for (; returned < copies; ++returned) {
-                        if (!impl_->pool->give_back(unit.champion_internal_id)) {
-                            returned_all_copies = false;
-                            break;
-                        }
-                    }
-                    if (returned_all_copies) {
-                        impl_->player_envs[i].bench[bench_slot].reset();
-                        (void)impl_->economy_engine.add_gold(economy, sell_value);
-                        impl_->register_position_state(i);
-                    } else {
-                        for (std::int32_t copy = 0; copy < returned; ++copy)
-                            (void)impl_->pool->take(unit.champion_internal_id);
-                    }
-                }
-            }
-        } else if (type == 6) {
-            // PASS
-        }
-
-        impl_->sync_player_economy(i);
-        int new_board_count = 0, new_bench_count = 0;
-        for (const auto& unit : impl_->player_envs[i].board) if (unit) ++new_board_count;
-        for (const auto& unit : impl_->player_envs[i].bench) if (unit) ++new_bench_count;
-
-        // Alinhado a RewardManager.calculate_action_reward() e aos valores
-        // usados em env.py para compra, reroll e XP.
-        double action_reward = 0.0;
-        bool success = false;
-        if (type == 0) {
-            // The unit may be bought successfully while immediately consuming
-            // two copies in an automatic upgrade, so slot counts are not a
-            // reliable signal of success. Match MiniTFTEnv._execute_buy():
-            // +0.05 for a normal purchase, +0.30 for any completed upgrade.
-            success = bought_unit_successfully;
-            action_reward = !success ? -0.10 : (bought_upgrade ? 0.30 : 0.05);
-        } else if (type == 1) {
-            success = economy.gold == old_gold - EconomyEngine::REROLL_COST;
-            action_reward = success ? -0.01 : -0.10;
-        } else if (type == 2) {
-            success = economy.gold == old_gold - EconomyEngine::BUY_XP_COST;
-            action_reward = success ? 0.02 : -0.10;
-            // RewardManager tracks the last rewarded level, initialized to 1,
-            // not merely the level at the start of this action.
-            if (success && economy.level > old_level &&
-                economy.level > impl_->player_envs[i].previous_reward_level) {
-                action_reward += reward_model::level(
-                    economy.level, impl_->player_envs[i].previous_reward_level);
-                impl_->player_envs[i].previous_reward_level = economy.level;
-            }
-            (void)old_level;
-            (void)old_xp;
-        } else if (type == 3 || type == 4) {
-            bool board_layout_changed = false;
-            for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
-                const std::string current_uuid = impl_->player_envs[i].board[slot]
-                    ? impl_->player_envs[i].board[slot]->uuid : std::string{};
-                if (current_uuid != old_board_layout[slot]) {
-                    board_layout_changed = true;
-                    break;
-                }
-            }
-            success = type == 4 ? board_layout_changed
-                                : new_board_count > old_board_count;
-            action_reward = success ? (type == 4 ? 0.02 : 0.0) : -0.10;
-            if (type == 3 && success)
-                action_reward += impl_->positioning_score(i) * 0.05;
-        } else if (type == 5) {
-            success = economy.gold > old_gold;
-            action_reward = success ? (sold_core_unit ? -0.15 : 0.05) : -0.10;
-        } else {
-            success = true;
-        }
-
-        // MiniTFTEnv.step() returns the action-specific reward directly.
-        // RewardManager's broader state components are not called by the
-        // Python environment, so applying them here would change PPO targets.
-        action_rewards[i] = static_cast<float>(action_reward);
-        round_rewards[i] += action_rewards[i];
+        action_rewards[i] = transition.action_reward;
+        round_rewards[i] += transition.action_reward;
         impl_->player_envs[i].round_reward_total = round_rewards[i];
         impl_->player_envs[i].total_reward += round_rewards[i];
-        impl_->update_strategy(i);
-
         impl_->sync_player_economy(i);
         impl_->refresh_masks(i);
-        impl_->mark_round_completion(i, type);
+        impl_->mark_round_completion(i, actions[i].values[0]);
     }
 
     // ========================================================
