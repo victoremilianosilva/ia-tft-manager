@@ -67,3 +67,11 @@ A Etapa 4 só deve ser marcada concluída depois que:
 - os campos de combate usados pelo motor forem transferidos de forma explícita;
 - recompensas de ação, combate, economia e colocação forem comparadas após cada etapa;
 - os cenários controlados Python/C++ e as suítes nativas/Python forem executados em CI, com resultados anexados ao PR/commit.
+
+
+## Atualização de verificação — 2026-10-15
+
+- A reprodução cruzada foi tentada com uma ação real de mover unidade do banco para o tabuleiro. O teste revelou diferença de recompensa de posicionamento quando as unidades iniciais diferem entre backends: Python `-0.025`, C++ `0.125` no cenário observado. Isso é consequência conhecida da ausência de um estado inicial compartilhado/RNG compatível; não foi mascarado como paridade aprovada.
+- O cenário de movimento foi retirado do replay de recompensas comparáveis até haver uma forma de injetar o mesmo snapshot inicial nos dois backends. Os testes de movimento de cada backend continuam sendo executados separadamente.
+- O workflow agora usa `REQUIRE_CPP_PARITY=1`: falha se `tft_engine` ou `combat_engine` não puderem ser importados, em vez de marcar o replay como ignorado.
+- A execução deve continuar sendo considerada parcial até que o mesmo estado inicial controlado possa ser reproduzido em Python/C++, incluindo identidade de unidades, loja, traits e papéis, e até que combate real e recompensa terminal sejam comparados em cenários integrados.
