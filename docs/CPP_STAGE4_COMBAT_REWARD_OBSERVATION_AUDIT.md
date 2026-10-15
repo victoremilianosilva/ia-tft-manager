@@ -9,8 +9,8 @@ Escopo: inspeção estática de `cpp/include/combat/*`, `cpp/src/combat/CombatEn
 
 | Tarefa | Status | Evidência / lacuna |
 |---|---|---|
-| Converter unidades do estado C++ para CombatInput | Parcial | `append_combat_team()` converte unidades do tabuleiro em `CombatTeam/CombatUnit`. |
-| Preservar atributos, posições, papéis e dados de combate | Parcial | Copia ID, nome, estrelas, papel inferido do perfil, posição, HP, AD, velocidade/alcance, armadura e resistência mágica. Não copia para a entrada montada pelo lobby a habilidade, itens, traits, AP, críticos, modificadores, mana e vários campos já existentes em `CombatUnit`; isso pode alterar combates. |
+| Converter unidades do estado C++ para CombatInput | Parcial | `append_combat_team()` converte unidades do tabuleiro em `CombatTeam/CombatUnit`; agora usa IDs sequenciais e o seed/configuração enviados pelo lobby Python. |
+| Preservar atributos, posições, papéis e dados de combate | Parcial | Copia atributos básicos e alinha a orientação do time B com Python (espelha X), os IDs sequenciais e os fallbacks de HP/AD/AS/alcance. Habilidades, itens, traits, AP, críticos e modificadores não são preenchidos/consumidos pelo loop atual de combate; precisam de uma decisão de escopo e implementação própria. |
 | Integrar CombatEngine à resolução das partidas | Implementado estruturalmente | `resolve_combats()` chama `combat_engine.simulate(input)` e rejeita resultado com `success=false` ou `completed=false`. Falta validar comportamento por testes executados. |
 | Migrar pareamento dos oito jogadores | Parcial | Junta vivos, embaralha com RNG C++ e tenta evitar repetição. A equivalência exata com o pareamento Python e seu RNG não foi demonstrada. |
 | Migrar controle de rodada, estágio e progressão | Parcial | Existem contadores e avanço de estágio/rodada no motor; paridade completa com a ordem da referência Python não foi provada. |
@@ -18,12 +18,12 @@ Escopo: inspeção estática de `cpp/include/combat/*`, `cpp/src/combat/CombatEn
 | Aplicar dano, eliminações e ranking | Parcial | Há aplicação de dano por estágio e sobreviventes, eliminação, colocação e ranking. Deve-se comparar ordenação e dano exatos com Python, incluindo eliminações simultâneas. |
 | Preservar ordem de processamento dos combates | Não comprovado | O C++ percorre os confrontos em sequência e elimina depois do loop; falta verificar se a referência Python aplica resultados na mesma ordem e com os mesmos efeitos colaterais. |
 | Recompensas individuais e terminais | Parcial / lacuna crítica | Há componentes de recompensa de ação/estado e recompensa de combate. Não encontrei no caminho C++ equivalente explícito à recompensa terminal de colocação de `TFTLobby._calculate_placement_reward()` e `_apply_placement_rewards()`; precisa ser implementada ou a equivalência documentada. |
-| Construir observações em C++ | Implementado, mas incompatível | `build_observations()` e `write_observation()` existem. |
-| Preservar dimensão, índices, tipos e normalização das observações | **Não implementado** | C++ declara `kObservationDim = 8` e emite HP, ouro, nível, XP, alive, wins, losses e round sem normalização. Python `env._get_state()` concatena core=22, board=140, bench=45, shop=25, extra=5, synergy=5, positioning=4, trait_vector=`len(_trait_to_idx)` e capacity=2: dimensão total **248 + número de traits**. As escalas também são diferentes. |
+| Construir observações em C++ | Implementado estruturalmente | `build_observations()` agora emite o vetor concatenado com core, tabuleiro, banco, loja, extras, sinergias, posicionamento, traits e capacidade; dimensão dinâmica é devolvida pela API. |
+| Preservar dimensão, índices, tipos e normalização das observações | Parcial; falta paridade total | O vetor C++ segue as dimensões/ordem e escalas de `env._get_state()` (248 + traits). Corrigido também o nome do método Python para chamar `evaluate_board_positioning()`. A comparação cruzada ainda exclui campos dependentes da seleção aleatória de unidade inicial/loja/traits; a dimensão e todos os valores ainda não foram comprovados em estado idêntico. |
 | Preservar dados de estratégia e logging | Parcial | Há estrutura de estratégia, eventos de lobby e metadados públicos; a observação de 8 floats não carrega os dados que o vetor Python fornece ao PPO. |
 | Tratar success/completed/timeout/erros | Parcial | `CombatResult` tem `success`, `completed`, `timeout` e campos de erro. O lobby trata falha/incompletude lançando exceção. Não encontrei validação de timeout como resultado específico nem política de retry/fallback comparável à Python. |
 | Término da lobby e episódios individuais | Parcial | C++ termina com um jogador restante e marca colocações; `vector_lobby_env.py` define done individual por eliminação e marca todos done ao acabar a lobby. Falta contrato comparativo e recompensa terminal correspondente. |
-| Testes de regressão de combate/dano/eliminações/ranking/recompensas | Parcial | Existem testes nativos e testes Python de combate/integracão, mas a cobertura cruzada de todas essas regras não foi demonstrada. |
+| Testes de regressão de combate/dano/eliminações/ranking/recompensas | Parcial | Adicionado `cpp/tests/test_combat_engine.cpp` para vencedor determinístico, sobreviventes, replay, configuração inválida e timeout por limite de eventos. Dano de jogador, eliminação, ranking e recompensa terminal ainda precisam de cenário integrado. |
 | Comparar observações e recompensas em cenários controlados | Parcial | `tests/test_cross_language_replay.py` foi criado para replay da lobby, mas compara estado público e recompensas em cenário PASS; não compara o vetor de observação completo com o vetor Python. Não foi executado nesta auditoria. |
 
 ## Bloqueadores prioritários
@@ -33,6 +33,23 @@ Escopo: inspeção estática de `cpp/include/combat/*`, `cpp/src/combat/CombatEn
 3. **Recompensa terminal:** reproduzir o cálculo e a aplicação única da recompensa de colocação; testar eliminação e vitória final para evitar recompensa ausente ou duplicada.
 4. **Paridade de rodada/combate:** fixtures determinísticas para vitória, derrota, empate, tabuleiro vazio, dano, eliminação simultânea, ranking e mudança de estágio.
 5. **Teste de integração real:** comparar observações após cada etapa e cada recompensa individual, além de estado público. Falha de import do binding não deve ser confundida com teste aprovado.
+
+## Implementações adicionais realizadas durante a correção
+
+- A lobby C++ agora cria uma unidade inicial de custo 1 no banco de cada jogador e desconta corretamente do pool, como `MiniTFTEnv.reset()`.
+- Recompensa de colocação é aplicada uma única vez e preservada para jogadores eliminados e para o vencedor final.
+- O agregado de recompensa após combate não recalcula a recompensa de estado nem aplica um segundo clamp ao total, aproximando-se do fluxo `env.step()` + `TFTLobby`.
+- A orientação do time B, IDs das unidades, seed e parâmetros básicos de combate foram alinhados com `TFTLobby._build_cpp_combat_input()`.
+- Criado workflow `.github/workflows/cpp-parity.yml` para compilar módulos/testes, executar CTest e executar o replay Python/C++.
+- Corrigidos testes nativos de máscaras que usavam enum como índice de `std::array`, e fallback de máscaras que habilitava destinos impossíveis.
+
+## Lacunas que permanecem
+
+1. O RNG de loja, seleção da unidade inicial e pareamento não é compartilhado entre Python e C++; os estados aleatórios podem divergir com a mesma seed.
+2. O replay atual compara apenas as features de observação independentes desses sorteios. Bench-role, loja, sinergias e vetor de traits são validados quanto a valores finitos/normalizados, mas ainda não comparados campo a campo em um estado idêntico.
+3. Ainda não há fixture compartilhada com formação controlada para comparar uma vitória/derrota real, dano, eliminação, ranking e recompensa terminal.
+4. Habilidades, itens, traits de combate e modificadores não são aplicados pelo loop atual de `CombatEngine`; o cabeçalho agora documenta essa limitação.
+5. A suíte C++ já chegou a compilar e CTest passou em uma execução, mas o replay cruzado falhou por diferenças de estado inicial/observação. A execução mais recente deve ser consultada antes de considerar a CI verde.
 
 ## Próximo critério de aceite
 
