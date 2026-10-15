@@ -44,8 +44,8 @@ public:
     static constexpr std::array<std::string_view, 7> carry_keywords = {
         "attack damage", "critical", "crit", "damage", "projectile", "rapid fire", "attack speed"
     };
-    static constexpr std::array<std::string_view, 8> support_keywords = {
-        "heal", "healing", "shield", "buff", "ally", "all allies", "mana", "restore"
+    static constexpr std::array<std::string_view, 9> support_keywords = {
+        "heal", "healing", "shield", "buff", "ally", "all allies", "mana", "restore", "protect"
     };
     static constexpr std::array<std::string_view, 6> assassin_keywords = {
         "dash", "jump", "backline", "lowest health", "furthest", "farther"
