@@ -14,6 +14,7 @@
 #include "lobby/TftEngine.hpp"
 #include "strategy/PositioningEngine.hpp"
 #include "reward/RewardManager.hpp"
+#include "combat/CombatProfileEngine.hpp"
 
 namespace py = pybind11;
 
@@ -618,6 +619,110 @@ PYBIND11_MODULE(tft_engine, module) {
             &TFTEngine::is_done
         )
         .def("close", &TFTEngine::close);
+
+
+    // CombatProfileManager.py parity API. This is deliberately stateless:
+    // Python's mutable profile cache remains a Python lifecycle detail.
+    module.def("combat_profile_get_profile", [](py::dict unit) {
+        auto numeric = [&unit](const char* key, double fallback = 0.0) {
+            if (!unit.contains(key) || unit[key].is_none()) return fallback;
+            try { return py::cast<double>(unit[key]); } catch (...) { return fallback; }
+        };
+        auto text_value = [](py::handle value) -> std::string {
+            if (py::isinstance<py::str>(value)) return py::cast<std::string>(value);
+            return {};
+        };
+        std::string ability_text;
+        if (unit.contains("ability")) {
+            py::handle ability = unit["ability"];
+            if (py::isinstance<py::str>(ability)) ability_text = text_value(ability);
+            else if (py::isinstance<py::dict>(ability)) {
+                py::dict d = py::reinterpret_borrow<py::dict>(ability);
+                for (const char* key : {"description", "desc", "name", "effect"}) {
+                    if (d.contains(key) && py::isinstance<py::str>(d[key])) {
+                        ability_text = text_value(d[key]); break;
+                    }
+                }
+            }
+        }
+        if (ability_text.empty()) {
+            for (const char* key : {"ability_description", "ability_desc", "description"}) {
+                if (unit.contains(key) && py::isinstance<py::str>(unit[key])) {
+                    ability_text = text_value(unit[key]); break;
+                }
+            }
+        }
+        const double hp = numeric("max_hp", numeric("hp", 0.0));
+        const double ad = numeric("attack_damage", numeric("ad", 0.0));
+        const double mr = numeric("magic_resist", numeric("mr", 0.0));
+        tft::CombatProfileInput input{ability_text, numeric("attack_range"), numeric("attack_speed"),
+            ad, numeric("armor"), mr, hp, numeric("max_mana")};
+        const auto p = tft::CombatProfileEngine::build_profile(input);
+        const int role = static_cast<int>(p.role);
+        py::dict out;
+        out["role"] = role;
+        out["role_name"] = std::array<const char*,5>{"tank","carry","support","fighter","assassin"}[role];
+        out["frontline"] = p.frontline();
+        out["backline"] = p.backline();
+        out["is_tank"] = role == 0;
+        out["is_carry"] = role == 1;
+        out["is_support"] = role == 2;
+        out["is_fighter"] = role == 3;
+        out["is_assassin"] = role == 4;
+        out["attack_range"] = p.attack_range;
+        out["attack_speed"] = p.attack_speed;
+        out["attack_damage"] = p.attack_damage;
+        out["armor"] = p.armor;
+        out["magic_resist"] = p.magic_resist;
+        out["max_hp"] = p.max_hp;
+        out["max_mana"] = p.max_mana;
+        return out;
+    });
+    module.def("combat_profile_get_role", [](py::object unit) {
+        if (unit.is_none()) return 3;
+        py::dict d = py::cast<py::dict>(unit);
+        auto p = py::cast<py::dict>(py::module_::import("tft_engine").attr("combat_profile_get_profile")(d));
+        return py::cast<int>(p["role"]);
+    });
+    module.def("combat_profile_is_frontline", [](py::object unit) {
+        if (unit.is_none()) return true;
+        const int role = py::cast<int>(py::module_::import("tft_engine").attr("combat_profile_get_role")(unit));
+        return tft::CombatProfileEngine::is_frontline(static_cast<tft::ProfileRole>(role));
+    });
+    module.def("combat_profile_is_backline", [](py::object unit) {
+        if (unit.is_none()) return false;
+        const int role = py::cast<int>(py::module_::import("tft_engine").attr("combat_profile_get_role")(unit));
+        return tft::CombatProfileEngine::is_backline(static_cast<tft::ProfileRole>(role));
+    });
+    module.def("combat_profile_build_combat_input", [](py::dict unit) {
+        auto numeric = [&unit](const char* key, double fallback = 0.0) {
+            if (!unit.contains(key) || unit[key].is_none()) return fallback;
+            try { return py::cast<double>(unit[key]); } catch (...) { return fallback; }
+        };
+        auto identifier = [&unit]() -> py::object {
+            for (const char* key : {"id", "champion_id", "apiName", "characterName"})
+                if (unit.contains(key) && !unit[key].is_none()) return py::reinterpret_borrow<py::object>(unit[key]);
+            return py::none();
+        };
+        py::dict profile = py::cast<py::dict>(
+            py::module_::import("tft_engine").attr("combat_profile_get_profile")(unit));
+        py::dict out;
+        out["id"] = identifier();
+        int star = 1;
+        try { if (unit.contains("star")) star = py::cast<int>(unit["star"]); } catch (...) {}
+        out["star"] = star;
+        out["hp"] = numeric("hp", py::cast<double>(profile["max_hp"]));
+        out["max_hp"] = profile["max_hp"];
+        out["mana"] = numeric("mana");
+        out["max_mana"] = profile["max_mana"];
+        out["attack_damage"] = profile["attack_damage"];
+        out["attack_speed"] = profile["attack_speed"];
+        out["armor"] = profile["armor"];
+        out["magic_resist"] = profile["magic_resist"];
+        out["attack_range"] = profile["attack_range"];
+        out["role"] = profile["role"];
+        return out;
+    });
 
     // PositioningManager.py parity API. Boards are vectors of role IDs:
     // -1 = empty; 0 tank, 1 carry, 2 support, 3 fighter, 4 assassin.
