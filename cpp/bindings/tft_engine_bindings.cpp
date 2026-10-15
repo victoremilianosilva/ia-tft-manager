@@ -540,6 +540,25 @@ PYBIND11_MODULE(tft_engine, module) {
                 return anti_loop_to_dict(self.get_anti_loop_metrics());
             }
         )
+        // Contrato público de diagnóstico e fixtures de paridade.
+        // Não faz parte do caminho de execução normal do Trainer.
+        .def(
+            "get_public_state",
+            [](const TFTEngine& self) {
+                return public_state_to_dict(self.get_public_state());
+            }
+        )
+        .def("set_unit_for_testing", &TFTEngine::set_unit_for_testing,
+             py::arg("player_id"), py::arg("on_board"), py::arg("slot"),
+             py::arg("champion_api_name"), py::arg("star") = 1)
+        .def("set_player_alive_for_testing", &TFTEngine::set_player_alive_for_testing,
+             py::arg("player_id"), py::arg("alive"))
+        .def_property_readonly("observation_dim", &TFTEngine::observation_dim)
+        .def_property_readonly("episode_id", &TFTEngine::episode_id)
+        .def_property_readonly("round", &TFTEngine::round)
+        .def_property_readonly("stage", &TFTEngine::stage)
+        .def_property_readonly("alive_players", &TFTEngine::alive_players)
+        .def_property_readonly("is_done", &TFTEngine::is_done)
         .def("close", &TFTEngine::close);
 
 
