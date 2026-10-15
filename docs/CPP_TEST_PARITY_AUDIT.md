@@ -60,3 +60,30 @@ Expandir o contrato de snapshot compartilhado para expor loja, banco, tabuleiro,
 ## Limitação desta auditoria
 
 Esta é uma auditoria estática dos arquivos e nomes dos testes disponíveis no repositório. Ela não afirma que a suíte completa foi executada. Nenhum resultado de compilação/teste é declarado aqui sem uma execução reproduzível.
+
+
+## Atualização de trabalho — 2026-10-15
+
+### CI e relatórios
+
+A branch `audit/full-cross-language-parity` amplia `.github/workflows/cpp-parity.yml` para incluir grupos adicionais de regressão de máscaras, AntiLoop, economia, loja/pool, upgrades e seleção de backend. O workflow agora grava o log do CTest, produz JUnit XML para a suíte Python e publica ambos como artifact mesmo quando um passo falha.
+
+A variável `REQUIRE_CPP_PARITY=1` continua obrigando a importação de `tft_engine` e `combat_engine` no teste de replay, para que ausência do binding nativo não seja tratada como sucesso por skip.
+
+### Limites confirmados no código atual
+
+- O hook `set_unit_for_testing` permite configurar unidades no tabuleiro/banco, mas não permite definir ofertas específicas da loja nem controlar diretamente ouro/XP/nível. Por isso, ele ainda não consegue criar fixtures completas e idênticas para BUY e REROLL.
+- `get_public_state()` não expõe o conteúdo completo de tabuleiro, banco, loja ou estrelas das unidades. Não é suficiente para comparar todas as transições.
+- O binding devolve as máscaras completas (incluindo matrizes condicionais), mas o replay atual não compara essas máscaras após cada ação.
+- A economia RNG da loja e a RNG de matchmaking são streams separados em C++; no Python, a loja/pool usa seus próprios objetos RNG. Reutilizar somente o mesmo inteiro de seed não garante as mesmas ofertas ou pareamentos.
+- `state_reward()` existe no motor nativo, mas o caminho ativo de recompensa da partida continua usando recompensa de ação, combate e colocação. A auditoria deve preservar esse contrato atual até haver decisão explícita de mudança.
+
+### Próxima implementação necessária para as fixtures das sete ações
+
+1. Adicionar hooks exclusivos de teste para configurar ouro/XP/nível e ofertas específicas da loja, com validação de slots e sem expor esses hooks ao Trainer.
+2. Expor um snapshot de auditoria equivalente nos dois backends: identidade/API do campeão, estrelas, loja, banco, tabuleiro, economia, estado de pool necessário, máscaras e componentes de recompensa.
+3. Adicionar replay de uma ação por fixture para BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL e PASS. Validar tanto ações válidas quanto inválidas; comparar valores discretos exatamente e floats com tolerância documentada.
+4. Comparar as oito máscaras completas, inclusive `board_move_target_masks` e `bench_to_board_target_masks`, antes e depois de cada transição.
+5. Só depois ampliar para cenários determinísticos de combate, eliminação/colocação, juros, streaks, pareamento e mudanças de estágio.
+
+**Status:** a mudança de CI está preparada nesta branch; ainda não foi executada aqui, e a paridade de transições completas permanece pendente. Não declarar o grupo aprovado até o GitHub Actions fornecer resultados reais.
