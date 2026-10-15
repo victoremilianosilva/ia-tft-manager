@@ -122,3 +122,22 @@ A API nativa agora expõe arrays separados `action_rewards`, `combat_rewards` e 
 | Contexto de `_update_strategy()` | C++ calcula board_power e bench_strength a partir das unidades possuídas; expõe quantidade de traits ativos do snapshot. A decisão Python atualmente recebe XP, round, bench_strength e composição, mas suas regras heurísticas não usam esses argumentos. | A força do banco e o comportamento de composição ainda precisam de fixtures específicas se a regra Python for ampliada. |
 
 **Limite explícito:** isso fecha a paridade dos cálculos atualmente implementados em `StrategyManager.py`, não a migração integral de todos os managers chamados por `env.py`. A estratégia escolhida não deve ser confundida com `choose_best_strategy()`, que é um cálculo alternativo no código Python.
+
+
+## Auditoria complementar — CompositionManager.py (2026-10-15)
+
+| Método/estado Python | Implementação nativa | Validação |
+|---|---|---|
+| `rebuild_unit_counts()` / `count_unit()` | Contagem por ID interno, incluindo cópias equivalentes 1★=1, 2★=3, 3★=9; inclui tabuleiro e banco, exclui loja. | Replay cruzado compara `unit_counts_by_id` com `get_state()['unit_counts']`. |
+| `get_active_traits()` | Contagem de traits das unidades próprias do tabuleiro e banco, preservando a ordem de inserção para desempates. | Comparação exata do dicionário de traits ativos. |
+| `update_direction()` | Trait com maior contagem; empate preserva a primeira trait observada, como o `Counter` Python. | Comparação após cada passo do replay. |
+| `update_focus()` / `_calculate_focus_score()` | Score por unidade usando estrelas, custo, número de traits e cópias equivalentes; foco usa ID interno como no Python. | Comparação de `composition_focus_id` após cada passo. |
+| `update_core_units()` | Até três IDs internos com maior score, desempate estável pela ordem de primeira ocorrência. | Comparação do conjunto de IDs core. |
+| `update_core_traits()` | Até três traits mais presentes, somente com contagem >= 2, com desempate estável. | Comparação exata do conjunto de traits core. |
+| `get_unit_comp_score()` | API nativa `get_unit_comp_score(player_id, champion_api_name, star)`; replica bônus core, direção, traits core, estrelas e custo. | Testa todos os campeões do catálogo para estrelas 1/2/3, comparando com Python. |
+| `is_core_unit()` / `is_core_trait()` | Consultas expostas no binding Python do motor nativo. | Comparação cruzada para campeões e traits do catálogo. |
+| `get_state()` | Snapshot exposto por `get_strategies()`, com IDs internos e nomes legíveis separados. | Teste cruzado compara foco, direção, core units/traits, traits ativos e contagem de cópias. |
+
+**Validação executada:** workflow [C++ engine and cross-language parity](https://github.com/victoremilianosilva/teste-ia/actions/runs/38760053429) aprovado: build nativo, CTest e regressões Python/C++ passaram.
+
+**Limite explícito:** o estado de composição está integrado ao snapshot estratégico do lobby, não como uma classe C++ independente com a mesma forma de objeto do Python. As consultas públicas e os cálculos de estado são equivalentes; a API de score recebe o identificador `apiName` do campeão e estrelas, enquanto o Python recebe o dicionário da unidade.
