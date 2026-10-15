@@ -3,6 +3,8 @@ import torch.optim as optim
 import numpy as np
 import os
 
+from engine_backend import make_lobby_factory
+
 from torch.utils.tensorboard import SummaryWriter
 
 
@@ -147,27 +149,7 @@ class Trainer:
         # 🏭 ENV FACTORY / ENGINE BACKEND
         # ============================================================
 
-        # Prioridade: argumento explícito > variável de ambiente > Python.
-        # O backend Python não depende de a extensão C++ estar compilada.
-        self.engine_backend = str(
-            engine_backend or os.environ.get("TFT_ENGINE_BACKEND", "python")
-        ).strip().lower()
-
-        if self.engine_backend not in {"python", "cpp"}:
-            raise ValueError(
-                "engine_backend deve ser 'python' ou 'cpp'; "
-                f"recebi {self.engine_backend!r}."
-            )
-
-        if self.engine_backend == "python":
-            # Importação tardia: backend C++ não inicializa a lobby Python.
-            from lobby.TFTLobby import TFTLobby
-            env_factory = TFTLobby
-        else:
-            # Importação tardia: o backend Python não depende do módulo nativo.
-            from cpp_lobby_env import CppTFTLobbyWrapper
-            env_factory = CppTFTLobbyWrapper
-
+        self.engine_backend, env_factory = make_lobby_factory(engine_backend)
         print(f"🧩 Engine selecionada: {self.engine_backend.upper()}")
 
         def make_env():
