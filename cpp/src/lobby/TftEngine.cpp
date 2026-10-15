@@ -2386,7 +2386,6 @@ TFTEngine::get_strategies() const {
 // MÉTRICAS ANTI-LOOP
 // ============================================================
 
-std::array<AntiLoopMetrics, kPlayersPerLobby>
 double TFTEngine::get_unit_comp_score(std::int32_t player_id, const std::string& champion_api_name, std::int32_t star) const {
     if (!impl_ || player_id < 0 || player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) throw std::out_of_range("player_id fora do intervalo.");
     impl_->ensure_open(); const auto* def = impl_->catalog->find_by_api_name(champion_api_name); if (!def || star < 1 || star > 3) return 0.0;
@@ -2405,6 +2404,7 @@ bool TFTEngine::is_core_trait(std::int32_t player_id, const std::string& trait) 
     return !list.empty() && std::find(list.back().core_traits.begin(), list.back().core_traits.end(), trait) != list.back().core_traits.end();
 }
 
+std::array<AntiLoopMetrics, kPlayersPerLobby>
 TFTEngine::get_anti_loop_metrics() const {
     if (!impl_) {
         throw std::runtime_error(
