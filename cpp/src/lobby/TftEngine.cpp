@@ -2267,6 +2267,9 @@ bool TFTEngine::set_unit_for_testing(
     }
 
     impl_->register_position_state(player_index);
+    // Keep derived strategy/composition data coherent with test-only fixture
+    // mutations. SELL reward reads the current core-unit set before transition.
+    impl_->update_strategy(player_index);
     impl_->refresh_masks(player_index);
     return true;
 }
