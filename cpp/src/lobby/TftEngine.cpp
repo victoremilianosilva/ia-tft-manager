@@ -1558,7 +1558,6 @@ StepResult TFTEngine::step(
     // ========================================================
 
     std::array<float, kPlayersPerLobby> round_rewards{};
-    std::array<double, kPlayersPerLobby> action_reward_values{};
     for (std::size_t i = 0;
          i < kPlayersPerLobby;
          ++i) {
@@ -1926,7 +1925,6 @@ StepResult TFTEngine::step(
             success = true;
         }
 
-        action_reward_values[i] = action_reward;
         // MiniTFTEnv.step() returns the action-specific reward directly.
         // RewardManager's broader state components are not called by the
         // Python environment, so applying them here would change PPO targets.
