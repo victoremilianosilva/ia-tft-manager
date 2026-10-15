@@ -1927,8 +1927,10 @@ StepResult TFTEngine::step(
         }
 
         action_reward_values[i] = action_reward;
-        round_rewards[i] += static_cast<float>(
-            reward_model::clamp_total(impl_->state_reward(i, action_reward)));
+        // MiniTFTEnv.step() returns the action-specific reward directly.
+        // RewardManager's broader state components are not called by the
+        // Python environment, so applying them here would change PPO targets.
+        round_rewards[i] += static_cast<float>(action_reward);
         impl_->round_reward_total[i] = round_rewards[i];
         impl_->total_reward[i] += round_rewards[i];
         impl_->update_strategy(i);
