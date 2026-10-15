@@ -1974,16 +1974,14 @@ StepResult TFTEngine::step(
         }
 
         for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
-            if (!impl_->players[i].alive) continue;
-            round_rewards[i] += static_cast<float>(
-                reward_model::clamp_total(impl_->state_reward(i, 0.0)));
-            // RewardManager.calculate_total_reward limita o total a [-5, 5].
-            round_rewards[i] = static_cast<float>(reward_model::clamp_total(round_rewards[i]));
+            // Python clamps the per-player action transition inside env.step(),
+            // then TFTLobby adds combat and placement rewards without clamping
+            // that combined value a second time.
             impl_->round_reward_total[i] = round_rewards[i];
-            // As recompensas de ação já foram acumuladas no processamento
-            // acima; aqui somamos apenas combate + avaliação pós-combate.
             impl_->total_reward[i] += round_rewards[i] - rewards_before_combat[i];
-            impl_->update_strategy(i);
+            if (impl_->players[i].alive) {
+                impl_->update_strategy(i);
+            }
         }
 
         // O bônus de vitória já foi creditado no ouro pelo combate.
