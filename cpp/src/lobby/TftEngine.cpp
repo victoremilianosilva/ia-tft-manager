@@ -1576,6 +1576,8 @@ StepResult TFTEngine::step(
         const auto old_xp = economy.xp;
         int old_board_count = 0, old_bench_count = 0;
         bool sold_core_unit = false;
+        bool bought_unit_successfully = false;
+        bool bought_upgrade = false;
         std::array<std::string, kBoardSlots> old_board_layout{};
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
             if (impl_->boards[i][slot]) {
@@ -1621,6 +1623,7 @@ StepResult TFTEngine::step(
                         shop.take_unit(shop_slot);
 
                     if (purchased) {
+                        bought_unit_successfully = true;
                         impl_->benches[i][free_slot] = std::move(*purchased);
 
                         // Auto-upgrade 3x1★ -> 2★ e 3x2★ -> 3★.
@@ -1644,6 +1647,7 @@ StepResult TFTEngine::step(
                                     matches.emplace_back(true, slot);
                             }
                             if (matches.size() < 3) break;
+                            bought_upgrade = true;
                             std::size_t removed = 0;
                             for (const auto& [on_board, slot] : matches) {
                                 if (!on_board && slot == free_slot) continue;
@@ -1890,12 +1894,12 @@ StepResult TFTEngine::step(
         double action_reward = 0.0;
         bool success = false;
         if (type == 0) {
-            success = new_bench_count > old_bench_count || new_board_count > old_board_count ||
-                      (old_bench_count == new_bench_count && old_board_count == new_board_count &&
-                       economy.gold < old_gold);
-            action_reward = success ? 0.05 : -0.10;
-            if (success && (new_board_count < old_board_count || new_bench_count < old_bench_count))
-                action_reward = 0.30; // compra que conclui upgrade automático
+            // The unit may be bought successfully while immediately consuming
+            // two copies in an automatic upgrade, so slot counts are not a
+            // reliable signal of success. Match MiniTFTEnv._execute_buy():
+            // +0.05 for a normal purchase, +0.30 for any completed upgrade.
+            success = bought_unit_successfully;
+            action_reward = !success ? -0.10 : (bought_upgrade ? 0.30 : 0.05);
         } else if (type == 1) {
             success = economy.gold == old_gold - EconomyEngine::REROLL_COST;
             action_reward = success ? -0.01 : -0.10;
