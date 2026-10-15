@@ -279,11 +279,46 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
                     player_id, shop_fixture
                 ), "C++ rejected shop roll fixture for player %d" % player_id
 
+            # Snapshot per-transition stock deltas. Absolute pool counts can
+            # differ after reset because each backend's independent RNG selected
+            # different initial units before the deterministic fixture replaced them.
+            py_pool_before = [
+                python_lobby.unit_pool.get_available(unit_id)
+                for unit_id in shop_fixture_ids
+            ]
+            cpp_pool_before = [
+                cpp_engine.pool_available(unit_id) for unit_id in shop_fixture_ids
+            ]
+
             # Execute identical semantic actions through the two public APIs.
             py_obs, py_rewards, py_done, py_info = python_lobby.step(
                 step["python_actions"]
             )
             cpp_result = cpp_engine.step(step["cpp_actions"])
+
+            py_pool_after_transition = [
+                python_lobby.unit_pool.get_available(unit_id)
+                for unit_id in shop_fixture_ids
+            ]
+            cpp_pool_after_transition = [
+                cpp_engine.pool_available(unit_id) for unit_id in shop_fixture_ids
+            ]
+            py_stock_delta = [
+                after - before for before, after in zip(
+                    py_pool_before, py_pool_after_transition
+                )
+            ]
+            cpp_stock_delta = [
+                after - before for before, after in zip(
+                    cpp_pool_before, cpp_pool_after_transition
+                )
+            ]
+            assert py_stock_delta == cpp_stock_delta, (
+                "%s: shop pool stock delta diverged during transition; "
+                "Python=%r C++=%r" % (
+                    step["name"], py_stock_delta, cpp_stock_delta
+                )
+            )
 
             # Normalize current offers on both sides before comparing masks,
             # observations, or pool counts. Any inability to reserve the same
@@ -300,19 +335,6 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
                     ), "C++ shop fixture failed: step=%s player=%d slot=%d" % (
                         step["name"], player_id, slot
                     )
-
-            py_pool = [
-                python_lobby.unit_pool.get_available(unit_id)
-                for unit_id in shop_fixture_ids
-            ]
-            cpp_pool = [
-                cpp_engine.pool_available(unit_id)
-                for unit_id in shop_fixture_ids
-            ]
-            assert py_pool == cpp_pool, (
-                "%s: shop pool stock diverged after controlled offers; "
-                "Python=%r C++=%r" % (step["name"], py_pool, cpp_pool)
-            )
 
             _compare_action_masks(python_lobby, cpp_engine, step["name"])
             _compare_audit_snapshots(python_lobby, cpp_engine, step["name"])
