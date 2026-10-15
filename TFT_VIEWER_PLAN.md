@@ -392,6 +392,49 @@ PySide6 é a recomendação, mas a escolha deve ser confirmada antes de iniciar 
 - [ ] Comparar checkpoints em sessões controladas.
 - [ ] Medir overhead de logging e ajustar níveis de detalhe.
 
+## 13.1 Próximas tarefas técnicas obrigatórias
+
+Esta é a sequência de execução acordada antes de avançar a implementação visual. **Estas tarefas estão registradas como pendentes; o registro no plano não significa que já foram executadas.**
+
+### Tarefa 1 — Compilar e validar a passagem dos eventos de combate até Python
+- [ ] Configurar/compilar a extensão C++ e executar um teste de combate real com registro de eventos ativado.
+- [ ] Confirmar quais eventos são preenchidos de fato em `CombatResult` (ataque, dano, posição, morte e outros suportados).
+- [ ] Rastrear o resultado pela engine do lobby, binding pybind11 e adaptador `cpp_lobby_env.py`.
+- [ ] Se os eventos forem descartados em algum nível, adicionar passagem explícita dos dados sem alterar a semântica do combate.
+- [ ] Criar teste automatizado que confirme que os eventos emitidos no C++ chegam ao Python com IDs, timestamps e valores consistentes.
+- [ ] Registrar comandos executados, ambiente, resultado dos testes e limitações encontradas.
+
+**Critério para encerrar:** existe um teste reproduzível que executa combate e demonstra quais dados de evento chegam ao Python. Só então decidir se a tela de combate consegue consumir a linha do tempo diretamente ou se precisa de instrumentação adicional.
+
+### Tarefa 2 — Validar avanço conjunto e pontos seguros de pausa
+- [ ] Executar um lobby real com oito assentos e confirmar o contrato de `step()`, incluindo assentos que não atuam e ações `PASS`.
+- [ ] Confirmar quando cada lote de ações é validado, executado e refletido no snapshot do estado.
+- [ ] Definir a pausa como controle entre chamadas de passo conjunto, sem bloquear ou interromper uma chamada nativa em andamento.
+- [ ] Testar pausa, retomada e avanço unitário, verificando que nenhuma ação é executada duas vezes nem fica parcialmente aplicada.
+- [ ] Documentar como o controlador distingue ação proposta, ação rejeitada e ação efetivamente executada.
+
+**Critério para encerrar:** teste reproduzível confirma a fronteira de cada passo e a UI consegue pausar com o estado do lobby consistente.
+
+### Tarefa 3 — Implementar e testar diagnóstico opt-in da política
+- [ ] Preservar sem alteração a assinatura e o comportamento normal de `get_action_and_value()`.
+- [ ] Adicionar caminho opcional para coletar logits/probabilidades após máscara das cabeças visitadas, máscaras, escolhas condicionais e probabilidades das escolhas.
+- [ ] Evitar amostragem duplicada ou consumo adicional do RNG quando o diagnóstico estiver habilitado.
+- [ ] Testar modo determinístico e estocástico com e sem diagnóstico, usando estados e seeds equivalentes.
+- [ ] Confirmar que ações, log-probabilidade, entropia e valor continuam coerentes e que nenhum peso é alterado.
+- [ ] Medir o custo adicional e permitir desativar o detalhe para sessões longas.
+
+**Critério para encerrar:** testes automatizados demonstram que diagnóstico habilitado não altera a ação nem os pesos e que os dados registrados correspondem às distribuições usadas para escolher a ação.
+
+### Tarefa 4 — Validar esquema e ciclo completo do replay JSONL
+- [ ] Definir versão explícita do esquema, identificador de sessão, sequência monotônica de eventos e metadados de engine/checkpoint/seed.
+- [ ] Registrar snapshots inicial, checkpoints de estado acordados, eventos incrementais e resultado final.
+- [ ] Distinguir proposta, validação, execução confirmada e estado posterior; nunca registrar ação rejeitada como executada.
+- [ ] Implementar gravação incremental e tratamento de erro de escrita sem travar a UI.
+- [ ] Testar gravação, fechamento, reabertura, validação de esquema e reconstrução do estado a partir de snapshot + eventos.
+- [ ] Testar arquivo truncado/corrompido e versão de esquema não suportada, apresentando erro claro em vez de inventar dados.
+
+**Critério para encerrar:** uma sessão real pode ser gravada, fechada e reaberta, reconstruindo os dados registrados sem executar novamente a política.
+
 ## 14. Critérios de aceite
 
 A primeira versão completa será funcional quando:
