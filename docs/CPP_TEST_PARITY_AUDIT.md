@@ -99,3 +99,14 @@ A branch agora contém:
 - As ofertas da loja estão disponíveis no snapshot para diagnóstico, mas a comparação de conteúdo da loja ainda não é assertiva: os motores usam streams de RNG independentes. Para fechar isso, ainda falta o hook de fixture que injeta a mesma oferta nos dois backends e mantém o pool coerente.
 
 O CI deve compilar a nova API e executar esses testes. Até o término da execução, a implementação está **adicionada, mas não validada por build/testes**.
+
+
+### Fixtures determinísticas de loja/economia — implementação
+
+- C++: `set_player_economy_for_testing`, `set_shop_offer_for_testing` e `set_next_shop_roll_for_testing`, expostos pelo binding `tft_engine`.
+- `ShopEngine`: oferta fixa reserva uma cópia do pool e devolve a oferta substituída; a próxima rerrolagem pode consumir uma sequência de cinco IDs definidos pela fixture, com validação de estoque e tentativa de restauração em falha.
+- Python: `UnitPool.take_champion_for_testing` e `ShopManager.set_offer_for_testing` / `set_next_roll_for_testing`, usando o mesmo pool e devoluções pelo ID interno correto.
+- O novo teste `test_shared_shop_and_economy_fixtures_cover_all_seven_actions` executa BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL e PASS numa fase comum; compara recompensas, máscaras, snapshot de estado, ofertas determinísticas e deltas do pool.
+- A suíte também expôs duas discrepâncias de contrato de máscaras: a lobby nativa gerava a máscara auxiliar de destino com semântica diferente da API Python, e a engine de decisão filtrava `available` na loja embora a máscara Python atual não filtre esse campo. Foram alinhadas ao comportamento Python.
+
+**Validação atual:** o CTest já havia passado em uma execução anterior, mas os testes Python falharam antes dessas últimas correções. Um novo workflow foi iniciado após os commits mais recentes; considerar o resultado final desse workflow como a evidência válida.
