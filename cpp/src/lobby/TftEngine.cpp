@@ -1140,7 +1140,8 @@ struct TFTEngine::Impl {
     void append_combat_team(
         std::size_t player_index,
         UnitTeam team,
-        CombatTeam& output
+        CombatTeam& output,
+        int& next_unit_id
     ) const {
         output.team = team;
         output.player_id = static_cast<std::int32_t>(player_index);
@@ -1162,7 +1163,8 @@ struct TFTEngine::Impl {
             const auto& profile = definition->combat_profile;
 
             CombatUnit unit{};
-            unit.id = static_cast<int>(player_index * 100 + slot);
+            // Same deterministic sequential IDs as TFTLobby._build_cpp_combat_input().
+            unit.id = next_unit_id++;
             unit.api_name = definition->api_name;
             unit.name = definition->name;
             unit.star = std::clamp(instance.star, 1, 3);
@@ -1332,13 +1334,18 @@ struct TFTEngine::Impl {
             if (!players[a].alive || !players[b].alive) continue;
             CombatInput input{};
             input.context = CombatContext::PVP;
-            input.seed = seed + static_cast<std::uint64_t>(round + 1) * 1000003ULL
-                + static_cast<std::uint64_t>(a) * 101ULL
-                + static_cast<std::uint64_t>(b) * 1009ULL;
-            input.config.seed = input.seed;
+            // Python TFTLobby sends the lobby seed unchanged for each
+            // deterministic combat; unit IDs are sequential across both teams.
+            input.seed = seed;
+            input.config.seed = seed;
+            input.config.board_rows = 4;
+            input.config.board_cols = 7;
+            input.config.max_duration = 30.0f;
+            input.config.max_events = 100000;
             input.config.deterministic = true;
-            append_combat_team(a, UnitTeam::PLAYER_A, input.player_a);
-            append_combat_team(b, UnitTeam::PLAYER_B, input.player_b);
+            int next_unit_id = 0;
+            append_combat_team(a, UnitTeam::PLAYER_A, input.player_a, next_unit_id);
+            append_combat_team(b, UnitTeam::PLAYER_B, input.player_b, next_unit_id);
 
             const bool empty_a = input.player_a.units.empty();
             const bool empty_b = input.player_b.units.empty();
