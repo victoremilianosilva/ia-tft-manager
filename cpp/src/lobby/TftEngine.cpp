@@ -1904,7 +1904,8 @@ StepResult TFTEngine::step(
             action_reward = success ? 0.02 : -0.10;
             // RewardManager tracks the last rewarded level, initialized to 1,
             // not merely the level at the start of this action.
-            if (success && economy.level > impl_->previous_reward_level[i]) {
+            if (success && economy.level > old_level &&
+                economy.level > impl_->previous_reward_level[i]) {
                 action_reward += reward_model::level(
                     economy.level, impl_->previous_reward_level[i]);
                 impl_->previous_reward_level[i] = economy.level;
