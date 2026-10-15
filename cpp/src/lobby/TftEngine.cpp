@@ -443,6 +443,10 @@ struct TFTEngine::Impl {
         previous_matchups.clear();
         matchmaking_rng.seed(seed + episode_id);
 
+        // Python creates one random cost-1 starter on each player's bench
+        // before rolling that player's shop. Keep the same state transition
+        // and pool accounting in the native lobby.
+        std::mt19937_64 starting_rng(seed + episode_id);
         for (std::size_t i = 0;
              i < kPlayersPerLobby;
              ++i) {
@@ -478,6 +482,13 @@ struct TFTEngine::Impl {
             // interfira no novo episódio.
             // Limpa o histórico da partida, preservando as métricas acumuladas.
             anti_loop_engines[i].reset();
+
+            const auto starting_champion = pool->draw_by_cost(1, starting_rng);
+            if (!starting_champion.has_value()) {
+                throw std::runtime_error(
+                    "UnitPool sem campeao de custo 1 para a unidade inicial.");
+            }
+            benches[i][0] = unit_factory->create(*starting_champion);
 
             shops[i] = std::make_unique<ShopEngine>(
                 *pool,
