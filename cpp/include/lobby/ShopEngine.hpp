@@ -20,6 +20,7 @@ public:
     std::optional<UnitInstance> take_unit(std::int32_t slot) noexcept;
     void return_current_shop();
     void reset();
+    bool set_offer_for_testing(std::int32_t slot, const std::string& champion_api_name);
 
     // Exposto para validação de equivalência com GameConfig.SHOP_ODDS.
     [[nodiscard]] static const std::array<std::array<double, 5>, 10>& odds_by_level();
