@@ -184,6 +184,52 @@ class StrategyManager:
             )
 
         # =========================================================
+        # 🚀 FAST 8
+        # =========================================================
+
+        if (
+            level >= 7
+            and gold >= 30
+            and hp >= 50
+        ):
+
+            strategy = Strategy.FAST8
+
+            reason = (
+                "Economia suficiente para acelerar nível"
+            )
+
+            confidence = 0.75
+
+            return self._apply_strategy(
+                strategy,
+                confidence,
+                reason,
+            )
+        # =========================================================
+        # 🐌 SLOW ROLL
+        # =========================================================
+
+        if (
+            level <= 6
+            and gold >= 30
+            and board_power >= 40
+        ):
+
+            strategy = Strategy.SLOWROLL
+
+            reason = (
+                "Board estável + economia para rolagem"
+            )
+
+            confidence = 0.70
+
+            return self._apply_strategy(
+                strategy,
+                confidence,
+                reason,
+            )
+        # =========================================================
         # 💰 ECONOMIA FORTE
         # =========================================================
 
@@ -207,53 +253,7 @@ class StrategyManager:
                 reason,
             )
 
-        # =========================================================
-        # 🚀 FAST 8
-        # =========================================================
 
-        if (
-            level >= 7
-            and gold >= 30
-            and hp >= 50
-        ):
-
-            strategy = Strategy.FAST8
-
-            reason = (
-                "Economia suficiente para acelerar nível"
-            )
-
-            confidence = 0.75
-
-            return self._apply_strategy(
-                strategy,
-                confidence,
-                reason,
-            )
-
-        # =========================================================
-        # 🐌 SLOW ROLL
-        # =========================================================
-
-        if (
-            level <= 6
-            and gold >= 30
-            and board_power >= 40
-        ):
-
-            strategy = Strategy.SLOWROLL
-
-            reason = (
-                "Board estável + economia para rolagem"
-            )
-
-            confidence = 0.70
-
-            return self._apply_strategy(
-                strategy,
-                confidence,
-                reason,
-            )
 
         # =========================================================
         # 🛡️ ESTABILIZAÇÃO
