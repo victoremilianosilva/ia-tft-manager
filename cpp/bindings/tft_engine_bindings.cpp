@@ -265,11 +265,14 @@ py::list strategies_to_list(
             item["bench_strength"] = 0.0;
             item["active_traits_count"] = 0;
             item["composition_focus"] = "";
+            item["composition_focus_id"] = -1;
             item["composition_direction"] = "";
             item["core_units"] = py::list();
+            item["core_unit_ids"] = py::list();
             item["core_traits"] = py::list();
             item["active_traits"] = py::dict();
             item["unit_counts"] = py::dict();
+            item["unit_counts_by_id"] = py::dict();
         } else {
             const auto& strategy = player_strategies.back();
 
@@ -295,8 +298,10 @@ py::list strategies_to_list(
             item["bench_strength"] = strategy.bench_strength;
             item["active_traits_count"] = strategy.active_traits_count;
             item["composition_focus"] = strategy.composition_focus;
+            item["composition_focus_id"] = strategy.composition_focus_id;
             item["composition_direction"] = strategy.composition_direction;
             item["core_units"] = strategy.core_units;
+            item["core_unit_ids"] = strategy.core_unit_ids;
             item["core_traits"] = strategy.core_traits;
             py::dict active_traits;
             for (const auto& [trait, count] : strategy.active_traits)
@@ -306,6 +311,9 @@ py::list strategies_to_list(
             for (const auto& [unit_id, count] : strategy.unit_counts)
                 unit_counts[py::str(unit_id)] = count;
             item["unit_counts"] = std::move(unit_counts);
+            py::dict unit_counts_by_id;
+            for (const auto& [unit_id, count] : strategy.unit_counts_by_id) unit_counts_by_id[py::int_(unit_id)] = count;
+            item["unit_counts_by_id"] = std::move(unit_counts_by_id);
         }
 
         result.append(std::move(item));
@@ -500,6 +508,10 @@ PYBIND11_MODULE(tft_engine, module) {
                 );
             }
         ).def(
+            "get_unit_comp_score", &TFTEngine::get_unit_comp_score, py::arg("player_id"), py::arg("champion_api_name"), py::arg("star") = 1)
+        .def("is_core_unit", &TFTEngine::is_core_unit, py::arg("player_id"), py::arg("champion_api_name"))
+        .def("is_core_trait", &TFTEngine::is_core_trait, py::arg("player_id"), py::arg("trait"))
+        .def(
             "get_anti_loop_metrics",
             [](const TFTEngine& self) {
                 return anti_loop_to_dict(
