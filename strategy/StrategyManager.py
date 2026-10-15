@@ -184,30 +184,6 @@ class StrategyManager:
             )
 
         # =========================================================
-        # 💰 ECONOMIA FORTE
-        # =========================================================
-
-        if (
-            gold >= 40
-            and level <= 7
-            and hp >= 50
-        ):
-
-            strategy = Strategy.ECON
-
-            reason = (
-                "Economia forte"
-            )
-
-            confidence = 0.85
-
-            return self._apply_strategy(
-                strategy,
-                confidence,
-                reason,
-            )
-
-        # =========================================================
         # 🚀 FAST 8
         # =========================================================
 
@@ -254,6 +230,32 @@ class StrategyManager:
                 confidence,
                 reason,
             )
+
+        # =========================================================
+        # 💰 ECONOMIA FORTE
+        # =========================================================
+
+        if (
+            gold >= 40
+            and level <= 7
+            and hp >= 50
+        ):
+
+            strategy = Strategy.ECON
+
+            reason = (
+                "Economia forte"
+            )
+
+            confidence = 0.85
+
+            return self._apply_strategy(
+                strategy,
+                confidence,
+                reason,
+            )
+
+
 
         # =========================================================
         # 🛡️ ESTABILIZAÇÃO

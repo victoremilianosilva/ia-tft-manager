@@ -238,6 +238,8 @@ class Trainer:
                 print(
                     "✅ Estado do optimizer restaurado."
                 )
+                restored_lr = [float(group["lr"]) for group in self.optimizer.param_groups]
+                print(f"📉 LR efetiva após restaurar optimizer: {restored_lr}")
 
             # --------------------------------------------------------
             # SCHEDULER
@@ -259,6 +261,35 @@ class Trainer:
 
                 print(
                     "✅ Estado do scheduler restaurado."
+                )
+                print(
+                    f"🗓️ Scheduler restaurado | last_epoch={self.scheduler.last_epoch} | "
+                    f"LR atual={[float(group['lr']) for group in self.optimizer.param_groups]}"
+                )
+
+            # --------------------------------------------------------
+            # Controlled LR override (opt-in via TFT_PPO_LR)
+            # --------------------------------------------------------
+            requested_lr = os.getenv("TFT_PPO_LR")
+            if requested_lr:
+                controlled_lr = float(requested_lr)
+                if not np.isfinite(controlled_lr) or controlled_lr <= 0:
+                    raise ValueError("TFT_PPO_LR deve ser um número finito > 0.")
+                for group in self.optimizer.param_groups:
+                    group["lr"] = controlled_lr
+                min_lr = float(os.getenv("TFT_PPO_MIN_LR", str(min(2e-5, controlled_lr))))
+                if not np.isfinite(min_lr) or min_lr < 0 or min_lr > controlled_lr:
+                    raise ValueError("TFT_PPO_MIN_LR deve estar entre 0 e TFT_PPO_LR.")
+                # Reinicia a fase do scheduler para que a curva antiga do
+                # checkpoint não altere silenciosamente o teste controlado.
+                self.scheduler = optim.lr_scheduler.CosineAnnealingLR(
+                    self.optimizer,
+                    T_max=2000,
+                    eta_min=min_lr,
+                )
+                print(
+                    f"🧪 LR controlado via ambiente: lr={controlled_lr:.2e}, "
+                    f"eta_min={min_lr:.2e}"
                 )
 
             # --------------------------------------------------------
@@ -309,6 +340,28 @@ class Trainer:
                     eta_min=5e-5
                 )
             )
+
+            requested_lr = os.getenv("TFT_PPO_LR")
+            if requested_lr:
+                controlled_lr = float(requested_lr)
+                if not np.isfinite(controlled_lr) or controlled_lr <= 0:
+                    raise ValueError("TFT_PPO_LR deve ser um número finito > 0.")
+                for group in self.optimizer.param_groups:
+                    group["lr"] = controlled_lr
+                min_lr = float(os.getenv("TFT_PPO_MIN_LR", str(min(2e-5, controlled_lr))))
+                if not np.isfinite(min_lr) or min_lr < 0 or min_lr > controlled_lr:
+                    raise ValueError("TFT_PPO_MIN_LR deve estar entre 0 e TFT_PPO_LR.")
+                # Reinicia a fase do scheduler para que a curva antiga do
+                # checkpoint não altere silenciosamente o teste controlado.
+                self.scheduler = optim.lr_scheduler.CosineAnnealingLR(
+                    self.optimizer,
+                    T_max=2000,
+                    eta_min=min_lr,
+                )
+                print(
+                    f"🧪 LR controlado via ambiente: lr={controlled_lr:.2e}, "
+                    f"eta_min={min_lr:.2e}"
+                )
 
         # ============================================================
         # 🧠 PPO TRAINER
@@ -1560,18 +1613,25 @@ class Trainer:
             # 📉 SCHEDULER
             # ========================================================
 
+            lr_used_for_update = float(self.optimizer.param_groups[0]["lr"])
+            self.writer.add_scalar(
+                "charts/learning_rate_before_scheduler",
+                lr_used_for_update,
+                update,
+            )
             self.scheduler.step()
 
-            current_lr = (
-                self.optimizer
-                .param_groups[0]["lr"]
-            )
+            current_lrs = [float(group["lr"]) for group in self.optimizer.param_groups]
+            current_lr = current_lrs[0]
 
             self.writer.add_scalar(
                 "charts/learning_rate",
                 current_lr,
                 update
             )
+            self.writer.add_scalar("charts/learning_rate_min", min(current_lrs), update)
+            self.writer.add_scalar("charts/learning_rate_max", max(current_lrs), update)
+            self.writer.add_scalar("ppo/target_kl", float(self.ppo.target_kl), update)
   
             # ========================================================
             # 📊 GENERAL LOGS

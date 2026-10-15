@@ -204,10 +204,12 @@ class PPOTrainer:
             # Approximate KL
             # --------------------------------------------------------
 
+            # Estimador não negativo: E[(r - 1) - log(r)].
+            # Mais estável que mean(old_logprob - new_logprob), que pode
+            # ficar negativo por ruído amostral e mascarar divergência.
             approx_kl = (
-                old_logprobs
-                - new_logprob
-            ).mean()
+                (ratio - 1.0) - logratio
+            ).mean().clamp_min(0.0)
 
             # --------------------------------------------------------
             # Clip fraction
@@ -350,6 +352,21 @@ class PPOTrainer:
                 max_kl = max(max_kl, float(approx_kl.item()))
 
                 # ====================================================
+                # KL EARLY STOP — ANTES DO OPTIMIZER STEP
+                # ====================================================
+                # O minibatch que excede o limite não deve atualizar os pesos.
+                # A checagem ocorre após avaliar a policy atual e antes do backward.
+                if approx_kl.item() > self.target_kl:
+                    stop_early = True
+                    early_stop_triggered = True
+                    early_stop_kl = float(approx_kl.item())
+                    print(
+                        f"🛑 PPO Early Stop | KL={approx_kl.item():.5f} "
+                        f"> {self.target_kl:.5f}; minibatch ignorado"
+                    )
+                    break
+
+                # ====================================================
                 # SEGURANÇA NUMÉRICA
                 # ====================================================
 
@@ -407,23 +424,6 @@ class PPOTrainer:
 
                 total_batches += 1
 
-                # ====================================================
-                # KL EARLY STOP
-                # ====================================================
-
-                if approx_kl.item() > self.target_kl:
-
-                    stop_early = True
-                    early_stop_triggered = True
-                    early_stop_kl = float(approx_kl.item())
-
-                    print(
-                        f"🛑 PPO Early Stop | "
-                        f"KL={approx_kl.item():.5f} "
-                        f"> {self.target_kl:.5f}"
-                    )
-
-                    break
 
         # ============================================================
         # TENSORBOARD
@@ -491,6 +491,7 @@ class PPOTrainer:
 
             self.writer.add_scalar("ppo/approx_kl_max", max_kl, self.update_step)
             self.writer.add_scalar("ppo/target_kl", float(self.target_kl), self.update_step)
+            self.writer.add_scalar("ppo/early_stop_rate", float(early_stop_triggered), self.update_step)
             self.writer.add_scalar("ppo/early_stop", float(early_stop_triggered), self.update_step)
             self.writer.add_scalar("ppo/early_stop_kl", early_stop_kl, self.update_step)
             self.writer.add_scalar("ppo/batches_processed", total_batches, self.update_step)
