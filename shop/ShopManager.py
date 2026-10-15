@@ -111,7 +111,7 @@ class ShopManager:
                     reserved.append(unit)
             except Exception:
                 for unit in reserved:
-                    self.unit_pool.return_unit(unit)
+                    self._return_to_pool(unit)
                 restored = []
                 for old_unit in previous_shop:
                     if old_unit is None:
@@ -147,7 +147,7 @@ class ShopManager:
             return False
         previous = self.shop[slot]
         if previous is not None and not self.unit_pool.return_unit(previous):
-            self.unit_pool.return_unit(unit)
+            self._return_to_pool(unit)
             return False
         self.shop[slot] = unit
         return True
