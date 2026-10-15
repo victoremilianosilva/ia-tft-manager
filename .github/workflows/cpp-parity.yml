@@ -41,7 +41,7 @@ jobs:
 
       - name: Run required cross-language parity suite
         env:
-          PYTHONPATH: ${{ github.workspace }}/cpp/build/bin:${{ github.workspace }}
+          PYTHONPATH: \${{ github.workspace }}/cpp/build/bin:\${{ github.workspace }}
           REQUIRE_CPP_PARITY: "1"
         run: >-
           python -m pytest -q
@@ -76,7 +76,18 @@ jobs:
           tests/test_upgrade_integration.py
           tests/test_engine_backend_selection.py
 
-      - name: Publish native and Python test reports
+      - name: Benchmark full Python engine vs native C++ engine
+        env:
+          PYTHONPATH: \${{ github.workspace }}/cpp/build/bin:\${{ github.workspace }}
+        run: >-
+          python benchmark_engine_python_vs_cpp.py
+          --lobbies 1
+          --steps 100
+          --warmup 10
+          --repeats 2
+          --output artifacts/engine_python_vs_cpp_comparison.json
+
+      - name: Publish native, parity, and benchmark reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
