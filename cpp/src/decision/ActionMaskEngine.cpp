@@ -447,6 +447,11 @@ ActionMaskBatch ActionMaskEngine::generate_masks(
     // --------------------------------------------------------
 
     set_fallback(masks);
+    if (!bench_has_space) {
+        // A full bench makes every shop choice semantically invalid. Do not
+        // restore a dummy shop index that could be mistaken for a valid buy.
+        masks.shop_mask.fill(MASK_DISABLED);
+    }
     return masks;
 }
 
