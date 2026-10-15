@@ -230,7 +230,8 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
                     f"{step['name']}.deterministic_observations{first}: "
                     f"Python={py_deterministic[first]!r}, "
                     f"C++={cpp_deterministic[first]!r}; "
-                    f"total mismatches={len(mismatches)}"
+                    f"total mismatches={len(mismatches)}; "
+                        f"original_indices={deterministic_indices[mismatches[:20, 1]].tolist()}"
                 )
             assert np.isfinite(py_obs_array).all(), f"{step['name']}: Python observation contains NaN/inf"
             assert np.isfinite(cpp_obs_array).all(), f"{step['name']}: C++ observation contains NaN/inf"

@@ -1598,7 +1598,7 @@ class MiniTFTEnv:
 
             positioning[0] = (
                 self.positioning_manager
-                .evaluate_board(
+                .evaluate_board_positioning(
                     self.board_manager.board
                 )
             )
