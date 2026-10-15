@@ -50,3 +50,15 @@ tensorboard --logdir=tft_logs
 ```
 
 Abra http://localhost:6006. Use um novo treino para gerar as novas tags; o CSV antigo não será retroativamente preenchido.
+
+
+## Auditoria do PPO e comparação de versões
+
+- `ppo/approx_kl` usa o estimador `mean((ratio - 1) - logratio)`, limitado inferiormente a zero para evitar KL negativa por ruído de minibatch.
+- O Early Stop é avaliado antes do backward/optimizer step. O minibatch que ultrapassa `target_kl` é descartado, sem atualizar os pesos.
+- `charts/learning_rate` registra a LR efetiva depois do scheduler; a inicialização também imprime a LR restaurada do optimizer e o `last_epoch` do scheduler.
+- `FAST8` e `SLOWROLL` são avaliadas antes da estratégia ECON, para que a regra genérica de economia não capture estados elegíveis para uma estratégia específica.
+
+### Comparação com baseline fixo
+
+Não use as métricas agregadas de uma lobby homogênea como prova de melhoria: com oito agentes da mesma versão, a média de colocação tende a 4,5 e a taxa de vitória a 12,5% por construção. Para comparar versões, use um checkpoint baseline imutável e um checkpoint candidato, coloque ambos na mesma lobby e registre resultado por política, rotação de assentos e número de partidas. O baseline deve permanecer congelado durante a avaliação. O script de avaliação usa um checkpoint explícito como baseline; execute apenas depois de salvar uma cópia do checkpoint que não será sobrescrita pelo treinamento.
