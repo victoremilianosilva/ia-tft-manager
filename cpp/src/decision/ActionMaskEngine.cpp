@@ -243,11 +243,16 @@ ActionMaskBatch ActionMaskEngine::generate_masks(
 
     // Jogador eliminado: somente PASS é uma ação real.
     if (!state.is_alive) {
-        masks.type_mask[
-            static_cast<std::size_t>(ActionType::PASS)
-        ] = MASK_ENABLED;
-
-        set_fallback(masks);
+        // Match TFTLobby._dead_player_mask exactly: only the first entry
+        // is a dummy fallback, including the two conditional matrices.
+        masks.type_mask[static_cast<std::size_t>(ActionType::PASS)] = MASK_ENABLED;
+        masks.shop_mask[0] = MASK_ENABLED;
+        masks.bench_source_mask[0] = MASK_ENABLED;
+        masks.board_target_mask[0] = MASK_ENABLED;
+        masks.board_source_mask[0] = MASK_ENABLED;
+        masks.board_move_target_masks[0][0] = MASK_ENABLED;
+        masks.bench_move_source_mask[0] = MASK_ENABLED;
+        masks.bench_to_board_target_masks[0][0] = MASK_ENABLED;
         return masks;
     }
 
