@@ -192,6 +192,7 @@ struct TFTEngine::Impl {
     std::array<double, kPlayersPerLobby> last_combat_reward{};
     std::array<double, kPlayersPerLobby> round_reward_total{};
     std::array<double, kPlayersPerLobby> total_reward{};
+    std::array<bool, kPlayersPerLobby> placement_reward_given{};
     std::unordered_map<std::string, std::vector<int>> trait_milestones;
     // Same insertion order as UnitManager.get_all_champions() -> traits.
     std::vector<std::string> observation_trait_names;
@@ -1911,6 +1912,30 @@ StepResult TFTEngine::step(
 
         const auto rewards_before_combat = round_rewards;
         impl_->resolve_combats(round_events, round_rewards);
+
+        // TFTLobby aplica a recompensa de colocação uma única vez assim que
+        // a posição do jogador é conhecida (inclusive para eliminados).
+        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+            if (impl_->placement_reward_given[i] ||
+                !impl_->players[i].placement.has_value()) {
+                continue;
+            }
+            const auto placement = *impl_->players[i].placement;
+            if (placement < 1 ||
+                placement > static_cast<std::int32_t>(kPlayersPerLobby)) {
+                throw std::logic_error("Colocacao invalida ao calcular recompensa terminal.");
+            }
+            const double placement_reward = 1.0 - 2.0 *
+                (static_cast<double>(placement - 1) /
+                 static_cast<double>(kPlayersPerLobby - 1));
+            round_rewards[i] += static_cast<float>(placement_reward);
+            impl_->placement_reward_given[i] = true;
+            round_events.emplace_back(
+                "PLACEMENT_REWARD: jogador " + std::to_string(i) +
+                ", colocacao=" + std::to_string(placement) +
+                ", recompensa=" + std::to_string(placement_reward));
+        }
+
         for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
             if (!impl_->players[i].alive) continue;
             round_rewards[i] += static_cast<float>(
