@@ -1554,7 +1554,7 @@ ResetResult TFTEngine::reset(
 
     result.observations = impl_->build_observations();
     result.observation_dim = impl_->observation_dim();
-    result.action_masks = impl_->masks;
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) result.action_masks[i] = impl_->player_envs[i].action_masks;
     result.episode_id = impl_->episode_id;
 
     return result;
