@@ -146,7 +146,7 @@ class ShopManager:
         if unit is None:
             return False
         previous = self.shop[slot]
-        if previous is not None and not self.unit_pool.return_unit(previous):
+        if previous is not None and not self._return_to_pool(previous):
             self._return_to_pool(unit)
             return False
         self.shop[slot] = unit
