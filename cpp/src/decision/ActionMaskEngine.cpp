@@ -260,9 +260,10 @@ ActionMaskBatch ActionMaskEngine::generate_masks(
     for (std::size_t slot = 0; slot < SHOP_SIZE; ++slot) {
         const auto& unit = state.shop[slot];
 
-        // A oferta precisa existir, estar disponível, haver espaço
-        // no banco e o jogador precisa ter ouro suficiente.
-        if (!bench_has_space || !unit.has_value() || !unit->available) {
+        // Paridade com Python: a máscara considera a oferta presente,
+        // espaço no banco e ouro. O flag "available" não é filtrado pela
+        // implementação Python atual e não deve alterar o contrato da máscara.
+        if (!bench_has_space || !unit.has_value()) {
             continue;
         }
 
