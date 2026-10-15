@@ -49,7 +49,15 @@ Escopo: inspeção estática de `cpp/include/combat/*`, `cpp/src/combat/CombatEn
 2. O replay atual compara apenas as features de observação independentes desses sorteios. Bench-role, loja, sinergias e vetor de traits são validados quanto a valores finitos/normalizados, mas ainda não comparados campo a campo em um estado idêntico.
 3. Ainda não há fixture compartilhada com formação controlada para comparar uma vitória/derrota real, dano, eliminação, ranking e recompensa terminal.
 4. Habilidades, itens, traits de combate e modificadores não são aplicados pelo loop atual de `CombatEngine`; o cabeçalho agora documenta essa limitação.
-5. A suíte C++ já chegou a compilar e CTest passou em uma execução, mas o replay cruzado falhou por diferenças de estado inicial/observação. A execução mais recente deve ser consultada antes de considerar a CI verde.
+5. A suíte C++ e o replay cruzado passaram no workflow [C++ engine and cross-language parity](https://github.com/victoremilianosilva/teste-ia/actions/runs/38725932292), no commit `567d537`. O replay é limitado a ações PASS e compara os campos de observação independentes dos sorteios; ainda não prova paridade integral de combate/eliminação/recompensa terminal.
+
+## Última execução de CI observada
+
+- Build de módulos e executáveis nativos: **PASS**.
+- CTest: **16/16 testes PASS**, incluindo o teste novo `test_combat_engine` e o soak test de combate/anti-loop.
+- Replay Python/C++ `tests/test_cross_language_replay.py`: **PASS** para o cenário determinístico de três transições de rodada.
+- O teste cruza recompensas por jogador, recompensa acumulada, dimensões e campos determinísticos de observação, estado público e metadados de rodada.
+- Os campos dependentes do RNG da unidade inicial/loja/sinergias/traits são validados quanto a valores finitos e escala, mas ainda não são comparados entre os backends.
 
 ## Próximo critério de aceite
 
