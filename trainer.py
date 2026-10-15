@@ -1216,9 +1216,18 @@ class Trainer:
                             except (TypeError, ValueError):
                                 continue
                     elif placement_rewards is not None:
-                        values = np.asarray(placement_rewards, dtype=np.float32).reshape(-1)
-                        if values.size == self.PLAYERS_PER_LOBBY and np.any(np.abs(values) > 1e-6):
-                            reward_values = {idx: float(value) for idx, value in enumerate(values)}
+                        placement_reward_array = np.asarray(
+                            placement_rewards,
+                            dtype=np.float32,
+                        ).reshape(-1)
+                        if (
+                            placement_reward_array.size == self.PLAYERS_PER_LOBBY
+                            and np.any(np.abs(placement_reward_array) > 1e-6)
+                        ):
+                            reward_values = {
+                                idx: float(value)
+                                for idx, value in enumerate(placement_reward_array)
+                            }
 
                     # Usa placement_rewards apenas como fallback se ranking/placement
                     # não estiverem disponíveis; não inventa resultados ausentes.
