@@ -1375,6 +1375,11 @@ struct TFTEngine::Impl {
                 events.emplace_back("COMBAT: jogador " + std::to_string(a) +
                     " vs " + std::to_string(b) + ", eventos=" +
                     std::to_string(combat.events_processed));
+                if (combat.timeout) {
+                    events.emplace_back(
+                        "COMBAT_TIMEOUT: resultado parcial aceito para " +
+                        std::to_string(a) + " vs " + std::to_string(b));
+                }
                 if (combat.winner == CombatWinner::PLAYER_A) {
                     winner = a; loser = b;
                     winner_survivors = combat.player_a_survivors;
