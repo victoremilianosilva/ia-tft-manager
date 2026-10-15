@@ -268,6 +268,31 @@ class Trainer:
                 )
 
             # --------------------------------------------------------
+            # Controlled LR override (opt-in via TFT_PPO_LR)
+            # --------------------------------------------------------
+            requested_lr = os.getenv("TFT_PPO_LR")
+            if requested_lr:
+                controlled_lr = float(requested_lr)
+                if not np.isfinite(controlled_lr) or controlled_lr <= 0:
+                    raise ValueError("TFT_PPO_LR deve ser um número finito > 0.")
+                for group in self.optimizer.param_groups:
+                    group["lr"] = controlled_lr
+                self.scheduler.base_lrs = [
+                    controlled_lr for _ in self.optimizer.param_groups
+                ]
+                min_lr = float(os.getenv("TFT_PPO_MIN_LR", str(min(2e-5, controlled_lr))))
+                if not np.isfinite(min_lr) or min_lr < 0 or min_lr > controlled_lr:
+                    raise ValueError("TFT_PPO_MIN_LR deve estar entre 0 e TFT_PPO_LR.")
+                self.scheduler.eta_min = min_lr
+                self.scheduler._last_lr = [
+                    controlled_lr for _ in self.optimizer.param_groups
+                ]
+                print(
+                    f"🧪 LR controlado via ambiente: lr={controlled_lr:.2e}, "
+                    f"eta_min={min_lr:.2e}"
+                )
+
+            # --------------------------------------------------------
             # UPDATE
             # --------------------------------------------------------
 
@@ -315,6 +340,28 @@ class Trainer:
                     eta_min=5e-5
                 )
             )
+
+            requested_lr = os.getenv("TFT_PPO_LR")
+            if requested_lr:
+                controlled_lr = float(requested_lr)
+                if not np.isfinite(controlled_lr) or controlled_lr <= 0:
+                    raise ValueError("TFT_PPO_LR deve ser um número finito > 0.")
+                for group in self.optimizer.param_groups:
+                    group["lr"] = controlled_lr
+                self.scheduler.base_lrs = [
+                    controlled_lr for _ in self.optimizer.param_groups
+                ]
+                min_lr = float(os.getenv("TFT_PPO_MIN_LR", str(min(2e-5, controlled_lr))))
+                if not np.isfinite(min_lr) or min_lr < 0 or min_lr > controlled_lr:
+                    raise ValueError("TFT_PPO_MIN_LR deve estar entre 0 e TFT_PPO_LR.")
+                self.scheduler.eta_min = min_lr
+                self.scheduler._last_lr = [
+                    controlled_lr for _ in self.optimizer.param_groups
+                ]
+                print(
+                    f"🧪 LR controlado via ambiente: lr={controlled_lr:.2e}, "
+                    f"eta_min={min_lr:.2e}"
+                )
 
         # ============================================================
         # 🧠 PPO TRAINER
