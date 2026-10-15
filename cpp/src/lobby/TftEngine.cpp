@@ -41,8 +41,15 @@ namespace tft {
 
 namespace {
 
-constexpr std::size_t kObservationDim = 8;
 constexpr std::uint32_t kRoundsPerStage = 7;
+constexpr std::size_t kCoreObservationDim = 22;
+constexpr std::size_t kBoardObservationDim = kBoardSlots * 5;
+constexpr std::size_t kBenchObservationDim = kBenchSlots * 5;
+constexpr std::size_t kShopObservationDim = kShopSlots * 5;
+constexpr std::size_t kExtraObservationDim = 5;
+constexpr std::size_t kSynergyObservationDim = 5;
+constexpr std::size_t kPositioningObservationDim = 4;
+constexpr std::size_t kCapacityObservationDim = 2;
 
 std::int32_t stage_damage(std::uint32_t stage) noexcept {
     switch (stage) {
@@ -87,19 +94,21 @@ PlayerActionMasks make_default_masks() {
     return masks;
 }
 
-void write_observation(
-    const PlayerInfo& player,
-    std::uint32_t round,
-    float* output
-) {
-    output[0] = player.hp;
-    output[1] = static_cast<float>(player.gold);
-    output[2] = static_cast<float>(player.level);
-    output[3] = static_cast<float>(player.xp);
-    output[4] = player.alive ? 1.0f : 0.0f;
-    output[5] = static_cast<float>(player.wins);
-    output[6] = static_cast<float>(player.losses);
-    output[7] = static_cast<float>(round);
+float role_state_value(std::int32_t role) {
+    switch (role) {
+        case 0: return 0.2f; // tank
+        case 1: return 0.4f; // carry
+        case 2: return 0.6f; // support
+        case 3: return 0.8f; // fighter
+        case 4: return 1.0f; // assassin
+        default: return 0.0f;
+    }
+}
+
+float unit_strength(const ChampionDefinition& def, const UnitInstance& unit) {
+    const float cost = static_cast<float>(def.cost);
+    const float star = static_cast<float>(unit.star);
+    return std::min(1.0f, cost / 5.0f * 0.5f + star / 3.0f * 0.5f);
 }
 
 } // namespace
@@ -184,6 +193,8 @@ struct TFTEngine::Impl {
     std::array<double, kPlayersPerLobby> round_reward_total{};
     std::array<double, kPlayersPerLobby> total_reward{};
     std::unordered_map<std::string, std::vector<int>> trait_milestones;
+    // Same insertion order as UnitManager.get_all_champions() -> traits.
+    std::vector<std::string> observation_trait_names;
 
     explicit Impl(
         std::uint64_t initial_seed,
@@ -198,6 +209,16 @@ struct TFTEngine::Impl {
         catalog = std::make_unique<ChampionCatalog>(
             resolved_path
         );
+
+        for (const auto& champion : catalog->all()) {
+            for (const auto& trait : champion.traits) {
+                if (std::find(observation_trait_names.begin(),
+                              observation_trait_names.end(), trait)
+                    == observation_trait_names.end()) {
+                    observation_trait_names.push_back(trait);
+                }
+            }
+        }
 
         // Usa os mesmos marcos de traits.json que SynergyManager.py,
         // em vez de presumir níveis genéricos 2/4/6 para toda trait.
@@ -482,22 +503,172 @@ struct TFTEngine::Impl {
     // OBSERVAÇÕES
     // ========================================================
 
+    std::size_t observation_dim() const noexcept {
+        return kCoreObservationDim + kBoardObservationDim +
+            kBenchObservationDim + kShopObservationDim +
+            kExtraObservationDim + kSynergyObservationDim +
+            kPositioningObservationDim + observation_trait_names.size() +
+            kCapacityObservationDim;
+    }
+
     std::vector<float> build_observations() const {
-        std::vector<float> observations(
-            kPlayersPerLobby * kObservationDim,
-            0.0f
-        );
+        const auto dim = observation_dim();
+        std::vector<float> observations(kPlayersPerLobby * dim, 0.0f);
 
-        for (std::size_t i = 0;
-             i < kPlayersPerLobby;
-             ++i) {
-            write_observation(
-                players[i],
-                round + 1,
-                observations.data() + i * kObservationDim
-            );
+        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+            float* out = observations.data() + i * dim;
+            const auto& player = players[i];
+            const auto& economy = economies[i];
+            const auto& strategy = strategies[i].empty()
+                ? StrategyInfo{} : strategies[i].back();
+
+            std::array<int, kBoardSlots> board_roles{};
+            std::array<bool, kBoardSlots> board_occupied{};
+            std::array<bool, kBenchSlots> bench_occupied{};
+            std::vector<std::pair<std::string, int>> trait_counts;
+            std::unordered_map<std::string, std::size_t> trait_count_index;
+            int board_count = 0, bench_count = 0, frontline = 0, backline = 0;
+            std::set<int> unique_roles;
+
+            const auto count_traits = [&](const UnitInstance& unit) {
+                const auto* def = catalog->find_by_id(unit.champion_internal_id);
+                if (!def) return;
+                for (const auto& trait : def->traits) {
+                    auto it = trait_count_index.find(trait);
+                    if (it == trait_count_index.end()) {
+                        trait_count_index[trait] = trait_counts.size();
+                        trait_counts.emplace_back(trait, 0);
+                        it = trait_count_index.find(trait);
+                    }
+                    ++trait_counts[it->second].second;
+                }
+            };
+
+            for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+                if (!boards[i][slot]) continue;
+                ++board_count;
+                board_occupied[slot] = true;
+                const auto& unit = *boards[i][slot];
+                const auto* def = catalog->find_by_id(unit.champion_internal_id);
+                if (!def) continue;
+                const int role = std::clamp(def->combat_profile.role, 0, 4);
+                board_roles[slot] = role;
+                unique_roles.insert(role);
+                const int row = static_cast<int>(slot / 7);
+                if (row <= 1) ++frontline;
+                if (row >= 2) ++backline;
+                count_traits(unit);
+            }
+            for (std::size_t slot = 0; slot < kBenchSlots; ++slot) {
+                if (!benches[i][slot]) continue;
+                ++bench_count;
+                bench_occupied[slot] = true;
+                count_traits(*benches[i][slot]);
+            }
+
+            // 1) CORE (same order/scales as MiniTFTEnv._get_state()).
+            std::size_t offset = 0;
+            out[offset++] = player.hp / 100.0f;
+            out[offset++] = static_cast<float>(economy.gold) / 50.0f;
+            out[offset++] = static_cast<float>(economy.level) / 9.0f;
+            out[offset++] = static_cast<float>(economy.xp) /
+                static_cast<float>(std::max(1, economy_engine.get_xp_to_next(economy)));
+            out[offset++] = static_cast<float>(economy.win_streak) / 10.0f;
+            out[offset++] = static_cast<float>(economy.loss_streak) / 10.0f;
+            const float current_round = static_cast<float>(round + 1);
+            out[offset++] = current_round / (current_round + 10.0f);
+            out[offset++] = static_cast<float>(board_count) /
+                static_cast<float>(std::max(1, economy.level));
+            out[offset++] = static_cast<float>(bench_count) / static_cast<float>(kBenchSlots);
+            out[offset++] = 1.0f; // shop vector always contains five slots in Python.
+            for (int s = 0; s < 7; ++s)
+                out[offset++] = strategy.strategy == s ? 1.0f : 0.0f;
+
+            // 2) BOARD: occupied, cost, stars, role, strength per slot.
+            for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+                if (!boards[i][slot]) { offset += 5; continue; }
+                const auto& unit = *boards[i][slot];
+                const auto* def = catalog->find_by_id(unit.champion_internal_id);
+                if (!def) { offset += 5; continue; }
+                out[offset++] = 1.0f;
+                out[offset++] = static_cast<float>(def->cost) / 5.0f;
+                out[offset++] = static_cast<float>(unit.star) / 3.0f;
+                out[offset++] = role_state_value(def->combat_profile.role);
+                out[offset++] = unit_strength(*def, unit);
+            }
+
+            // 3) BENCH.
+            for (std::size_t slot = 0; slot < kBenchSlots; ++slot) {
+                if (!benches[i][slot]) { offset += 5; continue; }
+                const auto& unit = *benches[i][slot];
+                const auto* def = catalog->find_by_id(unit.champion_internal_id);
+                if (!def) { offset += 5; continue; }
+                out[offset++] = 1.0f;
+                out[offset++] = static_cast<float>(def->cost) / 5.0f;
+                out[offset++] = static_cast<float>(unit.star) / 3.0f;
+                out[offset++] = role_state_value(def->combat_profile.role);
+                out[offset++] = unit_strength(*def, unit);
+            }
+
+            // 4) SHOP.
+            for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
+                const auto* unit = shops[i] ? shops[i]->get_unit(static_cast<std::int32_t>(slot)) : nullptr;
+                if (!unit) { offset += 5; continue; }
+                const auto* def = catalog->find_by_id(unit->champion_internal_id);
+                if (!def) { offset += 5; continue; }
+                out[offset++] = 1.0f;
+                out[offset++] = static_cast<float>(def->cost) / 5.0f;
+                out[offset++] = 1.0f;
+                out[offset++] = role_state_value(def->combat_profile.role);
+                out[offset++] = 0.0f; // Python shop strength slot is intentionally zero.
+            }
+
+            // 5) EXTRA.
+            out[offset++] = static_cast<float>(board_count) / static_cast<float>(kBoardSlots);
+            out[offset++] = static_cast<float>(bench_count) / static_cast<float>(kBenchSlots);
+            out[offset++] = static_cast<float>(economy.gold) / 50.0f;
+            out[offset++] = static_cast<float>(economy.level) / 9.0f;
+            out[offset++] = player.hp / 100.0f;
+
+            // 6) SYNERGY: first five active trait counts in insertion order.
+            for (std::size_t n = 0; n < kSynergyObservationDim; ++n) {
+                const float value = n < trait_counts.size()
+                    ? static_cast<float>(trait_counts[n].second) / 5.0f : 0.0f;
+                out[offset++] = std::min(1.0f, value);
+            }
+
+            // 7) POSITIONING. The board evaluator is not exposed in the C++ API;
+            // ratios and role diversity are kept semantically aligned.
+            float positioning_score = 0.0f;
+            if (board_count > 0) {
+                for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+                    if (!boards[i][slot]) continue;
+                    const auto* def = catalog->find_by_id(boards[i][slot]->champion_internal_id);
+                    if (!def) continue;
+                    const int role = std::clamp(def->combat_profile.role, 0, 4);
+                    positioning_score += (role == 0 ? 0.2f : role == 2 ? 0.6f : 0.4f);
+                }
+                positioning_score /= static_cast<float>(board_count);
+            }
+            out[offset++] = positioning_score;
+            out[offset++] = board_count ? static_cast<float>(frontline) / board_count : 0.0f;
+            out[offset++] = board_count ? static_cast<float>(backline) / board_count : 0.0f;
+            out[offset++] = std::min(1.0f, static_cast<float>(unique_roles.size()) / 5.0f);
+
+            // 8) TRAITS: fixed catalog order shared across all players.
+            std::unordered_map<std::string, int> all_trait_counts;
+            for (const auto& entry : trait_counts) all_trait_counts[entry.first] = entry.second;
+            for (const auto& trait : observation_trait_names) {
+                const auto it = all_trait_counts.find(trait);
+                const float value = it == all_trait_counts.end()
+                    ? 0.0f : static_cast<float>(it->second) / 5.0f;
+                out[offset++] = std::min(1.0f, value);
+            }
+
+            // 9) CAPACITY.
+            out[offset++] = static_cast<float>(std::max(0, economy.level - board_count)) / 9.0f;
+            out[offset++] = static_cast<float>(kBenchSlots - bench_count) / 9.0f;
         }
-
         return observations;
     }
 
@@ -1283,7 +1454,7 @@ ResetResult TFTEngine::reset(
     ResetResult result{};
 
     result.observations = impl_->build_observations();
-    result.observation_dim = kObservationDim;
+    result.observation_dim = impl_->observation_dim();
     result.action_masks = impl_->masks;
     result.episode_id = impl_->episode_id;
 
@@ -2027,7 +2198,7 @@ PublicState TFTEngine::get_public_state() const {
 // ============================================================
 
 std::size_t TFTEngine::observation_dim() const noexcept {
-    return kObservationDim;
+    return impl_ ? impl_->observation_dim() : 0;
 }
 
 // ============================================================
