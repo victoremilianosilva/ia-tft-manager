@@ -2266,6 +2266,61 @@ bool TFTEngine::set_unit_for_testing(
     return true;
 }
 
+bool TFTEngine::set_player_economy_for_testing(
+    std::int32_t player_id, std::int32_t gold,
+    std::int32_t level, std::int32_t xp
+) {
+    if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
+    impl_->ensure_open();
+    if (player_id < 0 || static_cast<std::size_t>(player_id) >= kPlayersPerLobby ||
+        gold < 0 || level < 1 || level > EconomyEngine::MAX_LEVEL || xp < 0)
+        return false;
+    auto& player = impl_->player_envs[static_cast<std::size_t>(player_id)];
+    player.economy.gold = gold;
+    player.economy.level = level;
+    player.economy.xp = xp;
+    impl_->refresh_masks(static_cast<std::size_t>(player_id));
+    return true;
+}
+
+bool TFTEngine::set_shop_offer_for_testing(
+    std::int32_t player_id, std::int32_t slot,
+    const std::string& champion_api_name
+) {
+    if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
+    impl_->ensure_open();
+    if (player_id < 0 || static_cast<std::size_t>(player_id) >= kPlayersPerLobby ||
+        slot < 0 || static_cast<std::size_t>(slot) >= kShopSlots)
+        return false;
+    const auto* definition = impl_->catalog->find_by_api_name(champion_api_name);
+    if (!definition) return false;
+    auto& player = impl_->player_envs[static_cast<std::size_t>(player_id)];
+    auto unit = impl_->unit_factory->create(definition->internal_id);
+    if (!player.shop->set_offer_for_testing(slot, std::move(unit))) return false;
+    impl_->refresh_masks(static_cast<std::size_t>(player_id));
+    return true;
+}
+
+bool TFTEngine::set_next_shop_roll_for_testing(
+    std::int32_t player_id,
+    const std::vector<std::string>& champion_api_names
+) {
+    if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
+    impl_->ensure_open();
+    if (player_id < 0 || static_cast<std::size_t>(player_id) >= kPlayersPerLobby ||
+        champion_api_names.size() != kShopSlots)
+        return false;
+    std::vector<std::int32_t> ids;
+    ids.reserve(kShopSlots);
+    for (const auto& name : champion_api_names) {
+        const auto* definition = impl_->catalog->find_by_api_name(name);
+        if (!definition) return false;
+        ids.push_back(definition->internal_id);
+    }
+    auto& player = impl_->player_envs[static_cast<std::size_t>(player_id)];
+    return player.shop->set_next_roll_for_testing(ids);
+}
+
 bool TFTEngine::set_player_alive_for_testing(
     std::int32_t player_id,
     bool alive
