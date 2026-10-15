@@ -565,6 +565,20 @@ def test_shared_shop_and_economy_fixtures_cover_all_seven_actions():
         for player in python_lobby.players:
             player.env._rebuild_player_state()
 
+        # Align all five current offers for player 1 too, so reroll pool
+        # deltas are compared from the same pre-transition inventory.
+        py_old_shop = python_lobby.players[1].env.shop_manager.get_shop()
+        cpp_old_shop = cpp_engine.get_audit_snapshot()["players"][1]["shop"]
+        for slot, old_unit in enumerate(py_old_shop):
+            if old_unit is None:
+                continue
+            old_name = old_unit.get("apiName") or old_unit.get("api_name") or old_unit.get("champion_id")
+            if cpp_old_shop[slot]["occupied"] and cpp_old_shop[slot]["champion_id"] == old_name:
+                continue
+            assert cpp_engine.set_shop_offer_for_testing(1, slot, old_name), (
+                "Could not synchronize pre-reroll native offer slot %d" % slot
+            )
+
         assert python_lobby.players[1].env.shop_manager.set_next_roll_for_testing(names)
         assert cpp_engine.set_next_shop_roll_for_testing(1, names)
 
@@ -590,6 +604,14 @@ def test_shared_shop_and_economy_fixtures_cover_all_seven_actions():
             [6, 0, 0, 0, 0, 0],
             [6, 0, 0, 0, 0, 0],
         ]
+
+        # Capture stock deltas for the forced reroll champions. Absolute pool
+        # counts can differ from reset because the two RNG implementations are
+        # intentionally independent; transition deltas must still match.
+        unit_manager = python_lobby.players[0].env.unit_manager
+        pool_ids = [unit_manager.get_unit_id(champion) for champion in champions[:5]]
+        py_pool_before = [python_lobby.unit_pool.get_available(unit_id) for unit_id in pool_ids]
+        cpp_pool_before = [cpp_engine.pool_available(unit_id) for unit_id in pool_ids]
 
         # The chosen actions must be legal in both engines before execution.
         py_masks = python_lobby.get_action_masks()
@@ -632,6 +654,11 @@ def test_shared_shop_and_economy_fixtures_cover_all_seven_actions():
         # Economy side effects are checked explicitly as a readable contract.
         py_gold = [player.env.economy_manager.gold for player in python_lobby.players]
         cpp_gold = [player["gold"] for player in cpp_snapshot["players"]]
+        py_pool_after = [python_lobby.unit_pool.get_available(unit_id) for unit_id in pool_ids]
+        cpp_pool_after = [cpp_engine.pool_available(unit_id) for unit_id in pool_ids]
+        assert [after - before for before, after in zip(py_pool_before, py_pool_after)] == [
+            after - before for before, after in zip(cpp_pool_before, cpp_pool_after)
+        ], "Python/C++ global pool deltas diverged during deterministic reroll and sell"
         assert py_gold == cpp_gold
         assert py_gold[0] == 30 - int(champions[0]["cost"])
         assert py_gold[1] == 28
