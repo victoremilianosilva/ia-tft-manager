@@ -71,6 +71,13 @@ inline double board(int occupied, int total_slots) noexcept {
         static_cast<double>(total_slots) * 0.15;
 }
 
+inline double placement(int placement, int total_players) noexcept {
+    if (total_players <= 1) return 0.0;
+    return 1.0 - 2.0 *
+        (static_cast<double>(placement - 1) /
+         static_cast<double>(total_players - 1));
+}
+
 inline double clamp_total(double total) noexcept {
     return std::clamp(total, -5.0, 5.0);
 }
