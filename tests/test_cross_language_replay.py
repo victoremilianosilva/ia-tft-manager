@@ -252,6 +252,8 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
             # StrategyManager for each live player after every transition.
             cpp_strategies = cpp_engine.get_strategies()
             for player_id, player in enumerate(python_lobby.players):
+                if not player.alive:
+                    continue
                 env = player.env
                 manager = env.strategy_manager
                 economy = env.economy_manager
