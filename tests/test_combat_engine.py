@@ -8,11 +8,16 @@ import pytest
 # ============================================================
 
 ROOT = Path(__file__).resolve().parent.parent
-BUILD_DIR = ROOT / "cpp" / "build" / "bin" / "Release"
+BUILD_DIRS = [
+    ROOT / "cpp" / "build" / "bin",
+    ROOT / "cpp" / "build" / "bin" / "Release",
+]
+BUILD_DIR = next((path for path in BUILD_DIRS if path.exists()), None)
 
-if not BUILD_DIR.exists():
+if BUILD_DIR is None:
     pytest.fail(
-        f"Diretório do motor C++ não encontrado: {BUILD_DIR}",
+        "Diretório do motor C++ não encontrado. Caminhos verificados: "
+        + ", ".join(str(path) for path in BUILD_DIRS),
         pytrace=False,
     )
 
