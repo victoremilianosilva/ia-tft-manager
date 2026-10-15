@@ -30,7 +30,7 @@ jobs:
       - name: Run native CTest suite
         run: ctest --test-dir cpp/build --output-on-failure
 
-      - name: Run cross-language replay
+      - name: Run combat, lobby, reward and cross-language regression suites
         env:
           PYTHONPATH: ${{ github.workspace }}/cpp/build/bin:${{ github.workspace }}
         run: >-
@@ -46,6 +46,7 @@ jobs:
           tests/test_integracao_combate_cpp.py
           tests/test_lobby_combat_regression.py
           tests/test_reward_integration.py
+          tests/test_reward_cpp_parity.py
           tests/test_round_economy_combat_flow.py
           tests/test_tft_engine_api.py
           tests/test_lobby_end_to_end.py
