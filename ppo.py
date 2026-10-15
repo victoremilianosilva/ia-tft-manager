@@ -297,6 +297,10 @@ class PPOTrainer:
         mean_kl = 0.0
         mean_clipfrac = 0.0
         mean_ratio = 0.0
+        max_kl = 0.0
+        early_stop_kl = 0.0
+        early_stop_triggered = False
+        epochs_started = 0
 
         total_batches = 0
 
@@ -310,6 +314,7 @@ class PPOTrainer:
 
             if stop_early:
                 break
+            epochs_started = epoch + 1
 
             for batch in rollout.get_batches(
                 batch_size=batch_size,
@@ -341,6 +346,8 @@ class PPOTrainer:
 
                     batch["masks"]
                 )
+
+                max_kl = max(max_kl, float(approx_kl.item()))
 
                 # ====================================================
                 # SEGURANÇA NUMÉRICA
@@ -407,6 +414,8 @@ class PPOTrainer:
                 if approx_kl.item() > self.target_kl:
 
                     stop_early = True
+                    early_stop_triggered = True
+                    early_stop_kl = float(approx_kl.item())
 
                     print(
                         f"🛑 PPO Early Stop | "
@@ -480,6 +489,13 @@ class PPOTrainer:
                 self.update_step
             )
 
+            self.writer.add_scalar("ppo/approx_kl_max", max_kl, self.update_step)
+            self.writer.add_scalar("ppo/target_kl", float(self.target_kl), self.update_step)
+            self.writer.add_scalar("ppo/early_stop", float(early_stop_triggered), self.update_step)
+            self.writer.add_scalar("ppo/early_stop_kl", early_stop_kl, self.update_step)
+            self.writer.add_scalar("ppo/batches_processed", total_batches, self.update_step)
+            self.writer.add_scalar("ppo/epochs_started", epochs_started, self.update_step)
+
             # --------------------------------------------------------
             # SELF-PLAY / ROLLOUT
             # --------------------------------------------------------
@@ -543,3 +559,11 @@ class PPOTrainer:
         # ============================================================
 
         self.update_step += 1
+        return {
+            "approx_kl_mean": mean_kl,
+            "approx_kl_max": max_kl,
+            "early_stop": early_stop_triggered,
+            "early_stop_kl": early_stop_kl,
+            "batches_processed": total_batches,
+            "epochs_started": epochs_started,
+        }
