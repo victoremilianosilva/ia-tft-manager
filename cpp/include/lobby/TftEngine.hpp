@@ -251,6 +251,10 @@ struct StepResult {
     std::size_t observation_dim{0};
 
     std::array<float, kPlayersPerLobby> rewards{};
+    // Componentes expostos separadamente para auditoria de paridade.
+    std::array<float, kPlayersPerLobby> action_rewards{};
+    std::array<float, kPlayersPerLobby> combat_rewards{};
+    std::array<float, kPlayersPerLobby> placement_rewards{};
     std::array<std::uint8_t, kPlayersPerLobby> dones{};
 
     std::array<PlayerActionMasks, kPlayersPerLobby>
