@@ -447,6 +447,13 @@ if(BUILD_TESTING)
 
     configure_tft_module(test_tft_engine_pool)
 
+    # CombatEngine.cpp includes "CombatEngine.hpp" without the combat/ prefix.
+    target_include_directories(
+        test_tft_engine_pool
+        PRIVATE
+            "${TFT_COMBAT_INCLUDE_DIR}"
+    )
+
     target_link_libraries(
         test_tft_engine_pool
         PRIVATE nlohmann_json::nlohmann_json
