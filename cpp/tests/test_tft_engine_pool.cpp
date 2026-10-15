@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
         for (auto& action : invalid_actions) {
             action.values = {6, 0, 0, 0, 0, 0};
         }
-        invalid_actions[0].values = {5, 0, 0, 0, 0, 0}; // Banco vazio.
+        invalid_actions[0].values = {5, 0, 8, 0, 0, 0}; // Slot vazio; slot 0 contém a unidade inicial.
 
         bool invalid_sell_rejected = false;
         try {
