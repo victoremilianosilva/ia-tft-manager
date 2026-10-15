@@ -595,6 +595,8 @@ struct TFTEngine::Impl {
             out[offset++] = 1.0f; // shop vector always contains five slots in Python.
             for (int s = 0; s < 7; ++s)
                 out[offset++] = strategy.strategy == s ? 1.0f : 0.0f;
+            // Python's 22-wide core reserves five trailing zero features.
+            offset = kCoreObservationDim;
 
             // 2) BOARD: occupied, cost, stars, role, strength per slot.
             for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
