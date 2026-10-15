@@ -8,7 +8,7 @@ O replay cruzado é executado com bindings nativos obrigatórios no CI. Ele comp
 
 # Documentação da Engine de Decisão TFT
 
-Esta pasta documenta a migração gradual de Action Masks e consultas AntiLoop de Python para C++. A política PPO, o treinamento, o estado oficial e a execução das ações permanecem em Python.
+Os documentos abaixo foram escritos durante a fase inicial da migração de Action Masks/AntiLoop e alguns descrevem a arquitetura planejada naquela época. Para a arquitetura executada atualmente, consulte também `cpp/include/lobby/TftEngine.hpp`, `cpp/src/lobby/TftEngine.cpp`, `cpp/bindings/tft_engine_bindings.cpp` e a auditoria da Etapa 4. Quando houver divergência entre documento histórico e código atual, confirme o comportamento nos testes e atualize o contrato antes de declarar paridade.
 
 ## Comece por aqui
 
