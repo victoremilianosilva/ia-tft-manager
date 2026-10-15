@@ -140,8 +140,6 @@ struct TFTEngine::Impl {
         double total_reward{0.0};
         bool placement_reward_given{false};
 
-        // Executa a transição individual. A lobby fornece os serviços globais
-        // compartilhados, mas não precisa mais conter o loop de ação de cada jogador.
         bool step(
             TFTEngine::Impl& lobby,
             std::size_t player_id,
@@ -1571,103 +1569,10 @@ bool TFTEngine::Impl::PlayerEnv::step(
                                     this->bench[slot]->star == star)
                                     matches.emplace_back(false, slot);
                             }
-                            for (std::size_t slot = 0; slot < kBoard    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
-        if (!impl_->player_envs[i].step(
-                *impl_, i, actions[i], round_rewards, action_rewards)) {
-            continue;
-        }
-
-        // A lobby mantém apenas a sincronização entre ambientes e a barreira global.
-        impl_->sync_player_economy(i);
-        impl_->refresh_masks(i);
-        impl_->mark_round_completion(i, actions[i].values[0]);
-    }rewards{};
-    std::array<float, kPlayersPerLobby> combat_rewards{};
-    std::array<float, kPlayersPerLobby> placement_rewards{};
-    for (std::size_t i = 0;
-         i < kPlayersPerLobby;
-         ++i) {
-        const auto& action = actions[i].values;
-
-        const auto type = action[0];
-
-        const auto shop_slot = action[1];
-
-        auto& economy = impl_->player_envs[i].economy;
-        auto& shop = *impl_->player_envs[i].shop;
-        const auto old_gold = economy.gold;
-        const auto old_level = economy.level;
-        const auto old_xp = economy.xp;
-        int old_board_count = 0, old_bench_count = 0;
-        bool sold_core_unit = false;
-        bool bought_unit_successfully = false;
-        bool bought_upgrade = false;
-        std::array<std::string, kBoardSlots> old_board_layout{};
-        for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
-            if (impl_->player_envs[i].board[slot]) {
-                ++old_board_count;
-                old_board_layout[slot] = impl_->player_envs[i].board[slot]->uuid;
-            }
-        }
-        for (const auto& unit : impl_->player_envs[i].bench) if (unit) ++old_bench_count;
-
-        if (!impl_->player_envs[i].info.alive) {
-            impl_->refresh_masks(i);
-            continue;
-        }
-
-        if (type == 0) {
-            // BUY
-            const auto* offer = shop.get_unit(shop_slot);
-
-            std::size_t free_slot = kBenchSlots;
-
-            for (std::size_t slot = 0;
-                 slot < kBenchSlots;
-                 ++slot) {
-                if (!impl_->player_envs[i].bench[slot]) {
-                    free_slot = slot;
-                    break;
-                }
-            }
-
-            if (offer && free_slot < kBenchSlots) {
-                const auto* definition =
-                    impl_->catalog->find_by_id(
-                        offer->champion_internal_id
-                    );
-
-                if (definition &&
-                    economy.gold >= definition->cost &&
-                    impl_->economy_engine.spend_gold(
-                        economy,
-                        definition->cost
-                    )) {
-                    auto purchased =
-                        shop.take_unit(shop_slot);
-
-                    if (purchased) {
-                        bought_unit_successfully = true;
-                        impl_->player_envs[i].bench[free_slot] = std::move(*purchased);
-
-                        // Auto-upgrade 3x1★ -> 2★ e 3x2★ -> 3★.
-                        // O pool não muda: as cópias continuam pertencendo ao jogador.
-                        auto& bought_unit = impl_->player_envs[i].bench[free_slot];
-                        while (bought_unit && bought_unit->star < 3) {
-                            const auto champion_id = bought_unit->champion_internal_id;
-                            const auto star = bought_unit->star;
-                            std::vector<std::pair<bool, std::size_t>> matches;
-                            matches.emplace_back(false, free_slot);
-                            for (std::size_t slot = 0; slot < kBenchSlots; ++slot) {
-                                if (slot != free_slot && impl_->player_envs[i].bench[slot] &&
-                                    impl_->player_envs[i].bench[slot]->champion_internal_id == champion_id &&
-                                    impl_->player_envs[i].bench[slot]->star == star)
-                                    matches.emplace_back(false, slot);
-                            }
                             for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
-                                if (impl_->player_envs[i].board[slot] &&
-                                    impl_->player_envs[i].board[slot]->champion_internal_id == champion_id &&
-                                    impl_->player_envs[i].board[slot]->star == star)
+                                if (this->board[slot] &&
+                                    this->board[slot]->champion_internal_id == champion_id &&
+                                    this->board[slot]->star == star)
                                     matches.emplace_back(true, slot);
                             }
                             if (matches.size() < 3) break;
@@ -1675,15 +1580,15 @@ bool TFTEngine::Impl::PlayerEnv::step(
                             std::size_t removed = 0;
                             for (const auto& [on_board, slot] : matches) {
                                 if (!on_board && slot == free_slot) continue;
-                                if (on_board) impl_->player_envs[i].board[slot].reset();
-                                else impl_->player_envs[i].bench[slot].reset();
+                                if (on_board) this->board[slot].reset();
+                                else this->bench[slot].reset();
                                 if (++removed == 2) break;
                             }
                             bought_unit->star = star + 1;
                         }
-                        impl_->register_position_state(i);
+                        lobby.register_position_state(player_id);
                     } else {
-                        impl_->economy_engine.add_gold(
+                        lobby.economy_engine.add_gold(
                             economy,
                             definition->cost
                         );
@@ -1692,7 +1597,7 @@ bool TFTEngine::Impl::PlayerEnv::step(
             }
         } else if (type == 1) {
             // REROLL
-            if (impl_->economy_engine.spend_gold(
+            if (lobby.economy_engine.spend_gold(
                     economy,
                     EconomyEngine::REROLL_COST
                 )) {
@@ -1700,10 +1605,10 @@ bool TFTEngine::Impl::PlayerEnv::step(
             }
         } else if (type == 2) {
             // BUY XP
-            (void)impl_->economy_engine.buy_xp(economy);
+            (void)lobby.economy_engine.buy_xp(economy);
         } else if (type == 3) {
             // MOVE_BENCH: banco -> tabuleiro
-            auto& anti_loop = impl_->player_envs[i].anti_loop;
+            auto& anti_loop = this->anti_loop;
 
             anti_loop.record_execution_attempt();
 
@@ -1711,7 +1616,7 @@ bool TFTEngine::Impl::PlayerEnv::step(
             const auto target = action[3];
 
             const auto state =
-                impl_->build_decision_state(i);
+                lobby.build_decision_state(player_id);
 
             const auto validation =
                 decision::MoveValidator::validate_bench_to_board_move(
@@ -1761,21 +1666,21 @@ bool TFTEngine::Impl::PlayerEnv::step(
                         unit_identity
                     );
 
-                    impl_->player_envs[i].board[target_index] =
+                    this->board[target_index] =
                         std::move(
-                            impl_->player_envs[i].bench[source_index]
+                            this->bench[source_index]
                         );
 
-                    impl_->player_envs[i].bench[source_index].reset();
+                    this->bench[source_index].reset();
 
                     anti_loop.record_successful_move(move_type);
 
-                    impl_->register_position_state(i);
+                    lobby.register_position_state(player_id);
                 }
             }
         } else if (type == 4) {
             // MOVE_BOARD: movimento ou troca
-            auto& anti_loop = impl_->player_envs[i].anti_loop;
+            auto& anti_loop = this->anti_loop;
 
             anti_loop.record_execution_attempt();
 
@@ -1783,7 +1688,7 @@ bool TFTEngine::Impl::PlayerEnv::step(
             const auto target = action[5];
 
             const auto state =
-                impl_->build_decision_state(i);
+                lobby.build_decision_state(player_id);
 
             const auto validation =
                 decision::MoveValidator::validate_board_move(
@@ -1838,21 +1743,21 @@ bool TFTEngine::Impl::PlayerEnv::step(
 
                     if (move_type == "board_swap") {
                         std::swap(
-                            impl_->player_envs[i].board[source_index],
-                            impl_->player_envs[i].board[target_index]
+                            this->board[source_index],
+                            this->board[target_index]
                         );
                     } else {
-                        impl_->player_envs[i].board[target_index] =
+                        this->board[target_index] =
                             std::move(
-                                impl_->player_envs[i].board[source_index]
+                                this->board[source_index]
                             );
 
-                        impl_->player_envs[i].board[source_index].reset();
+                        this->board[source_index].reset();
                     }
 
                     anti_loop.record_successful_move(move_type);
 
-                    impl_->register_position_state(i);
+                    lobby.register_position_state(player_id);
                 }
             }
         } else if (type == 5) {
@@ -1861,18 +1766,18 @@ bool TFTEngine::Impl::PlayerEnv::step(
                 static_cast<std::size_t>(action[2]);
 
             if (bench_slot < kBenchSlots &&
-                impl_->player_envs[i].bench[bench_slot]) {
+                this->bench[bench_slot]) {
                 const auto& unit =
-                    *impl_->player_envs[i].bench[bench_slot];
+                    *this->bench[bench_slot];
 
                 const auto* definition =
-                    impl_->catalog->find_by_id(
+                    lobby.catalog->find_by_id(
                         unit.champion_internal_id
                     );
 
                 if (definition) {
-                    if (!impl_->player_envs[i].strategy.empty()) {
-                        const auto& core_units = impl_->player_envs[i].strategy.back().core_units;
+                    if (!this->strategy.empty()) {
+                        const auto& core_units = this->strategy.back().core_units;
                         sold_core_unit = std::find(
                             core_units.begin(), core_units.end(), unit.champion_id
                         ) != core_units.end();
@@ -1889,18 +1794,18 @@ bool TFTEngine::Impl::PlayerEnv::step(
                     const auto copies = star_copies(unit.star);
                     std::int32_t returned = 0;
                     for (; returned < copies; ++returned) {
-                        if (!impl_->pool->give_back(unit.champion_internal_id)) {
+                        if (!lobby.pool->give_back(unit.champion_internal_id)) {
                             returned_all_copies = false;
                             break;
                         }
                     }
                     if (returned_all_copies) {
-                        impl_->player_envs[i].bench[bench_slot].reset();
-                        (void)impl_->economy_engine.add_gold(economy, sell_value);
-                        impl_->register_position_state(i);
+                        this->bench[bench_slot].reset();
+                        (void)lobby.economy_engine.add_gold(economy, sell_value);
+                        lobby.register_position_state(player_id);
                     } else {
                         for (std::int32_t copy = 0; copy < returned; ++copy)
-                            (void)impl_->pool->take(unit.champion_internal_id);
+                            (void)lobby.pool->take(unit.champion_internal_id);
                     }
                 }
             }
@@ -1908,10 +1813,10 @@ bool TFTEngine::Impl::PlayerEnv::step(
             // PASS
         }
 
-        impl_->sync_player_economy(i);
+        lobby.sync_player_economy(player_id);
         int new_board_count = 0, new_bench_count = 0;
-        for (const auto& unit : impl_->player_envs[i].board) if (unit) ++new_board_count;
-        for (const auto& unit : impl_->player_envs[i].bench) if (unit) ++new_bench_count;
+        for (const auto& unit : this->board) if (unit) ++new_board_count;
+        for (const auto& unit : this->bench) if (unit) ++new_bench_count;
 
         // Alinhado a RewardManager.calculate_action_reward() e aos valores
         // usados em env.py para compra, reroll e XP.
@@ -1933,18 +1838,18 @@ bool TFTEngine::Impl::PlayerEnv::step(
             // RewardManager tracks the last rewarded level, initialized to 1,
             // not merely the level at the start of this action.
             if (success && economy.level > old_level &&
-                economy.level > impl_->player_envs[i].previous_reward_level) {
+                economy.level > this->previous_reward_level) {
                 action_reward += reward_model::level(
-                    economy.level, impl_->player_envs[i].previous_reward_level);
-                impl_->player_envs[i].previous_reward_level = economy.level;
+                    economy.level, this->previous_reward_level);
+                this->previous_reward_level = economy.level;
             }
             (void)old_level;
             (void)old_xp;
         } else if (type == 3 || type == 4) {
             bool board_layout_changed = false;
             for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
-                const std::string current_uuid = impl_->player_envs[i].board[slot]
-                    ? impl_->player_envs[i].board[slot]->uuid : std::string{};
+                const std::string current_uuid = this->board[slot]
+                    ? this->board[slot]->uuid : std::string{};
                 if (current_uuid != old_board_layout[slot]) {
                     board_layout_changed = true;
                     break;
@@ -1954,7 +1859,7 @@ bool TFTEngine::Impl::PlayerEnv::step(
                                 : new_board_count > old_board_count;
             action_reward = success ? (type == 4 ? 0.02 : 0.0) : -0.10;
             if (type == 3 && success)
-                action_reward += impl_->positioning_score(i) * 0.05;
+                action_reward += lobby.positioning_score(player_id) * 0.05;
         } else if (type == 5) {
             success = economy.gold > old_gold;
             action_reward = success ? (sold_core_unit ? -0.15 : 0.05) : -0.10;
@@ -1965,15 +1870,147 @@ bool TFTEngine::Impl::PlayerEnv::step(
         // MiniTFTEnv.step() returns the action-specific reward directly.
         // RewardManager's broader state components are not called by the
         // Python environment, so applying them here would change PPO targets.
-        action_rewards[i] = static_cast<float>(action_reward);
-        round_rewards[i] += action_rewards[i];
-        impl_->player_envs[i].round_reward_total = round_rewards[i];
-        impl_->player_envs[i].total_reward += round_rewards[i];
-        impl_->update_strategy(i);
+        action_rewards[player_id] = static_cast<float>(action_reward);
+        round_rewards[player_id] += action_rewards[player_id];
+        this->round_reward_total = round_rewards[player_id];
+        this->total_reward += round_rewards[player_id];
+        lobby.update_strategy(player_id);
+    return true;
+}
 
+// ============================================================
+// CONSTRUTOR E DESTRUTOR
+// ============================================================
+
+TFTEngine::TFTEngine(
+    std::uint64_t seed,
+    std::string catalog_path
+)
+    : impl_(
+        std::make_unique<Impl>(seed, catalog_path)
+    ) {
+}
+
+TFTEngine::~TFTEngine() = default;
+
+TFTEngine::TFTEngine(TFTEngine&&) noexcept = default;
+
+TFTEngine& TFTEngine::operator=(TFTEngine&&) noexcept = default;
+
+// ============================================================
+// RESET
+// ============================================================
+
+ResetResult TFTEngine::reset(
+    std::optional<std::uint64_t> seed
+) {
+    if (!impl_) {
+        throw std::runtime_error(
+            "TFTEngine nao possui estado interno."
+        );
+    }
+
+    impl_->ensure_open();
+
+    if (seed.has_value()) {
+        impl_->seed = *seed;
+    }
+
+    ++impl_->episode_id;
+
+    impl_->round = 0;
+    impl_->stage = 1;
+    impl_->done = false;
+    impl_->winner_id = std::nullopt;
+    impl_->ranking.clear();
+    impl_->previous_matchups.clear();
+    impl_->matchmaking_rng.seed(impl_->seed + impl_->episode_id);
+
+    // Devolve as ofertas antes de restaurar o pool.
+    for (auto& player_env : impl_->player_envs) {
+        auto& shop = player_env.shop;
+        if (shop) {
+            shop->return_current_shop();
+        }
+
+        shop.reset();
+    }
+
+    impl_->pool->reset();
+
+    impl_->unit_factory =
+        std::make_unique<UnitInstanceFactory>(
+            *impl_->catalog,
+            impl_->seed
+        );
+
+    impl_->initialize_players();
+    for (auto& player_env : impl_->player_envs) player_env.previous_board_power = 0.0;
+    for (auto& player_env : impl_->player_envs) player_env.previous_synergy_score = 0.0;
+    for (auto& player_env : impl_->player_envs) player_env.previous_positioning_score = 0.0;
+    for (auto& player_env : impl_->player_envs) player_env.previous_reward_level = 1;
+    for (auto& player_env : impl_->player_envs) player_env.last_combat_reward = 0.0;
+    for (auto& player_env : impl_->player_envs) player_env.round_reward_total = 0.0;
+    for (auto& player_env : impl_->player_envs) player_env.total_reward = 0.0;
+    for (auto& player_env : impl_->player_envs) player_env.placement_reward_given = false;
+
+    ResetResult result{};
+
+    result.observations = impl_->build_observations();
+    result.observation_dim = impl_->observation_dim();
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) result.action_masks[i] = impl_->player_envs[i].action_masks;
+    result.episode_id = impl_->episode_id;
+
+    return result;
+}
+
+// ============================================================
+// STEP
+// ============================================================
+
+StepResult TFTEngine::step(
+    const std::array<PlayerAction, kPlayersPerLobby>& actions
+) {
+    if (!impl_) {
+        throw std::runtime_error(
+            "TFTEngine nao possui estado interno."
+        );
+    }
+
+    impl_->ensure_open();
+
+    if (impl_->done) {
+        throw std::runtime_error(
+            "A partida ja foi encerrada. Execute reset()."
+        );
+    }
+
+    // Preflight em duas fases: valida limites e disponibilidade semântica
+    // de todas as ações antes de executar a primeira. Se qualquer ação for
+    // impossível, o lote falha sem alterar ouro, unidades ou posições.
+    for (const auto& action : actions) {
+        impl_->validate_action(action);
+    }
+    for (std::size_t i = 0; i < actions.size(); ++i) {
+        impl_->validate_action_against_masks(i, actions[i]);
+    }
+
+    // ========================================================
+    // AÇÕES DE LOJA, ECONOMIA E MOVIMENTAÇÃO
+    // ========================================================
+
+    std::array<float, kPlayersPerLobby> round_rewards{};
+    std::array<float, kPlayersPerLobby> action_rewards{};
+    std::array<float, kPlayersPerLobby> combat_rewards{};
+    std::array<float, kPlayersPerLobby> placement_rewards{};
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        if (!impl_->player_envs[i].step(
+                *impl_, i, actions[i], round_rewards, action_rewards)) {
+            continue;
+        }
         impl_->sync_player_economy(i);
         impl_->refresh_masks(i);
-        impl_->mark_round_completion(i, type);
+        impl_->mark_round_completion(i, actions[i].values[0]);
     }
 
     // ========================================================
