@@ -25,6 +25,7 @@
 #include "combat/CombatEngine.hpp"
 #include "lobby/ShopEngine.hpp"
 #include "strategy/SynergyCounter.hpp"
+#include "strategy/PositioningEngine.hpp"
 #include "reward/RewardModel.hpp"
 
 #include "decision/ActionMaskEngine.hpp"
@@ -658,53 +659,17 @@ struct TFTEngine::Impl {
                 out[offset++] = std::min(1.0f, value);
             }
 
-            // 7) POSITIONING: port of PositioningManager.evaluate_board_positioning().
-            double positioning_score = 0.0;
-            const auto role_at = [&](int slot) -> int {
-                if (slot < 0 || slot >= static_cast<int>(kBoardSlots) ||
-                    !boards[i][static_cast<std::size_t>(slot)]) return -1;
+            // 7) POSITIONING: use the shared native implementation also exposed
+            // to Python, so observations and diagnostic searches share formulas.
+            std::vector<int> positioning_roles(kBoardSlots, -1);
+            for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+                if (!boards[i][slot]) continue;
                 const auto* def = catalog->find_by_id(
-                    boards[i][static_cast<std::size_t>(slot)]->champion_internal_id);
-                return def ? std::clamp(def->combat_profile.role, 0, 4) : -1;
-            };
-            for (int slot = 0; slot < static_cast<int>(kBoardSlots); ++slot) {
-                const int role = role_at(slot);
-                if (role < 0) continue;
-                const int row = slot / 7;
-                const int col = slot % 7;
-                const double front = (3.0 - row) / 3.0;
-                const double back = row / 3.0;
-                const double center = std::max(0.0, 1.0 - std::abs(col - 3.0) / 3.0);
-                const double edge_distance = std::min(col, 6 - col);
-                const double edge = std::max(0.0, 1.0 - edge_distance / 3.0);
-                const double assassin_center = 3.0 * std::max(
-                    0.0, 1.0 - std::abs(row - 1.65) / 3.0);
-                if (role == 0) positioning_score += front * 4.0 + center * 1.5;
-                else if (role == 1) {
-                    positioning_score += back * 4.0 + center * 2.0;
-                    if (col == 0 || col == 6) positioning_score -= 0.5;
-                } else if (role == 2) positioning_score += back * 3.0 + center * 1.5;
-                else if (role == 3) positioning_score += front * 2.5 + center;
-                else if (role == 4) positioning_score += assassin_center + edge;
-
-                int neighbors = 0;
-                int tanks = 0;
-                for (int dr = -1; dr <= 1; ++dr) {
-                    for (int dc = -1; dc <= 1; ++dc) {
-                        if (dr == 0 && dc == 0) continue;
-                        const int nr = row + dr;
-                        const int nc = col + dc;
-                        if (nr < 0 || nr >= 4 || nc < 0 || nc >= 7) continue;
-                        const int neighbor_role = role_at(nr * 7 + nc);
-                        if (neighbor_role < 0) continue;
-                        ++neighbors;
-                        if (neighbor_role == 0) ++tanks;
-                    }
-                }
-                if (role == 1) positioning_score += neighbors * 0.8 + tanks * 1.5;
-                else if (role == 2) positioning_score += neighbors * 0.6 + tanks;
-                else if (role == 0) positioning_score += neighbors * 0.2;
+                    boards[i][slot]->champion_internal_id);
+                if (def) positioning_roles[slot] = std::clamp(def->combat_profile.role, 0, 4);
             }
+            const double positioning_score =
+                PositioningEngine::evaluate_board_positioning(positioning_roles);
             out[offset++] = static_cast<float>(positioning_score);
             out[offset++] = board_count ? static_cast<float>(frontline) / board_count : 0.0f;
             out[offset++] = board_count ? static_cast<float>(backline) / board_count : 0.0f;
