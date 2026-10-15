@@ -407,11 +407,13 @@ PYBIND11_MODULE(tft_engine, module) {
              py::arg("active_traits"), py::arg("partial_traits") = tft::TraitCounts{})
         .def("calculate_multiplier", [](const tft::SynergyEngine& self, py::object active) {
             if (active.is_none()) return self.calculate_multiplier();
-            return self.calculate_multiplier(&active.cast<tft::TraitCounts&>());
+            const auto parsed = active.cast<tft::TraitCounts>();
+            return self.calculate_multiplier(&parsed);
         }, py::arg("active_traits") = py::none())
         .def("get_all_multipliers", [](const tft::SynergyEngine& self, py::object active) {
             if (active.is_none()) return self.get_all_multipliers();
-            return self.get_all_multipliers(&active.cast<tft::TraitCounts&>());
+            const auto parsed = active.cast<tft::TraitCounts>();
+            return self.get_all_multipliers(&parsed);
         }, py::arg("active_traits") = py::none())
         .def("get_trait_level", &tft::SynergyEngine::get_trait_level,
              py::arg("trait_name"), py::arg("count"))
