@@ -1486,6 +1486,7 @@ ResetResult TFTEngine::reset(
     impl_->last_combat_reward.fill(0.0);
     impl_->round_reward_total.fill(0.0);
     impl_->total_reward.fill(0.0);
+    impl_->placement_reward_given.fill(false);
 
     ResetResult result{};
 
