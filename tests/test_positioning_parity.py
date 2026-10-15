@@ -38,7 +38,9 @@ def test_positioning_formula_search_and_geometry_match(roles):
     assert cpp.positioning_is_valid_position(-1) == manager.is_valid_position(-1)
     for p in range(-1, 29):
         assert bool(cpp.positioning_is_valid_position(p)) == manager.is_valid_position(p)
-        cpp_rc = tuple(cpp.positioning_position_to_row_col(p))\n        py_rc = manager.position_to_row_col(p)\n        assert ((None, None) if cpp_rc == (-1, -1) else cpp_rc) == py_rc
+        cpp_rc = tuple(cpp.positioning_position_to_row_col(p))
+        py_rc = manager.position_to_row_col(p)
+        assert ((None, None) if cpp_rc == (-1, -1) else cpp_rc) == py_rc
         for diagonal in (False, True):
             assert list(cpp.positioning_get_neighbors(p, diagonal)) == manager.get_neighbors(p, diagonal)
 
