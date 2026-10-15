@@ -190,6 +190,21 @@ class UnitPool:
     # 📥 RETURN UNIT
     # =============================================================
 
+    def take_champion_for_testing(self, champion_api_name):
+        """Retira uma cópia exata do pool para fixtures de paridade."""
+        if not isinstance(champion_api_name, str) or not champion_api_name:
+            return None
+        for champion in self.unit_manager.get_all_champions():
+            api_name = champion.get("apiName", champion.get("champion_id"))
+            if api_name != champion_api_name:
+                continue
+            champion_id = self.unit_manager.get_unit_id(champion)
+            if champion_id is None or self.available.get(champion_id, 0) <= 0:
+                return None
+            self.available[champion_id] -= 1
+            return self._copy_champion(champion)
+        return None
+
     def return_unit(self, unit):
         """
         🔄 Devolve uma unidade para o pool global.
