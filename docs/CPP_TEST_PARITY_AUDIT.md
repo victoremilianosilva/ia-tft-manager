@@ -87,3 +87,15 @@ A variável `REQUIRE_CPP_PARITY=1` continua obrigando a importação de `tft_eng
 5. Só depois ampliar para cenários determinísticos de combate, eliminação/colocação, juros, streaks, pareamento e mudanças de estágio.
 
 **Status:** a mudança de CI está preparada nesta branch; ainda não foi executada aqui, e a paridade de transições completas permanece pendente. Não declarar o grupo aprovado até o GitHub Actions fornecer resultados reais.
+
+
+### Atualização da implementação — snapshots e máscaras
+
+A branch agora contém:
+
+- `TFTEngine::get_audit_snapshot()` e binding Python `get_audit_snapshot()`, com round/stage, ouro/nível/XP/streaks, unidades por slot (campeão, UUID, estrelas e custo), ofertas da loja e todas as máscaras nomeadas.
+- O replay cruzado compara todas as oito máscaras de cada jogador após reset e após cada transição: vetores de tipo/loja/origens/destinos e matrizes condicionais `28x28` e `9x28`.
+- O replay compara slots do tabuleiro/banco, estrelas, custo e estado econômico com o snapshot nativo após cada etapa. UUIDs não são comparados porque são gerados por RNGs independentes.
+- As ofertas da loja estão disponíveis no snapshot para diagnóstico, mas a comparação de conteúdo da loja ainda não é assertiva: os motores usam streams de RNG independentes. Para fechar isso, ainda falta o hook de fixture que injeta a mesma oferta nos dois backends e mantém o pool coerente.
+
+O CI deve compilar a nova API e executar esses testes. Até o término da execução, a implementação está **adicionada, mas não validada por build/testes**.
