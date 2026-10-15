@@ -248,6 +248,55 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
             cpp_state = _native_snapshot(cpp_engine)
             _compare_snapshots(py_state, cpp_state, step["name"])
 
+            # Validate the full strategy analysis API against the Python
+            # StrategyManager for each live player after every transition.
+            cpp_strategies = cpp_engine.get_strategies()
+            for player_id, player in enumerate(python_lobby.players):
+                env = player.env
+                manager = env.strategy_manager
+                economy = env.economy_manager
+                board_power = sum(
+                    float(unit.get("cost", 1)) * float(unit.get("star", 1)) * 2.0
+                    for unit in env.board_manager.board if unit is not None
+                )
+                cpp_strategy = cpp_strategies[player_id]
+                _assert_close(
+                    cpp_strategy["state_confidence"],
+                    manager.compute_strategy_confidence(
+                        hp=env.hp, gold=economy.gold, board_power=board_power,
+                        level=economy.level, win_streak=economy.win_streak,
+                        loss_streak=economy.loss_streak,
+                    ),
+                    f"{step['name']}.strategies[{player_id}].state_confidence",
+                )
+                expected_scores = {
+                    int(strategy): manager.get_strategy_score(
+                        strategy, hp=env.hp, gold=economy.gold,
+                        level=economy.level, board_power=board_power,
+                        win_streak=economy.win_streak,
+                        loss_streak=economy.loss_streak,
+                    )
+                    for strategy in __import__(
+                        "strategy.StrategyManager", fromlist=["Strategy"]
+                    ).Strategy
+                }
+                cpp_scores = cpp_strategy["strategy_scores"]
+                assert set(map(int, cpp_scores.keys())) == set(expected_scores), (
+                    f"{step['name']}.strategies[{player_id}].strategy_scores keys differ"
+                )
+                for strategy_id, expected_score in expected_scores.items():
+                    _assert_close(
+                        cpp_scores[strategy_id], expected_score,
+                        f"{step['name']}.strategies[{player_id}].scores[{strategy_id}]",
+                    )
+                best_expected = max(expected_scores, key=expected_scores.get)
+                assert cpp_strategy["best_scored_strategy"] == best_expected, (
+                    f"{step['name']}.strategies[{player_id}].best_scored_strategy: "
+                    f"Python={best_expected}, C++={cpp_strategy['best_scored_strategy']}"
+                )
+                assert 0.0 <= float(cpp_strategy["confidence"]) <= 1.0
+                assert 0.0 <= float(cpp_strategy["state_confidence"]) <= 1.0
+
             assert len(py_rewards) == len(cpp_result["rewards"]) == 8
             for player_id, (py_reward, cpp_reward) in enumerate(
                 zip(py_rewards, cpp_result["rewards"])
