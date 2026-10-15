@@ -90,6 +90,7 @@ def run_match(factory, baseline, candidate, candidate_slots, seed, device, max_s
         # Checkpoint models are loaded by the caller after the first lobby establishes obs_dim.
         policies = {"baseline": baseline, "candidate": candidate}
         rows = []
+        final_info = {}
         for step in range(max_steps):
             if getattr(lobby, "finished", False):
                 break
@@ -108,13 +109,15 @@ def run_match(factory, baseline, candidate, candidate_slots, seed, device, max_s
                 for i in range(8)
             ]
             observations, _, done, info = lobby.step(actions)
+            final_info = info if isinstance(info, dict) else {}
             observations = np.asarray(observations, dtype=np.float32)
             if done:
                 break
         else:
             raise RuntimeError(f"Partida excedeu max_steps={max_steps}; resultado não será contabilizado.")
 
-        state = lobby.get_public_state()
+        get_public_state = getattr(lobby, "get_public_state", None)
+        state = get_public_state() if callable(get_public_state) else final_info
         ranking = state.get("ranking") or state.get("final_ranking") or getattr(lobby, "final_ranking", [])
         placement_by_id = {}
         if isinstance(ranking, list):
@@ -199,7 +202,7 @@ def main():
     rows = []
     for match_idx in range(args.matches):
         # Rotate which seats use the candidate to reduce seat-order bias.
-        offset = (match_idx * 4) % 8
+        offset = match_idx % 8
         candidate_slots = {(offset + j) % 8 for j in range(4)}
         match_seed = args.seed + match_idx
         result = run_match(
