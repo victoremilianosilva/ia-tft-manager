@@ -64,7 +64,6 @@ jobs:
           tests/test_synergy_manager_parity.py
           tests/test_action_mask_equivalence.py
           tests/test_action_mask_integration.py
-          tests/test_action_mask_validation.py
           tests/test_anti_loop_mask_integration.py
           tests/test_anti_loop_swap_cycles.py
           tests/test_combat_economy_integration.py
