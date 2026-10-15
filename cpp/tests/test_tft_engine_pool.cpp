@@ -161,7 +161,7 @@ int main(int argc, char** argv) {
         for (auto& action : actions) {
             action.values = {6, 0, 0, 0, 0, 0};
         }
-        actions[0].values = {5, 0, 0, 0, 0, 0}; // Venda inválida.
+        actions[0].values = {5, 0, 8, 0, 0, 0}; // Slot vazio; slot 0 contém a unidade inicial.
         actions[1].values = {0, player1_buy_slot, 0, 0, 0, 0}; // Compra válida.
 
         bool mixed_batch_rejected = false;
