@@ -62,3 +62,17 @@ Abra http://localhost:6006. Use um novo treino para gerar as novas tags; o CSV a
 ### Comparação com baseline fixo
 
 Não use as métricas agregadas de uma lobby homogênea como prova de melhoria: com oito agentes da mesma versão, a média de colocação tende a 4,5 e a taxa de vitória a 12,5% por construção. Para comparar versões, use um checkpoint baseline imutável e um checkpoint candidato, coloque ambos na mesma lobby e registre resultado por política, rotação de assentos e número de partidas. O baseline deve permanecer congelado durante a avaliação. O script de avaliação usa um checkpoint explícito como baseline; execute apenas depois de salvar uma cópia do checkpoint que não será sobrescrita pelo treinamento.
+
+
+### Rodada curta com taxa de aprendizado controlada
+
+No PowerShell, ative a venv e rode:
+
+```powershell
+$env:TFT_ENGINE_BACKEND = "cpp"
+$env:TFT_PPO_LR = "0.0001"
+$env:TFT_PPO_MIN_LR = "0.00002"
+python -c "from trainer import Trainer; t=Trainer(num_envs=4, use_subprocess=False); t.train(total_updates=20, rollout_steps=128)"
+```
+
+Esse override é opt-in e é aplicado depois da restauração de optimizer e scheduler. Compare `ppo/early_stop`, `ppo/approx_kl_max`, `ppo/epochs_started`, `ppo/batches_processed` e `charts/learning_rate`. Após o teste, limpe as variáveis com `Remove-Item Env:TFT_PPO_LR, Env:TFT_PPO_MIN_LR -ErrorAction SilentlyContinue`. O teste não foi executado nesta sessão.
