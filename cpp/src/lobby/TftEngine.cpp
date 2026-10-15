@@ -996,17 +996,18 @@ struct TFTEngine::Impl {
 
         // Equivalente ao CompositionManager.update(board, bench).
         std::unordered_map<std::string, int> trait_counts;
-        std::unordered_map<std::string, int> copies_by_unit;
-        std::unordered_map<std::string, double> focus_scores;
+        std::unordered_map<std::int32_t, int> copies_by_unit;
+        std::unordered_map<std::int32_t, double> focus_scores;
+        std::unordered_map<std::int32_t, std::string> unit_names;
         // Preserve Python dict/Counter insertion order for tie-breaking.
         std::vector<std::string> trait_order;
-        std::vector<std::string> unit_order;
+        std::vector<std::int32_t> unit_order;
         const auto add_owned_unit = [&](const UnitInstance& unit) {
             const auto* def = catalog->find_by_id(unit.champion_internal_id);
             if (!def) return;
-            const std::string id = def->api_name;
-            if (copies_by_unit.find(id) == copies_by_unit.end())
-                unit_order.push_back(id);
+            const std::int32_t id = def->internal_id;
+            if (copies_by_unit.find(id) == copies_by_unit.end()) unit_order.push_back(id);
+            unit_names[id] = def->api_name;
             copies_by_unit[id] += star_copies(unit.star);
             for (const auto& trait : def->traits) {
                 if (trait_counts.find(trait) == trait_counts.end())
@@ -1020,7 +1021,7 @@ struct TFTEngine::Impl {
         const auto score_owned_unit = [&](const UnitInstance& unit) {
             const auto* def = catalog->find_by_id(unit.champion_internal_id);
             if (!def) return;
-            const std::string id = def->api_name;
+            const std::int32_t id = def->internal_id;
             const double score = (unit.star - 1) * 3.0 + def->cost * 1.5
                 + def->traits.size() + std::min(copies_by_unit[id], 9) * 0.5;
             focus_scores[id] = std::max(focus_scores[id], score);
@@ -1029,11 +1030,14 @@ struct TFTEngine::Impl {
         for (const auto& unit : benches[i]) if (unit) score_owned_unit(*unit);
 
         info.composition_focus.clear();
+        info.composition_focus_id = -1;
         info.composition_direction.clear();
         info.core_units.clear();
+        info.core_unit_ids.clear();
         info.core_traits.clear();
         info.active_traits.clear();
         info.unit_counts.clear();
+        info.unit_counts_by_id.clear();
 
         for (const auto& trait : trait_order) {
             const auto count = trait_counts.at(trait);
@@ -1042,8 +1046,10 @@ struct TFTEngine::Impl {
                 count > trait_counts.at(info.composition_direction))
                 info.composition_direction = trait;
         }
-        for (const auto& unit_id : unit_order)
-            info.unit_counts.emplace_back(unit_id, copies_by_unit.at(unit_id));
+        for (const auto& unit_id : unit_order) {
+            info.unit_counts.emplace_back(unit_names[unit_id], copies_by_unit.at(unit_id));
+            info.unit_counts_by_id.emplace_back(unit_id, copies_by_unit.at(unit_id));
+        }
 
         if (!focus_scores.empty()) {
             auto best_score = -std::numeric_limits<double>::infinity();
@@ -1051,24 +1057,25 @@ struct TFTEngine::Impl {
                 const auto found = focus_scores.find(unit_id);
                 if (found != focus_scores.end() && found->second > best_score) {
                     best_score = found->second;
-                    info.composition_focus = unit_id;
+                    info.composition_focus_id = unit_id;
+                    info.composition_focus = unit_names[unit_id];
                 }
             }
         }
 
-        std::vector<std::pair<std::string, double>> ordered_units;
+        std::vector<std::pair<std::int32_t, double>> ordered_units;
         ordered_units.reserve(focus_scores.size());
         for (const auto& unit_id : unit_order) {
             const auto found = focus_scores.find(unit_id);
-            if (found != focus_scores.end())
-                ordered_units.emplace_back(unit_id, found->second);
+            if (found != focus_scores.end()) ordered_units.emplace_back(unit_id, found->second);
         }
         std::stable_sort(ordered_units.begin(), ordered_units.end(),
-            [](const auto& lhs, const auto& rhs) {
-                return lhs.second > rhs.second;
-            });
-        for (std::size_t index = 0; index < std::min<std::size_t>(3, ordered_units.size()); ++index)
-            info.core_units.push_back(ordered_units[index].first);
+            [](const auto& lhs, const auto& rhs) { return lhs.second > rhs.second; });
+        for (std::size_t index = 0; index < std::min<std::size_t>(3, ordered_units.size()); ++index) {
+            const auto id = ordered_units[index].first;
+            info.core_unit_ids.push_back(id);
+            info.core_units.push_back(unit_names[id]);
+        }
 
         std::vector<std::pair<std::string, int>> ordered_traits;
         ordered_traits.reserve(trait_order.size());
@@ -2378,6 +2385,24 @@ TFTEngine::get_strategies() const {
 // ============================================================
 // MÉTRICAS ANTI-LOOP
 // ============================================================
+
+double TFTEngine::get_unit_comp_score(std::int32_t player_id, const std::string& champion_api_name, std::int32_t star) const {
+    if (!impl_ || player_id < 0 || player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) throw std::out_of_range("player_id fora do intervalo.");
+    impl_->ensure_open(); const auto* def = impl_->catalog->find_by_api_name(champion_api_name); if (!def || star < 1 || star > 3) return 0.0;
+    const auto& list = impl_->strategies[static_cast<std::size_t>(player_id)]; if (list.empty()) return 0.0; const auto& state = list.back(); double score = 0.0;
+    if (std::find(state.core_unit_ids.begin(), state.core_unit_ids.end(), def->internal_id) != state.core_unit_ids.end()) score += 5.0;
+    if (!state.composition_direction.empty() && std::find(def->traits.begin(), def->traits.end(), state.composition_direction) != def->traits.end()) score += 3.0;
+    for (const auto& trait : def->traits) if (std::find(state.core_traits.begin(), state.core_traits.end(), trait) != state.core_traits.end()) score += 2.0;
+    if (star >= 2) score += 2.0; if (star >= 3) score += 4.0; score += static_cast<double>(def->cost) * 0.5; return score;
+}
+bool TFTEngine::is_core_unit(std::int32_t player_id, const std::string& champion_api_name) const {
+    if (!impl_ || player_id < 0 || player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) return false; impl_->ensure_open(); const auto* def = impl_->catalog->find_by_api_name(champion_api_name); if (!def) return false;
+    const auto& list = impl_->strategies[static_cast<std::size_t>(player_id)]; return !list.empty() && std::find(list.back().core_unit_ids.begin(), list.back().core_unit_ids.end(), def->internal_id) != list.back().core_unit_ids.end();
+}
+bool TFTEngine::is_core_trait(std::int32_t player_id, const std::string& trait) const {
+    if (!impl_ || player_id < 0 || player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) return false; impl_->ensure_open(); const auto& list = impl_->strategies[static_cast<std::size_t>(player_id)];
+    return !list.empty() && std::find(list.back().core_traits.begin(), list.back().core_traits.end(), trait) != list.back().core_traits.end();
+}
 
 std::array<AntiLoopMetrics, kPlayersPerLobby>
 TFTEngine::get_anti_loop_metrics() const {

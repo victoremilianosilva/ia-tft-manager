@@ -229,11 +229,14 @@ struct StrategyInfo {
 
     // Snapshot de CompositionManager: foco/direção e elementos core.
     std::string composition_focus;
+    std::int32_t composition_focus_id{-1};
     std::string composition_direction;
     std::vector<std::string> core_units;
+    std::vector<std::int32_t> core_unit_ids;
     std::vector<std::string> core_traits;
     std::vector<std::pair<std::string, std::int32_t>> active_traits;
     std::vector<std::pair<std::string, std::int32_t>> unit_counts;
+    std::vector<std::pair<std::int32_t, std::int32_t>> unit_counts_by_id;
 };
 
 struct AntiLoopMetrics {
@@ -339,6 +342,9 @@ public:
 
     std::array<std::vector<StrategyInfo>, kPlayersPerLobby>
     get_strategies() const;
+    double get_unit_comp_score(std::int32_t player_id, const std::string& champion_api_name, std::int32_t star = 1) const;
+    bool is_core_unit(std::int32_t player_id, const std::string& champion_api_name) const;
+    bool is_core_trait(std::int32_t player_id, const std::string& trait) const;
 
     std::array<AntiLoopMetrics, kPlayersPerLobby>
     get_anti_loop_metrics() const;

@@ -299,6 +299,45 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
                 assert 0.0 <= float(cpp_strategy["confidence"]) <= 1.0
                 assert 0.0 <= float(cpp_strategy["state_confidence"]) <= 1.0
 
+                # CompositionManager parity: IDs, copy counts, direction/focus,
+                # core membership and candidate-unit scores.
+                composition = env.composition_manager
+                comp_state = composition.get_state()
+                assert cpp_strategy["composition_focus_id"] == (
+                    -1 if comp_state["focus"] is None else int(comp_state["focus"])
+                ), f"{step['name']}.composition[{player_id}].focus"
+                assert cpp_strategy["composition_direction"] == (comp_state["direction"] or ""), (
+                    f"{step['name']}.composition[{player_id}].direction"
+                )
+                assert set(cpp_strategy["core_unit_ids"]) == set(comp_state["core_units"]), (
+                    f"{step['name']}.composition[{player_id}].core_units"
+                )
+                assert set(cpp_strategy["core_traits"]) == set(comp_state["core_traits"]), (
+                    f"{step['name']}.composition[{player_id}].core_traits"
+                )
+                assert dict(cpp_strategy["active_traits"]) == comp_state["active_traits"], (
+                    f"{step['name']}.composition[{player_id}].active_traits"
+                )
+                assert {int(k): int(v) for k, v in cpp_strategy["unit_counts_by_id"].items()} == {
+                    int(k): int(v) for k, v in comp_state["unit_counts"].items()
+                }, f"{step['name']}.composition[{player_id}].unit_counts"
+
+                for champion_def in env.unit_manager.get_all_champions():
+                    api_name = champion_def.get("apiName") or champion_def.get("api_name") or champion_def.get("champion_id")
+                    if not api_name:
+                        continue
+                    candidate = env.unit_manager.create_unit(champion_def)
+                    for star in (1, 2, 3):
+                        candidate["star"] = star
+                        _assert_close(
+                            cpp_engine.get_unit_comp_score(player_id, api_name, star),
+                            composition.get_unit_comp_score(candidate),
+                            f"{step['name']}.composition[{player_id}].score[{api_name},star={star}]",
+                        )
+                    assert cpp_engine.is_core_unit(player_id, api_name) == composition.is_core_unit(candidate)
+                    for trait in candidate.get("traits", []):
+                        assert cpp_engine.is_core_trait(player_id, trait) == composition.is_core_trait(trait)
+
             assert len(py_rewards) == len(cpp_result["rewards"]) == 8
             for player_id, (py_reward, cpp_reward) in enumerate(
                 zip(py_rewards, cpp_result["rewards"])
