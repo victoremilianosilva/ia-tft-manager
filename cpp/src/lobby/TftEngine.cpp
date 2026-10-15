@@ -118,36 +118,40 @@ float unit_strength(const ChampionDefinition& def, const UnitInstance& unit) {
 // IMPLEMENTAÇÃO INTERNA
 // ============================================================
 
+struct PlayerTransition {
+    float action_reward{0.0f};
+    bool acted{false};
+};
+
+struct PlayerEnv {
+    // Estado e serviços pertencentes exclusivamente a um jogador.
+    std::unique_ptr<ShopEngine> shop;
+    std::array<std::optional<UnitInstance>, kBenchSlots> bench{};
+    std::array<std::optional<UnitInstance>, kBoardSlots> board{};
+    decision::AntiLoopEngine anti_loop;
+    PlayerInfo info{};
+    PlayerActionMasks action_masks{};
+    std::vector<StrategyInfo> strategy;
+    AntiLoopMetrics anti_loop_metrics{};
+    PlayerEconomy economy{};
+
+    double previous_board_power{0.0};
+    double previous_synergy_score{0.0};
+    double previous_positioning_score{0.0};
+    std::int32_t previous_reward_level{1};
+    double last_combat_reward{0.0};
+    double round_reward_total{0.0};
+    double total_reward{0.0};
+    bool placement_reward_given{false};
+
+    PlayerTransition step(
+        TFTEngine::Impl& lobby,
+        std::size_t player_id,
+        const PlayerAction& player_action
+    );
+};
+
 struct TFTEngine::Impl {
-    struct PlayerEnv {
-        // Estado e serviços pertencentes exclusivamente a um jogador.
-        std::unique_ptr<ShopEngine> shop;
-        std::array<std::optional<UnitInstance>, kBenchSlots> bench{};
-        std::array<std::optional<UnitInstance>, kBoardSlots> board{};
-        decision::AntiLoopEngine anti_loop;
-        PlayerInfo info{};
-        PlayerActionMasks action_masks{};
-        std::vector<StrategyInfo> strategy;
-        AntiLoopMetrics anti_loop_metrics{};
-        PlayerEconomy economy{};
-
-        double previous_board_power{0.0};
-        double previous_synergy_score{0.0};
-        double previous_positioning_score{0.0};
-        std::int32_t previous_reward_level{1};
-        double last_combat_reward{0.0};
-        double round_reward_total{0.0};
-        double total_reward{0.0};
-        bool placement_reward_given{false};
-
-        bool step(
-            TFTEngine::Impl& lobby,
-            std::size_t player_id,
-            const PlayerAction& player_action,
-            std::array<float, kPlayersPerLobby>& round_rewards,
-            std::array<float, kPlayersPerLobby>& action_rewards
-        );
-    };
     std::uint64_t seed{0};
     std::uint64_t episode_id{0};
     std::mt19937_64 matchmaking_rng{0};
@@ -1484,12 +1488,10 @@ struct TFTEngine::Impl {
     }
 };
 
-bool TFTEngine::Impl::PlayerEnv::step(
+PlayerTransition PlayerEnv::step(
     TFTEngine::Impl& lobby,
     std::size_t player_id,
-    const PlayerAction& player_action,
-    std::array<float, kPlayersPerLobby>& round_rewards,
-    std::array<float, kPlayersPerLobby>& action_rewards
+    const PlayerAction& player_action
 ) {
 
         const auto& action = player_action.values;
@@ -1518,7 +1520,7 @@ bool TFTEngine::Impl::PlayerEnv::step(
 
         if (!this->info.alive) {
             lobby.refresh_masks(player_id);
-            return false;
+            return PlayerTransition{0.0f, false};
         }
 
         if (type == 0) {
@@ -1870,12 +1872,8 @@ bool TFTEngine::Impl::PlayerEnv::step(
         // MiniTFTEnv.step() returns the action-specific reward directly.
         // RewardManager's broader state components are not called by the
         // Python environment, so applying them here would change PPO targets.
-        action_rewards[player_id] = static_cast<float>(action_reward);
-        round_rewards[player_id] += action_rewards[player_id];
-        this->round_reward_total = round_rewards[player_id];
-        this->total_reward += round_rewards[player_id];
         lobby.update_strategy(player_id);
-    return true;
+        return PlayerTransition{static_cast<float>(action_reward), true};
 }
 
 // ============================================================
@@ -2004,10 +2002,14 @@ StepResult TFTEngine::step(
     std::array<float, kPlayersPerLobby> combat_rewards{};
     std::array<float, kPlayersPerLobby> placement_rewards{};
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
-        if (!impl_->player_envs[i].step(
-                *impl_, i, actions[i], round_rewards, action_rewards)) {
+        const auto transition = impl_->player_envs[i].step(*impl_, i, actions[i]);
+        if (!transition.acted) {
             continue;
         }
+        action_rewards[i] = transition.action_reward;
+        round_rewards[i] += transition.action_reward;
+        impl_->player_envs[i].round_reward_total = round_rewards[i];
+        impl_->player_envs[i].total_reward += round_rewards[i];
         impl_->sync_player_economy(i);
         impl_->refresh_masks(i);
         impl_->mark_round_completion(i, actions[i].values[0]);
