@@ -230,6 +230,60 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
                     abs_tol=5e-4,
                 )
 
+            # Compare reward components separately so an aggregate total
+            # cannot hide an omitted or duplicated action/combat/placement term.
+            py_players_info = py_info.get("players", [])
+            py_action_components = np.asarray(
+                [float(item.get("action_reward", 0.0)) for item in py_players_info],
+                dtype=np.float32,
+            )
+            py_combat_components = np.asarray(
+                [float(item.get("combat_reward", 0.0)) for item in py_players_info],
+                dtype=np.float32,
+            )
+            placement_map = py_info.get("placement_rewards", {}) or {}
+            py_placement_components = np.asarray(
+                [
+                    float(placement_map.get(pid, placement_map.get(str(pid), 0.0)))
+                    for pid in range(8)
+                ],
+                dtype=np.float32,
+            )
+            component_pairs = (
+                ("action_rewards", py_action_components, cpp_result["action_rewards"]),
+                ("combat_rewards", py_combat_components, cpp_result["combat_rewards"]),
+                ("placement_rewards", py_placement_components, cpp_result["placement_rewards"]),
+            )
+            for component_name, py_component, cpp_component in component_pairs:
+                assert np.asarray(cpp_component).shape == (8,), (
+                    f"{step['name']}.{component_name}: C++ component shape is invalid"
+                )
+                for player_id, (py_value, cpp_value) in enumerate(
+                    zip(py_component, cpp_component)
+                ):
+                    _assert_close(
+                        py_value, cpp_value,
+                        f"{step['name']}.{component_name}[{player_id}]",
+                        abs_tol=2e-4,
+                    )
+
+            _assert_close(
+                float(np.sum(cpp_result["action_rewards"] +
+                             cpp_result["combat_rewards"] +
+                             cpp_result["placement_rewards"])),
+                float(np.sum(cpp_result["rewards"])),
+                f"{step['name']}.cpp_reward_components_sum",
+                abs_tol=5e-4,
+            )
+            _assert_close(
+                float(np.sum(py_action_components +
+                             py_combat_components +
+                             py_placement_components)),
+                float(np.sum(py_rewards)),
+                f"{step['name']}.python_reward_components_sum",
+                abs_tol=5e-4,
+            )
+
             # Public round metadata is compared too; rewards alone can hide
             # a broken state transition.
             assert bool(py_done) == bool(cpp_result["lobby_done"]), (
