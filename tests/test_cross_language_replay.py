@@ -140,10 +140,9 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
             )
             py_obs_array = np.asarray(py_obs, dtype=np.float32)
             cpp_obs_array = np.asarray(cpp_result["observations"], dtype=np.float32)
-            # The starting champion and shop RNG are not yet shared. We still
-            # exercise a real move and compare all stable slot fields. Role values,
-            # shop offers, synergy/trait vectors and the role-dependent positioning
-            # score remain separately checked for finite, normalized values where applicable.
+            # The starting champion and shop RNG are not yet shared. Compare
+            # stable fields exactly and validate random-dependent features separately
+            # until both backends can be initialized from an identical full snapshot.
             dim = py_obs_array.shape[1]
             bench_start = 22 + 28 * 5
             shop_start = bench_start + 9 * 5
