@@ -118,40 +118,39 @@ float unit_strength(const ChampionDefinition& def, const UnitInstance& unit) {
 // IMPLEMENTAÇÃO INTERNA
 // ============================================================
 
-struct PlayerTransition {
-    float action_reward{0.0f};
-    bool acted{false};
-};
-
-struct PlayerEnv {
-    // Estado e serviços pertencentes exclusivamente a um jogador.
-    std::unique_ptr<ShopEngine> shop;
-    std::array<std::optional<UnitInstance>, kBenchSlots> bench{};
-    std::array<std::optional<UnitInstance>, kBoardSlots> board{};
-    decision::AntiLoopEngine anti_loop;
-    PlayerInfo info{};
-    PlayerActionMasks action_masks{};
-    std::vector<StrategyInfo> strategy;
-    AntiLoopMetrics anti_loop_metrics{};
-    PlayerEconomy economy{};
-
-    double previous_board_power{0.0};
-    double previous_synergy_score{0.0};
-    double previous_positioning_score{0.0};
-    std::int32_t previous_reward_level{1};
-    double last_combat_reward{0.0};
-    double round_reward_total{0.0};
-    double total_reward{0.0};
-    bool placement_reward_given{false};
-
-    PlayerTransition step(
-        TFTEngine::Impl& lobby,
-        std::size_t player_id,
-        const PlayerAction& player_action
-    );
-};
-
 struct TFTEngine::Impl {
+    struct PlayerTransition {
+        float action_reward{0.0f};
+        bool acted{false};
+    };
+
+    struct PlayerEnv {
+        // Estado e serviços pertencentes exclusivamente a um jogador.
+        std::unique_ptr<ShopEngine> shop;
+        std::array<std::optional<UnitInstance>, kBenchSlots> bench{};
+        std::array<std::optional<UnitInstance>, kBoardSlots> board{};
+        decision::AntiLoopEngine anti_loop;
+        PlayerInfo info{};
+        PlayerActionMasks action_masks{};
+        std::vector<StrategyInfo> strategy;
+        AntiLoopMetrics anti_loop_metrics{};
+        PlayerEconomy economy{};
+
+        double previous_board_power{0.0};
+        double previous_synergy_score{0.0};
+        double previous_positioning_score{0.0};
+        std::int32_t previous_reward_level{1};
+        double last_combat_reward{0.0};
+        double round_reward_total{0.0};
+        double total_reward{0.0};
+        bool placement_reward_given{false};
+
+        PlayerTransition step(
+            TFTEngine::Impl& lobby,
+            std::size_t player_id,
+            const PlayerAction& player_action
+        );
+    };
     std::uint64_t seed{0};
     std::uint64_t episode_id{0};
     std::mt19937_64 matchmaking_rng{0};
@@ -1488,7 +1487,7 @@ struct TFTEngine::Impl {
     }
 };
 
-PlayerTransition PlayerEnv::step(
+TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
     TFTEngine::Impl& lobby,
     std::size_t player_id,
     const PlayerAction& player_action
