@@ -35,7 +35,7 @@ void test_empty_state_keeps_pass_available() {
     const auto masks = engine.generate_masks(state, anti_loop);
 
     // PASS sempre deve estar disponível.
-    assert(masks.type_mask[ActionType::PASS] == MASK_ENABLED);
+    assert(masks.type_mask[static_cast<std::size_t>(ActionType::PASS)] == MASK_ENABLED);
 
     // Nenhuma ação econômica real está disponível.
     assert(!masks.buy_available);
@@ -43,12 +43,12 @@ void test_empty_state_keeps_pass_available() {
     assert(!masks.board_move_available);
     assert(!masks.bench_move_available);
 
-    assert(masks.type_mask[ActionType::BUY] == MASK_DISABLED);
-    assert(masks.type_mask[ActionType::REROLL] == MASK_DISABLED);
-    assert(masks.type_mask[ActionType::BUY_XP] == MASK_DISABLED);
-    assert(masks.type_mask[ActionType::MOVE_BENCH] == MASK_DISABLED);
-    assert(masks.type_mask[ActionType::MOVE_BOARD] == MASK_DISABLED);
-    assert(masks.type_mask[ActionType::SELL] == MASK_DISABLED);
+    assert(masks.type_mask[static_cast<std::size_t>(ActionType::BUY)] == MASK_DISABLED);
+    assert(masks.type_mask[static_cast<std::size_t>(ActionType::REROLL)] == MASK_DISABLED);
+    assert(masks.type_mask[static_cast<std::size_t>(ActionType::BUY_XP)] == MASK_DISABLED);
+    assert(masks.type_mask[static_cast<std::size_t>(ActionType::MOVE_BENCH)] == MASK_DISABLED);
+    assert(masks.type_mask[static_cast<std::size_t>(ActionType::MOVE_BOARD)] == MASK_DISABLED);
+    assert(masks.type_mask[static_cast<std::size_t>(ActionType::SELL)] == MASK_DISABLED);
 
     // Fallback técnico das cabeças categóricas.
     // O fallback não deve habilitar uma ação real.
@@ -75,7 +75,7 @@ void test_shop_only_allows_affordable_available_units() {
     const auto masks = engine.generate_masks(state, anti_loop);
 
     assert(masks.buy_available);
-    assert(masks.type_mask[ActionType::BUY] == MASK_ENABLED);
+    assert(masks.type_mask[static_cast<std::size_t>(ActionType::BUY)] == MASK_ENABLED);
 
     assert(masks.shop_mask[0] == MASK_ENABLED);
     assert(masks.shop_mask[1] == MASK_DISABLED);
@@ -93,14 +93,14 @@ void test_sell_uses_real_bench_units_not_fallback() {
     const auto empty_masks = engine.generate_masks(state, anti_loop);
 
     assert(!empty_masks.sell_available);
-    assert(empty_masks.type_mask[ActionType::SELL] == MASK_DISABLED);
+    assert(empty_masks.type_mask[static_cast<std::size_t>(ActionType::SELL)] == MASK_DISABLED);
 
     state.bench[4] = make_unit("bench-unit");
 
     const auto occupied_masks = engine.generate_masks(state, anti_loop);
 
     assert(occupied_masks.sell_available);
-    assert(occupied_masks.type_mask[ActionType::SELL] == MASK_ENABLED);
+    assert(occupied_masks.type_mask[static_cast<std::size_t>(ActionType::SELL)] == MASK_ENABLED);
     assert(occupied_masks.bench_source_mask[4] == MASK_ENABLED);
 }
 
@@ -117,7 +117,7 @@ void test_board_move_masks_respect_source_and_destination() {
     const auto masks = engine.generate_masks(state, anti_loop);
 
     assert(masks.board_move_available);
-    assert(masks.type_mask[ActionType::MOVE_BOARD] == MASK_ENABLED);
+    assert(masks.type_mask[static_cast<std::size_t>(ActionType::MOVE_BOARD)] == MASK_ENABLED);
 
     // A origem ocupada possui destinos válidos.
     assert(masks.board_source_mask[3] == MASK_ENABLED);
@@ -144,7 +144,7 @@ void test_bench_to_board_requires_empty_target() {
     const auto masks = engine.generate_masks(state, anti_loop);
 
     assert(masks.bench_move_available);
-    assert(masks.type_mask[ActionType::MOVE_BENCH] == MASK_ENABLED);
+    assert(masks.type_mask[static_cast<std::size_t>(ActionType::MOVE_BENCH)] == MASK_ENABLED);
 
     assert(masks.bench_move_source_mask[2] == MASK_ENABLED);
 
@@ -170,7 +170,7 @@ void test_buy_is_disabled_when_bench_is_full() {
     const auto masks = engine.generate_masks(state, anti_loop);
 
     assert(!masks.buy_available);
-    assert(masks.type_mask[ActionType::BUY] == MASK_DISABLED);
+    assert(masks.type_mask[static_cast<std::size_t>(ActionType::BUY)] == MASK_DISABLED);
     assert(masks.shop_mask[0] == MASK_DISABLED);
 }
 
@@ -189,7 +189,7 @@ void test_bench_to_board_is_disabled_when_board_is_full() {
     const auto masks = engine.generate_masks(state, anti_loop);
 
     assert(!masks.bench_move_available);
-    assert(masks.type_mask[ActionType::MOVE_BENCH] == MASK_DISABLED);
+    assert(masks.type_mask[static_cast<std::size_t>(ActionType::MOVE_BENCH)] == MASK_DISABLED);
     for (std::size_t target = 0; target < BOARD_SIZE; ++target) {
         assert(masks.bench_to_board_target_masks[0][target] == MASK_DISABLED);
     }
