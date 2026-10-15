@@ -82,6 +82,23 @@ void test_deterministic_winner_and_damage() {
             "Deterministic replay changed survivor counts.");
 }
 
+void test_event_limit_is_reported_as_timeout() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_events = 1;
+    input.player_a.units[0].hp = input.player_a.units[0].max_hp = 1000.0f;
+    input.player_a.units[0].attack_damage = 1.0f;
+    input.player_a.units[0].attack_speed = 0.1f;
+    input.player_b.units[0].hp = input.player_b.units[0].max_hp = 1000.0f;
+    input.player_b.units[0].attack_damage = 1.0f;
+    input.player_b.units[0].attack_speed = 0.1f;
+
+    const auto result = engine.simulate(input);
+    require(result.success, "Event-limit result should be a valid simulation result.");
+    require(result.completed, "Engine currently returns a completed partial result on event timeout.");
+    require(result.timeout, "Reaching max_events with pending events must report timeout.");
+}
+
 void test_invalid_configuration_returns_error() {
     tft::CombatEngine engine;
     auto input = make_input();
@@ -99,6 +116,7 @@ void test_invalid_configuration_returns_error() {
 int main() {
     try {
         test_deterministic_winner_and_damage();
+        test_event_limit_is_reported_as_timeout();
         test_invalid_configuration_returns_error();
     } catch (const std::exception& error) {
         std::cerr << "test_combat_engine: " << error.what() << '\n';
