@@ -548,6 +548,13 @@ PYBIND11_MODULE(tft_engine, module) {
                 return public_state_to_dict(self.get_public_state());
             }
         )
+        .def("get_unit_comp_score", &TFTEngine::get_unit_comp_score,
+             py::arg("player_id"), py::arg("champion_api_name"),
+             py::arg("star") = 1)
+        .def("is_core_unit", &TFTEngine::is_core_unit,
+             py::arg("player_id"), py::arg("champion_api_name"))
+        .def("is_core_trait", &TFTEngine::is_core_trait,
+             py::arg("player_id"), py::arg("trait"))
         .def("set_unit_for_testing", &TFTEngine::set_unit_for_testing,
              py::arg("player_id"), py::arg("on_board"), py::arg("slot"),
              py::arg("champion_api_name"), py::arg("star") = 1)
