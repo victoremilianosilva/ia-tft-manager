@@ -5,7 +5,7 @@ import os
 
 from torch.utils.tensorboard import SummaryWriter
 
-from cpp_lobby_env import CppTFTLobbyWrapper
+from lobby.TFTLobby import TFTLobby
 
 from vector_lobby_env import LobbyVectorEnv
 
@@ -57,7 +57,8 @@ class Trainer:
     def __init__(
         self,
         num_envs=4,
-        use_subprocess=True
+        use_subprocess=True,
+        engine_backend=None,
     ):
 
         # ============================================================
@@ -144,15 +145,34 @@ class Trainer:
         )
 
         # ============================================================
-        # 🏭 ENV FACTORY
+        # 🏭 ENV FACTORY / ENGINE BACKEND
         # ============================================================
+
+        # Prioridade: argumento explícito > variável de ambiente > Python.
+        # O backend Python não depende de a extensão C++ estar compilada.
+        self.engine_backend = str(
+            engine_backend or os.environ.get("TFT_ENGINE_BACKEND", "python")
+        ).strip().lower()
+
+        if self.engine_backend not in {"python", "cpp"}:
+            raise ValueError(
+                "engine_backend deve ser 'python' ou 'cpp'; "
+                f"recebi {self.engine_backend!r}."
+            )
+
+        if self.engine_backend == "python":
+            env_factory = TFTLobby
+        else:
+            # Importação tardia: o backend Python não depende do módulo nativo.
+            from cpp_lobby_env import CppTFTLobbyWrapper
+            env_factory = CppTFTLobbyWrapper
+
+        print(f"🧩 Engine selecionada: {self.engine_backend.upper()}")
 
         def make_env():
-            # Cada instância é uma lobby nativa com oito jogadores C++.
-            # O Python mantém somente o adaptador para o vetor PPO.
-            return CppTFTLobbyWrapper()
+            return env_factory()
 
-        # ============================================================
+# ============================================================
         # 🚀 VECTOR ENV
         # ============================================================
 
