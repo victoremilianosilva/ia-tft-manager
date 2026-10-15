@@ -45,21 +45,16 @@ class CppTFTLobbyWrapper:
             "" if catalog_path is None else str(catalog_path),
         )
         self._last_dones = np.zeros(self.PLAYERS_PER_LOBBY, dtype=np.bool_)
+        self._players = [
+            SimpleNamespace(player_id=i, alive=True, eliminated=False)
+            for i in range(self.PLAYERS_PER_LOBBY)
+        ]
         self._closed = False
 
     @property
     def players(self):
         """Compatibility view used by LobbyVectorEnv; state remains in C++."""
-        state = self.get_public_state()
-        players = state.get("players", [])
-        return [
-            SimpleNamespace(
-                player_id=int(player.get("player_id", idx)),
-                alive=bool(player.get("alive", False)),
-                eliminated=bool(player.get("eliminated", False)),
-            )
-            for idx, player in enumerate(players)
-        ]
+        return self._players
 
     @staticmethod
     def _normalize_action(action):
@@ -87,6 +82,10 @@ class CppTFTLobbyWrapper:
     def reset(self, seed: int | None = None):
         result = self._engine.reset(seed)
         self._last_dones.fill(False)
+        self._players = [
+            SimpleNamespace(player_id=i, alive=True, eliminated=False)
+            for i in range(self.PLAYERS_PER_LOBBY)
+        ]
         return np.asarray(result["observations"], dtype=np.float32)
 
     def step(self, actions):
@@ -102,6 +101,15 @@ class CppTFTLobbyWrapper:
         observations = np.asarray(result["observations"], dtype=np.float32)
         rewards = np.asarray(result["rewards"], dtype=np.float32)
         self._last_dones = np.asarray(result["dones"], dtype=np.bool_)
+        player_info = result.get("players", [])
+        self._players = [
+            SimpleNamespace(
+                player_id=int(player.get("player_id", idx)),
+                alive=bool(player.get("alive", False)),
+                eliminated=bool(player.get("eliminated", False)),
+            )
+            for idx, player in enumerate(player_info)
+        ]
 
         info = {
             "players": result.get("players", []),
@@ -145,8 +153,6 @@ class CppTFTLobbyWrapper:
     def get_anti_loop_metrics(self):
         return dict(self._engine.get_anti_loop_metrics())
 
-    def get_public_state(self):
-        return self._engine.get_public_state()
 
     def close(self):
         if not self._closed:
