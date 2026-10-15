@@ -178,8 +178,9 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
             player.env.action_mask_manager.decision_engine_runtime = None
         cpp_engine.reset(fixture["seed"])
 
+        # Reset uses independent RNG implementations, so owned-unit slots are
+        # not expected to match until the shared deterministic fixture is applied.
         _compare_action_masks(python_lobby, cpp_engine, "reset")
-        _compare_audit_snapshots(python_lobby, cpp_engine, "reset")
 
         # Build the same owned-unit snapshot in both backends. Shop offers
         # remain random, but all board/bench/trait/combat features are controlled.
@@ -226,6 +227,9 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
                 player.env.done = True
                 player.env.hp = 0
                 assert cpp_engine.set_player_alive_for_testing(player_id, False)
+
+        # Compare owned units only after both backends have received the same fixture.
+        _compare_audit_snapshots(python_lobby, cpp_engine, "shared_initial_fixture")
 
         python_lobby.round_finished = [False] * python_lobby.PLAYERS_PER_LOBBY
         for player_id in range(2, python_lobby.PLAYERS_PER_LOBBY):
