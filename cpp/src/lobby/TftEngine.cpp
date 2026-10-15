@@ -159,6 +159,9 @@ struct TFTEngine::Impl {
     // Uma instância C++ por jogador; o lobby coordena as oito.
     std::array<PlayerEnv, kPlayersPerLobby> player_envs{};
 
+    // Serviços compartilhados pela lobby, não pertencem a um jogador.
+    EconomyEngine economy_engine;
+    CombatEngine combat_engine;
     decision::ActionMaskEngine action_mask_engine;
 
     std::int32_t alive_players{
@@ -2100,7 +2103,7 @@ StepResult TFTEngine::step(
         result.dones[i] = (!impl_->player_envs[i].info.alive || impl_->done) ? 1 : 0;
     }
 
-    result.action_masks = impl_->masks;
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) result.action_masks[i] = impl_->player_envs[i].action_masks;
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) result.players[i] = impl_->player_envs[i].info;
 
     result.lobby_done = impl_->done;
