@@ -378,7 +378,8 @@ struct TFTEngine::Impl {
         const auto batch =
             action_mask_engine.generate_masks(
                 state,
-                player_envs[player_index].anti_loop
+                player_envs[player_index].anti_loop,
+                false
             );
 
         auto& current = player_envs[player_index].action_masks;
