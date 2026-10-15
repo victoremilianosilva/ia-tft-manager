@@ -91,33 +91,51 @@ A arquitetura deve permitir futuramente carregar políticas ou checkpoints difer
 
 ## 5. Interface: visão geral e foco individual
 
-![Wireframe conceitual da interface](viwer/dashboard-wireframe.svg)
+![Wireframe da visão geral com oito jogadores e tabuleiros completos](viwer/dashboard-wireframe.svg)
 
-A tela principal deve combinar:
+A tela principal deve mostrar os oito jogadores ao mesmo tempo. **Cada cartão de jogador contém o tabuleiro completo daquele jogador, em uma grade de 7 colunas × 4 linhas (28 posições), com cada peça desenhada na posição ocupada correta.** Não basta mostrar uma composição resumida ou apenas as unidades da primeira fileira.
 
-- Oito mini-tabuleiros visíveis simultaneamente.
-- Indicadores resumidos de vida, ouro, nível, XP e situação no lobby.
-- Composição e última ação relevante.
-- Classificação/estado de cada jogador.
-- Seleção de um agente para abrir seu tabuleiro ampliado.
-- Banco, loja, unidades, sinergias e dados detalhados do jogador selecionado.
-- Painel de log filtrado pelo jogador selecionado.
-- Controles globais de reprodução e linha do tempo.
+Cada cartão deve incluir, quando os dados estiverem disponíveis:
 
-O wireframe é uma referência conceitual, não uma afirmação sobre dados já expostos pela engine. Campos ainda indisponíveis devem ser implementados no adaptador ou explicitamente marcados como indisponíveis; não inventar valores.
+- Identificador do jogador e estado no lobby.
+- Tabuleiro 7×4 completo, com as posições livres e ocupadas visíveis.
+- Identificação compacta de cada peça; estrelas/nível de estrela quando disponível.
+- Indicadores resumidos de vida, ouro, nível e XP.
+- Fase/rodada e última ação relevante.
+- Realce do jogador selecionado e de mudanças recentes no tabuleiro.
+
+Ao selecionar um jogador, o painel de inspeção mostra o seu tabuleiro em tamanho ampliado, com coordenadas das casas e informações da peça selecionada, além de banco, loja, sinergias e logs. As coordenadas devem seguir o mesmo padrão usado pela engine, sem criar uma segunda convenção que confunda a depuração.
 
 ### 5.1 Controles de espectador
 
-- Iniciar/retomar.
-- Pausar.
+- Iniciar/retomar e pausar.
 - Avançar uma decisão/etapa, quando compatível com a granularidade real do controlador.
 - Avançar uma fase ou rodada.
 - Ajustar a velocidade visual.
-- Selecionar agente.
+- Selecionar um dos oito agentes.
 - Filtrar eventos por agente, tipo, rodada ou gravidade.
 - Alternar entre sessão ao vivo e replay.
+- Entrar e sair da visualização detalhada de combate sem perder o contexto da partida.
 
 A granularidade de avanço deve ser definida após auditar a API da engine. Não assumir que é possível avançar exatamente uma ação se a engine só aceitar lotes de ações do lobby.
+
+### 5.2 Combate detalhado ao clicar em um jogador
+
+![Wireframe da batalha detalhada com as duas equipes e painel de eventos](viwer/combat-view.svg)
+
+Durante a fase de combate, clicar no cartão de um jogador abre uma **visão de batalha dedicada** para o confronto dele. Essa tela deve mostrar todas as peças participantes dos dois lados — as unidades do jogador selecionado e todas as unidades inimigas —, e não apenas o campeão selecionado ou um resumo do combate.
+
+A visão de combate deve incluir:
+
+- Campo de batalha com as peças dos dois times e sua posição atual, diferenciadas visualmente por equipe.
+- Nome/identificador de cada unidade e, quando disponível, estrelas, vida atual/máxima, barra de HP, mana e estado (viva, eliminada, alvo/atacando).
+- Atualização temporal da posição e dos atributos durante o combate, conforme os eventos ou snapshots realmente emitidos pela engine.
+- Linha do tempo de combate com eventos como movimento, ataque, habilidade, dano, eliminação e fim de combate, apenas quando esses dados forem fornecidos.
+- Controles de pausa, velocidade, avanço de evento e retorno à visão geral.
+- Seleção de uma unidade para inspecionar seus dados sem esconder as demais peças.
+- Resultado final e resumo do confronto após a engine concluir a batalha.
+
+**Limite técnico a validar:** a animação fiel só é possível se a engine expuser estados intermediários ou eventos de combate com timestamp/ordem, posições e atributos por unidade. Se hoje a engine apenas calcula o resultado final (por exemplo, uma comparação agregada de poder), a primeira versão deve exibir o que realmente existe e marcar a animação detalhada como indisponível; não inventar trajetórias, HP, dano ou habilidades. Nesse caso, uma evolução da engine será necessária para emitir snapshots/eventos intermediários, sem alterar silenciosamente a semântica de treinamento.
 
 ## 6. Logs de decisão: requisito central
 
@@ -393,7 +411,7 @@ Decisões já alinhadas:
 - [ ] A tecnologia exata da interface ainda será decidida.
 - [ ] O formato físico de persistência de replay ainda será decidido.
 - [ ] O esquema final de eventos será validado contra as assinaturas reais do código.
-- [ ] A implementação ainda não começou.
+- [x] A visão geral foi especificada para exibir o tabuleiro 7×4 completo de cada um dos oito jogadores, com posição individual das peças.\n- [x] Durante combate, clicar no jogador abre uma tela separada com todas as unidades dos dois lados e atualização condicionada aos dados reais da engine.\n- [ ] Confirmar se a engine atual emite eventos/snapshots intermediários de combate com posição e HP por unidade.\n- [ ] A implementação ainda não começou.
 
 ## 16. Manutenção deste documento
 
