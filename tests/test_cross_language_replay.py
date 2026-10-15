@@ -185,8 +185,18 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
         # Build the same owned-unit snapshot in both backends. Shop offers
         # remain random, but all board/bench/trait/combat features are controlled.
         champions = python_lobby.players[0].env.unit_manager.get_all_champions()
-        assert champions, "Python champion catalog is empty"
-        champion = champions[0]
+        shop_champions = [
+            unit for unit in champions if int(unit.get("cost", 1)) == 1
+        ]
+        assert len(shop_champions) >= 5, (
+            "Need five distinct cost-1 champions to synchronize shop fixtures"
+        )
+        shop_fixture = [
+            unit.get("apiName") or unit.get("api_name") or unit.get("champion_id")
+            for unit in shop_champions[:5]
+        ]
+        assert all(shop_fixture), "Fixture champions must have apiName"
+        champion = shop_champions[0]
         champion_api_name = (
             champion.get("apiName")
             or champion.get("api_name")
@@ -228,8 +238,27 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
                 player.env.hp = 0
                 assert cpp_engine.set_player_alive_for_testing(player_id, False)
 
+        # Normalize every current shop before replay. This removes independent
+        # reset RNG from the stock baseline and makes later stock deltas comparable.
+        for player_id, player in enumerate(python_lobby.players):
+            for slot, api_name in enumerate(shop_fixture):
+                assert player.env.shop_manager.set_offer_for_testing(slot, api_name), (
+                    "Python could not reserve initial shop fixture: player=%d slot=%d"
+                    % (player_id, slot)
+                )
+                assert cpp_engine.set_shop_offer_for_testing(
+                    player_id, slot, api_name
+                ), "C++ could not reserve initial shop fixture: player=%d slot=%d" % (
+                    player_id, slot
+                )
+
         # Compare owned units only after both backends have received the same fixture.
         _compare_audit_snapshots(python_lobby, cpp_engine, "shared_initial_fixture")
+
+        unit_manager = python_lobby.players[0].env.unit_manager
+        shop_fixture_ids = [
+            unit_manager.get_unit_id(unit) for unit in shop_champions[:5]
+        ]
 
         python_lobby.round_finished = [False] * python_lobby.PLAYERS_PER_LOBBY
         for player_id in range(2, python_lobby.PLAYERS_PER_LOBBY):
@@ -239,11 +268,51 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
         cpp_reward_totals = [0.0] * 8
 
         for step in fixture["steps"]:
+            # Queue identical offers for every roll-triggering transition.
+            # The explicit post-step sync below also covers eliminated players,
+            # whose shops may not reroll when a round resolves.
+            for player_id in range(python_lobby.PLAYERS_PER_LOBBY):
+                assert python_lobby.players[player_id].env.shop_manager.set_next_roll_for_testing(
+                    shop_fixture
+                ), "Python rejected shop roll fixture for player %d" % player_id
+                assert cpp_engine.set_next_shop_roll_for_testing(
+                    player_id, shop_fixture
+                ), "C++ rejected shop roll fixture for player %d" % player_id
+
             # Execute identical semantic actions through the two public APIs.
             py_obs, py_rewards, py_done, py_info = python_lobby.step(
                 step["python_actions"]
             )
             cpp_result = cpp_engine.step(step["cpp_actions"])
+
+            # Normalize current offers on both sides before comparing masks,
+            # observations, or pool counts. Any inability to reserve the same
+            # offer is itself a stock/parity failure, not a reason to skip it.
+            for player_id, player in enumerate(python_lobby.players):
+                for slot, api_name in enumerate(shop_fixture):
+                    assert player.env.shop_manager.set_offer_for_testing(
+                        slot, api_name
+                    ), "Python shop fixture failed: step=%s player=%d slot=%d" % (
+                        step["name"], player_id, slot
+                    )
+                    assert cpp_engine.set_shop_offer_for_testing(
+                        player_id, slot, api_name
+                    ), "C++ shop fixture failed: step=%s player=%d slot=%d" % (
+                        step["name"], player_id, slot
+                    )
+
+            py_pool = [
+                python_lobby.unit_pool.get_available(unit_id)
+                for unit_id in shop_fixture_ids
+            ]
+            cpp_pool = [
+                cpp_engine.pool_available(unit_id)
+                for unit_id in shop_fixture_ids
+            ]
+            assert py_pool == cpp_pool, (
+                "%s: shop pool stock diverged after controlled offers; "
+                "Python=%r C++=%r" % (step["name"], py_pool, cpp_pool)
+            )
 
             _compare_action_masks(python_lobby, cpp_engine, step["name"])
             _compare_audit_snapshots(python_lobby, cpp_engine, step["name"])
@@ -278,35 +347,21 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
             )
             py_obs_array = np.asarray(py_obs)
             cpp_obs_array = np.asarray(cpp_result["observations"])
-            # Owned-unit data is identical by fixture. Only shop offers
-            # remain dependent on the backend-specific random stream.
-            dim = py_obs_array.shape[1]
-            bench_start = 22 + 28 * 5
-            shop_start = bench_start + 9 * 5
-            shop_end = shop_start + 5 * 5
-            excluded = set(range(shop_start, shop_end))
-            deterministic_indices = np.array(
-                [index for index in range(dim) if index not in excluded],
-                dtype=np.int64,
-            )
-            py_deterministic = py_obs_array[:, deterministic_indices]
-            cpp_deterministic = cpp_obs_array[:, deterministic_indices]
+            # All shop offers are now controlled too, so compare the complete
+            # observation vector instead of excluding the shop feature slice.
             if not np.allclose(
-                py_deterministic, cpp_deterministic, rtol=1e-5, atol=2e-5
+                py_obs_array, cpp_obs_array, rtol=1e-5, atol=2e-5
             ):
                 mismatches = np.argwhere(
                     ~np.isclose(
-                        py_deterministic, cpp_deterministic,
-                        rtol=1e-5, atol=2e-5
+                        py_obs_array, cpp_obs_array, rtol=1e-5, atol=2e-5
                     )
                 )
                 first = tuple(int(x) for x in mismatches[0])
                 pytest.fail(
-                    f"{step['name']}.deterministic_observations{first}: "
-                    f"Python={py_deterministic[first]!r}, "
-                    f"C++={cpp_deterministic[first]!r}; "
-                    f"total mismatches={len(mismatches)}; "
-                        f"original_indices={deterministic_indices[mismatches[:20, 1]].tolist()}"
+                    f"{step['name']}.observations{first}: "
+                    f"Python={py_obs_array[first]!r}, C++={cpp_obs_array[first]!r}; "
+                    f"total mismatches={len(mismatches)}"
                 )
             assert np.isfinite(py_obs_array).all(), f"{step['name']}: Python observation contains NaN/inf"
             assert np.isfinite(cpp_obs_array).all(), f"{step['name']}: C++ observation contains NaN/inf"
