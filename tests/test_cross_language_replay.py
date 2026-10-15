@@ -138,8 +138,20 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
                 f"{step['name']}.observations.shape: Python={np.asarray(py_obs).shape}, "
                 f"C++={cpp_result['observations'].shape}"
             )
-            py_obs_array = np.asarray(py_obs, dtype=np.float32)
-            cpp_obs_array = np.asarray(cpp_result["observations"], dtype=np.float32)
+            # Observation ABI is float32 on both sides; do not hide a dtype
+            # regression by casting before checking the public API contract.
+            assert np.asarray(py_obs).dtype == np.dtype(np.float32), (
+                f"{step['name']}: Python observations must be float32"
+            )
+            assert cpp_result["observations"].dtype == np.dtype(np.float32), (
+                f"{step['name']}: C++ observations must be float32"
+            )
+            assert cpp_engine.observation_dim == np.asarray(py_obs).shape[1], (
+                f"{step['name']}.observation_dim: native={cpp_engine.observation_dim}, "
+                f"Python={np.asarray(py_obs).shape[1]}"
+            )
+            py_obs_array = np.asarray(py_obs)
+            cpp_obs_array = np.asarray(cpp_result["observations"])
             # The starting champion and shop RNG are not yet shared. Compare
             # stable fields exactly and validate random-dependent features separately
             # until both backends can be initialized from an identical full snapshot.
