@@ -447,6 +447,11 @@ PYBIND11_MODULE(tft_engine, module) {
             },
             py::arg("actions")
         )
+        .def("set_unit_for_testing", &TFTEngine::set_unit_for_testing,
+             py::arg("player_id"), py::arg("on_board"), py::arg("slot"),
+             py::arg("champion_api_name"), py::arg("star") = 1)
+        .def("set_player_alive_for_testing", &TFTEngine::set_player_alive_for_testing,
+             py::arg("player_id"), py::arg("alive"))
         .def("set_shop_locked", &TFTEngine::set_shop_locked,
              py::arg("player_id"), py::arg("locked"))
         .def("toggle_shop_lock", &TFTEngine::toggle_shop_lock,

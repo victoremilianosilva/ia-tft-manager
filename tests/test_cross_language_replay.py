@@ -112,6 +112,57 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
     try:
         python_lobby.reset()
         cpp_engine.reset(fixture["seed"])
+
+        # Build the same owned-unit snapshot in both backends. Shop offers
+        # remain random, but all board/bench/trait/combat features are controlled.
+        champions = python_lobby.players[0].env.unit_manager.get_all_champions()
+        assert champions, "Python champion catalog is empty"
+        champion = champions[0]
+        champion_api_name = (
+            champion.get("apiName")
+            or champion.get("api_name")
+            or champion.get("champion_id")
+        )
+        assert champion_api_name, f"Champion lacks apiName: {champion!r}"
+
+        for player_id, player in enumerate(python_lobby.players):
+            env = player.env
+            env.board_manager.board[:] = [None] * len(env.board_manager.board)
+            env.bench_manager.bench[:] = [None] * len(env.bench_manager.bench)
+            env.bench_manager.bench[0] = env.unit_manager.create_unit(champion)
+            assert cpp_engine.set_unit_for_testing(
+                player_id, False, 0, champion_api_name, 1
+            ), f"C++ could not set shared bench unit for player {player_id}"
+
+            if player_id == 0:
+                env.board_manager.board[6] = env.unit_manager.create_unit(champion)
+                env.board_manager.board[13] = env.unit_manager.create_unit(champion)
+                assert cpp_engine.set_unit_for_testing(
+                    player_id, True, 6, champion_api_name, 1
+                )
+                assert cpp_engine.set_unit_for_testing(
+                    player_id, True, 13, champion_api_name, 1
+                )
+            elif player_id == 1:
+                env.board_manager.board[0] = env.unit_manager.create_unit(champion)
+                assert cpp_engine.set_unit_for_testing(
+                    player_id, True, 0, champion_api_name, 1
+                )
+
+            env._rebuild_player_state()
+
+            # One controlled PVP pair makes winner/loser reward parity
+            # deterministic and avoids differences in matchmaking RNG.
+            if player_id >= 2:
+                player.alive = False
+                player.env.done = True
+                player.env.hp = 0
+                assert cpp_engine.set_player_alive_for_testing(player_id, False)
+
+        python_lobby.round_finished = [False] * python_lobby.PLAYERS_PER_LOBBY
+        for player_id in range(2, python_lobby.PLAYERS_PER_LOBBY):
+            python_lobby.round_finished[player_id] = True
+
         python_reward_totals = [0.0] * 8
         cpp_reward_totals = [0.0] * 8
 
@@ -152,23 +203,13 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
             )
             py_obs_array = np.asarray(py_obs)
             cpp_obs_array = np.asarray(cpp_result["observations"])
-            # The starting champion and shop RNG are not yet shared. Compare
-            # stable fields exactly and validate random-dependent features separately
-            # until both backends can be initialized from an identical full snapshot.
+            # Owned-unit data is identical by fixture. Only shop offers
+            # remain dependent on the backend-specific random stream.
             dim = py_obs_array.shape[1]
             bench_start = 22 + 28 * 5
             shop_start = bench_start + 9 * 5
             shop_end = shop_start + 5 * 5
-            extra_end = shop_end + 5
-            synergy_end = extra_end + 5
-            positioning_end = synergy_end + 4
-            traits_end = dim - 2
-            board_start = 22
-            # Role encoding depends on the randomly selected starter champion.
-            excluded = {board_start + 3, bench_start + 3, synergy_end}
-            excluded.update(range(shop_start, shop_end))
-            excluded.update(range(extra_end, synergy_end))
-            excluded.update(range(positioning_end, traits_end))
+            excluded = set(range(shop_start, shop_end))
             deterministic_indices = np.array(
                 [index for index in range(dim) if index not in excluded],
                 dtype=np.int64,
@@ -193,13 +234,7 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
                 )
             assert np.isfinite(py_obs_array).all(), f"{step['name']}: Python observation contains NaN/inf"
             assert np.isfinite(cpp_obs_array).all(), f"{step['name']}: C++ observation contains NaN/inf"
-            random_dependent = np.r_[
-                board_start + 3,
-                bench_start + 3,
-                np.arange(shop_start, shop_end),
-                np.arange(extra_end, synergy_end),
-                np.arange(positioning_end, traits_end),
-            ]
+            random_dependent = np.arange(shop_start, shop_end)
             py_random = py_obs_array[:, random_dependent]
             cpp_random = cpp_obs_array[:, random_dependent]
             assert np.isfinite(py_random).all() and np.isfinite(cpp_random).all(), (
@@ -302,6 +337,7 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
             assert all(
                 item.get("round_resolved", False) is expected_round_resolved
                 for item in py_info["players"]
+                if not item.get("dead", False)
             ), (
                 f"{step['name']}: Python round_resolved flags do not match "
                 f"expected={expected_round_resolved}"
