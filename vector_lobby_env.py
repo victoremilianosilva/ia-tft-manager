@@ -76,6 +76,20 @@ class LobbyVectorEnv:
             info = dict(info)
             info["lobby_done"] = bool(lobby_done)
 
+            # Captura o estado terminal ANTES do reset para preservar ranking/colocações.
+            if lobby_done:
+                get_public_state = getattr(env, "get_public_state", None)
+                if callable(get_public_state):
+                    info["final_state"] = get_public_state()
+                else:
+                    info["final_state"] = {
+                        "players": info.get("players", []),
+                        "round": info.get("round"),
+                        "stage": info.get("stage"),
+                        "ranking": info.get("ranking", []),
+                        "winner_id": info.get("winner_id"),
+                    }
+
             # Salva a observação terminal antes de reiniciar a lobby.
             # A recompensa terminal e o ranking já foram calculados
             # por TFTLobby.step().
