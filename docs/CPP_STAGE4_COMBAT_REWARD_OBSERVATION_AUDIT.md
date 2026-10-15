@@ -141,3 +141,25 @@ A API nativa agora expõe arrays separados `action_rewards`, `combat_rewards` e 
 **Validação executada:** workflow [C++ engine and cross-language parity](https://github.com/victoremilianosilva/teste-ia/actions/runs/38760053429) aprovado: build nativo, CTest e regressões Python/C++ passaram.
 
 **Limite explícito:** o estado de composição está integrado ao snapshot estratégico do lobby, não como uma classe C++ independente com a mesma forma de objeto do Python. As consultas públicas e os cálculos de estado são equivalentes; a API de score recebe o identificador `apiName` do campeão e estrelas, enquanto o Python recebe o dicionário da unidade.
+
+
+## Auditoria complementar — PositioningManager.py (2026-10-15)
+
+O novo cabeçalho `cpp/include/strategy/PositioningEngine.hpp` implementa a lógica de posicionamento como funções puras, sem alterar o estado real do tabuleiro. O binding `tft_engine` expõe as operações para os testes cruzados e a observação nativa reutiliza a mesma função `evaluate_board_positioning`, evitando manter uma segunda fórmula separada.
+
+| Método Python | API C++ | Validação |
+|---|---|---|
+| `is_valid_position` | `positioning_is_valid_position` | posições válidas e limites |
+| `position_to_row_col` / `row_col_to_position` | `positioning_position_to_row_col` / `positioning_row_col_to_position` | índices row-major do tabuleiro 4x7 |
+| `get_neighbors` | `positioning_get_neighbors` | vizinhos ortogonais e diagonais |
+| `evaluate_unit_placement` | `positioning_evaluate_unit_placement` | todas as roles em cada posição |
+| `evaluate_protection` | `positioning_evaluate_protection` | vizinhos ocupados e tanks adjacentes |
+| `evaluate_board_positioning` | `positioning_evaluate_board_positioning` | score completo, mesma fórmula e pesos |
+| `find_best_position` | `positioning_find_best_position` | busca por posições vazias, sem mover unidade real |
+| `find_best_swap` | `positioning_find_best_swap` | simulação temporária da troca e delta de score |
+| `is_board_stable` | `positioning_is_board_stable` | limiar de melhoria padrão 0.01 |
+| `get_normalized_positioning_score` | `positioning_get_normalized_score` | score dividido por quantidade de unidades × 10 e limitado a [-1, 1] |
+
+A suíte `tests/test_positioning_parity.py` compara tabuleiros vazios, mistos e determinísticos; testa as cinco roles, vizinhos, fórmulas, busca de posição/troca e estabilidade. A execução é incluída no workflow `.github/workflows/cpp-parity.yml`.
+
+**Limites de representação:** a API C++ recebe um vetor de 28 roles (com -1 para casa vazia), enquanto o Python recebe uma lista de dicionários de unidades. UUIDs não são necessários para as fórmulas de posicionamento; continuam relevantes para a assinatura do tabuleiro usada pelo anti-loop, que permanece separada. Valores de retorno sem posição são representados como -1 no C++ e devem ser convertidos para `None` na camada de integração.
