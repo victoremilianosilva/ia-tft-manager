@@ -1246,6 +1246,9 @@ class TFTLobby:
         # ⚔️ COMBATE NORMAL NO MOTOR C++
         # --------------------------------------------------------
 
+        combat_timed_out = False
+        combat_completed = True
+
         if winner is None:
             combat_input = self._build_cpp_combat_input(
                 player_a,
@@ -1271,6 +1274,7 @@ class TFTLobby:
             # survivor-based result, but preserve the timeout signal for logs
             # and diagnostics instead of silently discarding it.
             combat_timed_out = bool(cpp_result.timeout)
+            combat_completed = bool(cpp_result.completed)
 
             survivors_a = int(cpp_result.player_a_survivors)
             survivors_b = int(cpp_result.player_b_survivors)
@@ -1327,7 +1331,7 @@ class TFTLobby:
             damage=damage,
             draw=False,
             timeout=combat_timed_out,
-            completed=bool(cpp_result.completed),
+            completed=combat_completed,
         )
 
         # 📊 Atualiza estatísticas da lobby.
