@@ -452,6 +452,12 @@ ActionMaskBatch ActionMaskEngine::generate_masks(
         // restore a dummy shop index that could be mistaken for a valid buy.
         masks.shop_mask.fill(MASK_DISABLED);
     }
+    if (!board_has_space) {
+        // No empty board cell means no bench-to-board destination is valid.
+        for (auto& row : masks.bench_to_board_target_masks) {
+            row.fill(MASK_DISABLED);
+        }
+    }
     return masks;
 }
 
