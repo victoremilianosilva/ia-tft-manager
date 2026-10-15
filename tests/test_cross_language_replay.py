@@ -84,6 +84,27 @@ def _native_snapshot(engine):
     }
 
 
+MASK_SHAPES = {
+    "type_mask": (7,), "shop_mask": (5,), "bench_source_mask": (9,),
+    "board_target_mask": (28,), "board_source_mask": (28,),
+    "board_move_target_masks": (28, 28), "bench_move_source_mask": (9,),
+    "bench_to_board_target_masks": (9, 28),
+}
+
+def _compare_action_masks(python_lobby, cpp_engine, step_name):
+    """Compara todas as máscaras nomeadas e suas matrizes condicionais."""
+    py_masks = python_lobby.get_action_masks()
+    cpp_masks = cpp_engine.get_action_masks()
+    assert len(py_masks) == len(cpp_masks) == 8, "%s: lote de máscaras inválido" % step_name
+    for player_id, (py_player, cpp_player) in enumerate(zip(py_masks, cpp_masks)):
+        for name, shape in MASK_SHAPES.items():
+            assert name in py_player and name in cpp_player, (step_name, player_id, name)
+            py_mask = np.asarray(py_player[name])
+            cpp_mask = np.asarray(cpp_player[name])
+            assert py_mask.shape == cpp_mask.shape == shape, "%s player=%d mask=%s shape" % (step_name, player_id, name)
+            assert py_mask.dtype == np.bool_ and cpp_mask.dtype == np.bool_, (step_name, player_id, name, 'dtype')
+            np.testing.assert_array_equal(py_mask, cpp_mask, err_msg='%s player=%d mask=%s divergiu' % (step_name, player_id, name))
+
 def _compare_snapshots(py_state, cpp_state, step_name):
     for field in ("round", "stage", "finished"):
         assert py_state[field] == cpp_state[field], (
@@ -112,6 +133,8 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
     try:
         python_lobby.reset()
         cpp_engine.reset(fixture["seed"])
+
+        _compare_action_masks(python_lobby, cpp_engine, "reset")
 
         # Build the same owned-unit snapshot in both backends. Shop offers
         # remain random, but all board/bench/trait/combat features are controlled.
@@ -172,6 +195,8 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
                 step["python_actions"]
             )
             cpp_result = cpp_engine.step(step["cpp_actions"])
+
+            _compare_action_masks(python_lobby, cpp_engine, step["name"])
 
             assert all(math.isfinite(float(value)) for value in py_rewards), (
                 f"{step['name']}: Python returned a non-finite reward"
