@@ -105,6 +105,45 @@ def _compare_action_masks(python_lobby, cpp_engine, step_name):
             assert py_mask.dtype == np.bool_ and cpp_mask.dtype == np.bool_, (step_name, player_id, name, 'dtype')
             np.testing.assert_array_equal(py_mask, cpp_mask, err_msg='%s player=%d mask=%s divergiu' % (step_name, player_id, name))
 
+def _compare_audit_snapshots(python_lobby, cpp_engine, step_name):
+    """Compare unit slots and economy without relying on UUID or RNG."""
+    native = cpp_engine.get_audit_snapshot()
+    assert int(native["round"]) == int(python_lobby.round) + 1, (step_name, "round audit")
+    assert int(native["stage"]) == int(python_lobby.stage), (step_name, "stage audit")
+    for player_id, player in enumerate(python_lobby.players):
+        env = player.env
+        py_economy = env.economy_manager
+        cpp_player = native["players"][player_id]
+        for field in ("gold", "level", "xp", "win_streak", "loss_streak"):
+            assert int(getattr(py_economy, field)) == int(cpp_player[field]), (
+                step_name, player_id, field, getattr(py_economy, field), cpp_player[field]
+            )
+        for py_name, cpp_name, py_units in (
+            ("board", "board", env.board_manager.board),
+            ("bench", "bench", env.bench_manager.bench),
+        ):
+            cpp_units = cpp_player[cpp_name]
+            assert len(py_units) == len(cpp_units), (step_name, player_id, py_name, "length")
+            for slot, (py_unit, cpp_unit) in enumerate(zip(py_units, cpp_units)):
+                occupied = py_unit is not None
+                assert occupied is bool(cpp_unit["occupied"]), (
+                    step_name, player_id, py_name, slot, "occupied"
+                )
+                if not occupied:
+                    continue
+                assert int(py_unit.get("star", 1)) == int(cpp_unit["star"]), (
+                    step_name, player_id, py_name, slot, "star"
+                )
+                assert int(py_unit.get("cost", 0)) == int(cpp_unit["cost"]), (
+                    step_name, player_id, py_name, slot, "cost"
+                )
+                py_id = py_unit.get("champion_id", py_unit.get("apiName"))
+                if py_id is not None:
+                    assert str(py_id) == str(cpp_unit["champion_id"]), (
+                        step_name, player_id, py_name, slot, py_id, cpp_unit["champion_id"]
+                    )
+
+
 def _compare_snapshots(py_state, cpp_state, step_name):
     for field in ("round", "stage", "finished"):
         assert py_state[field] == cpp_state[field], (
@@ -135,6 +174,7 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
         cpp_engine.reset(fixture["seed"])
 
         _compare_action_masks(python_lobby, cpp_engine, "reset")
+        _compare_audit_snapshots(python_lobby, cpp_engine, "reset")
 
         # Build the same owned-unit snapshot in both backends. Shop offers
         # remain random, but all board/bench/trait/combat features are controlled.
@@ -197,6 +237,7 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
             cpp_result = cpp_engine.step(step["cpp_actions"])
 
             _compare_action_masks(python_lobby, cpp_engine, step["name"])
+            _compare_audit_snapshots(python_lobby, cpp_engine, step["name"])
 
             assert all(math.isfinite(float(value)) for value in py_rewards), (
                 f"{step['name']}: Python returned a non-finite reward"
