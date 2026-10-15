@@ -35,6 +35,7 @@ class ShopManager:
         self.shop = self._create_empty_shop()
 
         self.locked = False
+        self._next_roll_for_testing = None
 
     # =============================================================
     # 🧱 ESTRUTURA
@@ -47,6 +48,7 @@ class ShopManager:
         self.shop = self._create_empty_shop()
         self.locked = False
 
+        self._next_roll_for_testing = None
     # =============================================================
     # 🔎 CONSULTA
     # =============================================================
