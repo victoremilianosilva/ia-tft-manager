@@ -1273,8 +1273,8 @@ class TFTLobby:
             # Timeout is a valid partial outcome in CombatEngine: keep its
             # survivor-based result, but preserve the timeout signal for logs
             # and diagnostics instead of silently discarding it.
-            combat_timed_out = bool(cpp_result.timeout)
-            combat_completed = bool(cpp_result.completed)
+            combat_timed_out = bool(getattr(cpp_result, "timeout", False))
+            combat_completed = bool(getattr(cpp_result, "completed", True))
 
             survivors_a = int(cpp_result.player_a_survivors)
             survivors_b = int(cpp_result.player_b_survivors)
