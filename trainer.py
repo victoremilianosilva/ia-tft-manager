@@ -402,6 +402,12 @@ class Trainer:
                 slot = int(action[1])
                 conditional_valid = (0 <= slot < mask_np["shop_mask"].shape[1]
                                      and bool(mask_np["shop_mask"][agent_idx, slot]))
+            elif action_type == int(ActionType.SELL):
+                slot = int(action[2])
+                conditional_valid = (
+                    0 <= slot < mask_np["bench_source_mask"].shape[1]
+                    and bool(mask_np["bench_source_mask"][agent_idx, slot])
+                )
             elif action_type == int(ActionType.MOVE_BENCH):
                 source, target = int(action[2]), int(action[3])
                 source_mask = mask_np["bench_move_source_mask"][agent_idx]
