@@ -883,3 +883,37 @@ def test_sell_core_and_non_core_units_match_rewards_gold_and_pool_return():
         if callable(close):
             close()
         cpp_engine.close()
+
+
+def test_ppo_completes_update_with_cpp_backend(tmp_path, monkeypatch):
+    """Exercise a real PPO update through the native C++ lobby adapter."""
+    import os
+    import sys
+
+    monkeypatch.chdir(tmp_path)
+    for module_dir in (
+        ROOT / "cpp" / "build" / "bin",
+        ROOT / "cpp" / "build" / "bin" / "Release",
+    ):
+        if module_dir.exists() and str(module_dir) not in sys.path:
+            sys.path.insert(0, str(module_dir))
+
+    # The CI parity job sets REQUIRE_CPP_PARITY=1, so native modules cannot
+    # silently skip this integration test when they fail to build/import.
+    if os.environ.get("REQUIRE_CPP_PARITY") == "1":
+        import tft_engine  # noqa: F401
+        import combat_engine  # noqa: F401
+
+    from trainer import Trainer
+
+    trainer = Trainer(num_envs=1, use_subprocess=False, engine_backend="cpp")
+    assert trainer.engine_backend == "cpp"
+    try:
+        trainer.train(total_updates=1, rollout_steps=2)
+    finally:
+        vec_env = getattr(trainer, "vec_env", None)
+        if vec_env is not None:
+            vec_env.close()
+        writer = getattr(trainer, "writer", None)
+        if writer is not None:
+            writer.close()
