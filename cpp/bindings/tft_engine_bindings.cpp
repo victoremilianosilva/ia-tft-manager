@@ -600,6 +600,12 @@ PYBIND11_MODULE(tft_engine, module) {
              py::arg("champion_api_name"), py::arg("star") = 1)
         .def("set_player_alive_for_testing", &TFTEngine::set_player_alive_for_testing,
              py::arg("player_id"), py::arg("alive"))
+        .def("set_player_economy_for_testing", &TFTEngine::set_player_economy_for_testing,
+             py::arg("player_id"), py::arg("gold"), py::arg("level"), py::arg("xp"))
+        .def("set_shop_offer_for_testing", &TFTEngine::set_shop_offer_for_testing,
+             py::arg("player_id"), py::arg("slot"), py::arg("champion_api_name"))
+        .def("set_next_shop_roll_for_testing", &TFTEngine::set_next_shop_roll_for_testing,
+             py::arg("player_id"), py::arg("champion_api_names"))
         .def_property_readonly("observation_dim", &TFTEngine::observation_dim)
         .def_property_readonly("episode_id", &TFTEngine::episode_id)
         .def_property_readonly("round", &TFTEngine::round)
