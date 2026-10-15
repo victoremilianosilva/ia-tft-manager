@@ -2172,6 +2172,58 @@ TFTEngine::get_action_masks() const {
     return result;
 }
 
+AuditSnapshot TFTEngine::get_audit_snapshot() const {
+    if (!impl_) {
+        throw std::runtime_error("TFTEngine nao possui estado interno.");
+    }
+    impl_->ensure_open();
+
+    AuditSnapshot snapshot{};
+    snapshot.round = impl_->round + 1;
+    snapshot.stage = impl_->stage;
+    snapshot.finished = impl_->done;
+
+    const auto describe_unit = [this](const UnitInstance* unit) {
+        AuditUnitSnapshot result{};
+        if (!unit) return result;
+        result.occupied = true;
+        result.champion_id = unit->champion_id;
+        result.uuid = unit->uuid;
+        result.star = unit->star;
+        const auto* definition = impl_->catalog->find_by_id(
+            unit->champion_internal_id
+        );
+        result.cost = definition ? definition->cost : 0;
+        return result;
+    };
+
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        const auto& source = impl_->player_envs[i];
+        auto& target = snapshot.players[i];
+        target.player_id = static_cast<std::int32_t>(i);
+        target.gold = source.economy.gold;
+        target.level = source.economy.level;
+        target.xp = source.economy.xp;
+        target.win_streak = source.economy.win_streak;
+        target.loss_streak = source.economy.loss_streak;
+        target.masks = source.action_masks;
+
+        for (std::size_t slot = 0; slot < kBoardSlots; ++slot)
+            target.board[slot] = describe_unit(
+                source.board[slot] ? &*source.board[slot] : nullptr
+            );
+        for (std::size_t slot = 0; slot < kBenchSlots; ++slot)
+            target.bench[slot] = describe_unit(
+                source.bench[slot] ? &*source.bench[slot] : nullptr
+            );
+        for (std::size_t slot = 0; slot < kShopSlots; ++slot)
+            target.shop[slot] = describe_unit(source.shop->get_unit(
+                static_cast<std::int32_t>(slot)
+            ));
+    }
+    return snapshot;
+}
+
 bool TFTEngine::set_unit_for_testing(
     std::int32_t player_id,
     bool on_board,
