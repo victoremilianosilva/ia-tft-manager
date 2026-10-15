@@ -238,6 +238,8 @@ class Trainer:
                 print(
                     "✅ Estado do optimizer restaurado."
                 )
+                restored_lr = [float(group["lr"]) for group in self.optimizer.param_groups]
+                print(f"📉 LR efetiva após restaurar optimizer: {restored_lr}")
 
             # --------------------------------------------------------
             # SCHEDULER
@@ -259,6 +261,10 @@ class Trainer:
 
                 print(
                     "✅ Estado do scheduler restaurado."
+                )
+                print(
+                    f"🗓️ Scheduler restaurado | last_epoch={self.scheduler.last_epoch} | "
+                    f"LR atual={[float(group['lr']) for group in self.optimizer.param_groups]}"
                 )
 
             # --------------------------------------------------------
@@ -1562,16 +1568,17 @@ class Trainer:
 
             self.scheduler.step()
 
-            current_lr = (
-                self.optimizer
-                .param_groups[0]["lr"]
-            )
+            current_lrs = [float(group["lr"]) for group in self.optimizer.param_groups]
+            current_lr = current_lrs[0]
 
             self.writer.add_scalar(
                 "charts/learning_rate",
                 current_lr,
                 update
             )
+            self.writer.add_scalar("charts/learning_rate_min", min(current_lrs), update)
+            self.writer.add_scalar("charts/learning_rate_max", max(current_lrs), update)
+            self.writer.add_scalar("ppo/target_kl", float(self.ppo.target_kl), update)
   
             # ========================================================
             # 📊 GENERAL LOGS
