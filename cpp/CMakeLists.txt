@@ -255,6 +255,16 @@ endif()
 include(CTest)
 
 if(BUILD_TESTING)
+    add_executable(test_combat_engine
+        tests/test_combat_engine.cpp
+        src/combat/CombatEngine.cpp
+    )
+    configure_tft_module(test_combat_engine)
+    target_include_directories(test_combat_engine
+        PRIVATE "${TFT_COMBAT_INCLUDE_DIR}"
+    )
+    add_test(NAME test_combat_engine COMMAND test_combat_engine)
+
     add_executable(test_reward_model tests/test_reward_model.cpp)
     target_include_directories(test_reward_model PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
     add_test(NAME test_reward_model COMMAND test_reward_model)
