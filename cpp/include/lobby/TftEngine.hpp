@@ -177,6 +177,17 @@ struct PlayerActionMasks {
         bench_to_board_target_masks{};
 };
 
+struct RewardState {
+    double previous_board_power{0.0};
+    double previous_positioning_score{0.0};
+    double previous_synergy_score{0.0};
+    std::int32_t previous_level{1};
+    std::int32_t previous_gold{0};
+    double last_combat_reward{0.0};
+    double round_reward{0.0};
+    double total_reward{0.0};
+};
+
 struct ResetResult {
     // Row-major: (8, observation_dim).
     std::vector<float> observations;
@@ -342,6 +353,8 @@ public:
 
     std::array<std::vector<StrategyInfo>, kPlayersPerLobby>
     get_strategies() const;
+
+    RewardState get_reward_state(std::int32_t player_id) const;
     double get_unit_comp_score(std::int32_t player_id, const std::string& champion_api_name, std::int32_t star = 1) const;
     bool is_core_unit(std::int32_t player_id, const std::string& champion_api_name) const;
     bool is_core_trait(std::int32_t player_id, const std::string& trait) const;

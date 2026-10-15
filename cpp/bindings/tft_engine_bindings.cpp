@@ -12,6 +12,7 @@
 #include <pybind11/stl.h>
 
 #include "lobby/TftEngine.hpp"
+#include "reward/RewardManager.hpp"
 
 namespace py = pybind11;
 
@@ -396,6 +397,43 @@ py::dict anti_loop_to_dict(
 }  // namespace
 
 PYBIND11_MODULE(tft_engine, module) {
+
+    py::class_<tft::RewardManager>(module, "RewardManager")
+        .def(py::init<>())
+        .def("reset", &tft::RewardManager::reset)
+        .def("calculate_combat_reward", &tft::RewardManager::calculate_combat_reward,
+             py::arg("won"), py::arg("damage_dealt")=0.0, py::arg("damage_taken")=0.0,
+             py::arg("enemy_alive")=0, py::arg("own_alive")=0)
+        .def("calculate_power_reward", &tft::RewardManager::calculate_power_reward)
+        .def("calculate_synergy_reward", &tft::RewardManager::calculate_synergy_reward)
+        .def("calculate_positioning_reward", &tft::RewardManager::calculate_positioning_reward)
+        .def("calculate_level_reward", &tft::RewardManager::calculate_level_reward)
+        .def("calculate_economy_reward", &tft::RewardManager::calculate_economy_reward,
+             py::arg("gold"), py::arg("level"), py::arg("hp"))
+        .def("calculate_streak_reward", &tft::RewardManager::calculate_streak_reward)
+        .def("calculate_board_reward", &tft::RewardManager::calculate_board_reward)
+        .def("calculate_action_reward", &tft::RewardManager::calculate_action_reward,
+             py::arg("action_type"), py::arg("action_success"), py::arg("action_value")=0.0)
+        .def("calculate_total_reward", &tft::RewardManager::calculate_total_reward,
+             py::arg("combat_reward")=0.0, py::arg("power_reward")=0.0,
+             py::arg("synergy_reward")=0.0, py::arg("positioning_reward")=0.0,
+             py::arg("level_reward")=0.0, py::arg("economy_reward")=0.0,
+             py::arg("streak_reward")=0.0, py::arg("board_reward")=0.0,
+             py::arg("action_reward")=0.0)
+        .def("get_state", [](const tft::RewardManager& self) {
+            const auto st=self.get_state();
+            py::dict d;
+            d["previous_board_power"]=st.previous_board_power;
+            d["previous_positioning_score"]=st.previous_positioning_score;
+            d["previous_synergy_score"]=st.previous_synergy_score;
+            d["previous_level"]=st.previous_level;
+            d["previous_gold"]=st.previous_gold;
+            d["last_combat_reward"]=st.last_combat_reward;
+            d["round_reward"]=st.round_reward;
+            d["total_reward"]=st.total_reward;
+            return d;
+        });
+
     module.doc() =
         "API Python do motor nativo de simulacao TFT.";
 
@@ -472,6 +510,19 @@ PYBIND11_MODULE(tft_engine, module) {
             },
             py::arg("actions")
         )
+        .def("get_reward_state", [](const TFTEngine& self, std::int32_t player_id) {
+            const auto st = self.get_reward_state(player_id);
+            py::dict d;
+            d["previous_board_power"] = st.previous_board_power;
+            d["previous_positioning_score"] = st.previous_positioning_score;
+            d["previous_synergy_score"] = st.previous_synergy_score;
+            d["previous_level"] = st.previous_level;
+            d["previous_gold"] = st.previous_gold;
+            d["last_combat_reward"] = st.last_combat_reward;
+            d["round_reward"] = st.round_reward;
+            d["total_reward"] = st.total_reward;
+            return d;
+        }, py::arg("player_id"))
         .def("set_unit_for_testing", &TFTEngine::set_unit_for_testing,
              py::arg("player_id"), py::arg("on_board"), py::arg("slot"),
              py::arg("champion_api_name"), py::arg("star") = 1)

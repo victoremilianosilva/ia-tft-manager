@@ -2382,6 +2382,27 @@ TFTEngine::get_strategies() const {
     return impl_->strategies;
 }
 
+RewardState TFTEngine::get_reward_state(std::int32_t player_id) const {
+    if (!impl_ || player_id < 0 ||
+        player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) {
+        throw std::out_of_range("player_id fora do intervalo.");
+    }
+    impl_->ensure_open();
+    const auto i = static_cast<std::size_t>(player_id);
+    RewardState state{};
+    state.previous_board_power = impl_->previous_board_power[i];
+    state.previous_positioning_score = impl_->previous_positioning_score[i];
+    state.previous_synergy_score = impl_->previous_synergy_score[i];
+    state.previous_level = impl_->previous_reward_level[i];
+    // RewardManager.py declares previous_gold but does not update it.
+    // Keep the same observable value until the Python contract changes.
+    state.previous_gold = 0;
+    state.last_combat_reward = impl_->last_combat_reward[i];
+    state.round_reward = impl_->round_reward_total[i];
+    state.total_reward = impl_->total_reward[i];
+    return state;
+}
+
 // ============================================================
 // MÉTRICAS ANTI-LOOP
 // ============================================================
