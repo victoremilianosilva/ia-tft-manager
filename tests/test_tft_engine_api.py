@@ -60,8 +60,8 @@ def test_lobby_step_contract():
         assert state["round_index"] == 1
         assert state["stage"] == 1
 
-        # A última posição da observação provisória representa a rodada.
-        assert np.all(result["observations"][:, -1] == 2)
+        # O índice 6 do core contém a rodada normalizada pelo contrato Python.
+        assert np.allclose(result["observations"][:, 6], 2.0 / 12.0)
         
     finally:
         engine.close()
