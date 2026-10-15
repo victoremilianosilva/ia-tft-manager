@@ -63,16 +63,19 @@ A interface não deve acessar estruturas internas da engine diretamente. Uma cam
 
 ### 4.1 O modelo já treinado é suficiente?
 
-Sim, para avaliação, desde que o checkpoint seja compatível com a arquitetura da política, o ambiente e as dimensões atuais das observações e ações. O fluxo não deve executar otimização PPO nem atualizar pesos.
+Sim, para avaliação, desde que o checkpoint seja compatível com a arquitetura da política, o ambiente e as dimensões atuais das observações e ações. **O visualizador é exclusivamente de inferência: não treina, não retreina e não atualiza os pesos.** O treinamento continua sendo um processo separado, executado antes da abertura do visualizador.
 
-A sessão precisa:
+Regras obrigatórias da sessão:
 
-- Carregar o checkpoint selecionado.
-- Instanciar a arquitetura de política compatível.
-- Usar modo de avaliação/inferência e evitar gradientes desnecessários.
-- Preservar o contrato de observações e máscaras.
-- Registrar identificador ou hash do checkpoint e versão da política.
-- Registrar seed e configuração da sessão.
+- Carregar o checkpoint selecionado e instanciar a arquitetura de política compatível.
+- Usar `model.eval()` e `torch.inference_mode()` (ou `torch.no_grad()` quando necessário), de acordo com a implementação real da política.
+- Não criar nem executar otimizador PPO no visualizador; não chamar `optimizer.step()`, rotinas de atualização de política, backpropagation ou coleta de rollout destinada a treinamento.
+- Não salvar checkpoints modificados pela sessão. Salvar logs, snapshots e replays é permitido e independente do treinamento.
+- Preservar exatamente o contrato de observações, máscaras, ações e recompensas da engine.
+- Registrar identificador/hash do checkpoint, versão da política, seed e configuração da sessão.
+- Verificar antes da partida que os pesos carregados permanecem inalterados durante toda a avaliação.
+
+`model.eval()` por si só não torna a escolha de ação determinística. O modo determinístico/estocástico deve ser controlado explicitamente pela API de inferência já existente.
 
 ### 4.2 Modos selecionáveis
 
@@ -85,9 +88,9 @@ Mesmo com modo determinístico, não se deve prometer resultados idênticos se m
 
 ### 4.3 Uma política ou oito?
 
-A configuração inicial recomendada é **uma política/checkpoint compartilhada pelos oito agentes**, mantendo estado de jogo e histórico independentes para cada jogador. Não é necessário carregar oito cópias dos mesmos pesos se a API atual permitir compartilhar o modelo com segurança.
+A configuração inicial recomendada é **um checkpoint compartilhado pelos oito agentes**, mantendo observações, estado de jogo, seed/fluxo de amostragem e histórico de decisões independentes por jogador. Não é necessário carregar oito cópias dos mesmos pesos se a API atual permitir compartilhar o modelo com segurança.
 
-A arquitetura deve permitir futuramente carregar políticas ou checkpoints diferentes por assento para comparação. Isso não é requisito da primeira versão.
+A arquitetura deve permitir futuramente associar checkpoints diferentes a assentos específicos para comparação, mas isso não é requisito da primeira versão. Se houver apenas um checkpoint, os oito agentes usam a mesma política; isso não significa que tomarão necessariamente as mesmas decisões, pois os estados observados e as amostragens podem ser diferentes.
 
 ## 5. Interface: visão geral e foco individual
 
@@ -283,7 +286,7 @@ Links:
 
 ## 10. Replay reproduzível
 
-O replay deve reproduzir os dados gravados, não pedir à política que jogue novamente e presumir que a partida será idêntica. Isso é especialmente importante no modo estocástico.
+O replay deve reproduzir os dados gravados, não pedir à política que jogue novamente e presumir que a partida será idêntica. Isso é especialmente importante no modo estocástico. **Abrir ou reproduzir um replay nunca dispara treinamento nem precisa carregar/executar a política**: a sessão gravada deve conter os eventos e snapshots necessários para reconstruir o que foi registrado.
 
 ![Ciclo de auditoria de uma decisão](viwer/event-lifecycle.svg)
 
@@ -324,17 +327,18 @@ O visualizador deve facilitar avaliações após diferentes quantidades de trein
 
 Uma única partida serve para observar comportamento, mas não prova superioridade de um checkpoint. Avaliações comparativas precisam de várias partidas e condições controladas.
 
-## 12. Tecnologia: orientação, ainda não decisão final
+## 12. Tecnologia: recomendação e decisões pendentes
 
-Direção inicial:
+Direção técnica recomendada:
 
-- Engine: C++ atual.
-- Modelo: Python/PyTorch.
+- Engine: C++ atual, como fonte da verdade.
+- Modelo: Python/PyTorch, apenas carregamento de checkpoint e inferência.
 - Controlador: Python, aproveitando a integração existente.
-- Interface: aplicação desktop com frontend moderno e ponte local com o controlador.
-- Persistência: arquivos de replay versionados.
+- Interface desktop: **PySide6/Qt**, recomendação inicial pela integração direta com Python/PyTorch e pelos controles necessários para lobby, inspeção, logs e replay.
+- Gráficos/telemetria: avaliar pyqtgraph ou Qt Charts conforme o volume e o tipo de dados.
+- Persistência: formato de replay versionado, a escolher após medir volume e requisitos de consulta.
 
-A tecnologia específica de frontend, comunicação e armazenamento deve ser escolhida depois de confirmar as APIs atuais e estimar volume de eventos. Não é necessário reescrever a engine ou migrar a política para C++.
+PySide6 é a recomendação, mas a escolha deve ser confirmada antes de iniciar a implementação. Não é necessário reescrever a engine nem migrar a política para C++. A UI não deve executar inferência pesada nem simulação diretamente na thread de renderização; o controlador deve coordenar o trabalho para manter a interface responsiva.
 
 ## 13. Plano de implementação
 
