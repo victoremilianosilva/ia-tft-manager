@@ -38,7 +38,7 @@ def test_positioning_formula_search_and_geometry_match(roles):
     assert cpp.positioning_is_valid_position(-1) == manager.is_valid_position(-1)
     for p in range(-1, 29):
         assert bool(cpp.positioning_is_valid_position(p)) == manager.is_valid_position(p)
-        assert tuple(cpp.positioning_position_to_row_col(p)) == manager.position_to_row_col(p)
+        cpp_rc = tuple(cpp.positioning_position_to_row_col(p))\n        py_rc = manager.position_to_row_col(p)\n        assert ((None, None) if cpp_rc == (-1, -1) else cpp_rc) == py_rc
         for diagonal in (False, True):
             assert list(cpp.positioning_get_neighbors(p, diagonal)) == manager.get_neighbors(p, diagonal)
 
@@ -55,14 +55,14 @@ def test_positioning_formula_search_and_geometry_match(roles):
     for role in range(5):
         py_position, py_score = manager.find_best_position(board, {"role": UnitRole(role)})
         cpp_position, cpp_score = cpp.positioning_find_best_position(roles, role)
-        assert cpp_position == py_position, f"best position role={role}"
+        assert (None if cpp_position < 0 else cpp_position) == py_position, f"best position role={role}"
         if py_position is not None:
             _close(cpp_score, py_score, f"best-position-score[{role}]")
 
     for source, role in enumerate(roles):
         py_position, py_delta = manager.find_best_swap(board, source)
         cpp_position, cpp_delta = cpp.positioning_find_best_swap(roles, source)
-        assert cpp_position == py_position, f"best swap source={source}"
+        assert (None if cpp_position < 0 else cpp_position) == py_position, f"best swap source={source}"
         if py_position is not None:
             _close(cpp_delta, py_delta, f"best-swap-delta[{source}]")
     assert bool(cpp.positioning_is_board_stable(roles)) == manager.is_board_stable(board)
