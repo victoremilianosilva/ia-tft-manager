@@ -1779,10 +1779,14 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
 
                 if (definition) {
                     if (!this->strategy.empty()) {
-                        const auto& core_units = this->strategy.back().core_units;
+                        // CompositionManager.is_core_unit() checks the
+                        // UnitManager internal ID (unit["id"]), not apiName.
+                        // Keep SELL reward semantics identical to Python.
+                        const auto& core_unit_ids = this->strategy.back().core_unit_ids;
                         sold_core_unit = std::find(
-                            core_units.begin(), core_units.end(), unit.champion_id
-                        ) != core_units.end();
+                            core_unit_ids.begin(), core_unit_ids.end(),
+                            unit.champion_internal_id
+                        ) != core_unit_ids.end();
                     }
                     const auto sell_value =
                         EconomyEngine::get_sell_value(
