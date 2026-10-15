@@ -58,7 +58,7 @@ void test_empty_state_keeps_pass_available() {
     assert(masks.board_source_mask[0] == MASK_ENABLED);
 }
 
-void test_shop_only_allows_affordable_available_units() {
+void test_shop_mask_matches_python_offer_presence_semantics() {
     PlayerState state;
     state.economy.gold = 3;
     state.economy.level = 2;
@@ -79,7 +79,9 @@ void test_shop_only_allows_affordable_available_units() {
 
     assert(masks.shop_mask[0] == MASK_ENABLED);
     assert(masks.shop_mask[1] == MASK_DISABLED);
-    assert(masks.shop_mask[2] == MASK_DISABLED);
+    // Python's current mask checks offer presence, affordability and bench space;
+    // it does not filter the auxiliary `available` flag.
+    assert(masks.shop_mask[2] == MASK_ENABLED);
 }
 
 void test_sell_uses_real_bench_units_not_fallback() {
@@ -262,7 +264,7 @@ void test_invalid_economy_is_rejected() {
 
 int main() {
     test_empty_state_keeps_pass_available();
-    test_shop_only_allows_affordable_available_units();
+    test_shop_mask_matches_python_offer_presence_semantics();
     test_sell_uses_real_bench_units_not_fallback();
     test_board_move_masks_respect_source_and_destination();
     test_bench_to_board_requires_empty_target();
