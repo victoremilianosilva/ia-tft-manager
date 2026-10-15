@@ -421,10 +421,12 @@ Decisões já alinhadas:
 - [x] O visualizador não deve alterar regras, recompensas nem pesos do PPO.
 - [x] A engine C++ continua sendo a fonte da verdade.
 - [x] A pasta de diagramas e imagens se chama viwer/, conforme solicitado.
-- [ ] A tecnologia exata da interface ainda será decidida.
-- [x] O formato físico inicial do replay foi definido como JSONL versionado; SQLite só será considerado se medições justificarem.
+- [x] PySide6/Qt definido como tecnologia inicial da interface desktop; reavaliar apenas se a validação técnica mostrar impedimento.
 - [ ] O esquema final de eventos será validado contra as assinaturas reais do código.
-- [x] A visão geral foi especificada para exibir o tabuleiro 7×4 completo de cada um dos oito jogadores, com posição individual das peças.\n- [x] Durante combate, clicar no jogador abre uma tela separada com todas as unidades dos dois lados e atualização condicionada aos dados reais da engine.\n- [ ] Confirmar em execução se os eventos de `CombatResult` são propagados pelo lobby/bindings até Python; o motor já define eventos tipados e flags de gravação, mas o caminho completo ainda precisa ser validado.\n- [x] Avanço unitário definido como um passo conjunto do lobby (ações dos oito assentos), com pausa entre passos; não se promete interromper o passo internamente.
+- [x] A visão geral foi especificada para exibir o tabuleiro 7×4 completo de cada um dos oito jogadores, com posição individual das peças.
+- [x] Durante combate, clicar no jogador abre uma tela separada com todas as unidades dos dois lados e atualização condicionada aos dados reais da engine.
+- [ ] Confirmar em execução se os eventos de `CombatResult` são propagados pelo lobby/bindings até Python; o motor já define eventos tipados e flags de gravação, mas o caminho completo ainda precisa ser validado.
+- [x] Avanço unitário definido como um passo conjunto do lobby (ações dos oito assentos), com pausa entre passos; não se promete interromper o passo internamente.
 - [x] Diagnósticos PPO definidos como opt-in e sem alteração do contrato normal ou da sequência de amostragem.
 - [x] JSONL versionado definido como formato inicial de replay.
 - [ ] A implementação do visualizador ainda não começou.
