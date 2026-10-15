@@ -277,16 +277,16 @@ class Trainer:
                     raise ValueError("TFT_PPO_LR deve ser um número finito > 0.")
                 for group in self.optimizer.param_groups:
                     group["lr"] = controlled_lr
-                self.scheduler.base_lrs = [
-                    controlled_lr for _ in self.optimizer.param_groups
-                ]
                 min_lr = float(os.getenv("TFT_PPO_MIN_LR", str(min(2e-5, controlled_lr))))
                 if not np.isfinite(min_lr) or min_lr < 0 or min_lr > controlled_lr:
                     raise ValueError("TFT_PPO_MIN_LR deve estar entre 0 e TFT_PPO_LR.")
-                self.scheduler.eta_min = min_lr
-                self.scheduler._last_lr = [
-                    controlled_lr for _ in self.optimizer.param_groups
-                ]
+                # Reinicia a fase do scheduler para que a curva antiga do
+                # checkpoint não altere silenciosamente o teste controlado.
+                self.scheduler = optim.lr_scheduler.CosineAnnealingLR(
+                    self.optimizer,
+                    T_max=2000,
+                    eta_min=min_lr,
+                )
                 print(
                     f"🧪 LR controlado via ambiente: lr={controlled_lr:.2e}, "
                     f"eta_min={min_lr:.2e}"
@@ -348,16 +348,16 @@ class Trainer:
                     raise ValueError("TFT_PPO_LR deve ser um número finito > 0.")
                 for group in self.optimizer.param_groups:
                     group["lr"] = controlled_lr
-                self.scheduler.base_lrs = [
-                    controlled_lr for _ in self.optimizer.param_groups
-                ]
                 min_lr = float(os.getenv("TFT_PPO_MIN_LR", str(min(2e-5, controlled_lr))))
                 if not np.isfinite(min_lr) or min_lr < 0 or min_lr > controlled_lr:
                     raise ValueError("TFT_PPO_MIN_LR deve estar entre 0 e TFT_PPO_LR.")
-                self.scheduler.eta_min = min_lr
-                self.scheduler._last_lr = [
-                    controlled_lr for _ in self.optimizer.param_groups
-                ]
+                # Reinicia a fase do scheduler para que a curva antiga do
+                # checkpoint não altere silenciosamente o teste controlado.
+                self.scheduler = optim.lr_scheduler.CosineAnnealingLR(
+                    self.optimizer,
+                    T_max=2000,
+                    eta_min=min_lr,
+                )
                 print(
                     f"🧪 LR controlado via ambiente: lr={controlled_lr:.2e}, "
                     f"eta_min={min_lr:.2e}"
@@ -1613,6 +1613,12 @@ class Trainer:
             # 📉 SCHEDULER
             # ========================================================
 
+            lr_used_for_update = float(self.optimizer.param_groups[0]["lr"])
+            self.writer.add_scalar(
+                "charts/learning_rate_before_scheduler",
+                lr_used_for_update,
+                update,
+            )
             self.scheduler.step()
 
             current_lrs = [float(group["lr"]) for group in self.optimizer.param_groups]
