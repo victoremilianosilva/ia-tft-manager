@@ -120,7 +120,7 @@ Ao selecionar um jogador, o painel de inspeção mostra o seu tabuleiro em taman
 - Alternar entre sessão ao vivo e replay.
 - Entrar e sair da visualização detalhada de combate sem perder o contexto da partida.
 
-A granularidade de avanço deve ser definida após auditar a API da engine. Não assumir que é possível avançar exatamente uma ação se a engine só aceitar lotes de ações do lobby.
+A API nativa `TftEngine::step` recebe um array de ações dos oito assentos e executa um passo conjunto do lobby. Portanto, **o avanço unitário da primeira versão será um passo conjunto**, com uma ação proposta para cada jogador vivo (e `PASS` para assentos que não atuam, conforme as regras da engine), não uma ação isolada de um único jogador. A UI poderá pausar entre esses passos conjuntos. A linha do tempo interna de combate será navegável separadamente por eventos gravados. Não vamos fingir que é possível pausar a engine no meio de um passo conjunto se a API não oferece esse controle.
 
 ### 5.2 Combate detalhado ao clicar em um jogador
 
@@ -138,7 +138,9 @@ A visão de combate deve incluir:
 - Seleção de uma unidade para inspecionar seus dados sem esconder as demais peças.
 - Resultado final e resumo do confronto após a engine concluir a batalha.
 
-**Limite técnico a validar:** a animação fiel só é possível se a engine expuser estados intermediários ou eventos de combate com timestamp/ordem, posições e atributos por unidade. Se hoje a engine apenas calcula o resultado final (por exemplo, uma comparação agregada de poder), a primeira versão deve exibir o que realmente existe e marcar a animação detalhada como indisponível; não inventar trajetórias, HP, dano ou habilidades. Nesse caso, uma evolução da engine será necessária para emitir snapshots/eventos intermediários, sem alterar silenciosamente a semântica de treinamento.
+**Resultado da inspeção estática:** a engine C++ já define `CombatResult` com eventos tipados de dano, ataque, posição, morte e eventos genéricos, além de HP inicial/final e estatísticas por unidade. `CombatConfig` também tem flags para registrar eventos, dano, alvos, posições, mana e habilidades. Isso indica que existe uma base no motor de combate para construir a linha do tempo. Ainda precisamos confirmar se a configuração é ativada no fluxo normal do lobby e se esses dados chegam ao binding Python e ao adaptador `cpp_lobby_env.py`.
+
+**Decisão para a primeira versão:** registrar e reproduzir a linha do tempo real emitida pelo motor; não exigir que a simulação de combate seja pausável internamente. Se o motor resolve a batalha inteira numa chamada, a UI pode animar os eventos gravados depois que a chamada retornar, respeitando seus timestamps, mas deve identificar isso como reprodução da linha do tempo, não como combate simulado em tempo real. Se eventos intermediários não chegarem à camada Python, implementar a passagem explícita desses eventos/snapshots pela API do lobby. Não fabricar HP, mana, trajetórias ou habilidades. O comentário atual do `CombatEngine` indica que o loop ativo resolve movimento e ataques básicos; habilidades, itens e traits ainda não são mecânicas ativas do loop e não devem ser animadas como se fossem.
 
 ## 6. Logs de decisão: requisito central
 
@@ -205,12 +207,16 @@ A política atual usa uma ação estruturada em seis componentes: tipo, slot da 
 
 ### 7.1 Dados a registrar
 
+A inspeção de `TFTPolicy` confirma que `get_action_and_value()` retorna quatro saídas: ação, log-probabilidade total, entropia total e valor estimado. **A distribuição completa/logits de cada cabeça não é retornada atualmente.** A ação é autorregressiva e já aplica máscaras às cabeças condicionais.
+
+Decisão de implementação: preservar o contrato atual de quatro retornos usado pelo trainer e criar uma API de diagnóstico opt-in que devolva, além das saídas normais, os logits/probabilidades após máscara de cada cabeça realmente visitada, a máscara aplicada, a ação selecionada e a probabilidade condicional correspondente. Essa API deve compartilhar o mesmo caminho de inferência para não amostrar uma segunda ação nem avançar o RNG de novo. Não alterar pesos, observações, máscaras, ações ou recompensas. Testes devem garantir que, com a mesma seed e modo de inferência, ativar diagnósticos não altera a ação produzida.
+
+Dados a registrar:
+
 - Ação final selecionada.
-- Log-probabilidade total, se fornecida pela política.
-- Entropia, se fornecida.
-- Valor estimado V(s).
-- Distribuição/probabilidades disponíveis em cada cabeça relevante.
-- Alternativas de maior probabilidade.
+- Log-probabilidade total, entropia total e valor estimado V(s), já disponíveis na saída atual.
+- Distribuição/probabilidades após máscara em cada cabeça visitada, via API de diagnóstico nova.
+- Alternativas de maior probabilidade, calculadas a partir dessas distribuições.
 - Máscara aplicada em cada etapa.
 - Dependências condicionais entre componentes da ação.
 - Modo determinístico/estocástico e seed de sessão.
@@ -290,18 +296,19 @@ O replay deve reproduzir os dados gravados, não pedir à política que jogue no
 
 ![Ciclo de auditoria de uma decisão](viwer/event-lifecycle.svg)
 
-### 10.1 Persistência recomendada
+### 10.1 Persistência escolhida para a primeira versão
 
-Para a primeira versão, usar arquivos versionados de sessão com:
+**Formato inicial: JSONL versionado por sessão**, com um evento JSON por linha, em ordem monotônica. A escolha prioriza simplicidade de implementação, inspeção manual, gravação incremental e facilidade para depurar arquivos sem ferramentas adicionais. A UI deve depender do contrato lógico de eventos, não de detalhes de serialização.
 
-- Metadados de partida.
-- Eventos estruturados em ordem global.
-- Snapshots completos em pontos selecionados.
+Cada sessão terá um arquivo de metadados e um fluxo JSONL com:
+
+- Metadados de partida: checkpoint/hash, seed, versão da engine, configuração e modo de inferência.
+- Eventos estruturados em ordem global, incluindo decisão proposta, validação, execução confirmada, estado e diagnóstico.
+- Snapshots completos no início, em marcos definidos e no fim; eventos incrementais entre snapshots.
 - Referências de decisão e estado anterior/posterior.
 - Resultado final e classificação.
-- Identidade do checkpoint, seed e versões.
 
-Formato físico (JSONL, SQLite ou outro) ainda deve ser decidido após medir volume, custo de gravação e requisitos de navegação. A interface deve depender do contrato lógico, não do formato físico.
+Implementar escrita incremental e buffer limitado, sem bloquear a thread da UI. Começar com logging configurável (resumo/diagnóstico detalhado) para controlar overhead. SQLite só será reconsiderado se medições reais mostrarem que consulta aleatória, volume ou tamanho de sessão tornam JSONL insuficiente; não precisamos manter dois formatos na primeira versão.
 
 ### 10.2 Integridade do replay
 
@@ -343,11 +350,12 @@ PySide6 é a recomendação, mas a escolha deve ser confirmada antes de iniciar 
 ## 13. Plano de implementação
 
 ### Fase 1 — Auditoria e contrato
-- [ ] Confirmar API real do lobby e do binding C++.
-- [ ] Expor o snapshot de auditoria pelo adaptador Python.
+- [ ] Confirmar API real do lobby e do binding C++ em execução.
+- [ ] Expor `get_audit_snapshot()` pelo adaptador Python.
 - [ ] Confirmar formato e semântica dos seis componentes de ação.
-- [ ] Definir esquema versionado de eventos e snapshots.
+- [ ] Definir e versionar o esquema de eventos/snapshots.
 - [ ] Confirmar como obter classificação final e resultado por jogador.
+- [ ] Passar eventos de combate do `CombatResult` pelo lobby/binding até o adaptador Python, ativando somente as flags de gravação necessárias.
 
 ### Fase 2 — Avaliação com checkpoint
 - [ ] Carregar checkpoint treinado sem executar otimização.
@@ -358,7 +366,7 @@ PySide6 é a recomendação, mas a escolha deve ser confirmada antes de iniciar 
 
 ### Fase 3 — Instrumentação de debug
 - [ ] Registrar entrada da política, máscaras e ação proposta.
-- [ ] Expor distribuições/probabilidades condicionais.
+- [ ] Expor distribuições/probabilidades condicionais por uma API de diagnóstico opt-in sem mudar a API normal nem a sequência de amostragem.
 - [ ] Registrar log-probabilidade, entropia e valor estimado.
 - [ ] Registrar validação, resultado real e estados anterior/posterior.
 - [ ] Instrumentar ações inválidas e bloqueios anti-loop com causa individual.
@@ -414,9 +422,12 @@ Decisões já alinhadas:
 - [x] A engine C++ continua sendo a fonte da verdade.
 - [x] A pasta de diagramas e imagens se chama viwer/, conforme solicitado.
 - [ ] A tecnologia exata da interface ainda será decidida.
-- [ ] O formato físico de persistência de replay ainda será decidido.
+- [x] O formato físico inicial do replay foi definido como JSONL versionado; SQLite só será considerado se medições justificarem.
 - [ ] O esquema final de eventos será validado contra as assinaturas reais do código.
-- [x] A visão geral foi especificada para exibir o tabuleiro 7×4 completo de cada um dos oito jogadores, com posição individual das peças.\n- [x] Durante combate, clicar no jogador abre uma tela separada com todas as unidades dos dois lados e atualização condicionada aos dados reais da engine.\n- [ ] Confirmar se a engine atual emite eventos/snapshots intermediários de combate com posição e HP por unidade.\n- [ ] A implementação ainda não começou.
+- [x] A visão geral foi especificada para exibir o tabuleiro 7×4 completo de cada um dos oito jogadores, com posição individual das peças.\n- [x] Durante combate, clicar no jogador abre uma tela separada com todas as unidades dos dois lados e atualização condicionada aos dados reais da engine.\n- [ ] Confirmar em execução se os eventos de `CombatResult` são propagados pelo lobby/bindings até Python; o motor já define eventos tipados e flags de gravação, mas o caminho completo ainda precisa ser validado.\n- [x] Avanço unitário definido como um passo conjunto do lobby (ações dos oito assentos), com pausa entre passos; não se promete interromper o passo internamente.
+- [x] Diagnósticos PPO definidos como opt-in e sem alteração do contrato normal ou da sequência de amostragem.
+- [x] JSONL versionado definido como formato inicial de replay.
+- [ ] A implementação do visualizador ainda não começou.
 
 ## 16. Manutenção deste documento
 
