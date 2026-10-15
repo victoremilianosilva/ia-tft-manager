@@ -530,6 +530,13 @@ struct TFTEngine::Impl {
         for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
             float* out = observations.data() + i * dim;
             const auto& player = players[i];
+
+            // TFTLobby.get_observations() returns an all-zero vector for
+            // eliminated players. Preserve that public PPO contract exactly.
+            if (!player.alive) {
+                continue;
+            }
+
             const auto& economy = economies[i];
             const auto& strategy = strategies[i].empty()
                 ? StrategyInfo{} : strategies[i].back();
