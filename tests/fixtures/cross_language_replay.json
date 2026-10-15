@@ -1,22 +1,487 @@
 {
-  "name": "all_players_pass_three_rounds",
+  "name": "deterministic_rounds_and_level_reward",
   "seed": 123,
-  "description": "Three deterministic round-boundary replays with no board units, exercising state transitions, economy, combat-draw handling and rewards without depending on shop RNG.",
+  "description": "Five-step deterministic replay: four round barriers and a shared BUY_XP action after economy income, comparing state, rewards and observation features.",
   "steps": [
     {
       "name": "pass_round_1",
-      "python_actions": [{"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}],
-      "cpp_actions": [[6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0]]
+      "expected_round_resolved": true,
+      "python_actions": [
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        }
+      ],
+      "cpp_actions": [
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ]
     },
     {
       "name": "pass_round_2",
-      "python_actions": [{"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}],
-      "cpp_actions": [[6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0]]
+      "expected_round_resolved": true,
+      "python_actions": [
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        }
+      ],
+      "cpp_actions": [
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ]
     },
     {
       "name": "pass_round_3",
-      "python_actions": [{"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}, {"type": 6}],
-      "cpp_actions": [[6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0]]
+      "expected_round_resolved": true,
+      "python_actions": [
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        }
+      ],
+      "cpp_actions": [
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "buy_xp_before_round_4",
+      "expected_round_resolved": false,
+      "python_actions": [
+        {
+          "type": 2
+        },
+        {
+          "type": 2
+        },
+        {
+          "type": 2
+        },
+        {
+          "type": 2
+        },
+        {
+          "type": 2
+        },
+        {
+          "type": 2
+        },
+        {
+          "type": 2
+        },
+        {
+          "type": 2
+        }
+      ],
+      "cpp_actions": [
+        [
+          2,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "pass_round_4",
+      "expected_round_resolved": true,
+      "python_actions": [
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        }
+      ],
+      "cpp_actions": [
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ]
     }
   ]
 }
