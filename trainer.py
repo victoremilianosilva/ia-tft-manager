@@ -377,6 +377,52 @@ class Trainer:
     # 🎭 FLATTEN MASKS
     # ================================================================
 
+    # ================================================================
+    # AUDITAR AÇÃO ESCOLHIDA CONTRA AS MÁSCARAS
+    # ================================================================
+    def _audit_selected_action_masks(self, actions, masks):
+        """Conta ações incompatíveis com as máscaras usadas pela policy."""
+        action_np = actions.detach().cpu().numpy()
+        mask_np = {
+            key: value.detach().cpu().numpy().astype(np.bool_, copy=False)
+            for key, value in masks.items()
+        }
+        counts = {"actions_checked": int(action_np.shape[0]), "type_invalid": 0,
+                  "conditional_invalid": 0, "selected_invalid": 0}
+        for agent_idx, action in enumerate(action_np):
+            action_type = int(action[0])
+            type_valid = (0 <= action_type < mask_np["type_mask"].shape[1]
+                          and bool(mask_np["type_mask"][agent_idx, action_type]))
+            if not type_valid:
+                counts["type_invalid"] += 1
+                counts["selected_invalid"] += 1
+                continue
+            conditional_valid = True
+            if action_type == int(ActionType.BUY):
+                slot = int(action[1])
+                conditional_valid = (0 <= slot < mask_np["shop_mask"].shape[1]
+                                     and bool(mask_np["shop_mask"][agent_idx, slot]))
+            elif action_type == int(ActionType.MOVE_BENCH):
+                source, target = int(action[2]), int(action[3])
+                source_mask = mask_np["bench_move_source_mask"][agent_idx]
+                target_masks = mask_np["bench_to_board_target_masks"][agent_idx]
+                conditional_valid = (0 <= source < source_mask.shape[0]
+                                     and bool(source_mask[source])
+                                     and 0 <= target < target_masks.shape[1]
+                                     and bool(target_masks[source, target]))
+            elif action_type == int(ActionType.MOVE_BOARD):
+                source, target = int(action[4]), int(action[5])
+                source_mask = mask_np["board_source_mask"][agent_idx]
+                target_masks = mask_np["board_move_target_masks"][agent_idx]
+                conditional_valid = (0 <= source < source_mask.shape[0]
+                                     and bool(source_mask[source])
+                                     and 0 <= target < target_masks.shape[1]
+                                     and bool(target_masks[source, target]))
+            if not conditional_valid:
+                counts["conditional_invalid"] += 1
+                counts["selected_invalid"] += 1
+        return counts
+
     def _flatten_masks(
         self,
         gym_masks
@@ -935,12 +981,25 @@ class Trainer:
 
         # 📊 Último snapshot acumulado da lobby
         anti_loop_totals = {}
+        match_steps = np.zeros(self.num_envs, dtype=np.int64)
+        completed_matches = 0
+        completed_wins = 0
+        placement_sum = 0.0
+        placement_samples = 0
+        outcome_sample_step = 0
 
         for update in range(
             start,
             end
         ):
 
+            anti_loop_start_totals = dict(anti_loop_totals)
+            mask_audit_counts = {
+                "actions_checked": 0,
+                "type_invalid": 0,
+                "conditional_invalid": 0,
+                "selected_invalid": 0,
+            }
             rollout.reset()
 
             # --------------------------------------------------------
@@ -1059,6 +1118,10 @@ class Trainer:
                     .numpy()
                 )
 
+                action_audit = self._audit_selected_action_masks(actions, masks)
+                for key, value in action_audit.items():
+                    mask_audit_counts[key] += value
+
                 for agent_idx in range(
                     self.num_agents
                 ):
@@ -1100,6 +1163,87 @@ class Trainer:
                 ) = self.vec_env.step(
                     lobby_actions
                 )
+
+                # Resultado final, colocação e duração de cada partida.
+                for lobby_idx, info in enumerate(infos):
+                    match_steps[lobby_idx] += 1
+                    if not info.get("lobby_done", False):
+                        continue
+
+                    completed_matches += 1
+                    final_state = info.get("final_state") or {}
+                    final_players = final_state.get("players", [])
+                    if not isinstance(final_players, list):
+                        final_players = []
+
+                    placements_by_player = {}
+                    for player_idx, player_data in enumerate(final_players):
+                        if not isinstance(player_data, dict):
+                            continue
+                        player_id = int(player_data.get("player_id", player_idx))
+                        placement = player_data.get("placement")
+                        try:
+                            placement = int(placement) if placement is not None else None
+                        except (TypeError, ValueError):
+                            placement = None
+                        if placement is not None and 1 <= placement <= self.PLAYERS_PER_LOBBY:
+                            placements_by_player[player_id] = placement
+
+                    ranking = final_state.get("ranking") or info.get("ranking")
+                    if isinstance(ranking, list):
+                        for rank_idx, ranked_player in enumerate(ranking, start=1):
+                            if isinstance(ranked_player, dict):
+                                ranked_player = ranked_player.get("player_id")
+                            try:
+                                player_id = int(ranked_player)
+                            except (TypeError, ValueError):
+                                continue
+                            placements_by_player.setdefault(player_id, rank_idx)
+
+                    placement_rewards = info.get("placement_rewards")
+                    reward_values = None
+                    if isinstance(placement_rewards, dict):
+                        reward_values = {}
+                        for player_id, value in placement_rewards.items():
+                            try:
+                                reward_values[int(player_id)] = float(value)
+                            except (TypeError, ValueError):
+                                continue
+                    elif placement_rewards is not None:
+                        values = np.asarray(placement_rewards, dtype=np.float32).reshape(-1)
+                        if values.size == self.PLAYERS_PER_LOBBY and np.any(np.abs(values) > 1e-6):
+                            reward_values = {idx: float(value) for idx, value in enumerate(values)}
+
+                    # Usa placement_rewards apenas como fallback se ranking/placement
+                    # não estiverem disponíveis; não inventa resultados ausentes.
+                    if reward_values:
+                        for player_id, placement_reward in reward_values.items():
+                            if player_id not in placements_by_player and np.isfinite(placement_reward) and -1.001 <= placement_reward <= 1.001:
+                                inferred = int(round((1.0 - placement_reward) * (self.PLAYERS_PER_LOBBY - 1) / 2.0)) + 1
+                                if 1 <= inferred <= self.PLAYERS_PER_LOBBY:
+                                    placements_by_player[player_id] = inferred
+
+                    for player_id, placement in sorted(placements_by_player.items()):
+                        if not 1 <= placement <= self.PLAYERS_PER_LOBBY:
+                            continue
+                        outcome_sample_step += 1
+                        placement_samples += 1
+                        placement_sum += placement
+                        completed_wins += int(placement == 1)
+                        self.writer.add_scalar("outcomes/final_placement", placement, outcome_sample_step)
+                        self.writer.add_scalar("outcomes/win", float(placement == 1), outcome_sample_step)
+                        self.writer.add_scalar("outcomes/mean_placement", placement_sum / placement_samples, outcome_sample_step)
+                        self.writer.add_scalar("outcomes/win_rate", completed_wins / placement_samples, outcome_sample_step)
+
+                    self.writer.add_scalar("outcomes/matches_completed", completed_matches, completed_matches)
+                    self.writer.add_scalar("outcomes/match_duration_steps", int(match_steps[lobby_idx]), completed_matches)
+                    final_round = final_state.get("round", info.get("round"))
+                    if final_round is not None:
+                        try:
+                            self.writer.add_scalar("outcomes/match_duration_rounds", float(final_round), completed_matches)
+                        except (TypeError, ValueError):
+                            pass
+                    match_steps[lobby_idx] = 0
 
                 # 📊 Captura os contadores reais de todas as lobbies
                 metrics_by_lobby = (
@@ -1458,13 +1602,28 @@ class Trainer:
                 # 🔄 ANTI-LOOP — TENSORBOARD
                 # ========================================================
 
-                # Contadores cumulativos desde o início dos ambientes
+                # Contadores cumulativos e deltas por update.
+                anti_loop_delta = {}
+                counter_reset_detected = False
                 for key, value in anti_loop_totals.items():
-                    self.writer.add_scalar(
-                        f"anti_loop/{key}",
-                        value,
-                        update,
-                    )
+                    previous_value = anti_loop_start_totals.get(key, 0)
+                    if value < previous_value:
+                        counter_reset_detected = True
+                        delta_value = value
+                    else:
+                        delta_value = value - previous_value
+                    anti_loop_delta[key] = delta_value
+                    self.writer.add_scalar(f"anti_loop/{key}", value, update)
+                    self.writer.add_scalar(f"anti_loop_delta/{key}", delta_value, update)
+
+                self.writer.add_scalar("anti_loop/counter_reset_detected", float(counter_reset_detected), update)
+                delta_attempts = anti_loop_delta.get("execution_attempts", 0)
+                delta_blocks = anti_loop_delta.get("execution_blocks", 0)
+                self.writer.add_scalar(
+                    "anti_loop/block_rate_update",
+                    delta_blocks / delta_attempts if delta_attempts > 0 else 0.0,
+                    update,
+                )
 
                 # 📉 Proporção cumulativa de tentativas bloqueadas
                 attempts = anti_loop_totals.get(
@@ -1484,6 +1643,16 @@ class Trainer:
                 self.writer.add_scalar(
                     "anti_loop/block_rate",
                     block_rate,
+                    update,
+                )
+
+                # Auditoria das ações amostradas contra as máscaras.
+                checked = max(1, mask_audit_counts["actions_checked"])
+                for key in ("actions_checked", "type_invalid", "conditional_invalid", "selected_invalid"):
+                    self.writer.add_scalar(f"mask_audit/{key}", mask_audit_counts[key], update)
+                self.writer.add_scalar(
+                    "mask_audit/selected_invalid_rate",
+                    mask_audit_counts["selected_invalid"] / checked,
                     update,
                 )
 
