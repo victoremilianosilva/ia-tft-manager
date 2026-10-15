@@ -12,7 +12,15 @@ from __future__ import annotations
 import argparse
 import csv
 import random
+import sys
 from pathlib import Path
+
+# Running "python scripts/evaluate_checkpoints.py" makes scripts/ the
+# first import directory. Add the repository root so top-level modules
+# (engine_backend.py, policy.py) resolve from the project root.
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 import numpy as np
 import torch
