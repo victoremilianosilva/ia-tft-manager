@@ -70,6 +70,8 @@ class CombatResult:
     damage: int
 
     draw: bool = False
+    timeout: bool = False
+    completed: bool = True
 
 
 # ============================================================
@@ -1265,6 +1267,11 @@ class TFTLobby:
                     "mas não concluiu a simulação."
                 )
 
+            # Timeout is a valid partial outcome in CombatEngine: keep its
+            # survivor-based result, but preserve the timeout signal for logs
+            # and diagnostics instead of silently discarding it.
+            combat_timed_out = bool(cpp_result.timeout)
+
             survivors_a = int(cpp_result.player_a_survivors)
             survivors_b = int(cpp_result.player_b_survivors)
 
@@ -1319,6 +1326,8 @@ class TFTLobby:
             loser_units=loser_units,
             damage=damage,
             draw=False,
+            timeout=combat_timed_out,
+            completed=bool(cpp_result.completed),
         )
 
         # 📊 Atualiza estatísticas da lobby.
