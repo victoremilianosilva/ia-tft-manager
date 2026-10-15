@@ -144,10 +144,15 @@ class ShopManager:
         """Substitui uma oferta reservando/devolvendo a cópia no pool."""
         if not self.is_valid_slot(slot):
             return False
+        previous = self.shop[slot]
+        if previous is not None and (
+            previous.get("apiName") or previous.get("api_name")
+            or previous.get("champion_id")
+        ) == champion_api_name:
+            return True
         unit = self.unit_pool.take_champion_for_testing(champion_api_name)
         if unit is None:
             return False
-        previous = self.shop[slot]
         if previous is not None and not self._return_to_pool(previous):
             self._return_to_pool(unit)
             return False
