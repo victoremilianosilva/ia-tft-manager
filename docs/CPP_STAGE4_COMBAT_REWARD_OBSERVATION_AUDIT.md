@@ -141,3 +141,31 @@ A API nativa agora expõe arrays separados `action_rewards`, `combat_rewards` e 
 **Validação executada:** workflow [C++ engine and cross-language parity](https://github.com/victoremilianosilva/teste-ia/actions/runs/38760053429) aprovado: build nativo, CTest e regressões Python/C++ passaram.
 
 **Limite explícito:** o estado de composição está integrado ao snapshot estratégico do lobby, não como uma classe C++ independente com a mesma forma de objeto do Python. As consultas públicas e os cálculos de estado são equivalentes; a API de score recebe o identificador `apiName` do campeão e estrelas, enquanto o Python recebe o dicionário da unidade.
+
+
+## Auditoria complementar — RewardManager.py (2026-10-15)
+
+Adicionado `cpp/include/reward/RewardManager.hpp` com a API comportamental do gerenciador Python, exposta no módulo `tft_engine.RewardManager`. A implementação reproduz as funções de recompensa e o estado acumulado, e `TFTEngine.get_reward_state(player_id)` permite inspecionar o histórico efetivamente mantido pela lobby.
+
+| Python | C++ | Paridade coberta |
+|---|---|---|
+| `reset()` | `RewardManager.reset()` | todos os campos retornam aos defaults |
+| `calculate_combat_reward()` | mesmo nome | vitória/derrota, dano, sobreviventes e `last_combat_reward` |
+| `calculate_power_reward()` | mesmo nome | delta, epsilon de 1e-6, tanh e atualização do valor anterior |
+| `calculate_synergy_reward()` | mesmo nome | delta, tanh e histórico |
+| `calculate_positioning_reward()` | mesmo nome | delta, tanh × 0.5 e histórico |
+| `calculate_level_reward()` | mesmo nome | subida de nível e limite de 1.5 |
+| `calculate_economy_reward()` | mesmo nome | marcos de ouro e penalidades de HP |
+| `calculate_streak_reward()` | mesmo nome | limites para streaks |
+| `calculate_board_reward()` | mesmo nome | ocupação / capacidade × 0.15 |
+| `calculate_action_reward()` | mesmo nome | falha = -0.10; sucesso = action_value |
+| `calculate_total_reward()` | mesmo nome | soma, clamp por chamada em [-5, 5] e acumulação do total limitado |
+| `get_state()` | mesmo nome | os oito campos públicos, com os mesmos nomes |
+
+A suíte `tests/test_reward_manager_parity.py` compara componentes, sequências de deltas, estado após cada atualização, clamp, acumulação e reset. Ela foi adicionada ao workflow `.github/workflows/cpp-parity.yml`.
+
+**Distinção crítica de integração:** o fluxo efetivo de `env.step()` não deve somar automaticamente os componentes de `calculate_total_reward()`. O código atual retorna a recompensa específica da ação e a lobby acrescenta recompensas de combate/colocação separadamente. A função interna C++ `state_reward()` não é chamada no fluxo de jogo atual; ativá-la sem alterar deliberadamente o contrato Python duplicaria ou mudaria o sinal de treino. Por isso, a nova classe nativa reproduz a API completa do gerenciador para uso/testes, mas não injeta esses componentes no PPO por conta própria.
+
+**Histórico da lobby:** `TFTEngine.get_reward_state(player_id)` expõe os acumuladores reais da lobby. Os deltas de força/sinergia/posicionamento só avançam se o caminho que calcula esses componentes for chamado; como `state_reward()` não é chamado pelo ciclo atual, esses valores permanecem nos defaults. `previous_gold` também permanece em zero na referência Python, pois o atributo existe mas não é atualizado. Isso foi preservado intencionalmente, sem inventar atualização que alteraria a semântica.
+
+**Critério restante:** executar a CI após as últimas alterações. A etapa não deve ser marcada aprovada enquanto compilação nativa, CTest e `tests/test_reward_manager_parity.py` não passarem.
