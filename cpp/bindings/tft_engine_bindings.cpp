@@ -12,6 +12,7 @@
 #include <pybind11/stl.h>
 
 #include "lobby/TftEngine.hpp"
+#include "strategy/PositioningEngine.hpp"
 
 namespace py = pybind11;
 
@@ -566,4 +567,18 @@ PYBIND11_MODULE(tft_engine, module) {
             &TFTEngine::is_done
         )
         .def("close", &TFTEngine::close);
+
+    // PositioningManager.py parity API. Boards are vectors of role IDs:
+    // -1 = empty; 0 tank, 1 carry, 2 support, 3 fighter, 4 assassin.
+    module.def("positioning_is_valid_position", &tft::PositioningEngine::is_valid_position);
+    module.def("positioning_position_to_row_col", [](int p) { auto v=tft::PositioningEngine::position_to_row_col(p); return py::make_tuple(v.first,v.second); });
+    module.def("positioning_row_col_to_position", &tft::PositioningEngine::row_col_to_position);
+    module.def("positioning_get_neighbors", &tft::PositioningEngine::get_neighbors, py::arg("position"), py::arg("include_diagonal")=true);
+    module.def("positioning_evaluate_unit_placement", &tft::PositioningEngine::evaluate_unit_placement, py::arg("board"), py::arg("position"), py::arg("candidate_role")=-2);
+    module.def("positioning_evaluate_protection", &tft::PositioningEngine::evaluate_protection);
+    module.def("positioning_evaluate_board_positioning", &tft::PositioningEngine::evaluate_board_positioning);
+    module.def("positioning_find_best_position", [](const std::vector<int>& board,int role,const std::vector<int>& candidates) { auto v=tft::PositioningEngine::find_best_position(board,role,candidates); return py::make_tuple(v.first,v.second); }, py::arg("board"),py::arg("role"),py::arg("candidate_positions")=std::vector<int>{});
+    module.def("positioning_find_best_swap", [](const std::vector<int>& board,int source,const std::vector<int>& candidates) { auto v=tft::PositioningEngine::find_best_swap(board,source,candidates); return py::make_tuple(v.first,v.second); }, py::arg("board"),py::arg("source_position"),py::arg("candidate_positions")=std::vector<int>{});
+    module.def("positioning_is_board_stable", &tft::PositioningEngine::is_board_stable, py::arg("board"),py::arg("tolerance")=0.01);
+    module.def("positioning_get_normalized_score", &tft::PositioningEngine::get_normalized_positioning_score);
 }
