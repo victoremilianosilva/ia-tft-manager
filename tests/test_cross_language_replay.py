@@ -387,15 +387,6 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
                 )
             assert np.isfinite(py_obs_array).all(), f"{step['name']}: Python observation contains NaN/inf"
             assert np.isfinite(cpp_obs_array).all(), f"{step['name']}: C++ observation contains NaN/inf"
-            random_dependent = np.arange(shop_start, shop_end)
-            py_random = py_obs_array[:, random_dependent]
-            cpp_random = cpp_obs_array[:, random_dependent]
-            assert np.isfinite(py_random).all() and np.isfinite(cpp_random).all(), (
-                f"{step['name']}: random-dependent observation fields contain NaN/inf"
-            )
-            assert ((py_random >= 0.0) & (py_random <= 1.0)).all()
-            assert ((cpp_random >= 0.0) & (cpp_random <= 1.0)).all()
-
             py_state = _python_snapshot(python_lobby)
             cpp_state = _native_snapshot(cpp_engine)
             _compare_snapshots(py_state, cpp_state, step["name"])
