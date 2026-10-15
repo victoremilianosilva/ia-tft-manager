@@ -169,3 +169,25 @@ A suíte `tests/test_reward_manager_parity.py` compara componentes, sequências 
 **Histórico da lobby:** `TFTEngine.get_reward_state(player_id)` expõe os acumuladores reais da lobby. Os deltas de força/sinergia/posicionamento só avançam se o caminho que calcula esses componentes for chamado; como `state_reward()` não é chamado pelo ciclo atual, esses valores permanecem nos defaults. `previous_gold` também permanece em zero na referência Python, pois o atributo existe mas não é atualizado. Isso foi preservado intencionalmente, sem inventar atualização que alteraria a semântica.
 
 **Critério restante:** executar a CI após as últimas alterações. A etapa não deve ser marcada aprovada enquanto compilação nativa, CTest e `tests/test_reward_manager_parity.py` não passarem.
+
+
+## Auditoria complementar — PositioningManager.py (2026-10-15)
+
+O novo cabeçalho `cpp/include/strategy/PositioningEngine.hpp` implementa a lógica de posicionamento como funções puras, sem alterar o estado real do tabuleiro. O binding `tft_engine` expõe as operações para os testes cruzados e a observação nativa reutiliza a mesma função `evaluate_board_positioning`, evitando manter uma segunda fórmula separada.
+
+| Método Python | API C++ | Validação |
+|---|---|---|
+| `is_valid_position` | `positioning_is_valid_position` | posições válidas e limites |
+| `position_to_row_col` / `row_col_to_position` | `positioning_position_to_row_col` / `positioning_row_col_to_position` | índices row-major do tabuleiro 4x7 |
+| `get_neighbors` | `positioning_get_neighbors` | vizinhos ortogonais e diagonais |
+| `evaluate_unit_placement` | `positioning_evaluate_unit_placement` | todas as roles em cada posição |
+| `evaluate_protection` | `positioning_evaluate_protection` | vizinhos ocupados e tanks adjacentes |
+| `evaluate_board_positioning` | `positioning_evaluate_board_positioning` | score completo, mesma fórmula e pesos |
+| `find_best_position` | `positioning_find_best_position` | busca por posições vazias, sem mover unidade real |
+| `find_best_swap` | `positioning_find_best_swap` | simulação temporária da troca e delta de score |
+| `is_board_stable` | `positioning_is_board_stable` | limiar de melhoria padrão 0.01 |
+| `get_normalized_positioning_score` | `positioning_get_normalized_score` | score dividido por quantidade de unidades × 10 e limitado a [-1, 1] |
+
+A suíte `tests/test_positioning_parity.py` compara tabuleiros vazios, mistos e determinísticos; testa as cinco roles, vizinhos, fórmulas, busca de posição/troca e estabilidade. A execução é incluída no workflow `.github/workflows/cpp-parity.yml`.
+
+**Limites de representação:** a API C++ recebe um vetor de 28 roles (com -1 para casa vazia), enquanto o Python recebe uma lista de dicionários de unidades. UUIDs não são necessários para as fórmulas de posicionamento; continuam relevantes para a assinatura do tabuleiro usada pelo anti-loop, que permanece separada. Valores de retorno sem posição são representados como -1 no C++ e devem ser convertidos para `None` na camada de integração.
