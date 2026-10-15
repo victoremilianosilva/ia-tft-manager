@@ -107,6 +107,9 @@ bool ShopEngine::set_offer_for_testing(std::int32_t slot, UnitInstance unit) {
         unit.champion_internal_id < 0)
         return false;
     const auto index = static_cast<std::size_t>(slot);
+    if (offers_[index] &&
+        offers_[index]->champion_internal_id == unit.champion_internal_id)
+        return true;
     if (!pool_.take(unit.champion_internal_id)) return false;
     if (offers_[index] && !pool_.give_back(offers_[index]->champion_internal_id)) {
         (void)pool_.give_back(unit.champion_internal_id);
