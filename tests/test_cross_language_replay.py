@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 from pathlib import Path
 import sys
 
@@ -23,10 +24,15 @@ for module_dir in (ROOT / "cpp" / "build" / "bin", ROOT / "cpp" / "build" / "bin
 FIXTURE_PATH = ROOT / "tests" / "fixtures" / "cross_language_replay.json"
 CATALOG_PATH = ROOT / "units_gerado.json"
 
-pytest.importorskip("tft_engine", reason="Build cpp target tft_engine to run cross-language parity")
-from tft_engine import TFTLobby as NativeTFTEngine  # noqa: E402
+if os.environ.get("REQUIRE_CPP_PARITY") == "1":
+    # CI must fail rather than silently skip parity when a native module fails to build/import.
+    from tft_engine import TFTLobby as NativeTFTEngine  # noqa: E402
+    import combat_engine  # noqa: F401,E402
+else:
+    pytest.importorskip("tft_engine", reason="Build cpp target tft_engine to run cross-language parity")
+    from tft_engine import TFTLobby as NativeTFTEngine  # noqa: E402
+    pytest.importorskip("combat_engine", reason="Python lobby combat integration requires combat_engine")
 
-pytest.importorskip("combat_engine", reason="Python lobby combat integration requires combat_engine")
 from lobby.TFTLobby import TFTLobby as PythonLobby  # noqa: E402
 
 
@@ -134,10 +140,10 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
             )
             py_obs_array = np.asarray(py_obs, dtype=np.float32)
             cpp_obs_array = np.asarray(cpp_result["observations"], dtype=np.float32)
-            # Random-dependent features are excluded until the two backends
-            # share a random stream: bench role (the starter champion varies),
-            # shop offers, synergy counts and the trait vector. All other
-            # observation fields are compared exactly with a float tolerance.
+            # The starting champion and shop RNG are not yet shared. We still
+            # exercise a real move and compare all stable slot fields. Role values,
+            # shop offers, synergy/trait vectors and the role-dependent positioning
+            # score remain separately checked for finite, normalized values where applicable.
             dim = py_obs_array.shape[1]
             bench_start = 22 + 28 * 5
             shop_start = bench_start + 9 * 5
@@ -146,7 +152,9 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
             synergy_end = extra_end + 5
             positioning_end = synergy_end + 4
             traits_end = dim - 2
-            excluded = set(range(bench_start + 3, bench_start + 4))
+            board_start = 22
+            # Role encoding depends on the randomly selected starter champion.
+            excluded = {board_start + 3, bench_start + 3, synergy_end}
             excluded.update(range(shop_start, shop_end))
             excluded.update(range(extra_end, synergy_end))
             excluded.update(range(positioning_end, traits_end))
@@ -172,7 +180,10 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
                     f"C++={cpp_deterministic[first]!r}; "
                     f"total mismatches={len(mismatches)}"
                 )
+            assert np.isfinite(py_obs_array).all(), f"{step['name']}: Python observation contains NaN/inf"
+            assert np.isfinite(cpp_obs_array).all(), f"{step['name']}: C++ observation contains NaN/inf"
             random_dependent = np.r_[
+                board_start + 3,
                 bench_start + 3,
                 np.arange(shop_start, shop_end),
                 np.arange(extra_end, synergy_end),
