@@ -55,3 +55,4 @@ jobs:
           tests/test_positioning_parity.py
           tests/test_reward_manager_parity.py
           tests/test_combat_profile_parity.py
+          tests/test_synergy_manager_parity.py
