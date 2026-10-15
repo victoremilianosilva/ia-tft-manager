@@ -12,7 +12,15 @@ from __future__ import annotations
 import argparse
 import csv
 import random
+import sys
 from pathlib import Path
+
+# When invoked as "python scripts/evaluate_checkpoints.py", Python places
+# scripts/ (not the repository root) at sys.path[0]. Add the root so project
+# modules such as engine_backend.py and policy.py resolve consistently.
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 import numpy as np
 import torch
