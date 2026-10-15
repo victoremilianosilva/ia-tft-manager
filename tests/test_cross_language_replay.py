@@ -108,7 +108,7 @@ def _compare_action_masks(python_lobby, cpp_engine, step_name):
 def _compare_audit_snapshots(python_lobby, cpp_engine, step_name):
     """Compare unit slots and economy without relying on UUID or RNG."""
     native = cpp_engine.get_audit_snapshot()
-    assert int(native["round"]) == int(python_lobby.round) + 1, (step_name, "round audit")
+    assert int(native["round"]) == int(python_lobby.get_public_state()["round"]), (step_name, "round audit")
     assert int(native["stage"]) == int(python_lobby.stage), (step_name, "stage audit")
     for player_id, player in enumerate(python_lobby.players):
         env = player.env
