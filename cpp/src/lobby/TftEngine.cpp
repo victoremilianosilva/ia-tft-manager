@@ -1902,8 +1902,14 @@ StepResult TFTEngine::step(
         } else if (type == 2) {
             success = economy.gold == old_gold - EconomyEngine::BUY_XP_COST;
             action_reward = success ? 0.02 : -0.10;
-            if (success && economy.level > old_level)
-                action_reward += std::min((economy.level - old_level) * 0.5, 1.5);
+            // RewardManager tracks the last rewarded level, initialized to 1,
+            // not merely the level at the start of this action.
+            if (success && economy.level > impl_->previous_reward_level[i]) {
+                action_reward += reward_model::level(
+                    economy.level, impl_->previous_reward_level[i]);
+                impl_->previous_reward_level[i] = economy.level;
+            }
+            (void)old_level;
             (void)old_xp;
         } else if (type == 3 || type == 4) {
             bool board_layout_changed = false;
