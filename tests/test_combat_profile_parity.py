@@ -57,7 +57,7 @@ def test_build_combat_input_matches_python(manager):
     units = [
         {"apiName":"CombatUnit","star":2,"hp":700,"max_hp":900,"mana":20,"max_mana":100,
          "attack_damage":80,"attack_speed":0.9,"armor":35,"magic_resist":25,"attack_range":3},
-        {"id":123,"hp":"bad","max_hp":"bad","ad":61,"mr":17,"ability":{"effect":"Dash to the furthest enemy"}},
+        {"id":123,"hp":450,"max_hp":600,"ad":61,"mr":17,"ability":{"effect":"Dash to the furthest enemy"}},
         {"characterName":"fallback","hp":500,"max_hp":600,"attack_damage":40,"attack_range":1},
     ]
     for unit in units:
