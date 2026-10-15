@@ -171,6 +171,11 @@ def test_same_action_fixture_matches_python_and_cpp_after_every_step():
     cpp_engine = NativeTFTEngine(fixture["seed"], str(CATALOG_PATH))
     try:
         python_lobby.reset()
+        # Force the reference side through the Python mask implementation;
+        # otherwise an installed decision_engine extension silently makes
+        # both sides use C++ masks and invalidates the cross-language check.
+        for player in python_lobby.players:
+            player.env.action_mask_manager.decision_engine_runtime = None
         cpp_engine.reset(fixture["seed"])
 
         _compare_action_masks(python_lobby, cpp_engine, "reset")
@@ -516,6 +521,8 @@ def test_shared_shop_and_economy_fixtures_cover_all_seven_actions():
     cpp_engine = NativeTFTEngine(fixture_seed, str(CATALOG_PATH))
     try:
         python_lobby.reset()
+        for player in python_lobby.players:
+            player.env.action_mask_manager.decision_engine_runtime = None
         cpp_engine.reset(fixture_seed)
 
         env0 = python_lobby.players[0].env
