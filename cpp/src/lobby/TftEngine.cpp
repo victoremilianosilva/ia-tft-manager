@@ -530,6 +530,13 @@ struct TFTEngine::Impl {
         for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
             float* out = observations.data() + i * dim;
             const auto& player = players[i];
+
+            // TFTLobby.get_observations() returns an all-zero vector for
+            // eliminated players. Preserve that public PPO contract exactly.
+            if (!player.alive) {
+                continue;
+            }
+
             const auto& economy = economies[i];
             const auto& strategy = strategies[i].empty()
                 ? StrategyInfo{} : strategies[i].back();
@@ -2111,6 +2118,83 @@ TFTEngine::get_action_masks() const {
     impl_->ensure_open();
 
     return impl_->masks;
+}
+
+bool TFTEngine::set_unit_for_testing(
+    std::int32_t player_id,
+    bool on_board,
+    std::int32_t slot,
+    const std::string& champion_api_name,
+    std::int32_t star
+) {
+    if (!impl_) {
+        throw std::runtime_error("TFTEngine nao possui estado interno.");
+    }
+    impl_->ensure_open();
+    if (player_id < 0 ||
+        static_cast<std::size_t>(player_id) >= kPlayersPerLobby ||
+        star < 1 || star > 3) {
+        return false;
+    }
+
+    const auto player_index = static_cast<std::size_t>(player_id);
+    const auto* definition =
+        impl_->catalog->find_by_api_name(champion_api_name);
+    if (!definition) return false;
+
+    auto unit = impl_->unit_factory->create(definition->internal_id);
+    unit.star = star;
+
+    if (on_board) {
+        if (slot < 0 || static_cast<std::size_t>(slot) >= kBoardSlots)
+            return false;
+        impl_->boards[player_index][static_cast<std::size_t>(slot)] =
+            std::move(unit);
+    } else {
+        if (slot < 0 || static_cast<std::size_t>(slot) >= kBenchSlots)
+            return false;
+        impl_->benches[player_index][static_cast<std::size_t>(slot)] =
+            std::move(unit);
+    }
+
+    impl_->register_position_state(player_index);
+    impl_->refresh_masks(player_index);
+    return true;
+}
+
+bool TFTEngine::set_player_alive_for_testing(
+    std::int32_t player_id,
+    bool alive
+) {
+    if (!impl_) {
+        throw std::runtime_error("TFTEngine nao possui estado interno.");
+    }
+    impl_->ensure_open();
+    if (player_id < 0 ||
+        static_cast<std::size_t>(player_id) >= kPlayersPerLobby) {
+        return false;
+    }
+
+    const auto index = static_cast<std::size_t>(player_id);
+    auto& player = impl_->players[index];
+    player.alive = alive;
+    player.eliminated = !alive;
+    if (!alive) {
+        player.hp = 0.0f;
+        player.placement.reset();
+        impl_->round_finished[index] = true;
+    } else if (player.hp <= 0.0f) {
+        player.hp = 100.0f;
+    }
+
+    impl_->alive_players = 0;
+    for (const auto& candidate : impl_->players) {
+        if (candidate.alive) ++impl_->alive_players;
+    }
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        impl_->refresh_masks(i);
+    }
+    return true;
 }
 
 bool TFTEngine::set_shop_locked(

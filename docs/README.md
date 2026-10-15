@@ -38,3 +38,8 @@ Os documentos abaixo foram escritos durante a fase inicial da migração de Acti
 - Consultas não podem duplicar mutações de histórico.
 - Não declarar teste, benchmark ou equivalência sem execução verificável.
 - Não alterar `4.5.2/` como parte desta consolidação.
+
+
+## Atualização de paridade controlada — 2026-10-15
+
+O replay Python/C++ agora controla a formação das unidades para comparar uma luta real e seus componentes de recompensa. A execução atual corrige a observação de jogadores eliminados e o score de posicionamento do ambiente Python. A paridade integral ainda depende de fixtures adicionais de empate, eliminações/ranking terminal e de uma decisão explícita sobre sincronização dos RNGs. Consulte CPP_STAGE4_COMBAT_REWARD_OBSERVATION_AUDIT.md.

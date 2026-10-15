@@ -312,6 +312,17 @@ public:
     std::array<PlayerActionMasks, kPlayersPerLobby>
     get_action_masks() const;
 
+    // Hooks de fixture determinística para testes de paridade Python/C++.
+    // Não alteram o pool compartilhado; usar apenas em cenários de teste.
+    bool set_unit_for_testing(
+        std::int32_t player_id,
+        bool on_board,
+        std::int32_t slot,
+        const std::string& champion_api_name,
+        std::int32_t star = 1
+    );
+    bool set_player_alive_for_testing(std::int32_t player_id, bool alive);
+
     // Controla o bloqueio da loja sem alterar as dimensões da policy PPO.
     bool set_shop_locked(std::int32_t player_id, bool locked);
     bool toggle_shop_lock(std::int32_t player_id);
