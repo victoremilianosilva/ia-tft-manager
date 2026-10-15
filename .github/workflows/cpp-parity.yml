@@ -1,0 +1,36 @@
+name: C++ engine and cross-language parity
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install test dependencies
+        run: python -m pip install --upgrade pip numpy pytest pybind11
+
+      - name: Configure CMake
+        run: cmake -S cpp -B cpp/build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+
+      - name: Build native modules and tests
+        run: cmake --build cpp/build --parallel 2
+
+      - name: Run native CTest suite
+        run: ctest --test-dir cpp/build --output-on-failure
+
+      - name: Run cross-language replay
+        env:
+          PYTHONPATH: ${{ github.workspace }}/cpp/build/bin:${{ github.workspace }}
+        run: python -m pytest -q tests/test_cross_language_replay.py
