@@ -413,7 +413,7 @@ class ViewerWindow(QMainWindow):
         elif self._step_round_target is not None:
             current_round = self.session.public_state.get("round", 0)
             if current_round == self._step_round_target:
-                QTimer.singleShot(0, self._advance_once)
+                QTimer.singleShot(10, self._advance_once)
             else:
                 self._step_round_target = None
                 self.status_label.setText(f"Rodada avançada para {current_round}.")
