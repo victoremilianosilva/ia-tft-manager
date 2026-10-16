@@ -2,7 +2,7 @@
 
 Aplicativo desktop de observação e avaliação de partidas TFT-like, baseado exclusivamente na especificação de `TFT_VIEWER_PLAN.md`.
 
-## Executar no Windows
+## Estrutura\n\n- `viwer/main.py`: entrada da interface desktop.\n- `viewer/session.py`: controlador, inferência, eventos e replay.\n- `viewer/docs/`: especificação integral e wireframes.\n\n## Executar no Windows
 
 Na raiz do repositório, com o ambiente virtual ativo:
 
@@ -17,7 +17,7 @@ O motor nativo `tft_engine` e o catálogo `units_gerado.json` precisam estar dis
 
 ## Checkpoint
 
-A primeira versão aceita checkpoints cujo arquivo contém o `state_dict` da `TFTPolicy` ou um dicionário com `policy_state_dict`, `model_state_dict` ou `state_dict`, e metadados opcionais `obs_dim`, `action_dims` e `hidden_size`. O modelo é carregado em CPU, colocado em `eval()`, com gradientes desativados. Nenhum `PPOTrainer` nem otimizador é criado.
+A primeira versão aceita checkpoints cujo arquivo contém o `state_dict` da `TFTPolicy` ou um dicionário com `policy`, `policy_state_dict`, `model_state_dict` ou `state_dict`, e metadados opcionais `obs_dim`, `action_dims` e `hidden_size`. O modelo é carregado em CPU, colocado em `eval()`, com gradientes desativados. Nenhum `PPOTrainer` nem otimizador é criado.
 
 ## Sessões e replay
 
