@@ -81,6 +81,10 @@ class ViewerSession:
         self._jsonl = None
         self._metadata_path: Path | None = None
         self._sequence = 0
+        self._metadata_path = None
+        self.replay_events = []
+        self.replay_mode = False
+        self.replay_cursor = 0
         self._rng = torch.Generator(device="cpu")
         self._rng.manual_seed(0)
         self.replay_events: list[dict] = []
