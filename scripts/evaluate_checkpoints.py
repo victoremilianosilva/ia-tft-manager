@@ -1,7 +1,6 @@
 """Head-to-head evaluation of two fixed TFT policy checkpoints.
 
 Example (PowerShell):
-  $env:TFT_ENGINE_BACKEND = "cpp"
   python scripts/evaluate_checkpoints.py --baseline checkpoints/baseline.pt --candidate tft_checkpoint.pt --matches 40 --output reports/head_to_head.csv
 
 Each match puts four seats on each policy and rotates the candidate seats between matches.
