@@ -1,6 +1,7 @@
 """Desktop TFT Viewer — PySide6."""
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -9,7 +10,7 @@ import numpy as np
 import torch
 from PySide6.QtCore import Qt, QTimer, Signal, QObject, QThread, QUrl
 from PySide6.QtGui import QPixmap
-from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest
+from PySide6.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
     QFrame, QLabel, QPushButton, QComboBox, QCheckBox, QDoubleSpinBox,
@@ -127,11 +128,11 @@ class ChampionIconLoader(QObject):
             self.loaded.emit(canonical)
             return
         url = urls[index]
-        cache_name = __import__("hashlib").sha256(url.encode("utf-8")).hexdigest() + ".img"
+        cache_name = hashlib.sha256(url.encode("utf-8")).hexdigest() + ".img"
         cache_path = self._cache_dir / cache_name
         if cache_path.is_file():
             pixmap = QPixmap()
-            if pixmap.load(str(cache_path)) and not pixmap.isNull():
+            if pixmap.loadFromData(cache_path.read_bytes()) and not pixmap.isNull():
                 self._pixmaps[canonical] = pixmap
                 self._pending.pop(canonical, None)
                 self.loaded.emit(canonical)
@@ -150,7 +151,7 @@ class ChampionIconLoader(QObject):
 
     def _on_download_finished(self, canonical, urls, index, reply, cache_path):
         data = bytes(reply.readAll())
-        success = reply.error() == reply.NetworkError.NoError
+        success = reply.error() == QNetworkReply.NetworkError.NoError
         reply.deleteLater()
         if success:
             pixmap = QPixmap()
@@ -177,6 +178,7 @@ class ChampionCell(QFrame):
     def __init__(self, min_width: int, min_height: int, parent=None):
         super().__init__(parent)
         self.setMinimumSize(min_width, min_height)
+        self.setObjectName("championCell")
         self.setFrameShape(QFrame.Shape.StyledPanel)
         self._champion_id = ""
         self.image = QLabel("·", self)
@@ -196,7 +198,7 @@ class ChampionCell(QFrame):
         self._set_empty_style()
 
     def _set_empty_style(self):
-        self.setStyleSheet("ChampionCell { background:#18263b;border:1px solid #293751;border-radius:3px; }")
+        self.setStyleSheet("QFrame#championCell { background:#18263b;border:1px solid #293751;border-radius:3px; }")
         self.image.setPixmap(QPixmap())
         self.image.setText("·")
         self.stars.setText("")
@@ -214,7 +216,7 @@ class ChampionCell(QFrame):
         cost = int(unit.get("cost", 0) or 0)
         border = self.COST_COLORS.get(cost, "#38bdf8")
         self.setStyleSheet(
-            f"ChampionCell {{ background:#0f172a;border:2px solid {border};border-radius:4px; }}"
+            f"QFrame#championCell {{ background:#0f172a;border:2px solid {border};border-radius:4px; }}"
         )
         self.setToolTip(f"{champion_id} · {'★' * star} · custo {cost or '?'}")
         pixmap = icon_loader.pixmap_for(champion_id)
