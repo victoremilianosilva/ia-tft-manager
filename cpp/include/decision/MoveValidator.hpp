@@ -69,7 +69,9 @@ public:
         RawIndex target
     );
 
-    // Valida movimentação do banco para uma posição vazia.
+    // Valida movimentação do banco para o tabuleiro.
+    // Destino vazio implanta (consome capacidade); destino ocupado substitui
+    // e devolve a unidade antiga ao mesmo slot do banco.
     [[nodiscard]] static MoveValidationResult
     validate_bench_to_board_move(
         std::span<const std::optional<UnitSnapshot>> board,
