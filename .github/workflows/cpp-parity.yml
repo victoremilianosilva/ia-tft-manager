@@ -75,6 +75,7 @@ jobs:
           tests/test_shared_pool_shop_validation.py
           tests/test_upgrade_integration.py
           tests/test_engine_backend_selection.py
+          tests/test_evaluate_checkpoints.py
 
       - name: Benchmark full Python engine vs native C++ engine
         env:
