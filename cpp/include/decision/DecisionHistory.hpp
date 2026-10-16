@@ -33,6 +33,9 @@ struct MoveRecord {
     std::int32_t source = -1;
     std::int32_t target = -1;
     std::optional<UnitIdentity> unit;
+    // Unidade que ocupava o destino antes de uma substituição bench -> board.
+    // Permite reconhecer a reversão mesmo quando a unidade selecionada muda.
+    std::optional<UnitIdentity> displaced_unit;
 
     bool operator==(const MoveRecord&) const = default;
 };
