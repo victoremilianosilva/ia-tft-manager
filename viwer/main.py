@@ -44,6 +44,21 @@ def _format_unit(unit):
     return unit_label(unit) or "·"
 
 
+class StepWorker(QObject):
+    completed = Signal(object)
+    failed = Signal(str)
+
+    def __init__(self, session):
+        super().__init__()
+        self.session = session
+
+    def run(self):
+        try:
+            self.completed.emit(self.session.step())
+        except Exception as exc:
+            self.failed.emit(str(exc))
+
+
 class PlayerCard(QFrame):
     selected = Signal(int)
 
@@ -130,6 +145,9 @@ class ViewerWindow(QMainWindow):
         self.resize(1600, 1000)
         self.session = ViewerSession()
         self.selected_player = 0
+        self._step_thread = None
+        self._step_worker = None
+        self._step_round_target = None
         self.play_timer = QTimer(self)
         self.play_timer.timeout.connect(self._on_play_tick)
         self._build_ui()
@@ -364,26 +382,55 @@ class ViewerWindow(QMainWindow):
         if not self.session.started:
             return
         self.play_timer.stop()
-        initial_round = self.session.public_state.get("round", 0)
-        for _ in range(60):
-            if self.session.finished or self.session.public_state.get("round", 0) != initial_round:
-                break
-            self._advance_once()
+        self._step_round_target = self.session.public_state.get("round", 0)
+        self._advance_once()
 
     def _on_play_tick(self):
         self._advance_once()
 
     def _advance_once(self):
-        try:
-            snapshot = self.session.step()
-            self._render_snapshot(snapshot)
-            if self.session.finished:
-                self.play_timer.stop()
-                self.status_label.setText("Partida encerrada. Replay salvo; inferência não alterou os pesos.")
-        except Exception as exc:
+        if self._step_thread is not None and self._step_thread.isRunning():
+            return
+        if not self.session.started or self.session.finished:
+            return
+        self._step_thread = QThread(self)
+        self._step_worker = StepWorker(self.session)
+        self._step_worker.moveToThread(self._step_thread)
+        self._step_thread.started.connect(self._step_worker.run)
+        self._step_worker.completed.connect(self._on_step_completed)
+        self._step_worker.failed.connect(self._on_step_failed)
+        self._step_worker.completed.connect(self._step_thread.quit)
+        self._step_worker.failed.connect(self._step_thread.quit)
+        self._step_thread.finished.connect(self._cleanup_step_worker)
+        self._step_thread.start()
+
+    def _on_step_completed(self, snapshot):
+        self._render_snapshot(snapshot)
+        if self.session.finished:
             self.play_timer.stop()
-            QMessageBox.critical(self, "Erro durante a partida", str(exc))
-            self._log(f"ERRO de execução: {exc}")
+            self._step_round_target = None
+            self.status_label.setText("Partida encerrada. Replay salvo; inferência não alterou os pesos.")
+        elif self._step_round_target is not None:
+            current_round = self.session.public_state.get("round", 0)
+            if current_round == self._step_round_target:
+                QTimer.singleShot(0, self._advance_once)
+            else:
+                self._step_round_target = None
+                self.status_label.setText(f"Rodada avançada para {current_round}.")
+
+    def _on_step_failed(self, message):
+        self.play_timer.stop()
+        self._step_round_target = None
+        QMessageBox.critical(self, "Erro durante a partida", message)
+        self._log(f"ERRO de execução: {message}")
+
+    def _cleanup_step_worker(self):
+        if self._step_worker is not None:
+            self._step_worker.deleteLater()
+        if self._step_thread is not None:
+            self._step_thread.deleteLater()
+        self._step_worker = None
+        self._step_thread = None
 
     def _interval_ms(self):
         speed = float(self.speed.currentText().replace("×", ""))
@@ -532,6 +579,9 @@ class ViewerWindow(QMainWindow):
 
     def closeEvent(self, event):
         self.play_timer.stop()
+        if self._step_thread is not None and self._step_thread.isRunning():
+            self._step_thread.quit()
+            self._step_thread.wait(5000)
         self.session.close()
         super().closeEvent(event)
 
