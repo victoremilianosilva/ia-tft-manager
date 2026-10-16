@@ -3,7 +3,7 @@ import torch.optim as optim
 import numpy as np
 import os
 
-from engine_backend import make_lobby_factory
+from cpp_lobby_env import CppTFTLobbyWrapper
 
 from torch.utils.tensorboard import SummaryWriter
 
@@ -14,8 +14,8 @@ from policy import TFTPolicy
 from rollout import RolloutBuffer
 from ppo import PPOTrainer
 
-from strategy.StrategyManager import Strategy
-from ai.ActionMaskManager import ActionType
+from engine_contracts import Strategy
+from engine_contracts import ActionType
 
 class Trainer:
 
@@ -59,7 +59,6 @@ class Trainer:
         self,
         num_envs=4,
         use_subprocess=True,
-        engine_backend=None,
     ):
 
         # ============================================================
@@ -149,11 +148,10 @@ class Trainer:
         # 🏭 ENV FACTORY / ENGINE BACKEND
         # ============================================================
 
-        self.engine_backend, env_factory = make_lobby_factory(engine_backend)
-        print(f"🧩 Engine selecionada: {self.engine_backend.upper()}")
+        print("🧩 Engine selecionada: C++ (única engine)")
 
         def make_env():
-            return env_factory()
+            return CppTFTLobbyWrapper()
 
 # ============================================================
         # 🚀 VECTOR ENV

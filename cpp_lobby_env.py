@@ -135,7 +135,7 @@ class CppTFTLobbyWrapper:
 
     def get_strategies(self):
         """Return native strategy snapshots as the enum expected by Trainer logs."""
-        from strategy.StrategyManager import Strategy
+        from engine_contracts import Strategy
 
         snapshots = self._engine.get_strategies()
         result = []

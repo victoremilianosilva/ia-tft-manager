@@ -17,7 +17,7 @@ from pathlib import Path
 
 # Running "python scripts/evaluate_checkpoints.py" makes scripts/ the
 # first import directory. Add the repository root so top-level modules
-# (engine_backend.py, policy.py) resolve from the project root.
+# (cpp_lobby_env.py, policy.py) resolve from the project root.
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
@@ -25,7 +25,7 @@ if str(_REPO_ROOT) not in sys.path:
 import numpy as np
 import torch
 
-from engine_backend import make_lobby_factory
+from cpp_lobby_env import CppTFTLobbyWrapper
 from policy import TFTPolicy
 
 
@@ -189,8 +189,8 @@ def main():
         parser.error("Os caminhos dos dois checkpoints precisam existir.")
 
     device = torch.device("cpu")
-    backend, factory = make_lobby_factory()
-    print(f"Engine: {backend.upper()} | partidas: {args.matches} | device: CPU")
+    factory = CppTFTLobbyWrapper
+    print(f"Engine: C++ (única engine) | partidas: {args.matches} | device: CPU")
 
     # Establish observation dimensions using the selected engine.
     probe = factory(seed=args.seed)
