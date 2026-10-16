@@ -1702,6 +1702,12 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         std::optional<decision::UnitIdentity>{
                             state.bench[source_index]->identity
                         };
+                    const auto displaced_unit_identity =
+                        state.board[target_index].has_value()
+                            ? std::optional<decision::UnitIdentity>{
+                                  state.board[target_index]->identity
+                              }
+                            : std::nullopt;
                     const std::string move_type = "bench_to_board";
                     const auto reason = anti_loop.get_block_reason(
                         move_type,
@@ -1723,7 +1729,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             move_type,
                             source,
                             target,
-                            unit_identity
+                            unit_identity,
+                            displaced_unit_identity
                         );
 
                         if (this->board[target_index].has_value()) {
