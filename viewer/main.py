@@ -211,6 +211,12 @@ class ViewerWindow(QMainWindow):
         controls.addWidget(self.replay_button)
         layout.addLayout(controls)
 
+        self.replay_slider = QSlider(Qt.Orientation.Horizontal)
+        self.replay_slider.setRange(0, 0)
+        self.replay_slider.setVisible(False)
+        self.replay_slider.valueChanged.connect(self._show_replay_event)
+        layout.addWidget(self.replay_slider)
+
         split = QSplitter(Qt.Orientation.Vertical)
         top_panel = QWidget()
         top_layout = QVBoxLayout(top_panel)
