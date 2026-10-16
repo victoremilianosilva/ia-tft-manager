@@ -541,7 +541,8 @@ class ViewerWindow(QMainWindow):
         round_filter = self.log_round_filter.currentText() if hasattr(self, "log_round_filter") else "Todos os rounds"
         severity_filter = self.log_severity_filter.currentText() if hasattr(self, "log_severity_filter") else "Todas as gravidades"
         # Session's visible recent events are rebuilt from the persisted JSONL when available.
-        events = self.session.replay_events[:]
+        events = (self.session.replay_events[:] if self.session.replay_mode
+                  else self.session.live_events[:])
         if self.session._metadata_path:
             event_file = self.session._metadata_path.parent / "events.jsonl"
             if event_file.is_file():
