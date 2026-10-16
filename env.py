@@ -779,12 +779,23 @@ class MiniTFTEnv:
         if not self.board_manager.is_valid_position(target):
             return -0.10
 
-        unit = self.bench_manager.get_unit(
-            bench_slot
-        )
-
+        unit = self.bench_manager.get_unit(bench_slot)
         if unit is None:
             return -0.10
+
+        target_unit = self.board_manager.get_unit(target)
+
+        # Bloqueio rígido de capacidade: a tentativa é penalizada e o estado
+        # permanece intacto. Substituir uma unidade ocupada não aumenta a equipe.
+        if (
+            target_unit is None
+            and self.board_manager.get_unit_count() >= int(self.economy_manager.level)
+        ):
+            info["action_success"] = False
+            info["rule_violation"] = "board_capacity"
+            info["board_units"] = self.board_manager.get_unit_count()
+            info["board_capacity"] = int(self.economy_manager.level)
+            return -0.25
 
         # --------------------------------------------------------
         # 🚫 ANTI LOOP + MÉTRICAS
@@ -800,41 +811,31 @@ class MiniTFTEnv:
         )
 
         if block_reason is not None:
-            self.anti_loop_manager.record_execution_block(
-                block_reason
-            )
+            self.anti_loop_manager.record_execution_block(block_reason)
             info["anti_loop_blocked"] = block_reason
             return -0.10
 
         # --------------------------------------------------------
-        # 📍 TARGET EMPTY
+        # 🔄 COLOCAÇÃO OU SUBSTITUIÇÃO ATÔMICA
         # --------------------------------------------------------
 
-        if self.board_manager.get_unit(target) is not None:
-            return -0.10
-
-        # --------------------------------------------------------
-        # 🔄 MOVE
-        # --------------------------------------------------------
-
-        removed = self.bench_manager.remove_unit(
-            bench_slot
-        )
-
-        if removed is None:
-            return -0.10
-
-        if not self.board_manager.add_unit(
-            removed,
-            target,
-        ):
-
-            self.bench_manager.add_unit(
-                removed,
-                bench_slot,
+        if target_unit is not None:
+            # A unidade retirada do tabuleiro volta ao slot do banco liberado.
+            # A atribuição simultânea evita estados intermediários inconsistentes.
+            self.board_manager.board[target], self.bench_manager.bench[bench_slot] = (
+                unit,
+                target_unit,
             )
+            removed = unit
+            info["swapped_unit"] = target_unit
+        else:
+            removed = self.bench_manager.remove_unit(bench_slot)
+            if removed is None:
+                return -0.10
 
-            return -0.10
+            if not self.board_manager.add_unit(removed, target):
+                self.bench_manager.add_unit(removed, bench_slot)
+                return -0.10
 
         self.anti_loop_manager.register_move(
             move_type="bench_to_board",
@@ -850,36 +851,22 @@ class MiniTFTEnv:
             unit=removed,
         )
 
-        # ✅ Movimento realmente executado
-        self.anti_loop_manager.record_successful_move(
-            "bench_to_board"
-        )
+        self.anti_loop_manager.record_successful_move("bench_to_board")
 
         info["action_success"] = True
         info["moved_unit"] = removed
 
         try:
-
-            positioning_score = (
-                self.positioning_manager
-                .evaluate_board_positioning(
-                    self.board_manager.board
-                )
+            positioning_score = self.positioning_manager.evaluate_board_positioning(
+                self.board_manager.board
             )
-
         except Exception:
-
             positioning_score = 0.0
 
-        return (
-            self.reward_manager
-            .calculate_action_reward(
-                ActionType.MOVE_BENCH,
-                True,
-                action_value=(
-                    positioning_score * 0.05
-                ),
-            )
+        return self.reward_manager.calculate_action_reward(
+            ActionType.MOVE_BENCH,
+            True,
+            action_value=positioning_score * 0.05,
         )
 
     # ============================================================
@@ -1088,23 +1075,24 @@ class MiniTFTEnv:
     # 🔄 PLAYER ROUND END
     # ============================================================
 
-    def resolve_player_round(self):
+    def resolve_player_round(self, next_round_number=None):
 
         if self.done:
             return {}
 
-        result = (
-            self.economy_manager
-            .resolve_round(
-                self.round
-            )
+        # A renda/XP são creditadas ao entrar na próxima preparação,
+        # depois do resultado do combate anterior (ouro e streak inclusos).
+        round_number = (
+            self.round
+            if next_round_number is None
+            else int(next_round_number)
         )
 
+        result = self.economy_manager.resolve_round(round_number)
         self.round_action_count = 0
 
-        # Nova shop para o próximo round.
+        # A loja da próxima rodada usa o nível já atualizado.
         self._roll_shop()
-
         self._rebuild_player_state()
 
         return result
