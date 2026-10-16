@@ -68,7 +68,8 @@ public:
         const std::string& move_type,
         std::int32_t source,
         std::int32_t target,
-        const std::optional<UnitIdentity>& unit = std::nullopt
+        const std::optional<UnitIdentity>& unit = std::nullopt,
+        const std::optional<UnitIdentity>& displaced_unit = std::nullopt
     );
 
     [[nodiscard]] MoveKey block_move(
