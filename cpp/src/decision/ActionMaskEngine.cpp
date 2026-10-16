@@ -294,46 +294,52 @@ ActionMaskBatch ActionMaskEngine::generate_masks(
     }
 
     // --------------------------------------------------------
-    // Banco -> tabuleiro: origem e destino condicionados
-    // --------------------------------------------------------
+    // Banco -> tabuleiro: implantação ou substituição.
+    // Uma casa vazia consome espaço de equipe; uma ocupada troca a unidade
+    // com o slot do banco e mantém a quantidade de unidades implantadas.
+    std::size_t board_unit_count = 0;
+    for (const auto& unit : state.board) {
+        if (unit.has_value()) {
+            ++board_unit_count;
+        }
+    }
+    const bool has_team_capacity =
+        board_unit_count < static_cast<std::size_t>(state.economy.level);
 
-    const bool board_has_space = state.has_free_board_slot();
+    for (std::size_t source = 0; source < BENCH_SIZE; ++source) {
+        if (!state.bench[source].has_value()) {
+            continue;
+        }
 
-    if (board_has_space) {
-        for (std::size_t source = 0; source < BENCH_SIZE; ++source) {
-            if (!state.bench[source].has_value()) {
+        for (std::size_t target = 0; target < BOARD_SIZE; ++target) {
+            const bool target_occupied = state.board[target].has_value();
+
+            // O limite só bloqueia implantações em casas vazias.
+            if (!target_occupied && !has_team_capacity) {
                 continue;
             }
 
-            for (std::size_t target = 0; target < BOARD_SIZE; ++target) {
-                if (state.board[target].has_value()) {
-                    continue;
-                }
-
-                if (!is_valid_bench_to_board_move(
-                    state,
-                    anti_loop,
-                    static_cast<RawIndex>(source),
-                    static_cast<RawIndex>(target)
-                )) {
-                    continue;
-                }
-
-                masks.bench_to_board_target_masks[source][target] =
-                    MASK_ENABLED;
-
-                masks.bench_move_source_mask[source] = MASK_ENABLED;
-
-                if (include_board_target) {
-                    masks.board_target_mask[target] = MASK_ENABLED;
-                }
-
-                masks.bench_move_available = true;
+            if (!is_valid_bench_to_board_move(
+                state,
+                anti_loop,
+                static_cast<RawIndex>(source),
+                static_cast<RawIndex>(target)
+            )) {
+                continue;
             }
+
+            masks.bench_to_board_target_masks[source][target] =
+                MASK_ENABLED;
+            masks.bench_move_source_mask[source] = MASK_ENABLED;
+
+            if (include_board_target) {
+                masks.board_target_mask[target] = MASK_ENABLED;
+            }
+
+            masks.bench_move_available = true;
         }
     }
 
-    // --------------------------------------------------------
     // Tabuleiro -> tabuleiro: origem e destino condicionados
     // --------------------------------------------------------
 
@@ -457,12 +463,6 @@ ActionMaskBatch ActionMaskEngine::generate_masks(
         // A full bench makes every shop choice semantically invalid. Do not
         // restore a dummy shop index that could be mistaken for a valid buy.
         masks.shop_mask.fill(MASK_DISABLED);
-    }
-    if (!board_has_space) {
-        // No empty board cell means no bench-to-board destination is valid.
-        for (auto& row : masks.bench_to_board_target_masks) {
-            row.fill(MASK_DISABLED);
-        }
     }
     return masks;
 }
