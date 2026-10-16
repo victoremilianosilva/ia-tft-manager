@@ -98,7 +98,7 @@ class ViewerSession:
         digest = hashlib.sha256(path.read_bytes()).hexdigest()
         payload = torch.load(path, map_location="cpu", weights_only=False)
         if isinstance(payload, dict):
-            state_dict = payload.get("policy_state_dict", payload.get("model_state_dict", payload.get("state_dict", payload)))
+            state_dict = payload.get("policy_state_dict", payload.get("model_state_dict", payload.get("state_dict", payload.get("policy", payload))))
             obs_dim = payload.get("obs_dim")
             action_dims = payload.get("action_dims", [7, 5, 9, 28, 28, 28])
             hidden_size = payload.get("hidden_size", 512)
@@ -123,14 +123,15 @@ class ViewerSession:
         for parameter in self.policy.parameters():
             parameter.requires_grad_(False)
         self._rng.manual_seed(int(seed))
+        torch.manual_seed(int(seed))
         self.config = ViewerConfig(path, int(seed), bool(deterministic), "cpp")
         self.checkpoint_sha256 = digest
         self.match_id = str(uuid.uuid4())
         self.lobby = CppTFTLobbyWrapper(seed=int(seed), catalog_path=str(CATALOG))
         self.obs = self.lobby.reset(seed=int(seed))
         self.masks = self.lobby.get_action_masks()
-        self.public_state = self.lobby._engine.get_public_state()
-        self.audit_snapshot = self.lobby._engine.get_audit_snapshot()
+        self.public_state = self.lobby.get_public_state()
+        self.audit_snapshot = self.lobby.get_audit_snapshot()
         self.started = True
         self.finished = False
         self.step_count = 0
