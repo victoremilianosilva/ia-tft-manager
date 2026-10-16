@@ -370,6 +370,27 @@ bool AntiLoopEngine::is_bench_board_loop(
         return false;
     }
 
+    // A substituição registra a unidade que entrou no board. A reversão
+    // seleciona a unidade deslocada, portanto a identidade muda entre ações.
+    // Se a candidata é exatamente a unidade deslocada nos mesmos slots,
+    // a ação desfaz imediatamente a substituição anterior.
+    if (history_.last_move.has_value()) {
+        const auto& last = *history_.last_move;
+        const auto last_type = normalize_bench_move(last.move_type);
+        if (
+            last_type.has_value()
+            && *last_type == *candidate_type
+            && source.has_value()
+            && target.has_value()
+            && last.source == *source
+            && last.target == *target
+            && last.displaced_unit == unit
+            && unit.has_value()
+        ) {
+            return true;
+        }
+    }
+
     struct BenchTransition {
         std::string type;
         std::int32_t source;
