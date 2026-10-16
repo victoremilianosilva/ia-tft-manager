@@ -1,0 +1,567 @@
+"""Per-player JSON logs mirroring the readable legacy TFT observer log.
+
+The native audit snapshot does not expose the old impact helper. The i: value
+in the readable lines uses the native board-power contribution (cost * star *
+2) and the JSON metadata identifies that formula explicitly.
+"""
+from __future__ import annotations
+
+import json
+import re
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+ACTION_NAMES = {0: "BUY", 1: "REROLL", 2: "BUY_XP", 3: "MOVE_BENCH",
+                4: "MOVE_BOARD", 5: "SELL", 6: "PASS"}
+ROLE_ABBREVIATIONS = {0: "T", 1: "C", 2: "S", 3: "F", 4: "A"}
+ROLE_NAMES = {0: "tank", 1: "carry", 2: "support", 3: "fighter", 4: "assassin"}
+
+
+def _jsonable(value: Any):
+    if hasattr(value, "tolist"):
+        try:
+            return value.tolist()
+        except (TypeError, ValueError):
+            pass
+    if hasattr(value, "item"):
+        try:
+            return value.item()
+        except (TypeError, ValueError):
+            pass
+    if isinstance(value, dict):
+        return {str(k): _jsonable(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_jsonable(v) for v in value]
+    if isinstance(value, float):
+        return value if value == value and abs(value) != float("inf") else None
+    if isinstance(value, (str, int, bool)) or value is None:
+        return value
+    return str(value)
+
+
+def _player_by_id(players, player_id):
+    for player in players or []:
+        try:
+            if int(player.get("player_id", -1)) == player_id:
+                return player
+        except (AttributeError, TypeError, ValueError):
+            continue
+    return {}
+
+
+def _round_coordinates(round_number: int) -> tuple[int, int]:
+    number = max(1, int(round_number or 1))
+    if number <= 4:
+        return 1, number
+    offset = number - 5
+    return 2 + offset // 7, offset % 7 + 1
+
+
+def _synergy_level(count: int) -> int:
+    if count >= 9:
+        return 3
+    if count >= 6:
+        return 2
+    if count >= 3:
+        return 1
+    return 0
+
+
+class PlayerJsonLogWriter:
+    """Persists one self-contained, readable JSON timeline for each lobby seat."""
+
+    def __init__(
+        self, session_dir: str | Path, *, match_id: str, checkpoint_sha256: str,
+        seed: int, deterministic: bool, catalog_path: str | Path,
+        initial_snapshot: dict | None = None, flush_interval_steps: int = 10,
+    ):
+        self.session_dir = Path(session_dir)
+        self.session_dir.mkdir(parents=True, exist_ok=True)
+        self.match_id = str(match_id)
+        self.checkpoint_sha256 = str(checkpoint_sha256)
+        self.seed = int(seed)
+        self.deterministic = bool(deterministic)
+        self.flush_interval_steps = max(1, int(flush_interval_steps))
+        self._sequence = [0] * 8
+        self._dirty = set(range(8))
+        self._closed = False
+        self._catalog_by_alias: dict[str, dict] = {}
+        self._load_catalog(Path(catalog_path))
+
+        created_at = datetime.now(timezone.utc).isoformat()
+        self.documents = []
+        self.paths = []
+        for player_id in range(8):
+            player_number = player_id + 1
+            self.documents.append({
+                "schema_version": 1,
+                "log_format": "tft_player_log",
+                "match_id": self.match_id,
+                "player_id": player_id,
+                "player_number": player_number,
+                "player_label": f"Jogador {player_number}",
+                "checkpoint_sha256": self.checkpoint_sha256,
+                "seed": self.seed,
+                "deterministic": self.deterministic,
+                "created_at": created_at,
+                "updated_at": created_at,
+                "impact_estimate_formula": "cost * star * 2.0 (contribuição de board_power da engine C++)",
+                "entries": [],
+            })
+            self.paths.append(self.session_dir / f"player_{player_number}_log.json")
+
+        snapshot = initial_snapshot or {}
+        initial_round = int(snapshot.get("round", 1) or 1)
+        stage, round_in_stage = _round_coordinates(initial_round)
+        timestamp, timestamp_iso = self._timestamp()
+        for player_id in range(8):
+            audit = _player_by_id(snapshot.get("audit_players", []), player_id)
+            public = _player_by_id(snapshot.get("players", []), player_id)
+            self._append_entry(
+                player_id, timestamp=timestamp, timestamp_iso=timestamp_iso,
+                step=0, round_number=initial_round, stage=stage,
+                round_in_stage=round_in_stage, event_type="match_started",
+                text=f"--- INÍCIO DA PARTIDA · JOGADOR {player_id + 1} ---",
+                tag="round_msg",
+                data={"state": self._player_snapshot(audit, public)},
+            )
+        self.flush(force=True)
+
+    @staticmethod
+    def _timestamp():
+        now = datetime.now().astimezone()
+        return now.strftime("%H:%M:%S"), now.isoformat()
+
+    def _load_catalog(self, catalog_path: Path):
+        try:
+            catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            catalog = []
+        if not isinstance(catalog, list):
+            return
+        for definition in catalog:
+            if not isinstance(definition, dict):
+                continue
+            for alias in (definition.get("apiName"), definition.get("characterName"), definition.get("name")):
+                if isinstance(alias, str) and alias.strip():
+                    self._catalog_by_alias[alias.casefold()] = definition
+
+    def _definition(self, unit: dict | None) -> dict:
+        if not unit or not unit.get("occupied", True):
+            return {}
+        key = str(unit.get("champion_id") or unit.get("apiName") or unit.get("api_name") or unit.get("name") or "")
+        return self._catalog_by_alias.get(key.casefold(), {})
+
+    def _unit_info(self, unit: dict | None, slot: int, location: str) -> dict:
+        if not unit or not unit.get("occupied", True):
+            return {"slot": int(slot), "location": location, "occupied": False}
+        definition = self._definition(unit)
+        profile = definition.get("combat_profile", {})
+        if not isinstance(profile, dict):
+            profile = {}
+        raw_role = profile.get("role", definition.get("role"))
+        try:
+            role = int(raw_role) if raw_role is not None else None
+        except (TypeError, ValueError):
+            role = None
+        cost = int(unit.get("cost", definition.get("cost", 0)) or 0)
+        star = max(1, int(unit.get("star", 1) or 1))
+        impact = float(cost * star * 2.0)
+        return {
+            "slot": int(slot), "location": location, "occupied": True,
+            "champion_id": unit.get("champion_id", ""), "name": definition.get("name") or unit.get("champion_id", "?"),
+            "uuid": unit.get("uuid"), "cost": cost, "star": star, "role": role,
+            "role_name": profile.get("role_name", definition.get("role_name", ROLE_NAMES.get(role, "unknown"))),
+            "role_abbreviation": ROLE_ABBREVIATIONS.get(role, "?"),
+            "traits": list(definition.get("traits", []) or []), "impact": impact,
+            "impact_method": "cost * star * 2.0 (native board_power contribution)",
+        }
+
+    def _player_snapshot(self, audit: dict, public: dict) -> dict:
+        audit, public = audit or {}, public or {}
+        return {
+            "player_id": int(public.get("player_id", audit.get("player_id", -1))),
+            "hp": public.get("hp"), "gold": public.get("gold", audit.get("gold")),
+            "level": public.get("level", audit.get("level")), "xp": public.get("xp", audit.get("xp")),
+            "alive": public.get("alive"), "eliminated": public.get("eliminated"),
+            "wins": public.get("wins"), "losses": public.get("losses"),
+            "placement": public.get("placement"), "opponent_id": public.get("opponent_id"),
+            "win_streak": audit.get("win_streak"), "loss_streak": audit.get("loss_streak"),
+            "board": [self._unit_info(u, i, "board") for i, u in enumerate(audit.get("board", []))],
+            "bench": [self._unit_info(u, i, "bench") for i, u in enumerate(audit.get("bench", []))],
+            "shop": [self._unit_info(u, i, "shop") for i, u in enumerate(audit.get("shop", []))],
+        }
+
+    def _compact_unit(self, unit: dict | None, slot: int = 0, location: str = "unknown") -> str:
+        if not unit or not unit.get("occupied", True):
+            return "Vazio"
+        info = self._unit_info(unit, slot, location)
+        return f"{info['name']} (i:{info['impact']:.1f})"
+
+    @staticmethod
+    def _unit_at(units, index):
+        return units[int(index)] if 0 <= int(index) < len(units) else None
+
+    def _action_text(self, action: list[int], before_audit: dict) -> str:
+        action_type = int(action[0])
+        shop, bench, board = (
+            before_audit.get("shop", []), before_audit.get("bench", []), before_audit.get("board", [])
+        )
+        if action_type == 0:
+            slot = int(action[1])
+            unit = self._unit_at(shop, slot)
+            if unit and unit.get("occupied", True):
+                info = self._unit_info(unit, slot, "shop")
+                return f"COMPROU: {info['name']} (Custo {info['cost']} | i:{info['impact']:.1f})"
+            return "COMPROU Vazio"
+        if action_type == 1:
+            return "REROLL"
+        if action_type == 2:
+            return "BUY XP"
+        if action_type == 3:
+            source, target = int(action[2]), int(action[3])
+            return (
+                f"MOVE Bench -> Board: {self._compact_unit(self._unit_at(bench, source), source, 'bench')} "
+                f"<-> {self._compact_unit(self._unit_at(board, target), target, 'board')}"
+            )
+        if action_type == 4:
+            source, target = int(action[4]), int(action[5])
+            return (
+                f"MOVE Board -> Board: {self._compact_unit(self._unit_at(board, source), source, 'board')} "
+                f"<-> {self._compact_unit(self._unit_at(board, target), target, 'board')}"
+            )
+        if action_type == 5:
+            slot = int(action[2])
+            unit = self._unit_at(bench, slot)
+            if unit and unit.get("occupied", True):
+                info = self._unit_info(unit, slot, "bench")
+                return f"VENDEU: {info['name']} (i:{info['impact']:.1f})"
+            return "VENDEU Vazio"
+        return "PASSOU TURNO"
+
+    def _board_snapshot_keyed(self, audit: dict) -> dict[str, dict]:
+        result = {}
+        for index, unit in enumerate(audit.get("bench", [])):
+            if unit and unit.get("occupied", True):
+                result[f"bench_{index}"] = self._unit_info(unit, index, "bench")
+        for index, unit in enumerate(audit.get("board", [])):
+            if unit and unit.get("occupied", True):
+                result[f"board_{index // 7}_{index % 7}"] = self._unit_info(unit, index, "board")
+        return result
+
+    def _active_traits(self, audit: dict) -> dict[str, int]:
+        counts: dict[str, int] = {}
+        for location in ("board", "bench"):
+            for unit in audit.get(location, []):
+                if not unit or not unit.get("occupied", True):
+                    continue
+                for trait in self._definition(unit).get("traits", []) or []:
+                    if isinstance(trait, str) and trait and trait.casefold() != "none":
+                        counts[trait] = counts.get(trait, 0) + 1
+        return counts
+
+    def _append_entry(
+        self, player_id: int, *, timestamp: str, timestamp_iso: str, step: int,
+        round_number: int, stage: int, round_in_stage: int, event_type: str,
+        text: str, tag: str | None, data: dict | None = None,
+    ):
+        self._sequence[player_id] += 1
+        event = {
+            "schema_version": 1, "match_id": self.match_id, "player_id": player_id,
+            "player_number": player_id + 1, "sequence_id": self._sequence[player_id],
+            "timestamp": timestamp, "timestamp_iso": timestamp_iso, "step": int(step),
+            "round": int(round_number), "stage": int(stage), "round_in_stage": int(round_in_stage),
+            "event_type": event_type, "tag": tag, "text": text, "payload": _jsonable(data or {}),
+        }
+        document = self.documents[player_id]
+        document["entries"].append(event)
+        document["updated_at"] = timestamp_iso
+        self._dirty.add(player_id)
+
+    def _append_shop(self, player_id: int, *, timestamp: str, timestamp_iso: str,
+                     step: int, round_number: int, stage: int, round_in_stage: int, audit: dict):
+        names = []
+        for slot, unit in enumerate(audit.get("shop", [])):
+            if unit and unit.get("occupied", True):
+                info = self._unit_info(unit, slot, "shop")
+                names.append(f"{info['name']}(i:{info['impact']:.1f})")
+            else:
+                names.append("None")
+        self._append_entry(
+            player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
+            round_number=round_number, stage=stage, round_in_stage=round_in_stage,
+            event_type="shop_view", text=f"[{timestamp}] 🛒 LOJA: {', '.join(names)}\n",
+            tag="shop_view",
+            data={"shop": [self._unit_info(u, i, "shop") for i, u in enumerate(audit.get("shop", []))]},
+        )
+
+    def _record_round_end(
+        self, player_id: int, *, timestamp: str, timestamp_iso: str, step: int,
+        round_number: int, stage: int, round_in_stage: int, audit: dict,
+        public: dict, action: list[int], reward: float, before_state: dict,
+        after_state: dict, diagnostics: dict, engine_events: list[str],
+    ):
+        self._append_entry(
+            player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
+            round_number=round_number, stage=stage, round_in_stage=round_in_stage,
+            event_type="round_finished",
+            text=f"\n[{timestamp}] --- FIM DO ROUND {stage}-{round_in_stage} | GOLD: {after_state.get('gold', '?')} ---\n",
+            tag="round_msg",
+            data={
+                "action": action, "action_name": ACTION_NAMES.get(int(action[0]), "UNKNOWN"),
+                "reward": reward, "state_before": before_state, "state_after": after_state,
+                "policy_diagnostics": diagnostics, "engine_events": engine_events,
+            },
+        )
+        board = list(audit.get("board", []))
+        self._append_entry(
+            player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
+            round_number=round_number, stage=stage, round_in_stage=round_in_stage,
+            event_type="board_header", text="\n--- CONFIGURAÇÃO DO TABULEIRO ---\n",
+            tag="board_view", data={"board": after_state["board"]},
+        )
+        frontline = backline = carries_front = tanks_back = assassins_front = 0
+        rows = []
+        for row in range(4):
+            row_text = ""
+            for col in range(7):
+                index = row * 7 + col
+                unit = board[index] if index < len(board) else None
+                if unit and unit.get("occupied", True):
+                    info = self._unit_info(unit, index, "board")
+                    role = info.get("role")
+                    char = f"[{str(info.get('name') or '?')[:3]}|{info.get('role_abbreviation', '?')}|{info['star']}*|i:{info['impact']:.1f}]"
+                    if row <= 1:
+                        frontline += 1
+                    else:
+                        backline += 1
+                    if role == 1 and row <= 1:
+                        carries_front += 1
+                    if role == 0 and row >= 2:
+                        tanks_back += 1
+                    if role == 4 and row <= 1:
+                        assassins_front += 1
+                else:
+                    char = "[ . ]"
+                row_text += char.center(18)
+            rows.append(row_text + "\n")
+        self._append_entry(
+            player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
+            round_number=round_number, stage=stage, round_in_stage=round_in_stage,
+            event_type="board_view", text="".join(rows), tag="board_view",
+            data={"rows": [row.rstrip("\n") for row in rows]},
+        )
+        self._append_entry(
+            player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
+            round_number=round_number, stage=stage, round_in_stage=round_in_stage,
+            event_type="board_separator", text="----------------------------------\n", tag="board_view",
+        )
+        analysis = []
+        if carries_front > 0:
+            analysis.append(f"⚠️ {carries_front} carry(s) expostos na frontline")
+        if tanks_back > 0:
+            analysis.append(f"⚠️ {tanks_back} tank(s) posicionados atrás")
+        if assassins_front > 0:
+            analysis.append(f"⚠️ {assassins_front} assassin(s) na frontline")
+        if frontline == 0:
+            analysis.append("⚠️ sem frontline")
+        if backline == 0:
+            analysis.append("⚠️ sem backline")
+        if not analysis:
+            analysis.append("✅ posicionamento parece consistente")
+        self._append_entry(
+            player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
+            round_number=round_number, stage=stage, round_in_stage=round_in_stage,
+            event_type="position_analysis", text="\n".join(analysis) + "\n", tag="system",
+            data={"frontline": frontline, "backline": backline, "carries_frontline": carries_front,
+                  "tanks_backline": tanks_back, "assassins_frontline": assassins_front, "warnings": analysis},
+        )
+        self._append_entry(
+            player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
+            round_number=round_number, stage=stage, round_in_stage=round_in_stage,
+            event_type="bench_header", text="\n--- ESTADO DO BANCO ---\n", tag="board_view",
+            data={"bench": after_state["bench"]},
+        )
+        bench = list(audit.get("bench", []))
+        bench_rows = []
+        for start in range(0, 9, 3):
+            chars = []
+            for index in range(start, min(start + 3, 9)):
+                unit = bench[index] if index < len(bench) else None
+                if unit and unit.get("occupied", True):
+                    info = self._unit_info(unit, index, "bench")
+                    char = f"[{str(info.get('name') or '?')[:3]}|{info['star']}*|i:{info['impact']:.1f}]"
+                else:
+                    char = "[VAZIO]"
+                chars.append(char.center(14))
+            bench_rows.append("".join(chars) + "\n")
+        self._append_entry(
+            player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
+            round_number=round_number, stage=stage, round_in_stage=round_in_stage,
+            event_type="bench_view", text="".join(bench_rows) + "----------------------------------\n",
+            tag="board_view", data={"rows": [row.rstrip("\n") for row in bench_rows]},
+        )
+        self._append_shop(
+            player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
+            round_number=round_number, stage=stage, round_in_stage=round_in_stage, audit=audit,
+        )
+
+    @staticmethod
+    def _events_for_player(events: list[str], player_id: int) -> list[str]:
+        patterns = (
+            re.compile(rf"\bjogador\s+{player_id}\b", re.IGNORECASE),
+            re.compile(rf"\bplayer\s+{player_id}\b", re.IGNORECASE),
+        )
+        relevant = []
+        for event in events:
+            event = str(event)
+            mentions_seat = re.search(r"\b(?:jogador|player)\s+\d+\b", event, re.IGNORECASE)
+            if not mentions_seat or any(pattern.search(event) for pattern in patterns):
+                relevant.append(event)
+        return relevant
+
+    def record_step(self, *, before: dict, after: dict, actions: list[list[int]],
+                    diagnostics: list[dict], rewards, info: dict, step: int, finished: bool):
+        """Append per-seat action lines and matching board/bench/shop snapshots."""
+        if self._closed:
+            return
+        timestamp, timestamp_iso = self._timestamp()
+        round_number = int(before.get("round", 1) or 1)
+        stage, round_in_stage = _round_coordinates(round_number)
+        engine_events = [str(event) for event in info.get("events", [])]
+        round_resolved = any(
+            event.strip() == "ROUND_RESOLVED" or event.strip().startswith("ROUND_RESOLVED:")
+            for event in engine_events
+        )
+        shared_round_events = [
+            event for event in engine_events
+            if event.strip() == "ROUND_RESOLVED" or event.strip().startswith("ROUND_NO_PVP")
+            or event.strip().startswith("PLACEMENT_REWARD")
+        ]
+        action_rewards = _jsonable(info.get("action_rewards"))
+        combat_rewards = _jsonable(info.get("combat_rewards"))
+        placement_rewards = _jsonable(info.get("placement_rewards"))
+
+        for player_id in range(8):
+            before_audit = _player_by_id(before.get("audit_players", []), player_id)
+            after_audit = _player_by_id(after.get("audit_players", []), player_id)
+            before_public = _player_by_id(before.get("players", []), player_id)
+            after_public = _player_by_id(after.get("players", []), player_id)
+            action = [int(value) for value in actions[player_id]]
+            diagnostic = diagnostics[player_id] if player_id < len(diagnostics) else {}
+            try:
+                reward = float(rewards[player_id])
+            except (TypeError, ValueError, IndexError):
+                reward = 0.0
+            player_events = self._events_for_player(engine_events, player_id)
+            action_type = int(action[0])
+            is_round_end = action_type == 6 or round_resolved or finished
+            before_state = self._player_snapshot(before_audit, before_public)
+            after_state = self._player_snapshot(after_audit, after_public)
+            primary_data = {
+                "action": action, "action_name": ACTION_NAMES.get(action_type, "UNKNOWN"),
+                "reward": reward,
+                "action_reward": action_rewards[player_id] if isinstance(action_rewards, list) and player_id < len(action_rewards) else None,
+                "combat_reward": combat_rewards[player_id] if isinstance(combat_rewards, list) and player_id < len(combat_rewards) else None,
+                "placement_reward": placement_rewards[player_id] if isinstance(placement_rewards, list) and player_id < len(placement_rewards) else None,
+                "state_changed": before_state != after_state,
+                "state_before": before_state, "state_after": after_state,
+                "policy_diagnostics": diagnostic, "engine_events": player_events,
+            }
+
+            # Same order as the old UI: star upgrades first, then action/round,
+            # with synergy transitions recorded after the board/shop text.
+            before_units = self._board_snapshot_keyed(before_audit)
+            after_units = self._board_snapshot_keyed(after_audit)
+            for location, previous in before_units.items():
+                current = after_units.get(location)
+                if current and current.get("champion_id") == previous.get("champion_id") and int(current.get("star", 1)) > int(previous.get("star", 1)):
+                    self._append_entry(
+                        player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
+                        round_number=round_number, stage=stage, round_in_stage=round_in_stage,
+                        event_type="evolution",
+                        text=f"[{timestamp}] ⭐ EVOLUÇÃO: {current['name']} subiu para {current['star']} estrelas! (i:{current['impact']:.1f})\n",
+                        tag="upgrade", data={"location": location, "before": previous, "after": current},
+                    )
+
+            if is_round_end:
+                self._record_round_end(
+                    player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
+                    round_number=round_number, stage=stage, round_in_stage=round_in_stage,
+                    audit=after_audit, public=after_public, action=action, reward=reward,
+                    before_state=before_state, after_state=after_state,
+                    diagnostics=diagnostic, engine_events=player_events + shared_round_events,
+                )
+            else:
+                tag = "pos_rew" if reward > 0 else "neg_rew" if reward < 0 else None
+                line = f"[{timestamp}] {self._action_text(action, before_audit):28} | Rew: {reward:+.2f}\n"
+                self._append_entry(
+                    player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
+                    round_number=round_number, stage=stage, round_in_stage=round_in_stage,
+                    event_type="action", text=line, tag=tag, data=primary_data,
+                )
+                if action_type == 1:
+                    self._append_shop(
+                        player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
+                        round_number=round_number, stage=stage, round_in_stage=round_in_stage,
+                        audit=after_audit,
+                    )
+
+            before_traits, after_traits = self._active_traits(before_audit), self._active_traits(after_audit)
+            for trait in sorted(set(before_traits) | set(after_traits)):
+                old_level = _synergy_level(before_traits.get(trait, 0))
+                new_level = _synergy_level(after_traits.get(trait, 0))
+                if new_level > old_level:
+                    event_type, arrow, tag = "synergy_up", "⬆️", "syn_up"
+                elif new_level < old_level:
+                    event_type, arrow, tag = "synergy_down", "⬇️", "syn_down"
+                else:
+                    continue
+                self._append_entry(
+                    player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
+                    round_number=round_number, stage=stage, round_in_stage=round_in_stage,
+                    event_type=event_type,
+                    text=f"[{timestamp}]  {arrow} SINERGIA: {trait.upper()} nível {new_level}\n",
+                    tag=tag,
+                    data={"trait": trait, "old_count": before_traits.get(trait, 0),
+                          "new_count": after_traits.get(trait, 0), "old_level": old_level, "new_level": new_level},
+                )
+
+            if finished:
+                self._append_entry(
+                    player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
+                    round_number=round_number, stage=stage, round_in_stage=round_in_stage,
+                    event_type="match_finished",
+                    text="\n" + "=" * 40 + "\n GAME OVER - RELATÓRIO FINAL\n" + "=" * 40 + "\n",
+                    tag="round_msg",
+                    data={"ranking": after.get("ranking", []), "player_final_state": after_state,
+                          "winner_id": after.get("winner_id")},
+                )
+
+        if round_resolved or finished or step % self.flush_interval_steps == 0:
+            self.flush(force=True)
+
+    def flush(self, *, force: bool = False):
+        if self._closed:
+            return
+        selected = range(8) if force else sorted(self._dirty)
+        for player_id in selected:
+            if player_id not in self._dirty and not force:
+                continue
+            path = self.paths[player_id]
+            document = self.documents[player_id]
+            document["updated_at"] = datetime.now(timezone.utc).isoformat()
+            temporary = path.with_suffix(path.suffix + ".tmp")
+            temporary.write_text(
+                json.dumps(document, ensure_ascii=False, indent=2, allow_nan=False),
+                encoding="utf-8",
+            )
+            temporary.replace(path)
+            self._dirty.discard(player_id)
+
+    def close(self):
+        if self._closed:
+            return
+        self.flush(force=True)
+        self._closed = True

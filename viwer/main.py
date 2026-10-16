@@ -419,7 +419,7 @@ class ViewerWindow(QMainWindow):
         self.seed.setValue(20261016)
         self.deterministic = QCheckBox("Inferência determinística")
         self.deterministic.setChecked(True)
-        self.record = QCheckBox("Gravar replay JSONL")
+        self.record = QCheckBox("Salvar logs JSON por jogador")
         self.record.setChecked(True)
         self.output_dir = QLineEdit(str(ROOT / "viewer" / "sessions"))
         self.output_dir.setMinimumWidth(0)
@@ -586,9 +586,11 @@ class ViewerWindow(QMainWindow):
         self.log_player_filter.currentIndexChanged.connect(self._refresh_log_view)
         self.log_type_filter = QComboBox()
         self.log_type_filter.addItems([
-            "Todos os eventos", "decision_batch", "step_completed",
-            "match_started", "match_finished", "diagnostic_warning",
-            "diagnostic_error", "action_rejected", "action_failed",
+            "Todos os eventos", "action", "evolution", "round_finished",
+            "board_view", "bench_view", "shop_view", "synergy_up",
+            "synergy_down", "position_analysis", "decision_batch",
+            "step_completed", "match_started", "match_finished",
+            "diagnostic_warning", "diagnostic_error", "action_rejected", "action_failed",
         ])
         self.log_type_filter.currentIndexChanged.connect(self._refresh_log_view)
         self.log_round_filter = QComboBox()
@@ -759,6 +761,10 @@ class ViewerWindow(QMainWindow):
             )
             self._log(f"Checkpoint carregado: SHA-256 {self.session.checkpoint_sha256}")
             self._log("Modo de inferência: " + ("determinístico" if self.deterministic.isChecked() else "estocástico"))
+            if self.session._session_dir is not None:
+                self._log(f"Logs individuais por jogador: {self.session._session_dir}")
+                for player_number in range(1, 9):
+                    self._log(f"  • player_{player_number}_log.json")
             self._render_snapshot(snapshot)
             self._set_running(True)
             self.status_label.setText("Modelo em eval() · gradientes desativados · sem PPOTrainer/optimizer")
@@ -827,7 +833,7 @@ class ViewerWindow(QMainWindow):
         if self.session.finished:
             self.play_timer.stop()
             self._step_round_target = None
-            self.status_label.setText("Partida encerrada. Replay salvo; inferência não alterou os pesos.")
+            self.status_label.setText("Partida encerrada. Logs JSON por jogador salvos; inferência não alterou os pesos.")
         elif self._step_round_target is not None:
             current_round = self.session.public_state.get("round", 0)
             if current_round == self._step_round_target:
@@ -1027,23 +1033,18 @@ class ViewerWindow(QMainWindow):
         self.events_log.appendPlainText(message)
 
     def _refresh_log_view(self):
-        # Human-readable live audit summary; raw JSONL remains the authoritative full event stream.
+        # Human-readable live audit summary. New sessions persist independent JSON logs per player;
+        # live_events is the in-memory stream used by these filters.
         if not hasattr(self, "events_log"):
             return
         player_filter = self.log_player_filter.currentIndex() - 1 if hasattr(self, "log_player_filter") else -1
         type_filter = self.log_type_filter.currentText() if hasattr(self, "log_type_filter") else "Todos os eventos"
         round_filter = self.log_round_filter.currentText() if hasattr(self, "log_round_filter") else "Todos os rounds"
         severity_filter = self.log_severity_filter.currentText() if hasattr(self, "log_severity_filter") else "Todas as gravidades"
-        # Session's visible recent events are rebuilt from the persisted JSONL when available.
+        # Live audit remains in memory; each seat's human-readable history is
+        # independently persisted as player_N_log.json by ViewerSession.
         events = (self.session.replay_events[:] if self.session.replay_mode
                   else self.session.live_events[:])
-        if self.session._metadata_path:
-            event_file = self.session._metadata_path.parent / "events.jsonl"
-            if event_file.is_file():
-                try:
-                    events = [json.loads(line) for line in event_file.read_text(encoding="utf-8").splitlines() if line.strip()]
-                except (OSError, json.JSONDecodeError):
-                    events = []
         available_rounds = sorted({int(e.get("round", 0)) for e in events})
         current_round = self.log_round_filter.currentText() if hasattr(self, "log_round_filter") else "Todos os rounds"
         if hasattr(self, "log_round_filter"):
@@ -1070,9 +1071,13 @@ class ViewerWindow(QMainWindow):
             if severity_filter != "Todas as gravidades" and event_severity(event) != severity_filter:
                 continue
             if player_filter >= 0:
-                players = event.get("payload", {}).get("players", [])
-                if not any(int(p.get("player_id", -1)) == player_filter for p in players):
-                    continue
+                if "player_id" in event:
+                    if int(event.get("player_id", -1)) != player_filter:
+                        continue
+                else:
+                    players = event.get("payload", {}).get("players", [])
+                    if not any(int(p.get("player_id", -1)) == player_filter for p in players):
+                        continue
             filtered.append(event)
         self.events_log.setPlainText("\n".join(
             f"#{e.get('sequence_id')} · {e.get('event_type')} · R{e.get('round')} S{e.get('stage')}"
@@ -1080,7 +1085,11 @@ class ViewerWindow(QMainWindow):
         ) or "Nenhum evento corresponde aos filtros.")
 
     def _open_replay(self):
-        path, _ = QFileDialog.getOpenFileName(self, "Abrir replay JSONL", str(ROOT / "viewer" / "sessions"), "JSONL (*.jsonl);;Todos os arquivos (*)")
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Abrir log de jogador / replay legado",
+            str(ROOT / "viewer" / "sessions"),
+            "Logs JSON por jogador (*.json);;Replay JSONL legado (*.jsonl);;Todos os arquivos (*)",
+        )
         if not path:
             return
         try:
@@ -1103,8 +1112,20 @@ class ViewerWindow(QMainWindow):
         self.replay_slider.blockSignals(True)
         self.replay_slider.setValue(index)
         self.replay_slider.blockSignals(False)
-        self.events_log.setPlainText(json.dumps(event, ensure_ascii=False, indent=2))
-        self.round_label.setText(f"REPLAY · evento {event.get('sequence_id')} · {event.get('event_type')}")
+        readable_text = event.get("text")
+        payload = event.get("payload", {})
+        if readable_text:
+            detail = str(readable_text).rstrip()
+            if payload:
+                detail += "\n\nDETALHES ESTRUTURADOS\n" + json.dumps(payload, ensure_ascii=False, indent=2)
+            self.events_log.setPlainText(detail)
+        else:
+            self.events_log.setPlainText(json.dumps(event, ensure_ascii=False, indent=2))
+        player_number = event.get("player_number")
+        player_prefix = f"JOGADOR {player_number} · " if player_number else ""
+        self.round_label.setText(
+            f"REPLAY · {player_prefix}evento {event.get('sequence_id')} · {event.get('event_type')}"
+        )
 
     def _set_running(self, enabled):
         self.start_button.setEnabled(enabled)
