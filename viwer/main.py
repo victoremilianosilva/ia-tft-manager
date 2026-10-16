@@ -305,10 +305,22 @@ class ViewerWindow(QMainWindow):
         self.log_player_filter.addItems(["Todos os jogadores"] + [f"Jogador {i + 1}" for i in range(8)])
         self.log_player_filter.currentIndexChanged.connect(self._refresh_log_view)
         self.log_type_filter = QComboBox()
-        self.log_type_filter.addItems(["Todos os eventos", "decision_batch", "step_completed", "match_started", "match_finished"])
+        self.log_type_filter.addItems([
+            "Todos os eventos", "decision_batch", "step_completed",
+            "match_started", "match_finished", "diagnostic_warning",
+            "diagnostic_error", "action_rejected", "action_failed",
+        ])
         self.log_type_filter.currentIndexChanged.connect(self._refresh_log_view)
+        self.log_round_filter = QComboBox()
+        self.log_round_filter.addItems(["Todos os rounds"])
+        self.log_round_filter.currentIndexChanged.connect(self._refresh_log_view)
+        self.log_severity_filter = QComboBox()
+        self.log_severity_filter.addItems(["Todas as gravidades", "Info", "Warning", "Error"])
+        self.log_severity_filter.currentIndexChanged.connect(self._refresh_log_view)
         filters.addWidget(self.log_player_filter)
         filters.addWidget(self.log_type_filter)
+        filters.addWidget(self.log_round_filter)
+        filters.addWidget(self.log_severity_filter)
         logs_layout.addLayout(filters)
         self.events_log = QPlainTextEdit()
         self.events_log.setReadOnly(True)
@@ -521,6 +533,8 @@ class ViewerWindow(QMainWindow):
             return
         player_filter = self.log_player_filter.currentIndex() - 1 if hasattr(self, "log_player_filter") else -1
         type_filter = self.log_type_filter.currentText() if hasattr(self, "log_type_filter") else "Todos os eventos"
+        round_filter = self.log_round_filter.currentText() if hasattr(self, "log_round_filter") else "Todos os rounds"
+        severity_filter = self.log_severity_filter.currentText() if hasattr(self, "log_severity_filter") else "Todas as gravidades"
         # Session's visible recent events are rebuilt from the persisted JSONL when available.
         events = self.session.replay_events[:]
         if self.session._metadata_path:
@@ -530,9 +544,30 @@ class ViewerWindow(QMainWindow):
                     events = [json.loads(line) for line in event_file.read_text(encoding="utf-8").splitlines() if line.strip()]
                 except (OSError, json.JSONDecodeError):
                     events = []
+        available_rounds = sorted({int(e.get("round", 0)) for e in events})
+        current_round = self.log_round_filter.currentText() if hasattr(self, "log_round_filter") else "Todos os rounds"
+        if hasattr(self, "log_round_filter"):
+            desired = ["Todos os rounds"] + [str(value) for value in available_rounds]
+            if [self.log_round_filter.itemText(i) for i in range(self.log_round_filter.count())] != desired:
+                self.log_round_filter.blockSignals(True)
+                self.log_round_filter.clear()
+                self.log_round_filter.addItems(desired)
+                self.log_round_filter.setCurrentText(current_round if current_round in desired else "Todos os rounds")
+                self.log_round_filter.blockSignals(False)
         filtered = []
+        def event_severity(event):
+            kind = event.get("event_type", "")
+            if kind in {"diagnostic_error", "action_failed"}:
+                return "Error"
+            if kind in {"diagnostic_warning", "action_rejected", "anti_loop_detected", "anti_loop_blocked"}:
+                return "Warning"
+            return "Info"
         for event in events:
             if type_filter != "Todos os eventos" and event.get("event_type") != type_filter:
+                continue
+            if round_filter != "Todos os rounds" and str(event.get("round", 0)) != round_filter:
+                continue
+            if severity_filter != "Todas as gravidades" and event_severity(event) != severity_filter:
                 continue
             if player_filter >= 0:
                 players = event.get("payload", {}).get("players", [])
