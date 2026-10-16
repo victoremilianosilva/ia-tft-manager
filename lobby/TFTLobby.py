@@ -798,23 +798,9 @@ class TFTLobby:
     # ============================================================
     def _resolve_round(self):
 
-        # --------------------------------------------------------
-        # 💰 ECONOMY
-        # --------------------------------------------------------
-
+        # A economia da próxima preparação será aplicada depois dos
+        # combates, para usar o ouro e as sequências já atualizados.
         economy_results = {}
-
-        for player in self.players:
-
-            if not player.alive:
-                continue
-
-            economy_results[
-                player.player_id
-            ] = (
-                player.env
-                .resolve_player_round()
-            )
 
         # --------------------------------------------------------
         # ⚔️ MATCHMAKING
@@ -840,29 +826,42 @@ class TFTLobby:
             )
 
         # --------------------------------------------------------
+        # 💰 ECONOMIA DA PRÓXIMA PREPARAÇÃO
+        # --------------------------------------------------------
+        # A renda é calculada depois do combate anterior, de modo que juros
+        # considerem o saldo atualizado e o bônus de sequência veja o resultado
+        # mais recente. O índice representa a rodada que está começando.
+        next_round_number = self.round + 1
+        players_for_next_round = [
+            player
+            for player in self.players
+            if player.alive and float(getattr(player.env, "hp", 100)) > 0
+        ]
+
+        if len(players_for_next_round) > 1:
+            for player in players_for_next_round:
+                economy_results[player.player_id] = (
+                    player.env.resolve_player_round(
+                        next_round_number=next_round_number
+                    )
+                )
+
+        # --------------------------------------------------------
         # 💰 SINCRONIZA RECOMPENSAS DE COMBATE NO RELATÓRIO
         # --------------------------------------------------------
 
         for player in self.players:
-            economy_result = economy_results.get(
-                player.player_id
-            )
-
-            if economy_result is None:
-                continue
-
+            economy_result = economy_results.get(player.player_id)
             economy = player.env.economy_manager
 
-            # Ouro concedido pelos combates desta rodada.
+            # O bônus de vitória já está no saldo e não deve ser repetido
+            # no próximo relatório, mesmo se a partida terminar nesta rodada.
             win_gold = economy.round_win_gold
+            if economy_result is not None:
+                economy_result["win_gold"] = win_gold
+                economy_result["total_gold"] += win_gold
+                economy_result["new_gold"] = economy.gold
 
-            economy_result["win_gold"] = win_gold
-            economy_result["total_gold"] += win_gold
-
-            # Inclui o ouro recebido após a resolução econômica.
-            economy_result["new_gold"] = economy.gold
-
-            # Impede que o bônus apareça novamente no próximo relatório.
             economy.round_win_gold = 0
 
         # --------------------------------------------------------
