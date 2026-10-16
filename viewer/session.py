@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import hashlib
 import uuid
+import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -87,6 +88,8 @@ class ViewerSession:
         self.live_events: list[dict] = []
         self.replay_mode = False
         self.replay_cursor = 0
+        self._preparation_started_at: float | None = None
+        self._preparation_round: tuple[int, int] | None = None
 
     def load_checkpoint(self, checkpoint: str | Path, seed: int, deterministic: bool,
                         output_dir: str | Path, record: bool = True):
@@ -241,6 +244,18 @@ class ViewerSession:
             raise RuntimeError("Carregue um checkpoint antes de avançar.")
         if self.finished:
             return self._snapshot_for_event()
+
+        # The viewer's preparation phase is wall-clock based, not step-count based.
+        # Start it on the first actual advance so loading a checkpoint does not
+        # consume the player's five seconds before playback begins.
+        round_key = (
+            int(self.public_state.get("round", 1) or 1),
+            int(self.public_state.get("stage", 1) or 1),
+        )
+        if self._preparation_round != round_key or self._preparation_started_at is None:
+            self._preparation_round = round_key
+            self._preparation_started_at = time.monotonic()
+
         before = self._snapshot_for_event()
         actions, diagnostics = [], []
         for player_id in range(8):
@@ -260,8 +275,24 @@ class ViewerSession:
                 for i in range(8)
             ],
         })
-        # One native step is a simultaneous eight-seat lobby step.
-        obs, rewards, done, info = self.lobby.step(actions)
+        # Inference itself counts toward the five-second preparation window.
+        timer_expired = (
+            time.monotonic() - self._preparation_started_at
+        ) >= 5.0
+        if timer_expired:
+            # Do not execute a new policy move after the deadline. PASS closes
+            # preparation; the native engine resolves combat in this same batch.
+            actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+            diagnostics = [
+                {"action_name": "PASS", "action": action, "status": "preparation_timeout"}
+                for action in actions
+            ]
+
+        # One native step is a simultaneous eight-seat lobby step. Timed mode
+        # prevents early PASS from triggering combat before the five seconds.
+        obs, rewards, done, info = self.lobby.step(
+            actions, timer_enabled=True, timer_expired=timer_expired
+        )
         self.obs = obs
         self.last_actions = actions
         self.last_policy = diagnostics
@@ -271,6 +302,10 @@ class ViewerSession:
         self.public_state = self.lobby.get_public_state()
         self.audit_snapshot = self.lobby.get_audit_snapshot()
         self.finished = bool(done or self.public_state.get("finished", False))
+        # Combat advances the round; the next call starts a fresh 5-second window.
+        if any(str(event).strip() == "ROUND_RESOLVED" for event in info.get("events", [])):
+            self._preparation_started_at = None
+            self._preparation_round = None
         self.step_count += 1
         after = self._snapshot_for_event()
         self._emit("step_completed", {
