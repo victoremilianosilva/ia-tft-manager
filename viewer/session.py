@@ -90,6 +90,7 @@ class ViewerSession:
         self.replay_cursor = 0
         self._preparation_started_at: float | None = None
         self._preparation_round: tuple[int, int] | None = None
+        self._passed_players: set[int] = set()
 
     def load_checkpoint(self, checkpoint: str | Path, seed: int, deterministic: bool,
                         output_dir: str | Path, record: bool = True):
@@ -255,6 +256,7 @@ class ViewerSession:
         if self._preparation_round != round_key or self._preparation_started_at is None:
             self._preparation_round = round_key
             self._preparation_started_at = time.monotonic()
+            self._passed_players.clear()
 
         before = self._snapshot_for_event()
         actions, diagnostics = [], []
@@ -264,10 +266,19 @@ class ViewerSession:
             if not player.get("alive", True):
                 actions.append([6, 0, 0, 0, 0, 0])
                 diagnostics.append({"action_name": "PASS", "action": [6, 0, 0, 0, 0, 0], "status": "eliminated_seat"})
+            elif player_id in self._passed_players:
+                action = [6, 0, 0, 0, 0, 0]
+                actions.append(action)
+                diagnostics.append({
+                    "action_name": "PASS", "action": action,
+                    "status": "waiting_for_preparation_deadline",
+                })
             else:
                 action, diag = self._action_for_player(player_id)
                 actions.append(action)
                 diagnostics.append(diag)
+                if action[0] == 6:
+                    self._passed_players.add(player_id)
         self._emit("decision_batch", {
             "before": before,
             "players": [
@@ -306,6 +317,7 @@ class ViewerSession:
         if any(str(event).strip() == "ROUND_RESOLVED" for event in info.get("events", [])):
             self._preparation_started_at = None
             self._preparation_round = None
+            self._passed_players.clear()
         self.step_count += 1
         after = self._snapshot_for_event()
         self._emit("step_completed", {
