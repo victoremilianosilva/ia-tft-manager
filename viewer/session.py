@@ -268,8 +268,8 @@ class ViewerSession:
         self.last_rewards = np.asarray(rewards, dtype=np.float32)
         self.last_info = info
         self.masks = self.lobby.get_action_masks()
-        self.public_state = self.lobby._engine.get_public_state()
-        self.audit_snapshot = self.lobby._engine.get_audit_snapshot()
+        self.public_state = self.lobby.get_public_state()
+        self.audit_snapshot = self.lobby.get_audit_snapshot()
         self.finished = bool(done or self.public_state.get("finished", False))
         self.step_count += 1
         after = self._snapshot_for_event()
