@@ -1,0 +1,107 @@
+==========================================================
+TFT AI LOG · JOGADOR 5
+Partida: 43b53954-e928-4143-ac31-b812ef5f4c79
+Seed: 20261016 | Política: determinística
+Checkpoint SHA-256: 5f6bce8073ccf20294acb97dc86232804cefa434a9c3d8c4f480fbd1272fc2b0
+Impacto (i): custo × estrelas × 2 (contribuição nativa da engine)
+==========================================================
+--- INÍCIO DA PARTIDA · JOGADOR 5 ---
+[20:32:18] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Vazio | Rew: +0.02
+[20:32:19] PASSOU TURNO                 | Rew: +0.00
+
+[20:32:24] --- FIM DO ROUND 1-1 | GOLD: 2 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Rek|F|1*|i:2.0]       [ . ]       
+----------------------------------
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[20:32:24] 🛒 LOJA: Talon(i:2.0), Caitlyn(i:2.0), Gnar(i:4.0), Nasus(i:2.0), Cho'Gath(i:2.0)
+[20:32:25] COMPROU: Cho'Gath (Custo 1 | i:2.0) | Rew: +0.05
+[20:32:25] COMPROU: Talon (Custo 1 | i:2.0) | Rew: +0.05
+[20:32:26] MOVE Bench -> Board: Cho'Gath (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.02
+[20:32:27] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Cho'Gath (i:2.0) | Rew: +0.02
+[20:32:27] MOVE Bench -> Board: Cho'Gath (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.02
+[20:32:28] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Cho'Gath (i:2.0) | Rew: +0.02
+[20:32:29] MOVE Bench -> Board: Cho'Gath (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.02
+[20:32:30] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Cho'Gath (i:2.0) | Rew: +0.02
+
+[20:32:30] --- FIM DO ROUND 1-2 | GOLD: 2 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Rek|F|1*|i:2.0]       [ . ]       
+----------------------------------
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+[Cho|1*|i:2.0][Tal|1*|i:2.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[20:32:30] 🛒 LOJA: Pantheon(i:4.0), Ezreal(i:2.0), Jax(i:4.0), Caitlyn(i:2.0), Teemo(i:2.0)
+[20:32:31] COMPROU: Teemo (Custo 1 | i:2.0) | Rew: +0.05
+[20:32:32] COMPROU: Caitlyn (Custo 1 | i:2.0) | Rew: +0.05
+[20:32:32] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.02
+[20:32:33] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Caitlyn (i:2.0) | Rew: +0.02
+[20:32:34] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.02
+[20:32:34] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Caitlyn (i:2.0) | Rew: +0.02
+[20:32:35] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.02
+[20:32:36] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Caitlyn (i:2.0) | Rew: +0.02
+
+[20:32:37] --- FIM DO ROUND 1-3 | GOLD: 3 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Rek|F|1*|i:2.0]       [ . ]       
+----------------------------------
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+[Cho|1*|i:2.0][Tal|1*|i:2.0][Tee|1*|i:2.0]
+[Cai|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[20:32:37] 🛒 LOJA: Twisted Fate(i:2.0), Gragas(i:4.0), Milio(i:4.0), Poppy(i:2.0), Veigar(i:2.0)
+[20:32:37] COMPROU: Veigar (Custo 1 | i:2.0) | Rew: +0.05
+[20:32:38] COMPROU: Twisted Fate (Custo 1 | i:2.0) | Rew: +0.05
+[20:32:39] COMPROU: Poppy (Custo 1 | i:2.0) | Rew: +0.05
+[20:32:39] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.02
+[20:32:40] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Caitlyn (i:2.0) | Rew: +0.02
+[20:32:41] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.02
+[20:32:41] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Caitlyn (i:2.0) | Rew: +0.02
+[20:32:42] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.02
+
+[20:32:43] --- FIM DO ROUND 1-4 | GOLD: 4 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]       
+----------------------------------
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+[Cho|1*|i:2.0][Tal|1*|i:2.0][Tee|1*|i:2.0]
+[Rek|1*|i:2.0][Vei|1*|i:2.0][Twi|1*|i:2.0]
+[Pop|1*|i:2.0]   [VAZIO]       [VAZIO]    
+----------------------------------
+[20:32:43] 🛒 LOJA: Lissandra(i:2.0), Cho'Gath(i:2.0), Gwen(i:4.0), Talon(i:2.0), Illaoi(i:6.0)
+[20:32:44] COMPROU: Illaoi (Custo 3 | i:6.0) | Rew: +0.05
+[20:32:44] COMPROU: Lissandra (Custo 1 | i:2.0) | Rew: +0.05
+[20:32:44]  ⬆️ SINERGIA: SHEPHERD nível 1
+[20:32:45] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Caitlyn (i:2.0) | Rew: +0.02
+[20:32:46] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.02
