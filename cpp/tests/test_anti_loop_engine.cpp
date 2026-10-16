@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstdint>
 #include <string>
+#include <stdexcept>
 
 using namespace tft::decision;
 
@@ -278,15 +279,23 @@ void test_blocks_bench_board_replacement_oscillation_between_units() {
 
         if (i == 0) {
             // Não bloquear a primeira ação legítima.
-            assert(!blocked);
+            if (blocked) {
+                throw std::runtime_error(
+                    "AntiLoop blocked the first legitimate bench-to-board move"
+                );
+            }
             engine.register_move(move_type, bench_slot, board_position, unit);
             continue;
         }
 
         // A partir da segunda ação, permitir a troca inicia a oscilação.
         // A asserção falha imediatamente se o AntiLoop deixar o loop passar.
-        assert(blocked && "AntiLoop allowed a bench/board replacement oscillation");
-        loop_was_blocked = blocked;
+        if (!blocked) {
+            throw std::runtime_error(
+                "AntiLoop allowed a bench/board replacement oscillation"
+            );
+        }
+        loop_was_blocked = true;
         if (blocked) {
             break;
         }
@@ -295,7 +304,11 @@ void test_blocks_bench_board_replacement_oscillation_between_units() {
     }
 
     // O teste só é bem-sucedido se a sequência for interrompida pelo bloqueio.
-    assert(loop_was_blocked);
+    if (!loop_was_blocked) {
+        throw std::runtime_error(
+            "AntiLoop did not block the reproducible bench/board oscillation"
+        );
+    }
 }
 
 void test_reset_preserves_execution_metrics_like_python() {
