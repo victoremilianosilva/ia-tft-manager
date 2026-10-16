@@ -190,6 +190,9 @@ class ViewerSession:
             "checkpoint_id": self.checkpoint_sha256,
             "payload": _jsonable(payload),
         }
+        self.live_events.append(event)
+        if len(self.live_events) > 5000:
+            del self.live_events[:1000]
         if self._jsonl:
             self._jsonl.write(json.dumps(event, ensure_ascii=False, separators=(",", ":")) + "\n")
         return event
