@@ -309,17 +309,17 @@ O replay deve reproduzir os dados gravados, não pedir à política que jogue no
 
 ### 10.1 Persistência escolhida para a primeira versão
 
-**Formato inicial: JSONL versionado por sessão**, com um evento JSON por linha, em ordem monotônica. A escolha prioriza simplicidade de implementação, inspeção manual, gravação incremental e facilidade para depurar arquivos sem ferramentas adicionais. A UI deve depender do contrato lógico de eventos, não de detalhes de serialização.
+**Formato de saída: oito arquivos JSON independentes por sessão**, um para cada jogador (`player_1_log.json` a `player_8_log.json`), junto de `metadata.json`. Cada JSON contém `entries` com sequência monotônica local, timestamp, estágio/rodada, tipo de evento, texto compatível com o log legível antigo e `payload` estruturado. Novas sessões não geram JSONL. O leitor ainda aceita JSONL antigo como caminho de compatibilidade, sem continuar a produzi-lo.
 
-Cada sessão terá um arquivo de metadados e um fluxo JSONL com:
+Cada sessão terá um arquivo de metadados e um JSON por jogador com:
 
 - Metadados de partida: checkpoint/hash, seed, versão da engine, configuração e modo de inferência.
-- Eventos estruturados em ordem global, incluindo decisão proposta, validação, execução confirmada, estado e diagnóstico.
+- Eventos legíveis por jogador em ordem monotônica, incluindo ação/recompensa, evolução de estrelas, final de rodada, tabuleiro 7×4, análise de posicionamento, banco, loja, mudança de sinergia e relatório final, com estado estruturado associado.
 - Snapshots completos no início, em marcos definidos e no fim; eventos incrementais entre snapshots.
 - Referências de decisão e estado anterior/posterior.
 - Resultado final e classificação.
 
-Implementar escrita incremental e buffer limitado, sem bloquear a thread da UI. Começar com logging configurável (resumo/diagnóstico detalhado) para controlar overhead. SQLite só será reconsiderado se medições reais mostrarem que consulta aleatória, volume ou tamanho de sessão tornam JSONL insuficiente; não precisamos manter dois formatos na primeira versão.
+Os arquivos são gravados atomicamente por substituição de um `.tmp`, com flush periódico, ao final da rodada e ao encerrar a partida. Isso evita deixar JSON parcialmente escrito quando a interface ou o processo é fechado. O formato é destinado à inspeção manual e às análises por jogador; não é necessário manter duas saídas novas em paralelo.
 
 ### 10.2 Integridade do replay
 
@@ -436,13 +436,13 @@ Esta é a sequência de execução acordada antes de avançar a implementação 
 
 **Critério para encerrar:** testes automatizados demonstram que diagnóstico habilitado não altera a ação nem os pesos e que os dados registrados correspondem às distribuições usadas para escolher a ação.
 
-### Tarefa 4 — Validar esquema e ciclo completo do replay JSONL
-- [ ] Definir versão explícita do esquema, identificador de sessão, sequência monotônica de eventos e metadados de engine/checkpoint/seed.
-- [ ] Registrar snapshots inicial, checkpoints de estado acordados, eventos incrementais e resultado final.
+### Tarefa 4 — Validar esquema e ciclo completo dos logs JSON por jogador
+- [ ] Definir versão explícita do esquema dos oito logs, identificador de sessão, sequência monotônica por jogador e metadados de checkpoint/seed.
+- [ ] Registrar snapshot inicial e final, ação/recompensa por passo, eventos incrementais de evolução/sinergia e snapshots de rodada com tabuleiro, banco e loja.
 - [ ] Distinguir proposta, validação, execução confirmada e estado posterior; nunca registrar ação rejeitada como executada.
 - [ ] Implementar gravação incremental e tratamento de erro de escrita sem travar a UI.
-- [ ] Testar gravação, fechamento, reabertura, validação de esquema e reconstrução do estado a partir de snapshot + eventos.
-- [ ] Testar arquivo truncado/corrompido e versão de esquema não suportada, apresentando erro claro em vez de inventar dados.
+- [ ] Testar geração dos oito arquivos, fechamento, reabertura por replay JSON e validação de esquema; manter teste de leitura de JSONL legado.
+- [ ] Testar JSON truncado/corrompido e versão de esquema não suportada, apresentando erro claro em vez de inventar dados.
 
 **Critério para encerrar:** uma sessão real pode ser gravada, fechada e reaberta, reconstruindo os dados registrados sem executar novamente a política.
 
@@ -455,7 +455,7 @@ A implementação inicial foi iniciada, sem declarar concluídos os critérios d
 - [x] Controles de seleção de checkpoint, seed, inferência determinística/estocástica, iniciar/pausar, passo conjunto, avanço de rodada e velocidade visual.
 - [x] Leitura de checkpoints salvos pelo trainer no campo `policy`, inferência em modo `eval()` e parâmetros com gradientes desativados.
 - [x] API de diagnóstico opt-in para probabilidades/máscaras das cabeças visitadas, com teste para preservar ações/valores e consumo de RNG.
-- [x] Gravação inicial de metadados e eventos JSONL versionados, e navegação de eventos em replay.
+- [x] Gravação inicial de metadados e oito logs JSON independentes, com texto legível e payload estruturado por jogador.
 - [x] Passagem de snapshots públicos/auditáveis pelo adaptador Python, sem a interface acessar diretamente a engine.
 - [ ] Executar a aplicação no Windows com checkpoint real e confirmar compatibilidade de formato/observações.
 - [ ] Validar todas as máscaras e as oito inferências com uma partida real no motor nativo.
@@ -503,7 +503,7 @@ Decisões já alinhadas:
 - [ ] Confirmar em execução se os eventos de `CombatResult` são propagados pelo lobby/bindings até Python; o motor já define eventos tipados e flags de gravação, mas o caminho completo ainda precisa ser validado.
 - [x] Avanço unitário definido como um passo conjunto do lobby (ações dos oito assentos), com pausa entre passos; não se promete interromper o passo internamente.
 - [x] Diagnósticos PPO definidos como opt-in e sem alteração do contrato normal ou da sequência de amostragem.
-- [x] JSONL versionado definido como formato inicial de replay.
+- [x] Logs JSON independentes por jogador definidos como formato de saída; importação JSONL legado mantida para compatibilidade.
 - [x] Casas de campeões quadradas, com retratos dimensionados junto com a célula.
 - [x] Interface responsiva: grade de jogadores e painéis adaptam-se à largura disponível; página com rolagem vertical e sem rolagem horizontal.
 - [x] A implementação inicial do visualizador começou em `viwer/main.py` e `viewer/session.py`; os critérios de aceite ainda dependem de validação em execução.

@@ -27,7 +27,7 @@ A primeira versão aceita checkpoints cujo arquivo contém o `state_dict` da `TF
 
 ## Sessões e replay
 
-As sessões são gravadas em `viewer/sessions/` com `metadata.json` e `events.jsonl`. Os eventos têm `schema_version` e `sequence_id` monotônico. Abrir replay lê os eventos existentes e não executa a política.
+As novas sessões são gravadas em `viewer/sessions/` com `metadata.json` e oito arquivos independentes: `player_1_log.json` até `player_8_log.json`. Cada arquivo é o histórico legível daquele jogador (`text`) junto dos dados estruturados de ação, recompensa, snapshots do tabuleiro/banco/loja, evolução, mudanças de sinergia e análise de posicionamento. O JSON é atualizado atomicamente durante a partida, no fim de rodada e ao finalizar. Novas sessões não criam `events.jsonl`; o botão de replay ainda pode importar arquivos JSONL legados, apenas para compatibilidade. Abrir replay nunca executa a política.
 
 ## Limitações explícitas da primeira versão
 

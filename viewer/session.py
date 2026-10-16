@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import json
 import hashlib
-import time
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -15,6 +14,7 @@ import torch
 
 from policy import TFTPolicy
 from cpp_lobby_env import CppTFTLobbyWrapper
+from viewer.player_logs import PlayerJsonLogWriter
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG = ROOT / "units_gerado.json"
@@ -78,7 +78,8 @@ class ViewerSession:
         self.checkpoint_sha256 = ""
         self.started = False
         self.finished = False
-        self._jsonl = None
+        self._player_log_writer: PlayerJsonLogWriter | None = None
+        self._session_dir: Path | None = None
         self._metadata_path: Path | None = None
         self._sequence = 0
         self._rng = torch.Generator(device="cpu")
@@ -145,7 +146,9 @@ class ViewerSession:
             out.mkdir(parents=True, exist_ok=True)
             session_dir = out / f"match-{datetime.now().strftime('%Y%m%d-%H%M%S')}-{self.match_id[:8]}"
             session_dir.mkdir(parents=True, exist_ok=False)
+            self._session_dir = session_dir
             self._metadata_path = session_dir / "metadata.json"
+            log_files = [f"player_{player_id + 1}_log.json" for player_id in range(8)]
             self._metadata_path.write_text(json.dumps({
                 "schema_version": 1,
                 "match_id": self.match_id,
@@ -158,8 +161,18 @@ class ViewerSession:
                 "policy_class": "TFTPolicy",
                 "observation_dim": int(obs_dim),
                 "action_dims": list(action_dims),
+                "log_format": "one JSON file per player",
+                "player_log_files": log_files,
             }, ensure_ascii=False, indent=2), encoding="utf-8")
-            self._jsonl = (session_dir / "events.jsonl").open("a", encoding="utf-8", buffering=1)
+            self._player_log_writer = PlayerJsonLogWriter(
+                session_dir,
+                match_id=self.match_id,
+                checkpoint_sha256=digest,
+                seed=int(seed),
+                deterministic=bool(deterministic),
+                catalog_path=CATALOG,
+                initial_snapshot=self._snapshot_for_event(),
+            )
         self._emit("match_started", {
             "checkpoint_sha256": digest, "seed": int(seed),
             "mode": "deterministic" if deterministic else "stochastic",
@@ -173,6 +186,7 @@ class ViewerSession:
             "stage": self.public_state.get("stage", self.audit_snapshot.get("stage", 1)),
             "finished": bool(self.public_state.get("finished", False)),
             "ranking": self.public_state.get("ranking", []),
+            "winner_id": self.public_state.get("winner_id"),
             "players": self.public_state.get("players", []),
             "audit_players": self.audit_snapshot.get("players", []),
         }
@@ -194,8 +208,6 @@ class ViewerSession:
         self.live_events.append(event)
         if len(self.live_events) > 5000:
             del self.live_events[:1000]
-        if self._jsonl:
-            self._jsonl.write(json.dumps(event, ensure_ascii=False, separators=(",", ":")) + "\n")
         return event
 
     def _action_for_player(self, player_id: int):
@@ -273,6 +285,17 @@ class ViewerSession:
             "after": after,
             "players": after.get("players", []),
         })
+        if self._player_log_writer is not None:
+            self._player_log_writer.record_step(
+                before=before,
+                after=after,
+                actions=actions,
+                diagnostics=diagnostics,
+                rewards=self.last_rewards,
+                info=info,
+                step=self.step_count,
+                finished=self.finished,
+            )
         if self.finished:
             self._emit("match_finished", {
                 "ranking": self.public_state.get("ranking", []),
@@ -283,32 +306,53 @@ class ViewerSession:
         return after
 
     def _flush_close_log(self):
-        if self._jsonl:
-            self._jsonl.flush()
-            self._jsonl.close()
-            self._jsonl = None
+        if self._player_log_writer is not None:
+            self._player_log_writer.close()
+            self._player_log_writer = None
 
     def load_replay(self, path: str | Path):
         source = Path(path).expanduser().resolve()
         if source.is_dir():
-            source = source / "events.jsonl"
+            legacy_stream = source / "events.jsonl"
+            source = legacy_stream if legacy_stream.is_file() else source / "player_1_log.json"
         if not source.is_file():
             raise FileNotFoundError(source)
+
         events = []
-        with source.open("r", encoding="utf-8") as stream:
-            for line_no, line in enumerate(stream, 1):
-                if not line.strip():
-                    continue
-                try:
-                    event = json.loads(line)
-                except json.JSONDecodeError as exc:
-                    raise ValueError(f"Replay inválido na linha {line_no}: {exc}") from exc
-                if event.get("schema_version") != 1:
-                    raise ValueError(f"Versão de esquema não suportada na linha {line_no}.")
-                events.append(event)
+        if source.suffix.casefold() == ".json":
+            try:
+                document = json.loads(source.read_text(encoding="utf-8"))
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"Log JSON inválido: {exc}") from exc
+            if not isinstance(document, dict) or document.get("schema_version") != 1:
+                raise ValueError("Versão ou estrutura do log JSON não suportada.")
+            if document.get("log_format") == "tft_player_log":
+                events = document.get("entries", [])
+            elif isinstance(document.get("events"), list):
+                events = document["events"]
+            else:
+                raise ValueError("O JSON não contém entries de um log de jogador.")
+        else:
+            # Compatibility reader only: new sessions no longer write JSONL.
+            with source.open("r", encoding="utf-8") as stream:
+                for line_no, line in enumerate(stream, 1):
+                    if not line.strip():
+                        continue
+                    try:
+                        event = json.loads(line)
+                    except json.JSONDecodeError as exc:
+                        raise ValueError(f"Replay JSONL legado inválido na linha {line_no}: {exc}") from exc
+                    events.append(event)
+
+        if not isinstance(events, list):
+            raise ValueError("O arquivo de replay precisa conter uma lista de eventos.")
+        for index, event in enumerate(events, 1):
+            if not isinstance(event, dict) or event.get("schema_version") != 1:
+                raise ValueError(f"Evento {index} possui esquema ausente ou incompatível.")
         seq = [int(e.get("sequence_id", -1)) for e in events]
         if seq != sorted(seq) or len(seq) != len(set(seq)):
             raise ValueError("Replay com sequence_id duplicado ou fora de ordem.")
+
         self._flush_close_log()
         if self.lobby is not None:
             self.lobby.close()
@@ -319,6 +363,7 @@ class ViewerSession:
         self.started = False
         self.finished = False
         self._metadata_path = None
+        self._session_dir = None
         self.live_events = []
         self.replay_events = events
         self.replay_cursor = 0
@@ -344,6 +389,7 @@ class ViewerSession:
         self.started = False
         self.finished = False
         self._metadata_path = None
+        self._session_dir = None
         self._sequence = 0
         self.replay_events = []
         self.live_events = []
