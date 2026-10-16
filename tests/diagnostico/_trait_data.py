@@ -127,7 +127,16 @@ def collect_traits(data):
             for t in traits
         )
     ]
-    return str(latest_set), max(matching, key=lambda item: len(item[1]))
+    # Se a fonte for uma lista plana com vários sets, filtra para não misturar catálogos.
+    filtered = []
+    for path, trait_list in matching:
+        only_latest = [
+            trait for trait in trait_list
+            if set_number_from_api_name(trait.get("apiName")) == str(latest_set)
+        ]
+        if only_latest:
+            filtered.append((path, only_latest))
+    return str(latest_set), max(filtered, key=lambda item: len(item[1]))
 
 
 def validate_traits(traits, selected_set):
