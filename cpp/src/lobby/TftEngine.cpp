@@ -730,32 +730,32 @@ struct TFTEngine::Impl {
         const auto type = static_cast<std::size_t>(values[0]);
         const auto& player_masks = player_envs[player_index].action_masks;
 
-        if (player_masks.type_mask[type] != 1) {
-            // A máscara evita esta ação na amostragem normal. Se uma ação
-            // externa tentar implantar em casa vazia além do nível, deixe-a
-            // chegar ao executor para registrar a penalidade, sem mutação.
-            if (type == 3) {
-                const auto state = build_decision_state(player_index);
-                const auto source = static_cast<std::size_t>(values[2]);
-                const auto target = static_cast<std::size_t>(values[3]);
-                const auto occupied = static_cast<std::size_t>(
-                    std::count_if(
-                        state.board.begin(),
-                        state.board.end(),
-                        [](const auto& unit) { return unit.has_value(); }
-                    )
-                );
-                if (
-                    source < state.bench.size()
-                    && target < state.board.size()
-                    && state.bench[source].has_value()
-                    && !state.board[target].has_value()
-                    && occupied >= static_cast<std::size_t>(state.economy.level)
-                ) {
-                    return;
-                }
+        // A tentativa de implantar além do nível deve ser rejeitada com
+        // penalidade mesmo quando MOVE_BENCH segue habilitado por existir
+        // outra substituição válida no mesmo estado.
+        if (type == 3) {
+            const auto state = build_decision_state(player_index);
+            const auto source = static_cast<std::size_t>(values[2]);
+            const auto target = static_cast<std::size_t>(values[3]);
+            const auto occupied = static_cast<std::size_t>(
+                std::count_if(
+                    state.board.begin(),
+                    state.board.end(),
+                    [](const auto& unit) { return unit.has_value(); }
+                )
+            );
+            if (
+                source < state.bench.size()
+                && target < state.board.size()
+                && state.bench[source].has_value()
+                && !state.board[target].has_value()
+                && occupied >= static_cast<std::size_t>(state.economy.level)
+            ) {
+                return;
             }
+        }
 
+        if (player_masks.type_mask[type] != 1) {
             throw std::invalid_argument(
                 "Acao indisponivel para o estado atual do jogador "
                 + std::to_string(player_index)
