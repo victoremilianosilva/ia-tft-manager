@@ -653,6 +653,11 @@ class ViewerWindow(QMainWindow):
         for cell in cells:
             cell.set_square_size(size)
 
+    @staticmethod
+    def _set_cell_squares(cells, size):
+        for cell in cells:
+            cell.set_square_size(size)
+
     def _sync_all_board_cells(self):
         for card in getattr(self, "cards", []):
             card._sync_board_cell_size()
@@ -698,6 +703,27 @@ class ViewerWindow(QMainWindow):
         )
         if self.combat_matchup_layout.direction() != combat_direction:
             self.combat_matchup_layout.setDirection(combat_direction)
+
+        # Resize fixed-size cells before Qt recomputes parent minimum widths.
+        # This prevents large portraits from temporarily forcing horizontal overflow
+        # when a window is dragged from a wide monitor onto a smaller one.
+        grid_width = max(1, width - 24)
+        card_width = max(1, (grid_width - (player_columns - 1) * 8) // player_columns)
+        overview_size = max(20, min(96, (card_width - 16 - 12) // 7))
+        for card in self.cards:
+            self._set_cell_squares(card.cells, overview_size)
+
+        if width < 1080:
+            detail_grid_width = width - 70
+            combat_grid_width = width - 50
+        else:
+            detail_grid_width = int(width * 0.63) - 40
+            combat_grid_width = width // 2 - 45
+        detail_size = max(20, min(120, (detail_grid_width - 18) // 7))
+        combat_size = max(20, min(96, (combat_grid_width - 18) // 7))
+        self._set_cell_squares(self.detail_cells, detail_size)
+        for cells in self.combat_board_cells:
+            self._set_cell_squares(cells, combat_size)
 
         compact = width < 820
         self.viewer_subtitle.setVisible(not compact)
