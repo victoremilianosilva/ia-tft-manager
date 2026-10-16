@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QBoxLayout, QGridLayout,
     QFrame, QLabel, QPushButton, QComboBox, QCheckBox, QDoubleSpinBox,
     QSpinBox, QFileDialog, QLineEdit, QPlainTextEdit, QSplitter, QTabWidget,
-    QMessageBox, QScrollArea, QGroupBox, QProgressBar, QSlider, QFormLayout,
+    QMessageBox, QScrollArea, QGroupBox, QProgressBar, QSlider, QFormLayout, QDialog,
 )
 
 from viewer.session import ViewerSession, unit_label, ACTION_NAMES, ROOT
@@ -352,7 +352,7 @@ class PlayerCard(QFrame):
         if width <= 0:
             return
         gap = max(0, self.board.horizontalSpacing())
-        size = max(20, min(96, (width - gap * 6) // 7))
+        size = max(12, min(112, (width - gap * 6) // 7))
         for cell in self.cells:
             cell.set_square_size(size)
 
@@ -476,6 +476,9 @@ class ViewerWindow(QMainWindow):
         layout.addWidget(self.replay_slider)
 
         split = QSplitter(Qt.Orientation.Vertical)
+        self.main_splitter = split
+        split.setChildrenCollapsible(False)
+        split.setHandleWidth(8)
         top_panel = QWidget()
         top_layout = QVBoxLayout(top_panel)
         top_layout.setContentsMargins(0, 0, 0, 0)
@@ -488,6 +491,7 @@ class ViewerWindow(QMainWindow):
             card.selected.connect(self._select_player)
             self.cards.append(card)
         top_layout.addLayout(self.player_grid)
+        top_panel.setMinimumWidth(0)
         split.addWidget(top_panel)
 
         bottom_panel = QWidget()
@@ -610,9 +614,15 @@ class ViewerWindow(QMainWindow):
         self.events_log.setReadOnly(True)
         logs_layout.addWidget(self.events_log)
         self.tabs.addTab(logs_tab, "Eventos / auditoria")
+        # Player details are now opened in a modal from the player card.
+        # Keep the legacy widgets alive for snapshot updates, but remove the fixed bottom panel.
+        self.tabs.removeTab(0)
         split.addWidget(self.tabs)
-        split.setSizes([520, 430])
+        split.setStretchFactor(0, 3)
+        split.setStretchFactor(1, 2)
+        split.setMinimumHeight(0)
         layout.addWidget(split, 1)
+        QTimer.singleShot(0, self._balance_main_splitter)
 
         footer = QHBoxLayout()
         self.status_label = QLabel("Aguardando checkpoint")
@@ -631,10 +641,18 @@ class ViewerWindow(QMainWindow):
             text_view.setLineWrapMode(QPlainTextEdit.LineWrapMode.WidgetWidth)
         self._update_responsive_layout()
 
+    def _balance_main_splitter(self):
+        if not hasattr(self, "main_splitter"):
+            return
+        height = max(1, self.scroll_area.viewport().height())
+        top = int(height * (0.60 if height >= 1000 else 0.54))
+        self.main_splitter.setSizes([top, max(1, height - top)])
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
         if hasattr(self, "player_grid"):
             self._update_responsive_layout()
+            QTimer.singleShot(0, self._balance_main_splitter)
 
     @staticmethod
     def _reflow_grid(layout, widgets, columns):
@@ -668,12 +686,12 @@ class ViewerWindow(QMainWindow):
         for card in getattr(self, "cards", []):
             card._sync_board_cell_size()
         if hasattr(self, "detail_board"):
-            self._fit_square_cells(self.detail_board, self.detail_cells, max_size=120)
+            self._fit_square_cells(self.detail_board, self.detail_cells, max_size=144)
         for board, cells in zip(
             getattr(self, "combat_board_layouts", []),
             getattr(self, "combat_board_cells", []),
         ):
-            self._fit_square_cells(board, cells, max_size=96)
+            self._fit_square_cells(board, cells, max_size=128)
 
     def _update_responsive_layout(self):
         if not hasattr(self, "scroll_area") or not hasattr(self, "player_grid"):
@@ -715,7 +733,8 @@ class ViewerWindow(QMainWindow):
         # when a window is dragged from a wide monitor onto a smaller one.
         grid_width = max(1, width - 24)
         card_width = max(1, (grid_width - (player_columns - 1) * 8) // player_columns)
-        overview_size = max(20, min(96, (card_width - 16 - 12) // 7))
+        # Fit each board to its actual card width instead of forcing overflow.
+        overview_size = max(12, min(112, (card_width - 16 - 12) // 7))
         for card in self.cards:
             self._set_cell_squares(card.cells, overview_size)
 
@@ -725,8 +744,8 @@ class ViewerWindow(QMainWindow):
         else:
             detail_grid_width = int(width * 0.63) - 40
             combat_grid_width = width // 2 - 45
-        detail_size = max(20, min(120, (detail_grid_width - 18) // 7))
-        combat_size = max(20, min(96, (combat_grid_width - 18) // 7))
+        detail_size = max(12, min(144, (detail_grid_width - 18) // 7))
+        combat_size = max(12, min(128, (combat_grid_width - 18) // 7))
         self._set_cell_squares(self.detail_cells, detail_size)
         for cells in self.combat_board_cells:
             self._set_cell_squares(cells, combat_size)
@@ -880,12 +899,86 @@ class ViewerWindow(QMainWindow):
         for card in self.cards:
             card.set_selected(card.player_id == player_id)
         self._render_selected_player()
-        events = self.session.last_info.get("events", [])
-        in_combat = any(
-            "COMBAT" in str(item).upper() or "ELIMINATED" in str(item).upper()
-            for item in events
+        self._show_player_dialog(player_id)
+
+    def _show_player_dialog(self, player_id: int):
+        """Show the selected seat's existing snapshot, inventory, diagnostics and log."""
+        state_players = self.session.public_state.get("players", [])
+        audit_players = self.session.audit_snapshot.get("players", [])
+        player = next((p for p in state_players if int(p.get("player_id", -1)) == player_id), {})
+        audit = next((p for p in audit_players if int(p.get("player_id", -1)) == player_id), {})
+        previous_dialog = getattr(self, "_player_dialog", None)
+        if previous_dialog is not None:
+            previous_dialog.close()
+        dialog = QDialog(self)
+        self._player_dialog = dialog
+        dialog.setWindowTitle(f"Jogador {player_id + 1} · detalhes e log")
+        dialog.setModal(True)
+        dialog.setMinimumSize(560, 480)
+        screen = self.screen().availableGeometry() if self.screen() else self.geometry()
+        dialog.resize(min(980, max(560, int(screen.width() * 0.72))),
+                      min(820, max(480, int(screen.height() * 0.82))))
+        outer = QVBoxLayout(dialog)
+        header = QLabel(f"JOGADOR {player_id + 1} · ROUND {self.session.public_state.get('round', 0)}")
+        header.setStyleSheet("font-size:16pt;font-weight:800;color:#60a5fa;")
+        outer.addWidget(header)
+        summary = QLabel(
+            f"HP: {_value(player, 'hp', default='—')}   ·   Ouro: {_value(player, 'gold', default='—')}   ·   "
+            f"Nível: {_value(player, 'level', default='—')}   ·   XP: {_value(player, 'xp', default='—')}\n"
+            f"Colocação: {_value(player, 'placement', default='—')}   ·   "
+            f"Status: {'ELIMINADO' if player.get('eliminated') or not player.get('alive', True) else 'VIVO'}"
         )
-        self.tabs.setCurrentIndex(1 if in_combat else 0)
+        summary.setWordWrap(True)
+        outer.addWidget(summary)
+        details = QTabWidget()
+        roster_view = QPlainTextEdit()
+        roster_view.setReadOnly(True)
+        roster_lines = ["TABULEIRO:"]
+        roster_lines.extend(f"  {index:02d}: {unit_label(unit)}" for index, unit in enumerate(audit.get("board", [])) if unit and unit.get("occupied"))
+        roster_lines.append("\nBANCO:")
+        roster_lines.extend(f"  {index:02d}: {unit_label(unit)}" for index, unit in enumerate(audit.get("bench", [])) if unit and unit.get("occupied"))
+        roster_lines.append("\nLOJA:")
+        roster_lines.extend(f"  {index:02d}: {unit_label(unit)}" for index, unit in enumerate(audit.get("shop", [])) if unit and unit.get("occupied"))
+        roster_view.setPlainText("\n".join(roster_lines))
+        details.addTab(roster_view, "Tabuleiro / banco / loja")
+        diagnostic_view = QPlainTextEdit()
+        diagnostic_view.setReadOnly(True)
+        diag = self.session.last_policy[player_id] if player_id < len(self.session.last_policy) else {}
+        diagnostic_view.setPlainText(json.dumps(diag, ensure_ascii=False, indent=2) if diag else "Sem diagnóstico de decisão neste passo.")
+        details.addTab(diagnostic_view, "Diagnóstico da política")
+        player_log_view = QPlainTextEdit()
+        player_log_view.setReadOnly(True)
+        log_path = (self.session._session_dir / f"player_{player_id + 1}_log.json") if self.session._session_dir else None
+        log_text = "Ainda não há arquivo de log individual para esta sessão. Ative 'Salvar logs JSON por jogador' antes de iniciar para registrar o histórico."
+        if log_path and log_path.exists():
+            try:
+                log_document = json.loads(log_path.read_text(encoding="utf-8"))
+                entries = log_document.get("entries", [])
+                lines = []
+                for entry in entries[-250:]:
+                    timestamp = entry.get("timestamp_iso") or entry.get("timestamp") or ""
+                    event_type = entry.get("event_type") or entry.get("tag") or "evento"
+                    message = entry.get("text") or ""
+                    lines.append(f"[{timestamp}] {event_type}\n{message}")
+                    payload = entry.get("payload")
+                    if payload:
+                        lines.append(json.dumps(payload, ensure_ascii=False, indent=2))
+                log_text = "\n\n".join(lines) if lines else "O log individual existe, mas ainda não contém eventos."
+            except (OSError, ValueError, TypeError) as exc:
+                log_text = f"Não foi possível ler o log individual: {exc}"
+        player_log_view.setPlainText(log_text)
+        details.addTab(player_log_view, "Log do jogador")
+        outer.addWidget(details, 1)
+        close_button = QPushButton("Fechar")
+        close_button.clicked.connect(dialog.accept)
+        outer.addWidget(close_button, 0, Qt.AlignmentFlag.AlignRight)
+        dialog.finished.connect(lambda _result, current=dialog: self._on_player_dialog_finished(current))
+        dialog.show()
+
+    def _on_player_dialog_finished(self, dialog):
+        if getattr(self, "_player_dialog", None) is dialog:
+            self._player_dialog = None
+        dialog.deleteLater()
 
     def _render_snapshot(self, _snapshot=None):
         state_players = self.session.public_state.get("players", [])
@@ -955,11 +1048,12 @@ class ViewerWindow(QMainWindow):
 
         if opponent_id is None:
             self.combat_title.setText(
-                f"Jogador {self.selected_player + 1} · nenhum confronto registrado ainda"
+                f"JOGADOR {self.selected_player + 1} · sem combate ativo/pareamento informado"
             )
             self.combat_team_labels[0].setText(f"JOGADOR {self.selected_player + 1} · formação atual")
-            self.combat_team_labels[1].setText("Adversário ainda não informado pela engine")
-            self._clear_combat_boards()
+            self.combat_team_labels[1].setText("LADO ADVERSÁRIO · sem combate")
+            self._render_combat_board(0, selected_audit.get("board", []), mirror=False)
+            self._clear_combat_board(1)
             self.combat_units.setPlainText(
                 "O pareamento só fica disponível depois que a engine resolve a primeira rodada de combate.\n"
                 "A interface consulta o campo opponent_id real do estado público; ela não sorteia "
@@ -1003,10 +1097,13 @@ class ViewerWindow(QMainWindow):
         self.combat_events.setPlainText("\n".join(str(event) for event in raw_events))
 
     def _clear_combat_boards(self):
-        for cells in self.combat_board_cells:
-            for cell in cells:
-                cell.set_unit(None, self.icon_loader)
-                cell.setToolTip("Sem confronto disponível")
+        for team_index in range(len(self.combat_board_cells)):
+            self._clear_combat_board(team_index)
+
+    def _clear_combat_board(self, team_index):
+        for cell in self.combat_board_cells[team_index]:
+            cell.set_unit(None, self.icon_loader)
+            cell.setToolTip("Sem confronto disponível")
 
     def _render_combat_board(self, team_index, board_units, mirror=False):
         cells = self.combat_board_cells[team_index]
