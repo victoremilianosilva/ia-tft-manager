@@ -296,14 +296,48 @@ class ViewerWindow(QMainWindow):
 
         combat_tab = QWidget()
         combat_layout = QVBoxLayout(combat_tab)
-        self.combat_title = QLabel("Combate detalhado")
+        self.combat_title = QLabel("Último confronto registrado")
+        self.combat_title.setStyleSheet("font-weight:700;color:#fbbf24;font-size:12pt;")
         combat_layout.addWidget(self.combat_title)
+
+        # Dois tabuleiros para tornar visível o pareamento real da engine.
+        # O adversário é espelhado horizontalmente para representar equipes frente a frente.
+        matchup_row = QHBoxLayout()
+        self.combat_team_labels = []
+        self.combat_board_cells = []
+        for team_index in range(2):
+            panel = QFrame()
+            panel.setObjectName("playerCard")
+            panel_layout = QVBoxLayout(panel)
+            team_label = QLabel("Aguardando pareamento")
+            team_label.setStyleSheet("font-weight:700;color:#93c5fd;")
+            panel_layout.addWidget(team_label)
+            board = QGridLayout()
+            board.setSpacing(3)
+            cells = []
+            for row in range(4):
+                for col in range(7):
+                    cell = QLabel("·")
+                    cell.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                    cell.setMinimumSize(42, 30)
+                    cell.setStyleSheet(
+                        "background:#18263b;border:1px solid #293751;border-radius:3px;font-size:8pt;"
+                    )
+                    board.addWidget(cell, row, col)
+                    cells.append(cell)
+            panel_layout.addLayout(board)
+            matchup_row.addWidget(panel)
+            self.combat_team_labels.append(team_label)
+            self.combat_board_cells.append(cells)
+        combat_layout.addLayout(matchup_row, 2)
+
         self.combat_units = QPlainTextEdit()
         self.combat_units.setReadOnly(True)
-        combat_layout.addWidget(self.combat_units, 1)
+        self.combat_units.setMaximumHeight(105)
+        combat_layout.addWidget(self.combat_units)
+        combat_layout.addWidget(QLabel("Eventos reais emitidos pela engine"))
         self.combat_events = QPlainTextEdit()
         self.combat_events.setReadOnly(True)
-        combat_layout.addWidget(QLabel("Eventos fornecidos pela engine"))
         combat_layout.addWidget(self.combat_events, 1)
         self.tabs.addTab(combat_tab, "Combate / timeline")
 
@@ -523,20 +557,97 @@ class ViewerWindow(QMainWindow):
 
     def _render_combat(self):
         state_players = self.session.public_state.get("players", [])
-        selected = next((p for p in state_players if int(p.get("player_id", -1)) == self.selected_player), {})
-        matchups = self.session.public_state.get("matchups", [])
-        self.combat_title.setText(
-            f"Confronto do jogador {self.selected_player + 1} · round {self.session.public_state.get('round', 0)}"
+        audit_players = self.session.audit_snapshot.get("players", [])
+        selected = next(
+            (p for p in state_players if int(p.get("player_id", -1)) == self.selected_player), {}
         )
-        if matchups:
-            self.combat_units.setPlainText(json.dumps(matchups, ensure_ascii=False, indent=2))
-        else:
-            self.combat_units.setPlainText(
-                "A engine não fornece, neste snapshot, um roster de combate pareado com posições/HP por evento. "
-                "Nenhum HP, trajetória ou habilidade é inferido artificialmente.\n\n"
-                + json.dumps({"jogador_selecionado": selected, "eventos_reais": self.session.last_info.get("events", [])}, ensure_ascii=False, indent=2)
+        selected_audit = next(
+            (p for p in audit_players if int(p.get("player_id", -1)) == self.selected_player), {}
+        )
+        opponent_id = selected.get("opponent_id")
+        try:
+            opponent_id = int(opponent_id) if opponent_id is not None else None
+        except (TypeError, ValueError):
+            opponent_id = None
+
+        if opponent_id is None:
+            self.combat_title.setText(
+                f"Jogador {self.selected_player + 1} · nenhum confronto registrado ainda"
             )
-        self.combat_events.setPlainText(json.dumps(self.session.last_info.get("events", []), ensure_ascii=False, indent=2))
+            self.combat_team_labels[0].setText(f"JOGADOR {self.selected_player + 1} · formação atual")
+            self.combat_team_labels[1].setText("Adversário ainda não informado pela engine")
+            self._clear_combat_boards()
+            self.combat_units.setPlainText(
+                "O pareamento só fica disponível depois que a engine resolve a primeira rodada de combate.\n"
+                "A interface agora consulta o campo opponent_id real do estado público; ela não sorteia "
+                "nem deduz adversários."
+            )
+        else:
+            opponent = next(
+                (p for p in state_players if int(p.get("player_id", -1)) == opponent_id), {}
+            )
+            opponent_audit = next(
+                (p for p in audit_players if int(p.get("player_id", -1)) == opponent_id), {}
+            )
+            round_number = self.session.public_state.get("round", 0)
+            self.combat_title.setText(
+                f"ÚLTIMO CONFRONTO · JOGADOR {self.selected_player + 1} vs JOGADOR {opponent_id + 1}"
+                f" · rodada atual {round_number}"
+            )
+            self.combat_team_labels[0].setText(
+                f"JOGADOR {self.selected_player + 1} · HP {_value(selected, 'hp', default='—')}"
+                f" · {'VIVO' if selected.get('alive', True) else 'ELIMINADO'}"
+            )
+            self.combat_team_labels[1].setText(
+                f"JOGADOR {opponent_id + 1} · HP {_value(opponent, 'hp', default='—')}"
+                f" · {'VIVO' if opponent.get('alive', True) else 'ELIMINADO'}"
+            )
+            self._render_combat_board(0, selected_audit.get("board", []), mirror=False)
+            self._render_combat_board(1, opponent_audit.get("board", []), mirror=True)
+            self.combat_units.setPlainText(
+                f"Pareamento lido de PlayerInfo.opponent_id: {self.selected_player} ↔ {opponent_id}.\n"
+                f"Placar do histórico: jogador {self.selected_player + 1} — "
+                f"{_value(selected, 'wins', default=0)} vitória(s), {_value(selected, 'losses', default=0)} derrota(s); "
+                f"jogador {opponent_id + 1} — {_value(opponent, 'wins', default=0)} vitória(s), "
+                f"{_value(opponent, 'losses', default=0)} derrota(s).\n"
+                "Os tabuleiros mostram as formações reais registradas. A engine ainda não exporta snapshots "
+                "de HP/mana por frame; portanto, estes quadros não simulam uma animação inventada."
+            )
+
+        raw_events = self.session.last_info.get("events", [])
+        if not raw_events:
+            raw_events = ["Nenhum evento novo de combate retornado neste passo."]
+        self.combat_events.setPlainText("\n".join(str(event) for event in raw_events))
+
+    def _clear_combat_boards(self):
+        for cells in self.combat_board_cells:
+            for cell in cells:
+                cell.setText("·")
+                cell.setToolTip("Sem confronto disponível")
+                cell.setStyleSheet(
+                    "background:#18263b;border:1px solid #293751;border-radius:3px;font-size:8pt;"
+                )
+
+    def _render_combat_board(self, team_index, board_units, mirror=False):
+        cells = self.combat_board_cells[team_index]
+        for row in range(4):
+            for col in range(7):
+                source_col = 6 - col if mirror else col
+                source_index = row * 7 + source_col
+                unit = board_units[source_index] if source_index < len(board_units) else None
+                cell = cells[row * 7 + col]
+                occupied = bool(unit and unit.get("occupied", False))
+                cell.setText(_compact_unit(unit) if occupied else "·")
+                cell.setToolTip(
+                    f"Posição original {source_index}: {unit.get('champion_id')} · "
+                    f"{unit.get('star', 1)} estrela(s)"
+                    if occupied else f"Posição original {source_index}: vazia"
+                )
+                cell.setStyleSheet(
+                    "background:#164e63;border:1px solid #0e7490;border-radius:3px;font-size:8pt;"
+                    if occupied else
+                    "background:#18263b;border:1px solid #293751;border-radius:3px;font-size:8pt;"
+                )
 
     def _log(self, message: str):
         self.events_log.appendPlainText(message)
