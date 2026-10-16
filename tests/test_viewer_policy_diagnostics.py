@@ -25,6 +25,7 @@ def _fixture():
 
 def test_diagnostics_do_not_change_deterministic_actions_or_values():
     policy, obs, masks = _fixture()
+    weights_before = {name: value.detach().clone() for name, value in policy.state_dict().items()}
     with torch.inference_mode():
         normal = policy.get_action_and_value(obs, masks=masks, deterministic=True)
         diagnostic = policy.get_action_and_value_with_diagnostics(
@@ -33,6 +34,7 @@ def test_diagnostics_do_not_change_deterministic_actions_or_values():
     for expected, actual in zip(normal, diagnostic[:4]):
         assert torch.equal(expected, actual)
     assert len(diagnostic[4]) == 2
+    assert all(torch.equal(weights_before[name], value) for name, value in policy.state_dict().items())
     assert {item["head"] for item in diagnostic[4][0]} == {"type", "shop_slot"}
     assert {item["head"] for item in diagnostic[4][1]} == {
         "type", "board_source", "board_move_target"
