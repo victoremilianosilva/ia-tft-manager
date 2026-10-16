@@ -499,7 +499,9 @@ PYBIND11_MODULE(tft_engine, module) {
         .def(
             "step",
             [](TFTEngine& self,
-               const std::vector<std::vector<std::int32_t>>& raw_actions) {
+               const std::vector<std::vector<std::int32_t>>& raw_actions,
+               bool timer_enabled,
+               bool timer_expired) {
                 if (raw_actions.size() != tft::kPlayersPerLobby) {
                     throw py::value_error("actions deve conter 8 jogadores.");
                 }
@@ -518,9 +520,11 @@ PYBIND11_MODULE(tft_engine, module) {
                             raw_actions[player][component];
                     }
                 }
-                return step_to_dict(self.step(actions));
+                return step_to_dict(self.step(actions, timer_enabled, timer_expired));
             },
-            py::arg("actions")
+            py::arg("actions"),
+            py::arg("timer_enabled") = false,
+            py::arg("timer_expired") = false
         )
         .def(
             "get_audit_snapshot",
