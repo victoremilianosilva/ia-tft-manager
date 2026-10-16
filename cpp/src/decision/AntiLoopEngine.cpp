@@ -370,6 +370,26 @@ bool AntiLoopEngine::is_bench_board_loop(
         return false;
     }
 
+    // Uma substituição bench -> board registra o campeão que entrou no
+    // tabuleiro. A reversão seleciona o campeão deslocado, portanto a
+    // identidade da ação candidata difere da identidade do último movimento.
+    // Se a unidade candidata for exatamente a que foi deslocada e os slots
+    // forem os mesmos, esta ação desfaz imediatamente a substituição.
+    if (history_.last_move.has_value()) {
+        const auto& last = *history_.last_move;
+        const auto last_type = normalize_bench_move(last.move_type);
+        if (
+            last_type.has_value()
+            && *last_type == *candidate_type
+            && last.source == source.value_or(-1)
+            && last.target == target.value_or(-1)
+            && last.displaced_unit == unit
+            && unit.has_value()
+        ) {
+            return true;
+        }
+    }
+
     struct BenchTransition {
         std::string type;
         std::int32_t source;
