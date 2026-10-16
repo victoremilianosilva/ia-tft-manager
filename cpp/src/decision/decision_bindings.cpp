@@ -78,7 +78,8 @@ PYBIND11_MODULE(decision_engine, module) {
         .def_readwrite("move_type", &MoveRecord::move_type)
         .def_readwrite("source", &MoveRecord::source)
         .def_readwrite("target", &MoveRecord::target)
-        .def_readwrite("unit", &MoveRecord::unit);
+        .def_readwrite("unit", &MoveRecord::unit)
+        .def_readwrite("displaced_unit", &MoveRecord::displaced_unit);
 
     py::class_<MoveKey>(module, "MoveKey")
         .def(py::init<>())
@@ -221,7 +222,8 @@ PYBIND11_MODULE(decision_engine, module) {
             py::arg("move_type"),
             py::arg("source"),
             py::arg("target"),
-            py::arg("unit") = std::nullopt
+            py::arg("unit") = std::nullopt,
+            py::arg("displaced_unit") = std::nullopt
         )
         .def(
             "block_move",
