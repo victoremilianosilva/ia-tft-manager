@@ -15,7 +15,7 @@ SOURCE_FILE = TESTS_DIR / "units.json"
 OUTPUT_FILE = PROJECT_ROOT / "units_gerado.json"
 REPORT_FILE = PROJECT_ROOT / "relatorio_units_gerado.txt"
 
-SET_DESEJADO = None  # None = detectar automaticamente o último set disponívelne  # None = detectar automaticamente o último set disponível
+SET_DESEJADO = None  # None = detectar automaticamente o último set disponível
 
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -206,7 +206,7 @@ def get_latest_set_id(data):
             for key in ("number", "setNumber", "setId", "name"):
                 value = item.get(key)
                 if value is not None:
-                    match = re.search(r"(?<!\\d)(\\d+)(?!\\d)", str(value))
+                    match = re.search(r"(?<!\d)(\d+)(?!\d)", str(value))
                     if match:
                         candidates.add(match.group(1))
 
@@ -215,7 +215,7 @@ def get_latest_set_id(data):
         if isinstance(value, dict):
             api_name = value.get("apiName")
             if isinstance(api_name, str):
-                match = re.match(r"TFT(\\d+)_", api_name, re.IGNORECASE)
+                match = re.match(r"TFT(\d+)_", api_name, re.IGNORECASE)
                 if match:
                     candidates.add(match.group(1))
             for child in value.values():
