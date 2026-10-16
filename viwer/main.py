@@ -638,8 +638,12 @@ class ViewerWindow(QMainWindow):
     def _reflow_grid(layout, widgets, columns):
         while layout.count():
             layout.takeAt(0)
-        for column in range(8):
-            layout.setColumnStretch(column, 1 if column < columns else 0)
+        # Clear only previously-created columns; do not create extra empty
+        # columns that could reserve spacing or trigger horizontal clipping.
+        for column in range(layout.columnCount()):
+            layout.setColumnStretch(column, 0)
+        for column in range(columns):
+            layout.setColumnStretch(column, 1)
         for index, widget in enumerate(widgets):
             layout.addWidget(widget, index // columns, index % columns)
 
