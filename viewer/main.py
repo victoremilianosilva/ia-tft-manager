@@ -972,8 +972,13 @@ class ViewerWindow(QMainWindow):
         close_button = QPushButton("Fechar")
         close_button.clicked.connect(dialog.accept)
         outer.addWidget(close_button, 0, Qt.AlignmentFlag.AlignRight)
-        dialog.finished.connect(lambda _result: dialog.deleteLater())
+        dialog.finished.connect(lambda _result, current=dialog: self._on_player_dialog_finished(current))
         dialog.show()
+
+    def _on_player_dialog_finished(self, dialog):
+        if getattr(self, "_player_dialog", None) is dialog:
+            self._player_dialog = None
+        dialog.deleteLater()
 
     def _render_snapshot(self, _snapshot=None):
         state_players = self.session.public_state.get("players", [])
