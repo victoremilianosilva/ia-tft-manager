@@ -1,6 +1,7 @@
 
 import numpy as np
 import pytest
+from types import SimpleNamespace
 
 from ai.ActionMaskManager import ActionMaskManager, ActionType
 
@@ -46,7 +47,7 @@ def setup_manager():
         board_manager=board,
         bench_manager=bench,
         shop_manager=None,
-        economy_manager=None,
+        economy_manager=SimpleNamespace(level=10),
         composition_manager=None,
         positioning_manager=None,
         anti_loop_manager=anti_loop,
@@ -89,7 +90,7 @@ def test_invalid_board_source_uses_fallback(setup_manager):
     assert np.count_nonzero(mask) == 1
 
 
-def test_bench_targets_only_include_empty_positions(
+def test_bench_targets_allow_replacement_and_empty_positions(
     setup_manager,
 ):
     manager, board, bench, _ = setup_manager
@@ -100,7 +101,8 @@ def test_bench_targets_only_include_empty_positions(
     mask = manager.get_bench_to_board_target_mask(2)
 
     assert mask.shape == (28,)
-    assert mask[4] == 0
+    # Casas ocupadas são válidas para troca; casas vazias para colocação.
+    assert mask[4] == 1
     assert mask[0] == 1
     assert mask[1] == 1
     assert mask.dtype == np.float32
