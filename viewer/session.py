@@ -84,6 +84,7 @@ class ViewerSession:
         self._rng = torch.Generator(device="cpu")
         self._rng.manual_seed(0)
         self.replay_events: list[dict] = []
+        self.live_events: list[dict] = []
         self.replay_mode = False
         self.replay_cursor = 0
 
@@ -331,5 +332,6 @@ class ViewerSession:
         self._metadata_path = None
         self._sequence = 0
         self.replay_events = []
+        self.live_events = []
         self.replay_mode = False
         self.replay_cursor = 0
