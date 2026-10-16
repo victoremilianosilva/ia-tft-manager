@@ -134,7 +134,7 @@ def test_run_match_reports_all_eight_players_without_inventing_results():
     assert {row["player_id"] for row in rows} == set(range(8))
     assert all(row["placement"] in range(1, 9) for row in rows)
     assert sum(row["win"] for row in rows) == 1
-    assert sum(row["top4"] for row in rows) == 4
+    assert sum(row["placement"] <= 4 for row in rows) == 4
 
 
 def test_run_match_rejects_incomplete_final_ranking():
