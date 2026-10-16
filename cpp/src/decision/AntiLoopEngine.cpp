@@ -105,13 +105,15 @@ MoveRecord AntiLoopEngine::register_move(
     const std::string& move_type,
     std::int32_t source,
     std::int32_t target,
-    const std::optional<UnitIdentity>& unit
+    const std::optional<UnitIdentity>& unit,
+    const std::optional<UnitIdentity>& displaced_unit
 ) {
     MoveRecord move{
         move_type,
         source,
         target,
-        unit
+        unit,
+        displaced_unit
     };
 
     history_.move_history.push_back(move);
