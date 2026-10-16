@@ -96,9 +96,6 @@ MoveValidationResult MoveValidator::validate_board_move(
     const auto source_index =
         static_cast<std::size_t>(source);
 
-    const auto target_index =
-        static_cast<std::size_t>(target);
-
     if (!board[source_index].has_value()) {
         return invalid_result(
             "EMPTY_SOURCE",
