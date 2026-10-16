@@ -33,7 +33,7 @@ Os documentos abaixo foram escritos durante a fase inicial da migração de Acti
 
 ## Regras de segurança da migração
 
-- Python continua como referência até a equivalência automatizada ser demonstrada.
+- A referência de regras Python foi removida; a suíte atual valida a implementação C++ diretamente, sem declarar por isso paridade integral com todos os estados históricos.
 - Fallback técnico não deve ser interpretado como ação disponível.
 - Consultas não podem duplicar mutações de histórico.
 - Não declarar teste, benchmark ou equivalência sem execução verificável.
