@@ -1,6 +1,6 @@
 # Planejamento do visualizador TFT — 8 agentes PPO
 
-> **Status:** planejamento e auditoria inicial; ainda sem implementação do visualizador.  
+> **Status:** implementação inicial em andamento; validação de execução local e aceite final ainda pendentes.  
 > **Repositório:** victoremilianosilva/teste-ia  
 > **Pasta de documentação visual:** `viewer/docs/`.  
 > **Última revisão:** 2026-10-15.
@@ -435,6 +435,25 @@ Esta é a sequência de execução acordada antes de avançar a implementação 
 
 **Critério para encerrar:** uma sessão real pode ser gravada, fechada e reaberta, reconstruindo os dados registrados sem executar novamente a política.
 
+
+## 13.2 Registro da implementação inicial (2026-10-16)
+
+A implementação inicial foi iniciada, sem declarar concluídos os critérios de aceite que ainda não foram testados em execução:
+
+- [x] Janela desktop PySide6 com dashboard de oito jogadores e grade completa 7×4 por jogador.
+- [x] Controles de seleção de checkpoint, seed, inferência determinística/estocástica, iniciar/pausar, passo conjunto, avanço de rodada e velocidade visual.
+- [x] Leitura de checkpoints salvos pelo trainer no campo `policy`, inferência em modo `eval()` e parâmetros com gradientes desativados.
+- [x] API de diagnóstico opt-in para probabilidades/máscaras das cabeças visitadas, com teste para preservar ações/valores e consumo de RNG.
+- [x] Gravação inicial de metadados e eventos JSONL versionados, e navegação de eventos em replay.
+- [x] Passagem de snapshots públicos/auditáveis pelo adaptador Python, sem a interface acessar diretamente a engine.
+- [ ] Executar a aplicação no Windows com checkpoint real e confirmar compatibilidade de formato/observações.
+- [ ] Validar todas as máscaras e as oito inferências com uma partida real no motor nativo.
+- [ ] Confirmar propagação dos eventos tipados de combate e implementar roster/HP/posições completos apenas com dados reais.
+- [ ] Validar reconstrução visual de snapshots ao navegar replay, além da navegação dos eventos gravados.
+- [ ] Executar os testes de diagnóstico em CI e confirmar ausência de regressão no trainer.
+
+A lista acima registra estado de implementação, não uma declaração de aprovação. Campos não fornecidos pelo binding continuam explicitamente indisponíveis na UI.
+
 ## 14. Critérios de aceite
 
 A primeira versão completa será funcional quando:
@@ -472,7 +491,7 @@ Decisões já alinhadas:
 - [x] Avanço unitário definido como um passo conjunto do lobby (ações dos oito assentos), com pausa entre passos; não se promete interromper o passo internamente.
 - [x] Diagnósticos PPO definidos como opt-in e sem alteração do contrato normal ou da sequência de amostragem.
 - [x] JSONL versionado definido como formato inicial de replay.
-- [ ] A implementação do visualizador ainda não começou.
+- [x] A implementação inicial do visualizador começou em `viwer/main.py` e `viewer/session.py`; os critérios de aceite ainda dependem de validação em execução.
 
 ## 16. Manutenção deste documento
 
