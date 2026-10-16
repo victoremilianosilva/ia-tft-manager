@@ -13,7 +13,7 @@ from PySide6.QtCore import Qt, QTimer, Signal, QObject, QThread, QUrl
 from PySide6.QtGui import QPixmap
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
 from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QBoxLayout, QGridLayout,
     QFrame, QLabel, QPushButton, QComboBox, QCheckBox, QDoubleSpinBox,
     QSpinBox, QFileDialog, QLineEdit, QPlainTextEdit, QSplitter, QTabWidget,
     QMessageBox, QScrollArea, QGroupBox, QProgressBar, QSlider, QFormLayout,
@@ -178,10 +178,13 @@ class ChampionCell(QFrame):
 
     def __init__(self, min_width: int, min_height: int, parent=None):
         super().__init__(parent)
-        self.setMinimumSize(min_width, min_height)
+        initial_size = max(20, int(min_width), int(min_height))
+        self.setFixedSize(initial_size, initial_size)
         self.setObjectName("championCell")
         self.setFrameShape(QFrame.Shape.StyledPanel)
         self._champion_id = ""
+        self._last_unit = None
+        self._icon_loader = None
         self.image = QLabel("·", self)
         self.image.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.image.setStyleSheet("background:transparent;border:0;color:#94a3b8;font-size:8pt;")
@@ -198,6 +201,16 @@ class ChampionCell(QFrame):
         layout.addWidget(self.stars, 0, 0, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignRight)
         self._set_empty_style()
 
+    def set_square_size(self, size: int):
+        """Keep the tile and rendered portrait square at the chosen pixel size."""
+        size = max(20, int(size))
+        if self.width() == size and self.height() == size:
+            return
+        self.setFixedSize(size, size)
+        if self._icon_loader is not None:
+            # Re-scale an already loaded portrait as soon as the cell changes size.
+            self.set_unit(self._last_unit, self._icon_loader)
+
     def _set_empty_style(self):
         self.setStyleSheet("QFrame#championCell { background:#18263b;border:1px solid #293751;border-radius:3px; }")
         self.image.setPixmap(QPixmap())
@@ -205,6 +218,8 @@ class ChampionCell(QFrame):
         self.stars.setText("")
 
     def set_unit(self, unit: dict | None, icon_loader: ChampionIconLoader):
+        self._last_unit = dict(unit) if unit and unit.get("occupied", False) else None
+        self._icon_loader = icon_loader
         if not unit or not unit.get("occupied", False):
             self._champion_id = ""
             self._set_empty_style()
@@ -222,7 +237,8 @@ class ChampionCell(QFrame):
         self.setToolTip(f"{champion_id} · {'★' * star} · custo {cost or '?'}")
         pixmap = icon_loader.pixmap_for(champion_id)
         if pixmap is not None and not pixmap.isNull():
-            size = max(16, min(self.width() - 4, self.height() - 4))
+            size = max(16, min(self.width(), self.height()) - 4)
+            self.image.setStyleSheet("background:transparent;border:0;")
             self.image.setText("")
             self.image.setPixmap(pixmap.scaled(
                 size, size,
@@ -278,11 +294,14 @@ class PlayerCard(QFrame):
         self.metrics.setObjectName("muted")
         root.addWidget(self.metrics)
         self.board = QGridLayout()
+        self.board.setContentsMargins(0, 0, 0, 0)
         self.board.setSpacing(2)
+        for col in range(7):
+            self.board.setColumnStretch(col, 1)
         self.cells = []
         for row in range(4):
             for col in range(7):
-                cell = ChampionCell(27, 22)
+                cell = ChampionCell(27, 27)
                 cell.setToolTip(f"Linha {row + 1}, coluna {col + 1}")
                 self.board.addWidget(cell, row, col)
                 self.cells.append(cell)
@@ -324,12 +343,26 @@ class PlayerCard(QFrame):
         else:
             self.last_action.setText("Última ação: —")
 
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        QTimer.singleShot(0, self._sync_board_cell_size)
+
+    def _sync_board_cell_size(self):
+        width = self.board.geometry().width()
+        if width <= 0:
+            return
+        gap = max(0, self.board.horizontalSpacing())
+        size = max(20, min(96, (width - gap * 6) // 7))
+        for cell in self.cells:
+            cell.set_square_size(size)
+
 
 class ViewerWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("TFT Viewer — PPO Observer")
-        self.resize(1600, 1000)
+        self.resize(1280, 820)
+        self.setMinimumSize(640, 480)
         self.session = ViewerSession()
         self.selected_player = 0
         self.icon_loader = ChampionIconLoader(ROOT / "units_gerado.json", self)
@@ -345,8 +378,16 @@ class ViewerWindow(QMainWindow):
         self._set_running(False)
 
     def _build_ui(self):
+        self.scroll_area = QScrollArea(self)
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setFrameShape(QFrame.Shape.NoFrame)
+        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         central = QWidget()
-        self.setCentralWidget(central)
+        central.setMinimumWidth(0)
+        self.scroll_area.setWidget(central)
+        self.setCentralWidget(self.scroll_area)
+        self.content_widget = central
         layout = QVBoxLayout(central)
         layout.setContentsMargins(12, 10, 12, 10)
         layout.setSpacing(10)
@@ -354,10 +395,12 @@ class ViewerWindow(QMainWindow):
         top = QHBoxLayout()
         title = QLabel("TFT VIEWER")
         title.setStyleSheet("font-size:20pt;font-weight:800;color:#60a5fa;")
-        subtitle = QLabel("8 agentes PPO · inferência somente · engine C++")
-        subtitle.setObjectName("muted")
+        self.viewer_title = title
+        self.viewer_subtitle = QLabel("8 agentes PPO · inferência somente · engine C++")
+        self.viewer_subtitle.setObjectName("muted")
+        self.viewer_subtitle.setWordWrap(True)
         top.addWidget(title)
-        top.addWidget(subtitle)
+        top.addWidget(self.viewer_subtitle)
         top.addStretch()
         self.round_label = QLabel("SEM PARTIDA")
         self.round_label.setStyleSheet("font-weight:700;color:#fbbf24;")
@@ -365,8 +408,9 @@ class ViewerWindow(QMainWindow):
         layout.addLayout(top)
 
         config = QGroupBox("Sessão de avaliação")
-        form = QHBoxLayout(config)
+        form = QGridLayout(config)
         self.checkpoint = QLineEdit()
+        self.checkpoint.setMinimumWidth(0)
         self.checkpoint.setPlaceholderText("Checkpoint .pth / .pt")
         browse = QPushButton("Selecionar checkpoint…")
         browse.clicked.connect(self._choose_checkpoint)
@@ -378,23 +422,27 @@ class ViewerWindow(QMainWindow):
         self.record = QCheckBox("Gravar replay JSONL")
         self.record.setChecked(True)
         self.output_dir = QLineEdit(str(ROOT / "viewer" / "sessions"))
+        self.output_dir.setMinimumWidth(0)
         output_browse = QPushButton("Pasta…")
         output_browse.clicked.connect(self._choose_output)
-        form.addWidget(QLabel("Checkpoint"))
-        form.addWidget(self.checkpoint, 3)
-        form.addWidget(browse)
-        form.addWidget(QLabel("Seed"))
-        form.addWidget(self.seed)
-        form.addWidget(self.deterministic)
-        form.addWidget(self.record)
-        form.addWidget(self.output_dir, 2)
-        form.addWidget(output_browse)
         self.load_button = QPushButton("Carregar modelo")
         self.load_button.clicked.connect(self._load_session)
-        form.addWidget(self.load_button)
+
+        form.addWidget(QLabel("Checkpoint"), 0, 0)
+        form.addWidget(self.checkpoint, 0, 1, 1, 3)
+        form.addWidget(browse, 0, 4)
+        form.addWidget(self.load_button, 0, 5)
+        form.addWidget(QLabel("Seed"), 1, 0)
+        form.addWidget(self.seed, 1, 1)
+        form.addWidget(self.deterministic, 1, 2, 1, 2)
+        form.addWidget(self.record, 1, 4, 1, 2)
+        form.addWidget(QLabel("Pasta de gravação"), 2, 0)
+        form.addWidget(self.output_dir, 2, 1, 1, 4)
+        form.addWidget(output_browse, 2, 5)
+        for column in (1, 2, 3, 4):
+            form.setColumnStretch(column, 1 if column < 4 else 0)
         layout.addWidget(config)
 
-        controls = QHBoxLayout()
         self.start_button = QPushButton("▶ Iniciar")
         self.start_button.clicked.connect(self._start_play)
         self.pause_button = QPushButton("Ⅱ Pausar")
@@ -407,17 +455,19 @@ class ViewerWindow(QMainWindow):
         self.speed.addItems(["0.25×", "0.5×", "1×", "2×", "4×"])
         self.speed.setCurrentText("1×")
         self.speed.currentTextChanged.connect(self._speed_changed)
+        speed_group = QWidget()
+        speed_layout = QHBoxLayout(speed_group)
+        speed_layout.setContentsMargins(0, 0, 0, 0)
+        speed_layout.addWidget(QLabel("Velocidade visual"))
+        speed_layout.addWidget(self.speed)
         self.replay_button = QPushButton("Abrir replay…")
         self.replay_button.clicked.connect(self._open_replay)
-        controls.addWidget(self.start_button)
-        controls.addWidget(self.pause_button)
-        controls.addWidget(self.step_button)
-        controls.addWidget(self.round_button)
-        controls.addWidget(QLabel("Velocidade visual"))
-        controls.addWidget(self.speed)
-        controls.addStretch()
-        controls.addWidget(self.replay_button)
-        layout.addLayout(controls)
+        self.control_items = [
+            self.start_button, self.pause_button, self.step_button,
+            self.round_button, speed_group, self.replay_button,
+        ]
+        self.controls_layout = QGridLayout()
+        layout.addLayout(self.controls_layout)
 
         self.replay_slider = QSlider(Qt.Orientation.Horizontal)
         self.replay_slider.setRange(0, 0)
@@ -430,14 +480,14 @@ class ViewerWindow(QMainWindow):
         top_layout = QVBoxLayout(top_panel)
         top_layout.setContentsMargins(0, 0, 0, 0)
         self.cards = []
-        grid = QGridLayout()
-        grid.setSpacing(8)
+        self.player_grid = QGridLayout()
+        self.player_grid.setContentsMargins(0, 0, 0, 0)
+        self.player_grid.setSpacing(8)
         for player_id in range(8):
             card = PlayerCard(player_id)
             card.selected.connect(self._select_player)
             self.cards.append(card)
-            grid.addWidget(card, player_id // 4, player_id % 4)
-        top_layout.addLayout(grid)
+        top_layout.addLayout(self.player_grid)
         split.addWidget(top_panel)
 
         bottom_panel = QWidget()
@@ -445,19 +495,25 @@ class ViewerWindow(QMainWindow):
         bottom_layout.setContentsMargins(0, 0, 0, 0)
         self.tabs = QTabWidget()
         detail_tab = QWidget()
-        detail_layout = QHBoxLayout(detail_tab)
+        self.detail_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight, detail_tab)
         self.detail_board = QGridLayout()
+        self.detail_board.setContentsMargins(0, 0, 0, 0)
+        self.detail_board.setHorizontalSpacing(3)
+        self.detail_board.setVerticalSpacing(3)
+        for col in range(7):
+            self.detail_board.setColumnStretch(col, 1)
         self.detail_cells = []
-        board_frame = QGroupBox("Tabuleiro ampliado · 7×4")
+        self.detail_board_frame = QGroupBox("Tabuleiro ampliado · 7×4")
+        board_frame = self.detail_board_frame
         board_layout = QVBoxLayout(board_frame)
         board_layout.addLayout(self.detail_board)
         for row in range(4):
             for col in range(7):
-                cell = ChampionCell(62, 45)
+                cell = ChampionCell(62, 62)
                 cell.setToolTip(f"Posição {row * 7 + col}")
                 self.detail_board.addWidget(cell, row, col)
                 self.detail_cells.append(cell)
-        detail_layout.addWidget(board_frame, 2)
+        self.detail_layout.addWidget(board_frame, 2)
         side = QVBoxLayout()
         self.player_summary = QLabel("Selecione um jogador.")
         self.player_summary.setWordWrap(True)
@@ -469,7 +525,7 @@ class ViewerWindow(QMainWindow):
         self.policy_log.setReadOnly(True)
         side.addWidget(QLabel("Diagnóstico da política"))
         side.addWidget(self.policy_log, 2)
-        detail_layout.addLayout(side, 1)
+        self.detail_layout.addLayout(side, 1)
         self.tabs.addTab(detail_tab, "Jogador selecionado")
 
         combat_tab = QWidget()
@@ -480,29 +536,36 @@ class ViewerWindow(QMainWindow):
 
         # Dois tabuleiros para tornar visível o pareamento real da engine.
         # O adversário é espelhado horizontalmente para representar equipes frente a frente.
-        matchup_row = QHBoxLayout()
+        self.combat_matchup_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
         self.combat_team_labels = []
         self.combat_board_cells = []
+        self.combat_board_layouts = []
+        self.combat_panels = []
         for team_index in range(2):
             panel = QFrame()
             panel.setObjectName("playerCard")
+            self.combat_panels.append(panel)
             panel_layout = QVBoxLayout(panel)
             team_label = QLabel("Aguardando pareamento")
             team_label.setStyleSheet("font-weight:700;color:#93c5fd;")
             panel_layout.addWidget(team_label)
             board = QGridLayout()
+            board.setContentsMargins(0, 0, 0, 0)
             board.setSpacing(3)
+            for col in range(7):
+                board.setColumnStretch(col, 1)
             cells = []
             for row in range(4):
                 for col in range(7):
-                    cell = ChampionCell(42, 30)
+                    cell = ChampionCell(42, 42)
                     board.addWidget(cell, row, col)
                     cells.append(cell)
             panel_layout.addLayout(board)
-            matchup_row.addWidget(panel)
+            self.combat_matchup_layout.addWidget(panel)
             self.combat_team_labels.append(team_label)
             self.combat_board_cells.append(cells)
-        combat_layout.addLayout(matchup_row, 2)
+            self.combat_board_layouts.append(board)
+        combat_layout.addLayout(self.combat_matchup_layout, 2)
 
         self.combat_units = QPlainTextEdit()
         self.combat_units.setReadOnly(True)
@@ -516,7 +579,8 @@ class ViewerWindow(QMainWindow):
 
         logs_tab = QWidget()
         logs_layout = QVBoxLayout(logs_tab)
-        filters = QHBoxLayout()
+        self.log_filters_layout = QGridLayout()
+        self.log_filter_widgets = []
         self.log_player_filter = QComboBox()
         self.log_player_filter.addItems(["Todos os jogadores"] + [f"Jogador {i + 1}" for i in range(8)])
         self.log_player_filter.currentIndexChanged.connect(self._refresh_log_view)
@@ -533,11 +597,13 @@ class ViewerWindow(QMainWindow):
         self.log_severity_filter = QComboBox()
         self.log_severity_filter.addItems(["Todas as gravidades", "Info", "Warning", "Error"])
         self.log_severity_filter.currentIndexChanged.connect(self._refresh_log_view)
-        filters.addWidget(self.log_player_filter)
-        filters.addWidget(self.log_type_filter)
-        filters.addWidget(self.log_round_filter)
-        filters.addWidget(self.log_severity_filter)
-        logs_layout.addLayout(filters)
+        self.log_filter_widgets = [
+            self.log_player_filter, self.log_type_filter,
+            self.log_round_filter, self.log_severity_filter,
+        ]
+        for combo in self.log_filter_widgets:
+            combo.setMinimumWidth(0)
+        logs_layout.addLayout(self.log_filters_layout)
         self.events_log = QPlainTextEdit()
         self.events_log.setReadOnly(True)
         logs_layout.addWidget(self.events_log)
@@ -556,6 +622,120 @@ class ViewerWindow(QMainWindow):
         footer.addWidget(self.progress, 1)
         layout.addLayout(footer)
         self.setStyleSheet(APP_STYLE)
+
+        # Avoid horizontal scrolling in text views as well as in the page.
+        for text_view in self.findChildren(QPlainTextEdit):
+            text_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+            text_view.setLineWrapMode(QPlainTextEdit.LineWrapMode.WidgetWidth)
+        self._update_responsive_layout()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if hasattr(self, "player_grid"):
+            self._update_responsive_layout()
+
+    @staticmethod
+    def _reflow_grid(layout, widgets, columns):
+        while layout.count():
+            layout.takeAt(0)
+        # Clear only previously-created columns; do not create extra empty
+        # columns that could reserve spacing or trigger horizontal clipping.
+        for column in range(layout.columnCount()):
+            layout.setColumnStretch(column, 0)
+        for column in range(columns):
+            layout.setColumnStretch(column, 1)
+        for index, widget in enumerate(widgets):
+            layout.addWidget(widget, index // columns, index % columns)
+
+    @staticmethod
+    def _fit_square_cells(grid_layout, cells, max_size=96):
+        width = grid_layout.geometry().width()
+        if width <= 0:
+            return
+        gap = max(0, grid_layout.horizontalSpacing())
+        size = max(20, min(max_size, (width - gap * 6) // 7))
+        for cell in cells:
+            cell.set_square_size(size)
+
+    @staticmethod
+    def _set_cell_squares(cells, size):
+        for cell in cells:
+            cell.set_square_size(size)
+
+    def _sync_all_board_cells(self):
+        for card in getattr(self, "cards", []):
+            card._sync_board_cell_size()
+        if hasattr(self, "detail_board"):
+            self._fit_square_cells(self.detail_board, self.detail_cells, max_size=120)
+        for board, cells in zip(
+            getattr(self, "combat_board_layouts", []),
+            getattr(self, "combat_board_cells", []),
+        ):
+            self._fit_square_cells(board, cells, max_size=96)
+
+    def _update_responsive_layout(self):
+        if not hasattr(self, "scroll_area") or not hasattr(self, "player_grid"):
+            return
+        width = max(1, self.scroll_area.viewport().width())
+
+        # Fewer columns on compact screens give each unit portrait more room.
+        player_columns = 1 if width < 720 else 2 if width < 1050 else 3 if width < 1450 else 4
+        if getattr(self, "_player_columns", None) != player_columns:
+            self._player_columns = player_columns
+            self._reflow_grid(self.player_grid, self.cards, player_columns)
+
+        control_columns = 2 if width < 760 else 3 if width < 1080 else 6
+        if getattr(self, "_control_columns", None) != control_columns:
+            self._control_columns = control_columns
+            self._reflow_grid(self.controls_layout, self.control_items, control_columns)
+
+        filter_columns = 2 if width < 900 else 4
+        if getattr(self, "_filter_columns", None) != filter_columns:
+            self._filter_columns = filter_columns
+            self._reflow_grid(self.log_filters_layout, self.log_filter_widgets, filter_columns)
+
+        detail_direction = (
+            QBoxLayout.Direction.LeftToRight
+            if width >= 1080 else QBoxLayout.Direction.TopToBottom
+        )
+        if self.detail_layout.direction() != detail_direction:
+            self.detail_layout.setDirection(detail_direction)
+
+        combat_direction = (
+            QBoxLayout.Direction.LeftToRight
+            if width >= 1080 else QBoxLayout.Direction.TopToBottom
+        )
+        if self.combat_matchup_layout.direction() != combat_direction:
+            self.combat_matchup_layout.setDirection(combat_direction)
+
+        # Resize fixed-size cells before Qt recomputes parent minimum widths.
+        # This prevents large portraits from temporarily forcing horizontal overflow
+        # when a window is dragged from a wide monitor onto a smaller one.
+        grid_width = max(1, width - 24)
+        card_width = max(1, (grid_width - (player_columns - 1) * 8) // player_columns)
+        overview_size = max(20, min(96, (card_width - 16 - 12) // 7))
+        for card in self.cards:
+            self._set_cell_squares(card.cells, overview_size)
+
+        if width < 1080:
+            detail_grid_width = width - 70
+            combat_grid_width = width - 50
+        else:
+            detail_grid_width = int(width * 0.63) - 40
+            combat_grid_width = width // 2 - 45
+        detail_size = max(20, min(120, (detail_grid_width - 18) // 7))
+        combat_size = max(20, min(96, (combat_grid_width - 18) // 7))
+        self._set_cell_squares(self.detail_cells, detail_size)
+        for cells in self.combat_board_cells:
+            self._set_cell_squares(cells, combat_size)
+
+        compact = width < 820
+        self.viewer_subtitle.setVisible(not compact)
+        self.viewer_title.setStyleSheet(
+            "font-size:16pt;font-weight:800;color:#60a5fa;"
+            if compact else "font-size:20pt;font-weight:800;color:#60a5fa;"
+        )
+        QTimer.singleShot(0, self._sync_all_board_cells)
 
     def _choose_checkpoint(self):
         path, _ = QFileDialog.getOpenFileName(self, "Selecionar checkpoint PPO", str(ROOT), "Checkpoints (*.pth *.pt *.ckpt);;Todos os arquivos (*)")
