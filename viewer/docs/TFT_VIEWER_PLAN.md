@@ -1,8 +1,8 @@
 # Planejamento do visualizador TFT — 8 agentes PPO
 
-> **Status:** planejamento e auditoria inicial; ainda sem implementação do visualizador.  
+> **Status:** implementação inicial em andamento; validação de execução local e aceite final ainda pendentes.  
 > **Repositório:** victoremilianosilva/teste-ia  
-> **Pasta de documentação visual:** viwer/ (nome mantido exatamente como solicitado).  
+> **Pasta de documentação visual:** `viewer/docs/`.  
 > **Última revisão:** 2026-10-15.
 
 Este documento é a fonte de referência do projeto de visualização. Toda decisão futura sobre arquitetura, eventos, logs, replay, inferência ou interface deve ser refletida aqui para evitar que o plano fique espalhado em conversas.
@@ -36,7 +36,7 @@ Podemos, por exemplo, avaliar checkpoints após 10, 50 ou 200 atualizações. Es
 
 ## 3. Arquitetura proposta
 
-![Diagrama de arquitetura do TFT Viewer](viwer/architecture.svg)
+![Diagrama de arquitetura do TFT Viewer](architecture.svg)
 
 A arquitetura tem cinco responsabilidades:
 
@@ -94,7 +94,7 @@ A arquitetura deve permitir futuramente associar checkpoints diferentes a assent
 
 ## 5. Interface: visão geral e foco individual
 
-![Wireframe da visão geral com oito jogadores e tabuleiros completos](viwer/dashboard-wireframe.svg)
+![Wireframe da visão geral com oito jogadores e tabuleiros completos](dashboard-wireframe.svg)
 
 A tela principal deve mostrar os oito jogadores ao mesmo tempo. **Cada cartão de jogador contém o tabuleiro completo daquele jogador, em uma grade de 7 colunas × 4 linhas (28 posições), com cada peça desenhada na posição ocupada correta.** Não basta mostrar uma composição resumida ou apenas as unidades da primeira fileira.
 
@@ -124,7 +124,7 @@ A API nativa `TftEngine::step` recebe um array de ações dos oito assentos e ex
 
 ### 5.2 Combate detalhado ao clicar em um jogador
 
-![Wireframe da batalha detalhada com as duas equipes e painel de eventos](viwer/combat-view.svg)
+![Wireframe da batalha detalhada com as duas equipes e painel de eventos](combat-view.svg)
 
 Durante a fase de combate, clicar no cartão de um jogador abre uma **visão de batalha dedicada** para o confronto dele. Essa tela deve mostrar todas as peças participantes dos dois lados — as unidades do jogador selecionado e todas as unidades inimigas —, e não apenas o campeão selecionado ou um resumo do combate.
 
@@ -294,7 +294,7 @@ Links:
 
 O replay deve reproduzir os dados gravados, não pedir à política que jogue novamente e presumir que a partida será idêntica. Isso é especialmente importante no modo estocástico. **Abrir ou reproduzir um replay nunca dispara treinamento nem precisa carregar/executar a política**: a sessão gravada deve conter os eventos e snapshots necessários para reconstruir o que foi registrado.
 
-![Ciclo de auditoria de uma decisão](viwer/event-lifecycle.svg)
+![Ciclo de auditoria de uma decisão](event-lifecycle.svg)
 
 ### 10.1 Persistência escolhida para a primeira versão
 
@@ -435,6 +435,25 @@ Esta é a sequência de execução acordada antes de avançar a implementação 
 
 **Critério para encerrar:** uma sessão real pode ser gravada, fechada e reaberta, reconstruindo os dados registrados sem executar novamente a política.
 
+
+## 13.2 Registro da implementação inicial (2026-10-16)
+
+A implementação inicial foi iniciada, sem declarar concluídos os critérios de aceite que ainda não foram testados em execução:
+
+- [x] Janela desktop PySide6 com dashboard de oito jogadores e grade completa 7×4 por jogador.
+- [x] Controles de seleção de checkpoint, seed, inferência determinística/estocástica, iniciar/pausar, passo conjunto, avanço de rodada e velocidade visual.
+- [x] Leitura de checkpoints salvos pelo trainer no campo `policy`, inferência em modo `eval()` e parâmetros com gradientes desativados.
+- [x] API de diagnóstico opt-in para probabilidades/máscaras das cabeças visitadas, com teste para preservar ações/valores e consumo de RNG.
+- [x] Gravação inicial de metadados e eventos JSONL versionados, e navegação de eventos em replay.
+- [x] Passagem de snapshots públicos/auditáveis pelo adaptador Python, sem a interface acessar diretamente a engine.
+- [ ] Executar a aplicação no Windows com checkpoint real e confirmar compatibilidade de formato/observações.
+- [ ] Validar todas as máscaras e as oito inferências com uma partida real no motor nativo.
+- [ ] Confirmar propagação dos eventos tipados de combate e implementar roster/HP/posições completos apenas com dados reais.
+- [ ] Validar reconstrução visual de snapshots ao navegar replay, além da navegação dos eventos gravados.
+- [ ] Executar os testes de diagnóstico em CI e confirmar ausência de regressão no trainer.
+
+A lista acima registra estado de implementação, não uma declaração de aprovação. Campos não fornecidos pelo binding continuam explicitamente indisponíveis na UI.
+
 ## 14. Critérios de aceite
 
 A primeira versão completa será funcional quando:
@@ -463,7 +482,7 @@ Decisões já alinhadas:
 - [x] O log será de debug completo, incluindo probabilidades da política, valor estimado, ações inválidas, ciclos e diagnósticos.
 - [x] O visualizador não deve alterar regras, recompensas nem pesos do PPO.
 - [x] A engine C++ continua sendo a fonte da verdade.
-- [x] A pasta de diagramas e imagens se chama viwer/, conforme solicitado.
+- [x] A pasta de diagramas e imagens se chama ./, conforme solicitado.
 - [x] PySide6/Qt definido como tecnologia inicial da interface desktop; reavaliar apenas se a validação técnica mostrar impedimento.
 - [ ] O esquema final de eventos será validado contra as assinaturas reais do código.
 - [x] A visão geral foi especificada para exibir o tabuleiro 7×4 completo de cada um dos oito jogadores, com posição individual das peças.
@@ -472,7 +491,7 @@ Decisões já alinhadas:
 - [x] Avanço unitário definido como um passo conjunto do lobby (ações dos oito assentos), com pausa entre passos; não se promete interromper o passo internamente.
 - [x] Diagnósticos PPO definidos como opt-in e sem alteração do contrato normal ou da sequência de amostragem.
 - [x] JSONL versionado definido como formato inicial de replay.
-- [ ] A implementação do visualizador ainda não começou.
+- [x] A implementação inicial do visualizador começou em `viwer/main.py` e `viewer/session.py`; os critérios de aceite ainda dependem de validação em execução.
 
 ## 16. Manutenção deste documento
 
@@ -482,6 +501,6 @@ Toda nova decisão acordada para o visualizador deve atualizar este documento na
 2. **Arquitetura e contratos:** manter diagramas e nomes dos eventos alinhados com o código real.
 3. **Plano de implementação:** marcar tarefas concluídas apenas após validação.
 4. **Critérios de aceite:** registrar testes realizados e resultados reais.
-5. **Diagramas em viwer/:** atualizar as imagens quando o fluxo, a interface ou a arquitetura mudar.
+5. **Diagramas em ./:** atualizar as imagens quando o fluxo, a interface ou a arquitetura mudar.
 
 Não marcar tarefas como concluídas com base apenas em inspeção estática. Distinguir claramente entre planejado, implementado, testado e validado em execução.

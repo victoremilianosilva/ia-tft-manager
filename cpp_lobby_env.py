@@ -158,3 +158,11 @@ class CppTFTLobbyWrapper:
         if not self._closed:
             self._engine.close()
             self._closed = True
+
+    def get_public_state(self):
+        """Read-only public lobby snapshot exposed by the native engine."""
+        return self._engine.get_public_state()
+
+    def get_audit_snapshot(self):
+        """Read-only board/bench/shop and mask snapshot for the observer."""
+        return self._engine.get_audit_snapshot()

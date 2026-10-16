@@ -39,6 +39,9 @@ jobs:
           set -o pipefail
           ctest --test-dir cpp/build --output-on-failure 2>&1 | tee artifacts/ctest.log
 
+      - name: Validate viewer Python syntax
+        run: python -m compileall -q viwer viewer tests/test_viewer_policy_diagnostics.py
+
       - name: Run required cross-language parity suite
         env:
           PYTHONPATH: \${{ github.workspace }}/cpp/build/bin:\${{ github.workspace }}
@@ -76,6 +79,7 @@ jobs:
           tests/test_upgrade_integration.py
           tests/test_engine_backend_selection.py
           tests/test_evaluate_checkpoints.py
+          tests/test_viewer_policy_diagnostics.py
           tests/test_four_area_audit_completion.py
           tests/test_full_match_terminal_ranking.py
           tests/test_anti_loop_regression.py
