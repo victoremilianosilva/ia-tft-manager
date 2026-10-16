@@ -55,7 +55,6 @@ class ViewerConfig:
     checkpoint: Path
     seed: int = 20261016
     deterministic: bool = True
-    engine_backend: str = "cpp"
 
 
 class ViewerSession:
@@ -126,7 +125,7 @@ class ViewerSession:
             parameter.requires_grad_(False)
         self._rng.manual_seed(int(seed))
         torch.manual_seed(int(seed))
-        self.config = ViewerConfig(path, int(seed), bool(deterministic), "cpp")
+        self.config = ViewerConfig(path, int(seed), bool(deterministic))
         self.checkpoint_sha256 = digest
         self.match_id = str(uuid.uuid4())
         self.lobby = CppTFTLobbyWrapper(seed=int(seed), catalog_path=str(CATALOG))
@@ -156,7 +155,7 @@ class ViewerSession:
                 "checkpoint_sha256": digest,
                 "seed": int(seed),
                 "deterministic": bool(deterministic),
-                "engine_backend": "cpp",
+                "engine": "cpp",
                 "created_at": datetime.now(timezone.utc).isoformat(),
                 "policy_class": "TFTPolicy",
                 "observation_dim": int(obs_dim),
