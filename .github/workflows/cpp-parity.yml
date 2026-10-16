@@ -77,6 +77,7 @@ jobs:
           tests/test_engine_backend_selection.py
           tests/test_evaluate_checkpoints.py
           tests/test_four_area_audit_completion.py
+          tests/test_full_match_terminal_ranking.py
           tests/test_anti_loop_regression.py
           tests/test_anti_loop_swap_back.py
           tests/test_anti_loop_position_cycles.py
