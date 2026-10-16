@@ -686,12 +686,12 @@ class ViewerWindow(QMainWindow):
         for card in getattr(self, "cards", []):
             card._sync_board_cell_size()
         if hasattr(self, "detail_board"):
-            self._fit_square_cells(self.detail_board, self.detail_cells, max_size=120)
+            self._fit_square_cells(self.detail_board, self.detail_cells, max_size=144)
         for board, cells in zip(
             getattr(self, "combat_board_layouts", []),
             getattr(self, "combat_board_cells", []),
         ):
-            self._fit_square_cells(board, cells, max_size=96)
+            self._fit_square_cells(board, cells, max_size=128)
 
     def _update_responsive_layout(self):
         if not hasattr(self, "scroll_area") or not hasattr(self, "player_grid"):
@@ -907,9 +907,13 @@ class ViewerWindow(QMainWindow):
         audit_players = self.session.audit_snapshot.get("players", [])
         player = next((p for p in state_players if int(p.get("player_id", -1)) == player_id), {})
         audit = next((p for p in audit_players if int(p.get("player_id", -1)) == player_id), {})
+        previous_dialog = getattr(self, "_player_dialog", None)
+        if previous_dialog is not None:
+            previous_dialog.close()
         dialog = QDialog(self)
+        self._player_dialog = dialog
         dialog.setWindowTitle(f"Jogador {player_id + 1} · detalhes e log")
-        dialog.setModal(False)
+        dialog.setModal(True)
         dialog.setMinimumSize(560, 480)
         screen = self.screen().availableGeometry() if self.screen() else self.geometry()
         dialog.resize(min(980, max(560, int(screen.width() * 0.72))),
