@@ -50,7 +50,7 @@ def test_native_match_finishes_with_unique_ordered_placements_and_one_reward_eac
         # A legal PASS from every player closes each preparation phase. With
         # deployed units, combat and stage damage eventually produce a terminal lobby.
         for _ in range(500):
-            if engine.is_done():
+            if engine.is_done:
                 break
             result = engine.step([[6, 0, 0, 0, 0, 0] for _ in range(8)])
             cumulative_placement_rewards += np.asarray(
