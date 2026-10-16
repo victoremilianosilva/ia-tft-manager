@@ -2061,14 +2061,24 @@ StepResult TFTEngine::step(
         );
     }
 
+    // A primeira PASS (ou o limite de ações) encerra as decisões daquele
+    // jogador durante a preparação. Não permita que uma policy volte a agir
+    // enquanto os outros jogadores ainda estão usando o tempo restante.
+    auto effective_actions = actions;
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        if (impl_->round_finished[i]) {
+            effective_actions[i].values = {6, 0, 0, 0, 0, 0};
+        }
+    }
+
     // Preflight em duas fases: valida limites e disponibilidade semântica
     // de todas as ações antes de executar a primeira. Se qualquer ação for
     // impossível, o lote falha sem alterar ouro, unidades ou posições.
-    for (const auto& action : actions) {
+    for (const auto& action : effective_actions) {
         impl_->validate_action(action);
     }
     for (std::size_t i = 0; i < actions.size(); ++i) {
-        impl_->validate_action_against_masks(i, actions[i]);
+        impl_->validate_action_against_masks(i, effective_actions[i]);
     }
 
     // ========================================================
@@ -2081,7 +2091,7 @@ StepResult TFTEngine::step(
     std::array<float, kPlayersPerLobby> placement_rewards{};
     std::array<bool, kPlayersPerLobby> capacity_violations{};
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
-        const auto transition = impl_->player_envs[i].step(*impl_, i, actions[i]);
+        const auto transition = impl_->player_envs[i].step(*impl_, i, effective_actions[i]);
         if (!transition.acted) {
             continue;
         }
@@ -2092,7 +2102,7 @@ StepResult TFTEngine::step(
         impl_->player_envs[i].total_reward += round_rewards[i];
         impl_->sync_player_economy(i);
         impl_->refresh_masks(i);
-        impl_->mark_round_completion(i, actions[i].values[0]);
+        impl_->mark_round_completion(i, effective_actions[i].values[0]);
     }
 
     // ========================================================
