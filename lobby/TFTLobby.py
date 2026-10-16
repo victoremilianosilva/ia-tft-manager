@@ -793,6 +793,30 @@ class TFTLobby:
             for player in alive_players
         )
 
+    @staticmethod
+    def is_pvp_round(round_number):
+        """
+        Mapeia o índice linear interno ao calendário de rodadas do TFT.
+
+        1-1..1-4 são abertura/PvE. A partir de 2-1, a sequência normal tem
+        cinco rodadas PvP por estágio: 1, 2, 3, 5 e 6. A rodada 4 é carrossel
+        e a 7 é PvE. Elas não concedem ouro de vitória nem alteram streak.
+        """
+        round_number = int(round_number)
+        if round_number <= 4:
+            return False
+
+        round_in_stage = ((round_number - 5) % 7) + 1
+        return round_in_stage not in (4, 7)
+
+    @staticmethod
+    def stage_for_round(round_number):
+        """Retorna o estágio TFT a partir do índice linear (1-1 = round 1)."""
+        round_number = int(round_number)
+        if round_number <= 4:
+            return 1
+        return 2 + (round_number - 5) // 7
+
     # ============================================================
     # 🔄 RESOLVE ROUND
     # ============================================================
@@ -803,27 +827,22 @@ class TFTLobby:
         economy_results = {}
 
         # --------------------------------------------------------
-        # ⚔️ MATCHMAKING
+        # ⚔️ MATCHMAKING / COMBAT
         # --------------------------------------------------------
-
-        self.generate_matchups()
-
-        # --------------------------------------------------------
-        # ⚔️ COMBAT
-        # --------------------------------------------------------
-
+        # A economia de vitória e as sequências só mudam em rodadas PvP.
+        # Rodadas PvE e carrossel não contam como vitória/derrota PvP.
         combat_results = []
 
-        for player_a, player_b in self.matchups:
+        if self.is_pvp_round(self.round):
+            self.generate_matchups()
 
-            result = self.resolve_combat(
-                player_a,
-                player_b,
-            )
-
-            combat_results.append(
-                result
-            )
+            for player_a, player_b in self.matchups:
+                result = self.resolve_combat(player_a, player_b)
+                combat_results.append(result)
+        else:
+            self.matchups = []
+            for player in self.players:
+                player.opponent_id = None
 
         # --------------------------------------------------------
         # 💰 ECONOMIA DA PRÓXIMA PREPARAÇÃO
@@ -1744,10 +1763,8 @@ class TFTLobby:
         # STAGE
         # --------------------------------------------------------
 
-        # A cada 7 rounds sobe stage.
-        self.stage = (
-            ((self.round - 1) // 7) + 1
-        )
+        # A abertura 1-1..1-4 tem quatro rounds; depois cada stage tem sete.
+        self.stage = self.stage_for_round(self.round)
 
         self._set_round_on_players()
 
