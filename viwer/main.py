@@ -44,6 +44,15 @@ def _format_unit(unit):
     return unit_label(unit) or "·"
 
 
+def _compact_unit(unit):
+    if not unit or not unit.get("occupied", True):
+        return "·"
+    name = str(unit.get("champion_id") or unit.get("apiName") or unit.get("api_name") or "?")
+    short_name = name.split("_")[-1][:6]
+    star = int(unit.get("star", 1) or 1)
+    return f"{short_name}{star}★"
+
+
 class StepWorker(QObject):
     completed = Signal(object)
     failed = Signal(str)
@@ -121,7 +130,7 @@ class PlayerCard(QFrame):
         for i, cell in enumerate(self.cells):
             unit = board[i] if i < len(board) else None
             occupied = unit and unit.get("occupied", False)
-            cell.setText(_format_unit(unit) if occupied else "·")
+            cell.setText(_compact_unit(unit) if occupied else "·")
             cell.setStyleSheet(
                 "background:#164e63;border:1px solid #0e7490;border-radius:3px;font-size:8pt;"
                 if occupied else
