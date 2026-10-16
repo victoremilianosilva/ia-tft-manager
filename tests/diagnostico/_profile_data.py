@@ -15,7 +15,7 @@ SOURCE_FILE = TESTS_DIR / "units.json"
 OUTPUT_FILE = PROJECT_ROOT / "units_gerado.json"
 REPORT_FILE = PROJECT_ROOT / "relatorio_units_gerado.txt"
 
-SET_DESEJADO = None  # None = detectar automaticamente o último set disponível
+SET_DESEJADO = None  # None = detectar automaticamente o último set disponívelne  # None = detectar automaticamente o último set disponível
 
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -406,10 +406,8 @@ def generate_units():
     print(f"Lendo arquivo: {SOURCE_FILE}")
 
     data = load_json(SOURCE_FILE)
-    champions = get_set_champions(
-        data,
-        selected_set,
-    )
+    selected_set = str(SET_DESEJADO) if SET_DESEJADO is not None else get_latest_set_id(data)
+    champions = get_set_champions(data, selected_set)
 
     manager = create_profile_manager()
 
