@@ -1,5 +1,6 @@
 import copy
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -14,7 +15,7 @@ SOURCE_FILE = TESTS_DIR / "units.json"
 OUTPUT_FILE = PROJECT_ROOT / "units_gerado.json"
 REPORT_FILE = PROJECT_ROOT / "relatorio_units_gerado.txt"
 
-SET_DESEJADO = "17"
+SET_DESEJADO = None  # None = detectar automaticamente o último set disponível
 
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -187,6 +188,48 @@ def load_json(path):
 
     with path.open("r", encoding="utf-8-sig") as file:
         return json.load(file)
+
+
+def get_latest_set_id(data):
+    """Detecta o maior número de set presente no arquivo de origem."""
+    candidates = set()
+
+    sets = data.get("sets", {})
+    if isinstance(sets, dict):
+        candidates.update(str(key) for key in sets if str(key).isdigit())
+
+    set_data = data.get("setData", [])
+    if isinstance(set_data, list):
+        for item in set_data:
+            if not isinstance(item, dict):
+                continue
+            for key in ("number", "setNumber", "setId", "name"):
+                value = item.get(key)
+                if value is not None:
+                    match = re.search(r"(?<!\d)(\d+)(?!\d)", str(value))
+                    if match:
+                        candidates.add(match.group(1))
+
+    # Fallback para dumps que só possuem listas planas de campeões/traits.
+    def scan_api_names(value):
+        if isinstance(value, dict):
+            api_name = value.get("apiName")
+            if isinstance(api_name, str):
+                match = re.match(r"TFT(\d+)_", api_name, re.IGNORECASE)
+                if match:
+                    candidates.add(match.group(1))
+            for child in value.values():
+                if isinstance(child, (dict, list)):
+                    scan_api_names(child)
+        elif isinstance(value, list):
+            for child in value:
+                if isinstance(child, (dict, list)):
+                    scan_api_names(child)
+
+    scan_api_names(data)
+    if not candidates:
+        raise ValueError("Não foi possível detectar nenhum número de set no JSON de origem.")
+    return max(candidates, key=int)
 
 
 def get_set_champions(data, desired_set):
@@ -363,10 +406,8 @@ def generate_units():
     print(f"Lendo arquivo: {SOURCE_FILE}")
 
     data = load_json(SOURCE_FILE)
-    champions = get_set_champions(
-        data,
-        SET_DESEJADO,
-    )
+    selected_set = str(SET_DESEJADO) if SET_DESEJADO is not None else get_latest_set_id(data)
+    champions = get_set_champions(data, selected_set)
 
     manager = create_profile_manager()
 
@@ -378,7 +419,7 @@ def generate_units():
     units_with_estimates = 0
 
     report_lines.append(
-        f"Relatório de geração — Set {SET_DESEJADO}"
+        f"Relatório de geração — Set {selected_set}"
     )
     report_lines.append("=" * 70)
 
@@ -595,7 +636,7 @@ def generate_units():
         "=" * 70,
         "RESUMO",
         "=" * 70,
-        f"Set: {SET_DESEJADO}",
+        f"Set: {selected_set}",
         f"Registros no conjunto: {len(champions)}",
         f"Unidades geradas: {len(generated_units)}",
         f"Unidades sem traits ignoradas: {len(skipped_without_traits)}",
@@ -628,7 +669,7 @@ def generate_units():
     # ========================================================
 
     print("\n========== GERAÇÃO CONCLUÍDA ==========")
-    print(f"Set: {SET_DESEJADO}")
+    print(f"Set: {selected_set}")
     print(f"Registros na fonte: {len(champions)}")
     print(f"Unidades geradas: {len(generated_units)}")
     print(
