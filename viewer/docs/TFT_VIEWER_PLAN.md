@@ -2,7 +2,7 @@
 
 > **Status:** planejamento e auditoria inicial; ainda sem implementação do visualizador.  
 > **Repositório:** victoremilianosilva/teste-ia  
-> **Pasta de documentação visual:** ./ (nome mantido exatamente como solicitado).  
+> **Pasta de documentação visual:** `viewer/docs/`.  
 > **Última revisão:** 2026-10-15.
 
 Este documento é a fonte de referência do projeto de visualização. Toda decisão futura sobre arquitetura, eventos, logs, replay, inferência ou interface deve ser refletida aqui para evitar que o plano fique espalhado em conversas.
