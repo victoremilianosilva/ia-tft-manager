@@ -10,7 +10,7 @@ Na raiz do repositório, com o ambiente virtual ativo:
 python -m pip install -r viewer/requirements.txt
 cmake --build cpp/build --config Release --parallel 2
 $env:PYTHONPATH = "$PWD\cpp\build\bin\Release;$PWD"
-python -m viewer.main
+python -m viwer.main
 ```
 
 O motor nativo `tft_engine` e o catálogo `units_gerado.json` precisam estar disponíveis. Se a build estiver incompleta, compile todos os módulos nativos conforme os passos acima.
