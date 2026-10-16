@@ -176,7 +176,8 @@ MoveKey AntiLoopEngine::block_move(
                     key.move_type,
                     static_cast<std::int32_t>(key.source),
                     static_cast<std::int32_t>(key.target),
-                    key.unit_identity
+                    key.unit_identity,
+                    std::nullopt
                 },
                 history_.last_board_signature
             }
