@@ -13,7 +13,7 @@ Aplicativo desktop de observação e avaliação de partidas TFT-like, baseado e
 Na raiz do repositório, com o ambiente virtual ativo:
 
 ```powershell
-python -m pip install -r viewer/requirements.txt
+python -m pip install -r requirements.txt -r viewer/requirements.txt
 cmake --build cpp/build --config Release --parallel 2
 $env:PYTHONPATH = "$PWD\cpp\build\bin\Release;$PWD"
 python -m viwer.main
