@@ -851,21 +851,25 @@ def test_ciclo_completo_partida_eliminacao_reset_e_nova_partida():
         _, _, done, _ = lobby.step(move_actions)
         assert done is False
 
-        _, rewards, done, info = lobby.step(
-            [{"type": 6} for _ in lobby.players]
-        )
+        pass_actions = [{"type": 6} for _ in lobby.players]
+        _, rewards, done, info = lobby.step(pass_actions)
 
         assert rewards.shape == (8,)
         assert done is False
-        # ⚔️ Confirma que a rodada gerou resultados de combate.
+        # Após reset, a agenda recomeça em 1-1; avance até 2-1 antes
+        # de exigir os resultados dos confrontos PvP.
         round_info = info["round_info"]
+        for _ in range(8):
+            if round_info.get("combat"):
+                break
+            _, rewards, done, info = lobby.step(pass_actions)
+            round_info = info["round_info"]
 
         assert "combat" in round_info, (
             "A resposta não contém os resultados de combate."
         )
-
-        assert len(round_info["combat"]) > 0, (
-            "Nenhum combate foi registrado na rodada."
+        assert len(round_info["combat"]) == 4, (
+            "O primeiro PvP deveria registrar quatro confrontos."
         )
 
         assert_pool_conserved()
