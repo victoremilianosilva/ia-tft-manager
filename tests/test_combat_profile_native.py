@@ -24,7 +24,7 @@ else:
     ({"apiName": "carry", "max_hp": 400, "attack_damage": 100, "attack_speed": 1.0, "attack_range": 4}, 1),
     ({"apiName": "assassin", "max_hp": 400, "attack_damage": 30, "attack_speed": 0.5, "attack_range": 1,
       "ability": {"description": "Dash toward the backline and target the furthest enemy"}}, 4),
-    ({"apiName": "fighter", "attack_range": 1, "max_hp": 800, "armor": 35}, 3),
+    ({"apiName": "fighter", "attack_range": 1, "max_hp": 750, "armor": 35}, 3),
 ])
 def test_cpp_infers_combat_role_from_unit(unit, expected_role):
     profile = cpp.combat_profile_get_profile(unit)
