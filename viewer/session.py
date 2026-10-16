@@ -173,7 +173,8 @@ class ViewerSession:
             "stage": self.public_state.get("stage", self.audit_snapshot.get("stage", 1)),
             "finished": bool(self.public_state.get("finished", False)),
             "ranking": self.public_state.get("ranking", []),
-            "players": self.audit_snapshot.get("players", []),
+            "players": self.public_state.get("players", []),
+            "audit_players": self.audit_snapshot.get("players", []),
         }
 
     def _emit(self, event_type: str, payload: dict):
