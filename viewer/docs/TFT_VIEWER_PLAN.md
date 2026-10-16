@@ -3,7 +3,7 @@
 > **Status:** implementação inicial em andamento; validação de execução local e aceite final ainda pendentes.  
 > **Repositório:** victoremilianosilva/teste-ia  
 > **Pasta de documentação visual:** `viewer/docs/`.  
-> **Última revisão:** 2026-10-15.
+> **Última revisão:** 2026-10-16.
 
 Este documento é a fonte de referência do projeto de visualização. Toda decisão futura sobre arquitetura, eventos, logs, replay, inferência ou interface deve ser refletida aqui para evitar que o plano fique espalhado em conversas.
 
@@ -48,7 +48,18 @@ A arquitetura tem cinco responsabilidades:
 
 A interface não deve acessar estruturas internas da engine diretamente. Uma camada adaptadora estável reduz o acoplamento e permite mudar a tecnologia de interface sem reescrever as regras.
 
-### 3.1 Regras de arquitetura
+#### 3.2 Retratos de campeões nos tabuleiros
+
+Os tabuleiros do overview, jogador selecionado e combate devem exibir retratos de unidades, em vez de depender apenas de abreviações textuais.
+
+- A identidade da unidade e os caminhos de asset vêm do catálogo `units_gerado.json`.
+- O visualizador resolve os assets de textura para imagens públicas compatíveis, com carregamento assíncrono.
+- Os retratos baixados ficam em cache local do usuário para reduzir solicitações futuras.
+- As casas ocupadas mostram borda baseada no custo e marcador de estrelas; o tooltip mantém nome, posição e dados da unidade.
+- Quando o asset não existe, falha ao carregar ou a rede não está disponível, a célula mantém fallback textual. A partida e a engine não dependem das imagens.
+- O carregamento de imagem não pode alterar observações, ações, recompensas ou o estado da partida.
+
+## 3.1 Regras de arquitetura
 
 - A engine C++ continua sendo a fonte da verdade sobre estado e execução.
 - A política permanece em Python/PyTorch.

@@ -1,13 +1,16 @@
 """Desktop TFT Viewer — PySide6."""
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 from pathlib import Path
 
 import numpy as np
 import torch
-from PySide6.QtCore import Qt, QTimer, Signal, QObject, QThread
+from PySide6.QtCore import Qt, QTimer, Signal, QObject, QThread, QUrl
+from PySide6.QtGui import QPixmap
+from PySide6.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
     QFrame, QLabel, QPushButton, QComboBox, QCheckBox, QDoubleSpinBox,
@@ -53,6 +56,188 @@ def _compact_unit(unit):
     return f"{short_name}{star}★"
 
 
+class ChampionIconLoader(QObject):
+    """Loads champion portraits asynchronously and caches them on disk.
+
+    The unit catalog contains CommunityDragon texture asset paths (.tex), not
+    image URLs. These paths are resolved to their public PNG equivalents.
+    """
+    loaded = Signal(str)
+
+    def __init__(self, catalog_path: Path, parent=None):
+        super().__init__(parent)
+        self._network = QNetworkAccessManager(self)
+        self._pixmaps: dict[str, QPixmap] = {}
+        self._pending: dict[str, tuple[list[str], int]] = {}
+        self._failed: set[str] = set()
+        self._assets: dict[str, tuple[str, list[str]]] = {}
+        self._cache_dir = Path.home() / ".tft-viewer" / "champion-icons"
+        self._cache_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            catalog = []
+
+        for unit in catalog if isinstance(catalog, list) else []:
+            if not isinstance(unit, dict):
+                continue
+            api_name = str(unit.get("apiName") or unit.get("characterName") or unit.get("name") or "")
+            if not api_name:
+                continue
+            paths = []
+            for field in ("tileIcon", "squareIcon", "icon"):
+                value = unit.get(field)
+                if not isinstance(value, str) or not value.strip():
+                    continue
+                asset_path = value.strip().replace("\\", "/").lstrip("/")
+                if asset_path.lower().endswith(".tex"):
+                    asset_path = asset_path[:-4] + ".png"
+                elif not asset_path.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
+                    continue
+                # The JSON uses client asset paths; CommunityDragon publishes
+                # the corresponding game assets as normal image files.
+                url = "https://raw.communitydragon.org/latest/game/" + asset_path.lower()
+                if url not in paths:
+                    paths.append(url)
+            if not paths:
+                continue
+            record = (api_name, paths)
+            for alias in (api_name, unit.get("characterName"), unit.get("name")):
+                if isinstance(alias, str) and alias:
+                    self._assets[alias.casefold()] = record
+
+    def pixmap_for(self, champion_id: str) -> QPixmap | None:
+        record = self._assets.get(str(champion_id or "").casefold())
+        if record is None:
+            return None
+        canonical, urls = record
+        if canonical in self._pixmaps:
+            return self._pixmaps[canonical]
+        if canonical in self._failed or canonical in self._pending:
+            return None
+
+        # Reuse the first successfully cached URL if it exists.
+        self._pending[canonical] = (urls, 0)
+        self._try_url(canonical, urls, 0)
+        return None
+
+    def _try_url(self, canonical: str, urls: list[str], index: int):
+        if index >= len(urls):
+            self._pending.pop(canonical, None)
+            self._failed.add(canonical)
+            self.loaded.emit(canonical)
+            return
+        url = urls[index]
+        cache_name = hashlib.sha256(url.encode("utf-8")).hexdigest() + ".img"
+        cache_path = self._cache_dir / cache_name
+        if cache_path.is_file():
+            pixmap = QPixmap()
+            if pixmap.loadFromData(cache_path.read_bytes()) and not pixmap.isNull():
+                self._pixmaps[canonical] = pixmap
+                self._pending.pop(canonical, None)
+                self.loaded.emit(canonical)
+                return
+
+        self._pending[canonical] = (urls, index)
+        request = QNetworkRequest(QUrl(url))
+        reply = self._network.get(request)
+        reply.finished.connect(
+            lambda key=canonical, candidates=urls, candidate_index=index,
+                   network_reply=reply, disk_path=cache_path:
+                self._on_download_finished(
+                    key, candidates, candidate_index, network_reply, disk_path
+                )
+        )
+
+    def _on_download_finished(self, canonical, urls, index, reply, cache_path):
+        data = bytes(reply.readAll())
+        success = reply.error() == QNetworkReply.NetworkError.NoError
+        reply.deleteLater()
+        if success:
+            pixmap = QPixmap()
+            if pixmap.loadFromData(data) and not pixmap.isNull():
+                try:
+                    cache_path.write_bytes(data)
+                except OSError:
+                    pass
+                self._pixmaps[canonical] = pixmap
+                self._pending.pop(canonical, None)
+                self.loaded.emit(canonical)
+                return
+        self._try_url(canonical, urls, index + 1)
+
+
+class ChampionCell(QFrame):
+    """Small champion portrait cell with a star badge and text fallback."""
+
+    COST_COLORS = {
+        1: "#9ca3af", 2: "#22c55e", 3: "#60a5fa",
+        4: "#a78bfa", 5: "#f59e0b", 6: "#f472b6",
+    }
+
+    def __init__(self, min_width: int, min_height: int, parent=None):
+        super().__init__(parent)
+        self.setMinimumSize(min_width, min_height)
+        self.setObjectName("championCell")
+        self.setFrameShape(QFrame.Shape.StyledPanel)
+        self._champion_id = ""
+        self.image = QLabel("·", self)
+        self.image.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.image.setStyleSheet("background:transparent;border:0;color:#94a3b8;font-size:8pt;")
+        self.stars = QLabel("", self)
+        self.stars.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom)
+        self.stars.setStyleSheet(
+            "background:rgba(3,7,18,190);color:#fde047;font-size:6pt;font-weight:700;"
+            "padding:0 1px;border:0;"
+        )
+        layout = QGridLayout(self)
+        layout.setContentsMargins(1, 1, 1, 1)
+        layout.setSpacing(0)
+        layout.addWidget(self.image, 0, 0)
+        layout.addWidget(self.stars, 0, 0, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignRight)
+        self._set_empty_style()
+
+    def _set_empty_style(self):
+        self.setStyleSheet("QFrame#championCell { background:#18263b;border:1px solid #293751;border-radius:3px; }")
+        self.image.setPixmap(QPixmap())
+        self.image.setText("·")
+        self.stars.setText("")
+
+    def set_unit(self, unit: dict | None, icon_loader: ChampionIconLoader):
+        if not unit or not unit.get("occupied", False):
+            self._champion_id = ""
+            self._set_empty_style()
+            self.setToolTip("Posição vazia")
+            return
+
+        champion_id = str(unit.get("champion_id") or unit.get("apiName") or unit.get("api_name") or "")
+        self._champion_id = champion_id
+        star = max(1, min(3, int(unit.get("star", 1) or 1)))
+        cost = int(unit.get("cost", 0) or 0)
+        border = self.COST_COLORS.get(cost, "#38bdf8")
+        self.setStyleSheet(
+            f"QFrame#championCell {{ background:#0f172a;border:2px solid {border};border-radius:4px; }}"
+        )
+        self.setToolTip(f"{champion_id} · {'★' * star} · custo {cost or '?'}")
+        pixmap = icon_loader.pixmap_for(champion_id)
+        if pixmap is not None and not pixmap.isNull():
+            size = max(16, min(self.width() - 4, self.height() - 4))
+            self.image.setText("")
+            self.image.setPixmap(pixmap.scaled(
+                size, size,
+                Qt.AspectRatioMode.KeepAspectRatioByExpanding,
+                Qt.TransformationMode.SmoothTransformation,
+            ))
+            self.stars.setText("★" * star)
+        else:
+            self.image.setPixmap(QPixmap())
+            self.image.setText(_compact_unit(unit))
+            self.image.setStyleSheet(
+                "background:transparent;border:0;color:#e5e7eb;font-size:7pt;font-weight:700;"
+            )
+            self.stars.setText("")
+
+
 class StepWorker(QObject):
     completed = Signal(object)
     failed = Signal(str)
@@ -96,11 +281,8 @@ class PlayerCard(QFrame):
         self.cells = []
         for row in range(4):
             for col in range(7):
-                cell = QLabel("·")
-                cell.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                cell.setMinimumSize(27, 22)
+                cell = ChampionCell(27, 22)
                 cell.setToolTip(f"Linha {row + 1}, coluna {col + 1}")
-                cell.setStyleSheet("background:#18263b;border:1px solid #293751;border-radius:3px;font-size:8pt;")
                 self.board.addWidget(cell, row, col)
                 self.cells.append(cell)
         root.addLayout(self.board)
@@ -119,7 +301,7 @@ class PlayerCard(QFrame):
         self.style().unpolish(self)
         self.style().polish(self)
 
-    def update_player(self, player, audit, action, finished=False):
+    def update_player(self, player, audit, action, icon_loader, finished=False):
         self.status.setText("ELIMINADO" if player.get("eliminated") or not player.get("alive", True) else ("FINALIZADO" if finished else "VIVO"))
         hp = _value(player, "hp", default="?")
         gold = _value(player, "gold", default="?")
@@ -130,12 +312,7 @@ class PlayerCard(QFrame):
         for i, cell in enumerate(self.cells):
             unit = board[i] if i < len(board) else None
             occupied = unit and unit.get("occupied", False)
-            cell.setText(_compact_unit(unit) if occupied else "·")
-            cell.setStyleSheet(
-                "background:#164e63;border:1px solid #0e7490;border-radius:3px;font-size:8pt;"
-                if occupied else
-                "background:#18263b;border:1px solid #293751;border-radius:3px;font-size:8pt;"
-            )
+            cell.set_unit(unit if occupied else None, icon_loader)
             if occupied:
                 cell.setToolTip(f"Posição {i}: {unit.get('champion_id')} | ⭐ {unit.get('star')} | UUID {unit.get('uuid')}")
             else:
@@ -154,6 +331,8 @@ class ViewerWindow(QMainWindow):
         self.resize(1600, 1000)
         self.session = ViewerSession()
         self.selected_player = 0
+        self.icon_loader = ChampionIconLoader(ROOT / "units_gerado.json", self)
+        self.icon_loader.loaded.connect(self._on_champion_icon_loaded)
         self._step_thread = None
         self._step_worker = None
         self._step_round_target = None
@@ -272,10 +451,7 @@ class ViewerWindow(QMainWindow):
         board_layout.addLayout(self.detail_board)
         for row in range(4):
             for col in range(7):
-                cell = QLabel("·")
-                cell.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                cell.setMinimumSize(62, 45)
-                cell.setStyleSheet("background:#18263b;border:1px solid #334155;border-radius:4px;")
+                cell = ChampionCell(62, 45)
                 cell.setToolTip(f"Posição {row * 7 + col}")
                 self.detail_board.addWidget(cell, row, col)
                 self.detail_cells.append(cell)
@@ -296,14 +472,43 @@ class ViewerWindow(QMainWindow):
 
         combat_tab = QWidget()
         combat_layout = QVBoxLayout(combat_tab)
-        self.combat_title = QLabel("Combate detalhado")
+        self.combat_title = QLabel("Último confronto registrado")
+        self.combat_title.setStyleSheet("font-weight:700;color:#fbbf24;font-size:12pt;")
         combat_layout.addWidget(self.combat_title)
+
+        # Dois tabuleiros para tornar visível o pareamento real da engine.
+        # O adversário é espelhado horizontalmente para representar equipes frente a frente.
+        matchup_row = QHBoxLayout()
+        self.combat_team_labels = []
+        self.combat_board_cells = []
+        for team_index in range(2):
+            panel = QFrame()
+            panel.setObjectName("playerCard")
+            panel_layout = QVBoxLayout(panel)
+            team_label = QLabel("Aguardando pareamento")
+            team_label.setStyleSheet("font-weight:700;color:#93c5fd;")
+            panel_layout.addWidget(team_label)
+            board = QGridLayout()
+            board.setSpacing(3)
+            cells = []
+            for row in range(4):
+                for col in range(7):
+                    cell = ChampionCell(42, 30)
+                    board.addWidget(cell, row, col)
+                    cells.append(cell)
+            panel_layout.addLayout(board)
+            matchup_row.addWidget(panel)
+            self.combat_team_labels.append(team_label)
+            self.combat_board_cells.append(cells)
+        combat_layout.addLayout(matchup_row, 2)
+
         self.combat_units = QPlainTextEdit()
         self.combat_units.setReadOnly(True)
-        combat_layout.addWidget(self.combat_units, 1)
+        self.combat_units.setMaximumHeight(105)
+        combat_layout.addWidget(self.combat_units)
+        combat_layout.addWidget(QLabel("Eventos reais emitidos pela engine"))
         self.combat_events = QPlainTextEdit()
         self.combat_events.setReadOnly(True)
-        combat_layout.addWidget(QLabel("Eventos fornecidos pela engine"))
         combat_layout.addWidget(self.combat_events, 1)
         self.tabs.addTab(combat_tab, "Combate / timeline")
 
@@ -479,7 +684,10 @@ class ViewerWindow(QMainWindow):
         by_id = {int(p.get("player_id", i)): p for i, p in enumerate(state_players)}
         audit_by_id = {int(p.get("player_id", i)): p for i, p in enumerate(audit_players)}
         for i, card in enumerate(self.cards):
-            card.update_player(by_id.get(i, {}), audit_by_id.get(i, {}), self.session.last_actions[i], self.session.finished)
+            card.update_player(
+                by_id.get(i, {}), audit_by_id.get(i, {}), self.session.last_actions[i],
+                self.icon_loader, self.session.finished
+            )
             card.set_selected(i == self.selected_player)
         self.round_label.setText(
             f"ROUND {self.session.public_state.get('round', 0)} · STAGE {self.session.public_state.get('stage', 1)}"
@@ -499,7 +707,7 @@ class ViewerWindow(QMainWindow):
         for index, cell in enumerate(self.detail_cells):
             unit = board[index] if index < len(board) else None
             occupied = unit and unit.get("occupied", False)
-            cell.setText(_format_unit(unit) if occupied else "·")
+            cell.set_unit(unit if occupied else None, self.icon_loader)
             cell.setToolTip(f"Posição {index}: {unit.get('champion_id') if occupied else 'vazia'}")
         self.player_summary.setText(
             f"JOGADOR {i + 1}\nHP: {_value(player, 'hp', default='—')}\n"
@@ -523,20 +731,94 @@ class ViewerWindow(QMainWindow):
 
     def _render_combat(self):
         state_players = self.session.public_state.get("players", [])
-        selected = next((p for p in state_players if int(p.get("player_id", -1)) == self.selected_player), {})
-        matchups = self.session.public_state.get("matchups", [])
-        self.combat_title.setText(
-            f"Confronto do jogador {self.selected_player + 1} · round {self.session.public_state.get('round', 0)}"
+        audit_players = self.session.audit_snapshot.get("players", [])
+        selected = next(
+            (p for p in state_players if int(p.get("player_id", -1)) == self.selected_player), {}
         )
-        if matchups:
-            self.combat_units.setPlainText(json.dumps(matchups, ensure_ascii=False, indent=2))
-        else:
-            self.combat_units.setPlainText(
-                "A engine não fornece, neste snapshot, um roster de combate pareado com posições/HP por evento. "
-                "Nenhum HP, trajetória ou habilidade é inferido artificialmente.\n\n"
-                + json.dumps({"jogador_selecionado": selected, "eventos_reais": self.session.last_info.get("events", [])}, ensure_ascii=False, indent=2)
+        selected_audit = next(
+            (p for p in audit_players if int(p.get("player_id", -1)) == self.selected_player), {}
+        )
+        opponent_id = selected.get("opponent_id")
+        try:
+            opponent_id = int(opponent_id) if opponent_id is not None else None
+        except (TypeError, ValueError):
+            opponent_id = None
+
+        if opponent_id is None:
+            self.combat_title.setText(
+                f"Jogador {self.selected_player + 1} · nenhum confronto registrado ainda"
             )
-        self.combat_events.setPlainText(json.dumps(self.session.last_info.get("events", []), ensure_ascii=False, indent=2))
+            self.combat_team_labels[0].setText(f"JOGADOR {self.selected_player + 1} · formação atual")
+            self.combat_team_labels[1].setText("Adversário ainda não informado pela engine")
+            self._clear_combat_boards()
+            self.combat_units.setPlainText(
+                "O pareamento só fica disponível depois que a engine resolve a primeira rodada de combate.\n"
+                "A interface consulta o campo opponent_id real do estado público; ela não sorteia "
+                "nem deduz adversários."
+            )
+        else:
+            opponent = next(
+                (p for p in state_players if int(p.get("player_id", -1)) == opponent_id), {}
+            )
+            opponent_audit = next(
+                (p for p in audit_players if int(p.get("player_id", -1)) == opponent_id), {}
+            )
+            round_number = self.session.public_state.get("round", 0)
+            self.combat_title.setText(
+                f"ÚLTIMO CONFRONTO · JOGADOR {self.selected_player + 1} vs JOGADOR {opponent_id + 1}"
+                f" · rodada atual {round_number}"
+            )
+            self.combat_team_labels[0].setText(
+                f"JOGADOR {self.selected_player + 1} · HP {_value(selected, 'hp', default='—')}"
+                f" · {'VIVO' if selected.get('alive', True) else 'ELIMINADO'}"
+            )
+            self.combat_team_labels[1].setText(
+                f"JOGADOR {opponent_id + 1} · HP {_value(opponent, 'hp', default='—')}"
+                f" · {'VIVO' if opponent.get('alive', True) else 'ELIMINADO'}"
+            )
+            self._render_combat_board(0, selected_audit.get("board", []), mirror=False)
+            self._render_combat_board(1, opponent_audit.get("board", []), mirror=True)
+            self.combat_units.setPlainText(
+                f"Pareamento lido de PlayerInfo.opponent_id: {self.selected_player} ↔ {opponent_id}.\n"
+                f"Placar do histórico: jogador {self.selected_player + 1} — "
+                f"{_value(selected, 'wins', default=0)} vitória(s), {_value(selected, 'losses', default=0)} derrota(s); "
+                f"jogador {opponent_id + 1} — {_value(opponent, 'wins', default=0)} vitória(s), "
+                f"{_value(opponent, 'losses', default=0)} derrota(s).\n"
+                "Os tabuleiros mostram as formações reais registradas. A engine ainda não exporta snapshots "
+                "de HP/mana por frame; portanto, estes quadros não simulam uma animação inventada."
+            )
+
+        raw_events = self.session.last_info.get("events", [])
+        if not raw_events:
+            raw_events = ["Nenhum evento novo de combate retornado neste passo."]
+        self.combat_events.setPlainText("\n".join(str(event) for event in raw_events))
+
+    def _clear_combat_boards(self):
+        for cells in self.combat_board_cells:
+            for cell in cells:
+                cell.set_unit(None, self.icon_loader)
+                cell.setToolTip("Sem confronto disponível")
+
+    def _render_combat_board(self, team_index, board_units, mirror=False):
+        cells = self.combat_board_cells[team_index]
+        for row in range(4):
+            for col in range(7):
+                source_col = 6 - col if mirror else col
+                source_index = row * 7 + source_col
+                unit = board_units[source_index] if source_index < len(board_units) else None
+                cell = cells[row * 7 + col]
+                occupied = bool(unit and unit.get("occupied", False))
+                cell.set_unit(unit if occupied else None, self.icon_loader)
+                cell.setToolTip(
+                    f"Posição original {source_index}: {unit.get('champion_id')} · "
+                    f"{unit.get('star', 1)} estrela(s)"
+                    if occupied else f"Posição original {source_index}: vazia"
+                )
+
+    def _on_champion_icon_loaded(self, _champion_id: str):
+        # Download is async; repaint existing cells when a cached portrait arrives.
+        if hasattr(self, "cards"):
+            self._render_snapshot()
 
     def _log(self, message: str):
         self.events_log.appendPlainText(message)
