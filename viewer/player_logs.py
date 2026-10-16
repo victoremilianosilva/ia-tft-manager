@@ -1,8 +1,8 @@
-"""Per-player JSON logs mirroring the readable legacy TFT observer log.
+"""Per-player legacy-style TFT text logs, with structured entries kept in memory.
 
-The native audit snapshot does not expose the old impact helper. The i: value
-in the readable lines uses the native board-power contribution (cost * star *
-2) and the JSON metadata identifies that formula explicitly.
+The persisted .tft files are readable UTF-8 timelines matching the old observer.
+The native audit snapshot does not expose the old impact helper, so i: uses the
+native board-power contribution (cost * star * 2).
 """
 from __future__ import annotations
 
@@ -69,7 +69,7 @@ def _synergy_level(count: int) -> int:
 
 
 class PlayerJsonLogWriter:
-    """Persists one self-contained, readable JSON timeline for each lobby seat."""
+    """Persists one self-contained legacy-style .tft timeline for each lobby seat."""
 
     def __init__(
         self, session_dir: str | Path, *, match_id: str, checkpoint_sha256: str,
@@ -84,6 +84,7 @@ class PlayerJsonLogWriter:
         self.deterministic = bool(deterministic)
         self.flush_interval_steps = max(1, int(flush_interval_steps))
         self._sequence = [0] * 8
+        self._pass_logged = [False] * 8
         self._dirty = set(range(8))
         self._closed = False
         self._catalog_by_alias: dict[str, dict] = {}
@@ -109,7 +110,7 @@ class PlayerJsonLogWriter:
                 "impact_estimate_formula": "cost * star * 2.0 (contribuição de board_power da engine C++)",
                 "entries": [],
             })
-            self.paths.append(self.session_dir / f"player_{player_number}_log.json")
+            self.paths.append(self.session_dir / f"player_{player_number}_log.tft")
 
         snapshot = initial_snapshot or {}
         initial_round = int(snapshot.get("round", 1) or 1)
@@ -442,6 +443,8 @@ class PlayerJsonLogWriter:
         action_rewards = _jsonable(info.get("action_rewards"))
         combat_rewards = _jsonable(info.get("combat_rewards"))
         placement_rewards = _jsonable(info.get("placement_rewards"))
+        if round_resolved:
+            self._pass_logged = [False] * 8
 
         for player_id in range(8):
             before_audit = _player_by_id(before.get("audit_players", []), player_id)
@@ -456,7 +459,9 @@ class PlayerJsonLogWriter:
                 reward = 0.0
             player_events = self._events_for_player(engine_events, player_id)
             action_type = int(action[0])
-            is_round_end = action_type == 6 or round_resolved or finished
+            # PASS ends this player's decisions, not the shared round.
+            # The engine's ROUND_RESOLVED event is the sole round boundary.
+            is_round_end = round_resolved or finished
             before_state = self._player_snapshot(before_audit, before_public)
             after_state = self._player_snapshot(after_audit, after_public)
             primary_data = {
@@ -493,7 +498,7 @@ class PlayerJsonLogWriter:
                     before_state=before_state, after_state=after_state,
                     diagnostics=diagnostic, engine_events=player_events + shared_round_events,
                 )
-            else:
+            elif action_type != 6 or not self._pass_logged[player_id]:
                 tag = "pos_rew" if reward > 0 else "neg_rew" if reward < 0 else None
                 line = f"[{timestamp}] {self._action_text(action, before_audit):28} | Rew: {reward:+.2f}\n"
                 self._append_entry(
@@ -501,6 +506,8 @@ class PlayerJsonLogWriter:
                     round_number=round_number, stage=stage, round_in_stage=round_in_stage,
                     event_type="action", text=line, tag=tag, data=primary_data,
                 )
+                if action_type == 6:
+                    self._pass_logged[player_id] = True
                 if action_type == 1:
                     self._append_shop(
                         player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
@@ -542,6 +549,29 @@ class PlayerJsonLogWriter:
         if round_resolved or finished or step % self.flush_interval_steps == 0:
             self.flush(force=True)
 
+    def _render_legacy_log(self, player_id: int) -> str:
+        """Render the in-memory timeline as the legacy observer's plain-text log."""
+        document = self.documents[player_id]
+        header = [
+            "=" * 58,
+            f"TFT AI LOG · {document['player_label'].upper()}",
+            f"Partida: {self.match_id}",
+            f"Seed: {self.seed} | Política: {'determinística' if self.deterministic else 'estocástica'}",
+            f"Checkpoint SHA-256: {self.checkpoint_sha256}",
+            f"Impacto (i): custo × estrelas × 2 (contribuição nativa da engine)",
+            "=" * 58,
+            "",
+        ]
+        chunks = ["\n".join(header)]
+        for entry in document["entries"]:
+            line = str(entry.get("text", ""))
+            if not line:
+                continue
+            chunks.append(line)
+            if not line.endswith("\n"):
+                chunks.append("\n")
+        return "".join(chunks).rstrip() + "\n"
+
     def flush(self, *, force: bool = False):
         if self._closed:
             return
@@ -550,13 +580,8 @@ class PlayerJsonLogWriter:
             if player_id not in self._dirty and not force:
                 continue
             path = self.paths[player_id]
-            document = self.documents[player_id]
-            document["updated_at"] = datetime.now(timezone.utc).isoformat()
             temporary = path.with_suffix(path.suffix + ".tmp")
-            temporary.write_text(
-                json.dumps(document, ensure_ascii=False, indent=2, allow_nan=False),
-                encoding="utf-8",
-            )
+            temporary.write_text(self._render_legacy_log(player_id), encoding="utf-8")
             temporary.replace(path)
             self._dirty.discard(player_id)
 

@@ -355,8 +355,13 @@ public:
         std::optional<std::uint64_t> seed = std::nullopt
     );
 
+    // timer_enabled=true: a lobby step cannot resolve preparation until
+    // timer_expired=true. When expired, all living players are forced to PASS.
+    // Defaults preserve turn-based PPO/training behavior.
     StepResult step(
-        const std::array<PlayerAction, kPlayersPerLobby>& actions
+        const std::array<PlayerAction, kPlayersPerLobby>& actions,
+        bool timer_enabled = false,
+        bool timer_expired = false
     );
 
     std::array<PlayerActionMasks, kPlayersPerLobby>
