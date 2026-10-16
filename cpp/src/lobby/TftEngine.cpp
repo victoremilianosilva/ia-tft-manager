@@ -1557,6 +1557,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         bool sold_core_unit = false;
         bool bought_unit_successfully = false;
         bool bought_upgrade = false;
+        bool board_capacity_violation = false;
         std::array<std::string, kBoardSlots> old_board_layout{};
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
             if (this->board[slot]) {
