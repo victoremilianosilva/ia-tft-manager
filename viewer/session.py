@@ -308,10 +308,20 @@ class ViewerSession:
         seq = [int(e.get("sequence_id", -1)) for e in events]
         if seq != sorted(seq) or len(seq) != len(set(seq)):
             raise ValueError("Replay com sequence_id duplicado ou fora de ordem.")
+        self._flush_close_log()
+        if self.lobby is not None:
+            self.lobby.close()
+            self.lobby = None
+        self.policy = None
+        self.obs = None
+        self.masks = None
+        self.started = False
+        self.finished = False
+        self._metadata_path = None
+        self.live_events = []
         self.replay_events = events
         self.replay_cursor = 0
         self.replay_mode = True
-        self._flush_close_log()
         return len(events)
 
     def replay_event(self, index: int):
