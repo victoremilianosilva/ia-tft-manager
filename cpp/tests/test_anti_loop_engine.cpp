@@ -247,6 +247,29 @@ void test_move_queries_do_not_mutate_history() {
     assert(before.blocked_moves == after.blocked_moves);
 }
 
+// ---------------------------------------------------------
+// Regressão: troca repetida entre duas unidades bench <-> board
+// ---------------------------------------------------------
+
+void test_blocks_bench_board_replacement_oscillation_between_units() {
+    AntiLoopEngine engine;
+    const auto veigar = make_unit("veigar-1", 1);
+    const auto nasus = make_unit("nasus-1", 2);
+
+    // A primeira ação coloca Veigar no board e desloca Nasus para o bench.
+    engine.register_move("bench_to_board", 2, 12, veigar);
+
+    // O mesmo slot do bench e a mesma posição do board agora trocariam
+    // Nasus por Veigar novamente. É a reversão observada nos logs:
+    // Veigar <-> Nasus, depois Nasus <-> Veigar.
+    assert(engine.should_block_move("bench_to_board", 2, 12, nasus));
+
+    // Mesmo que uma chamada defeituosa tenha executado a troca, a próxima
+    // tentativa de alternar as mesmas duas unidades também deve ser bloqueada.
+    engine.register_move("bench_to_board", 2, 12, nasus);
+    assert(engine.should_block_move("bench_to_board", 2, 12, veigar));
+}
+
 void test_reset_preserves_execution_metrics_like_python() {
     AntiLoopEngine engine;
     const auto nasus = make_unit("nasus-1", 1);
@@ -291,6 +314,7 @@ int main() {
 
     test_detects_repeated_position_oscillation();
     test_detects_bench_board_oscillation();
+    test_blocks_bench_board_replacement_oscillation_between_units();
 
     test_allows_first_cycle_closure();
     test_blocks_persistent_three_position_cycle();
