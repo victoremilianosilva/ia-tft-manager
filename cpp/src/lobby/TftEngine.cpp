@@ -65,6 +65,19 @@ std::int32_t stage_damage(std::uint32_t stage) noexcept {
     }
 }
 
+// Internal round index follows TFT's actual 1-based round sequence:
+ // 1-1..1-4 are opening/PvE; each following stage has seven rounds.
+std::uint32_t stage_for_round(std::uint32_t round_number) noexcept {
+    if (round_number <= 4) return 1;
+    return 2 + (round_number - 5) / 7;
+}
+
+bool is_pvp_round(std::uint32_t round_number) noexcept {
+    if (round_number <= 4) return false;
+    const auto round_in_stage = ((round_number - 5) % 7) + 1;
+    return round_in_stage != 4 && round_in_stage != 7;
+}
+
 std::int32_t star_copies(std::int32_t star) noexcept {
     switch (star) {
         case 2: return 3;
@@ -2090,16 +2103,27 @@ StepResult TFTEngine::step(
     if (impl_->all_alive_players_finished_round()) {
         round_resolved = true;
 
-        // Primeiro resolve o combate: ouro de vitória e sequência já ficam
-        // atualizados antes de calcular juros e renda da próxima preparação.
+        // Primeiro resolve o PvP quando esta rodada possui combate entre
+        // jogadores. PvE/carrossel não concedem bônus de vitória nem alteram
+        // sequências; eles avançam a economia, mas não simulamos seus drops.
         const auto rewards_before_combat = round_rewards;
-        impl_->resolve_combats(round_events, round_rewards, combat_rewards);
+        const auto current_round_number = impl_->round + 1;
+        if (is_pvp_round(current_round_number)) {
+            impl_->resolve_combats(round_events, round_rewards, combat_rewards);
+        } else {
+            for (auto& player_env : impl_->player_envs) {
+                player_env.info.opponent_id.reset();
+            }
+            round_events.emplace_back(
+                "ROUND_NO_PVP: fase de abertura/PvE/carrossel; "
+                "nenhum bônus PvP ou streak foi aplicado."
+            );
+        }
 
-        // O estado interno começa em round=0 (abertura 1-1); ao fechar essa
-        // abertura, a economia deve disponibilizar a renda de 1-2 para as
-        // próximas ações. Por isso, usamos a rodada que está começando.
+        // A renda/XP calculada é para a próxima preparação; o estado começa
+        // em round=0 (1-1), então a próxima rodada é current_round_number + 1.
         const auto next_round_number =
-            static_cast<std::int32_t>(impl_->round + 2);
+            static_cast<std::int32_t>(current_round_number + 1);
 
         if (!impl_->done && impl_->alive_players > 1) {
             for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
@@ -2170,8 +2194,7 @@ StepResult TFTEngine::step(
             const std::uint32_t public_round =
                 impl_->round + 1;
 
-            impl_->stage =
-                ((public_round - 1) / kRoundsPerStage) + 1;
+            impl_->stage = stage_for_round(public_round);
 
             impl_->reset_round_completion();
         }
