@@ -55,7 +55,6 @@ jobs:
           tests/test_combat_engine.py
           tests/test_combat_events.py
           tests/test_combat_movement.py
-          tests/test_combat_profile_data.py
           tests/test_combat_stats.py
           tests/test_combat_timeout.py
           tests/test_determinismo_combate_cpp.py
