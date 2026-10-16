@@ -182,8 +182,55 @@ class TFTPolicy(nn.Module):
             return dist.sample()
 
     def get_action_and_value(self, obs, masks=None, deterministic=False):
+        """API original usada pelo PPO; mantém as quatro saídas existentes."""
+        actions, logprob, entropy, value, _ = self._get_action_and_value_impl(
+            obs, masks=masks, deterministic=deterministic, collect_diagnostics=False
+        )
+        return actions, logprob, entropy, value
+
+    def get_action_and_value_with_diagnostics(self, obs, masks=None, deterministic=False):
+        """Inferência opt-in com as distribuições realmente usadas, sem segunda amostragem."""
+        return self._get_action_and_value_impl(
+            obs, masks=masks, deterministic=deterministic, collect_diagnostics=True
+        )
+
+    def _get_action_and_value_impl(
+        self, obs, masks=None, deterministic=False, collect_diagnostics=False
+    ):
         device = obs.device
         batch_size = obs.shape[0]
+        # One list per player; diagnostic rows are captured from the exact
+        # masked logits that feed the action sampling below.
+        player_diagnostics = [[] for _ in range(batch_size)]
+
+        def record_distribution(name, logits, chosen, row_indices, applied_mask=None):
+            if not collect_diagnostics:
+                return
+            probabilities = torch.softmax(logits, dim=-1).detach()
+            selected = chosen.detach().long()
+            row_ids = row_indices.detach().long().tolist()
+            selected_values = selected.tolist()
+            mask_values = (
+                applied_mask.detach().bool().tolist()
+                if applied_mask is not None else None
+            )
+            top_count = min(3, probabilities.shape[-1])
+            top_probs, top_indices = probabilities.topk(top_count, dim=-1)
+            top_probs = top_probs.detach().tolist()
+            top_indices = top_indices.detach().tolist()
+            all_probs = probabilities.tolist()
+            for row, player_id in enumerate(row_ids):
+                player_diagnostics[player_id].append({
+                    "head": name,
+                    "mask": mask_values[row] if mask_values is not None else None,
+                    "probabilities": all_probs[row],
+                    "selected": int(selected_values[row]),
+                    "selected_probability": float(all_probs[row][selected_values[row]]),
+                    "top_choices": [
+                        {"index": int(index), "probability": float(probability)}
+                        for index, probability in zip(top_indices[row], top_probs[row])
+                    ],
+                })
 
         features = self.encode(obs)
 
@@ -196,6 +243,11 @@ class TFTPolicy(nn.Module):
         type_dist = Categorical(logits=type_logits)
         type_logprob = type_dist.log_prob(action_type)
         type_entropy = type_dist.entropy()
+        record_distribution(
+            "type", type_logits, action_type,
+            torch.arange(batch_size, device=device),
+            masks.get("type_mask") if masks is not None else None,
+        )
 
         total_logprob = type_logprob.clone()
         total_entropy = type_entropy.clone()
@@ -222,6 +274,10 @@ class TFTPolicy(nn.Module):
             dist = Categorical(logits=logits)
             total_logprob[buy_mask] += dist.log_prob(sampled)
             total_entropy[buy_mask] += dist.entropy()
+            record_distribution(
+                "shop_slot", logits, sampled, torch.where(buy_mask)[0],
+                masks["shop_mask"][buy_mask] if masks is not None else None,
+            )
 
         # --- MOVE BENCH ---
         move_bench_mask = action_type == 3
@@ -246,6 +302,11 @@ class TFTPolicy(nn.Module):
             dist = Categorical(logits=logits)
             total_logprob[move_bench_mask] += dist.log_prob(sampled)
             total_entropy[move_bench_mask] += dist.entropy()
+            record_distribution(
+                "bench_slot", logits, sampled, torch.where(move_bench_mask)[0],
+                masks.get("bench_move_source_mask", masks["bench_source_mask"])[move_bench_mask]
+                if masks is not None else None,
+            )
 
             # Board target condicionado ao slot selecionado no banco
             logits = self.bench_to_board_head(conditioned[move_bench_mask])
@@ -270,6 +331,10 @@ class TFTPolicy(nn.Module):
             dist = Categorical(logits=logits)
             total_logprob[move_bench_mask] += dist.log_prob(sampled_target)
             total_entropy[move_bench_mask] += dist.entropy()
+            record_distribution(
+                "board_target", logits, sampled_target, torch.where(move_bench_mask)[0],
+                target_mask if masks is not None else None,
+            )
 
         # --- MOVE BOARD ---
         move_board_mask = action_type == 4
@@ -287,6 +352,10 @@ class TFTPolicy(nn.Module):
             src_dist = Categorical(logits=logits)
             total_logprob[move_board_mask] += src_dist.log_prob(sampled_source)
             total_entropy[move_board_mask] += src_dist.entropy()
+            record_distribution(
+                "board_source", logits, sampled_source, torch.where(move_board_mask)[0],
+                masks["board_source_mask"][move_board_mask] if masks is not None else None,
+            )
 
             # Target condicionado à origem selecionada
             source_onehot = F.one_hot(
@@ -318,6 +387,11 @@ class TFTPolicy(nn.Module):
             target_dist = Categorical(logits=target_logits)
             total_logprob[move_board_mask] += target_dist.log_prob(target_sampled)
             total_entropy[move_board_mask] += target_dist.entropy()
+            record_distribution(
+                "board_move_target", target_logits, target_sampled,
+                torch.where(move_board_mask)[0],
+                target_mask if masks is not None else None,
+            )
 
         # --- SELL ---
         sell_mask = action_type == 5
@@ -335,6 +409,10 @@ class TFTPolicy(nn.Module):
             dist = Categorical(logits=logits)
             total_logprob[sell_mask] += dist.log_prob(sampled)
             total_entropy[sell_mask] += dist.entropy()
+            record_distribution(
+                "bench_slot", logits, sampled, torch.where(sell_mask)[0],
+                masks["bench_source_mask"][sell_mask] if masks is not None else None,
+            )
 
         actions = torch.stack([
             action_type, shop_slot, bench_slot, board_target, board_source, board_move_target
@@ -342,7 +420,9 @@ class TFTPolicy(nn.Module):
 
         value = self.value_head(features).squeeze(-1)
 
-        return actions, total_logprob, total_entropy, value
+        if collect_diagnostics:
+            return actions, total_logprob, total_entropy, value, player_diagnostics
+        return actions, total_logprob, total_entropy, value, None
 
     def evaluate_actions(self, obs, actions, masks):
         hidden = self.encode(obs)
