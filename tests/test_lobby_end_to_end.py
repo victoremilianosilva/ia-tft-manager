@@ -66,9 +66,14 @@ def test_real_lobby_executes_round_and_resolves_combat():
         assert rewards.shape == (8,)
         assert np.isfinite(rewards).all()
 
-        # 4. A rodada precisa ter sido resolvida.
-        # O resultado da rodada contém os combates realizados.
+        # 4. A abertura (1-1 a 1-4) não possui PvP no calendário atual.
+        # Continua encerrando as rodadas até a primeira rodada PvP (2-1).
         round_info = info["round_info"]
+        for _ in range(8):
+            if round_info.get("combat"):
+                break
+            observations, rewards, done, info = lobby.step(pass_actions)
+            round_info = info["round_info"]
 
         assert len(round_info["combat"]) == 4
 
@@ -705,23 +710,25 @@ def test_ciclo_completo_partida_eliminacao_reset_e_nova_partida():
                 for unit in player.env.board_manager.board
             ), f"Jogador {player.player_id} sem unidade no tabuleiro"
 
-        # Todos encerram a preparação para resolver o combate.
-        _, rewards, done, info = lobby.step(
-            [{"type": 6} for _ in lobby.players]  # PASS
-        )
+        # Todos encerram a preparação. A agenda tem abertura/PvE até 1-4,
+        # então avança com PASS até o primeiro PvP (2-1).
+        pass_actions = [{"type": 6} for _ in lobby.players]
+        _, rewards, done, info = lobby.step(pass_actions)
 
         assert rewards.shape == (8,)
-        # ⚔️ Confirma que a rodada gerou resultados de combate.
         round_info = info["round_info"]
 
+        for _ in range(8):
+            if round_info.get("combat"):
+                break
+            _, rewards, done, info = lobby.step(pass_actions)
+            round_info = info["round_info"]
+
+        # ⚔️ Confirma que a rodada PvP gerou todos os confrontos da lobby.
         assert "combat" in round_info, (
             "A resposta não contém os resultados de combate."
         )
-
-        assert len(round_info["combat"]) > 0, (
-            "Nenhum combate foi registrado na rodada."
-        )
-        assert len(info["round_info"]["combat"]) == 4
+        assert len(round_info["combat"]) == 4
         assert done is False
 
         assert_pool_conserved()
@@ -844,21 +851,25 @@ def test_ciclo_completo_partida_eliminacao_reset_e_nova_partida():
         _, _, done, _ = lobby.step(move_actions)
         assert done is False
 
-        _, rewards, done, info = lobby.step(
-            [{"type": 6} for _ in lobby.players]
-        )
+        pass_actions = [{"type": 6} for _ in lobby.players]
+        _, rewards, done, info = lobby.step(pass_actions)
 
         assert rewards.shape == (8,)
         assert done is False
-        # ⚔️ Confirma que a rodada gerou resultados de combate.
+        # Após reset, a agenda recomeça em 1-1; avance até 2-1 antes
+        # de exigir os resultados dos confrontos PvP.
         round_info = info["round_info"]
+        for _ in range(8):
+            if round_info.get("combat"):
+                break
+            _, rewards, done, info = lobby.step(pass_actions)
+            round_info = info["round_info"]
 
         assert "combat" in round_info, (
             "A resposta não contém os resultados de combate."
         )
-
-        assert len(round_info["combat"]) > 0, (
-            "Nenhum combate foi registrado na rodada."
+        assert len(round_info["combat"]) == 4, (
+            "O primeiro PvP deveria registrar quatro confrontos."
         )
 
         assert_pool_conserved()

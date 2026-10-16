@@ -41,7 +41,8 @@ class GameConfig:
 
     STARTING_HP = 100
 
-    # TFT começa no nível 2.
+    # Referência atual do Set 18 (18.4): a partida começa no nível 2.
+    # O nível define a capacidade padrão de unidades implantadas.
     STARTING_LEVEL = 2
     STARTING_XP = 0
 

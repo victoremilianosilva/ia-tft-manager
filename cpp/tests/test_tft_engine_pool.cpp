@@ -367,31 +367,41 @@ int main(int argc, char** argv) {
         require(saw_round_resolved,
                 "O resultado não informou que a rodada foi resolvida.");
 
-        // Só o jogador 0 possui uma unidade no tabuleiro: contra oponente
-        // vazio deve receber vitória automática e aplicar dano base + sobreviventes.
+        // A agenda oficial tem abertura/PvE até 1-4; o primeiro PvP ocorre em 2-1.
+        // Como só o jogador 0 possui unidade no tabuleiro, a primeira rodada PvP
+        // deve conceder a ele uma vitória automática contra uma equipe vazia.
+        auto combat_round = closed_round;
+        for (int wait = 0;
+             wait < 8 && combat_round.players[0].wins == 0;
+             ++wait) {
+            for (auto& action : actions) {
+                action.values = {6, 0, 0, 0, 0, 0};
+            }
+            combat_round = engine.step(actions);
+        }
         require(
-            closed_round.players[0].wins >= 1,
-            "Equipe com unidades não recebeu vitória automática contra equipe vazia."
+            combat_round.players[0].wins >= 1,
+            "Equipe com unidades não recebeu vitória automática na primeira rodada PvP."
         );
         require(
-            closed_round.players[0].opponent_id.has_value(),
+            combat_round.players[0].opponent_id.has_value(),
             "Matchmaking não registrou o oponente do jogador 0."
         );
         const auto opponent_id = static_cast<std::size_t>(
-            *closed_round.players[0].opponent_id
+            *combat_round.players[0].opponent_id
         );
         require(opponent_id < tft::kPlayersPerLobby && opponent_id != 0,
                 "Matchmaking atribuiu um oponente inválido.");
         require(
-            closed_round.players[opponent_id].losses >= 1,
+            combat_round.players[opponent_id].losses >= 1,
             "A derrota automática não foi registrada no oponente."
         );
         require(
-            closed_round.players[opponent_id].damage_taken >= 1.0f,
+            combat_round.players[opponent_id].damage_taken >= 1.0f,
             "Dano ao jogador não incluiu os sobreviventes da vitória automática."
         );
         bool saw_auto_win = false;
-        for (const auto& event : closed_round.events) {
+        for (const auto& event : combat_round.events) {
             if (event.find("AUTO_WIN_EMPTY_BOARD") != std::string::npos) {
                 saw_auto_win = true;
                 break;
@@ -399,6 +409,10 @@ int main(int argc, char** argv) {
         }
         require(saw_auto_win,
                 "Faltou evento de diagnóstico para vitória automática.");
+
+        // A partir daqui, as ações econômicas são testadas na preparação posterior
+        // ao primeiro PvP, já com sua renda e bônus de vitória aplicados.
+        const auto round_before_economic_actions = engine.round();
 
         // Validação integrada de REROLL: custo 2, nova oferta e rodada
         // continua aberta até o jogador enviar PASS.
@@ -412,11 +426,11 @@ int main(int argc, char** argv) {
         const auto rerolled = engine.step(actions);
         require(rerolled.players[0].gold == gold_before_reroll - 2,
                 "REROLL não descontou exatamente 2 de ouro.");
-        require(engine.round() == round_before_pass + 1,
+        require(engine.round() == round_before_economic_actions,
                 "REROLL encerrou a rodada sem PASS.");
         actions[0].values = {6, 0, 0, 0, 0, 0};
         const auto next_round = engine.step(actions);
-        require(engine.round() == round_before_pass + 2,
+        require(engine.round() == round_before_economic_actions + 1,
                 "PASS não encerrou a rodada após o reroll.");
 
         // Com renda da rodada e bônus de vitória, deve haver ouro suficiente
@@ -433,11 +447,11 @@ int main(int argc, char** argv) {
         const auto bought_xp = engine.step(actions);
         require(bought_xp.players[0].gold == gold_before_xp - 4,
                 "BUY_XP não descontou exatamente 4 de ouro.");
-        require(level_before_xp == 4 && xp_before_xp == 0,
+        require(level_before_xp == 4 && xp_before_xp == 4,
                 "Progressão de XP passivo divergiu antes da compra de XP.");
-        require(bought_xp.players[0].level == 4 && bought_xp.players[0].xp == 4,
+        require(bought_xp.players[0].level == 4 && bought_xp.players[0].xp == 8,
                 "BUY_XP deveria adicionar exatamente 4 XP sem subir de nível neste estado.");
-        require(engine.round() == round_before_pass + 2,
+        require(engine.round() == round_before_economic_actions + 1,
                 "BUY_XP encerrou a rodada sem PASS.");
 
         // Reset de episódio limpa os históricos de movimentos, mas mantém

@@ -124,7 +124,7 @@ int main(int argc, char** argv) {
             std::array<std::int32_t, tft::kPlayersPerLobby> previous_losses{};
 
             for (std::uint32_t turn = 0;
-                 turn < 60 && !engine.is_done();
+                 turn < 240 && !engine.is_done();
                  ++turn) {
                 const auto masks = engine.get_action_masks();
                 std::array<tft::PlayerAction, tft::kPlayersPerLobby> actions{};

@@ -319,34 +319,35 @@ class ActionMaskManager:
 
     def get_board_target_mask(self):
         """
-        União dos destinos válidos para MOVE_BENCH.
-        A política usará a máscara condicionada à origem
-        selecionada para filtrar os destinos de verdade.
+        União dos destinos de MOVE_BENCH válidos.
+
+        Casas vazias só aceitam uma nova unidade quando há capacidade
+        pelo nível. Casas ocupadas podem ser selecionadas para substituir
+        uma unidade, que volta ao mesmo slot do banco.
         """
         mask = np.zeros(self.board_size, dtype=np.float32)
         bench = self._get_bench()
 
-        if self._has_free_board_slot():
-            empty_positions = self.board_manager.get_empty_positions()
+        for slot, unit in enumerate(bench[:self.bench_size]):
+            if unit is None:
+                continue
 
-            for slot, unit in enumerate(bench[:self.bench_size]):
-                if unit is None:
-                    continue
+            for target in range(self.board_size):
+                if self._is_valid_bench_board_move(slot, target, bench=bench):
+                    mask[target] = 1.0
 
-                for target in empty_positions:
-                    if self._is_valid_bench_board_move(slot, target):
-                        mask[target] = 1.0
-
-        # Evita uma distribuição vazia nas cabeças auxiliares.
+        # Fallback técnico para as cabeças categóricas.
         if not mask.any():
             mask[0] = 1.0
 
         return mask
 
-
     def get_bench_to_board_target_mask(self, bench_slot):
         """
         Destinos válidos para uma origem específica do banco.
+
+        Uma casa ocupada representa substituição; uma casa vazia exige
+        capacidade livre segundo o nível do jogador.
         """
         mask = np.zeros(self.board_size, dtype=np.float32)
         bench = self._get_bench()
@@ -355,52 +356,42 @@ class ActionMaskManager:
             mask[0] = 1.0
             return mask
 
-        if bench[bench_slot] is None or not self._has_free_board_slot():
+        if bench[bench_slot] is None:
             mask[0] = 1.0
             return mask
 
-        for target in self.board_manager.get_empty_positions():
-            if self._is_valid_bench_board_move(bench_slot, target):
+        for target in range(self.board_size):
+            if self._is_valid_bench_board_move(bench_slot, target, bench=bench):
                 mask[target] = 1.0
 
         if not mask.any():
             mask[0] = 1.0
 
         return mask
-    
 
     def _has_valid_bench_move(self):
-        """
-        Existe alguma unidade no bench que possa entrar no board?
-        """
-
-        if not self._has_free_board_slot():
-            return False
-
+        """Existe alguma colocação ou substituição válida a partir do banco."""
         bench = self._get_bench()
 
-        # ⚡ Calcula as posições vazias uma única vez.
-        empty_positions = self.board_manager.get_empty_positions()
-
-        for slot, unit in enumerate(bench):
+        for slot, unit in enumerate(bench[:self.bench_size]):
             if unit is None:
                 continue
 
-            for target in empty_positions:
+            for target in range(self.board_size):
                 if self._is_valid_bench_board_move(
                     bench_slot=slot,
                     target=target,
+                    bench=bench,
                 ):
                     return True
 
         return False
 
-
     def _is_valid_bench_board_move(self, bench_slot, target, bench=None):
         if bench is None:
             bench = self._get_bench()
 
-        if bench_slot < 0 or bench_slot >= len(bench):
+        if bench_slot < 0 or bench_slot >= min(len(bench), self.bench_size):
             return False
 
         unit = bench[bench_slot]
@@ -409,6 +400,14 @@ class ActionMaskManager:
             return False
 
         if not self._is_valid_board_position(target):
+            return False
+
+        # Substituir uma unidade não aumenta a ocupação do tabuleiro.
+        # Apenas colocar em uma casa vazia consome capacidade de nível.
+        board = self._get_board()
+        if target >= len(board):
+            return False
+        if board[target] is None and not self._has_board_capacity(board=board):
             return False
 
         if self._should_block_anti_loop(
@@ -420,6 +419,20 @@ class ActionMaskManager:
             return False
 
         return True
+
+    def _has_board_capacity(self, board=None):
+        """Retorna se uma unidade adicional cabe no nível atual."""
+        if board is None:
+            board = self._get_board()
+
+        try:
+            current_count = sum(unit is not None for unit in board)
+            level = max(1, int(self.economy_manager.level))
+            return current_count < level
+        except (AttributeError, TypeError, ValueError):
+            # Falha fechada: nunca habilitar uma colocação sem verificar o nível.
+            logger.exception("Não foi possível validar a capacidade do tabuleiro.")
+            return False
 
     # ============================================================
     # 🔀 BOARD -> BOARD
@@ -608,30 +621,23 @@ class ActionMaskManager:
 
     def get_bench_move_source_mask(self):
         """
-        Máscara exclusiva das unidades do banco que podem
-        entrar no tabuleiro em pelo menos uma posição válida.
-
-        Diferente de get_bench_source_mask(), esta máscara
-        NÃO é usada para vender unidades.
+        Máscara das unidades do banco que podem entrar no tabuleiro ou
+        substituir uma unidade já implantada. Não é usada para vender.
         """
         mask = np.zeros(self.bench_size, dtype=np.float32)
         bench = self._get_bench()
 
-        if self._has_free_board_slot():
-            empty_positions = self.board_manager.get_empty_positions()
+        for slot, unit in enumerate(bench[:self.bench_size]):
+            if unit is None:
+                continue
 
-            for slot, unit in enumerate(bench[:self.bench_size]):
-                if unit is None:
-                    continue
+            if any(
+                self._is_valid_bench_board_move(slot, target, bench=bench)
+                for target in range(self.board_size)
+            ):
+                mask[slot] = 1.0
 
-                for target in empty_positions:
-                    if self._is_valid_bench_board_move(slot, target):
-                        mask[slot] = 1.0
-                        break
-
-        # Fallback técnico: não representa um movimento válido.
-        # MOVE_BENCH precisa estar desabilitado se não houver
-        # nenhuma origem real válida.
+        # Fallback técnico: não habilita MOVE_BENCH por si só.
         if not mask.any():
             mask[0] = 1.0
 
@@ -779,27 +785,17 @@ class ActionMaskManager:
 
     def get_bench_move_masks(self):
         """
-        ⚡ Calcula as origens do bench e seus destinos válidos
-        em uma única passagem.
+        Calcula origens do banco e destinos válidos em uma só passagem.
 
-        Retorna:
-            source_mask: (9,)
-            target_masks: (9, 28)
-            has_valid_move: bool
+        Destinos vazios exigem capacidade de nível; destinos ocupados
+        representam substituição e devolvem a unidade antiga ao banco.
         """
         bench = self._get_bench()
-
         source_mask = np.zeros(self.bench_size, dtype=np.float32)
         target_masks = np.zeros(
             (self.bench_size, self.board_size),
             dtype=np.float32,
         )
-
-        # ⚡ Obtém as posições vazias uma única vez.
-        # ⚡ Uma consulta basta: sem posições vazias,
-        # não existe movimento possível do banco para o tabuleiro.
-        empty_positions = self.board_manager.get_empty_positions()
-
         has_valid_move = False
 
         for slot, unit in enumerate(bench[:self.bench_size]):
@@ -807,15 +803,13 @@ class ActionMaskManager:
                 target_masks[slot, 0] = 1.0
                 continue
 
-            for target in empty_positions:
-                if self._is_valid_bench_board_move(
-                    slot, target, bench=bench
-                ):
+            for target in range(self.board_size):
+                if self._is_valid_bench_board_move(slot, target, bench=bench):
                     target_masks[slot, target] = 1.0
                     source_mask[slot] = 1.0
                     has_valid_move = True
 
-            # 🎯 Fallback técnico; não indica movimento real.
+            # Fallback técnico para a cabeça condicionada.
             if not target_masks[slot].any():
                 target_masks[slot, 0] = 1.0
 
@@ -823,7 +817,7 @@ class ActionMaskManager:
             source_mask[0] = 1.0
 
         return source_mask, target_masks, has_valid_move
-        
+
     # ============================================================
     # 🧪 DEBUG
     # ============================================================

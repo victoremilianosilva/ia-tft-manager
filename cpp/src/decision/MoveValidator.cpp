@@ -150,15 +150,9 @@ MoveValidator::validate_bench_to_board_move(
         );
     }
 
-    // Diferente de um movimento dentro do tabuleiro,
-    // banco -> tabuleiro exige que o destino esteja vazio.
-    if (board[target_index].has_value()) {
-        return invalid_result(
-            "OCCUPIED_TARGET",
-            "O destino do banco para o tabuleiro esta ocupado."
-        );
-    }
-
+    // Destino vazio: implantação que consome capacidade de nível.
+    // Destino ocupado: substituição atômica; a unidade atual retorna ao banco.
+    // A regra de capacidade é validada na máscara e na execução da ação.
     return valid_result(MoveType::BENCH_TO_BOARD);
 }
 

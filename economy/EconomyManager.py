@@ -422,10 +422,14 @@ class EconomyManager:
         cost = int(unit.get("cost", 1))
         star = int(unit.get("star", 1))
 
+        # 1-cost champions sell for the full combined value. For costs
+        # 2-5, upgraded units lose 1 gold to the combine fee on resale.
         if star >= 3:
-            return max(1, cost * 9)
+            value = cost * 9
+            return max(1, value if cost == 1 else value - 1)
 
         if star >= 2:
-            return max(1, cost * 3)
+            value = cost * 3
+            return max(1, value if cost == 1 else value - 1)
 
         return max(1, cost)

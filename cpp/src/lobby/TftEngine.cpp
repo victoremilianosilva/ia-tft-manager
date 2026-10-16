@@ -65,6 +65,19 @@ std::int32_t stage_damage(std::uint32_t stage) noexcept {
     }
 }
 
+// Internal round index follows TFT's actual 1-based round sequence:
+ // 1-1..1-4 are opening/PvE; each following stage has seven rounds.
+std::uint32_t stage_for_round(std::uint32_t round_number) noexcept {
+    if (round_number <= 4) return 1;
+    return 2 + (round_number - 5) / 7;
+}
+
+bool is_pvp_round(std::uint32_t round_number) noexcept {
+    if (round_number <= 4) return false;
+    const auto round_in_stage = ((round_number - 5) % 7) + 1;
+    return round_in_stage != 4 && round_in_stage != 7;
+}
+
 std::int32_t star_copies(std::int32_t star) noexcept {
     switch (star) {
         case 2: return 3;
@@ -122,6 +135,7 @@ struct TFTEngine::Impl {
     struct PlayerTransition {
         float action_reward{0.0f};
         bool acted{false};
+        bool board_capacity_violation{false};
     };
 
     struct PlayerEnv {
@@ -715,6 +729,31 @@ struct TFTEngine::Impl {
         const auto& values = action.values;
         const auto type = static_cast<std::size_t>(values[0]);
         const auto& player_masks = player_envs[player_index].action_masks;
+
+        // A tentativa de implantar além do nível deve ser rejeitada com
+        // penalidade mesmo quando MOVE_BENCH segue habilitado por existir
+        // outra substituição válida no mesmo estado.
+        if (type == 3) {
+            const auto state = build_decision_state(player_index);
+            const auto source = static_cast<std::size_t>(values[2]);
+            const auto target = static_cast<std::size_t>(values[3]);
+            const auto occupied = static_cast<std::size_t>(
+                std::count_if(
+                    state.board.begin(),
+                    state.board.end(),
+                    [](const auto& unit) { return unit.has_value(); }
+                )
+            );
+            if (
+                source < state.bench.size()
+                && target < state.board.size()
+                && state.bench[source].has_value()
+                && !state.board[target].has_value()
+                && occupied >= static_cast<std::size_t>(state.economy.level)
+            ) {
+                return;
+            }
+        }
 
         if (player_masks.type_mask[type] != 1) {
             throw std::invalid_argument(
@@ -1531,6 +1570,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         bool sold_core_unit = false;
         bool bought_unit_successfully = false;
         bool bought_upgrade = false;
+        bool board_capacity_violation = false;
         std::array<std::string, kBoardSlots> old_board_layout{};
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
             if (this->board[slot]) {
@@ -1631,17 +1671,13 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             // BUY XP
             (void)lobby.economy_engine.buy_xp(economy);
         } else if (type == 3) {
-            // MOVE_BENCH: banco -> tabuleiro
+            // MOVE_BENCH: implantação ou substituição de uma unidade.
             auto& anti_loop = this->anti_loop;
-
             anti_loop.record_execution_attempt();
 
             const auto source = action[2];
             const auto target = action[3];
-
-            const auto state =
-                lobby.build_decision_state(player_id);
-
+            const auto state = lobby.build_decision_state(player_id);
             const auto validation =
                 decision::MoveValidator::validate_bench_to_board_move(
                     state.board,
@@ -1651,57 +1687,64 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 );
 
             if (validation.is_valid()) {
-                const auto source_index =
-                    static_cast<std::size_t>(source);
+                const auto source_index = static_cast<std::size_t>(source);
+                const auto target_index = static_cast<std::size_t>(target);
 
-                const auto target_index =
-                    static_cast<std::size_t>(target);
-
-                const auto unit_identity =
-                    std::optional<decision::UnitIdentity>{
-                        state.bench[source_index]->identity
-                    };
-
-                const std::string move_type =
-                    "bench_to_board";
-
-                const auto reason =
-                    anti_loop.get_block_reason(
-                        move_type,
-                        source,
-                        target,
-                        unit_identity
-                    );
-
-                if (reason.has_value()) {
-                    (void)anti_loop.block_move(
-                        move_type,
-                        source,
-                        target,
-                        unit_identity
-                    );
-
-                    anti_loop.record_execution_block(*reason);
+                // Uma casa vazia acrescenta uma unidade à equipe. Se o limite
+                // do nível já foi atingido, rejeita a ação e aplica -0.25.
+                if (
+                    !state.board[target_index].has_value()
+                    && old_board_count >= economy.level
+                ) {
+                    board_capacity_violation = true;
                 } else {
-                    (void)anti_loop.register_move(
+                    const auto unit_identity =
+                        std::optional<decision::UnitIdentity>{
+                            state.bench[source_index]->identity
+                        };
+                    const std::string move_type = "bench_to_board";
+                    const auto reason = anti_loop.get_block_reason(
                         move_type,
                         source,
                         target,
                         unit_identity
                     );
 
-                    this->board[target_index] =
-                        std::move(
-                            this->bench[source_index]
+                    if (reason.has_value()) {
+                        (void)anti_loop.block_move(
+                            move_type,
+                            source,
+                            target,
+                            unit_identity
+                        );
+                        anti_loop.record_execution_block(*reason);
+                    } else {
+                        (void)anti_loop.register_move(
+                            move_type,
+                            source,
+                            target,
+                            unit_identity
                         );
 
-                    this->bench[source_index].reset();
+                        if (this->board[target_index].has_value()) {
+                            // Substituição: a unidade retirada volta ao slot
+                            // do banco que acabou de ser liberado.
+                            std::swap(
+                                this->board[target_index],
+                                this->bench[source_index]
+                            );
+                        } else {
+                            this->board[target_index] =
+                                std::move(this->bench[source_index]);
+                            this->bench[source_index].reset();
+                        }
 
-                    anti_loop.record_successful_move(move_type);
-
-                    lobby.register_position_state(player_id);
+                        anti_loop.record_successful_move(move_type);
+                        lobby.register_position_state(player_id);
+                    }
                 }
             }
+
         } else if (type == 4) {
             // MOVE_BOARD: movimento ou troca
             auto& anti_loop = this->anti_loop;
@@ -1883,10 +1926,13 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     break;
                 }
             }
-            success = type == 4 ? board_layout_changed
-                                : new_board_count > old_board_count;
-            action_reward = success ? (type == 4 ? 0.02 : 0.0) : -0.10;
-            if (type == 3 && success)
+            // Tanto a implantação como a substituição alteram o layout.
+            // Capacidade excedida é a única falha com penalidade específica.
+            success = board_layout_changed;
+            action_reward = board_capacity_violation
+                ? -0.25
+                : (success ? (type == 4 ? 0.02 : 0.0) : -0.10);
+            if (type == 3 && success && !board_capacity_violation)
                 action_reward += lobby.positioning_score(player_id) * 0.05;
         } else if (type == 5) {
             success = economy.gold > old_gold;
@@ -1899,7 +1945,11 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         // RewardManager's broader state components are not called by the
         // Python environment, so applying them here would change PPO targets.
         lobby.update_strategy(player_id);
-        return PlayerTransition{static_cast<float>(action_reward), true};
+        return PlayerTransition{
+            static_cast<float>(action_reward),
+            true,
+            board_capacity_violation
+        };
 }
 
 // ============================================================
@@ -2027,12 +2077,14 @@ StepResult TFTEngine::step(
     std::array<float, kPlayersPerLobby> action_rewards{};
     std::array<float, kPlayersPerLobby> combat_rewards{};
     std::array<float, kPlayersPerLobby> placement_rewards{};
+    std::array<bool, kPlayersPerLobby> capacity_violations{};
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
         const auto transition = impl_->player_envs[i].step(*impl_, i, actions[i]);
         if (!transition.acted) {
             continue;
         }
         action_rewards[i] = transition.action_reward;
+        capacity_violations[i] = transition.board_capacity_violation;
         round_rewards[i] += transition.action_reward;
         impl_->player_envs[i].round_reward_total = round_rewards[i];
         impl_->player_envs[i].total_reward += round_rewards[i];
@@ -2051,30 +2103,46 @@ StepResult TFTEngine::step(
     if (impl_->all_alive_players_finished_round()) {
         round_resolved = true;
 
-        // A ordem acompanha TFTLobby._resolve_round(): primeiro a renda/XP
-        // da rodada e a preparação das lojas; depois os confrontos PVP.
-        const auto resolving_round =
-            static_cast<std::int32_t>(impl_->round + 1);
-
-        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
-            if (!impl_->player_envs[i].info.alive) {
-                continue;
+        // Primeiro resolve o PvP quando esta rodada possui combate entre
+        // jogadores. PvE/carrossel não concedem bônus de vitória nem alteram
+        // sequências; eles avançam a economia, mas não simulamos seus drops.
+        const auto rewards_before_combat = round_rewards;
+        const auto current_round_number = impl_->round + 1;
+        if (is_pvp_round(current_round_number)) {
+            impl_->resolve_combats(round_events, round_rewards, combat_rewards);
+        } else {
+            for (auto& player_env : impl_->player_envs) {
+                player_env.info.opponent_id.reset();
             }
-
-            (void)impl_->economy_engine.resolve_round(
-                impl_->player_envs[i].economy,
-                resolving_round
+            round_events.emplace_back(
+                "ROUND_NO_PVP: fase de abertura/PvE/carrossel; "
+                "nenhum bônus PvP ou streak foi aplicado."
             );
-            impl_->sync_player_economy(i);
-
-            // A loja da próxima rodada só é preparada quando a rodada
-            // realmente fecha, nunca em cada ação individual.
-            impl_->player_envs[i].shop->roll(impl_->player_envs[i].economy.level);
-            impl_->refresh_masks(i);
         }
 
-        const auto rewards_before_combat = round_rewards;
-        impl_->resolve_combats(round_events, round_rewards, combat_rewards);
+        // A renda/XP calculada é para a próxima preparação; o estado começa
+        // em round=0 (1-1), então a próxima rodada é current_round_number + 1.
+        const auto next_round_number =
+            static_cast<std::int32_t>(current_round_number + 1);
+
+        if (!impl_->done && impl_->alive_players > 1) {
+            for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+                auto& player_env = impl_->player_envs[i];
+                if (!player_env.info.alive || player_env.info.hp <= 0.0f) {
+                    continue;
+                }
+
+                (void)impl_->economy_engine.resolve_round(
+                    player_env.economy,
+                    next_round_number
+                );
+                impl_->sync_player_economy(i);
+
+                // A loja é renovada para o próximo turno após atualizar o nível.
+                player_env.shop->roll(player_env.economy.level);
+                impl_->refresh_masks(i);
+            }
+        }
 
         // TFTLobby aplica a recompensa de colocação uma única vez assim que
         // a posição do jogador é conhecida (inclusive para eliminados).
@@ -2126,8 +2194,7 @@ StepResult TFTEngine::step(
             const std::uint32_t public_round =
                 impl_->round + 1;
 
-            impl_->stage =
-                ((public_round - 1) / kRoundsPerStage) + 1;
+            impl_->stage = stage_for_round(public_round);
 
             impl_->reset_round_completion();
         }
@@ -2163,6 +2230,15 @@ StepResult TFTEngine::step(
         "Acoes de loja, economia, venda e movimentacao "
         "executadas pelo TFTEngine."
     );
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        if (capacity_violations[i]) {
+            result.events.emplace_back(
+                "RULE_VIOLATION: jogador " + std::to_string(i) +
+                " tentou exceder a capacidade do nivel; movimento recusado."
+            );
+        }
+    }
+
     if (!round_resolved) {
         result.events.emplace_back(
             "ROUND_WAITING: aguardando PASS ou limite de acoes "

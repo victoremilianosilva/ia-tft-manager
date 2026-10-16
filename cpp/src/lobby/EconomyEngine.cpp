@@ -262,8 +262,18 @@ std::int32_t EconomyEngine::get_sell_value(
 ) noexcept {
     cost = std::max<std::int32_t>(1, cost);
 
-    if (star >= 3) return std::max(1, cost * 9);
-    if (star >= 2) return std::max(1, cost * 3);
+    if (star >= 3) {
+        const auto value = cost * 9;
+        return std::max<std::int32_t>(
+            1, cost == 1 ? value : value - 1
+        );
+    }
+    if (star >= 2) {
+        const auto value = cost * 3;
+        return std::max<std::int32_t>(
+            1, cost == 1 ? value : value - 1
+        );
+    }
     return cost;
 }
 

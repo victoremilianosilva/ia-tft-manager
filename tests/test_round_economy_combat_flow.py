@@ -11,7 +11,7 @@ def make_player(player_id):
 
     env = SimpleNamespace(
         economy_manager=economy,
-        resolve_player_round=lambda: economy.resolve_round(1),
+        resolve_player_round=lambda next_round_number=None: economy.resolve_round(next_round_number or 1),
     )
 
     return SimpleNamespace(
@@ -37,8 +37,8 @@ def test_real_round_flow_registers_win_gold_once(monkeypatch):
 
     lobby.players = [player_a, player_b]
     lobby.matchups = [(player_a, player_b)]
-    lobby.stage = 1
-    lobby.round = 1
+    lobby.stage = 2
+    lobby.round = 5
     lobby.finished = False
     lobby.round_actions = {0: 0, 1: 0}
     lobby.round_finished = {0: False, 1: False}
@@ -63,6 +63,10 @@ def test_real_round_flow_registers_win_gold_once(monkeypatch):
 
     monkeypatch.setattr(lobby, "resolve_combat", fake_resolve_combat)
 
+    # Chega ao fim da rodada com quatro vitórias anteriores. A quinta vitória
+    # deve atualizar a sequência antes de calcular a economia da próxima rodada.
+    player_a.env.economy_manager.win_streak = 4
+
     # Act: executa o método real do lobby.
     result = lobby._resolve_round()
 
@@ -72,7 +76,14 @@ def test_real_round_flow_registers_win_gold_once(monkeypatch):
     winner_economy = player_a.env.economy_manager
     loser_economy = player_b.env.economy_manager
 
-    # Assert: o bônus deve aparecer no relatório da rodada atual.
+    # Esta fixture simula 2-1: o próximo turno é 2-2, com renda-base 5.
+    assert winner_report["round"] == 6
+    assert winner_report["base_gold"] == GameConfig.DEFAULT_ROUND_GOLD
+
+    # A quinta vitória é contabilizada antes da renda da próxima preparação.
+    assert winner_report["streak_gold"] == GameConfig.get_streak_gold(5)
+
+    # Assert: o bônus de vitória aparece uma única vez no relatório.
     assert winner_report["win_gold"] == GameConfig.WIN_GOLD
 
     assert winner_report["total_gold"] == (

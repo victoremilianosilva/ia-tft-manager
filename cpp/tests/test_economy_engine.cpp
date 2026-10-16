@@ -107,10 +107,18 @@ int main() {
     assert(win_round.total_gold == 3); // Renda base + bônus de vitória já creditado.
     assert(economy.round_win_gold == 0); // Não pode ser contabilizado duas vezes.
 
-    // 9. Valores de venda conforme custo e estrelas.
+    // 9. Valores de venda: unidades de 1 custo são exceção;
+    // unidades aprimoradas de custo >= 2 perdem 1 ouro na combinação.
+    assert(tft::EconomyEngine::get_sell_value(1, 1) == 1);
+    assert(tft::EconomyEngine::get_sell_value(1, 2) == 3);
+    assert(tft::EconomyEngine::get_sell_value(1, 3) == 9);
     assert(tft::EconomyEngine::get_sell_value(2, 1) == 2);
-    assert(tft::EconomyEngine::get_sell_value(2, 2) == 6);
-    assert(tft::EconomyEngine::get_sell_value(2, 3) == 18);
+    assert(tft::EconomyEngine::get_sell_value(2, 2) == 5);
+    assert(tft::EconomyEngine::get_sell_value(2, 3) == 17);
+    assert(tft::EconomyEngine::get_sell_value(4, 2) == 11);
+    assert(tft::EconomyEngine::get_sell_value(4, 3) == 35);
+    assert(tft::EconomyEngine::get_sell_value(5, 2) == 14);
+    assert(tft::EconomyEngine::get_sell_value(5, 3) == 44);
 
     // 10. O nível máximo impede compra e ganho de XP grátis.
     economy.level = tft::EconomyEngine::MAX_LEVEL;

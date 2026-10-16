@@ -132,7 +132,7 @@ void test_board_move_masks_respect_source_and_destination() {
     assert(masks.board_move_target_masks[4][3] == MASK_DISABLED);
 }
 
-void test_bench_to_board_requires_empty_target() {
+void test_bench_to_board_allows_replacement() {
     PlayerState state;
     state.economy.gold = 0;
     state.economy.level = 2;
@@ -142,19 +142,39 @@ void test_bench_to_board_requires_empty_target() {
 
     AntiLoopEngine anti_loop;
     ActionMaskEngine engine;
-
     const auto masks = engine.generate_masks(state, anti_loop);
 
     assert(masks.bench_move_available);
     assert(masks.type_mask[static_cast<std::size_t>(ActionType::MOVE_BENCH)] == MASK_ENABLED);
-
     assert(masks.bench_move_source_mask[2] == MASK_ENABLED);
 
-    // Posição vazia: movimento permitido.
+    // Uma das duas vagas de nível ainda está livre.
     assert(masks.bench_to_board_target_masks[2][11] == MASK_ENABLED);
+    // Uma casa ocupada também é destino válido para substituição.
+    assert(masks.bench_to_board_target_masks[2][10] == MASK_ENABLED);
+}
 
-    // Posição ocupada: banco -> tabuleiro não pode sobrescrever unidade.
-    assert(masks.bench_to_board_target_masks[2][10] == MASK_DISABLED);
+void test_bench_to_board_masks_enforce_level_capacity_but_allow_swaps() {
+    PlayerState state;
+    state.economy.gold = 0;
+    state.economy.level = 2;
+
+    state.bench[2] = make_unit("bench-unit");
+    state.board[10] = make_unit("board-unit-a");
+    state.board[11] = make_unit("board-unit-b");
+
+    AntiLoopEngine anti_loop;
+    ActionMaskEngine engine;
+    const auto masks = engine.generate_masks(state, anti_loop);
+
+    assert(masks.bench_move_available);
+    assert(masks.type_mask[static_cast<std::size_t>(ActionType::MOVE_BENCH)] == MASK_ENABLED);
+    assert(masks.bench_move_source_mask[2] == MASK_ENABLED);
+
+    // A equipe já usa as duas vagas do nível: só pode substituir.
+    assert(masks.bench_to_board_target_masks[2][10] == MASK_ENABLED);
+    assert(masks.bench_to_board_target_masks[2][11] == MASK_ENABLED);
+    assert(masks.bench_to_board_target_masks[2][12] == MASK_DISABLED);
 }
 
 void test_buy_is_disabled_when_bench_is_full() {
@@ -176,7 +196,7 @@ void test_buy_is_disabled_when_bench_is_full() {
     assert(masks.shop_mask[0] == MASK_DISABLED);
 }
 
-void test_bench_to_board_is_disabled_when_board_is_full() {
+void test_bench_to_board_can_replace_when_physical_grid_is_full() {
     PlayerState state;
     state.economy.gold = 0;
     state.economy.level = 2;
@@ -190,10 +210,11 @@ void test_bench_to_board_is_disabled_when_board_is_full() {
     ActionMaskEngine engine;
     const auto masks = engine.generate_masks(state, anti_loop);
 
-    assert(!masks.bench_move_available);
-    assert(masks.type_mask[static_cast<std::size_t>(ActionType::MOVE_BENCH)] == MASK_DISABLED);
+    // Mesmo em um estado legado inválido, substituir não amplia a equipe.
+    assert(masks.bench_move_available);
+    assert(masks.type_mask[static_cast<std::size_t>(ActionType::MOVE_BENCH)] == MASK_ENABLED);
     for (std::size_t target = 0; target < BOARD_SIZE; ++target) {
-        assert(masks.bench_to_board_target_masks[0][target] == MASK_DISABLED);
+        assert(masks.bench_to_board_target_masks[0][target] == MASK_ENABLED);
     }
 }
 
@@ -208,11 +229,11 @@ void test_invalid_move_pairs_are_not_enabled() {
     ActionMaskEngine engine;
     const auto masks = engine.generate_masks(state, anti_loop);
 
-    // Não permite origem vazia, origem==destino nem destino ocupado
-    // para o movimento banco -> tabuleiro.
+    // MOVE_BOARD não permite origem vazia nem origem==destino.
+    // MOVE_BENCH permite uma casa ocupada como substituição.
     assert(masks.board_move_target_masks[4][3] == MASK_DISABLED);
     assert(masks.board_move_target_masks[3][3] == MASK_DISABLED);
-    assert(masks.bench_to_board_target_masks[2][3] == MASK_DISABLED);
+    assert(masks.bench_to_board_target_masks[2][3] == MASK_ENABLED);
     assert(masks.bench_to_board_target_masks[2][4] == MASK_ENABLED);
 }
 
@@ -267,9 +288,10 @@ int main() {
     test_shop_mask_matches_python_offer_presence_semantics();
     test_sell_uses_real_bench_units_not_fallback();
     test_board_move_masks_respect_source_and_destination();
-    test_bench_to_board_requires_empty_target();
+    test_bench_to_board_allows_replacement();
+    test_bench_to_board_masks_enforce_level_capacity_but_allow_swaps();
     test_buy_is_disabled_when_bench_is_full();
-    test_bench_to_board_is_disabled_when_board_is_full();
+    test_bench_to_board_can_replace_when_physical_grid_is_full();
     test_invalid_move_pairs_are_not_enabled();
     test_eliminated_player_can_only_pass();
     test_invalid_economy_is_rejected();
