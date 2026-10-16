@@ -84,6 +84,7 @@ class PlayerJsonLogWriter:
         self.deterministic = bool(deterministic)
         self.flush_interval_steps = max(1, int(flush_interval_steps))
         self._sequence = [0] * 8
+        self._pass_logged = [False] * 8
         self._dirty = set(range(8))
         self._closed = False
         self._catalog_by_alias: dict[str, dict] = {}
@@ -442,6 +443,8 @@ class PlayerJsonLogWriter:
         action_rewards = _jsonable(info.get("action_rewards"))
         combat_rewards = _jsonable(info.get("combat_rewards"))
         placement_rewards = _jsonable(info.get("placement_rewards"))
+        if round_resolved:
+            self._pass_logged = [False] * 8
 
         for player_id in range(8):
             before_audit = _player_by_id(before.get("audit_players", []), player_id)
@@ -495,7 +498,7 @@ class PlayerJsonLogWriter:
                     before_state=before_state, after_state=after_state,
                     diagnostics=diagnostic, engine_events=player_events + shared_round_events,
                 )
-            else:
+            elif action_type != 6 or not self._pass_logged[player_id]:
                 tag = "pos_rew" if reward > 0 else "neg_rew" if reward < 0 else None
                 line = f"[{timestamp}] {self._action_text(action, before_audit):28} | Rew: {reward:+.2f}\n"
                 self._append_entry(
@@ -503,6 +506,8 @@ class PlayerJsonLogWriter:
                     round_number=round_number, stage=stage, round_in_stage=round_in_stage,
                     event_type="action", text=line, tag=tag, data=primary_data,
                 )
+                if action_type == 6:
+                    self._pass_logged[player_id] = True
                 if action_type == 1:
                     self._append_shop(
                         player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
