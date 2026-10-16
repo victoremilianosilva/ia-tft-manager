@@ -1,3 +1,4 @@
+from types import SimpleNamespace
 
 import numpy as np
 
@@ -35,6 +36,7 @@ def create_manager():
     manager.board_manager = board
     manager.bench_manager = bench
     manager.anti_loop_manager = anti_loop
+    manager.economy_manager = SimpleNamespace(level=10)
     manager.board_size = 28
     manager.bench_size = 9
     manager.shop_size = 5
