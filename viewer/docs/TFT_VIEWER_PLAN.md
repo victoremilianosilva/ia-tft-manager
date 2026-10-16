@@ -480,6 +480,8 @@ A primeira versão completa será funcional quando:
 9. Preservar regras, observações, máscaras e recompensas da engine.
 10. Identificar checkpoint, seed e versões necessárias para interpretar a sessão.
 11. Documentar campos indisponíveis e falhas de gravação sem fabricar dados.
+12. Mostrar cada retrato de campeão em uma casa quadrada, com o tamanho ajustado à largura disponível do tabuleiro.
+13. Adaptar a quantidade de colunas e a orientação dos painéis ao espaço disponível, mantendo somente rolagem vertical na página e sem barra horizontal.
 
 ## 15. Registro de decisões
 
@@ -502,6 +504,8 @@ Decisões já alinhadas:
 - [x] Avanço unitário definido como um passo conjunto do lobby (ações dos oito assentos), com pausa entre passos; não se promete interromper o passo internamente.
 - [x] Diagnósticos PPO definidos como opt-in e sem alteração do contrato normal ou da sequência de amostragem.
 - [x] JSONL versionado definido como formato inicial de replay.
+- [x] Casas de campeões quadradas, com retratos dimensionados junto com a célula.
+- [x] Interface responsiva: grade de jogadores e painéis adaptam-se à largura disponível; página com rolagem vertical e sem rolagem horizontal.
 - [x] A implementação inicial do visualizador começou em `viwer/main.py` e `viewer/session.py`; os critérios de aceite ainda dependem de validação em execução.
 
 ## 16. Manutenção deste documento
