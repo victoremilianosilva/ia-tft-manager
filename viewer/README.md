@@ -1,8 +1,14 @@
 # TFT Viewer
 
-Aplicativo desktop de observação e avaliação de partidas TFT-like, baseado exclusivamente na especificação de `TFT_VIEWER_PLAN.md`.
+Aplicativo desktop de observação e avaliação de partidas TFT-like, baseado exclusivamente na especificação de `viewer/docs/TFT_VIEWER_PLAN.md`.
 
-## Estrutura\n\n- `viwer/main.py`: entrada da interface desktop.\n- `viewer/session.py`: controlador, inferência, eventos e replay.\n- `viewer/docs/`: especificação integral e wireframes.\n\n## Executar no Windows
+## Estrutura
+
+- `viwer/main.py`: entrada da interface desktop.
+- `viewer/session.py`: controlador, inferência, eventos e replay.
+- `viewer/docs/`: especificação integral e wireframes.
+
+## Executar no Windows
 
 Na raiz do repositório, com o ambiente virtual ativo:
 
