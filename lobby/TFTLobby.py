@@ -854,12 +854,12 @@ class TFTLobby:
             economy_result = economy_results.get(player.player_id)
             economy = player.env.economy_manager
 
-            # O bônus de vitória já está no saldo e não deve ser repetido
-            # no próximo relatório, mesmo se a partida terminar nesta rodada.
+            # resolve_player_round() já inclui o ouro de vitória no
+            # relatório da economia e no saldo. Não o some novamente aqui.
             win_gold = economy.round_win_gold
             if economy_result is not None:
+                win_gold = economy_result.get("win_gold", win_gold)
                 economy_result["win_gold"] = win_gold
-                economy_result["total_gold"] += win_gold
                 economy_result["new_gold"] = economy.gold
 
             economy.round_win_gold = 0
