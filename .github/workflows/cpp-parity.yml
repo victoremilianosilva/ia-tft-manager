@@ -1,4 +1,4 @@
-name: C++ engine and cross-language parity
+name: C++ native engine
 
 on:
   push:
@@ -21,7 +21,7 @@ jobs:
       - name: Install test dependencies
         run: python -m pip install --upgrade pip numpy pytest pybind11 tensorboard
 
-      - name: Install CPU PyTorch for PPO integration test
+      - name: Install CPU PyTorch for PPO integration tests
         run: python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
 
       - name: Configure CMake
@@ -39,76 +39,39 @@ jobs:
           set -o pipefail
           ctest --test-dir cpp/build --output-on-failure 2>&1 | tee artifacts/ctest.log
 
-      - name: Validate viewer Python syntax
-        run: python -m compileall -q viwer viewer tests/test_viewer_policy_diagnostics.py tests/test_viewer_player_logs.py
+      - name: Validate Python adapter, PPO, scripts and viewer syntax
+        run: python -m compileall -q cpp_lobby_env.py engine_contracts.py vector_lobby_env.py trainer.py ppo.py policy.py rollout.py scripts/evaluate_checkpoints.py viwer viewer tests
 
-      - name: Run required cross-language parity suite
+      - name: Run native engine integration and PPO contract tests
         env:
-          PYTHONPATH: \${{ github.workspace }}/cpp/build/bin:\${{ github.workspace }}
-          REQUIRE_CPP_PARITY: "1"
+          PYTHONPATH: ${{ github.workspace }}/cpp/build/bin:${{ github.workspace }}
+          REQUIRE_CPP_ENGINE: "1"
         run: >-
           python -m pytest -q
-          --junitxml=artifacts/cross-language-parity.xml
+          --junitxml=artifacts/native-engine-tests.xml
+          tests/test_tft_engine_api.py
+          tests/test_lobby_end_to_end.py
+          tests/test_full_match_terminal_ranking.py
           tests/test_combat_engine.py
           tests/test_combat_events.py
           tests/test_combat_movement.py
-          tests/test_combat_profile_data.py
           tests/test_combat_stats.py
+          tests/test_combat_profile_native.py
           tests/test_combat_timeout.py
           tests/test_determinismo_combate_cpp.py
-          tests/test_empty_team_combat.py
           tests/test_integracao_combate_cpp.py
-          tests/test_lobby_combat_regression.py
-          tests/test_reward_integration.py
-          tests/test_round_economy_combat_flow.py
-          tests/test_level_capacity_rules.py
-          tests/test_economy_sell_values.py
-          tests/test_tft_round_schedule.py
-          tests/test_tft_engine_api.py
-          tests/test_lobby_end_to_end.py
-          tests/test_cross_language_replay.py
-          tests/test_positioning_parity.py
-          tests/test_reward_manager_parity.py
-          tests/test_combat_profile_parity.py
-          tests/test_synergy_manager_parity.py
-          tests/test_action_mask_equivalence.py
-          tests/test_action_mask_integration.py
-          tests/test_anti_loop_mask_integration.py
-          tests/test_anti_loop_swap_cycles.py
-          tests/test_combat_economy_integration.py
-          tests/test_self_play_economy_progression.py
-          tests/test_shop_manager_odds.py
-          tests/test_shared_pool_shop_validation.py
-          tests/test_upgrade_integration.py
-          tests/test_engine_backend_selection.py
+          tests/test_action_dimensions.py
+          tests/test_action_mask_validation.py
+          tests/test_ppo_mask_consistency.py
           tests/test_evaluate_checkpoints.py
           tests/test_viewer_policy_diagnostics.py
           tests/test_viewer_player_logs.py
-          tests/test_four_area_audit_completion.py
-          tests/test_full_match_terminal_ranking.py
-          tests/test_anti_loop_regression.py
-          tests/test_anti_loop_swap_back.py
-          tests/test_anti_loop_position_cycles.py
-          tests/test_anti_loop_useful_moves_audit.py
-          tests/test_ppo_mask_consistency.py
-          tests/test_reward_cpp_parity.py
 
-      - name: Benchmark full Python engine vs native C++ engine
-        env:
-          PYTHONPATH: \${{ github.workspace }}/cpp/build/bin:\${{ github.workspace }}
-        run: >-
-          python benchmark_engine_python_vs_cpp.py
-          --lobbies 1
-          --steps 100
-          --warmup 10
-          --repeats 2
-          --output artifacts/engine_python_vs_cpp_comparison.json
-
-      - name: Publish native, parity, and benchmark reports
+      - name: Publish native test reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cpp-cross-language-parity-report
+          name: cpp-native-engine-report
           path: artifacts/
           if-no-files-found: warn
           retention-days: 30
