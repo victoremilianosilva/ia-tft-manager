@@ -456,7 +456,9 @@ class PlayerJsonLogWriter:
                 reward = 0.0
             player_events = self._events_for_player(engine_events, player_id)
             action_type = int(action[0])
-            is_round_end = action_type == 6 or round_resolved or finished
+            # PASS ends this player's decisions, not the shared round.
+            # The engine's ROUND_RESOLVED event is the sole round boundary.
+            is_round_end = round_resolved or finished
             before_state = self._player_snapshot(before_audit, before_public)
             after_state = self._player_snapshot(after_audit, after_public)
             primary_data = {
