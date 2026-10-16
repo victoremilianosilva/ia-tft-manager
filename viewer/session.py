@@ -151,7 +151,7 @@ class ViewerSession:
             session_dir.mkdir(parents=True, exist_ok=False)
             self._session_dir = session_dir
             self._metadata_path = session_dir / "metadata.json"
-            log_files = [f"player_{player_id + 1}_log.json" for player_id in range(8)]
+            log_files = [f"player_{player_id + 1}_log.tft" for player_id in range(8)]
             self._metadata_path.write_text(json.dumps({
                 "schema_version": 1,
                 "match_id": self.match_id,
@@ -164,7 +164,7 @@ class ViewerSession:
                 "policy_class": "TFTPolicy",
                 "observation_dim": int(obs_dim),
                 "action_dims": list(action_dims),
-                "log_format": "one JSON file per player",
+                "log_format": "legacy-style UTF-8 TFT text log, one file per player",
                 "player_log_files": log_files,
             }, ensure_ascii=False, indent=2), encoding="utf-8")
             self._player_log_writer = PlayerJsonLogWriter(
