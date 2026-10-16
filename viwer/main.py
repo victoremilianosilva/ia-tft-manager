@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import sys
+import traceback
 from pathlib import Path
 
 import numpy as np
@@ -249,8 +250,10 @@ class StepWorker(QObject):
     def run(self):
         try:
             self.completed.emit(self.session.step())
-        except Exception as exc:
-            self.failed.emit(str(exc))
+        except Exception:
+            # Keep the traceback in the UI/log; silent one-line errors made
+            # failures during long evaluations difficult to diagnose.
+            self.failed.emit(traceback.format_exc())
 
 
 class PlayerCard(QFrame):
@@ -336,6 +339,7 @@ class ViewerWindow(QMainWindow):
         self._step_thread = None
         self._step_worker = None
         self._step_round_target = None
+        self._close_when_step_done = False
         self.play_timer = QTimer(self)
         self.play_timer.timeout.connect(self._on_play_tick)
         self._build_ui()
@@ -615,20 +619,30 @@ class ViewerWindow(QMainWindow):
         self._advance_once()
 
     def _advance_once(self):
-        if self._step_thread is not None and self._step_thread.isRunning():
+        # Keep the previous QThread reference until its finished signal has
+        # been handled. isRunning() can already be false while that signal is
+        # still queued; replacing the reference here lets the old cleanup
+        # callback accidentally delete the newly-created (running) thread.
+        if self._step_thread is not None:
             return
         if not self.session.started or self.session.finished:
             return
-        self._step_thread = QThread(self)
-        self._step_worker = StepWorker(self.session)
-        self._step_worker.moveToThread(self._step_thread)
-        self._step_thread.started.connect(self._step_worker.run)
-        self._step_worker.completed.connect(self._on_step_completed)
-        self._step_worker.failed.connect(self._on_step_failed)
-        self._step_worker.completed.connect(self._step_thread.quit)
-        self._step_worker.failed.connect(self._step_thread.quit)
-        self._step_thread.finished.connect(self._cleanup_step_worker)
-        self._step_thread.start()
+
+        thread = QThread(self)
+        worker = StepWorker(self.session)
+        self._step_thread = thread
+        self._step_worker = worker
+        worker.moveToThread(thread)
+
+        thread.started.connect(worker.run)
+        worker.completed.connect(self._on_step_completed)
+        worker.failed.connect(self._on_step_failed)
+        # quit() is thread-safe. DirectConnection avoids queuing the quit
+        # request behind a long-running worker slot on the GUI event loop.
+        worker.completed.connect(thread.quit, Qt.ConnectionType.DirectConnection)
+        worker.failed.connect(thread.quit, Qt.ConnectionType.DirectConnection)
+        thread.finished.connect(self._cleanup_step_worker)
+        thread.start()
 
     def _on_step_completed(self, snapshot):
         self._render_snapshot(snapshot)
@@ -651,12 +665,26 @@ class ViewerWindow(QMainWindow):
         self._log(f"ERRO de execução: {message}")
 
     def _cleanup_step_worker(self):
-        if self._step_worker is not None:
-            self._step_worker.deleteLater()
-        if self._step_thread is not None:
-            self._step_thread.deleteLater()
+        # This slot is invoked by the finished signal, not merely because a
+        # result was emitted. Only clear the exact active thread.
+        thread = self.sender()
+        if thread is None or thread is not self._step_thread:
+            return
+
+        worker = self._step_worker
         self._step_worker = None
         self._step_thread = None
+
+        if worker is not None:
+            worker.deleteLater()
+        thread.deleteLater()
+
+        # Closing while native inference/combat is running must never close
+        # the engine or destroy its QThread concurrently. Finish the UI close
+        # only after this worker exits and all references are cleaned up.
+        if self._close_when_step_done:
+            self._close_when_step_done = False
+            QTimer.singleShot(0, self.close)
 
     def _interval_ms(self):
         speed = float(self.speed.currentText().replace("×", ""))
@@ -911,9 +939,20 @@ class ViewerWindow(QMainWindow):
 
     def closeEvent(self, event):
         self.play_timer.stop()
-        if self._step_thread is not None and self._step_thread.isRunning():
-            self._step_thread.quit()
-            self._step_thread.wait(5000)
+        if self._step_thread is not None:
+            # Do not wait with an arbitrary timeout and then close the engine
+            # under an active native step. Ignore this close request; cleanup
+            # will call close() again once QThread.finished has been handled.
+            self._close_when_step_done = True
+            self._set_running(False)
+            self.status_label.setText(
+                "Finalizando o passo atual com segurança antes de fechar…"
+            )
+            if self._step_thread.isRunning():
+                self._step_thread.quit()
+            event.ignore()
+            return
+
         self.session.close()
         super().closeEvent(event)
 
