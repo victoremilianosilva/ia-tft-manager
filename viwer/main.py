@@ -457,7 +457,12 @@ class ViewerWindow(QMainWindow):
         for card in self.cards:
             card.set_selected(card.player_id == player_id)
         self._render_selected_player()
-        self.tabs.setCurrentIndex(0)
+        events = self.session.last_info.get("events", [])
+        in_combat = any(
+            "COMBAT" in str(item).upper() or "ELIMINATED" in str(item).upper()
+            for item in events
+        )
+        self.tabs.setCurrentIndex(1 if in_combat else 0)
 
     def _render_snapshot(self, _snapshot=None):
         state_players = self.session.public_state.get("players", [])
