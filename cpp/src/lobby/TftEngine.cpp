@@ -1344,6 +1344,28 @@ struct TFTEngine::Impl {
                 }
             }
         }
+
+        // Public ranking is ordered best-to-worst, matching Python's
+        // TFTLobby._finalize_ranking(). Eliminations are appended in the
+        // order they happen (worst placement first), so insertion order is
+        // not a valid final ranking once the winner is prepended.
+        const auto placement_for = [this](std::int32_t player_id) {
+            const auto& placement =
+                player_envs[static_cast<std::size_t>(player_id)].info.placement;
+            return placement.value_or(
+                static_cast<std::int32_t>(kPlayersPerLobby + 1));
+        };
+        std::stable_sort(
+            ranking.begin(),
+            ranking.end(),
+            [&](std::int32_t lhs, std::int32_t rhs) {
+                const auto lhs_placement = placement_for(lhs);
+                const auto rhs_placement = placement_for(rhs);
+                if (lhs_placement != rhs_placement) {
+                    return lhs_placement < rhs_placement;
+                }
+                return lhs < rhs;
+            });
     }
 
     void resolve_combats(
