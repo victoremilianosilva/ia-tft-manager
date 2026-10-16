@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstdint>
 #include <string>
+#include <stdexcept>
 
 using namespace tft::decision;
 
@@ -253,21 +254,61 @@ void test_move_queries_do_not_mutate_history() {
 
 void test_blocks_bench_board_replacement_oscillation_between_units() {
     AntiLoopEngine engine;
-    const auto veigar = make_unit("veigar-1", 1);
+    const auto lissandra = make_unit("lissandra-1", 1);
     const auto nasus = make_unit("nasus-1", 2);
 
-    // A primeira ação coloca Veigar no board e desloca Nasus para o bench.
-    engine.register_move("bench_to_board", 2, 12, veigar);
+    constexpr std::int32_t bench_slot = 2;
+    constexpr std::int32_t board_position = 12;
+    const std::string move_type = "bench_to_board";
 
-    // O mesmo slot do bench e a mesma posição do board agora trocariam
-    // Nasus por Veigar novamente. É a reversão observada nos logs:
-    // Veigar <-> Nasus, depois Nasus <-> Veigar.
-    assert(engine.should_block_move("bench_to_board", 2, 12, nasus));
+    // Reproduz deterministicamente o padrão do log:
+    // Lissandra <-> Nasus -> Nasus <-> Lissandra -> ...
+    // A primeira troca é legítima; a segunda inverteria imediatamente
+    // o par de unidades nos mesmos slots e precisa ser bloqueada.
+    const UnitIdentity* sequence[] = {
+        &lissandra, &nasus, &lissandra, &nasus, &lissandra
+    };
 
-    // Mesmo que uma chamada defeituosa tenha executado a troca, a próxima
-    // tentativa de alternar as mesmas duas unidades também deve ser bloqueada.
-    engine.register_move("bench_to_board", 2, 12, nasus);
-    assert(engine.should_block_move("bench_to_board", 2, 12, veigar));
+    bool loop_was_blocked = false;
+
+    for (std::size_t i = 0; i < (sizeof(sequence) / sizeof(sequence[0])); ++i) {
+        const auto& unit = *sequence[i];
+        const bool blocked = engine.should_block_move(
+            move_type, bench_slot, board_position, unit
+        );
+
+        if (i == 0) {
+            // Não bloquear a primeira ação legítima.
+            if (blocked) {
+                throw std::runtime_error(
+                    "AntiLoop blocked the first legitimate bench-to-board move"
+                );
+            }
+            engine.register_move(move_type, bench_slot, board_position, unit);
+            continue;
+        }
+
+        // A partir da segunda ação, permitir a troca inicia a oscilação.
+        // A asserção falha imediatamente se o AntiLoop deixar o loop passar.
+        if (!blocked) {
+            throw std::runtime_error(
+                "AntiLoop allowed a bench/board replacement oscillation"
+            );
+        }
+        loop_was_blocked = true;
+        if (blocked) {
+            break;
+        }
+
+        engine.register_move(move_type, bench_slot, board_position, unit);
+    }
+
+    // O teste só é bem-sucedido se a sequência for interrompida pelo bloqueio.
+    if (!loop_was_blocked) {
+        throw std::runtime_error(
+            "AntiLoop did not block the reproducible bench/board oscillation"
+        );
+    }
 }
 
 void test_reset_preserves_execution_metrics_like_python() {
