@@ -2043,7 +2043,9 @@ ResetResult TFTEngine::reset(
 // ============================================================
 
 StepResult TFTEngine::step(
-    const std::array<PlayerAction, kPlayersPerLobby>& actions
+    const std::array<PlayerAction, kPlayersPerLobby>& actions,
+    bool timer_enabled,
+    bool timer_expired
 ) {
     if (!impl_) {
         throw std::runtime_error(
@@ -2100,7 +2102,21 @@ StepResult TFTEngine::step(
     std::vector<std::string> round_events;
     bool round_resolved = false;
 
-    if (impl_->all_alive_players_finished_round()) {
+    // In viewer/runtime mode the wall-clock timer owns the preparation phase.
+    // PASS still freezes each player's decisions, but never starts combat early.
+    if (timer_enabled && timer_expired) {
+        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+            if (impl_->player_envs[i].info.alive) {
+                impl_->round_finished[i] = true;
+            }
+        }
+    }
+
+    const bool preparation_complete = timer_enabled
+        ? timer_expired
+        : impl_->all_alive_players_finished_round();
+
+    if (preparation_complete) {
         round_resolved = true;
 
         // Primeiro resolve o PvP quando esta rodada possui combate entre
@@ -2241,8 +2257,8 @@ StepResult TFTEngine::step(
 
     if (!round_resolved) {
         result.events.emplace_back(
-            "ROUND_WAITING: aguardando PASS ou limite de acoes "
-            "de todos os jogadores vivos."
+            "ROUND_WAITING: fase de preparacao ainda ativa; "
+            "aguardando o temporizador ou PASS de todos os jogadores vivos."
         );
     } else {
         result.events.emplace_back("ROUND_RESOLVED");
