@@ -352,7 +352,7 @@ class PlayerCard(QFrame):
         if width <= 0:
             return
         gap = max(0, self.board.horizontalSpacing())
-        size = max(12, min(112, (width - gap * 6) // 7))
+        size = max(16, min(38, (width - gap * 6) // 7))
         for cell in self.cells:
             cell.set_square_size(size)
 
@@ -618,11 +618,13 @@ class ViewerWindow(QMainWindow):
         # Keep the legacy widgets alive for snapshot updates, but remove the fixed bottom panel.
         self.tabs.removeTab(0)
         split.addWidget(self.tabs)
-        split.setStretchFactor(0, 3)
-        split.setStretchFactor(1, 2)
+        # Let the splitter use the space left after the header/config/controls.
+        # Sizing it from the entire scroll viewport double-counted those sections
+        # and forced the page to scroll, hiding part of the viewer.
+        split.setStretchFactor(0, 2)
+        split.setStretchFactor(1, 3)
         split.setMinimumHeight(0)
         layout.addWidget(split, 1)
-        QTimer.singleShot(0, self._balance_main_splitter)
 
         footer = QHBoxLayout()
         self.status_label = QLabel("Aguardando checkpoint")
@@ -641,18 +643,10 @@ class ViewerWindow(QMainWindow):
             text_view.setLineWrapMode(QPlainTextEdit.LineWrapMode.WidgetWidth)
         self._update_responsive_layout()
 
-    def _balance_main_splitter(self):
-        if not hasattr(self, "main_splitter"):
-            return
-        height = max(1, self.scroll_area.viewport().height())
-        top = int(height * (0.60 if height >= 1000 else 0.54))
-        self.main_splitter.setSizes([top, max(1, height - top)])
-
     def resizeEvent(self, event):
         super().resizeEvent(event)
         if hasattr(self, "player_grid"):
             self._update_responsive_layout()
-            QTimer.singleShot(0, self._balance_main_splitter)
 
     @staticmethod
     def _reflow_grid(layout, widgets, columns):
@@ -734,7 +728,9 @@ class ViewerWindow(QMainWindow):
         grid_width = max(1, width - 24)
         card_width = max(1, (grid_width - (player_columns - 1) * 8) // player_columns)
         # Fit each board to its actual card width instead of forcing overflow.
-        overview_size = max(12, min(112, (card_width - 16 - 12) // 7))
+        # Overview cards are a compact dashboard, not a second enlarged board.
+        # Keep four board rows short enough that all eight seats remain visible.
+        overview_size = max(16, min(38, (card_width - 16 - 12) // 7))
         for card in self.cards:
             self._set_cell_squares(card.cells, overview_size)
 
