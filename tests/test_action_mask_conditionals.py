@@ -212,8 +212,8 @@ def test_bench_move_matrix_matches_selected_source(setup_manager):
     assert has_move
     assert source_mask[2] == 1
 
-    # Não pode colocar a unidade em uma posição ocupada.
-    assert target_masks[2, 4] == 0
+    # Posição ocupada é válida para trocar pela unidade do banco.
+    assert target_masks[2, 4] == 1
 
     # A linha 2 deve conter destinos vazios válidos.
     assert target_masks[2, 0] == 1
