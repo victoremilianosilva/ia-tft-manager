@@ -562,15 +562,15 @@ class PlayerJsonLogWriter:
             "=" * 58,
             "",
         ]
-        chunks = ["\\n".join(header)]
+        chunks = ["\n".join(header)]
         for entry in document["entries"]:
             line = str(entry.get("text", ""))
             if not line:
                 continue
             chunks.append(line)
-            if not line.endswith("\\n"):
-                chunks.append("\\n")
-        return "".join(chunks).rstrip() + "\\n"
+            if not line.endswith("\n"):
+                chunks.append("\n")
+        return "".join(chunks).rstrip() + "\n"
 
     def flush(self, *, force: bool = False):
         if self._closed:
