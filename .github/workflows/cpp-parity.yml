@@ -61,6 +61,9 @@ jobs:
           tests/test_lobby_combat_regression.py
           tests/test_reward_integration.py
           tests/test_round_economy_combat_flow.py
+          tests/test_level_capacity_rules.py
+          tests/test_economy_sell_values.py
+          tests/test_tft_round_schedule.py
           tests/test_tft_engine_api.py
           tests/test_lobby_end_to_end.py
           tests/test_cross_language_replay.py
