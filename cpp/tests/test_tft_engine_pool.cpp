@@ -138,8 +138,11 @@ int main(int argc, char** argv) {
         // Valida renda, máscara e compra a partir da loja inicial.
         std::array<tft::PlayerAction, tft::kPlayersPerLobby> actions{};
         for (auto& action : actions) action.values = {6, 0, 0, 0, 0, 0};
-        engine.step(actions); // rodada 1: sem renda
-        engine.step(actions); // rodada 2: +2 de ouro
+        // O treinamento só resolve a preparação depois de 10 ações de cada
+        // jogador; PASS conta como ação, mas não encerra a rodada sozinho.
+        for (int action = 0; action < 20; ++action) {
+            (void)engine.step(actions);
+        } // duas rodadas completas de 10 ações
 
         // Uma ação inválida do jogador 0 não pode permitir que uma compra
         // válida do jogador 1 seja executada parcialmente no mesmo lote.
@@ -262,7 +265,7 @@ int main(int argc, char** argv) {
         require(
             sale_gold_delta == 1 || sale_gold_delta == 2,
             "Venda deveria creditar somente o valor do campeão; "
-            "a renda da rodada ainda não deve ser aplicada antes do PASS."
+            "a renda da rodada ainda não deve ser aplicada antes da décima ação."
         );
         require(
             engine.round() == 2,
@@ -348,31 +351,30 @@ int main(int argc, char** argv) {
         require(metrics[0].execution_blocks == 1 && metrics[0].blocked_reverse == 1,
                 "AntiLoop não bloqueou/contabilizou o movimento reverso.");
 
-        // A rodada permanece aberta durante ações de preparação. Um PASS
-        // do jogador 0 fecha a rodada porque os demais já enviaram PASS.
+        // Mesmo quando todos enviam PASS, o treinamento aguarda 10 ações.
         const auto round_before_pass = engine.round();
         actions[0].values = {6, 0, 0, 0, 0, 0};
-        const auto closed_round = engine.step(actions);
+        const auto after_pass = engine.step(actions);
         require(
-            engine.round() == round_before_pass + 1,
-            "PASS do último jogador não resolveu/avançou a rodada."
+            engine.round() == round_before_pass,
+            "PASS encerrou a rodada antes de completar 10 ações."
         );
-        bool saw_round_resolved = false;
-        for (const auto& event : closed_round.events) {
+        bool resolved_too_early = false;
+        for (const auto& event : after_pass.events) {
             if (event == "ROUND_RESOLVED") {
-                saw_round_resolved = true;
+                resolved_too_early = true;
                 break;
             }
         }
-        require(saw_round_resolved,
-                "O resultado não informou que a rodada foi resolvida.");
+        require(!resolved_too_early,
+                "A engine resolveu a rodada antes da décima ação.");
 
         // A agenda oficial tem abertura/PvE até 1-4; o primeiro PvP ocorre em 2-1.
         // Como só o jogador 0 possui unidade no tabuleiro, a primeira rodada PvP
         // deve conceder a ele uma vitória automática contra uma equipe vazia.
-        auto combat_round = closed_round;
+        auto combat_round = after_pass;
         for (int wait = 0;
-             wait < 8 && combat_round.players[0].wins == 0;
+             wait < 80 && combat_round.players[0].wins == 0;
              ++wait) {
             for (auto& action : actions) {
                 action.values = {6, 0, 0, 0, 0, 0};
@@ -415,7 +417,7 @@ int main(int argc, char** argv) {
         const auto round_before_economic_actions = engine.round();
 
         // Validação integrada de REROLL: custo 2, nova oferta e rodada
-        // continua aberta até o jogador enviar PASS.
+        // continua aberta até todos os jogadores completarem 10 ações.
         const auto gold_before_reroll = engine.get_public_state().players[0].gold;
         require(gold_before_reroll >= 2,
                 "Pré-condição econômica inesperada para testar reroll.");
@@ -429,9 +431,12 @@ int main(int argc, char** argv) {
         require(engine.round() == round_before_economic_actions,
                 "REROLL encerrou a rodada sem PASS.");
         actions[0].values = {6, 0, 0, 0, 0, 0};
-        const auto next_round = engine.step(actions);
+        auto next_round = engine.step(actions);
+        for (int action = 2; action < 10; ++action) {
+            next_round = engine.step(actions);
+        }
         require(engine.round() == round_before_economic_actions + 1,
-                "PASS não encerrou a rodada após o reroll.");
+                "A rodada não avançou após 10 ações por jogador.");
 
         // Com renda da rodada e bônus de vitória, deve haver ouro suficiente
         // para comprar XP. O nível/XP são verificados no estado público.
