@@ -195,8 +195,9 @@ struct TFTEngine::Impl {
     bool done{false};
     bool closed{false};
 
-    // O PASS encerra a fase de preparação daquele jogador.
-    static constexpr std::uint32_t kMaxActionsPerRound = 20;
+    // No treinamento, cada jogador recebe 10 ações por rodada; PASS também conta como ação.
+    // O viewer usa o temporizador de parede e não aplica este limite de ações.
+    static constexpr std::uint32_t kMaxActionsPerRound = 10;
     std::array<std::uint32_t, kPlayersPerLobby> round_actions{};
     std::array<bool, kPlayersPerLobby> round_finished{};
 
@@ -1210,14 +1211,13 @@ struct TFTEngine::Impl {
         return true;
     }
 
-    void mark_round_completion(std::size_t player_index, std::int32_t action_type) {
+    void mark_round_completion(std::size_t player_index) {
         if (!player_envs[player_index].info.alive) {
             return;
         }
 
         ++round_actions[player_index];
-        if (action_type == 6 ||
-            round_actions[player_index] >= kMaxActionsPerRound) {
+        if (round_actions[player_index] >= kMaxActionsPerRound) {
             round_finished[player_index] = true;
         }
     }
@@ -1939,8 +1939,21 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             action_reward = board_capacity_violation
                 ? -0.25
                 : (success ? (type == 4 ? 0.02 : 0.0) : -0.10);
-            if (type == 3 && success && !board_capacity_violation)
+            if (type == 3 && success && !board_capacity_violation) {
                 action_reward += lobby.positioning_score(player_id) * 0.05;
+
+                // Incentiva a policy a usar toda a capacidade disponível do nível.
+                // O bônus só ocorre quando a unidade realmente aumenta a equipe,
+                // evitando recompensar substituições ou reposicionamentos.
+                if (new_board_count > old_board_count) {
+                    action_reward += 0.25;
+                    const int board_capacity = std::min(
+                        economy.level, static_cast<int>(kBoardSlots));
+                    if (new_board_count == board_capacity) {
+                        action_reward += 1.0;
+                    }
+                }
+            }
         } else if (type == 5) {
             success = economy.gold > old_gold;
             action_reward = success ? (sold_core_unit ? -0.15 : 0.05) : -0.10;
@@ -2068,9 +2081,9 @@ StepResult TFTEngine::step(
         );
     }
 
-    // A primeira PASS (ou o limite de ações) encerra as decisões daquele
-    // jogador durante a preparação. Não permita que uma policy volte a agir
-    // enquanto os outros jogadores ainda estão usando o tempo restante.
+    // No treinamento, um jogador só encerra suas decisões após 10 ações.
+    // PASS conta como ação, mas não encerra a preparação antecipadamente.
+    // No viewer, o temporizador controla a fase e o limite de ações fica desativado.
     auto effective_actions = actions;
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
         if (impl_->round_finished[i]) {
@@ -2109,7 +2122,9 @@ StepResult TFTEngine::step(
         impl_->player_envs[i].total_reward += round_rewards[i];
         impl_->sync_player_economy(i);
         impl_->refresh_masks(i);
-        impl_->mark_round_completion(i, effective_actions[i].values[0]);
+        if (!timer_enabled) {
+            impl_->mark_round_completion(i);
+        }
     }
 
     // ========================================================
