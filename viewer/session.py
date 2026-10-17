@@ -56,6 +56,10 @@ class ViewerConfig:
     checkpoint: Path
     seed: int = 20261016
     deterministic: bool = True
+    # Wall-clock preparation is a viewer-only mode; training stays action-count based.
+    use_wall_clock_preparation: bool = True
+    preparation_seconds: float = 6.0
+    backline_fallback_seconds: float = 5.0
 
 
 class ViewerSession:
@@ -91,6 +95,7 @@ class ViewerSession:
         self._preparation_started_at: float | None = None
         self._preparation_round: tuple[int, int] | None = None
         self._passed_players: set[int] = set()
+        self._backline_fallback_checked = False
 
     def load_checkpoint(self, checkpoint: str | Path, seed: int, deterministic: bool,
                         output_dir: str | Path, record: bool = True):
@@ -130,6 +135,10 @@ class ViewerSession:
         self._rng.manual_seed(int(seed))
         torch.manual_seed(int(seed))
         self.config = ViewerConfig(path, int(seed), bool(deterministic))
+        self._preparation_started_at = None
+        self._preparation_round = None
+        self._passed_players.clear()
+        self._backline_fallback_checked = False
         self.checkpoint_sha256 = digest
         self.match_id = str(uuid.uuid4())
         self.lobby = CppTFTLobbyWrapper(seed=int(seed), catalog_path=str(CATALOG))
@@ -240,23 +249,61 @@ class ViewerSession:
         }
         return action, diag
 
+    def _backline_fallback_action(self, player_id: int) -> list[int] | None:
+        """Return a legal bench-to-backline move when a level slot is still unused."""
+        audit_players = self.audit_snapshot.get("players", [])
+        audit = next(
+            (p for p in audit_players if int(p.get("player_id", -1)) == player_id),
+            {},
+        )
+        board = audit.get("board", [])
+        bench = audit.get("bench", [])
+
+        def occupied(unit):
+            return bool(unit and unit.get("occupied", False))
+
+        board_count = sum(1 for unit in board if occupied(unit))
+        level = max(1, int(audit.get("level", 1) or 1))
+        capacity = min(level, 28)
+        if board_count >= capacity:
+            return None
+
+        # TFT board rows are row-major; slots 21..27 form the backline (row 4).
+        target = next(
+            (slot for slot in range(21, 28)
+             if slot < len(board) and not occupied(board[slot])),
+            None,
+        )
+        source = next(
+            (slot for slot, unit in enumerate(bench) if occupied(unit)),
+            None,
+        )
+        if target is None or source is None:
+            return None
+
+        return [3, 0, source, target, 0, 0]
+
     def step(self):
         if not self.started or self.lobby is None:
             raise RuntimeError("Carregue um checkpoint antes de avançar.")
         if self.finished:
             return self._snapshot_for_event()
 
-        # The viewer's preparation phase is wall-clock based, not step-count based.
-        # Start it on the first actual advance so loading a checkpoint does not
-        # consume the player's five seconds before playback begins.
-        round_key = (
-            int(self.public_state.get("round", 1) or 1),
-            int(self.public_state.get("stage", 1) or 1),
+        # Wall-clock waiting is explicitly a viewer option. Normal training uses
+        # the native engine's 10-action barrier and never waits for real seconds.
+        wall_clock_enabled = bool(
+            self.config is not None and self.config.use_wall_clock_preparation
         )
-        if self._preparation_round != round_key or self._preparation_started_at is None:
-            self._preparation_round = round_key
-            self._preparation_started_at = time.monotonic()
-            self._passed_players.clear()
+        if wall_clock_enabled:
+            round_key = (
+                int(self.public_state.get("round", 1) or 1),
+                int(self.public_state.get("stage", 1) or 1),
+            )
+            if self._preparation_round != round_key or self._preparation_started_at is None:
+                self._preparation_round = round_key
+                self._preparation_started_at = time.monotonic()
+                self._passed_players.clear()
+                self._backline_fallback_checked = False
 
         before = self._snapshot_for_event()
         actions, diagnostics = [], []
@@ -266,7 +313,7 @@ class ViewerSession:
             if not player.get("alive", True):
                 actions.append([6, 0, 0, 0, 0, 0])
                 diagnostics.append({"action_name": "PASS", "action": [6, 0, 0, 0, 0, 0], "status": "eliminated_seat"})
-            elif player_id in self._passed_players:
+            elif wall_clock_enabled and player_id in self._passed_players:
                 action = [6, 0, 0, 0, 0, 0]
                 actions.append(action)
                 diagnostics.append({
@@ -277,7 +324,7 @@ class ViewerSession:
                 action, diag = self._action_for_player(player_id)
                 actions.append(action)
                 diagnostics.append(diag)
-                if action[0] == 6:
+                if wall_clock_enabled and action[0] == 6:
                     self._passed_players.add(player_id)
         self._emit("decision_batch", {
             "before": before,
@@ -286,23 +333,68 @@ class ViewerSession:
                 for i in range(8)
             ],
         })
-        # Inference itself counts toward the five-second preparation window.
-        timer_expired = (
+        elapsed = (
             time.monotonic() - self._preparation_started_at
-        ) >= 5.0
+            if wall_clock_enabled and self._preparation_started_at is not None
+            else 0.0
+        )
+        fallback_actions: dict[int, list[int]] = {}
+        if (
+            wall_clock_enabled
+            and elapsed >= self.config.backline_fallback_seconds
+            and not self._backline_fallback_checked
+        ):
+            # Run the safety check once at second 5, before the 6-second deadline.
+            # If inference crosses the deadline, the fallback is still applied in
+            # this batch before the native engine resolves combat.
+            self._backline_fallback_checked = True
+            for player_id in range(8):
+                player = next(
+                    (p for p in self.public_state.get("players", [])
+                     if int(p.get("player_id", -1)) == player_id),
+                    {},
+                )
+                if not player.get("alive", True):
+                    continue
+                fallback = self._backline_fallback_action(player_id)
+                if fallback is None:
+                    continue
+                fallback_actions[player_id] = fallback
+                actions[player_id] = fallback
+                diagnostics[player_id] = {
+                    "action_name": "MOVE_BENCH",
+                    "action": fallback,
+                    "status": "viewer_backline_fallback_at_5s",
+                }
+                self._emit("backline_fallback", {
+                    "player_id": player_id,
+                    "action": fallback,
+                    "reason": "under level capacity with a bench unit and free backline slot",
+                })
+
+        timer_expired = (
+            wall_clock_enabled and elapsed >= self.config.preparation_seconds
+        )
         if timer_expired:
-            # Do not execute a new policy move after the deadline. PASS closes
-            # preparation; the native engine resolves combat in this same batch.
+            # The 6-second deadline ends viewer preparation. Preserve any
+            # second-5 fallback move so it executes before combat in this batch.
             actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
             diagnostics = [
                 {"action_name": "PASS", "action": action, "status": "preparation_timeout"}
                 for action in actions
             ]
+            for player_id, fallback in fallback_actions.items():
+                actions[player_id] = fallback
+                diagnostics[player_id] = {
+                    "action_name": "MOVE_BENCH",
+                    "action": fallback,
+                    "status": "viewer_backline_fallback_at_5s",
+                }
 
-        # One native step is a simultaneous eight-seat lobby step. Timed mode
-        # prevents early PASS from triggering combat before the five seconds.
+        # One native step is a simultaneous eight-seat lobby step. Only the
+        # viewer enables wall-clock waiting; training remains action-count based.
         obs, rewards, done, info = self.lobby.step(
-            actions, timer_enabled=True, timer_expired=timer_expired
+            actions, timer_enabled=wall_clock_enabled, timer_expired=timer_expired
         )
         self.obs = obs
         self.last_actions = actions
@@ -318,6 +410,7 @@ class ViewerSession:
             self._preparation_started_at = None
             self._preparation_round = None
             self._passed_players.clear()
+            self._backline_fallback_checked = False
         self.step_count += 1
         after = self._snapshot_for_event()
         self._emit("step_completed", {
