@@ -269,19 +269,38 @@ class ViewerSession:
             return None
 
         # TFT board rows are row-major; slots 21..27 form the backline (row 4).
-        target = next(
-            (slot for slot in range(21, 28)
-             if slot < len(board) and not occupied(board[slot])),
-            None,
-        )
-        source = next(
-            (slot for slot, unit in enumerate(bench) if occupied(unit)),
-            None,
-        )
-        if target is None or source is None:
+        vacant_backline = [
+            slot for slot in range(21, 28)
+            if slot < len(board) and not occupied(board[slot])
+        ]
+        bench_sources = [
+            slot for slot, unit in enumerate(bench) if occupied(unit)
+        ]
+        if not vacant_backline or not bench_sources:
             return None
 
-        return [3, 0, source, target, 0, 0]
+        # Prefer a move still allowed by the native masks, including AntiLoop.
+        player_masks = (
+            self.masks[player_id]
+            if getattr(self, "masks", None) is not None
+            and player_id < len(self.masks)
+            else {}
+        )
+        type_mask = player_masks.get("type_mask")
+        if type_mask is not None and (
+            len(type_mask) <= 3 or int(type_mask[3]) != 1
+        ):
+            return None
+        conditioned_targets = player_masks.get("bench_to_board_target_masks")
+        for source in bench_sources:
+            for target in vacant_backline:
+                if conditioned_targets is not None:
+                    if source >= len(conditioned_targets) or target >= len(conditioned_targets[source]):
+                        continue
+                    if int(conditioned_targets[source][target]) != 1:
+                        continue
+                return [3, 0, source, target, 0, 0]
+        return None
 
     def step(self):
         if not self.started or self.lobby is None:
