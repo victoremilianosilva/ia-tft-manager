@@ -2135,7 +2135,7 @@ StepResult TFTEngine::step(
     bool round_resolved = false;
 
     // In viewer/runtime mode the wall-clock timer owns the preparation phase.
-    // PASS still freezes each player's decisions, but never starts combat early.
+    // PASS does not resolve combat early; only the timer ends this phase.
     if (timer_enabled && timer_expired) {
         for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
             if (impl_->player_envs[i].info.alive) {
