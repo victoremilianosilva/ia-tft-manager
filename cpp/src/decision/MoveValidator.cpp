@@ -95,7 +95,6 @@ MoveValidationResult MoveValidator::validate_board_move(
 
     const auto source_index =
         static_cast<std::size_t>(source);
-
     const auto target_index =
         static_cast<std::size_t>(target);
 
@@ -139,9 +138,6 @@ MoveValidator::validate_bench_to_board_move(
 
     const auto bench_index =
         static_cast<std::size_t>(bench_slot);
-
-    const auto target_index =
-        static_cast<std::size_t>(target);
 
     if (!bench[bench_index].has_value()) {
         return invalid_result(

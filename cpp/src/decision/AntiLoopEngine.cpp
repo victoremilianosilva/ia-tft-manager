@@ -105,13 +105,15 @@ MoveRecord AntiLoopEngine::register_move(
     const std::string& move_type,
     std::int32_t source,
     std::int32_t target,
-    const std::optional<UnitIdentity>& unit
+    const std::optional<UnitIdentity>& unit,
+    const std::optional<UnitIdentity>& displaced_unit
 ) {
     MoveRecord move{
         move_type,
         source,
         target,
-        unit
+        unit,
+        displaced_unit
     };
 
     history_.move_history.push_back(move);
@@ -174,7 +176,8 @@ MoveKey AntiLoopEngine::block_move(
                     key.move_type,
                     static_cast<std::int32_t>(key.source),
                     static_cast<std::int32_t>(key.target),
-                    key.unit_identity
+                    key.unit_identity,
+                    std::nullopt
                 },
                 history_.last_board_signature
             }
@@ -366,6 +369,27 @@ bool AntiLoopEngine::is_bench_board_loop(
 
     if (!candidate_type.has_value()) {
         return false;
+    }
+
+    // A substituição registra a unidade que entrou no board. A reversão
+    // seleciona a unidade deslocada, portanto a identidade muda entre ações.
+    // Se a candidata é exatamente a unidade deslocada nos mesmos slots,
+    // a ação desfaz imediatamente a substituição anterior.
+    if (history_.last_move.has_value()) {
+        const auto& last = *history_.last_move;
+        const auto last_type = normalize_bench_move(last.move_type);
+        if (
+            last_type.has_value()
+            && *last_type == *candidate_type
+            && source.has_value()
+            && target.has_value()
+            && last.source == *source
+            && last.target == *target
+            && last.displaced_unit == unit
+            && unit.has_value()
+        ) {
+            return true;
+        }
     }
 
     struct BenchTransition {

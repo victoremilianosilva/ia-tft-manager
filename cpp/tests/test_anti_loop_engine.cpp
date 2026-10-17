@@ -284,7 +284,10 @@ void test_blocks_bench_board_replacement_oscillation_between_units() {
                     "AntiLoop blocked the first legitimate bench-to-board move"
                 );
             }
-            engine.register_move(move_type, bench_slot, board_position, unit);
+            // Lissandra entra no board e desloca Nasus para o bench.
+            engine.register_move(
+                move_type, bench_slot, board_position, unit, nasus
+            );
             continue;
         }
 

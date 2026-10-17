@@ -111,6 +111,10 @@ class PlayerJsonLogWriter:
                 "entries": [],
             })
             self.paths.append(self.session_dir / f"player_{player_number}_log.tft")
+        self.json_paths = [
+            self.session_dir / f"player_{player_id + 1}_log.json"
+            for player_id in range(8)
+        ]
 
         snapshot = initial_snapshot or {}
         initial_round = int(snapshot.get("round", 1) or 1)
@@ -583,6 +587,15 @@ class PlayerJsonLogWriter:
             temporary = path.with_suffix(path.suffix + ".tmp")
             temporary.write_text(self._render_legacy_log(player_id), encoding="utf-8")
             temporary.replace(path)
+
+            # Keep the structured JSON timeline alongside the legacy .tft log.
+            json_path = self.json_paths[player_id]
+            json_temporary = json_path.with_suffix(json_path.suffix + ".tmp")
+            json_temporary.write_text(
+                json.dumps(self.documents[player_id], ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            json_temporary.replace(json_path)
             self._dirty.discard(player_id)
 
     def close(self):
