@@ -11,7 +11,7 @@ def _session(level=3, board_count=2, occupied_backline=(21,), bench_slots=(2,)):
     session = ViewerSession.__new__(ViewerSession)
     board = [_unit() for _ in range(28)]
     bench = [_unit() for _ in range(9)]
-    for slot in range(board_count):
+    for slot in range(max(0, board_count - len(occupied_backline))):
         board[slot] = _unit(True)
     for slot in occupied_backline:
         board[slot] = _unit(True)
@@ -51,7 +51,7 @@ def test_backline_fallback_does_not_exceed_level_capacity():
 def test_backline_fallback_requires_a_bench_unit_and_vacant_backline_slot():
     no_bench_unit = _session(level=3, board_count=2, occupied_backline=(21,), bench_slots=())
     full_backline = _session(
-        level=3, board_count=2, occupied_backline=tuple(range(21, 28)), bench_slots=(2,)
+        level=10, board_count=2, occupied_backline=tuple(range(21, 28)), bench_slots=(2,)
     )
 
     assert no_bench_unit._backline_fallback_action(0) is None
