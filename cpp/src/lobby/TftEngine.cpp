@@ -1645,6 +1645,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         bool bought_unit_successfully = false;
         bool bought_upgrade = false;
         bool board_capacity_violation = false;
+        bool anti_loop_blocked = false;
         std::array<std::string, kBoardSlots> old_board_layout{};
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
             if (this->board[slot]) {
@@ -1791,6 +1792,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     );
 
                     if (reason.has_value()) {
+                        anti_loop_blocked = true;
                         (void)anti_loop.block_move(
                             move_type,
                             source,
@@ -1873,6 +1875,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     );
 
                 if (reason.has_value()) {
+                    anti_loop_blocked = true;
                     (void)anti_loop.block_move(
                         move_type,
                         source,
@@ -2012,7 +2015,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             success = board_layout_changed;
             action_reward = board_capacity_violation
                 ? -0.25
-                : (success ? (type == 4 ? 0.02 : 0.0) : -0.10);
+                : (anti_loop_blocked
+                    ? reward_model::blocked_move()
+                    : (success ? (type == 4 ? 0.02 : 0.0) : -0.10));
             if (type == 3 && success && !board_capacity_violation) {
                 action_reward += lobby.positioning_score(player_id) * 0.05;
 
@@ -2024,7 +2029,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     const int board_capacity = std::min(
                         economy.level, static_cast<int>(kBoardSlots));
                     if (new_board_count == board_capacity) {
-                        action_reward += 1.0;
+                        // Completar a capacidade é útil, mas não deve valer
+                        // tanto quanto a recompensa terminal de primeiro lugar.
+                        action_reward += reward_model::board_capacity_completion();
                     }
                 }
             }
