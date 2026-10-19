@@ -1,6 +1,22 @@
+import math
+
 import torch
 import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
+
+
+def exponential_schedule_value(progress, initial, final, decay_rate=2.0):
+    """Exponential decay normalized to reach `initial` at 0 and `final` at 1."""
+    values = (progress, initial, final, decay_rate)
+    if not all(math.isfinite(float(value)) for value in values):
+        raise ValueError("Os parâmetros do schedule devem ser finitos.")
+    if initial < final or final < 0.0 or decay_rate <= 0.0:
+        raise ValueError("Esperado initial >= final >= 0 e decay_rate > 0.")
+
+    progress = min(1.0, max(0.0, float(progress)))
+    decay_end = math.exp(-float(decay_rate))
+    decay = (math.exp(-float(decay_rate) * progress) - decay_end) / (1.0 - decay_end)
+    return float(final + (initial - final) * decay)
 
 
 class PPOTrainer:
