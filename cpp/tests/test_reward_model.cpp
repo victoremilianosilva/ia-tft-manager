@@ -53,6 +53,8 @@ int main() {
     require_close(level(4, 1), 1.5, "level reward cap");
     require_close(economy(50, 20), 0.25 - 0.05, "economy reward");
     require_close(streak(5, 4), 0.15 + 0.08, "streak reward");
+    require_close(blocked_move(), -0.35, "AntiLoop blocked move penalty");
+    require_close(board_capacity_completion(), 0.25, "board capacity completion bonus");
     require_close(clamp_total(9.0), 5.0, "upper reward clamp");
     require_close(clamp_total(-9.0), -5.0, "lower reward clamp");
 

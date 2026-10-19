@@ -78,6 +78,17 @@ inline double placement(int placement, int total_players) noexcept {
          static_cast<double>(total_players - 1));
 }
 
+// Penalidade explícita para uma ação estruturalmente válida bloqueada pelo AntiLoop.
+// É maior que a falha genérica (-0.10), sem dominar a recompensa terminal (+/-1.0).
+inline double blocked_move() noexcept {
+    return -0.35;
+}
+
+// Bônus pequeno, concedido uma única vez ao preencher a última vaga do nível.
+inline double board_capacity_completion() noexcept {
+    return 0.25;
+}
+
 inline double clamp_total(double total) noexcept {
     return std::clamp(total, -5.0, 5.0);
 }

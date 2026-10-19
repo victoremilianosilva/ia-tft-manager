@@ -756,6 +756,80 @@ struct TFTEngine::Impl {
             }
         }
 
+        // Se o movimento e estruturalmente valido, mas foi bloqueado
+        // pelo AntiLoop, deixe-o chegar ao fluxo de execucao mesmo quando
+        // nao restam movimentos validos desse tipo. A execucao registra a
+        // tentativa e o motivo do bloqueio sem alterar o tabuleiro.
+        // Sem este desvio, o type_mask desabilitado faz o preflight lancar
+        // antes de record_execution_attempt()/record_execution_block().
+        if (type == 3 || type == 4) {
+            const auto state = build_decision_state(player_index);
+            std::optional<std::string> block_reason;
+
+            if (type == 3) {
+                const auto source = values[2];
+                const auto target = values[3];
+                const auto validation =
+                    decision::MoveValidator::validate_bench_to_board_move(
+                        state.board,
+                        state.bench,
+                        source,
+                        target
+                    );
+
+                if (validation.is_valid()) {
+                    const auto source_index =
+                        static_cast<std::size_t>(source);
+                    const auto unit_identity =
+                        std::optional<decision::UnitIdentity>{
+                            state.bench[source_index]->identity
+                        };
+                    block_reason =
+                        player_envs[player_index].anti_loop.get_block_reason(
+                            "bench_to_board",
+                            source,
+                            target,
+                            unit_identity
+                        );
+                }
+            } else {
+                const auto source = values[4];
+                const auto target = values[5];
+                const auto validation =
+                    decision::MoveValidator::validate_board_move(
+                        state.board,
+                        source,
+                        target
+                    );
+
+                if (validation.is_valid() &&
+                    validation.move_type.has_value()) {
+                    const auto source_index =
+                        static_cast<std::size_t>(source);
+                    const auto unit_identity =
+                        std::optional<decision::UnitIdentity>{
+                            state.board[source_index]->identity
+                        };
+                    const std::string move_type =
+                        *validation.move_type ==
+                            decision::MoveType::BOARD_SWAP
+                            ? "board_swap"
+                            : "board_move";
+                    block_reason =
+                        player_envs[player_index].anti_loop.get_block_reason(
+                            move_type,
+                            source,
+                            target,
+                            unit_identity
+                        );
+                }
+            }
+
+            if (block_reason.has_value()) {
+                return;
+            }
+        }
+
         if (player_masks.type_mask[type] != 1) {
             throw std::invalid_argument(
                 "Acao indisponivel para o estado atual do jogador "
@@ -1571,6 +1645,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         bool bought_unit_successfully = false;
         bool bought_upgrade = false;
         bool board_capacity_violation = false;
+        bool anti_loop_blocked = false;
         std::array<std::string, kBoardSlots> old_board_layout{};
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
             if (this->board[slot]) {
@@ -1717,6 +1792,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     );
 
                     if (reason.has_value()) {
+                        anti_loop_blocked = true;
                         (void)anti_loop.block_move(
                             move_type,
                             source,
@@ -1799,6 +1875,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     );
 
                 if (reason.has_value()) {
+                    anti_loop_blocked = true;
                     (void)anti_loop.block_move(
                         move_type,
                         source,
@@ -1938,7 +2015,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             success = board_layout_changed;
             action_reward = board_capacity_violation
                 ? -0.25
-                : (success ? (type == 4 ? 0.02 : 0.0) : -0.10);
+                : (anti_loop_blocked
+                    ? reward_model::blocked_move()
+                    : (success ? (type == 4 ? 0.02 : 0.0) : -0.10));
             if (type == 3 && success && !board_capacity_violation) {
                 action_reward += lobby.positioning_score(player_id) * 0.05;
 
@@ -1950,7 +2029,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     const int board_capacity = std::min(
                         economy.level, static_cast<int>(kBoardSlots));
                     if (new_board_count == board_capacity) {
-                        action_reward += 1.0;
+                        // Completar a capacidade é útil, mas não deve valer
+                        // tanto quanto a recompensa terminal de primeiro lugar.
+                        action_reward += reward_model::board_capacity_completion();
                     }
                 }
             }

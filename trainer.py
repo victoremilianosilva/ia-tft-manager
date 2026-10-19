@@ -12,7 +12,7 @@ from vector_lobby_env import LobbyVectorEnv
 
 from policy import TFTPolicy
 from rollout import RolloutBuffer
-from ppo import PPOTrainer
+from ppo import PPOTrainer, exponential_schedule_value
 
 from engine_contracts import Strategy
 from engine_contracts import ActionType
@@ -1489,11 +1489,8 @@ class Trainer:
             decay_rate = 2.0
 
             progress = (
-                update
-                / max(
-                    1,
-                    total_updates
-                )
+                (update - start)
+                / max(1, end - start - 1)
             )
 
             progress = min(
@@ -1501,16 +1498,11 @@ class Trainer:
                 1.0
             )
 
-            self.ppo.ent_coef = (
-                final_ent
-                + (
-                    initial_ent
-                    - final_ent
-                )
-                * np.exp(
-                    -decay_rate
-                    * progress
-                )
+            self.ppo.ent_coef = exponential_schedule_value(
+                progress,
+                initial_ent,
+                final_ent,
+                decay_rate,
             )
 
             self.writer.add_scalar(
