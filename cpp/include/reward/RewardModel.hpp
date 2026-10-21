@@ -89,6 +89,41 @@ inline double board_capacity_completion() noexcept {
     return 0.25;
 }
 
+// Potential-based shaping for liquid gold. The small linear term values
+// liquidity; the larger 10-gold steps approximate the interest breakpoints.
+// Applying only the potential delta avoids paying the agent repeatedly just
+// for sitting on the same balance.
+inline double gold_potential(int gold) noexcept {
+    const int bounded = std::clamp(gold, 0, 50);
+    return static_cast<double>(bounded) * 0.002 +
+        static_cast<double>(bounded / 10) * 0.08;
+}
+
+inline double gold_change_reward(int old_gold, int new_gold) noexcept {
+    return std::clamp(
+        gold_potential(new_gold) - gold_potential(old_gold),
+        -0.25, 0.25);
+}
+
+// A purchase should be judged by marginal composition fit, not simply by
+// the fact that a shop action succeeded. Completing an upgrade is a separate
+// strategic signal because its value is not fully represented by cost/role.
+inline double purchase_quality(double fit_delta, bool completes_upgrade) noexcept {
+    return 0.10 * std::tanh(fit_delta / 5.0) +
+        (completes_upgrade ? 0.12 : 0.0);
+}
+
+// Selling frees a bench slot and returns gold, but should protect core units
+// and copies that are close to an upgrade. fit_score is normalized to [0, 1].
+inline double sale_quality(double fit_score, bool core_unit,
+                           bool protects_upgrade, bool frees_bench_space) noexcept {
+    const double fit = std::clamp(fit_score, 0.0, 1.0);
+    return 0.10 * (1.0 - fit) -
+        (core_unit ? 0.12 : 0.0) -
+        (protects_upgrade ? 0.10 : 0.0) +
+        (frees_bench_space ? 0.03 : 0.0);
+}
+
 inline double clamp_total(double total) noexcept {
     return std::clamp(total, -5.0, 5.0);
 }
