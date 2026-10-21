@@ -57,6 +57,19 @@ int main() {
     require_close(board_capacity_completion(), 0.25, "board capacity completion bonus");
     require_close(clamp_total(9.0), 5.0, "upper reward clamp");
     require_close(clamp_total(-9.0), -5.0, "lower reward clamp");
+    require_close(gold_potential(0), 0.0, "zero gold potential");
+    require_close(gold_potential(9), 0.018, "liquid gold potential below breakpoint");
+    require_close(gold_potential(10), 0.10, "interest breakpoint potential");
+    require_close(gold_change_reward(10, 9), -0.082, "spending below interest breakpoint");
+    require_close(gold_change_reward(9, 10), 0.082, "saving to interest breakpoint");
+    require_close(purchase_quality(5.0, false), 0.10 * std::tanh(1.0),
+                  "composition-aware purchase reward");
+    require_close(purchase_quality(0.0, true), 0.12,
+                  "purchase completing an upgrade");
+    require_close(sale_quality(0.0, false, false, true), 0.13,
+                  "sale of low-fit non-core unit frees space");
+    require_close(sale_quality(1.0, true, true, false), -0.32,
+                  "sale protects core unit and upgrade copies");
 
     std::cout << "[PASS] C++ reward formulas and deterministic action sequence.\n";
     return EXIT_SUCCESS;
