@@ -1716,6 +1716,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         const auto old_xp = economy.xp;
         int old_board_count = 0, old_bench_count = 0;
         const double old_synergy_score = lobby.synergy_score(player_id);
+        const double old_positioning_score = lobby.positioning_score(player_id);
         bool sold_core_unit = false;
         bool bought_unit_successfully = false;
         bool bought_upgrade = false;
@@ -1729,6 +1730,57 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             }
         }
         for (const auto& unit : this->bench) if (unit) ++old_bench_count;
+
+        // Compare a candidate against the current composition before mutating
+        // the board. This makes a replacement's reward relative, not absolute.
+        const StrategyInfo strategy_before = this->strategy.empty()
+            ? StrategyInfo{} : this->strategy.back();
+        double board_comp_score_sum = 0.0;
+        int board_comp_score_count = 0;
+        for (const auto& unit : this->board) {
+            if (!unit) continue;
+            const auto* def = lobby.catalog->find_by_id(unit->champion_internal_id);
+            if (!def) continue;
+            board_comp_score_sum += unit_composition_score(
+                strategy_before, *def, unit->star);
+            ++board_comp_score_count;
+        }
+        double candidate_comp_score = 0.0;
+        double displaced_comp_score = 0.0;
+        bool has_candidate_comp_score = false;
+        bool has_displaced_comp_score = false;
+        if (type == 3) {
+            const auto source = static_cast<std::size_t>(action[2]);
+            const auto target = static_cast<std::size_t>(action[3]);
+            if (source < this->bench.size() && this->bench[source]) {
+                const auto* def = lobby.catalog->find_by_id(
+                    this->bench[source]->champion_internal_id);
+                if (def) {
+                    candidate_comp_score = unit_composition_score(
+                        strategy_before, *def, this->bench[source]->star);
+                    has_candidate_comp_score = true;
+                }
+            }
+            if (target < this->board.size() && this->board[target]) {
+                const auto* def = lobby.catalog->find_by_id(
+                    this->board[target]->champion_internal_id);
+                if (def) {
+                    displaced_comp_score = unit_composition_score(
+                        strategy_before, *def, this->board[target]->star);
+                    has_displaced_comp_score = true;
+                }
+            }
+        }
+        double composition_quality_delta = 0.0;
+        if (has_candidate_comp_score) {
+            if (has_displaced_comp_score) {
+                composition_quality_delta =
+                    candidate_comp_score - displaced_comp_score;
+            } else if (board_comp_score_count > 0) {
+                composition_quality_delta = candidate_comp_score -
+                    board_comp_score_sum / board_comp_score_count;
+            }
+        }
 
         if (!this->info.alive) {
             lobby.refresh_masks(player_id);
@@ -2094,24 +2146,32 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     ? reward_model::blocked_move()
                     : (success ? (type == 4 ? 0.02 : 0.0) : -0.10));
             if (type == 3 && success && !board_capacity_violation) {
-                action_reward += lobby.positioning_score(player_id) * 0.05;
+                const double positioning_delta =
+                    lobby.positioning_score(player_id) - old_positioning_score;
+                const double synergy_delta =
+                    lobby.synergy_score(player_id) - old_synergy_score;
 
-                // Incentiva a policy a usar toda a capacidade disponível do nível.
-                // O bônus só ocorre quando a unidade realmente aumenta a equipe,
-                // evitando recompensar substituições ou reposicionamentos.
-                // Small, bounded shaping signal: reward board deployments that
-                // improve active trait milestones, without overpowering terminal
-                // placement/combat rewards or hard-coding a target composition.
+                // Small bounded signals are relative to the previous board.
+                // A weak deployment that changes nothing should not receive an
+                // unconditional positive reward merely for occupying a slot.
+                action_reward += 0.05 * std::tanh(positioning_delta);
+                action_reward += 0.10 * std::tanh(synergy_delta);
                 action_reward += 0.10 * std::tanh(
-                    lobby.synergy_score(player_id) - old_synergy_score);
+                    composition_quality_delta / 5.0);
 
-                if (new_board_count > old_board_count) {
+                const bool composition_improved =
+                    old_board_count == 0 ||
+                    composition_quality_delta > 1e-6 ||
+                    synergy_delta > 1e-6 ||
+                    positioning_delta > 1e-6;
+
+                if (new_board_count > old_board_count && composition_improved) {
                     action_reward += 0.25;
                     const int board_capacity = std::min(
                         economy.level, static_cast<int>(kBoardSlots));
                     if (new_board_count == board_capacity) {
-                        // Completar a capacidade é útil, mas não deve valer
-                        // tanto quanto a recompensa terminal de primeiro lugar.
+                        // Capacity bonus only applies when the deployment
+                        // improves composition, synergy, or positioning.
                         action_reward += reward_model::board_capacity_completion();
                     }
                 }
