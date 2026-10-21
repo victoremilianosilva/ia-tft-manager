@@ -56,7 +56,7 @@ constexpr std::size_t kCapacityObservationDim = 2;
 constexpr std::size_t kCompositionUnitSlots =
     kBoardSlots + kBenchSlots + kShopSlots;
 // Per-slot strategic features used by the policy's shared candidate scorers.
-constexpr std::size_t kCandidateFeatureDim = 7;
+constexpr std::size_t kCandidateFeatureDim = 8;
 constexpr std::size_t kStrategicCandidateObservationDim =
     (kBenchSlots + kShopSlots) * kCandidateFeatureDim;
 
@@ -812,13 +812,39 @@ struct TFTEngine::Impl {
                 const bool core = std::find(strategy.core_unit_ids.begin(),
                     strategy.core_unit_ids.end(), def->internal_id) != strategy.core_unit_ids.end();
                 const int copies = count_same_champion(*unit);
+                int trait_overlap = 0;
+                for (const auto& trait : def->traits) {
+                    bool shared = false;
+                    for (const auto& existing : player_envs[i].board) {
+                        if (!existing || &*existing == unit) continue;
+                        const auto* existing_def = catalog->find_by_id(existing->champion_internal_id);
+                        if (existing_def && std::find(existing_def->traits.begin(),
+                            existing_def->traits.end(), trait) != existing_def->traits.end()) {
+                            shared = true;
+                            break;
+                        }
+                    }
+                    if (!shared) {
+                        for (const auto& existing : player_envs[i].bench) {
+                            if (!existing || &*existing == unit) continue;
+                            const auto* existing_def = catalog->find_by_id(existing->champion_internal_id);
+                            if (existing_def && std::find(existing_def->traits.begin(),
+                                existing_def->traits.end(), trait) != existing_def->traits.end()) {
+                                shared = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (shared) ++trait_overlap;
+                }
                 out[offset++] = static_cast<float>(std::clamp(fit / 22.5, 0.0, 1.0));
                 out[offset++] = static_cast<float>(def->cost) / 5.0f;
                 out[offset++] = static_cast<float>(unit->star) / 3.0f;
                 out[offset++] = role_state_value(def->combat_profile.role);
                 out[offset++] = core ? 1.0f : 0.0f;
-                // Copies are capped for normalization; values >= 2 signal potential upgrade protection.
+                // Number of owned copies (including star-equivalent copies), normalized.
                 out[offset++] = static_cast<float>(std::min(copies, 9)) / 9.0f;
+                out[offset++] = static_cast<float>(std::min(trait_overlap, 5)) / 5.0f;
                 if (sale_candidate) {
                     out[offset++] = static_cast<float>(
                         EconomyEngine::get_sell_value(def->cost, unit->star)) / 50.0f;
