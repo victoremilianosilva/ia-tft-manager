@@ -160,6 +160,9 @@ public:
 
     void record_successful_move(const std::string& move_type);
 
+    // Registra diagnósticos da geração de máscaras sem alterar o histórico.
+    void record_mask_diagnostics(const MaskDiagnostics& diagnostics);
+
 private:
     AntiLoopConfig config_;
     AntiLoopHistory history_;
