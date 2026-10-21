@@ -46,6 +46,23 @@ bool is_valid_mask_row(
     );
 }
 
+void record_block_reason(
+    MaskDiagnostics& diagnostics,
+    const std::string& reason
+) {
+    if (reason == "reverse") {
+        ++diagnostics.blocked_reverse;
+    } else if (reason == "oscillation") {
+        ++diagnostics.blocked_oscillation;
+    } else if (reason == "explicit") {
+        ++diagnostics.blocked_explicit;
+    } else if (reason == "bench_board_loop") {
+        ++diagnostics.blocked_bench_board_loop;
+    } else if (reason == "cycle") {
+        ++diagnostics.blocked_cycle;
+    }
+}
+
 } // namespace
 
 bool ActionMaskEngine::can_spend(
@@ -171,7 +188,8 @@ bool ActionMaskEngine::is_valid_board_move(
     const PlayerState& state,
     const AntiLoopEngine& anti_loop,
     RawIndex source,
-    RawIndex target
+    RawIndex target,
+    MaskDiagnostics& diagnostics
 ) {
     const auto result = MoveValidator::validate_board_move(
         state.board,
@@ -195,13 +213,17 @@ bool ActionMaskEngine::is_valid_board_move(
 
     const auto move_type = *result.move_type;
     const auto unit = identity_of(state.board[*source_index]);
+    ++diagnostics.board_move_candidates;
 
-    if (anti_loop.should_block_move(
+    const auto block_reason = anti_loop.get_block_reason(
         move_type_name(move_type),
         source,
         target,
         unit
-    )) {
+    );
+    if (block_reason.has_value()) {
+        ++diagnostics.board_move_blocked_anti_loop;
+        record_block_reason(diagnostics, *block_reason);
         return false;
     }
 
@@ -217,14 +239,21 @@ bool ActionMaskEngine::is_valid_board_move(
     const auto resulting_signature =
         anti_loop.make_board_signature(next_state);
 
-    return !anti_loop.was_state_seen(resulting_signature);
+    if (anti_loop.was_state_seen(resulting_signature)) {
+        ++diagnostics.board_move_blocked_seen_state;
+        return false;
+    }
+
+    ++diagnostics.board_move_valid;
+    return true;
 }
 
 bool ActionMaskEngine::is_valid_bench_to_board_move(
     const PlayerState& state,
     const AntiLoopEngine& anti_loop,
     RawIndex bench_slot,
-    RawIndex target
+    RawIndex target,
+    MaskDiagnostics& diagnostics
 ) {
     const auto result = MoveValidator::validate_bench_to_board_move(
         state.board,
@@ -242,14 +271,42 @@ bool ActionMaskEngine::is_valid_bench_to_board_move(
         return false;
     }
 
-    const auto unit = identity_of(state.bench[*bench_index]);
+    const auto target_index = to_board_index(target);
+    if (!target_index.has_value()) {
+        return false;
+    }
 
-    return !anti_loop.should_block_move(
+    const auto unit = identity_of(state.bench[*bench_index]);
+    ++diagnostics.bench_move_candidates;
+
+    const auto block_reason = anti_loop.get_block_reason(
         move_type_name(*result.move_type),
         bench_slot,
         target,
         unit
     );
+    if (block_reason.has_value()) {
+        ++diagnostics.bench_move_blocked_anti_loop;
+        record_block_reason(diagnostics, *block_reason);
+        return false;
+    }
+
+    // A implantação/substituição também pode recriar um estado completo
+    // já visitado. Simula board <-> bench sem alterar o estado original.
+    PlayerState next_state = state;
+    std::swap(
+        next_state.board[*target_index],
+        next_state.bench[*bench_index]
+    );
+    const auto resulting_signature =
+        anti_loop.make_board_signature(next_state);
+    if (anti_loop.was_state_seen(resulting_signature)) {
+        ++diagnostics.bench_move_blocked_seen_state;
+        return false;
+    }
+
+    ++diagnostics.bench_move_valid;
+    return true;
 }
 
 
@@ -344,7 +401,8 @@ ActionMaskBatch ActionMaskEngine::generate_masks(
                 state,
                 anti_loop,
                 static_cast<RawIndex>(source),
-                static_cast<RawIndex>(target)
+                static_cast<RawIndex>(target),
+                masks.diagnostics
             )) {
                 continue;
             }
@@ -378,7 +436,8 @@ ActionMaskBatch ActionMaskEngine::generate_masks(
                 state,
                 anti_loop,
                 static_cast<RawIndex>(source),
-                static_cast<RawIndex>(target)
+                static_cast<RawIndex>(target),
+                masks.diagnostics
             )) {
                 continue;
             }

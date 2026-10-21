@@ -6,6 +6,7 @@
 #include "decision/DecisionTypes.hpp"
 
 #include <array>
+#include <cstdint>
 
 namespace tft::decision {
 
@@ -38,6 +39,9 @@ struct ActionMaskBatch {
     bool sell_available = false;
     bool board_move_available = false;
     bool bench_move_available = false;
+
+    // Contadores de candidatos reais; não incluem fallbacks categóricos.
+    MaskDiagnostics diagnostics;
 };
 
 class ActionMaskEngine {
@@ -64,14 +68,16 @@ private:
         const PlayerState& state,
         const AntiLoopEngine& anti_loop,
         RawIndex source,
-        RawIndex target
+        RawIndex target,
+        MaskDiagnostics& diagnostics
     );
 
     [[nodiscard]] static bool is_valid_bench_to_board_move(
         const PlayerState& state,
         const AntiLoopEngine& anti_loop,
         RawIndex bench_slot,
-        RawIndex target
+        RawIndex target,
+        MaskDiagnostics& diagnostics
     );
 
     static void validate_state(const PlayerState& state);

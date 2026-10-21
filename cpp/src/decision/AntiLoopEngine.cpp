@@ -684,6 +684,25 @@ void AntiLoopEngine::record_successful_move(
     }
 }
 
+void AntiLoopEngine::record_mask_diagnostics(
+    const MaskDiagnostics& diagnostics
+) {
+    auto& total = history_.metrics.mask;
+    total.board_move_candidates += diagnostics.board_move_candidates;
+    total.board_move_valid += diagnostics.board_move_valid;
+    total.board_move_blocked_anti_loop += diagnostics.board_move_blocked_anti_loop;
+    total.board_move_blocked_seen_state += diagnostics.board_move_blocked_seen_state;
+    total.bench_move_candidates += diagnostics.bench_move_candidates;
+    total.bench_move_valid += diagnostics.bench_move_valid;
+    total.bench_move_blocked_anti_loop += diagnostics.bench_move_blocked_anti_loop;
+    total.bench_move_blocked_seen_state += diagnostics.bench_move_blocked_seen_state;
+    total.blocked_reverse += diagnostics.blocked_reverse;
+    total.blocked_oscillation += diagnostics.blocked_oscillation;
+    total.blocked_explicit += diagnostics.blocked_explicit;
+    total.blocked_bench_board_loop += diagnostics.blocked_bench_board_loop;
+    total.blocked_cycle += diagnostics.blocked_cycle;
+}
+
 void AntiLoopEngine::trim_position_history() {
     while (
         history_.position_history.size() > config_.history_size

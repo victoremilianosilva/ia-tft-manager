@@ -45,6 +45,26 @@ struct BlockedMoveRecord {
     std::optional<PositionSignature> blocked_state;
 };
 
+// Diagnósticos coletados durante a geração das máscaras. Contam somente
+// pares estruturalmente legais; fallbacks categóricos nunca entram nesses contadores.
+struct MaskDiagnostics {
+    std::uint64_t board_move_candidates = 0;
+    std::uint64_t board_move_valid = 0;
+    std::uint64_t board_move_blocked_anti_loop = 0;
+    std::uint64_t board_move_blocked_seen_state = 0;
+
+    std::uint64_t bench_move_candidates = 0;
+    std::uint64_t bench_move_valid = 0;
+    std::uint64_t bench_move_blocked_anti_loop = 0;
+    std::uint64_t bench_move_blocked_seen_state = 0;
+
+    std::uint64_t blocked_reverse = 0;
+    std::uint64_t blocked_oscillation = 0;
+    std::uint64_t blocked_explicit = 0;
+    std::uint64_t blocked_bench_board_loop = 0;
+    std::uint64_t blocked_cycle = 0;
+};
+
 // Métricas acumuladas durante a execução do ambiente.
 struct ExecutionMetrics {
     std::uint64_t execution_attempts = 0;
@@ -58,6 +78,8 @@ struct ExecutionMetrics {
 
     std::uint64_t board_moves_executed = 0;
     std::uint64_t bench_to_board_executed = 0;
+
+    MaskDiagnostics mask;
 };
 
 // Histórico interno da engine AntiLoop.

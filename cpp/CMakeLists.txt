@@ -95,6 +95,15 @@ message(STATUS "pybind11: ${PYBIND11_CMAKE_DIR}")
 # Função auxiliar para configurar módulos Python
 # =========================================================
 
+# Keep assert-based regression checks active even when CI builds Release.
+function(enable_tft_test_assertions target)
+    if(MSVC)
+        target_compile_options(${target} PRIVATE /UNDEBUG)
+    else()
+        target_compile_options(${target} PRIVATE -UNDEBUG)
+    endif()
+endfunction()
+
 function(configure_tft_module target)
     target_compile_features(
         ${target}
@@ -324,6 +333,7 @@ if(BUILD_TESTING)
     )
 
     configure_tft_module(test_anti_loop_engine)
+    enable_tft_test_assertions(test_anti_loop_engine)
 
     target_include_directories(
         test_anti_loop_engine
@@ -349,6 +359,7 @@ if(BUILD_TESTING)
     )
 
     configure_tft_module(test_action_mask_engine)
+    enable_tft_test_assertions(test_action_mask_engine)
 
     target_include_directories(
         test_action_mask_engine
