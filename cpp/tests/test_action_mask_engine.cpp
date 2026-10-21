@@ -7,6 +7,7 @@
 #include <cassert>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 using namespace tft::decision;
 
