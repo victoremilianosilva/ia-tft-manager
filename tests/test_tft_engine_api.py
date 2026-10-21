@@ -457,3 +457,76 @@ def test_operations_after_close_raise_runtime_error():
 
     with pytest.raises(RuntimeError):
         engine.step([[6, 0, 0, 0, 0, 0] for _ in range(8)])
+
+
+def test_anti_loop_detects_unit_oscillation_with_other_units_interleaved():
+    """Other units' moves must not hide one unit repeatedly returning to a slot."""
+    engine = TFTLobby(seed=20261016)
+
+    try:
+        engine.reset()
+        native = engine._engine
+        audit = native.get_audit_snapshot()
+        starter_id = audit["players"][0]["bench"][0]["champion_id"]
+        assert starter_id
+
+        # Raise capacity and create three distinct instances; all use the same
+        # champion ID, so the test specifically relies on stable unit identity.
+        assert native.set_player_economy_for_testing(0, 20, 5, 0)
+        assert native.set_unit_for_testing(0, True, 0, starter_id, 1)
+        assert native.set_unit_for_testing(0, True, 1, starter_id, 1)
+        assert native.set_unit_for_testing(0, True, 2, starter_id, 1)
+
+        def move(source, target):
+            actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+            actions[0] = [4, 0, 0, 0, source, target]
+            engine.step(actions)
+
+        # A traverses 0 -> 3 -> 5 -> 3 -> 0. B's moves are deliberately
+        # interleaved so they used to crowd A's history out of the 6-action window.
+        move(0, 3)  # A: 0 -> 3
+        move(1, 4)  # B: 1 -> 4
+        move(3, 5)  # A: 3 -> 5
+        move(4, 6)  # B: 4 -> 6
+        move(5, 3)  # A: 5 -> 3
+        move(6, 7)  # B: 6 -> 7
+        move(3, 0)  # A: 3 -> 0
+        move(7, 8)  # B: 7 -> 8
+
+        masks = native.get_action_masks()[0]
+        assert not bool(masks["board_move_target_masks"][0][3]), (
+            "AntiLoop must mask A's 0 -> 3 return after two visits to slot 3, "
+            "even when B's moves are interleaved."
+        )
+    finally:
+        engine.close()
+
+
+def test_buying_third_copy_auto_upgrades_to_two_star():
+    """Three copies split between board, bench, and shop must merge on purchase."""
+    engine = TFTLobby(seed=20261016)
+
+    try:
+        engine.reset()
+        native = engine._engine
+        audit = native.get_audit_snapshot()
+        champion_id = audit["players"][0]["shop"][0]["champion_id"]
+        assert champion_id
+
+        assert native.set_player_economy_for_testing(0, 20, 3, 0)
+        assert native.set_unit_for_testing(0, True, 0, champion_id, 1)
+        assert native.set_unit_for_testing(0, False, 0, champion_id, 1)
+        assert native.set_shop_offer_for_testing(0, 0, champion_id)
+
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        actions[0] = [0, 0, 0, 0, 0, 0]
+        engine.step(actions)
+
+        after = native.get_audit_snapshot()["players"][0]
+        two_star = [
+            unit for unit in list(after["board"]) + list(after["bench"])
+            if unit["occupied"] and unit["champion_id"] == champion_id and unit["star"] == 2
+        ]
+        assert two_star, "The third 1-star copy should auto-upgrade into a 2-star unit."
+    finally:
+        engine.close()
