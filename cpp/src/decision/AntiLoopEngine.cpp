@@ -695,6 +695,7 @@ void AntiLoopEngine::record_mask_diagnostics(
     total.bench_move_candidates += diagnostics.bench_move_candidates;
     total.bench_move_valid += diagnostics.bench_move_valid;
     total.bench_move_blocked_anti_loop += diagnostics.bench_move_blocked_anti_loop;
+    total.bench_move_blocked_seen_state += diagnostics.bench_move_blocked_seen_state;
     total.blocked_reverse += diagnostics.blocked_reverse;
     total.blocked_oscillation += diagnostics.blocked_oscillation;
     total.blocked_explicit += diagnostics.blocked_explicit;
