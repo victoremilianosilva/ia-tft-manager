@@ -2957,6 +2957,8 @@ TFTEngine::get_anti_loop_metrics() const {
             metrics.mask.bench_move_valid;
         result[i].mask_bench_move_blocked_anti_loop =
             metrics.mask.bench_move_blocked_anti_loop;
+        result[i].mask_bench_move_blocked_seen_state =
+            metrics.mask.bench_move_blocked_seen_state;
         result[i].mask_blocked_reverse = metrics.mask.blocked_reverse;
         result[i].mask_blocked_oscillation = metrics.mask.blocked_oscillation;
         result[i].mask_blocked_explicit = metrics.mask.blocked_explicit;
