@@ -425,6 +425,12 @@ struct TFTEngine::Impl {
                 false
             );
 
+        // Contabiliza uma vez por geração de máscara; as consultas individuais
+        // do anti-loop permanecem sem efeitos colaterais.
+        player_envs[player_index].anti_loop.record_mask_diagnostics(
+            batch.diagnostics
+        );
+
         auto& current = player_envs[player_index].action_masks;
         current = PlayerActionMasks{};
 
@@ -2936,6 +2942,27 @@ TFTEngine::get_anti_loop_metrics() const {
             metrics.board_moves_executed;
         result[i].bench_to_board_executed =
             metrics.bench_to_board_executed;
+
+        result[i].mask_board_move_candidates =
+            metrics.mask.board_move_candidates;
+        result[i].mask_board_move_valid =
+            metrics.mask.board_move_valid;
+        result[i].mask_board_move_blocked_anti_loop =
+            metrics.mask.board_move_blocked_anti_loop;
+        result[i].mask_board_move_blocked_seen_state =
+            metrics.mask.board_move_blocked_seen_state;
+        result[i].mask_bench_move_candidates =
+            metrics.mask.bench_move_candidates;
+        result[i].mask_bench_move_valid =
+            metrics.mask.bench_move_valid;
+        result[i].mask_bench_move_blocked_anti_loop =
+            metrics.mask.bench_move_blocked_anti_loop;
+        result[i].mask_blocked_reverse = metrics.mask.blocked_reverse;
+        result[i].mask_blocked_oscillation = metrics.mask.blocked_oscillation;
+        result[i].mask_blocked_explicit = metrics.mask.blocked_explicit;
+        result[i].mask_blocked_bench_board_loop =
+            metrics.mask.blocked_bench_board_loop;
+        result[i].mask_blocked_cycle = metrics.mask.blocked_cycle;
     }
 
     return result;
