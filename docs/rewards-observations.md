@@ -17,7 +17,7 @@ A observação PPO inclui, após os campos anteriores:
 - um vetor binário indicando as core traits;
 - um score de compatibilidade normalizado para cada slot do tabuleiro, banco e loja. O score considera unidade principal, direção da composição, core traits, estrelas e custo.
 
-Esses campos tornam a direção e a compatibilidade visíveis à policy, em vez de mantê-las apenas como metadados de diagnóstico. A implantação/substituição no tabuleiro também recebe um sinal pequeno e limitado quando melhora os marcos de sinergia ativos; esse sinal não substitui as recompensas de combate e colocação.
+Esses campos tornam a direção e a compatibilidade visíveis à policy, em vez de mantê-las apenas como metadados de diagnóstico. A implantação/substituição no tabuleiro recebe sinais pequenos e limitados relativos ao estado anterior: mudança de posicionamento, progresso de sinergia e diferença de compatibilidade em relação à unidade substituída ou à média do tabuleiro. O bônus por preencher uma vaga só é concedido quando há melhora de composição, sinergia ou posicionamento (ou quando a primeira unidade é implantada). Assim, uma ação que apenas ocupa uma vaga sem melhorar o estado não recebe um bônus automático, deixando espaço para o PPO aprender quando PASS é preferível. Esses sinais não substituem as recompensas de combate e colocação.
 
 **Compatibilidade de checkpoints:** a dimensão da observação mudou. Checkpoints treinados antes desta alteração têm uma primeira camada com dimensão incompatível e não devem ser carregados como se fossem compatíveis. Inicie um novo treinamento ou implemente uma migração explícita de pesos antes de reutilizar checkpoints antigos.
 
