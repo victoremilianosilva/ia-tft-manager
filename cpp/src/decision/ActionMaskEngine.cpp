@@ -187,6 +187,7 @@ void ActionMaskEngine::set_fallback(ActionMaskBatch& masks) {
 bool ActionMaskEngine::is_valid_board_move(
     const PlayerState& state,
     const AntiLoopEngine& anti_loop,
+    PositionSignature& current_signature,
     RawIndex source,
     RawIndex target,
     MaskDiagnostics& diagnostics
@@ -231,15 +232,20 @@ bool ActionMaskEngine::is_valid_board_move(
     // the individual move is not an immediate reversal (e.g. after BUY_XP
     // or across rounds). This catches multi-unit oscillations such as
     // Nasus/Briar swapping positions over 1-3, 1-4, and 2-1.
-    PlayerState next_state = state;
+    // Reuse the signature created once per mask batch. Mutate only the
+    // two affected slots, query the index, then restore it before returning.
     std::swap(
-        next_state.board[*source_index],
-        next_state.board[*target_index]
+        current_signature.board[*source_index],
+        current_signature.board[*target_index]
     );
-    const auto resulting_signature =
-        anti_loop.make_board_signature(next_state);
+    const bool resulting_state_seen =
+        anti_loop.was_state_seen(current_signature);
+    std::swap(
+        current_signature.board[*source_index],
+        current_signature.board[*target_index]
+    );
 
-    if (anti_loop.was_state_seen(resulting_signature)) {
+    if (resulting_state_seen) {
         ++diagnostics.board_move_blocked_seen_state;
         return false;
     }
@@ -251,6 +257,7 @@ bool ActionMaskEngine::is_valid_board_move(
 bool ActionMaskEngine::is_valid_bench_to_board_move(
     const PlayerState& state,
     const AntiLoopEngine& anti_loop,
+    PositionSignature& current_signature,
     RawIndex bench_slot,
     RawIndex target,
     MaskDiagnostics& diagnostics
@@ -293,14 +300,18 @@ bool ActionMaskEngine::is_valid_bench_to_board_move(
 
     // A implantação/substituição também pode recriar um estado completo
     // já visitado. Simula board <-> bench sem alterar o estado original.
-    PlayerState next_state = state;
     std::swap(
-        next_state.board[*target_index],
-        next_state.bench[*bench_index]
+        current_signature.board[*target_index],
+        current_signature.bench[*bench_index]
     );
-    const auto resulting_signature =
-        anti_loop.make_board_signature(next_state);
-    if (anti_loop.was_state_seen(resulting_signature)) {
+    const bool resulting_state_seen =
+        anti_loop.was_state_seen(current_signature);
+    std::swap(
+        current_signature.board[*target_index],
+        current_signature.bench[*bench_index]
+    );
+
+    if (resulting_state_seen) {
         ++diagnostics.bench_move_blocked_seen_state;
         return false;
     }
@@ -333,6 +344,11 @@ ActionMaskBatch ActionMaskEngine::generate_masks(
         masks.bench_to_board_target_masks[0][0] = MASK_ENABLED;
         return masks;
     }
+
+    // Build the current board/bench signature only once. Candidate checks
+    // mutate and restore the affected slots, avoiding PlayerState copies and
+    // repeated identity/string construction.
+    auto current_signature = anti_loop.make_board_signature(state);
 
     // --------------------------------------------------------
     // Loja e economia
@@ -400,6 +416,7 @@ ActionMaskBatch ActionMaskEngine::generate_masks(
             if (!is_valid_bench_to_board_move(
                 state,
                 anti_loop,
+                current_signature,
                 static_cast<RawIndex>(source),
                 static_cast<RawIndex>(target),
                 masks.diagnostics
@@ -435,6 +452,7 @@ ActionMaskBatch ActionMaskEngine::generate_masks(
             if (!is_valid_board_move(
                 state,
                 anti_loop,
+                current_signature,
                 static_cast<RawIndex>(source),
                 static_cast<RawIndex>(target),
                 masks.diagnostics
