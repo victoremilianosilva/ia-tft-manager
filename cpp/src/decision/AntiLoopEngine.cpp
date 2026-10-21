@@ -1,10 +1,68 @@
 #include "decision/AntiLoopEngine.hpp"
 
 #include <algorithm>
+#include <functional>
 #include <iterator>
 #include <utility>
 
 namespace tft::decision {
+
+namespace {
+
+void hash_combine(std::size_t& seed, std::size_t value) noexcept {
+    seed ^= value + static_cast<std::size_t>(0x9e3779b9U)
+        + (seed << 6U) + (seed >> 2U);
+}
+
+template <typename T>
+void hash_optional(
+    std::size_t& seed,
+    const std::optional<T>& value
+) noexcept {
+    hash_combine(seed, value.has_value() ? 1U : 0U);
+    if (value.has_value()) {
+        hash_combine(seed, std::hash<T>{}(*value));
+    }
+}
+
+void hash_identity(std::size_t& seed, const UnitIdentity& identity) noexcept {
+    // Keep the hash contract aligned with UnitIdentity::operator==:
+    // UUID identities ignore id/star; identities without UUID use id,
+    // textual_id and star.
+    hash_combine(seed, identity.uuid.has_value() ? 1U : 0U);
+    if (identity.uuid.has_value()) {
+        hash_combine(seed, std::hash<std::string>{}(*identity.uuid));
+        return;
+    }
+
+    hash_optional(seed, identity.id);
+    hash_optional(seed, identity.textual_id);
+    hash_combine(seed, std::hash<std::uint8_t>{}(identity.star));
+}
+
+} // namespace
+
+std::size_t PositionSignatureHash::operator()(
+    const PositionSignature& signature
+) const noexcept {
+    std::size_t seed = 0;
+
+    for (const auto& slot : signature.board) {
+        hash_combine(seed, slot.has_value() ? 1U : 0U);
+        if (slot.has_value()) {
+            hash_identity(seed, *slot);
+        }
+    }
+
+    for (const auto& slot : signature.bench) {
+        hash_combine(seed, slot.has_value() ? 1U : 0U);
+        if (slot.has_value()) {
+            hash_identity(seed, *slot);
+        }
+    }
+
+    return seed;
+}
 
 AntiLoopEngine::AntiLoopEngine()
     : AntiLoopEngine(AntiLoopConfig{}) {
@@ -73,31 +131,29 @@ StateRegistrationResult AntiLoopEngine::register_state(
     history_.position_history.push_back(signature);
     trim_position_history();
 
-    auto it = std::find_if(
-        history_.state_visits.begin(),
-        history_.state_visits.end(),
-        [&signature](const StateVisit& visit) {
-            return visit.signature == signature;
-        }
-    );
+    auto indexed = history_.state_visit_index.find(signature);
+    std::size_t visit_index = 0;
 
-    if (it == history_.state_visits.end()) {
+    if (indexed == history_.state_visit_index.end()) {
+        visit_index = history_.state_visits.size();
         history_.state_visits.push_back(
             StateVisit{signature, 1, config_.loop_threshold <= 1}
         );
-
-        it = std::prev(history_.state_visits.end());
+        history_.state_visit_index.emplace(signature, visit_index);
     } else {
-        ++it->visits;
-        it->repeated = it->visits >= config_.loop_threshold;
+        visit_index = indexed->second;
+        auto& visit = history_.state_visits[visit_index];
+        ++visit.visits;
+        visit.repeated = visit.visits >= config_.loop_threshold;
     }
 
     history_.last_board_signature = signature;
+    const auto& visit = history_.state_visits[visit_index];
 
     return StateRegistrationResult{
         signature,
-        it->visits >= config_.loop_threshold,
-        it->visits
+        visit.visits >= config_.loop_threshold,
+        visit.visits
     };
 }
 
@@ -606,29 +662,19 @@ double AntiLoopEngine::evaluate_move_risk(
 bool AntiLoopEngine::was_state_seen(
     const PositionSignature& signature
 ) const {
-    return std::any_of(
-        history_.state_visits.begin(),
-        history_.state_visits.end(),
-        [&signature](const StateVisit& visit) {
-            return visit.signature == signature;
-        }
-    );
+    return history_.state_visit_index.find(signature)
+        != history_.state_visit_index.end();
 }
 
 std::uint32_t AntiLoopEngine::get_state_visits(
     const PositionSignature& signature
 ) const {
-    const auto it = std::find_if(
-        history_.state_visits.begin(),
-        history_.state_visits.end(),
-        [&signature](const StateVisit& visit) {
-            return visit.signature == signature;
-        }
-    );
+    const auto indexed = history_.state_visit_index.find(signature);
+    if (indexed == history_.state_visit_index.end()) {
+        return 0;
+    }
 
-    return it == history_.state_visits.end()
-        ? 0
-        : it->visits;
+    return history_.state_visits[indexed->second].visits;
 }
 
 AntiLoopStateSummary AntiLoopEngine::get_state() const {
