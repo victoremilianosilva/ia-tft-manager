@@ -193,6 +193,16 @@ class PlayerJsonLogWriter:
             "wins": public.get("wins"), "losses": public.get("losses"),
             "placement": public.get("placement"), "opponent_id": public.get("opponent_id"),
             "win_streak": audit.get("win_streak"), "loss_streak": audit.get("loss_streak"),
+            "strategy_name": (audit.get("strategy_info") or {}).get("strategy_name", "ECON"),
+            "strategy_id": (audit.get("strategy_info") or {}).get("strategy", 0),
+            "comp_direction": (audit.get("strategy_info") or {}).get("composition_direction", ""),
+            "comp_focus": (audit.get("strategy_info") or {}).get("composition_focus", ""),
+            "strategy_confidence": (audit.get("strategy_info") or {}).get("confidence", 0.0),
+            "strategy_reason": (audit.get("strategy_info") or {}).get("reason", ""),
+            "core_units": list((audit.get("strategy_info") or {}).get("core_units", []) or []),
+            "core_traits": list((audit.get("strategy_info") or {}).get("core_traits", []) or []),
+            "active_traits": dict((audit.get("strategy_info") or {}).get("active_traits", {}) or {}),
+            "strategy_scores": dict((audit.get("strategy_info") or {}).get("strategy_scores", {}) or {}),
             "board": [self._unit_info(u, i, "board") for i, u in enumerate(audit.get("board", []))],
             "bench": [self._unit_info(u, i, "bench") for i, u in enumerate(audit.get("bench", []))],
             "shop": [self._unit_info(u, i, "shop") for i, u in enumerate(audit.get("shop", []))],
@@ -311,7 +321,12 @@ class PlayerJsonLogWriter:
             player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
             round_number=round_number, stage=stage, round_in_stage=round_in_stage,
             event_type="round_finished",
-            text=f"\n[{timestamp}] --- FIM DO ROUND {stage}-{round_in_stage} | GOLD: {after_state.get('gold', '?')} ---\n",
+            text=(
+                f"\n[{timestamp}] --- FIM DO ROUND {stage}-{round_in_stage} | GOLD: {after_state.get('gold', '?')} ---\n"
+                f"    STRATEGY: {after_state.get('strategy_name', 'ECON')} | "
+                f"COMP DIRECTION: {after_state.get('comp_direction') or '—'} | "
+                f"FOCUS: {after_state.get('comp_focus') or '—'}\n"
+            ),
             tag="round_msg",
             data={
                 "action": action, "action_name": ACTION_NAMES.get(int(action[0]), "UNKNOWN"),
@@ -504,7 +519,12 @@ class PlayerJsonLogWriter:
                 )
             elif action_type != 6 or not self._pass_logged[player_id]:
                 tag = "pos_rew" if reward > 0 else "neg_rew" if reward < 0 else None
-                line = f"[{timestamp}] {self._action_text(action, before_audit):28} | Rew: {reward:+.2f}\n"
+                line = (
+                    f"[{timestamp}] {self._action_text(action, before_audit):28} | Rew: {reward:+.2f}\n"
+                    f"    STRATEGY: {after_state.get('strategy_name', 'ECON')} | "
+                    f"COMP DIRECTION: {after_state.get('comp_direction') or '—'} | "
+                    f"FOCUS: {after_state.get('comp_focus') or '—'}\n"
+                )
                 self._append_entry(
                     player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
                     round_number=round_number, stage=stage, round_in_stage=round_in_stage,
