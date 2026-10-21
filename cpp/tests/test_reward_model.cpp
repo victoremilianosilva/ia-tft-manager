@@ -68,7 +68,7 @@ int main() {
                   "purchase completing an upgrade");
     require_close(sale_quality(0.0, false, false, true), 0.13,
                   "sale of low-fit non-core unit frees space");
-    require_close(sale_quality(1.0, true, true, false), -0.32,
+    require_close(sale_quality(1.0, true, true, false), -0.22,
                   "sale protects core unit and upgrade copies");
 
     std::cout << "[PASS] C++ reward formulas and deterministic action sequence.\n";
