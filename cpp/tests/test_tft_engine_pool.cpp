@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
         const std::size_t legacy_observation_dim = 248 + trait_order.size();
         const std::size_t expected_observation_dim =
             legacy_observation_dim + 2 * trait_order.size() +
-            tft::kBoardSlots + tft::kBenchSlots + tft::kShopSlots + 7 * (tft::kBenchSlots + tft::kShopSlots);
+            tft::kBoardSlots + tft::kBenchSlots + tft::kShopSlots + 8 * (tft::kBenchSlots + tft::kShopSlots);
         require(engine.observation_dim() == expected_observation_dim,
                 "Dimensao PPO nao inclui os novos recursos de composicao.");
 
@@ -70,11 +70,11 @@ int main(int argc, char** argv) {
         require(player_observation[unit_fit_offset] > 0.0f,
                 "Score de compatibilidade da unidade nao chegou a observacao PPO.");
         const std::size_t candidate_features_offset =
-            expected_observation_dim - 7 * (tft::kBenchSlots + tft::kShopSlots);
+            expected_observation_dim - 8 * (tft::kBenchSlots + tft::kShopSlots);
         require(player_observation[candidate_features_offset] > 0.0f,
                 "Features estrategicas da primeira unidade do banco ausentes.");
         const std::size_t shop_candidate_offset =
-            candidate_features_offset + 7 * tft::kBenchSlots;
+            candidate_features_offset + 8 * tft::kBenchSlots;
         require(player_observation[shop_candidate_offset] > 0.0f,
                 "Features estrategicas da primeira oferta da loja ausentes.");
         if (!strategy_after_fixture.composition_direction.empty()) {
