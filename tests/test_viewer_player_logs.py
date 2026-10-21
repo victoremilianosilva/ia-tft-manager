@@ -32,6 +32,18 @@ def _snapshot(with_unit=False):
         audit_players.append({
             "player_id": player_id, "gold": 10, "level": 2, "xp": 0,
             "win_streak": 0, "loss_streak": 0,
+            "strategy_info": {
+                "strategy": 1 if player_id == 0 else 0,
+                "strategy_name": "STABILIZE" if player_id == 0 else "ECON",
+                "composition_direction": "Space Groove" if player_id == 0 else "",
+                "composition_focus": "Teemo" if player_id == 0 else "",
+                "confidence": 0.75 if player_id == 0 else 0.0,
+                "reason": "composition fit" if player_id == 0 else "",
+                "core_units": ["TFT_Test_Briar"] if player_id == 0 else [],
+                "core_traits": ["Space Groove"] if player_id == 0 else [],
+                "active_traits": {"Space Groove": 2} if player_id == 0 else {},
+                "strategy_scores": {"1": 0.8} if player_id == 0 else {},
+            },
             "board": board, "bench": bench, "shop": shop,
         })
     return {
@@ -119,6 +131,11 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
     assert "Briar (i:2.0)" in action_entry["text"]
     assert action_entry["payload"]["state_after"]["board"][0]["name"] == "Briar"
     assert action_entry["payload"]["state_after"]["bench"][0]["occupied"] is False
+    assert action_entry["payload"]["state_after"]["strategy_name"] == "STABILIZE"
+    assert action_entry["payload"]["state_after"]["comp_direction"] == "Space Groove"
+    assert action_entry["payload"]["state_after"]["comp_focus"] == "Teemo"
+    assert "STRATEGY: STABILIZE" in (tmp_path / "match-test" / "player_1_log.tft").read_text(encoding="utf-8")
+    assert "COMP DIRECTION: Space Groove" in (tmp_path / "match-test" / "player_1_log.tft").read_text(encoding="utf-8")
 
     event_types = {entry["event_type"] for entry in player1["entries"]}
     assert {"round_finished", "board_header", "board_view", "bench_header", "bench_view", "shop_view"} <= event_types
