@@ -340,7 +340,7 @@ def main() -> int:
         if not tft_files:
             tft_files = sorted(source.rglob("player_*_log.tft"))
         # JSON fornece estado estruturado; TFT complementa movimentos que o JSON não reconstrói bem.
-        files = json_files + tft_files)
+        files = json_files + tft_files
         default_out = source / "audit"
     else:
         parser.error(f"caminho não existe: {source}")
