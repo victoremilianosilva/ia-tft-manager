@@ -293,6 +293,10 @@ class PlayerCard(QFrame):
         self.metrics = QLabel("HP —   OURO —   NV —   XP —")
         self.metrics.setObjectName("muted")
         root.addWidget(self.metrics)
+        self.strategy_line = QLabel("Strategy: — | Comp direction: —")
+        self.strategy_line.setWordWrap(True)
+        self.strategy_line.setObjectName("muted")
+        root.addWidget(self.strategy_line)
         self.board = QGridLayout()
         self.board.setContentsMargins(0, 0, 0, 0)
         self.board.setSpacing(2)
@@ -328,6 +332,10 @@ class PlayerCard(QFrame):
         level = _value(player, "level", default="?")
         xp = _value(player, "xp", default="?")
         self.metrics.setText(f"HP {hp}   OURO {gold}   NV {level}   XP {xp}")
+        strategy = audit.get("strategy_info") or {}
+        strategy_name = strategy.get("strategy_name") or "ECON"
+        comp_direction = strategy.get("composition_direction") or "—"
+        self.strategy_line.setText(f"Strategy: {strategy_name} | Comp direction: {comp_direction}")
         board = audit.get("board", [])
         for i, cell in enumerate(self.cells):
             unit = board[i] if i < len(board) else None
@@ -918,11 +926,15 @@ class ViewerWindow(QMainWindow):
         header = QLabel(f"JOGADOR {player_id + 1} · ROUND {self.session.public_state.get('round', 0)}")
         header.setStyleSheet("font-size:16pt;font-weight:800;color:#60a5fa;")
         outer.addWidget(header)
+        strategy = audit.get("strategy_info") or {}
         summary = QLabel(
             f"HP: {_value(player, 'hp', default='—')}   ·   Ouro: {_value(player, 'gold', default='—')}   ·   "
             f"Nível: {_value(player, 'level', default='—')}   ·   XP: {_value(player, 'xp', default='—')}\n"
             f"Colocação: {_value(player, 'placement', default='—')}   ·   "
-            f"Status: {'ELIMINADO' if player.get('eliminated') or not player.get('alive', True) else 'VIVO'}"
+            f"Status: {'ELIMINADO' if player.get('eliminated') or not player.get('alive', True) else 'VIVO'}\n"
+            f"Strategy: {strategy.get('strategy_name', 'ECON')}   ·   "
+            f"Comp direction: {strategy.get('composition_direction') or '—'}   ·   "
+            f"Focus: {strategy.get('composition_focus') or '—'}"
         )
         summary.setWordWrap(True)
         outer.addWidget(summary)
@@ -1007,11 +1019,19 @@ class ViewerWindow(QMainWindow):
             occupied = unit and unit.get("occupied", False)
             cell.set_unit(unit if occupied else None, self.icon_loader)
             cell.setToolTip(f"Posição {index}: {unit.get('champion_id') if occupied else 'vazia'}")
+        strategy = audit.get("strategy_info") or {}
+        active_traits = strategy.get("active_traits") or {}
+        traits_text = ", ".join(f"{name}({count})" for name, count in sorted(active_traits.items())) or "—"
+        core_traits_text = ", ".join(strategy.get("core_traits") or []) or "—"
         self.player_summary.setText(
             f"JOGADOR {i + 1}\nHP: {_value(player, 'hp', default='—')}\n"
             f"Ouro: {_value(player, 'gold', default='—')}\nNível: {_value(player, 'level', default='—')} · "
             f"XP: {_value(player, 'xp', default='—')}\nColocação: {_value(player, 'placement', default='—')}\n"
-            f"Sinergias/traços detalhados: indisponíveis no snapshot público atual."
+            f"Strategy: {strategy.get('strategy_name', 'ECON')} · "
+            f"Comp direction: {strategy.get('composition_direction') or '—'}\n"
+            f"Focus: {strategy.get('composition_focus') or '—'} · "
+            f"Confiança: {float(strategy.get('confidence', 0.0) or 0.0):.2f}\n"
+            f"Core traits: {core_traits_text}\nTraits ativos: {traits_text}"
         )
         lines = ["TABULEIRO:"]
         lines.extend(f"  {index:02d}: {unit_label(u)}" for index, u in enumerate(board) if u and u.get("occupied"))

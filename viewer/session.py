@@ -145,7 +145,7 @@ class ViewerSession:
         self.obs = self.lobby.reset(seed=int(seed))
         self.masks = self.lobby.get_action_masks()
         self.public_state = self.lobby.get_public_state()
-        self.audit_snapshot = self.lobby.get_audit_snapshot()
+        self._refresh_audit_snapshot()
         self.started = True
         self.finished = False
         self.step_count = 0
@@ -191,6 +191,19 @@ class ViewerSession:
             "initial_snapshot": self._snapshot_for_event(),
         })
         return self._snapshot_for_event()
+
+    def _refresh_audit_snapshot(self):
+        """Refresh board state and attach the native StrategyInfo snapshot per seat."""
+        self.audit_snapshot = self.lobby.get_audit_snapshot()
+        strategies = self.lobby.get_strategy_snapshots()
+        self.strategy_snapshots = strategies
+        for player in self.audit_snapshot.get("players", []):
+            try:
+                player_id = int(player.get("player_id", -1))
+            except (TypeError, ValueError):
+                continue
+            player["strategy_info"] = strategies[player_id] if 0 <= player_id < len(strategies) else {}
+        return self.audit_snapshot
 
     def _snapshot_for_event(self):
         return {
@@ -422,7 +435,7 @@ class ViewerSession:
         self.last_info = info
         self.masks = self.lobby.get_action_masks()
         self.public_state = self.lobby.get_public_state()
-        self.audit_snapshot = self.lobby.get_audit_snapshot()
+        self._refresh_audit_snapshot()
         self.finished = bool(done or self.public_state.get("finished", False))
         # Combat advances the round; the next call starts a fresh 5-second window.
         if any(str(event).strip() == "ROUND_RESOLVED" for event in info.get("events", [])):
