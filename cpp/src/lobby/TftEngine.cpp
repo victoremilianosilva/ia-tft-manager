@@ -2622,6 +2622,7 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         target.round_base_gold = source.economy.round_base_gold;
         target.round_interest = source.economy.round_interest;
         target.round_streak_gold = source.economy.round_streak_gold;
+        target.round_win_gold = source.economy.last_round_win_gold;
         target.masks = source.action_masks;
 
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot)
