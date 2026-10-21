@@ -59,7 +59,7 @@ class TFTPolicy(nn.Module):
         # --- Cabeças de Decisão Autorregressivas ---
         self.type_head = nn.Linear(hidden_size, action_dims[0])
         # The native observation ends with 9 bench + 5 shop candidate records,
-        # each with 7 explicit strategic features. Shared per-slot scorers make
+        # each with 8 explicit strategic features. Shared per-slot scorers make
         # each action logit depend on that candidate, not only its slot index.
         self.candidate_feature_dim = 8
         self.candidate_observation_dim = (action_dims[2] + action_dims[1]) * self.candidate_feature_dim
