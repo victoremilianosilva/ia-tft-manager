@@ -2,10 +2,12 @@
 #include "lobby/TftEngine.hpp"
 #include "lobby/ChampionCatalog.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 void require(bool condition, const char* message) {
     if (!condition) {
@@ -29,6 +31,66 @@ int main(int argc, char** argv) {
         require(initial_observations.size() ==
                     tft::kPlayersPerLobby * engine.observation_dim(),
                 "Tamanho do lote de observacoes nao corresponde a dimensao declarada.");
+
+        // Composition must be part of the actual PPO observation, not only
+        // diagnostic metadata. Verify its fixed layout and live values.
+        std::vector<std::string> trait_order;
+        for (const auto& champion : catalog.all()) {
+            for (const auto& trait : champion.traits) {
+                if (std::find(trait_order.begin(), trait_order.end(), trait) ==
+                    trait_order.end()) {
+                    trait_order.push_back(trait);
+                }
+            }
+        }
+        const std::size_t legacy_observation_dim = 248 + trait_order.size();
+        const std::size_t expected_observation_dim =
+            legacy_observation_dim + 2 * trait_order.size() +
+            tft::kBoardSlots + tft::kBenchSlots + tft::kShopSlots;
+        require(engine.observation_dim() == expected_observation_dim,
+                "Dimensao PPO nao inclui os novos recursos de composicao.");
+
+        const auto comp_champion = std::find_if(
+            catalog.all().begin(), catalog.all().end(),
+            [](const auto& champion) { return !champion.traits.empty(); });
+        require(comp_champion != catalog.all().end(),
+                "Catalogo nao possui campeao com traits para testar composicao.");
+        require(engine.set_unit_for_testing(
+                    0, true, 0, comp_champion->api_name, 1),
+                "Nao foi possivel configurar unidade de teste para composicao.");
+
+        const auto strategy_after_fixture = engine.get_strategies()[0].back();
+        const auto composition_observations = engine.get_observations();
+        const auto* player_observation = composition_observations.data();
+        const std::size_t direction_offset = legacy_observation_dim;
+        const std::size_t core_traits_offset =
+            direction_offset + trait_order.size();
+        const std::size_t unit_fit_offset =
+            core_traits_offset + trait_order.size();
+        require(player_observation[unit_fit_offset] > 0.0f,
+                "Score de compatibilidade da unidade nao chegou a observacao PPO.");
+        if (!strategy_after_fixture.composition_direction.empty()) {
+            const auto direction_it = std::find(
+                trait_order.begin(), trait_order.end(),
+                strategy_after_fixture.composition_direction);
+            require(direction_it != trait_order.end(),
+                    "Direcao da composicao nao existe na ordem fixa de traits.");
+            const auto direction_index = static_cast<std::size_t>(
+                std::distance(trait_order.begin(), direction_it));
+            require(player_observation[direction_offset + direction_index] == 1.0f,
+                    "Direcao da composicao nao foi codificada na observacao PPO.");
+        }
+        for (std::size_t trait_index = 0;
+             trait_index < trait_order.size(); ++trait_index) {
+            const bool expected_core_trait = std::find(
+                strategy_after_fixture.core_traits.begin(),
+                strategy_after_fixture.core_traits.end(),
+                trait_order[trait_index]) !=
+                strategy_after_fixture.core_traits.end();
+            require(player_observation[core_traits_offset + trait_index] ==
+                        (expected_core_trait ? 1.0f : 0.0f),
+                    "Core traits divergem entre StrategyInfo e observacao PPO.");
+        }
 
         require(
             initial_state.players.size() == tft::kPlayersPerLobby,

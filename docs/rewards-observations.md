@@ -10,7 +10,16 @@ A engine retorna uma recompensa total por jogador e mantém componentes separado
 
 A engine gera observações por jogador e informa `observation_dim()`; o wrapper converte o vetor de retorno para `numpy.float32`. O treinador verifica a forma `(num_lobbies, 8, obs_dim)` antes de achatar o batch para `(num_lobbies * 8, obs_dim)`.
 
-A observação de treino não é igual ao snapshot de auditoria. O snapshot pode conter tabuleiro, banco, loja, máscaras e informações de diagnóstico que não fazem parte do vetor observado pela policy. Não usar dados de auditoria como entrada da policy sem uma mudança intencional do contrato e dos checkpoints.
+A observação de treino não é igual ao snapshot de auditoria. O snapshot pode conter tabuleiro, banco, loja, máscaras e informações de diagnóstico que não fazem parte do vetor observado pela policy.
+
+A observação PPO inclui, após os campos anteriores:
+- um vetor one-hot da direção atual da composição, na ordem fixa de traits do catálogo;
+- um vetor binário indicando as core traits;
+- um score de compatibilidade normalizado para cada slot do tabuleiro, banco e loja. O score considera unidade principal, direção da composição, core traits, estrelas e custo.
+
+Esses campos tornam a direção e a compatibilidade visíveis à policy, em vez de mantê-las apenas como metadados de diagnóstico. A implantação/substituição no tabuleiro recebe sinais pequenos e limitados relativos ao estado anterior: mudança de posicionamento, progresso de sinergia e diferença de compatibilidade em relação à unidade substituída ou à média do tabuleiro. O bônus por preencher uma vaga só é concedido quando há melhora de composição, sinergia ou posicionamento (ou quando a primeira unidade é implantada). Assim, uma ação que apenas ocupa uma vaga sem melhorar o estado não recebe um bônus automático, deixando espaço para o PPO aprender quando PASS é preferível. Esses sinais não substituem as recompensas de combate e colocação.
+
+**Compatibilidade de checkpoints:** a dimensão da observação mudou. Checkpoints treinados antes desta alteração têm uma primeira camada com dimensão incompatível e não devem ser carregados como se fossem compatíveis. Inicie um novo treinamento ou implemente uma migração explícita de pesos antes de reutilizar checkpoints antigos.
 
 ## Terminação
 

@@ -51,6 +51,10 @@ constexpr std::size_t kExtraObservationDim = 5;
 constexpr std::size_t kSynergyObservationDim = 5;
 constexpr std::size_t kPositioningObservationDim = 4;
 constexpr std::size_t kCapacityObservationDim = 2;
+// Composition-aware features: direction and core-trait flags, plus fit scores
+// for each board, bench, and shop slot.
+constexpr std::size_t kCompositionUnitSlots =
+    kBoardSlots + kBenchSlots + kShopSlots;
 
 std::int32_t stage_damage(std::uint32_t stage) noexcept {
     switch (stage) {
@@ -123,6 +127,30 @@ float unit_strength(const ChampionDefinition& def, const UnitInstance& unit) {
     const float cost = static_cast<float>(def.cost);
     const float star = static_cast<float>(unit.star);
     return std::min(1.0f, cost / 5.0f * 0.5f + star / 3.0f * 0.5f);
+}
+
+double unit_composition_score(
+    const StrategyInfo& strategy,
+    const ChampionDefinition& def,
+    std::int32_t star
+) {
+    double score = 0.0;
+    if (std::find(strategy.core_unit_ids.begin(), strategy.core_unit_ids.end(),
+                  def.internal_id) != strategy.core_unit_ids.end())
+        score += 5.0;
+    if (!strategy.composition_direction.empty() &&
+        std::find(def.traits.begin(), def.traits.end(),
+                  strategy.composition_direction) != def.traits.end())
+        score += 3.0;
+    for (const auto& trait : def.traits) {
+        if (std::find(strategy.core_traits.begin(), strategy.core_traits.end(),
+                      trait) != strategy.core_traits.end())
+            score += 2.0;
+    }
+    if (star >= 2) score += 2.0;
+    if (star >= 3) score += 4.0;
+    score += static_cast<double>(def.cost) * 0.5;
+    return score;
 }
 
 } // namespace
@@ -529,7 +557,8 @@ struct TFTEngine::Impl {
             kBenchObservationDim + kShopObservationDim +
             kExtraObservationDim + kSynergyObservationDim +
             kPositioningObservationDim + observation_trait_names.size() +
-            kCapacityObservationDim;
+            kCapacityObservationDim +
+            2 * observation_trait_names.size() + kCompositionUnitSlots;
     }
 
     std::vector<float> build_observations() const {
@@ -695,6 +724,51 @@ struct TFTEngine::Impl {
             // 9) CAPACITY.
             out[offset++] = static_cast<float>(std::max(0, economy.level - board_count)) / 9.0f;
             out[offset++] = static_cast<float>(kBenchSlots - bench_count) / 9.0f;
+
+            // 10) COMPOSITION DIRECTION: explicit, stable one-hot over the
+            // catalog trait order. This is derived from board + bench state.
+            for (const auto& trait : observation_trait_names) {
+                out[offset++] =
+                    !strategy.composition_direction.empty() &&
+                    strategy.composition_direction == trait ? 1.0f : 0.0f;
+            }
+
+            // 11) CORE TRAITS: explicit flags, aligned with the same trait order.
+            for (const auto& trait : observation_trait_names) {
+                out[offset++] =
+                    std::find(strategy.core_traits.begin(),
+                              strategy.core_traits.end(), trait) !=
+                    strategy.core_traits.end() ? 1.0f : 0.0f;
+            }
+
+            // 12) COMPOSITION FIT: normalized per-unit compatibility score.
+            // The score is exposed for all candidates, including shop units,
+            // so PPO can compare a purchase against the current comp direction.
+            const auto append_unit_fit = [&](const UnitInstance* unit) {
+                if (!unit) {
+                    out[offset++] = 0.0f;
+                    return;
+                }
+                const auto* def = catalog->find_by_id(unit->champion_internal_id);
+                if (!def) {
+                    out[offset++] = 0.0f;
+                    return;
+                }
+                const double score =
+                    unit_composition_score(strategy, *def, unit->star);
+                out[offset++] = static_cast<float>(
+                    std::clamp(score / 22.5, 0.0, 1.0));
+            };
+            for (const auto& unit : player_envs[i].board)
+                append_unit_fit(unit ? &*unit : nullptr);
+            for (const auto& unit : player_envs[i].bench)
+                append_unit_fit(unit ? &*unit : nullptr);
+            for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
+                const auto* unit = player_envs[i].shop
+                    ? player_envs[i].shop->get_unit(static_cast<std::int32_t>(slot))
+                    : nullptr;
+                append_unit_fit(unit);
+            }
         }
         return observations;
     }
@@ -1641,6 +1715,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         const auto old_level = economy.level;
         const auto old_xp = economy.xp;
         int old_board_count = 0, old_bench_count = 0;
+        const double old_synergy_score = lobby.synergy_score(player_id);
+        const double old_positioning_score = lobby.positioning_score(player_id);
         bool sold_core_unit = false;
         bool bought_unit_successfully = false;
         bool bought_upgrade = false;
@@ -1654,6 +1730,57 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             }
         }
         for (const auto& unit : this->bench) if (unit) ++old_bench_count;
+
+        // Compare a candidate against the current composition before mutating
+        // the board. This makes a replacement's reward relative, not absolute.
+        const StrategyInfo strategy_before = this->strategy.empty()
+            ? StrategyInfo{} : this->strategy.back();
+        double board_comp_score_sum = 0.0;
+        int board_comp_score_count = 0;
+        for (const auto& unit : this->board) {
+            if (!unit) continue;
+            const auto* def = lobby.catalog->find_by_id(unit->champion_internal_id);
+            if (!def) continue;
+            board_comp_score_sum += unit_composition_score(
+                strategy_before, *def, unit->star);
+            ++board_comp_score_count;
+        }
+        double candidate_comp_score = 0.0;
+        double displaced_comp_score = 0.0;
+        bool has_candidate_comp_score = false;
+        bool has_displaced_comp_score = false;
+        if (type == 3) {
+            const auto source = static_cast<std::size_t>(action[2]);
+            const auto target = static_cast<std::size_t>(action[3]);
+            if (source < this->bench.size() && this->bench[source]) {
+                const auto* def = lobby.catalog->find_by_id(
+                    this->bench[source]->champion_internal_id);
+                if (def) {
+                    candidate_comp_score = unit_composition_score(
+                        strategy_before, *def, this->bench[source]->star);
+                    has_candidate_comp_score = true;
+                }
+            }
+            if (target < this->board.size() && this->board[target]) {
+                const auto* def = lobby.catalog->find_by_id(
+                    this->board[target]->champion_internal_id);
+                if (def) {
+                    displaced_comp_score = unit_composition_score(
+                        strategy_before, *def, this->board[target]->star);
+                    has_displaced_comp_score = true;
+                }
+            }
+        }
+        double composition_quality_delta = 0.0;
+        if (has_candidate_comp_score) {
+            if (has_displaced_comp_score) {
+                composition_quality_delta =
+                    candidate_comp_score - displaced_comp_score;
+            } else if (board_comp_score_count > 0) {
+                composition_quality_delta = candidate_comp_score -
+                    board_comp_score_sum / board_comp_score_count;
+            }
+        }
 
         if (!this->info.alive) {
             lobby.refresh_masks(player_id);
@@ -2019,18 +2146,32 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     ? reward_model::blocked_move()
                     : (success ? (type == 4 ? 0.02 : 0.0) : -0.10));
             if (type == 3 && success && !board_capacity_violation) {
-                action_reward += lobby.positioning_score(player_id) * 0.05;
+                const double positioning_delta =
+                    lobby.positioning_score(player_id) - old_positioning_score;
+                const double synergy_delta =
+                    lobby.synergy_score(player_id) - old_synergy_score;
 
-                // Incentiva a policy a usar toda a capacidade disponível do nível.
-                // O bônus só ocorre quando a unidade realmente aumenta a equipe,
-                // evitando recompensar substituições ou reposicionamentos.
-                if (new_board_count > old_board_count) {
+                // Small bounded signals are relative to the previous board.
+                // A weak deployment that changes nothing should not receive an
+                // unconditional positive reward merely for occupying a slot.
+                action_reward += 0.05 * std::tanh(positioning_delta);
+                action_reward += 0.10 * std::tanh(synergy_delta);
+                action_reward += 0.10 * std::tanh(
+                    composition_quality_delta / 5.0);
+
+                const bool composition_improved =
+                    old_board_count == 0 ||
+                    composition_quality_delta > 1e-6 ||
+                    synergy_delta > 1e-6 ||
+                    positioning_delta > 1e-6;
+
+                if (new_board_count > old_board_count && composition_improved) {
                     action_reward += 0.25;
                     const int board_capacity = std::min(
                         economy.level, static_cast<int>(kBoardSlots));
                     if (new_board_count == board_capacity) {
-                        // Completar a capacidade é útil, mas não deve valer
-                        // tanto quanto a recompensa terminal de primeiro lugar.
+                        // Capacity bonus only applies when the deployment
+                        // improves composition, synergy, or positioning.
                         action_reward += reward_model::board_capacity_completion();
                     }
                 }
@@ -2722,14 +2863,22 @@ RewardState TFTEngine::get_reward_state(std::int32_t player_id) const {
 // MÉTRICAS ANTI-LOOP
 // ============================================================
 
-double TFTEngine::get_unit_comp_score(std::int32_t player_id, const std::string& champion_api_name, std::int32_t star) const {
-    if (!impl_ || player_id < 0 || player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) throw std::out_of_range("player_id fora do intervalo.");
-    impl_->ensure_open(); const auto* def = impl_->catalog->find_by_api_name(champion_api_name); if (!def || star < 1 || star > 3) return 0.0;
-    const auto& list = impl_->player_envs[static_cast<std::size_t>(player_id)].strategy; if (list.empty()) return 0.0; const auto& state = list.back(); double score = 0.0;
-    if (std::find(state.core_unit_ids.begin(), state.core_unit_ids.end(), def->internal_id) != state.core_unit_ids.end()) score += 5.0;
-    if (!state.composition_direction.empty() && std::find(def->traits.begin(), def->traits.end(), state.composition_direction) != def->traits.end()) score += 3.0;
-    for (const auto& trait : def->traits) if (std::find(state.core_traits.begin(), state.core_traits.end(), trait) != state.core_traits.end()) score += 2.0;
-    if (star >= 2) score += 2.0; if (star >= 3) score += 4.0; score += static_cast<double>(def->cost) * 0.5; return score;
+double TFTEngine::get_unit_comp_score(
+    std::int32_t player_id,
+    const std::string& champion_api_name,
+    std::int32_t star
+) const {
+    if (!impl_ || player_id < 0 ||
+        player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) {
+        throw std::out_of_range("player_id fora do intervalo.");
+    }
+    impl_->ensure_open();
+    const auto* def = impl_->catalog->find_by_api_name(champion_api_name);
+    if (!def || star < 1 || star > 3) return 0.0;
+    const auto& list =
+        impl_->player_envs[static_cast<std::size_t>(player_id)].strategy;
+    if (list.empty()) return 0.0;
+    return unit_composition_score(list.back(), *def, star);
 }
 bool TFTEngine::is_core_unit(std::int32_t player_id, const std::string& champion_api_name) const {
     if (!impl_ || player_id < 0 || player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) return false; impl_->ensure_open(); const auto* def = impl_->catalog->find_by_api_name(champion_api_name); if (!def) return false;
