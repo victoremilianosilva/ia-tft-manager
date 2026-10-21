@@ -1,3 +1,7 @@
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+
 #include "decision/AntiLoopEngine.hpp"
 
 #include <cassert>
