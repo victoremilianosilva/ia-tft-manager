@@ -10,6 +10,8 @@ import numpy as np
 import pytest
 import torch
 
+from scripts.audit_strategic_policy import _action_dict as strategic_action_dict, _json_masks, _player_gold
+
 from scripts.evaluate_checkpoints import (
     action_dict,
     as_mask_batch,
@@ -165,3 +167,30 @@ def test_run_match_rejects_match_that_exceeds_step_limit():
             device=torch.device("cpu"),
             max_steps=1,
         )
+
+
+
+def test_strategic_audit_captures_gold_from_native_snapshot():
+    class FakeLobby:
+        def get_audit_snapshot(self):
+            return {"players": [{"player_id": 0, "gold": 9}, {"player_id": 1, "gold": 20}]}
+
+        def get_public_state(self):
+            raise AssertionError("audit snapshot should already contain gold")
+
+    assert _player_gold(FakeLobby()) == {0: 9, 1: 20}
+
+
+def test_strategic_audit_records_exact_masks_and_action_components():
+    assert strategic_action_dict([5, 4, 8, 27, 6, 19]) == {
+        "type": 5,
+        "shop_slot": 4,
+        "bench_slot": 8,
+        "board_target": 27,
+        "board_source": 6,
+        "conditioned_board_target": 19,
+    }
+    assert _json_masks({
+        "type_mask": np.array([1, 0, 1], dtype=np.float32),
+        "shop_mask": np.array([False, True]),
+    }) == {"type_mask": [1, 0, 1], "shop_mask": [0, 1]}
