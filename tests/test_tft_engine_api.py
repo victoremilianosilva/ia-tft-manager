@@ -465,7 +465,7 @@ def test_anti_loop_detects_unit_oscillation_with_other_units_interleaved():
 
     try:
         engine.reset()
-        native = engine._engine
+        native = engine
         audit = native.get_audit_snapshot()
         starter_id = audit["players"][0]["bench"][0]["champion_id"]
         assert starter_id
@@ -508,7 +508,7 @@ def test_buying_third_copy_auto_upgrades_to_two_star():
 
     try:
         engine.reset()
-        native = engine._engine
+        native = engine
         audit = native.get_audit_snapshot()
         champion_id = audit["players"][0]["shop"][0]["champion_id"]
         assert champion_id
