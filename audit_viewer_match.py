@@ -116,6 +116,8 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
     recent_moves = deque(maxlen=loop_window)
     state_visits = defaultdict(lambda: deque(maxlen=loop_window))
     comp_history = deque(maxlen=comp_window)
+    last_comp_key = None
+    last_churn_episode_step = None
 
     for entry in entries:
         if not isinstance(entry, dict):
@@ -225,12 +227,17 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
                 add_issue(report, "MEDIUM", "CORE_UNITS_SHAPE", player, rnd, step,
                           "core_units deveria ser lista.", {"type": type(core_units).__name__})
             if comp:
-                comp_history.append({"step": step, "round": rnd, "comp": comp,
-                                     "focus": focus, "strategy": strategy})
-                if len(comp_history) == comp_window and len({x["comp"] for x in comp_history}) >= 3:
-                    add_issue(report, "MEDIUM", "COMP_DIRECTION_CHURN", player, rnd, step,
-                              "Direção de composição mudou pelo menos três vezes numa janela curta.",
-                              list(comp_history))
+                comp_key = (comp, focus, strategy)
+                if comp_key != last_comp_key:
+                    comp_history.append({"step": step, "round": rnd, "comp": comp,
+                                         "focus": focus, "strategy": strategy})
+                    last_comp_key = comp_key
+                    if len(comp_history) >= 4 and len({x["comp"] for x in comp_history}) >= 3:
+                        if last_churn_episode_step is None or (isinstance(step, int) and isinstance(last_churn_episode_step, int) and step - last_churn_episode_step > comp_window):
+                            add_issue(report, "MEDIUM", "COMP_DIRECTION_CHURN", player, rnd, step,
+                                      "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+                                      list(comp_history))
+                            last_churn_episode_step = step
             if focus and isinstance(core_units, list) and core_units:
                 if not any(focus.casefold() in str(unit).casefold()
                            or str(unit).casefold() in focus.casefold() for unit in core_units):
@@ -315,7 +322,9 @@ def markdown_report(report: dict) -> str:
               "- Achados CRITICAL/HIGH são sinais fortes para investigar, não prova isolada da causa.",
               "- Troca de comp direction pode ser legítima conforme loja, unidades, nível e economia.",
               "- A checagem de fusão conta apenas unidades compradas no tabuleiro+banco, nunca as da loja.",
-              "- Logs .tft permitem apenas heurísticas textuais; os JSON estruturados são preferíveis.", ""]
+              "- Quando JSON e TFT coexistem, somente JSON é analisado para evitar duplicação dos mesmos eventos.",
+              "- A auditoria não pode decidir se uma compra era ótima sem comparar loja, ouro, limite do banco, máscaras e avaliação de composição no mesmo estado.",
+              "- Uma fusão só pode ser confirmada com segurança se o log registrar cópias elegíveis antes/depois e o evento de merge; contar cópias é apenas um indício.", ""]
     return "\n".join(lines)
 
 
@@ -334,9 +343,15 @@ def main() -> int:
         files = [source]
         default_out = source.parent / "audit"
     elif source.is_dir():
-        files = sorted(source.glob("player_*_log.json")) + sorted(source.glob("player_*_log.tft"))
-        if not files:
-            files = sorted(source.rglob("player_*_log.json")) + sorted(source.rglob("player_*_log.tft"))
+        json_files = sorted(source.glob("player_*_log.json"))
+        if not json_files:
+            json_files = sorted(source.rglob("player_*_log.json"))
+        if json_files:
+            files = json_files
+        else:
+            files = sorted(source.glob("player_*_log.tft"))
+            if not files:
+                files = sorted(source.rglob("player_*_log.tft"))
         default_out = source / "audit"
     else:
         parser.error(f"caminho não existe: {source}")
