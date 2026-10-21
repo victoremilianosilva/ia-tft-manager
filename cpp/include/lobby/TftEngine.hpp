@@ -272,6 +272,7 @@ struct AntiLoopMetrics {
     std::uint64_t mask_bench_move_candidates{0};
     std::uint64_t mask_bench_move_valid{0};
     std::uint64_t mask_bench_move_blocked_anti_loop{0};
+    std::uint64_t mask_bench_move_blocked_seen_state{0};
     std::uint64_t mask_blocked_reverse{0};
     std::uint64_t mask_blocked_oscillation{0};
     std::uint64_t mask_blocked_explicit{0};
