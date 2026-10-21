@@ -263,6 +263,20 @@ struct AntiLoopMetrics {
 
     std::uint64_t board_moves_executed{0};
     std::uint64_t bench_to_board_executed{0};
+
+    // Contadores cumulativos da geração de máscaras, separados da execução.
+    std::uint64_t mask_board_move_candidates{0};
+    std::uint64_t mask_board_move_valid{0};
+    std::uint64_t mask_board_move_blocked_anti_loop{0};
+    std::uint64_t mask_board_move_blocked_seen_state{0};
+    std::uint64_t mask_bench_move_candidates{0};
+    std::uint64_t mask_bench_move_valid{0};
+    std::uint64_t mask_bench_move_blocked_anti_loop{0};
+    std::uint64_t mask_blocked_reverse{0};
+    std::uint64_t mask_blocked_oscillation{0};
+    std::uint64_t mask_blocked_explicit{0};
+    std::uint64_t mask_blocked_bench_board_loop{0};
+    std::uint64_t mask_blocked_cycle{0};
 };
 
 
