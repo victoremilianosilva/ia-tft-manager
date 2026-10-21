@@ -1755,7 +1755,20 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         double displaced_comp_score = 0.0;
         bool has_candidate_comp_score = false;
         bool has_displaced_comp_score = false;
-        if (type == 3) {
+        if (type == 0) {
+            // BUY: avalia a oferta contra a direção atual da composição,
+            // para que comprar qualquer unidade não tenha sempre a mesma recompensa.
+            const auto* offer = shop.get_unit(shop_slot);
+            if (offer) {
+                const auto* def = lobby.catalog->find_by_id(
+                    offer->champion_internal_id);
+                if (def) {
+                    candidate_comp_score = unit_composition_score(
+                        strategy_before, *def, offer->star);
+                    has_candidate_comp_score = true;
+                }
+            }
+        } else if (type == 3) {
             const auto source = static_cast<std::size_t>(action[2]);
             const auto target = static_cast<std::size_t>(action[3]);
             if (source < this->bench.size() && this->bench[source]) {
@@ -1785,6 +1798,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             } else if (board_comp_score_count > 0) {
                 composition_quality_delta = candidate_comp_score -
                     board_comp_score_sum / board_comp_score_count;
+            } else {
+                composition_quality_delta = candidate_comp_score;
             }
         }
 
@@ -2117,6 +2132,11 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             // +0.05 for a normal purchase, +0.30 for any completed upgrade.
             success = bought_unit_successfully;
             action_reward = !success ? -0.10 : (bought_upgrade ? 0.30 : 0.05);
+            if (success && has_candidate_comp_score) {
+                // O sinal de compra considera adequação à comp, além de gastar ouro.
+                action_reward += 0.10 * std::tanh(
+                    composition_quality_delta / 5.0);
+            }
         } else if (type == 1) {
             success = economy.gold == old_gold - EconomyEngine::REROLL_COST;
             action_reward = success ? -0.01 : -0.10;
@@ -2186,10 +2206,12 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         }
                     }
                 } else if (
-                    std::abs(positioning_delta) <= 1e-6 &&
-                    std::abs(synergy_delta) <= 1e-6
+                    positioning_delta <= 1e-6 &&
+                    synergy_delta <= 1e-6
                 ) {
-                    // No measurable gain: discourage moving units for its own sake.
+                    // Penaliza também movimentos que pioram o tabuleiro.
+                    // A versão anterior só penalizava deltas exatamente zero,
+                    // permitindo ciclos com pequenas oscilações negativas.
                     action_reward = -0.05;
                 }
             }
@@ -2596,6 +2618,10 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         target.xp = source.economy.xp;
         target.win_streak = source.economy.win_streak;
         target.loss_streak = source.economy.loss_streak;
+        target.round_gold = source.economy.round_gold;
+        target.round_base_gold = source.economy.round_base_gold;
+        target.round_interest = source.economy.round_interest;
+        target.round_streak_gold = source.economy.round_streak_gold;
         target.masks = source.action_masks;
 
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot)
