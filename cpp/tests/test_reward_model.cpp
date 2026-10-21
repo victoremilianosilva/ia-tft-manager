@@ -71,6 +71,18 @@ int main() {
     require_close(sale_quality(1.0, true, true, false), -0.22,
                   "sale protects core unit and upgrade copies");
 
+    // Test A: a high-fit purchase should beat PASS even when it spends through
+    // an interest threshold, while a low-value purchase should not.
+    const double pass_reward = 0.0;
+    const double strong_buy_reward = 0.05 +
+        purchase_quality(10.0, false) + gold_change_reward(10, 8);
+    const double weak_buy_reward = 0.05 +
+        purchase_quality(0.0, false) + gold_change_reward(10, 8);
+    if (!(strong_buy_reward > pass_reward && weak_buy_reward < pass_reward)) {
+        std::cerr << "[FAIL] Economic decision shaping does not distinguish a strong buy from PASS.\\n";
+        std::exit(EXIT_FAILURE);
+    }
+
     std::cout << "[PASS] C++ reward formulas and deterministic action sequence.\n";
     return EXIT_SUCCESS;
 }
