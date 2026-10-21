@@ -32,6 +32,10 @@ def _snapshot(with_unit=False):
         audit_players.append({
             "player_id": player_id, "gold": 10, "level": 2, "xp": 0,
             "win_streak": 0, "loss_streak": 0,
+            "round_gold": 8 if player_id == 0 else 0,
+            "round_base_gold": 5 if player_id == 0 else 0,
+            "round_interest": 2 if player_id == 0 else 0,
+            "round_streak_gold": 1 if player_id == 0 else 0,
             "strategy_info": {
                 "strategy": 1 if player_id == 0 else 0,
                 "strategy_name": "STABILIZE" if player_id == 0 else "ECON",
@@ -136,6 +140,10 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
     assert action_entry["payload"]["state_after"]["comp_focus"] == "Teemo"
     assert "STRATEGY: STABILIZE" in (tmp_path / "match-test" / "player_1_log.tft").read_text(encoding="utf-8")
     assert "COMP DIRECTION: Space Groove" in (tmp_path / "match-test" / "player_1_log.tft").read_text(encoding="utf-8")
+    assert "RENDA: +5 base, +2 juros, +1 sequência (total rodada: +8)" in (
+        tmp_path / "match-test" / "player_1_log.tft"
+    ).read_text(encoding="utf-8")
+    assert action_entry["payload"]["state_after"]["round_interest"] == 2
 
     event_types = {entry["event_type"] for entry in player1["entries"]}
     assert {"round_finished", "board_header", "board_view", "bench_header", "bench_view", "shop_view"} <= event_types
