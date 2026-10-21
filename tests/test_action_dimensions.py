@@ -75,9 +75,13 @@ def test_candidate_policy_avoids_selling_core_upgrade_copies():
     _configure_candidate_ranker(policy.sell_head, hidden_size, [4, 5], [-1.0, -1.0])
     context = torch.zeros(1, hidden_size + Trainer.ACTION_DIMS[0])
     candidates = torch.zeros(1, 9, 8)
+
+    # Two valid sale candidates: slot 0 is core and contributes to an upgrade;
+    # slot 1 is non-core and has fewer copies. Other slots are marked protected
+    # so this unit test evaluates candidate ranking rather than empty-slot masking.
+    candidates[0, :, 4:6] = torch.tensor([1.0, 0.9])
     candidates[0, 0, 4:6] = torch.tensor([1.0, 0.9])
     candidates[0, 1, 4:6] = torch.tensor([0.0, 0.1])
-    candidates[0, 2, 4:6] = torch.tensor([0.0, 0.2])
 
     logits = policy._candidate_logits(policy.sell_head, context, candidates)
 
