@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace tft::decision {
@@ -17,6 +18,12 @@ struct PositionSignature {
     std::array<std::optional<UnitIdentity>, BENCH_SIZE> bench{};
 
     bool operator==(const PositionSignature&) const = default;
+};
+
+struct PositionSignatureHash {
+    [[nodiscard]] std::size_t operator()(
+        const PositionSignature& signature
+    ) const noexcept;
 };
 
 // Resultado do registro de um estado visitado.
@@ -89,6 +96,10 @@ struct AntiLoopHistory {
     std::vector<MoveRecord> move_history;
     std::vector<BlockedMoveRecord> blocked_moves;
     std::vector<StateVisit> state_visits;
+    // Índice O(1) médio para consultas e registro de estados já conhecidos.
+    // O índice aponta para state_visits, cuja ordem é estável até reset().
+    std::unordered_map<PositionSignature, std::size_t, PositionSignatureHash>
+        state_visit_index;
 
     std::optional<PositionSignature> last_board_signature;
     std::optional<MoveRecord> last_move;
