@@ -271,6 +271,11 @@ bool ActionMaskEngine::is_valid_bench_to_board_move(
         return false;
     }
 
+    const auto target_index = to_board_index(target);
+    if (!target_index.has_value()) {
+        return false;
+    }
+
     const auto unit = identity_of(state.bench[*bench_index]);
     ++diagnostics.bench_move_candidates;
 
@@ -283,6 +288,20 @@ bool ActionMaskEngine::is_valid_bench_to_board_move(
     if (block_reason.has_value()) {
         ++diagnostics.bench_move_blocked_anti_loop;
         record_block_reason(diagnostics, *block_reason);
+        return false;
+    }
+
+    // A implantação/substituição também pode recriar um estado completo
+    // já visitado. Simula board <-> bench sem alterar o estado original.
+    PlayerState next_state = state;
+    std::swap(
+        next_state.board[*target_index],
+        next_state.bench[*bench_index]
+    );
+    const auto resulting_signature =
+        anti_loop.make_board_signature(next_state);
+    if (anti_loop.was_state_seen(resulting_signature)) {
+        ++diagnostics.bench_move_blocked_seen_state;
         return false;
     }
 
