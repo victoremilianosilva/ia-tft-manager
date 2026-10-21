@@ -55,6 +55,10 @@ constexpr std::size_t kCapacityObservationDim = 2;
 // for each board, bench, and shop slot.
 constexpr std::size_t kCompositionUnitSlots =
     kBoardSlots + kBenchSlots + kShopSlots;
+// Per-slot strategic features used by the policy's shared candidate scorers.
+constexpr std::size_t kCandidateFeatureDim = 7;
+constexpr std::size_t kStrategicCandidateObservationDim =
+    (kBenchSlots + kShopSlots) * kCandidateFeatureDim;
 
 std::int32_t stage_damage(std::uint32_t stage) noexcept {
     switch (stage) {
@@ -565,6 +569,7 @@ struct TFTEngine::Impl {
             kPositioningObservationDim + observation_trait_names.size() +
             kCapacityObservationDim +
             2 * observation_trait_names.size() + kCompositionUnitSlots;
+            + kStrategicCandidateObservationDim;
     }
 
     std::vector<float> build_observations() const {
@@ -774,6 +779,60 @@ struct TFTEngine::Impl {
                     ? player_envs[i].shop->get_unit(static_cast<std::int32_t>(slot))
                     : nullptr;
                 append_unit_fit(unit);
+            }
+
+            // 13) PER-CANDIDATE DECISION FEATURES. These are explicit slot-local
+            // features so the policy can compare offers/sale candidates rather than
+            // infer which global features correspond to each output index.
+            const auto count_same_champion = [&](const UnitInstance& candidate) {
+                int copies = 0;
+                for (const auto& unit : player_envs[i].board) {
+                    if (unit && unit->champion_internal_id == candidate.champion_internal_id)
+                        copies += unit->star == 1 ? 1 : (unit->star == 2 ? 3 : 9);
+                }
+                for (const auto& unit : player_envs[i].bench) {
+                    if (unit && unit->champion_internal_id == candidate.champion_internal_id)
+                        copies += unit->star == 1 ? 1 : (unit->star == 2 ? 3 : 9);
+                }
+                return copies;
+            };
+            const auto append_candidate_features = [&](const UnitInstance* unit, bool sale_candidate) {
+                if (!unit) {
+                    for (std::size_t n = 0; n < kCandidateFeatureDim; ++n)
+                        out[offset++] = 0.0f;
+                    return;
+                }
+                const auto* def = catalog->find_by_id(unit->champion_internal_id);
+                if (!def) {
+                    for (std::size_t n = 0; n < kCandidateFeatureDim; ++n)
+                        out[offset++] = 0.0f;
+                    return;
+                }
+                const double fit = unit_composition_score(strategy, *def, unit->star);
+                const bool core = std::find(strategy.core_unit_ids.begin(),
+                    strategy.core_unit_ids.end(), def->internal_id) != strategy.core_unit_ids.end();
+                const int copies = count_same_champion(*unit);
+                out[offset++] = static_cast<float>(std::clamp(fit / 22.5, 0.0, 1.0));
+                out[offset++] = static_cast<float>(def->cost) / 5.0f;
+                out[offset++] = static_cast<float>(unit->star) / 3.0f;
+                out[offset++] = role_state_value(def->combat_profile.role);
+                out[offset++] = core ? 1.0f : 0.0f;
+                // Copies are capped for normalization; values >= 2 signal potential upgrade protection.
+                out[offset++] = static_cast<float>(std::min(copies, 9)) / 9.0f;
+                if (sale_candidate) {
+                    out[offset++] = static_cast<float>(
+                        EconomyEngine::get_sell_value(def->cost, unit->star)) / 50.0f;
+                } else {
+                    out[offset++] = economy.gold >= def->cost ? 1.0f : 0.0f;
+                }
+            };
+            for (const auto& unit : player_envs[i].bench)
+                append_candidate_features(unit ? &*unit : nullptr, true);
+            for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
+                const auto* unit = player_envs[i].shop
+                    ? player_envs[i].shop->get_unit(static_cast<std::int32_t>(slot))
+                    : nullptr;
+                append_candidate_features(unit, false);
             }
         }
         return observations;
