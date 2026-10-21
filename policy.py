@@ -58,7 +58,21 @@ class TFTPolicy(nn.Module):
 
         # --- Cabeças de Decisão Autorregressivas ---
         self.type_head = nn.Linear(hidden_size, action_dims[0])
-        self.shop_head = nn.Linear(hidden_size + self.num_action_types, action_dims[1])
+        # The native observation ends with 9 bench + 5 shop candidate records,
+        # each with 8 explicit strategic features. Shared per-slot scorers make
+        # each action logit depend on that candidate, not only its slot index.
+        self.candidate_feature_dim = 8
+        self.candidate_observation_dim = (action_dims[2] + action_dims[1]) * self.candidate_feature_dim
+        self.shop_head = nn.Sequential(
+            nn.Linear(hidden_size + self.num_action_types + self.candidate_feature_dim, 256),
+            nn.ReLU(),
+            nn.Linear(256, 1),
+        )
+        self.sell_head = nn.Sequential(
+            nn.Linear(hidden_size + self.num_action_types + self.candidate_feature_dim, 256),
+            nn.ReLU(),
+            nn.Linear(256, 1),
+        )
         self.bench_head = nn.Linear(hidden_size + self.num_action_types, action_dims[2])
         self.bench_to_board_head = nn.Linear(hidden_size + self.num_action_types, action_dims[3])
         self.board_source_head = nn.Linear(hidden_size + self.num_action_types, action_dims[4])
@@ -93,6 +107,31 @@ class TFTPolicy(nn.Module):
         # Fusão latente
         combined = torch.cat([cnn_features, global_features], dim=-1)
         return self.fusion(combined)
+
+    def _candidate_features(self, obs):
+        """Extract slot-aligned strategic features appended by the native C++ engine."""
+        if obs.shape[-1] < self.candidate_observation_dim:
+            raise ValueError(
+                f"Observação curta para features de candidatos: {obs.shape[-1]} < "
+                f"{self.candidate_observation_dim}. Recompile a engine C++ atualizada."
+            )
+        candidate_tail = obs[:, -self.candidate_observation_dim:]
+        bench_size = self.action_dims[2] * self.candidate_feature_dim
+        bench = candidate_tail[:, :bench_size].reshape(
+            -1, self.action_dims[2], self.candidate_feature_dim
+        )
+        shop = candidate_tail[:, bench_size:].reshape(
+            -1, self.action_dims[1], self.candidate_feature_dim
+        )
+        return bench, shop
+
+    @staticmethod
+    def _candidate_logits(head, conditioned, candidate_features):
+        """Score each candidate with shared weights and its own slot-local features."""
+        batch, slots, feature_dim = candidate_features.shape
+        context = conditioned.unsqueeze(1).expand(-1, slots, -1)
+        joined = torch.cat([context, candidate_features], dim=-1)
+        return head(joined.reshape(batch * slots, -1)).reshape(batch, slots)
 
     def get_value(self, obs, masks=None):
         """ Retorna a estimativa de valor do estado (ignora as máscaras se enviadas) """
@@ -202,6 +241,7 @@ class TFTPolicy(nn.Module):
         # One list per player; diagnostic rows are captured from the exact
         # masked logits that feed the action sampling below.
         player_diagnostics = [[] for _ in range(batch_size)]
+        bench_candidate_features, shop_candidate_features = self._candidate_features(obs)
 
         def record_distribution(name, logits, chosen, row_indices, applied_mask=None):
             if not collect_diagnostics:
@@ -266,7 +306,9 @@ class TFTPolicy(nn.Module):
         # --- BUY ---
         buy_mask = action_type == 0
         if buy_mask.any():
-            logits = self.shop_head(conditioned[buy_mask])
+            logits = self._candidate_logits(
+                self.shop_head, conditioned[buy_mask], shop_candidate_features[buy_mask]
+            )
             if masks is not None:
                 logits = self._mask_logits(logits, masks["shop_mask"][buy_mask])
             sampled = self._sample_categorical(logits, deterministic)
@@ -396,7 +438,9 @@ class TFTPolicy(nn.Module):
         # --- SELL ---
         sell_mask = action_type == 5
         if sell_mask.any():
-            logits = self.bench_head(conditioned[sell_mask])
+            logits = self._candidate_logits(
+                self.sell_head, conditioned[sell_mask], bench_candidate_features[sell_mask]
+            )
             if masks is not None:
                 # Venda continua usando a máscara original do banco.
                 logits = self._mask_logits(
@@ -426,6 +470,7 @@ class TFTPolicy(nn.Module):
 
     def evaluate_actions(self, obs, actions, masks):
         hidden = self.encode(obs)
+        bench_candidate_features, shop_candidate_features = self._candidate_features(obs)
 
         # Type
         type_logits = self.type_head(hidden)
@@ -450,7 +495,9 @@ class TFTPolicy(nn.Module):
         # BUY
         buy_mask = action_type == 0
         if buy_mask.any():
-            logits = self.shop_head(conditioned[buy_mask])
+            logits = self._candidate_logits(
+                self.shop_head, conditioned[buy_mask], shop_candidate_features[buy_mask]
+            )
             shop_mask = masks["shop_mask"][buy_mask]
             logits = self._mask_logits(logits, shop_mask)
 
@@ -585,7 +632,9 @@ class TFTPolicy(nn.Module):
         # SELL
         sell_mask = action_type == 5
         if sell_mask.any():
-            logits = self.bench_head(conditioned[sell_mask])
+            logits = self._candidate_logits(
+                self.sell_head, conditioned[sell_mask], bench_candidate_features[sell_mask]
+            )
             sell_source_mask = masks["bench_source_mask"][sell_mask]
             logits = self._mask_logits(logits, sell_source_mask)
 

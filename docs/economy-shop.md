@@ -16,11 +16,24 @@ A tabela de odds é exposta por `odds_by_level()` para testes de equivalência c
 
 A engine coordena o pagamento, movimentação entre loja/banco/tabuleiro e devolução ao pool. As máscaras sinalizam previamente ações indisponíveis, mas a engine ainda é responsável por validar e aplicar a ação.
 
-## Testes
+## Validação estratégica
+
+Os testes de regra da engine não garantem que o PPO aprendeu a decidir. A suíte agora cobre o shaping de ouro, as features por slot e a capacidade das cabeças de compra/venda de distinguir candidatos em cenários controlados. Para avaliar um checkpoint treinado em partidas reais, execute:
+
+```powershell
+python scripts/audit_strategic_policy.py --checkpoint checkpoints/latest.pt --seeds 11,12,13 --output reports/strategic_policy.jsonl
+```
+
+O JSONL registra por jogador/step: ação escolhida, distribuições de probabilidade, máscaras usadas, ouro antes/depois e recompensas da ação e total. Compare vários seeds e checkpoints; uma auditoria de pesos aleatórios não demonstra aprendizagem estratégica.
+
+## Testes da engine
 
 - `cpp/tests/test_economy_engine.cpp`
 - `cpp/tests/test_shop_engine.cpp`
 - `cpp/tests/test_unit_pool.cpp`
 - `cpp/tests/test_tft_engine_pool.cpp`
+- `cpp/tests/test_reward_model.cpp`
+- `tests/test_strategic_policy.py`
+- `tests/test_strategic_policy_audit.py`
 
 Para o formato das ações, consulte [contratos e dados](contracts-and-data.md).

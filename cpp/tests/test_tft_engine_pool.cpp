@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
         const std::size_t legacy_observation_dim = 248 + trait_order.size();
         const std::size_t expected_observation_dim =
             legacy_observation_dim + 2 * trait_order.size() +
-            tft::kBoardSlots + tft::kBenchSlots + tft::kShopSlots;
+            tft::kBoardSlots + tft::kBenchSlots + tft::kShopSlots + 8 * (tft::kBenchSlots + tft::kShopSlots);
         require(engine.observation_dim() == expected_observation_dim,
                 "Dimensao PPO nao inclui os novos recursos de composicao.");
 
@@ -69,6 +69,14 @@ int main(int argc, char** argv) {
             core_traits_offset + trait_order.size();
         require(player_observation[unit_fit_offset] > 0.0f,
                 "Score de compatibilidade da unidade nao chegou a observacao PPO.");
+        const std::size_t candidate_features_offset =
+            expected_observation_dim - 8 * (tft::kBenchSlots + tft::kShopSlots);
+        require(player_observation[candidate_features_offset] > 0.0f,
+                "Features estrategicas da primeira unidade do banco ausentes.");
+        const std::size_t shop_candidate_offset =
+            candidate_features_offset + 8 * tft::kBenchSlots;
+        require(player_observation[shop_candidate_offset] > 0.0f,
+                "Features estrategicas da primeira oferta da loja ausentes.");
         if (!strategy_after_fixture.composition_direction.empty()) {
             const auto direction_it = std::find(
                 trait_order.begin(), trait_order.end(),
@@ -264,8 +272,10 @@ int main(int argc, char** argv) {
         const auto bought = engine.step(actions);
         require(bought.players[0].gold >= 0,
                 "Compra deixou ouro negativo.");
-        require(std::abs(bought.rewards[0] - 0.05f) < 1e-6f,
-                "Compra normal deve entregar exatamente +0.05 de recompensa, sem recompensa de combate em equipes vazias.");
+        require(std::abs(bought.rewards[0] - bought.action_rewards[0]) < 1e-6f,
+                "Compra sem combate deve retornar apenas a recompensa da acao.");
+        require(bought.action_rewards[0] > -0.25f && bought.action_rewards[0] < 0.50f,
+                "Recompensa de compra com shaping economico deve permanecer limitada.");
 
         // CompositionManager/StrategyManager devem refletir as unidades
         // compradas no snapshot público, sem depender de combate.

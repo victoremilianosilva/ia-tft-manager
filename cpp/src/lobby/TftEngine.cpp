@@ -55,6 +55,10 @@ constexpr std::size_t kCapacityObservationDim = 2;
 // for each board, bench, and shop slot.
 constexpr std::size_t kCompositionUnitSlots =
     kBoardSlots + kBenchSlots + kShopSlots;
+// Per-slot strategic features used by the policy's shared candidate scorers.
+constexpr std::size_t kCandidateFeatureDim = 8;
+constexpr std::size_t kStrategicCandidateObservationDim =
+    (kBenchSlots + kShopSlots) * kCandidateFeatureDim;
 
 std::int32_t stage_damage(std::uint32_t stage) noexcept {
     switch (stage) {
@@ -564,7 +568,8 @@ struct TFTEngine::Impl {
             kExtraObservationDim + kSynergyObservationDim +
             kPositioningObservationDim + observation_trait_names.size() +
             kCapacityObservationDim +
-            2 * observation_trait_names.size() + kCompositionUnitSlots;
+            2 * observation_trait_names.size() + kCompositionUnitSlots +
+            kStrategicCandidateObservationDim;
     }
 
     std::vector<float> build_observations() const {
@@ -774,6 +779,86 @@ struct TFTEngine::Impl {
                     ? player_envs[i].shop->get_unit(static_cast<std::int32_t>(slot))
                     : nullptr;
                 append_unit_fit(unit);
+            }
+
+            // 13) PER-CANDIDATE DECISION FEATURES. These are explicit slot-local
+            // features so the policy can compare offers/sale candidates rather than
+            // infer which global features correspond to each output index.
+            const auto count_same_champion = [&](const UnitInstance& candidate) {
+                int copies = 0;
+                for (const auto& unit : player_envs[i].board) {
+                    if (unit && unit->champion_internal_id == candidate.champion_internal_id)
+                        copies += unit->star == 1 ? 1 : (unit->star == 2 ? 3 : 9);
+                }
+                for (const auto& unit : player_envs[i].bench) {
+                    if (unit && unit->champion_internal_id == candidate.champion_internal_id)
+                        copies += unit->star == 1 ? 1 : (unit->star == 2 ? 3 : 9);
+                }
+                return copies;
+            };
+            const auto append_candidate_features = [&](const UnitInstance* unit, bool sale_candidate) {
+                if (!unit) {
+                    for (std::size_t n = 0; n < kCandidateFeatureDim; ++n)
+                        out[offset++] = 0.0f;
+                    return;
+                }
+                const auto* def = catalog->find_by_id(unit->champion_internal_id);
+                if (!def) {
+                    for (std::size_t n = 0; n < kCandidateFeatureDim; ++n)
+                        out[offset++] = 0.0f;
+                    return;
+                }
+                const double fit = unit_composition_score(strategy, *def, unit->star);
+                const bool core = std::find(strategy.core_unit_ids.begin(),
+                    strategy.core_unit_ids.end(), def->internal_id) != strategy.core_unit_ids.end();
+                const int copies = count_same_champion(*unit);
+                int trait_overlap = 0;
+                for (const auto& trait : def->traits) {
+                    bool shared = false;
+                    for (const auto& existing : player_envs[i].board) {
+                        if (!existing || &*existing == unit) continue;
+                        const auto* existing_def = catalog->find_by_id(existing->champion_internal_id);
+                        if (existing_def && std::find(existing_def->traits.begin(),
+                            existing_def->traits.end(), trait) != existing_def->traits.end()) {
+                            shared = true;
+                            break;
+                        }
+                    }
+                    if (!shared) {
+                        for (const auto& existing : player_envs[i].bench) {
+                            if (!existing || &*existing == unit) continue;
+                            const auto* existing_def = catalog->find_by_id(existing->champion_internal_id);
+                            if (existing_def && std::find(existing_def->traits.begin(),
+                                existing_def->traits.end(), trait) != existing_def->traits.end()) {
+                                shared = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (shared) ++trait_overlap;
+                }
+                out[offset++] = static_cast<float>(std::clamp(fit / 22.5, 0.0, 1.0));
+                out[offset++] = static_cast<float>(def->cost) / 5.0f;
+                out[offset++] = static_cast<float>(unit->star) / 3.0f;
+                out[offset++] = role_state_value(def->combat_profile.role);
+                out[offset++] = core ? 1.0f : 0.0f;
+                // Number of owned copies (including star-equivalent copies), normalized.
+                out[offset++] = static_cast<float>(std::min(copies, 9)) / 9.0f;
+                out[offset++] = static_cast<float>(std::min(trait_overlap, 5)) / 5.0f;
+                if (sale_candidate) {
+                    out[offset++] = static_cast<float>(
+                        EconomyEngine::get_sell_value(def->cost, unit->star)) / 50.0f;
+                } else {
+                    out[offset++] = economy.gold >= def->cost ? 1.0f : 0.0f;
+                }
+            };
+            for (const auto& unit : player_envs[i].bench)
+                append_candidate_features(unit ? &*unit : nullptr, true);
+            for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
+                const auto* unit = player_envs[i].shop
+                    ? player_envs[i].shop->get_unit(static_cast<std::int32_t>(slot))
+                    : nullptr;
+                append_candidate_features(unit, false);
             }
         }
         return observations;
@@ -1724,6 +1809,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         const double old_synergy_score = lobby.synergy_score(player_id);
         const double old_positioning_score = lobby.positioning_score(player_id);
         bool sold_core_unit = false;
+        bool sold_unit_protects_upgrade = false;
+        double sold_unit_fit_score = 0.0;
+        bool buy_completes_upgrade = false;
         bool bought_unit_successfully = false;
         bool bought_upgrade = false;
         bool board_capacity_violation = false;
@@ -1766,6 +1854,16 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     candidate_comp_score = unit_composition_score(
                         strategy_before, *def, offer->star);
                     has_candidate_comp_score = true;
+                    int same_star_copies = 0;
+                    for (const auto& unit : this->board) {
+                        if (unit && unit->champion_internal_id == offer->champion_internal_id &&
+                            unit->star == offer->star) ++same_star_copies;
+                    }
+                    for (const auto& unit : this->bench) {
+                        if (unit && unit->champion_internal_id == offer->champion_internal_id &&
+                            unit->star == offer->star) ++same_star_copies;
+                    }
+                    buy_completes_upgrade = same_star_copies >= 2;
                 }
             }
         } else if (type == 3) {
@@ -2076,15 +2174,29 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
 
                 if (definition) {
                     if (!this->strategy.empty()) {
-                        // CompositionManager.is_core_unit() checks the
-                        // UnitManager internal ID (unit["id"]), not apiName.
-                        // Keep SELL reward semantics identical to Python.
-                        const auto& core_unit_ids = this->strategy.back().core_unit_ids;
+                        const auto& current_strategy = this->strategy.back();
+                        const auto& core_unit_ids = current_strategy.core_unit_ids;
                         sold_core_unit = std::find(
                             core_unit_ids.begin(), core_unit_ids.end(),
                             unit.champion_internal_id
                         ) != core_unit_ids.end();
+                        sold_unit_fit_score = std::clamp(
+                            unit_composition_score(current_strategy, *definition, unit.star) / 22.5,
+                            0.0, 1.0);
                     }
+                    int same_star_copies = 0;
+                    for (const auto& candidate : this->board) {
+                        if (candidate &&
+                            candidate->champion_internal_id == unit.champion_internal_id &&
+                            candidate->star == unit.star) ++same_star_copies;
+                    }
+                    for (const auto& candidate : this->bench) {
+                        if (candidate &&
+                            candidate->champion_internal_id == unit.champion_internal_id &&
+                            candidate->star == unit.star) ++same_star_copies;
+                    }
+                    // Selling one of a pair removes an immediate path toward a merge.
+                    sold_unit_protects_upgrade = same_star_copies >= 2;
                     const auto sell_value =
                         EconomyEngine::get_sell_value(
                             definition->cost,
@@ -2132,11 +2244,15 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             // +0.05 for a normal purchase, +0.30 for any completed upgrade.
             success = bought_unit_successfully;
             action_reward = !success ? -0.10 : (bought_upgrade ? 0.30 : 0.05);
-            if (success && has_candidate_comp_score && board_comp_score_count > 1) {
-                // Só aplica bônus quando há uma composição mínima estabelecida
-                // (2+ unidades no tabuleiro). Compras iniciais mantêm +0.05.
-                action_reward += 0.10 * std::tanh(
-                    composition_quality_delta / 5.0);
+            if (success && has_candidate_comp_score) {
+                // Also guide early purchases before the board has a stable comp.
+                // composition_quality_delta is candidate-vs-board when a board
+                // exists, or the candidate's strategic score when it is empty.
+                action_reward += reward_model::purchase_quality(
+                    composition_quality_delta, false);
+            }
+            if (success && buy_completes_upgrade) {
+                action_reward += 0.12;
             }
         } else if (type == 1) {
             success = economy.gold == old_gold - EconomyEngine::REROLL_COST;
@@ -2218,10 +2334,19 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             }
         } else if (type == 5) {
             success = economy.gold > old_gold;
-            action_reward = success ? (sold_core_unit ? -0.15 : 0.05) : -0.10;
+            action_reward = success
+                ? reward_model::sale_quality(
+                    sold_unit_fit_score, sold_core_unit,
+                    sold_unit_protects_upgrade, old_bench_count >= static_cast<int>(kBenchSlots))
+                : -0.10;
         } else {
             success = true;
         }
+
+        // Give spending decisions immediate feedback for the opportunity cost
+        // of liquid gold and the interest breakpoints. This is a potential delta,
+        // not a per-step bonus, so repeatedly PASSing cannot farm reward.
+        action_reward += reward_model::gold_change_reward(old_gold, economy.gold);
 
         // MiniTFTEnv.step() returns the action-specific reward directly.
         // RewardManager's broader state components are not called by the
