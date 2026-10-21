@@ -1106,20 +1106,24 @@ class Trainer:
                     .item()
                 )
 
-                mask_valid_board_move_sum += (
-                    masks["board_move_target_masks"]
-                    .sum(dim=(1, 2))
-                    .float()
-                    .mean()
-                    .item()
+                # Conta somente pares reais origem/destino; fallbacks técnicos
+                # não contam quando o tipo de movimento está desabilitado.
+                board_move_enabled = (
+                    masks["type_mask"][:, 4].bool().view(-1, 1, 1)
+                    & masks["board_source_mask"].bool().unsqueeze(-1)
+                    & masks["board_move_target_masks"].bool()
+                )
+                bench_move_enabled = (
+                    masks["type_mask"][:, 3].bool().view(-1, 1, 1)
+                    & masks["bench_move_source_mask"].bool().unsqueeze(-1)
+                    & masks["bench_to_board_target_masks"].bool()
                 )
 
+                mask_valid_board_move_sum += (
+                    board_move_enabled.sum(dim=(1, 2)).float().mean().item()
+                )
                 mask_valid_bench_move_sum += (
-                    masks["bench_to_board_target_masks"]
-                    .sum(dim=(1, 2))
-                    .float()
-                    .mean()
-                    .item()
+                    bench_move_enabled.sum(dim=(1, 2)).float().mean().item()
                 )
 
                 mask_samples += 1
@@ -1685,7 +1689,7 @@ class Trainer:
                 delta_attempts = anti_loop_delta.get("execution_attempts", 0)
                 delta_blocks = anti_loop_delta.get("execution_blocks", 0)
                 self.writer.add_scalar(
-                    "anti_loop/block_rate_update",
+                    "anti_loop/execution_block_rate_update",
                     delta_blocks / delta_attempts if delta_attempts > 0 else 0.0,
                     update,
                 )
@@ -1706,8 +1710,38 @@ class Trainer:
                 )
 
                 self.writer.add_scalar(
-                    "anti_loop/block_rate",
+                    "anti_loop/execution_block_rate",
                     block_rate,
+                    update,
+                )
+
+                # Bloqueios durante a criação da máscara são distintos dos
+                # bloqueios na execução de uma ação amostrada.
+                board_candidates = anti_loop_delta.get("mask_board_move_candidates", 0)
+                board_blocked = (
+                    anti_loop_delta.get("mask_board_move_blocked_anti_loop", 0)
+                    + anti_loop_delta.get("mask_board_move_blocked_seen_state", 0)
+                )
+                bench_candidates = anti_loop_delta.get("mask_bench_move_candidates", 0)
+                bench_blocked = anti_loop_delta.get("mask_bench_move_blocked_anti_loop", 0)
+                self.writer.add_scalar(
+                    "mask_audit/board_move_candidate_filter_rate",
+                    board_blocked / board_candidates if board_candidates > 0 else 0.0,
+                    update,
+                )
+                self.writer.add_scalar(
+                    "mask_audit/bench_to_board_candidate_filter_rate",
+                    bench_blocked / bench_candidates if bench_candidates > 0 else 0.0,
+                    update,
+                )
+                self.writer.add_scalar(
+                    "mask_audit/board_move_candidates_update",
+                    board_candidates,
+                    update,
+                )
+                self.writer.add_scalar(
+                    "mask_audit/bench_to_board_candidates_update",
+                    bench_candidates,
                     update,
                 )
 
@@ -1730,13 +1764,13 @@ class Trainer:
                     )
 
                     self.writer.add_scalar(
-                        "anti_loop/valid_board_moves_mean",
+                        "mask_audit/valid_board_move_pairs_mean",
                         mask_valid_board_move_sum / mask_samples,
                         update,
                     )
 
                     self.writer.add_scalar(
-                        "anti_loop/valid_bench_to_board_moves_mean",
+                        "mask_audit/valid_bench_to_board_pairs_mean",
                         mask_valid_bench_move_sum / mask_samples,
                         update,
                     )
