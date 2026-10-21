@@ -1723,7 +1723,10 @@ class Trainer:
                     + anti_loop_delta.get("mask_board_move_blocked_seen_state", 0)
                 )
                 bench_candidates = anti_loop_delta.get("mask_bench_move_candidates", 0)
-                bench_blocked = anti_loop_delta.get("mask_bench_move_blocked_anti_loop", 0)
+                bench_blocked = (
+                    anti_loop_delta.get("mask_bench_move_blocked_anti_loop", 0)
+                    + anti_loop_delta.get("mask_bench_move_blocked_seen_state", 0)
+                )
                 self.writer.add_scalar(
                     "mask_audit/board_move_candidate_filter_rate",
                     board_blocked / board_candidates if board_candidates > 0 else 0.0,
