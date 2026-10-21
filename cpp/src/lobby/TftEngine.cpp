@@ -129,6 +129,30 @@ float unit_strength(const ChampionDefinition& def, const UnitInstance& unit) {
     return std::min(1.0f, cost / 5.0f * 0.5f + star / 3.0f * 0.5f);
 }
 
+double unit_composition_score(
+    const StrategyInfo& strategy,
+    const ChampionDefinition& def,
+    std::int32_t star
+) {
+    double score = 0.0;
+    if (std::find(strategy.core_unit_ids.begin(), strategy.core_unit_ids.end(),
+                  def.internal_id) != strategy.core_unit_ids.end())
+        score += 5.0;
+    if (!strategy.composition_direction.empty() &&
+        std::find(def.traits.begin(), def.traits.end(),
+                  strategy.composition_direction) != def.traits.end())
+        score += 3.0;
+    for (const auto& trait : def.traits) {
+        if (std::find(strategy.core_traits.begin(), strategy.core_traits.end(),
+                      trait) != strategy.core_traits.end())
+            score += 2.0;
+    }
+    if (star >= 2) score += 2.0;
+    if (star >= 3) score += 4.0;
+    score += static_cast<double>(def.cost) * 0.5;
+    return score;
+}
+
 } // namespace
 
 // ============================================================
@@ -730,24 +754,8 @@ struct TFTEngine::Impl {
                     out[offset++] = 0.0f;
                     return;
                 }
-                double score = 0.0;
-                if (std::find(strategy.core_unit_ids.begin(),
-                              strategy.core_unit_ids.end(),
-                              def->internal_id) != strategy.core_unit_ids.end())
-                    score += 5.0;
-                if (!strategy.composition_direction.empty() &&
-                    std::find(def->traits.begin(), def->traits.end(),
-                              strategy.composition_direction) != def->traits.end())
-                    score += 3.0;
-                for (const auto& trait : def->traits) {
-                    if (std::find(strategy.core_traits.begin(),
-                                  strategy.core_traits.end(), trait) !=
-                        strategy.core_traits.end())
-                        score += 2.0;
-                }
-                if (unit->star >= 2) score += 2.0;
-                if (unit->star >= 3) score += 4.0;
-                score += static_cast<double>(def->cost) * 0.5;
+                const double score =
+                    unit_composition_score(strategy, *def, unit->star);
                 out[offset++] = static_cast<float>(
                     std::clamp(score / 22.5, 0.0, 1.0));
             };
@@ -2795,14 +2803,22 @@ RewardState TFTEngine::get_reward_state(std::int32_t player_id) const {
 // MÉTRICAS ANTI-LOOP
 // ============================================================
 
-double TFTEngine::get_unit_comp_score(std::int32_t player_id, const std::string& champion_api_name, std::int32_t star) const {
-    if (!impl_ || player_id < 0 || player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) throw std::out_of_range("player_id fora do intervalo.");
-    impl_->ensure_open(); const auto* def = impl_->catalog->find_by_api_name(champion_api_name); if (!def || star < 1 || star > 3) return 0.0;
-    const auto& list = impl_->player_envs[static_cast<std::size_t>(player_id)].strategy; if (list.empty()) return 0.0; const auto& state = list.back(); double score = 0.0;
-    if (std::find(state.core_unit_ids.begin(), state.core_unit_ids.end(), def->internal_id) != state.core_unit_ids.end()) score += 5.0;
-    if (!state.composition_direction.empty() && std::find(def->traits.begin(), def->traits.end(), state.composition_direction) != def->traits.end()) score += 3.0;
-    for (const auto& trait : def->traits) if (std::find(state.core_traits.begin(), state.core_traits.end(), trait) != state.core_traits.end()) score += 2.0;
-    if (star >= 2) score += 2.0; if (star >= 3) score += 4.0; score += static_cast<double>(def->cost) * 0.5; return score;
+double TFTEngine::get_unit_comp_score(
+    std::int32_t player_id,
+    const std::string& champion_api_name,
+    std::int32_t star
+) const {
+    if (!impl_ || player_id < 0 ||
+        player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) {
+        throw std::out_of_range("player_id fora do intervalo.");
+    }
+    impl_->ensure_open();
+    const auto* def = impl_->catalog->find_by_api_name(champion_api_name);
+    if (!def || star < 1 || star > 3) return 0.0;
+    const auto& list =
+        impl_->player_envs[static_cast<std::size_t>(player_id)].strategy;
+    if (list.empty()) return 0.0;
+    return unit_composition_score(list.back(), *def, star);
 }
 bool TFTEngine::is_core_unit(std::int32_t player_id, const std::string& champion_api_name) const {
     if (!impl_ || player_id < 0 || player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) return false; impl_->ensure_open(); const auto* def = impl_->catalog->find_by_api_name(champion_api_name); if (!def) return false;
