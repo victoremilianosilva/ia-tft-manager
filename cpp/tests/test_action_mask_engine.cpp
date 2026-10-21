@@ -328,6 +328,24 @@ void test_mask_diagnostics_count_real_candidates_and_seen_state_blocks() {
     assert(empty_masks.diagnostics.board_move_valid == 0);
 }
 
+void test_bench_move_mask_rejects_repeated_position() {
+    PlayerState state;
+    state.economy.level = 3;
+    state.bench[2] = make_unit("nasus");
+    state.board[10] = make_unit("briar");
+    PlayerState prior = state;
+    std::swap(prior.board[10], prior.bench[2]);
+
+    AntiLoopEngine anti_loop;
+    (void)anti_loop.register_state(anti_loop.make_board_signature(prior));
+    ActionMaskEngine engine;
+    const auto masks = engine.generate_masks(state, anti_loop);
+
+    assert(masks.bench_to_board_target_masks[2][10] == MASK_DISABLED);
+    assert(masks.diagnostics.bench_move_blocked_seen_state == 1);
+    assert(masks.diagnostics.bench_move_valid > 0);
+}
+
 void test_mask_diagnostics_count_bench_replacement_loop() {
     PlayerState state;
     state.economy.gold = 0;
@@ -414,6 +432,7 @@ int main() {
     test_nasus_briar_loop_across_rounds_is_masked();
     test_mask_diagnostics_count_real_candidates_and_seen_state_blocks();
     test_mask_diagnostics_count_bench_replacement_loop();
+    test_bench_move_mask_rejects_repeated_position();
     test_eliminated_player_can_only_pass();
     test_invalid_economy_is_rejected();
 
