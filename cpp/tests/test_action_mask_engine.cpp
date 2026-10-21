@@ -1,9 +1,9 @@
 
-#include "decision/ActionMaskEngine.hpp"
-
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
+
+#include "decision/ActionMaskEngine.hpp"
 #include <cassert>
 #include <stdexcept>
 #include <string>
@@ -43,6 +43,9 @@ void test_empty_state_keeps_pass_available() {
     assert(!masks.sell_available);
     assert(!masks.board_move_available);
     assert(!masks.bench_move_available);
+    // Fallbacks técnicos não contam como candidatos reais.
+    assert(masks.diagnostics.board_move_candidates == 0);
+    assert(masks.diagnostics.bench_move_candidates == 0);
 
     assert(masks.type_mask[static_cast<std::size_t>(ActionType::BUY)] == MASK_DISABLED);
     assert(masks.type_mask[static_cast<std::size_t>(ActionType::REROLL)] == MASK_DISABLED);
@@ -294,6 +297,64 @@ void test_nasus_briar_loop_across_rounds_is_masked() {
     );
 }
 
+void test_mask_diagnostics_count_real_candidates_and_seen_state_blocks() {
+    PlayerState state;
+    state.economy.gold = 0;
+    state.economy.level = 2;
+    state.board[3] = make_unit("nasus");
+
+    // O movimento 3 -> 4 recriaria uma posição já registrada.
+    PlayerState previously_seen = state;
+    std::swap(previously_seen.board[3], previously_seen.board[4]);
+
+    AntiLoopEngine anti_loop;
+    anti_loop.register_state(
+        anti_loop.make_board_signature(previously_seen)
+    );
+    ActionMaskEngine engine;
+    const auto masks = engine.generate_masks(state, anti_loop);
+
+    assert(masks.diagnostics.board_move_candidates > 0);
+    assert(masks.diagnostics.board_move_valid > 0);
+    assert(masks.diagnostics.board_move_blocked_seen_state == 1);
+    assert(masks.board_move_target_masks[3][4] == MASK_DISABLED);
+
+    // O fallback da matriz não pode ser confundido com um movimento real.
+    PlayerState empty_state;
+    empty_state.economy.level = 2;
+    const auto empty_masks = engine.generate_masks(empty_state, anti_loop);
+    assert(!empty_masks.board_move_available);
+    assert(empty_masks.diagnostics.board_move_candidates == 0);
+    assert(empty_masks.diagnostics.board_move_valid == 0);
+}
+
+void test_mask_diagnostics_count_bench_replacement_loop() {
+    PlayerState state;
+    state.economy.gold = 0;
+    state.economy.level = 3;
+    state.bench[2] = make_unit("nasus");
+    state.board[10] = make_unit("briar");
+
+    AntiLoopEngine anti_loop;
+    // Briar entrou no tabuleiro e deslocou Nasus para o banco.
+    anti_loop.register_move(
+        "bench_to_board",
+        2,
+        10,
+        state.board[10]->identity,
+        state.bench[2]->identity
+    );
+
+    ActionMaskEngine engine;
+    const auto masks = engine.generate_masks(state, anti_loop);
+
+    assert(masks.diagnostics.bench_move_candidates > 0);
+    assert(masks.diagnostics.bench_move_blocked_anti_loop > 0);
+    assert(
+        masks.bench_to_board_target_masks[2][10] == MASK_DISABLED
+    );
+}
+
 void test_eliminated_player_can_only_pass() {
     PlayerState state;
     state.is_alive = false;
@@ -351,6 +412,8 @@ int main() {
     test_bench_to_board_can_replace_when_physical_grid_is_full();
     test_invalid_move_pairs_are_not_enabled();
     test_nasus_briar_loop_across_rounds_is_masked();
+    test_mask_diagnostics_count_real_candidates_and_seen_state_blocks();
+    test_mask_diagnostics_count_bench_replacement_loop();
     test_eliminated_player_can_only_pass();
     test_invalid_economy_is_rejected();
 
