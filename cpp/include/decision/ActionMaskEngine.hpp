@@ -67,6 +67,7 @@ private:
     [[nodiscard]] static bool is_valid_board_move(
         const PlayerState& state,
         const AntiLoopEngine& anti_loop,
+        PositionSignature& current_signature,
         RawIndex source,
         RawIndex target,
         MaskDiagnostics& diagnostics
@@ -75,6 +76,7 @@ private:
     [[nodiscard]] static bool is_valid_bench_to_board_move(
         const PlayerState& state,
         const AntiLoopEngine& anti_loop,
+        PositionSignature& current_signature,
         RawIndex bench_slot,
         RawIndex target,
         MaskDiagnostics& diagnostics
