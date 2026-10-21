@@ -61,7 +61,7 @@ class TFTPolicy(nn.Module):
         # The native observation ends with 9 bench + 5 shop candidate records,
         # each with 7 explicit strategic features. Shared per-slot scorers make
         # each action logit depend on that candidate, not only its slot index.
-        self.candidate_feature_dim = 7
+        self.candidate_feature_dim = 8
         self.candidate_observation_dim = (action_dims[2] + action_dims[1]) * self.candidate_feature_dim
         self.shop_head = nn.Sequential(
             nn.Linear(hidden_size + self.num_action_types + self.candidate_feature_dim, 256),
