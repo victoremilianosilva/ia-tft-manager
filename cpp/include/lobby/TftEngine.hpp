@@ -341,6 +341,7 @@ struct AuditPlayerSnapshot {
     std::int32_t round_base_gold{0};
     std::int32_t round_interest{0};
     std::int32_t round_streak_gold{0};
+    std::int32_t round_win_gold{0};
     std::array<AuditUnitSnapshot, kBoardSlots> board{};
     std::array<AuditUnitSnapshot, kBenchSlots> bench{};
     std::array<AuditUnitSnapshot, kShopSlots> shop{};
