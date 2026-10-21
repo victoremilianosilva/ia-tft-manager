@@ -1,0 +1,1499 @@
+==========================================================
+TFT AI LOG · JOGADOR 7
+Partida: 2c92163f-f570-4507-9db6-7ba92daea5e6
+Seed: 20261016 | Política: determinística
+Checkpoint SHA-256: 444ad4ba5c3d813c1c01d19d8526d50f05b83ed43a80fd45a6f4372086627299
+Impacto (i): custo × estrelas × 2 (contribuição nativa da engine)
+==========================================================
+--- INÍCIO DA PARTIDA · JOGADOR 7 ---
+[14:57:49] VENDEU: Briar (i:2.0)        | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: —
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:50] COMPROU: Aatrox (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Aatrox
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:51] MOVE Bench -> Board: Aatrox (i:2.0) <-> Vazio | Rew: +0.35
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Aatrox
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:52] MOVE Board -> Board: Aatrox (i:2.0) <-> Vazio | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Aatrox
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:52] MOVE Board -> Board: Aatrox (i:2.0) <-> Vazio | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Aatrox
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:53] MOVE Board -> Board: Aatrox (i:2.0) <-> Vazio | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Aatrox
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:54] MOVE Board -> Board: Aatrox (i:2.0) <-> Vazio | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Aatrox
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:54] MOVE Board -> Board: Aatrox (i:2.0) <-> Vazio | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Aatrox
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:55] MOVE Board -> Board: Aatrox (i:2.0) <-> Vazio | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Aatrox
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:57:56] --- FIM DO ROUND 1-1 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Aatrox
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:57:56] 🛒 LOJA: Talon(i:2.0), Caitlyn(i:2.0), Talon(i:2.0), Leona(i:2.0), Twisted Fate(i:2.0)
+[14:57:56] COMPROU: Twisted Fate (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Aatrox
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:57] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.25
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_TwistedFate
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:58] COMPROU: Leona (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_TwistedFate
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:59] MOVE Bench -> Board: Leona (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Leona
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:59] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.52
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Leona
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:00] MOVE Board -> Board: Leona (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_TwistedFate
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:01] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_TwistedFate
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:01] MOVE Board -> Board: Aatrox (i:2.0) <-> Vazio | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_TwistedFate
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:02] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Leona (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Leona
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:03] --- FIM DO ROUND 1-2 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Leona
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Leo|T|1*|i:2.0]       [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:03] 🛒 LOJA: Gnar(i:4.0), Briar(i:2.0), Rek'Sai(i:2.0), Jinx(i:4.0), Akali(i:4.0)
+[14:58:04] COMPROU: Jinx (Custo 2 | i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Jinx
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:04] MOVE Bench -> Board: Jinx (i:4.0) <-> Twisted Fate (i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Jinx
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:05] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.17
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Jinx
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:06] MOVE Bench -> Board: Aatrox (i:2.0) <-> Jinx (i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Jinx
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:06] MOVE Bench -> Board: Jinx (i:4.0) <-> Twisted Fate (i:2.0) | Rew: +0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Jinx
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:07] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Jinx
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:08] MOVE Bench -> Board: Aatrox (i:2.0) <-> Leona (i:2.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:08] MOVE Bench -> Board: Leona (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:09] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Jinx (i:4.0) | Rew: -0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:10] --- FIM DO ROUND 1-3 | GOLD: 3 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Aat|F|1*|i:2.0]       [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Jin|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:10] 🛒 LOJA: Gnar(i:4.0), Cho'Gath(i:2.0), Poppy(i:2.0), Cho'Gath(i:2.0), Veigar(i:2.0)
+[14:58:11] MOVE Bench -> Board: Jinx (i:4.0) <-> Leona (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:11] VENDEU: Leona (i:2.0)        | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 4 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:12] BUY XP                       | Rew: +1.52
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:13] MOVE Board -> Board: Aatrox (i:2.0) <-> Jinx (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Anima | FOCUS: TFT17_Jinx
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:13] MOVE Board -> Board: Jinx (i:4.0) <-> Twisted Fate (i:2.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Jinx
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:14] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Aatrox (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:15] MOVE Board -> Board: Aatrox (i:2.0) <-> Jinx (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Anima | FOCUS: TFT17_Jinx
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:15] MOVE Board -> Board: Jinx (i:4.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Jinx
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:16] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:17] --- FIM DO ROUND 1-4 | GOLD: 4 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:17] 🛒 LOJA: Akali(i:4.0), Teemo(i:2.0), Zoe(i:4.0), Gwen(i:4.0), Rek'Sai(i:2.0)
+[14:58:18] COMPROU: Rek'Sai (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:18] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Vazio | Rew: +0.46
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:19] COMPROU: Gwen (Custo 2 | i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:20] MOVE Bench -> Board: Gwen (i:4.0) <-> Rek'Sai (i:2.0) | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:21] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Jinx (i:4.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:21] MOVE Bench -> Board: Jinx (i:4.0) <-> Gwen (i:4.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:22] MOVE Bench -> Board: Gwen (i:4.0) <-> Rek'Sai (i:2.0) | Rew: +0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:23] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Jinx (i:4.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:23] MOVE Bench -> Board: Jinx (i:4.0) <-> Twisted Fate (i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:24] --- FIM DO ROUND 2-1 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Rek|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Gwe|A|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Twi|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:24] 🛒 LOJA: Briar(i:2.0), Talon(i:2.0), Caitlyn(i:2.0), Maokai(i:6.0), Ezreal(i:2.0)
+[14:58:25] BUY XP                       | Rew: +0.52
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:25] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:26] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Vazio | Rew: +0.48
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:27] COMPROU: Ezreal (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 2 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:27] MOVE Bench -> Board: Ezreal (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 2 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:28] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 2 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:29] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Ezreal (i:2.0) | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 2 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:30] MOVE Bench -> Board: Ezreal (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 2 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:30] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 2 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:31] --- FIM DO ROUND 2-2 | GOLD: 9 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Gwe|A|1*|i:4.0]  [Ezr|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Rek|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:31] 🛒 LOJA: Illaoi(i:6.0), Poppy(i:2.0), Zoe(i:4.0), Talon(i:2.0), Bel'Veth(i:4.0)
+[14:58:32] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Gwen (i:4.0) | Rew: -0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:32] MOVE Bench -> Board: Gwen (i:4.0) <-> Twisted Fate (i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:33] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Ezreal (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:34] MOVE Bench -> Board: Ezreal (i:2.0) <-> Gwen (i:4.0) | Rew: -0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:34] MOVE Bench -> Board: Gwen (i:4.0) <-> Twisted Fate (i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:35] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Ezreal (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:36] MOVE Bench -> Board: Ezreal (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:37] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:37] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Gwen (i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:38] --- FIM DO ROUND 2-3 | GOLD: 17 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Rek|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Ezr|F|1*|i:2.0]  [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Gwe|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:38] 🛒 LOJA: Urgot(i:6.0), Teemo(i:2.0), Nasus(i:2.0), Akali(i:4.0), Karma(i:8.0)
+[14:58:39] MOVE Bench -> Board: Gwen (i:4.0) <-> Rek'Sai (i:2.0) | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:39] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:40] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Gwen (i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:41] MOVE Bench -> Board: Gwen (i:4.0) <-> Jinx (i:4.0) | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:41] MOVE Bench -> Board: Jinx (i:4.0) <-> Twisted Fate (i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:42] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:43] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Jinx (i:4.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:44] MOVE Bench -> Board: Jinx (i:4.0) <-> Twisted Fate (i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:44] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:45] --- FIM DO ROUND 2-4 | GOLD: 24 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Ezr|F|1*|i:2.0]  [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Gwe|A|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Rek|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:45] 🛒 LOJA: Samira(i:6.0), Diana(i:6.0), Cho'Gath(i:2.0), Aatrox(i:2.0), Lissandra(i:2.0)
+[14:58:46] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 20 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:46] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 16 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:47] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:48] VENDEU: Rek'Sai (i:2.0)      | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 13 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:49] BUY XP                       | Rew: +0.52
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:49] COMPROU: Aatrox (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 8 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:50] MOVE Bench -> Board: Aatrox (i:2.0) <-> Twisted Fate (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 8 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:51] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Jinx (i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 8 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:51] MOVE Bench -> Board: Jinx (i:4.0) <-> Vazio | Rew: -0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 8 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:52] --- FIM DO ROUND 2-5 | GOLD: 15 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Ezr|F|1*|i:2.0]  [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Jin|F|1*|i:4.0]       [ . ]        [Gwe|A|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:52] 🛒 LOJA: Jax(i:4.0), Urgot(i:6.0), Meepsie(i:4.0), Zoe(i:4.0), Gnar(i:4.0)
+[14:58:53] MOVE Board -> Board: Jinx (i:4.0) <-> Vazio | Rew: +0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 15 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:53] MOVE Board -> Board: Aatrox (i:2.0) <-> Jinx (i:4.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 15 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:54] MOVE Board -> Board: Jinx (i:4.0) <-> Ezreal (i:2.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 15 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:55] MOVE Board -> Board: Ezreal (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 15 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:56] MOVE Board -> Board: Aatrox (i:2.0) <-> Jinx (i:4.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 15 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:56] MOVE Board -> Board: Jinx (i:4.0) <-> Ezreal (i:2.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 15 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:57] MOVE Board -> Board: Ezreal (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 15 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:58] MOVE Board -> Board: Aatrox (i:2.0) <-> Jinx (i:4.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 15 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:58] MOVE Board -> Board: Jinx (i:4.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 15 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:59] --- FIM DO ROUND 2-6 | GOLD: 21 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Aat|F|1*|i:2.0]       [ . ]        [Ezr|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Jin|F|1*|i:4.0]  [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Gwe|A|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:59] 🛒 LOJA: Jax(i:4.0), Caitlyn(i:2.0), Lulu(i:6.0), Nasus(i:2.0), Mordekaiser(i:4.0)
+[14:59:00] MOVE Board -> Board: Aatrox (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 21 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:00] MOVE Board -> Board: Aatrox (i:2.0) <-> Jinx (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 21 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:01] MOVE Board -> Board: Jinx (i:4.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 21 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:02] MOVE Board -> Board: Aatrox (i:2.0) <-> Vazio | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 21 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:03] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Jinx (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 21 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:03] MOVE Board -> Board: Jinx (i:4.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 21 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:04] MOVE Board -> Board: Aatrox (i:2.0) <-> Twisted Fate (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 21 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:05] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Jinx (i:4.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 21 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:05] MOVE Board -> Board: Jinx (i:4.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 21 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:59:06] --- FIM DO ROUND 2-7 | GOLD: 28 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]        [Ezr|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Twi|C|1*|i:2.0]  [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Gwe|A|1*|i:4.0]  [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:06] 🛒 LOJA: Nasus(i:2.0), Akali(i:4.0), Fizz(i:6.0), Aatrox(i:2.0), Pantheon(i:4.0)
+[14:59:07] MOVE Board -> Board: Aatrox (i:2.0) <-> Vazio | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:08] MOVE Board -> Board: Aatrox (i:2.0) <-> Jinx (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:08] MOVE Board -> Board: Jinx (i:4.0) <-> Twisted Fate (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:09] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:10] MOVE Board -> Board: Aatrox (i:2.0) <-> Ezreal (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:10] MOVE Board -> Board: Ezreal (i:2.0) <-> Twisted Fate (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:11] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Jinx (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:12] MOVE Board -> Board: Jinx (i:4.0) <-> Ezreal (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:12] MOVE Board -> Board: Ezreal (i:2.0) <-> Twisted Fate (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:59:13] --- FIM DO ROUND 3-1 | GOLD: 36 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Ezr|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Gwe|A|1*|i:4.0]  [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:13] 🛒 LOJA: Ornn(i:6.0), Rhaast(i:6.0), Jax(i:4.0), Jax(i:4.0), Nasus(i:2.0)
+[14:59:14] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Jinx (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 36 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:15] MOVE Board -> Board: Jinx (i:4.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 36 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:15] MOVE Board -> Board: Aatrox (i:2.0) <-> Twisted Fate (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 36 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:16] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Ezreal (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 36 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:17] MOVE Board -> Board: Ezreal (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 36 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:17] MOVE Board -> Board: Aatrox (i:2.0) <-> Twisted Fate (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 36 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:18] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Ezreal (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 36 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:19] MOVE Board -> Board: Ezreal (i:2.0) <-> Jinx (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 36 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:19] MOVE Board -> Board: Jinx (i:4.0) <-> Twisted Fate (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 36 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:59:20] --- FIM DO ROUND 3-2 | GOLD: 46 ---
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Ezr|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Gwe|A|1*|i:4.0]  [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:20] 🛒 LOJA: Fizz(i:6.0), Poppy(i:2.0), Rek'Sai(i:2.0), Pyke(i:4.0), Talon(i:2.0)
+[14:59:21] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Ezreal (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 46 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:22] MOVE Board -> Board: Ezreal (i:2.0) <-> Jinx (i:4.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 46 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:22] MOVE Board -> Board: Jinx (i:4.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 46 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:23] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 42 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:24] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 38 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:24] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 34 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:25] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 30 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:26] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 26 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:26] BUY XP                       | Rew: +0.52
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 22 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:59:27] --- FIM DO ROUND 3-3 | GOLD: 29 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Ezr|F|1*|i:2.0]       [ . ]        [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Gwe|A|1*|i:4.0]  [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:27] 🛒 LOJA: Kindred(i:8.0), Urgot(i:6.0), Akali(i:4.0), Zoe(i:4.0), Twisted Fate(i:2.0)
+[14:59:28] MOVE Board -> Board: Aatrox (i:2.0) <-> Ezreal (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 29 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:29] MOVE Board -> Board: Ezreal (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 29 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:29] MOVE Board -> Board: Aatrox (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 29 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:30] MOVE Board -> Board: Aatrox (i:2.0) <-> Ezreal (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 29 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:31] MOVE Board -> Board: Ezreal (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 29 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:31] MOVE Board -> Board: Aatrox (i:2.0) <-> Jinx (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 29 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:32] MOVE Board -> Board: Jinx (i:4.0) <-> Ezreal (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 29 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:33] MOVE Board -> Board: Ezreal (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 29 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:34] MOVE Board -> Board: Aatrox (i:2.0) <-> Jinx (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 29 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:59:34] --- FIM DO ROUND 3-4 | GOLD: 36 ---
+    STRATEGY: FAST8 | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Aat|F|1*|i:2.0]       [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Ezr|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Gwe|A|1*|i:4.0]  [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:34] 🛒 LOJA: Lissandra(i:2.0), Fizz(i:6.0), Gragas(i:4.0), Viktor(i:6.0), Bel'Veth(i:4.0)
+[14:59:35] MOVE Board -> Board: Jinx (i:4.0) <-> Ezreal (i:2.0) | Rew: -0.05
+    STRATEGY: FAST8 | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 36 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:36] MOVE Board -> Board: Ezreal (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: FAST8 | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 36 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:36] MOVE Board -> Board: Aatrox (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: FAST8 | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 36 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:37] MOVE Board -> Board: Aatrox (i:2.0) <-> Ezreal (i:2.0) | Rew: -0.05
+    STRATEGY: FAST8 | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 36 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:38] MOVE Board -> Board: Ezreal (i:2.0) <-> Jinx (i:4.0) | Rew: -0.05
+    STRATEGY: FAST8 | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 36 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:38] MOVE Board -> Board: Jinx (i:4.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: FAST8 | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 36 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:39] MOVE Board -> Board: Aatrox (i:2.0) <-> Gwen (i:4.0) | Rew: -0.03
+    STRATEGY: FAST8 | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 36 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:40] MOVE Board -> Board: Gwen (i:4.0) <-> Jinx (i:4.0) | Rew: -0.03
+    STRATEGY: FAST8 | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 36 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:41] MOVE Board -> Board: Jinx (i:4.0) <-> Ezreal (i:2.0) | Rew: -0.05
+    STRATEGY: FAST8 | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 36 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:59:41] --- FIM DO ROUND 3-5 | GOLD: 45 ---
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Gwe|A|1*|i:4.0]       [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Ezr|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 assassin(s) na frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:41] 🛒 LOJA: Nami(i:8.0), Kindred(i:8.0), Diana(i:6.0), Aurelion Sol(i:8.0), Kindred(i:8.0)
+[14:59:42] MOVE Board -> Board: Ezreal (i:2.0) <-> Gwen (i:4.0) | Rew: +0.03
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Jinx
+    GOLD: 45 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:43] MOVE Board -> Board: Gwen (i:4.0) <-> Vazio | Rew: +0.03
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 45 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:43] MOVE Board -> Board: Gwen (i:4.0) <-> Ezreal (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 45 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:44] MOVE Board -> Board: Ezreal (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 45 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:45] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Gwen (i:4.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 45 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:45] MOVE Board -> Board: Gwen (i:4.0) <-> Ezreal (i:2.0) | Rew: -0.01
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 45 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:46] MOVE Board -> Board: Ezreal (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 45 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:47] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Aatrox (i:2.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 45 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:48] MOVE Board -> Board: Aatrox (i:2.0) <-> Ezreal (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 45 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:59:48] --- FIM DO ROUND 3-6 | GOLD: 55 ---
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Aat|F|1*|i:2.0]       [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Ezr|F|1*|i:2.0] 
+      [ . ]             [ . ]             [ . ]        [Gwe|A|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 assassin(s) na frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:48] 🛒 LOJA: Pyke(i:4.0), Akali(i:4.0), Karma(i:8.0), Diana(i:6.0), Veigar(i:2.0)
+[14:59:49] MOVE Board -> Board: Ezreal (i:2.0) <-> Gwen (i:4.0) | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 55 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:50] MOVE Board -> Board: Gwen (i:4.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 55 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:50] MOVE Board -> Board: Aatrox (i:2.0) <-> Ezreal (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 55 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:51] MOVE Board -> Board: Ezreal (i:2.0) <-> Gwen (i:4.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 55 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:52] MOVE Board -> Board: Gwen (i:4.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 55 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:53] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Ezreal (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 55 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:53] MOVE Board -> Board: Ezreal (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 55 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:54] MOVE Board -> Board: Aatrox (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 55 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:55] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Ezreal (i:2.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 55 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:59:55] --- FIM DO ROUND 3-7 | GOLD: 66 ---
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Aat|F|1*|i:2.0]       [ . ]        [Gwe|A|1*|i:4.0]       [ . ]             [ . ]             [ . ]        [Ezr|F|1*|i:2.0] 
+      [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 assassin(s) na frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:55] 🛒 LOJA: Miss Fortune(i:6.0), Gwen(i:4.0), Ornn(i:6.0), Diana(i:6.0), Nasus(i:2.0)
+[14:59:56] MOVE Board -> Board: Ezreal (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 66 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:57] MOVE Board -> Board: Aatrox (i:2.0) <-> Vazio | Rew: +0.03
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 66 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:57] MOVE Board -> Board: Aatrox (i:2.0) <-> Ezreal (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 66 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:58] MOVE Board -> Board: Ezreal (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 66 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:59] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 66 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:00] MOVE Board -> Board: Aatrox (i:2.0) <-> Ezreal (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 66 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:00] MOVE Board -> Board: Ezreal (i:2.0) <-> Twisted Fate (i:2.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 66 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:01] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Gwen (i:4.0) | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 66 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:02] MOVE Board -> Board: Gwen (i:4.0) <-> Ezreal (i:2.0) | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 66 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:02] --- FIM DO ROUND 4-1 | GOLD: 77 ---
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Gwe|A|1*|i:4.0]       [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Ezr|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]        [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 assassin(s) na frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:02] 🛒 LOJA: Mordekaiser(i:4.0), Pyke(i:4.0), Samira(i:6.0), Milio(i:4.0), Pantheon(i:4.0)
+[15:00:04] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 73 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:04] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 69 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:05] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 65 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:06] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 61 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:07] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 57 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:07] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 53 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:08] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 49 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:09] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 45 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:09] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 41 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:10] --- FIM DO ROUND 4-2 | GOLD: 50 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Gwe|A|1*|i:4.0]       [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Ezr|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]        [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 assassin(s) na frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:10] 🛒 LOJA: Tahm Kench(i:8.0), Lulu(i:6.0), Bel'Veth(i:4.0), Gragas(i:4.0), Gwen(i:4.0)
+[15:00:11] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 46 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:12] BUY XP                       | Rew: +0.52
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 42 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:13] MOVE Board -> Board: Ezreal (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 42 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:14] MOVE Board -> Board: Aatrox (i:2.0) <-> Gwen (i:4.0) | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 42 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:14] MOVE Board -> Board: Gwen (i:4.0) <-> Ezreal (i:2.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 42 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:15] MOVE Board -> Board: Ezreal (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 42 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:16] MOVE Board -> Board: Aatrox (i:2.0) <-> Twisted Fate (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 42 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:16] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Ezreal (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 42 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:17] MOVE Board -> Board: Ezreal (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 42 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:18] --- FIM DO ROUND 4-3 | GOLD: 52 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Twi|C|1*|i:2.0]       [ . ]        [Ezr|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Gwe|A|1*|i:4.0]  [Aat|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]        [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 assassin(s) na frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:18] 🛒 LOJA: Pantheon(i:4.0), Samira(i:6.0), Gnar(i:4.0), Riven(i:8.0), Karma(i:8.0)
+[15:00:19] MOVE Board -> Board: Aatrox (i:2.0) <-> Twisted Fate (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 52 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:20] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 48 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:21] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 44 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:21] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 40 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:22] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 36 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:23] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 36 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:23] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 36 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:24] MOVE Board -> Board: Aatrox (i:2.0) <-> Gwen (i:4.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 36 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:25] MOVE Board -> Board: Gwen (i:4.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 36 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:26] --- FIM DO ROUND 4-4 | GOLD: 45 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Gwe|A|1*|i:4.0]       [ . ]        [Ezr|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0] 
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 assassin(s) na frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:26] 🛒 LOJA: Aurora(i:6.0), Aurelion Sol(i:8.0), Zoe(i:4.0), Gwen(i:4.0), Urgot(i:6.0)
+[15:00:27] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 41 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:28] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 37 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:28] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 33 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:29] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 29 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:30] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Gwen
+    GOLD: 25 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:30] COMPROU: Gwen (Custo 2 | i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Gwen
+    GOLD: 23 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:31] MOVE Bench -> Board: Gwen (i:4.0) <-> Vazio | Rew: +0.39
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Gwen
+    GOLD: 23 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:32] COMPROU: Aurelion Sol (Custo 4 | i:8.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:33] MOVE Bench -> Board: Aurelion Sol (i:8.0) <-> Vazio | Rew: +0.53
+    STRATEGY: ECON | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:33] --- FIM DO ROUND 4-5 | GOLD: 26 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Gwe|A|1*|i:4.0]       [ . ]        [Ezr|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0] 
+      [ . ]             [ . ]        [Gwe|A|1*|i:4.0]  [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aur|T|1*|i:8.0]       [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+⚠️ 2 assassin(s) na frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:33] 🛒 LOJA: Twisted Fate(i:2.0), Master Yi(i:8.0), Pantheon(i:4.0), Kai'Sa(i:6.0), Miss Fortune(i:6.0)
+[15:00:35] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 22 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:35] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 18 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:36] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 14 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:37] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 10 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:38] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:38] BUY XP                       | Rew: +0.52
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 2 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:39] COMPROU: Pantheon (Custo 2 | i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:40] MOVE Bench -> Board: Pantheon (i:4.0) <-> Gwen (i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:40] MOVE Bench -> Board: Gwen (i:4.0) <-> Vazio | Rew: +0.64
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:41] --- FIM DO ROUND 4-6 | GOLD: 6 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Gwe|A|1*|i:4.0]       [ . ]        [Ezr|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0] 
+      [ . ]             [ . ]        [Pan|T|1*|i:4.0]  [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aur|T|1*|i:8.0]  [Gwe|A|1*|i:4.0]  [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+⚠️ 1 assassin(s) na frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:41] 🛒 LOJA: Kai'Sa(i:6.0), Zed(i:10.0), Aurelion Sol(i:8.0), Illaoi(i:6.0), Pyke(i:4.0)
+[15:00:42] COMPROU: Illaoi (Custo 3 | i:6.0) | Rew: +0.05
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:43] MOVE Bench -> Board: Illaoi (i:6.0) <-> Pantheon (i:4.0) | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:44] MOVE Bench -> Board: Pantheon (i:4.0) <-> Gwen (i:4.0) | Rew: -0.04
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:45] MOVE Bench -> Board: Gwen (i:4.0) <-> Illaoi (i:6.0) | Rew: -0.06
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:45] MOVE Bench -> Board: Illaoi (i:6.0) <-> Pantheon (i:4.0) | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:46] MOVE Bench -> Board: Pantheon (i:4.0) <-> Gwen (i:4.0) | Rew: +0.05
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:47] MOVE Bench -> Board: Gwen (i:4.0) <-> Aurelion Sol (i:8.0) | Rew: +0.07
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:47] MOVE Bench -> Board: Aurelion Sol (i:8.0) <-> Pantheon (i:4.0) | Rew: -0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:48] MOVE Bench -> Board: Pantheon (i:4.0) <-> Illaoi (i:6.0) | Rew: -0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:49] --- FIM DO ROUND 4-7 | GOLD: 9 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Gwe|A|1*|i:4.0]       [ . ]        [Ezr|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0] 
+      [ . ]             [ . ]        [Aur|T|1*|i:8.0]  [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Gwe|A|1*|i:4.0]  [Pan|T|1*|i:4.0]  [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+⚠️ 1 assassin(s) na frontline
+
+--- ESTADO DO BANCO ---
+[Ill|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:49] 🛒 LOJA: Maokai(i:6.0), Tahm Kench(i:8.0), Bard(i:10.0), Jinx(i:4.0), Xayah(i:8.0)
+[15:00:50] MOVE Bench -> Board: Illaoi (i:6.0) <-> Aurelion Sol (i:8.0) | Rew: +0.04
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:51] MOVE Bench -> Board: Aurelion Sol (i:8.0) <-> Pantheon (i:4.0) | Rew: -0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:52] MOVE Bench -> Board: Pantheon (i:4.0) <-> Illaoi (i:6.0) | Rew: -0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:52] MOVE Bench -> Board: Illaoi (i:6.0) <-> Gwen (i:4.0) | Rew: -0.03
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:53] MOVE Bench -> Board: Gwen (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.05
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:54] MOVE Bench -> Board: Pantheon (i:4.0) <-> Aurelion Sol (i:8.0) | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:54] MOVE Bench -> Board: Aurelion Sol (i:8.0) <-> Gwen (i:4.0) | Rew: +0.03
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:55] MOVE Bench -> Board: Gwen (i:4.0) <-> Pantheon (i:4.0) | Rew: +0.04
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:56] MOVE Bench -> Board: Pantheon (i:4.0) <-> Aurelion Sol (i:8.0) | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:57] --- FIM DO ROUND 5-1 | GOLD: 9 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:57] 🛒 LOJA: None, None, None, None, None
+[15:00:58] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:01:04] --- FIM DO ROUND 5-2 | GOLD: 9 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:04] 🛒 LOJA: None, None, None, None, None
+[15:01:06] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:01:12] --- FIM DO ROUND 5-3 | GOLD: 9 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:12] 🛒 LOJA: None, None, None, None, None
+[15:01:13] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:01:20] --- FIM DO ROUND 5-4 | GOLD: 9 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:20] 🛒 LOJA: None, None, None, None, None
+[15:01:21] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:01:27] --- FIM DO ROUND 5-5 | GOLD: 9 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:27] 🛒 LOJA: None, None, None, None, None
+[15:01:29] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:01:35] --- FIM DO ROUND 5-6 | GOLD: 9 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:35] 🛒 LOJA: None, None, None, None, None
+[15:01:37] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:01:43] --- FIM DO ROUND 5-7 | GOLD: 9 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:43] 🛒 LOJA: None, None, None, None, None
+[15:01:44] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:01:51] --- FIM DO ROUND 6-1 | GOLD: 9 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:51] 🛒 LOJA: None, None, None, None, None
+[15:01:52] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:01:58] --- FIM DO ROUND 6-2 | GOLD: 9 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:58] 🛒 LOJA: None, None, None, None, None
+[15:02:00] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:02:06] --- FIM DO ROUND 6-3 | GOLD: 9 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:02:06] 🛒 LOJA: None, None, None, None, None
+[15:02:08] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:02:14] --- FIM DO ROUND 6-4 | GOLD: 9 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:02:14] 🛒 LOJA: None, None, None, None, None
+[15:02:15] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:02:22] --- FIM DO ROUND 6-5 | GOLD: 9 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:02:22] 🛒 LOJA: None, None, None, None, None
+[15:02:23] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:02:29] --- FIM DO ROUND 6-6 | GOLD: 9 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Space Groove | FOCUS: TFT17_AurelionSol
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:02:29] 🛒 LOJA: None, None, None, None, None
+
+========================================
+ GAME OVER - RELATÓRIO FINAL
+========================================

@@ -1,0 +1,1786 @@
+==========================================================
+TFT AI LOG · JOGADOR 3
+Partida: 2c92163f-f570-4507-9db6-7ba92daea5e6
+Seed: 20261016 | Política: determinística
+Checkpoint SHA-256: 444ad4ba5c3d813c1c01d19d8526d50f05b83ed43a80fd45a6f4372086627299
+Impacto (i): custo × estrelas × 2 (contribuição nativa da engine)
+==========================================================
+--- INÍCIO DA PARTIDA · JOGADOR 3 ---
+[14:57:49] VENDEU: Briar (i:2.0)        | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: —
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:50] COMPROU: Veigar (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Veigar
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:51] MOVE Bench -> Board: Veigar (i:2.0) <-> Vazio | Rew: +0.30
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Veigar
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:52] MOVE Board -> Board: Veigar (i:2.0) <-> Vazio | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Veigar
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:52] MOVE Board -> Board: Veigar (i:2.0) <-> Vazio | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Veigar
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:53] MOVE Board -> Board: Veigar (i:2.0) <-> Vazio | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Veigar
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:54] MOVE Board -> Board: Veigar (i:2.0) <-> Vazio | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Veigar
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:54] MOVE Board -> Board: Veigar (i:2.0) <-> Vazio | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Veigar
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:55] MOVE Board -> Board: Veigar (i:2.0) <-> Vazio | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Veigar
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:57:56] --- FIM DO ROUND 1-1 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Veigar
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:57:56] 🛒 LOJA: Nasus(i:2.0), Rek'Sai(i:2.0), Talon(i:2.0), Poppy(i:2.0), Nasus(i:2.0)
+[14:57:56] COMPROU: Nasus (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Veigar
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:57] MOVE Bench -> Board: Nasus (i:2.0) <-> Vazio | Rew: +0.25
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Nasus
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:58] COMPROU: Poppy (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Nasus
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:59] MOVE Bench -> Board: Poppy (i:2.0) <-> Nasus (i:2.0) | Rew: +0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Poppy
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:59] MOVE Bench -> Board: Nasus (i:2.0) <-> Vazio | Rew: +0.47
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Poppy
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:00] MOVE Board -> Board: Poppy (i:2.0) <-> Nasus (i:2.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Nasus
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:01] MOVE Board -> Board: Nasus (i:2.0) <-> Vazio | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Nasus
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:01] MOVE Board -> Board: Veigar (i:2.0) <-> Poppy (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Nasus
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:02] MOVE Board -> Board: Poppy (i:2.0) <-> Nasus (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Poppy
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:03] --- FIM DO ROUND 1-2 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Poppy
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:03] 🛒 LOJA: Jax(i:4.0), Aatrox(i:2.0), Briar(i:2.0), Briar(i:2.0), Briar(i:2.0)
+[14:58:04] COMPROU: Briar (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Briar
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:04] MOVE Bench -> Board: Briar (i:2.0) <-> Veigar (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Briar
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:05] MOVE Bench -> Board: Veigar (i:2.0) <-> Nasus (i:2.0) | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Briar
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:06] MOVE Bench -> Board: Nasus (i:2.0) <-> Briar (i:2.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Briar
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:06] MOVE Bench -> Board: Briar (i:2.0) <-> Veigar (i:2.0) | Rew: -0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Briar
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:07] MOVE Bench -> Board: Veigar (i:2.0) <-> Nasus (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Briar
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:08] MOVE Bench -> Board: Nasus (i:2.0) <-> Poppy (i:2.0) | Rew: -0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Briar
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:08] MOVE Bench -> Board: Poppy (i:2.0) <-> Veigar (i:2.0) | Rew: -0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Briar
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:09] MOVE Bench -> Board: Veigar (i:2.0) <-> Briar (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Briar
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:10] --- FIM DO ROUND 1-3 | GOLD: 4 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Briar
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Nas|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Bri|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:10] 🛒 LOJA: Veigar(i:2.0), Poppy(i:2.0), Lissandra(i:2.0), Pyke(i:4.0), Akali(i:4.0)
+[14:58:11] VENDEU: Briar (i:2.0)        | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Nasus
+    GOLD: 5 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:11] COMPROU: Pyke (Custo 2 | i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:12] MOVE Bench -> Board: Pyke (i:4.0) <-> Poppy (i:2.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:13] MOVE Bench -> Board: Poppy (i:2.0) <-> Veigar (i:2.0) | Rew: -0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:13] MOVE Bench -> Board: Veigar (i:2.0) <-> Pyke (i:4.0) | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:14] MOVE Bench -> Board: Pyke (i:4.0) <-> Poppy (i:2.0) | Rew: -0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:15] MOVE Bench -> Board: Poppy (i:2.0) <-> Veigar (i:2.0) | Rew: -0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:15] MOVE Bench -> Board: Veigar (i:2.0) <-> Nasus (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:16] VENDEU: Nasus (i:2.0)        | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 4 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:17] --- FIM DO ROUND 1-4 | GOLD: 8 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:17] 🛒 LOJA: Lissandra(i:2.0), Akali(i:4.0), Ezreal(i:2.0), Milio(i:4.0), Zoe(i:4.0)
+[14:58:18] COMPROU: Zoe (Custo 2 | i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:18] MOVE Bench -> Board: Zoe (i:4.0) <-> Vazio | Rew: +0.52
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Zoe
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:19] COMPROU: Milio (Custo 2 | i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Zoe
+    GOLD: 4 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:20] MOVE Bench -> Board: Milio (i:4.0) <-> Zoe (i:4.0) | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Milio
+    GOLD: 4 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:21] MOVE Bench -> Board: Zoe (i:4.0) <-> Pyke (i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Milio
+    GOLD: 4 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:21] MOVE Bench -> Board: Pyke (i:4.0) <-> Milio (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 4 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:22] MOVE Bench -> Board: Milio (i:4.0) <-> Zoe (i:4.0) | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 4 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:23] MOVE Bench -> Board: Zoe (i:4.0) <-> Pyke (i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Zoe
+    GOLD: 4 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:23] MOVE Bench -> Board: Pyke (i:4.0) <-> Poppy (i:2.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Zoe
+    GOLD: 4 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:24] --- FIM DO ROUND 2-1 | GOLD: 10 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Zoe
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Zoe|C|1*|i:4.0]  [Mil|C|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 3 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Pop|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:24] 🛒 LOJA: Pantheon(i:4.0), Aurora(i:6.0), Teemo(i:2.0), Pantheon(i:4.0), Akali(i:4.0)
+[14:58:25] MOVE Bench -> Board: Poppy (i:2.0) <-> Zoe (i:4.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Milio
+    GOLD: 10 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:25] MOVE Bench -> Board: Zoe (i:4.0) <-> Pyke (i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Milio
+    GOLD: 10 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:26] MOVE Bench -> Board: Pyke (i:4.0) <-> Poppy (i:2.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 10 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:27] MOVE Bench -> Board: Poppy (i:2.0) <-> Milio (i:4.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 10 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:27] MOVE Bench -> Board: Milio (i:4.0) <-> Pyke (i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Milio
+    GOLD: 10 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:28] MOVE Bench -> Board: Pyke (i:4.0) <-> Zoe (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Milio
+    GOLD: 10 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:29] MOVE Bench -> Board: Zoe (i:4.0) <-> Milio (i:4.0) | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Zoe
+    GOLD: 10 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:30] MOVE Bench -> Board: Milio (i:4.0) <-> Pyke (i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Zoe
+    GOLD: 10 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:30] MOVE Bench -> Board: Pyke (i:4.0) <-> Zoe (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 10 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:31] --- FIM DO ROUND 2-2 | GOLD: 16 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Pyk|F|1*|i:4.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mil|C|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Zoe|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:31] 🛒 LOJA: Lulu(i:6.0), Veigar(i:2.0), Twisted Fate(i:2.0), Jinx(i:4.0), Milio(i:4.0)
+[14:58:32] MOVE Bench -> Board: Zoe (i:4.0) <-> Poppy (i:2.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 16 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:32] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:33] VENDEU: Poppy (i:2.0)        | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 13 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:34] BUY XP                       | Rew: +1.52
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:34] COMPROU: Jinx (Custo 2 | i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 7 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:35] MOVE Bench -> Board: Jinx (i:4.0) <-> Pyke (i:4.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Jinx
+    GOLD: 7 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:36] MOVE Bench -> Board: Pyke (i:4.0) <-> Zoe (i:4.0) | Rew: -0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Jinx
+    GOLD: 7 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:37] MOVE Bench -> Board: Zoe (i:4.0) <-> Jinx (i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Zoe
+    GOLD: 7 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:37] MOVE Bench -> Board: Jinx (i:4.0) <-> Vazio | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Zoe
+    GOLD: 7 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:38] --- FIM DO ROUND 2-3 | GOLD: 13 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Zoe
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Zoe|C|1*|i:4.0]  [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mil|C|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:38] 🛒 LOJA: Ezreal(i:2.0), Jinx(i:4.0), Maokai(i:6.0), Talon(i:2.0), Diana(i:6.0)
+[14:58:39] COMPROU: Talon (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Zoe
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:39] MOVE Bench -> Board: Talon (i:2.0) <-> Zoe (i:4.0) | Rew: -0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:40] MOVE Bench -> Board: Zoe (i:4.0) <-> Pyke (i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Zoe
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:41] MOVE Bench -> Board: Pyke (i:4.0) <-> Talon (i:2.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:41] MOVE Bench -> Board: Talon (i:2.0) <-> Zoe (i:4.0) | Rew: -0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:42] MOVE Bench -> Board: Zoe (i:4.0) <-> Pyke (i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Zoe
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:43] MOVE Bench -> Board: Pyke (i:4.0) <-> Milio (i:4.0) | Rew: -0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Zoe
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:44] MOVE Bench -> Board: Milio (i:4.0) <-> Zoe (i:4.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Milio
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:44] MOVE Bench -> Board: Zoe (i:4.0) <-> Talon (i:2.0) | Rew: +0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Milio
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:45] --- FIM DO ROUND 2-4 | GOLD: 19 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Milio
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mil|C|1*|i:4.0]  [Zoe|C|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 3 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Tal|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:45] 🛒 LOJA: Bel'Veth(i:4.0), Bel'Veth(i:4.0), Akali(i:4.0), Miss Fortune(i:6.0), Rek'Sai(i:2.0)
+[14:58:46] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Milio
+    GOLD: 15 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:46] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Milio
+    GOLD: 11 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:47] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Milio
+    GOLD: 7 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:48] VENDEU: Talon (i:2.0)        | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Milio
+    GOLD: 8 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:49] BUY XP                       | Rew: +0.52
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Milio
+    GOLD: 4 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:49] COMPROU: Miss Fortune (Custo 3 | i:6.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:50] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Milio (i:4.0) | Rew: +0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:51] MOVE Bench -> Board: Milio (i:4.0) <-> Zoe (i:4.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:51] MOVE Bench -> Board: Zoe (i:4.0) <-> Vazio | Rew: +0.48
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:52] --- FIM DO ROUND 2-5 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mis|T|1*|i:6.0]  [Mil|C|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Jin|F|1*|i:4.0]  [Zoe|C|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:52] 🛒 LOJA: Aatrox(i:2.0), Rek'Sai(i:2.0), Akali(i:4.0), Pantheon(i:4.0), Jinx(i:4.0)
+[14:58:53] COMPROU: Pantheon (Custo 2 | i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 5 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:53]  ⬆️ SINERGIA: REPLICATOR nível 1
+[14:58:53] MOVE Bench -> Board: Pantheon (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 5 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:54] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Milio (i:4.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 5 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:55] MOVE Bench -> Board: Milio (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 5 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:56] MOVE Bench -> Board: Pantheon (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 5 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:56] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Milio (i:4.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 5 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:57] MOVE Bench -> Board: Milio (i:4.0) <-> Pyke (i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 5 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:58] MOVE Bench -> Board: Pyke (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 5 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:58] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Pantheon (i:4.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 5 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:59] --- FIM DO ROUND 2-6 | GOLD: 12 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Pyk|F|1*|i:4.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mil|C|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Jin|F|1*|i:4.0]  [Zoe|C|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Pan|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:59] 🛒 LOJA: Urgot(i:6.0), Rek'Sai(i:2.0), Aurora(i:6.0), Akali(i:4.0), Aatrox(i:2.0)
+[14:59:00] MOVE Bench -> Board: Pantheon (i:4.0) <-> Pyke (i:4.0) | Rew: +0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:00] MOVE Bench -> Board: Pyke (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:01] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Pantheon (i:4.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:02] MOVE Bench -> Board: Pantheon (i:4.0) <-> Milio (i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:03] MOVE Bench -> Board: Milio (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:03] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Pyke (i:4.0) | Rew: +0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:04] MOVE Bench -> Board: Pyke (i:4.0) <-> Milio (i:4.0) | Rew: -0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:05] MOVE Bench -> Board: Milio (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:05] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Pyke (i:4.0) | Rew: +0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:59:06] --- FIM DO ROUND 2-7 | GOLD: 19 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mis|T|1*|i:6.0]  [Mil|C|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Jin|F|1*|i:4.0]  [Zoe|C|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Pyk|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:06] 🛒 LOJA: Jax(i:4.0), Veigar(i:2.0), Gnar(i:4.0), Gragas(i:4.0), Rhaast(i:6.0)
+[14:59:07] MOVE Bench -> Board: Pyke (i:4.0) <-> Jinx (i:4.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:08] MOVE Bench -> Board: Jinx (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:08] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Milio (i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:09] MOVE Bench -> Board: Milio (i:4.0) <-> Jinx (i:4.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:10] MOVE Bench -> Board: Jinx (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:10] MOVE Bench -> Board: Pantheon (i:4.0) <-> Milio (i:4.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:11] MOVE Bench -> Board: Milio (i:4.0) <-> Jinx (i:4.0) | Rew: -0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:12] MOVE Bench -> Board: Jinx (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:12] MOVE Bench -> Board: Pantheon (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:59:13] --- FIM DO ROUND 3-1 | GOLD: 25 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Jin|F|1*|i:4.0]  [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mil|C|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]  [Zoe|C|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Mis|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:13] 🛒 LOJA: Bel'Veth(i:4.0), Talon(i:2.0), Veigar(i:2.0), Gragas(i:4.0), Diana(i:6.0)
+[14:59:14] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Jinx (i:4.0) | Rew: +0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 25 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:15] MOVE Bench -> Board: Jinx (i:4.0) <-> Milio (i:4.0) | Rew: -0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 25 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:15] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 21 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:16] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:17] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 13 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:17] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 9 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:18] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 5 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:19] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:19] VENDEU: Milio (i:4.0)        | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:59:20] --- FIM DO ROUND 3-2 | GOLD: 9 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mis|T|1*|i:6.0]  [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]  [Zoe|C|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:20] 🛒 LOJA: Xayah(i:8.0), Illaoi(i:6.0), Fizz(i:6.0), Miss Fortune(i:6.0), Nasus(i:2.0)
+[14:59:21] COMPROU: Miss Fortune (Custo 3 | i:6.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:21]  ⬆️ SINERGIA: CHALLENGER nível 1
+[14:59:21]  ⬆️ SINERGIA: CONDUIT nível 1
+[14:59:22] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Miss Fortune (i:6.0) | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:22] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Pantheon (i:4.0) | Rew: +0.07
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:23] MOVE Bench -> Board: Pantheon (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:24] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Vazio | Rew: +0.64
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:24] MOVE Board -> Board: Zoe (i:4.0) <-> Jinx (i:4.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:25] MOVE Board -> Board: Jinx (i:4.0) <-> Veigar (i:2.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:26] COMPROU: Nasus (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 5 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:26] MOVE Bench -> Board: Nasus (i:2.0) <-> Pantheon (i:4.0) | Rew: -0.15
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 5 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:59:27] --- FIM DO ROUND 3-3 | GOLD: 12 ---
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Nas|F|1*|i:2.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Zoe|C|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]  [Vei|C|1*|i:2.0]       [ . ]        [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Pan|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:27] 🛒 LOJA: Miss Fortune(i:6.0), Fizz(i:6.0), Gwen(i:4.0), Rhaast(i:6.0), Cho'Gath(i:2.0)
+[14:59:28] MOVE Bench -> Board: Pantheon (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:29] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Nasus (i:2.0) | Rew: +0.15
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:29] MOVE Bench -> Board: Nasus (i:2.0) <-> Miss Fortune (i:6.0) | Rew: -0.15
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:30] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Miss Fortune (i:6.0) | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:31] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Pantheon (i:4.0) | Rew: +0.07
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:31] MOVE Bench -> Board: Pantheon (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:32] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Miss Fortune (i:6.0) | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:33] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Pantheon (i:4.0) | Rew: +0.07
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:34] MOVE Bench -> Board: Pantheon (i:4.0) <-> Nasus (i:2.0) | Rew: +0.15
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:59:34] --- FIM DO ROUND 3-4 | GOLD: 19 ---
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mis|T|1*|i:6.0]  [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Zoe|C|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]  [Vei|C|1*|i:2.0]       [ . ]        [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Nas|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:34] 🛒 LOJA: Urgot(i:6.0), Morgana(i:8.0), Nunu & Willump(i:8.0), Gnar(i:4.0), Rhaast(i:6.0)
+[14:59:35] MOVE Bench -> Board: Nasus (i:2.0) <-> Miss Fortune (i:6.0) | Rew: -0.15
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:36] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Miss Fortune (i:6.0) | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:36] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Nasus (i:2.0) | Rew: +0.15
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:37] MOVE Bench -> Board: Nasus (i:2.0) <-> Miss Fortune (i:6.0) | Rew: -0.15
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:38] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Miss Fortune (i:6.0) | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:38] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Pantheon (i:4.0) | Rew: +0.07
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:39] MOVE Bench -> Board: Pantheon (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:40] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Miss Fortune (i:6.0) | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:41] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Pantheon (i:4.0) | Rew: +0.07
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:59:41] --- FIM DO ROUND 3-5 | GOLD: 28 ---
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mis|T|1*|i:6.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Zoe|C|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]  [Vei|C|1*|i:2.0]       [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Pan|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:41] 🛒 LOJA: Akali(i:4.0), Veigar(i:2.0), Urgot(i:6.0), Poppy(i:2.0), Gnar(i:4.0)
+[14:59:42] MOVE Bench -> Board: Pantheon (i:4.0) <-> Nasus (i:2.0) | Rew: +0.15
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:43] MOVE Bench -> Board: Nasus (i:2.0) <-> Miss Fortune (i:6.0) | Rew: -0.15
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:43] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Pantheon (i:4.0) | Rew: +0.07
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:44] MOVE Bench -> Board: Pantheon (i:4.0) <-> Nasus (i:2.0) | Rew: +0.15
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:45] MOVE Bench -> Board: Nasus (i:2.0) <-> Zoe (i:4.0) | Rew: -0.10
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:45] MOVE Bench -> Board: Zoe (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:46] MOVE Bench -> Board: Pantheon (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:47] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Zoe (i:4.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:48] MOVE Bench -> Board: Zoe (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.04
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:59:48] --- FIM DO ROUND 3-6 | GOLD: 37 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mis|T|1*|i:6.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]  [Vei|C|1*|i:2.0]       [ . ]        [Zoe|C|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Pan|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:48] 🛒 LOJA: Gwen(i:4.0), Mordekaiser(i:4.0), Kai'Sa(i:6.0), Veigar(i:2.0), Rhaast(i:6.0)
+[14:59:49] MOVE Bench -> Board: Pantheon (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.07
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 37 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:50] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Miss Fortune (i:6.0) | Rew: +0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 37 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:50] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Pantheon (i:4.0) | Rew: +0.07
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 37 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:51] MOVE Bench -> Board: Pantheon (i:4.0) <-> Zoe (i:4.0) | Rew: +0.04
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 37 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:52] MOVE Bench -> Board: Zoe (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 37 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:53] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Pantheon (i:4.0) | Rew: +0.07
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 37 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:53] MOVE Bench -> Board: Pantheon (i:4.0) <-> Zoe (i:4.0) | Rew: +0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 37 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:54] MOVE Bench -> Board: Zoe (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 37 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:55] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Pantheon (i:4.0) | Rew: +0.07
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 37 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:59:55] --- FIM DO ROUND 3-7 | GOLD: 46 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mis|T|1*|i:6.0]  [Zoe|C|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]  [Vei|C|1*|i:2.0]       [ . ]        [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Pan|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:55] 🛒 LOJA: Gragas(i:4.0), Tahm Kench(i:8.0), Urgot(i:6.0), Kai'Sa(i:6.0), Rhaast(i:6.0)
+[14:59:56] MOVE Bench -> Board: Pantheon (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.07
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 46 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:57] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Miss Fortune (i:6.0) | Rew: +0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 46 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:57] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Pantheon (i:4.0) | Rew: +0.07
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 46 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:58] MOVE Bench -> Board: Pantheon (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.07
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 46 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:59] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Nasus (i:2.0) | Rew: +0.15
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 46 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:00] MOVE Bench -> Board: Nasus (i:2.0) <-> Pantheon (i:4.0) | Rew: -0.15
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 46 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:00] MOVE Bench -> Board: Pantheon (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.07
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 46 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:01] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Nasus (i:2.0) | Rew: +0.15
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 46 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:02] MOVE Bench -> Board: Nasus (i:2.0) <-> Zoe (i:4.0) | Rew: -0.10
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 46 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:02] --- FIM DO ROUND 4-1 | GOLD: 58 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mis|T|1*|i:6.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]  [Vei|C|1*|i:2.0]       [ . ]        [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Zoe|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:02] 🛒 LOJA: Ezreal(i:2.0), Mordekaiser(i:4.0), Maokai(i:6.0), Gnar(i:4.0), Tahm Kench(i:8.0)
+[15:00:04] MOVE Bench -> Board: Zoe (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 58 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:04] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Nasus (i:2.0) | Rew: +0.15
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 58 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:05] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 54 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:06] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 50 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:07] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 46 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:07] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 42 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:08] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 38 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:09] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 34 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:09] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 30 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:10] --- FIM DO ROUND 4-2 | GOLD: 42 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Zoe|C|1*|i:4.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]  [Vei|C|1*|i:2.0]       [ . ]        [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Nas|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:10] 🛒 LOJA: Maokai(i:6.0), LeBlanc(i:8.0), Ornn(i:6.0), Illaoi(i:6.0), Veigar(i:2.0)
+[15:00:11] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 38 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:12] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 34 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:13] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 30 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:14] BUY XP                       | Rew: +1.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 26 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:14] MOVE Bench -> Board: Nasus (i:2.0) <-> Zoe (i:4.0) | Rew: -0.10
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 26 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:15] MOVE Bench -> Board: Zoe (i:4.0) <-> Vazio | Rew: +0.47
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 26 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:16] COMPROU: Illaoi (Custo 3 | i:6.0) | Rew: +0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 23 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:16] MOVE Bench -> Board: Illaoi (i:6.0) <-> Nasus (i:2.0) | Rew: +0.18
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 23 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:17] MOVE Bench -> Board: Nasus (i:2.0) <-> Zoe (i:4.0) | Rew: -0.10
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 23 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:18] --- FIM DO ROUND 4-3 | GOLD: 34 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Ill|T|1*|i:6.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mis|T|1*|i:6.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]  [Vei|C|1*|i:2.0]       [ . ]        [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Zoe|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:18] 🛒 LOJA: Corki(i:8.0), Teemo(i:2.0), Teemo(i:2.0), Viktor(i:6.0), Urgot(i:6.0)
+[15:00:19] MOVE Bench -> Board: Zoe (i:4.0) <-> Illaoi (i:6.0) | Rew: -0.06
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 34 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:20] MOVE Bench -> Board: Illaoi (i:6.0) <-> Nasus (i:2.0) | Rew: +0.18
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 34 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:21] MOVE Bench -> Board: Nasus (i:2.0) <-> Zoe (i:4.0) | Rew: -0.10
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 34 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:21] MOVE Bench -> Board: Zoe (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 34 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:22] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Nasus (i:2.0) | Rew: +0.15
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 34 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:23] MOVE Bench -> Board: Nasus (i:2.0) <-> Illaoi (i:6.0) | Rew: -0.18
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 34 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:23] MOVE Bench -> Board: Illaoi (i:6.0) <-> Miss Fortune (i:6.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 34 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:24] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Nasus (i:2.0) | Rew: +0.15
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 34 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:25] MOVE Bench -> Board: Nasus (i:2.0) <-> Illaoi (i:6.0) | Rew: -0.18
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 34 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:26] --- FIM DO ROUND 4-4 | GOLD: 45 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Nas|F|1*|i:2.0]  [Zoe|C|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mis|T|1*|i:6.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]  [Vei|C|1*|i:2.0]       [ . ]        [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Ill|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:26] 🛒 LOJA: Rhaast(i:6.0), Samira(i:6.0), Rhaast(i:6.0), Master Yi(i:8.0), Nunu & Willump(i:8.0)
+[15:00:27] MOVE Bench -> Board: Illaoi (i:6.0) <-> Zoe (i:4.0) | Rew: +0.06
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 45 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:28] MOVE Bench -> Board: Zoe (i:4.0) <-> Nasus (i:2.0) | Rew: +0.10
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 45 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:28] MOVE Bench -> Board: Nasus (i:2.0) <-> Miss Fortune (i:6.0) | Rew: -0.15
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 45 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:29] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Zoe (i:4.0) | Rew: +0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 45 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:30] MOVE Bench -> Board: Zoe (i:4.0) <-> Nasus (i:2.0) | Rew: +0.10
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 45 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:30] MOVE Bench -> Board: Nasus (i:2.0) <-> Miss Fortune (i:6.0) | Rew: -0.15
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 45 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:31] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Pantheon (i:4.0) | Rew: +0.07
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 45 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:32] MOVE Bench -> Board: Pantheon (i:4.0) <-> Nasus (i:2.0) | Rew: +0.15
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 45 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:33] MOVE Bench -> Board: Nasus (i:2.0) <-> Zoe (i:4.0) | Rew: -0.10
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 45 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:33] --- FIM DO ROUND 4-5 | GOLD: 58 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Pan|T|1*|i:4.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mis|T|1*|i:6.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]  [Vei|C|1*|i:2.0]       [ . ]        [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Zoe|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:33] 🛒 LOJA: Aurora(i:6.0), Ornn(i:6.0), Bel'Veth(i:4.0), Xayah(i:8.0), Xayah(i:8.0)
+[15:00:35] MOVE Bench -> Board: Zoe (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.04
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 58 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:35] MOVE Bench -> Board: Pantheon (i:4.0) <-> Nasus (i:2.0) | Rew: +0.15
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 58 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:36] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 54 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:37] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 50 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:38] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 46 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:38] VENDEU: Nasus (i:2.0)        | Rew: +0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 47 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:39] COMPROU: Xayah (Custo 4 | i:8.0) | Rew: +0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 43 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:40] MOVE Bench -> Board: Xayah (i:8.0) <-> Zoe (i:4.0) | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_Xayah
+    GOLD: 43 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:40] MOVE Bench -> Board: Zoe (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_Xayah
+    GOLD: 43 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:41] --- FIM DO ROUND 4-6 | GOLD: 56 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_Xayah
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Xay|F|1*|i:8.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mis|T|1*|i:6.0]  [Zoe|C|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]  [Vei|C|1*|i:2.0]       [ . ]        [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Pan|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:41] 🛒 LOJA: Maokai(i:6.0), Tahm Kench(i:8.0), Jax(i:4.0), Morgana(i:8.0), Jinx(i:4.0)
+[15:00:42] MOVE Bench -> Board: Pantheon (i:4.0) <-> Xayah (i:8.0) | Rew: +0.03
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 56 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:43] MOVE Bench -> Board: Xayah (i:8.0) <-> Zoe (i:4.0) | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 56 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:44] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 52 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:45] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 48 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:45] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 44 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:46] VENDEU: Zoe (i:4.0)          | Rew: +0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 46 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:46]  ⬇️ SINERGIA: CONDUIT nível 0
+[15:00:47] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 42 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:47] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 38 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:48] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 34 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:49] --- FIM DO ROUND 4-7 | GOLD: 45 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Pan|T|1*|i:4.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mis|T|1*|i:6.0]  [Xay|F|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]  [Vei|C|1*|i:2.0]       [ . ]        [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:49] 🛒 LOJA: Lissandra(i:2.0), Gragas(i:4.0), Lissandra(i:2.0), Leona(i:2.0), Samira(i:6.0)
+[15:00:50] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 41 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:51] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 37 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:52] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 33 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:52] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 29 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:53] BUY XP                       | Rew: +0.52
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 25 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:54] COMPROU: Leona (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 24 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:54] MOVE Bench -> Board: Leona (i:2.0) <-> Pantheon (i:4.0) | Rew: -0.08
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 24 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:55] MOVE Bench -> Board: Pantheon (i:4.0) <-> Xayah (i:8.0) | Rew: +0.03
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 24 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:56] MOVE Bench -> Board: Xayah (i:8.0) <-> Vazio | Rew: +0.55
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 24 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:57] --- FIM DO ROUND 5-1 | GOLD: 35 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Leo|T|1*|i:2.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mis|T|1*|i:6.0]  [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]  [Vei|C|1*|i:2.0]  [Xay|F|1*|i:8.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:57] 🛒 LOJA: Mordekaiser(i:4.0), Twisted Fate(i:2.0), Shen(i:10.0), Miss Fortune(i:6.0), Illaoi(i:6.0)
+[15:00:58] COMPROU: Miss Fortune (Custo 3 | i:6.0) | Rew: +0.30
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 32 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:58]  ⬇️ SINERGIA: CHALLENGER nível 0
+[15:00:59] MOVE Bench -> Board: Miss Fortune (i:12.0) <-> Leona (i:2.0) | Rew: +0.10
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 32 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:59] MOVE Bench -> Board: Leona (i:2.0) <-> Pantheon (i:4.0) | Rew: -0.08
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 32 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:00] MOVE Bench -> Board: Pantheon (i:4.0) <-> Miss Fortune (i:12.0) | Rew: -0.10
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 32 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:01] MOVE Bench -> Board: Miss Fortune (i:12.0) <-> Leona (i:2.0) | Rew: +0.10
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 32 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:01] MOVE Bench -> Board: Leona (i:2.0) <-> Pantheon (i:4.0) | Rew: -0.08
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 32 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:02] MOVE Bench -> Board: Pantheon (i:4.0) <-> Vazio | Rew: +0.29
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 32 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:03] COMPROU: Twisted Fate (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 31 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:04] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.47
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 31 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:01:04] --- FIM DO ROUND 5-2 | GOLD: 43 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Leo|T|1*|i:2.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]       [Mis|T|2*|i:12.0]       [ . ]        [Pan|T|1*|i:4.0]       [ . ]       
+ [Pyk|F|1*|i:4.0]  [Vei|C|1*|i:2.0]  [Xay|F|1*|i:8.0]  [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:04] 🛒 LOJA: Aurelion Sol(i:8.0), Kai'Sa(i:6.0), Shen(i:10.0), Caitlyn(i:2.0), Nunu & Willump(i:8.0)
+[15:01:06] COMPROU: Caitlyn (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 42 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:06] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Leona (i:2.0) | Rew: -0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 42 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:07] MOVE Bench -> Board: Leona (i:2.0) <-> Miss Fortune (i:12.0) | Rew: -0.10
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 42 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:08] MOVE Bench -> Board: Miss Fortune (i:12.0) <-> Caitlyn (i:2.0) | Rew: +0.10
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 42 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:08] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Leona (i:2.0) | Rew: -0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 42 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:09] MOVE Bench -> Board: Leona (i:2.0) <-> Miss Fortune (i:12.0) | Rew: -0.10
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 42 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:10] MOVE Bench -> Board: Miss Fortune (i:12.0) <-> Pantheon (i:4.0) | Rew: +0.10
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 42 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:11] MOVE Bench -> Board: Pantheon (i:4.0) <-> Leona (i:2.0) | Rew: +0.08
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 42 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:11] MOVE Bench -> Board: Leona (i:2.0) <-> Caitlyn (i:2.0) | Rew: +0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 42 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:01:12] --- FIM DO ROUND 5-3 | GOLD: 55 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Pan|T|1*|i:4.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]       [Mis|T|2*|i:12.0]       [ . ]       
+ [Pyk|F|1*|i:4.0]  [Vei|C|1*|i:2.0]  [Xay|F|1*|i:8.0]  [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Cai|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:12] 🛒 LOJA: Master Yi(i:8.0), Illaoi(i:6.0), Samira(i:6.0), LeBlanc(i:8.0), LeBlanc(i:8.0)
+[15:01:13] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 51 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:14] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 47 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:15] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 43 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:16] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 39 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:16] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 35 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:17] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 31 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:18] VENDEU: Caitlyn (i:2.0)      | Rew: +0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 32 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:18] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:19] COMPROU: LeBlanc (Custo 4 | i:8.0) | Rew: +0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 24 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:01:20] --- FIM DO ROUND 5-4 | GOLD: 34 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Pan|T|1*|i:4.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]       [Mis|T|2*|i:12.0]       [ . ]       
+ [Pyk|F|1*|i:4.0]  [Vei|C|1*|i:2.0]  [Xay|F|1*|i:8.0]  [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[LeB|1*|i:8.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:20] 🛒 LOJA: Sona(i:10.0), Gwen(i:4.0), Master Yi(i:8.0), Karma(i:8.0), Rammus(i:8.0)
+[15:01:21] MOVE Bench -> Board: LeBlanc (i:8.0) <-> Pantheon (i:4.0) | Rew: +0.07
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 34 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:22] MOVE Bench -> Board: Pantheon (i:4.0) <-> Leona (i:2.0) | Rew: +0.08
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 34 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:23] VENDEU: Leona (i:2.0)        | Rew: +0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 35 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:23] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 31 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:24] COMPROU: Karma (Custo 4 | i:8.0) | Rew: +0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 27 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:25] MOVE Bench -> Board: Karma (i:8.0) <-> LeBlanc (i:8.0) | Rew: -0.08
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 27 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:25] MOVE Bench -> Board: LeBlanc (i:8.0) <-> Pantheon (i:4.0) | Rew: -0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 27 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:26] MOVE Bench -> Board: Pantheon (i:4.0) <-> Karma (i:8.0) | Rew: -0.03
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 27 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:27] MOVE Bench -> Board: Karma (i:8.0) <-> LeBlanc (i:8.0) | Rew: -0.08
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 27 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:01:27] --- FIM DO ROUND 5-5 | GOLD: 37 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Pan|T|1*|i:4.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Kar|C|1*|i:8.0]       [ . ]       [Mis|T|2*|i:12.0]       [ . ]       
+ [Pyk|F|1*|i:4.0]  [Vei|C|1*|i:2.0]  [Xay|F|1*|i:8.0]  [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[LeB|1*|i:8.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:27] 🛒 LOJA: Aurora(i:6.0), Urgot(i:6.0), Aurelion Sol(i:8.0), Urgot(i:6.0), Bard(i:10.0)
+[15:01:29] MOVE Bench -> Board: LeBlanc (i:8.0) <-> Pantheon (i:4.0) | Rew: -0.06
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 37 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:30] MOVE Bench -> Board: Pantheon (i:4.0) <-> Miss Fortune (i:12.0) | Rew: -0.10
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 37 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:30] MOVE Bench -> Board: Miss Fortune (i:12.0) <-> LeBlanc (i:8.0) | Rew: +0.08
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 37 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:31] MOVE Bench -> Board: LeBlanc (i:8.0) <-> Karma (i:8.0) | Rew: -0.08
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 37 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:32] MOVE Bench -> Board: Karma (i:8.0) <-> Miss Fortune (i:12.0) | Rew: -0.09
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 37 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:32] MOVE Bench -> Board: Miss Fortune (i:12.0) <-> LeBlanc (i:8.0) | Rew: +0.04
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 37 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:33] MOVE Bench -> Board: LeBlanc (i:8.0) <-> Karma (i:8.0) | Rew: -0.08
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 37 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:34] MOVE Bench -> Board: Karma (i:8.0) <-> Pantheon (i:4.0) | Rew: -0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 37 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:35] VENDEU: Pantheon (i:4.0)     | Rew: +0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Anima | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 39 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:35]  ⬇️ SINERGIA: REPLICATOR nível 0
+
+[15:01:35] --- FIM DO ROUND 5-6 | GOLD: 50 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Anima | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [LeB|C|1*|i:8.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]       [Mis|T|2*|i:12.0]       [ . ]        [Kar|C|1*|i:8.0]       [ . ]       
+ [Pyk|F|1*|i:4.0]  [Vei|C|1*|i:2.0]  [Xay|F|1*|i:8.0]  [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:35] 🛒 LOJA: Pantheon(i:4.0), Urgot(i:6.0), Karma(i:8.0), Lulu(i:6.0), Master Yi(i:8.0)
+[15:01:37] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Anima | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 46 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:37] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Anima | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 42 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:38] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Anima | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 38 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:39] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Anima | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 34 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:39] BUY XP                       | Rew: +0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Anima | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 30 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:40] BUY XP                       | Rew: +0.52
+    STRATEGY: WINSTREAK | COMP DIRECTION: Anima | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 26 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:41] COMPROU: Lulu (Custo 3 | i:6.0) | Rew: +0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 23 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:41]  ⬆️ SINERGIA: REPLICATOR nível 1
+[15:01:41]  ⬆️ SINERGIA: STARGAZER nível 1
+[15:01:42] MOVE Bench -> Board: Lulu (i:6.0) <-> LeBlanc (i:8.0) | Rew: +0.03
+    STRATEGY: WINSTREAK | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 23 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:42] MOVE Bench -> Board: LeBlanc (i:8.0) <-> Vazio | Rew: +0.48
+    STRATEGY: WINSTREAK | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 23 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:01:43] --- FIM DO ROUND 5-7 | GOLD: 33 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Lul|C|1*|i:6.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]       [Mis|T|2*|i:12.0]       [ . ]        [Kar|C|1*|i:8.0]       [ . ]       
+ [Pyk|F|1*|i:4.0]  [Vei|C|1*|i:2.0]  [Xay|F|1*|i:8.0]  [Twi|C|1*|i:2.0]  [LeB|C|1*|i:8.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:43] 🛒 LOJA: Vex(i:10.0), Bard(i:10.0), The Mighty Mech(i:8.0), Zed(i:10.0), Corki(i:8.0)
+[15:01:44] COMPROU: Zed (Custo 5 | i:10.0) | Rew: +0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:45] MOVE Bench -> Board: Zed (i:10.0) <-> Lulu (i:6.0) | Rew: -0.07
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:46] MOVE Bench -> Board: Lulu (i:6.0) <-> Miss Fortune (i:12.0) | Rew: -0.03
+    STRATEGY: WINSTREAK | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:46] MOVE Bench -> Board: Miss Fortune (i:12.0) <-> Zed (i:10.0) | Rew: +0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:47] MOVE Bench -> Board: Zed (i:10.0) <-> Lulu (i:6.0) | Rew: -0.07
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:48] MOVE Bench -> Board: Lulu (i:6.0) <-> Miss Fortune (i:12.0) | Rew: -0.03
+    STRATEGY: WINSTREAK | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:49] MOVE Bench -> Board: Miss Fortune (i:12.0) <-> Karma (i:8.0) | Rew: +0.03
+    STRATEGY: WINSTREAK | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:49] MOVE Bench -> Board: Karma (i:8.0) <-> Lulu (i:6.0) | Rew: -0.09
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:50] MOVE Bench -> Board: Lulu (i:6.0) <-> Zed (i:10.0) | Rew: +0.07
+    STRATEGY: WINSTREAK | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:01:51] --- FIM DO ROUND 6-1 | GOLD: 35 ---
+    STRATEGY: FAST8 | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Kar|C|1*|i:8.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Lul|C|1*|i:6.0]       [ . ]       [Mis|T|2*|i:12.0]       [ . ]       
+ [Pyk|F|1*|i:4.0]  [Vei|C|1*|i:2.0]  [Xay|F|1*|i:8.0]  [Twi|C|1*|i:2.0]  [LeB|C|1*|i:8.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Zed|1*|i:10.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:51] 🛒 LOJA: Kai'Sa(i:6.0), Pyke(i:4.0), Gnar(i:4.0), Zed(i:10.0), Graves(i:10.0)
+[15:01:52] MOVE Bench -> Board: Zed (i:10.0) <-> Karma (i:8.0) | Rew: +0.00
+    STRATEGY: FAST8 | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 35 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:53] MOVE Bench -> Board: Karma (i:8.0) <-> Lulu (i:6.0) | Rew: -0.09
+    STRATEGY: FAST8 | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 35 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:53] MOVE Bench -> Board: Lulu (i:6.0) <-> Zed (i:10.0) | Rew: +0.03
+    STRATEGY: FAST8 | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 35 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:54] MOVE Bench -> Board: Zed (i:10.0) <-> Miss Fortune (i:12.0) | Rew: -0.05
+    STRATEGY: FAST8 | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 35 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:55] MOVE Bench -> Board: Miss Fortune (i:12.0) <-> Lulu (i:6.0) | Rew: +0.03
+    STRATEGY: FAST8 | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 35 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:56] MOVE Bench -> Board: Lulu (i:6.0) <-> Karma (i:8.0) | Rew: +0.03
+    STRATEGY: FAST8 | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 35 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:56] MOVE Bench -> Board: Karma (i:8.0) <-> Miss Fortune (i:12.0) | Rew: -0.09
+    STRATEGY: FAST8 | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 35 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:57] MOVE Bench -> Board: Miss Fortune (i:12.0) <-> Lulu (i:6.0) | Rew: -0.01
+    STRATEGY: FAST8 | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 35 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:01:58] MOVE Bench -> Board: Lulu (i:6.0) <-> Karma (i:8.0) | Rew: +0.03
+    STRATEGY: FAST8 | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 35 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:01:58] --- FIM DO ROUND 6-2 | GOLD: 44 ---
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Lul|C|1*|i:6.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]       [Mis|T|2*|i:12.0]       [ . ]       [Zed|T|1*|i:10.0]       [ . ]       
+ [Pyk|F|1*|i:4.0]  [Vei|C|1*|i:2.0]  [Xay|F|1*|i:8.0]  [Twi|C|1*|i:2.0]  [LeB|C|1*|i:8.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Kar|1*|i:8.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:58] 🛒 LOJA: Illaoi(i:6.0), Miss Fortune(i:6.0), Miss Fortune(i:6.0), Riven(i:8.0), Ornn(i:6.0)
+[15:02:00] MOVE Bench -> Board: Karma (i:8.0) <-> Veigar (i:2.0) | Rew: -0.01
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 44 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:01] MOVE Bench -> Board: Veigar (i:2.0) <-> Lulu (i:6.0) | Rew: -0.08
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 44 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:01] MOVE Bench -> Board: Lulu (i:6.0) <-> Miss Fortune (i:12.0) | Rew: -0.03
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 44 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:02] MOVE Bench -> Board: Miss Fortune (i:12.0) <-> Veigar (i:2.0) | Rew: +0.08
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 44 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:03] MOVE Bench -> Board: Veigar (i:2.0) <-> Lulu (i:6.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 44 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:03] MOVE Bench -> Board: Lulu (i:6.0) <-> Miss Fortune (i:12.0) | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 44 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:04] MOVE Bench -> Board: Miss Fortune (i:12.0) <-> Zed (i:10.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 44 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:05] MOVE Bench -> Board: Zed (i:10.0) <-> Lulu (i:6.0) | Rew: -0.03
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 44 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:05] MOVE Bench -> Board: Lulu (i:6.0) <-> Veigar (i:2.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 44 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:02:06] --- FIM DO ROUND 6-3 | GOLD: 54 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]       [Zed|T|1*|i:10.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Lul|C|1*|i:6.0]       [ . ]       [Mis|T|2*|i:12.0]       [ . ]       
+ [Pyk|F|1*|i:4.0]  [Kar|C|1*|i:8.0]  [Xay|F|1*|i:8.0]  [Twi|C|1*|i:2.0]  [LeB|C|1*|i:8.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Vei|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:02:06] 🛒 LOJA: Aurelion Sol(i:8.0), Aurelion Sol(i:8.0), Tahm Kench(i:8.0), LeBlanc(i:8.0), Jhin(i:10.0)
+[15:02:08] MOVE Bench -> Board: Veigar (i:2.0) <-> Zed (i:10.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 54 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:08] MOVE Bench -> Board: Zed (i:10.0) <-> Lulu (i:6.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 54 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:09] MOVE Bench -> Board: Lulu (i:6.0) <-> Veigar (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 54 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:10] MOVE Bench -> Board: Veigar (i:2.0) <-> Miss Fortune (i:12.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 54 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:10] MOVE Bench -> Board: Miss Fortune (i:12.0) <-> Lulu (i:6.0) | Rew: -0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 54 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:11] MOVE Bench -> Board: Lulu (i:6.0) <-> Zed (i:10.0) | Rew: +0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 54 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:12] MOVE Bench -> Board: Zed (i:10.0) <-> Miss Fortune (i:12.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 54 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:12] MOVE Bench -> Board: Miss Fortune (i:12.0) <-> Lulu (i:6.0) | Rew: -0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 54 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:13] MOVE Bench -> Board: Lulu (i:6.0) <-> Zed (i:10.0) | Rew: +0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 54 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:02:14] --- FIM DO ROUND 6-4 | GOLD: 65 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Lul|C|1*|i:6.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]       [Mis|T|2*|i:12.0]       [ . ]        [Vei|C|1*|i:2.0]       [ . ]       
+ [Pyk|F|1*|i:4.0]  [Kar|C|1*|i:8.0]  [Xay|F|1*|i:8.0]  [Twi|C|1*|i:2.0]  [LeB|C|1*|i:8.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Zed|1*|i:10.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:02:14] 🛒 LOJA: Miss Fortune(i:6.0), Akali(i:4.0), Rammus(i:8.0), Caitlyn(i:2.0), Zoe(i:4.0)
+[15:02:15] MOVE Bench -> Board: Zed (i:10.0) <-> Karma (i:8.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 65 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:16] MOVE Bench -> Board: Karma (i:8.0) <-> Lulu (i:6.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 65 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:17] MOVE Bench -> Board: Lulu (i:6.0) <-> Miss Fortune (i:12.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 65 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:17] MOVE Bench -> Board: Miss Fortune (i:12.0) <-> Karma (i:8.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 65 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:18] MOVE Bench -> Board: Karma (i:8.0) <-> Lulu (i:6.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 65 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:19] MOVE Bench -> Board: Lulu (i:6.0) <-> Miss Fortune (i:12.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 65 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:19] MOVE Bench -> Board: Miss Fortune (i:12.0) <-> Veigar (i:2.0) | Rew: +0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 65 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:20] MOVE Bench -> Board: Veigar (i:2.0) <-> Lulu (i:6.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 65 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:21] MOVE Bench -> Board: Lulu (i:6.0) <-> Karma (i:8.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 65 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:02:22] --- FIM DO ROUND 6-5 | GOLD: 76 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Vei|C|1*|i:2.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Lul|C|1*|i:6.0]       [ . ]       [Mis|T|2*|i:12.0]       [ . ]       
+ [Pyk|F|1*|i:4.0] [Zed|T|1*|i:10.0]  [Xay|F|1*|i:8.0]  [Twi|C|1*|i:2.0]  [LeB|C|1*|i:8.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Kar|1*|i:8.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:02:22] 🛒 LOJA: Gnar(i:4.0), Shen(i:10.0), Pyke(i:4.0), LeBlanc(i:8.0), Milio(i:4.0)
+[15:02:23] MOVE Bench -> Board: Karma (i:8.0) <-> Veigar (i:2.0) | Rew: -0.06
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 76 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:24] MOVE Bench -> Board: Veigar (i:2.0) <-> Lulu (i:6.0) | Rew: -0.08
+    STRATEGY: ALL_IN | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 76 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:24] MOVE Bench -> Board: Lulu (i:6.0) <-> Karma (i:8.0) | Rew: +0.03
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 76 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:25] MOVE Bench -> Board: Karma (i:8.0) <-> Miss Fortune (i:12.0) | Rew: -0.07
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 76 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:26] MOVE Bench -> Board: Miss Fortune (i:12.0) <-> Lulu (i:6.0) | Rew: +0.03
+    STRATEGY: ALL_IN | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 76 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:27] MOVE Bench -> Board: Lulu (i:6.0) <-> Veigar (i:2.0) | Rew: +0.05
+    STRATEGY: ALL_IN | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 76 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:27] VENDEU: Veigar (i:2.0)       | Rew: +0.05
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 77 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:27]  ⬇️ SINERGIA: REPLICATOR nível 0
+[15:02:28] COMPROU: LeBlanc (Custo 4 | i:8.0) | Rew: +0.05
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 73 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:02:28]  ⬆️ SINERGIA: SHEPHERD nível 1
+[15:02:29] MOVE Bench -> Board: LeBlanc (i:8.0) <-> Miss Fortune (i:12.0) | Rew: +0.07
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_MissFortune_TraitClone
+    GOLD: 73 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:02:29] --- FIM DO ROUND 6-6 | GOLD: 73 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_MissFortune_TraitClone
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:02:29] 🛒 LOJA: None, None, None, None, None
+[15:02:29]  ⬇️ SINERGIA: SHEPHERD nível 0
+[15:02:29]  ⬇️ SINERGIA: STARGAZER nível 0
+
+========================================
+ GAME OVER - RELATÓRIO FINAL
+========================================

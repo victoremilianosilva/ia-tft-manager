@@ -1,0 +1,1442 @@
+==========================================================
+TFT AI LOG · JOGADOR 5
+Partida: 2c92163f-f570-4507-9db6-7ba92daea5e6
+Seed: 20261016 | Política: determinística
+Checkpoint SHA-256: 444ad4ba5c3d813c1c01d19d8526d50f05b83ed43a80fd45a6f4372086627299
+Impacto (i): custo × estrelas × 2 (contribuição nativa da engine)
+==========================================================
+--- INÍCIO DA PARTIDA · JOGADOR 5 ---
+[14:57:49] VENDEU: Rek'Sai (i:2.0)      | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: —
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:50] COMPROU: Leona (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Leona
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:51] MOVE Bench -> Board: Leona (i:2.0) <-> Vazio | Rew: +0.30
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Leona
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:52] MOVE Board -> Board: Leona (i:2.0) <-> Vazio | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Leona
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:52] MOVE Board -> Board: Leona (i:2.0) <-> Vazio | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Leona
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:53] MOVE Board -> Board: Leona (i:2.0) <-> Vazio | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Leona
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:54] MOVE Board -> Board: Leona (i:2.0) <-> Vazio | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Leona
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:54] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Leona
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:57:56] --- FIM DO ROUND 1-1 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Leona
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:57:56] 🛒 LOJA: Talon(i:2.0), Caitlyn(i:2.0), Gnar(i:4.0), Nasus(i:2.0), Cho'Gath(i:2.0)
+[14:57:56] COMPROU: Cho'Gath (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Leona
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:57] MOVE Bench -> Board: Cho'Gath (i:2.0) <-> Vazio | Rew: +0.25
+    STRATEGY: STABILIZE | COMP DIRECTION: Dark Star | FOCUS: TFT17_Chogath
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:58] COMPROU: Nasus (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Chogath
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:59] MOVE Bench -> Board: Nasus (i:2.0) <-> Cho'Gath (i:2.0) | Rew: +0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Nasus
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:57:59] MOVE Bench -> Board: Cho'Gath (i:2.0) <-> Vazio | Rew: +0.47
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Nasus
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:00] MOVE Board -> Board: Nasus (i:2.0) <-> Cho'Gath (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Chogath
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:01] MOVE Board -> Board: Cho'Gath (i:2.0) <-> Vazio | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Chogath
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:01] MOVE Board -> Board: Nasus (i:2.0) <-> Cho'Gath (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Nasus
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:02] MOVE Board -> Board: Cho'Gath (i:2.0) <-> Vazio | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Chogath
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:03] --- FIM DO ROUND 1-2 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Chogath
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Cho|F|1*|i:2.0]       [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:03] 🛒 LOJA: Pantheon(i:4.0), Ezreal(i:2.0), Jax(i:4.0), Caitlyn(i:2.0), Teemo(i:2.0)
+[14:58:04] COMPROU: Teemo (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Chogath
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:04] MOVE Bench -> Board: Teemo (i:2.0) <-> Leona (i:2.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Chogath
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:05] MOVE Bench -> Board: Leona (i:2.0) <-> Nasus (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Chogath
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:06] MOVE Bench -> Board: Nasus (i:2.0) <-> Teemo (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Chogath
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:06] MOVE Bench -> Board: Teemo (i:2.0) <-> Leona (i:2.0) | Rew: -0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Chogath
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:07] MOVE Bench -> Board: Leona (i:2.0) <-> Nasus (i:2.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Chogath
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:08] VENDEU: Nasus (i:2.0)        | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Dark Star | FOCUS: TFT17_Chogath
+    GOLD: 2 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:08] COMPROU: Caitlyn (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Dark Star | FOCUS: TFT17_Chogath
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:09] VENDEU: Caitlyn (i:2.0)      | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Dark Star | FOCUS: TFT17_Chogath
+    GOLD: 2 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:10] --- FIM DO ROUND 1-3 | GOLD: 5 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Dark Star | FOCUS: TFT17_Chogath
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Cho|F|1*|i:2.0]       [ . ]        [Tee|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:10] 🛒 LOJA: Twisted Fate(i:2.0), Gragas(i:4.0), Milio(i:4.0), Poppy(i:2.0), Veigar(i:2.0)
+[14:58:11] BUY XP                       | Rew: +1.52
+    STRATEGY: STABILIZE | COMP DIRECTION: Dark Star | FOCUS: TFT17_Chogath
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:11] COMPROU: Veigar (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Dark Star | FOCUS: TFT17_Chogath
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:12] MOVE Bench -> Board: Veigar (i:2.0) <-> Vazio | Rew: +0.47
+    STRATEGY: STABILIZE | COMP DIRECTION: Dark Star | FOCUS: TFT17_Chogath
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:13] MOVE Board -> Board: Veigar (i:2.0) <-> Vazio | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Dark Star | FOCUS: TFT17_Chogath
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:13] MOVE Board -> Board: Cho'Gath (i:2.0) <-> Veigar (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Veigar
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:14] MOVE Board -> Board: Veigar (i:2.0) <-> Teemo (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Teemo
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:15] MOVE Board -> Board: Teemo (i:2.0) <-> Cho'Gath (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Dark Star | FOCUS: TFT17_Chogath
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:15] MOVE Board -> Board: Cho'Gath (i:2.0) <-> Veigar (i:2.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Veigar
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:16] MOVE Board -> Board: Veigar (i:2.0) <-> Teemo (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Teemo
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:17] --- FIM DO ROUND 1-4 | GOLD: 4 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Teemo
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Tee|C|1*|i:2.0]       [ . ]        [Cho|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:17] 🛒 LOJA: Lissandra(i:2.0), Cho'Gath(i:2.0), Gwen(i:4.0), Talon(i:2.0), Illaoi(i:6.0)
+[14:58:18] COMPROU: Talon (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Teemo
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:18] VENDEU: Talon (i:2.0)        | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Teemo
+    GOLD: 4 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:19] COMPROU: Illaoi (Custo 3 | i:6.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:20] MOVE Bench -> Board: Illaoi (i:6.0) <-> Veigar (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:21] VENDEU: Veigar (i:2.0)       | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 2 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:21] COMPROU: Cho'Gath (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:22] VENDEU: Cho'Gath (i:2.0)     | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 2 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:23] COMPROU: Gwen (Custo 2 | i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Illaoi
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:23] MOVE Bench -> Board: Gwen (i:4.0) <-> Illaoi (i:6.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Illaoi
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:24] --- FIM DO ROUND 2-1 | GOLD: 5 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Tee|C|1*|i:2.0]       [ . ]        [Cho|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Gwe|A|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Ill|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:24] 🛒 LOJA: Twisted Fate(i:2.0), Ezreal(i:2.0), Miss Fortune(i:6.0), Lulu(i:6.0), Ornn(i:6.0)
+[14:58:25] MOVE Bench -> Board: Illaoi (i:6.0) <-> Leona (i:2.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Illaoi
+    GOLD: 5 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:25] VENDEU: Leona (i:2.0)        | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Illaoi
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:26] COMPROU: Lulu (Custo 3 | i:6.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Illaoi
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:27] MOVE Bench -> Board: Lulu (i:6.0) <-> Gwen (i:4.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Illaoi
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:27] VENDEU: Gwen (i:4.0)         | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 5 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:28] COMPROU: Ornn (Custo 3 | i:6.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Illaoi
+    GOLD: 2 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:29] MOVE Bench -> Board: Ornn (i:6.0) <-> Lulu (i:6.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Illaoi
+    GOLD: 2 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:30] MOVE Bench -> Board: Lulu (i:6.0) <-> Illaoi (i:6.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Illaoi
+    GOLD: 2 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:30] MOVE Bench -> Board: Illaoi (i:6.0) <-> Ornn (i:6.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Illaoi
+    GOLD: 2 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:31] --- FIM DO ROUND 2-2 | GOLD: 8 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Tee|C|1*|i:2.0]       [ . ]        [Cho|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Lul|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Orn|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:31] 🛒 LOJA: Poppy(i:2.0), Ezreal(i:2.0), Caitlyn(i:2.0), Ezreal(i:2.0), Twisted Fate(i:2.0)
+[14:58:32] VENDEU: Ornn (i:6.0)         | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 11 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:32] BUY XP                       | Rew: +0.52
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 7 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:33] COMPROU: Ezreal (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:34] VENDEU: Ezreal (i:2.0)       | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 7 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:34] COMPROU: Twisted Fate (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:35] COMPROU: Ezreal (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 5 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:36] VENDEU: Twisted Fate (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:37] COMPROU: Caitlyn (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 5 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:37] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Vazio | Rew: +0.46
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 5 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:38] --- FIM DO ROUND 2-3 | GOLD: 12 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Tee|C|1*|i:2.0]       [ . ]        [Cho|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Cai|F|1*|i:2.0]       [ . ]        [Lul|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [Ezr|1*|i:2.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:38] 🛒 LOJA: Kai'Sa(i:6.0), Cho'Gath(i:2.0), Jinx(i:4.0), Gwen(i:4.0), Nasus(i:2.0)
+[14:58:39] VENDEU: Ezreal (i:2.0)       | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 13 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:39] COMPROU: Gwen (Custo 2 | i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Illaoi
+    GOLD: 11 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:40] MOVE Bench -> Board: Gwen (i:4.0) <-> Illaoi (i:6.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Illaoi
+    GOLD: 11 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:41] MOVE Bench -> Board: Illaoi (i:6.0) <-> Caitlyn (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Illaoi
+    GOLD: 11 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:41] VENDEU: Caitlyn (i:2.0)      | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Illaoi
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:42] COMPROU: Nasus (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Illaoi
+    GOLD: 11 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:42]  ⬆️ SINERGIA: SPACE GROOVE nível 1
+[14:58:43] VENDEU: Nasus (i:2.0)        | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Illaoi
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:43]  ⬇️ SINERGIA: SPACE GROOVE nível 0
+[14:58:44] COMPROU: Jinx (Custo 2 | i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Illaoi
+    GOLD: 10 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:44] MOVE Bench -> Board: Jinx (i:4.0) <-> Gwen (i:4.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Illaoi
+    GOLD: 10 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:45] --- FIM DO ROUND 2-4 | GOLD: 17 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Tee|C|1*|i:2.0]       [ . ]        [Cho|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Ill|T|1*|i:6.0]       [ . ]        [Lul|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Gwe|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:45] 🛒 LOJA: Lulu(i:6.0), Aatrox(i:2.0), Poppy(i:2.0), Briar(i:2.0), Teemo(i:2.0)
+[14:58:46] VENDEU: Gwen (i:4.0)         | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:46] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 15 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:47] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 11 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:48] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 7 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:49] BUY XP                       | Rew: +0.52
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:49] COMPROU: Briar (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi
+    GOLD: 2 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:49]  ⬆️ SINERGIA: ANIMA nível 1
+[14:58:50] VENDEU: Briar (i:2.0)        | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 3 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:50]  ⬇️ SINERGIA: ANIMA nível 0
+[14:58:51] COMPROU: Teemo (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 2 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:51]  ⬆️ SINERGIA: SHEPHERD nível 1
+[14:58:51] MOVE Bench -> Board: Teemo (i:2.0) <-> Vazio | Rew: +0.56
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 2 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:52] --- FIM DO ROUND 2-5 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Tee|C|1*|i:2.0]       [ . ]        [Cho|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Ill|T|1*|i:6.0]  [Tee|C|1*|i:2.0]  [Lul|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:52] 🛒 LOJA: Gnar(i:4.0), Gwen(i:4.0), Ezreal(i:2.0), Poppy(i:2.0), Twisted Fate(i:2.0)
+[14:58:53] COMPROU: Poppy (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:53] MOVE Bench -> Board: Poppy (i:2.0) <-> Teemo (i:2.0) | Rew: -0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:54] MOVE Bench -> Board: Teemo (i:2.0) <-> Illaoi (i:6.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:55] MOVE Bench -> Board: Illaoi (i:6.0) <-> Poppy (i:2.0) | Rew: +0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:56] MOVE Bench -> Board: Poppy (i:2.0) <-> Teemo (i:2.0) | Rew: -0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:56] MOVE Bench -> Board: Teemo (i:2.0) <-> Illaoi (i:6.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:57] MOVE Bench -> Board: Illaoi (i:6.0) <-> Jinx (i:4.0) | Rew: +0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:58] MOVE Bench -> Board: Jinx (i:4.0) <-> Teemo (i:2.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:58:58] MOVE Bench -> Board: Teemo (i:2.0) <-> Poppy (i:2.0) | Rew: +0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:58:59] --- FIM DO ROUND 2-6 | GOLD: 12 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Tee|C|1*|i:2.0]       [ . ]        [Cho|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Tee|C|1*|i:2.0]  [Jin|F|1*|i:4.0]  [Lul|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Pop|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:58:59] 🛒 LOJA: Pantheon(i:4.0), Veigar(i:2.0), Akali(i:4.0), Pantheon(i:4.0), Twisted Fate(i:2.0)
+[14:59:00] MOVE Bench -> Board: Poppy (i:2.0) <-> Jinx (i:4.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:00] MOVE Bench -> Board: Jinx (i:4.0) <-> Teemo (i:2.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:01] MOVE Bench -> Board: Teemo (i:2.0) <-> Poppy (i:2.0) | Rew: +0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:02] MOVE Bench -> Board: Poppy (i:2.0) <-> Illaoi (i:6.0) | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:03] MOVE Bench -> Board: Illaoi (i:6.0) <-> Teemo (i:2.0) | Rew: +0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:03] MOVE Bench -> Board: Teemo (i:2.0) <-> Jinx (i:4.0) | Rew: -0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:04] MOVE Bench -> Board: Jinx (i:4.0) <-> Illaoi (i:6.0) | Rew: -0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:05] MOVE Bench -> Board: Illaoi (i:6.0) <-> Teemo (i:2.0) | Rew: +0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:05] VENDEU: Teemo (i:2.0)        | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 13 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:05]  ⬇️ SINERGIA: SHEPHERD nível 0
+
+[14:59:06] --- FIM DO ROUND 2-7 | GOLD: 19 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Tee|C|1*|i:2.0]       [ . ]        [Cho|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Ill|T|1*|i:6.0]  [Jin|F|1*|i:4.0]  [Lul|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:06] 🛒 LOJA: Pyke(i:4.0), Nasus(i:2.0), Miss Fortune(i:6.0), Meepsie(i:4.0), Pantheon(i:4.0)
+[14:59:07] COMPROU: Meepsie (Custo 2 | i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:07]  ⬆️ SINERGIA: SHEPHERD nível 1
+[14:59:08] MOVE Bench -> Board: Meepsie (i:4.0) <-> Illaoi (i:6.0) | Rew: -0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:08] MOVE Bench -> Board: Illaoi (i:6.0) <-> Jinx (i:4.0) | Rew: +0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:09] MOVE Bench -> Board: Jinx (i:4.0) <-> Meepsie (i:4.0) | Rew: -0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:10] MOVE Bench -> Board: Meepsie (i:4.0) <-> Illaoi (i:6.0) | Rew: -0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:10] MOVE Bench -> Board: Illaoi (i:6.0) <-> Jinx (i:4.0) | Rew: +0.11
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:11] MOVE Bench -> Board: Jinx (i:4.0) <-> Poppy (i:2.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:12] MOVE Bench -> Board: Poppy (i:2.0) <-> Meepsie (i:4.0) | Rew: -0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:12] MOVE Bench -> Board: Meepsie (i:4.0) <-> Illaoi (i:6.0) | Rew: -0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:59:13] --- FIM DO ROUND 3-1 | GOLD: 23 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Tee|C|1*|i:2.0]       [ . ]        [Cho|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Mee|T|1*|i:4.0]  [Pop|T|1*|i:2.0]  [Lul|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Ill|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:13] 🛒 LOJA: Zoe(i:4.0), Veigar(i:2.0), Miss Fortune(i:6.0), Gnar(i:4.0), Pantheon(i:4.0)
+[14:59:14] MOVE Bench -> Board: Illaoi (i:6.0) <-> Poppy (i:2.0) | Rew: +0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 23 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:15] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:15] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 15 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:16] VENDEU: Poppy (i:2.0)        | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 16 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:17] COMPROU: Gnar (Custo 2 | i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 14 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:17] VENDEU: Gnar (i:4.0)         | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 16 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:18] COMPROU: Veigar (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 15 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:19] VENDEU: Veigar (i:2.0)       | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 16 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:19] COMPROU: Pantheon (Custo 2 | i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 14 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:59:20] --- FIM DO ROUND 3-2 | GOLD: 21 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Tee|C|1*|i:2.0]       [ . ]        [Cho|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Mee|T|1*|i:4.0]  [Ill|T|1*|i:6.0]  [Lul|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Pan|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:20] 🛒 LOJA: Lulu(i:6.0), Pantheon(i:4.0), Miss Fortune(i:6.0), Mordekaiser(i:4.0), Rammus(i:8.0)
+[14:59:21] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:22] VENDEU: Pantheon (i:4.0)     | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:22] COMPROU: Mordekaiser (Custo 2 | i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:23] MOVE Bench -> Board: Mordekaiser (i:4.0) <-> Illaoi (i:6.0) | Rew: -0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:24] MOVE Bench -> Board: Illaoi (i:6.0) <-> Meepsie (i:4.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:24] MOVE Bench -> Board: Meepsie (i:4.0) <-> Mordekaiser (i:4.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:25] MOVE Bench -> Board: Mordekaiser (i:4.0) <-> Illaoi (i:6.0) | Rew: -0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:26] MOVE Bench -> Board: Illaoi (i:6.0) <-> Meepsie (i:4.0) | Rew: +0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:26] MOVE Bench -> Board: Meepsie (i:4.0) <-> Jinx (i:4.0) | Rew: +0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:59:27] --- FIM DO ROUND 3-3 | GOLD: 24 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Tee|C|1*|i:2.0]       [ . ]        [Cho|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mee|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Mor|T|1*|i:4.0]  [Ill|T|1*|i:6.0]  [Lul|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Jin|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:27] 🛒 LOJA: Pyke(i:4.0), Bel'Veth(i:4.0), Mordekaiser(i:4.0), Aatrox(i:2.0), Caitlyn(i:2.0)
+[14:59:28] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 20 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:29] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 16 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:29] BUY XP                       | Rew: +0.52
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:30] VENDEU: Jinx (i:4.0)         | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 14 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:31] COMPROU: Aatrox (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 13 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:31] VENDEU: Aatrox (i:2.0)       | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 14 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:32] COMPROU: Bel'Veth (Custo 2 | i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:33] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Vazio | Rew: +0.46
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 12 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:34] COMPROU: Caitlyn (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 11 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:59:34] --- FIM DO ROUND 3-4 | GOLD: 18 ---
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Tee|C|1*|i:2.0]       [ . ]        [Cho|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Bel|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mee|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Mor|T|1*|i:4.0]  [Ill|T|1*|i:6.0]  [Lul|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Cai|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:34] 🛒 LOJA: Nami(i:8.0), Samira(i:6.0), Talon(i:2.0), Bel'Veth(i:4.0), Viktor(i:6.0)
+[14:59:35] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 14 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:36] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 10 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:36] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 6 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:37] VENDEU: Caitlyn (i:2.0)      | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 7 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:38] COMPROU: Bel'Veth (Custo 2 | i:4.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 5 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:38] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Bel'Veth (i:4.0) | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 5 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:39] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Illaoi (i:6.0) | Rew: -0.06
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 5 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:40] MOVE Bench -> Board: Illaoi (i:6.0) <-> Bel'Veth (i:4.0) | Rew: +0.06
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 5 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:41] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Bel'Veth (i:4.0) | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 5 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:59:41] --- FIM DO ROUND 3-5 | GOLD: 11 ---
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Tee|C|1*|i:2.0]       [ . ]        [Cho|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mee|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Mor|T|1*|i:4.0]  [Bel|T|1*|i:4.0]  [Lul|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Bel|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:41] 🛒 LOJA: Rek'Sai(i:2.0), Lulu(i:6.0), Leona(i:2.0), Samira(i:6.0), Jax(i:4.0)
+[14:59:42] VENDEU: Bel'Veth (i:4.0)     | Rew: -0.15
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 13 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:43] COMPROU: Samira (Custo 3 | i:6.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 10 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:43] MOVE Bench -> Board: Samira (i:6.0) <-> Illaoi (i:6.0) | Rew: -0.10
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 10 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:44] MOVE Bench -> Board: Illaoi (i:6.0) <-> Bel'Veth (i:4.0) | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 10 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:45] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Samira (i:6.0) | Rew: -0.04
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 10 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:45] MOVE Bench -> Board: Samira (i:6.0) <-> Illaoi (i:6.0) | Rew: -0.10
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 10 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:46] MOVE Bench -> Board: Illaoi (i:6.0) <-> Bel'Veth (i:4.0) | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 10 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:47] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Mordekaiser (i:4.0) | Rew: -0.04
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 10 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:48] MOVE Bench -> Board: Mordekaiser (i:4.0) <-> Illaoi (i:6.0) | Rew: -0.09
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 10 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:59:48] --- FIM DO ROUND 3-6 | GOLD: 18 ---
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Tee|C|1*|i:2.0]       [ . ]        [Cho|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mor|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mee|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Sam|F|1*|i:6.0]  [Lul|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Ill|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:48] 🛒 LOJA: Illaoi(i:6.0), Rhaast(i:6.0), Gwen(i:4.0), Ezreal(i:2.0), Diana(i:6.0)
+[14:59:49] MOVE Bench -> Board: Illaoi (i:6.0) <-> Samira (i:6.0) | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 18 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:50] MOVE Bench -> Board: Samira (i:6.0) <-> Mordekaiser (i:4.0) | Rew: +0.03
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 18 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:50] MOVE Bench -> Board: Mordekaiser (i:4.0) <-> Illaoi (i:6.0) | Rew: -0.09
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 18 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:51] MOVE Bench -> Board: Illaoi (i:6.0) <-> Samira (i:6.0) | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 18 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:52] MOVE Bench -> Board: Samira (i:6.0) <-> Bel'Veth (i:4.0) | Rew: +0.08
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 18 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:53] VENDEU: Bel'Veth (i:4.0)     | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 20 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:53] COMPROU: Ezreal (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 19 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:54] VENDEU: Ezreal (i:2.0)       | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 20 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:55] COMPROU: Rhaast (Custo 3 | i:6.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 17 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[14:59:55] --- FIM DO ROUND 3-7 | GOLD: 24 ---
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Tee|C|1*|i:2.0]       [ . ]        [Cho|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mee|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Sam|F|1*|i:6.0]  [Mor|T|1*|i:4.0]  [Lul|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Rha|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[14:59:55] 🛒 LOJA: Kai'Sa(i:6.0), Akali(i:4.0), Fizz(i:6.0), Jax(i:4.0), Viktor(i:6.0)
+[14:59:56] MOVE Bench -> Board: Rhaast (i:6.0) <-> Illaoi (i:6.0) | Rew: -0.10
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 24 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:57] MOVE Bench -> Board: Illaoi (i:6.0) <-> Mordekaiser (i:4.0) | Rew: +0.09
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 24 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:57] VENDEU: Mordekaiser (i:4.0)  | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 26 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:58] COMPROU: Jax (Custo 2 | i:4.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 24 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[14:59:59] MOVE Bench -> Board: Jax (i:4.0) <-> Rhaast (i:6.0) | Rew: +0.03
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 24 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:00] MOVE Bench -> Board: Rhaast (i:6.0) <-> Illaoi (i:6.0) | Rew: -0.10
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 24 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:00] MOVE Bench -> Board: Illaoi (i:6.0) <-> Jax (i:4.0) | Rew: +0.09
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 24 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:01] MOVE Bench -> Board: Jax (i:4.0) <-> Rhaast (i:6.0) | Rew: +0.03
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 24 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:02] MOVE Bench -> Board: Rhaast (i:6.0) <-> Illaoi (i:6.0) | Rew: -0.10
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 24 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:02] --- FIM DO ROUND 4-1 | GOLD: 31 ---
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Tee|C|1*|i:2.0]       [ . ]        [Cho|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Rha|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mee|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Sam|F|1*|i:6.0]  [Jax|T|1*|i:4.0]  [Lul|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Ill|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:02] 🛒 LOJA: Tahm Kench(i:8.0), Zoe(i:4.0), Lulu(i:6.0), Talon(i:2.0), Lulu(i:6.0)
+[15:00:04] MOVE Bench -> Board: Illaoi (i:6.0) <-> Samira (i:6.0) | Rew: +0.06
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 31 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:04] MOVE Bench -> Board: Samira (i:6.0) <-> Rhaast (i:6.0) | Rew: +0.04
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 31 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:05] MOVE Bench -> Board: Rhaast (i:6.0) <-> Jax (i:4.0) | Rew: -0.03
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 31 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:06] MOVE Bench -> Board: Jax (i:4.0) <-> Samira (i:6.0) | Rew: -0.03
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 31 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:07] MOVE Bench -> Board: Samira (i:6.0) <-> Rhaast (i:6.0) | Rew: +0.04
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 31 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:07] MOVE Bench -> Board: Rhaast (i:6.0) <-> Jax (i:4.0) | Rew: -0.03
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 31 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:08] MOVE Bench -> Board: Jax (i:4.0) <-> Illaoi (i:6.0) | Rew: -0.09
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 31 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:09] MOVE Bench -> Board: Illaoi (i:6.0) <-> Rhaast (i:6.0) | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 31 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:09] MOVE Bench -> Board: Rhaast (i:6.0) <-> Samira (i:6.0) | Rew: -0.04
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 31 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:10] --- FIM DO ROUND 4-2 | GOLD: 40 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Tee|C|1*|i:2.0]       [ . ]        [Cho|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Mee|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Jax|T|1*|i:4.0]  [Rha|T|1*|i:6.0]  [Lul|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Sam|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:10] 🛒 LOJA: Milio(i:4.0), Miss Fortune(i:6.0), Ornn(i:6.0), Talon(i:2.0), Urgot(i:6.0)
+[15:00:11] MOVE Bench -> Board: Samira (i:6.0) <-> Illaoi (i:6.0) | Rew: -0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 40 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:12] MOVE Bench -> Board: Illaoi (i:6.0) <-> Rhaast (i:6.0) | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 40 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:13] MOVE Bench -> Board: Rhaast (i:6.0) <-> Samira (i:6.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 40 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:14] MOVE Bench -> Board: Samira (i:6.0) <-> Meepsie (i:4.0) | Rew: -0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 40 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:14] MOVE Bench -> Board: Meepsie (i:4.0) <-> Rhaast (i:6.0) | Rew: +0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 40 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:15] MOVE Bench -> Board: Rhaast (i:6.0) <-> Illaoi (i:6.0) | Rew: -0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 40 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:16] MOVE Bench -> Board: Illaoi (i:6.0) <-> Meepsie (i:4.0) | Rew: +0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 40 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:16] MOVE Bench -> Board: Meepsie (i:4.0) <-> Rhaast (i:6.0) | Rew: +0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 40 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:17] MOVE Bench -> Board: Rhaast (i:6.0) <-> Illaoi (i:6.0) | Rew: -0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 40 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:18] --- FIM DO ROUND 4-3 | GOLD: 50 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Tee|C|1*|i:2.0]       [ . ]        [Cho|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Rha|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Sam|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Jax|T|1*|i:4.0]  [Mee|T|1*|i:4.0]  [Lul|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Ill|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:18] 🛒 LOJA: Lulu(i:6.0), Maokai(i:6.0), Talon(i:2.0), Diana(i:6.0), Meepsie(i:4.0)
+[15:00:19] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 46 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:20] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 42 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:21] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 38 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:21] MOVE Bench -> Board: Illaoi (i:6.0) <-> Jax (i:4.0) | Rew: +0.09
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 38 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:22] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 34 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:23] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 30 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:23] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 26 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:24] BUY XP                       | Rew: +0.52
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 22 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:25] MOVE Bench -> Board: Jax (i:4.0) <-> Vazio | Rew: +0.49
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 22 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:26] --- FIM DO ROUND 4-4 | GOLD: 30 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Tee|C|1*|i:2.0]       [ . ]        [Cho|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Rha|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Sam|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+ [Ill|T|1*|i:6.0]  [Mee|T|1*|i:4.0]  [Lul|C|1*|i:6.0]  [Jax|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:26] 🛒 LOJA: Caitlyn(i:2.0), Briar(i:2.0), Gragas(i:4.0), Milio(i:4.0), Gragas(i:4.0)
+[15:00:27] COMPROU: Milio (Custo 2 | i:4.0) | Rew: +0.05
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:28] MOVE Bench -> Board: Milio (i:4.0) <-> Rhaast (i:6.0) | Rew: -0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:28] MOVE Bench -> Board: Rhaast (i:6.0) <-> Meepsie (i:4.0) | Rew: -0.07
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:29] MOVE Bench -> Board: Meepsie (i:4.0) <-> Milio (i:4.0) | Rew: +0.07
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:30] MOVE Bench -> Board: Milio (i:4.0) <-> Rhaast (i:6.0) | Rew: +0.04
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:30] MOVE Bench -> Board: Rhaast (i:6.0) <-> Meepsie (i:4.0) | Rew: -0.07
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:31] MOVE Bench -> Board: Meepsie (i:4.0) <-> Illaoi (i:6.0) | Rew: -0.08
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:32] MOVE Bench -> Board: Illaoi (i:6.0) <-> Rhaast (i:6.0) | Rew: +0.10
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[15:00:33] MOVE Bench -> Board: Rhaast (i:6.0) <-> Milio (i:4.0) | Rew: -0.04
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:33] --- FIM DO ROUND 4-5 | GOLD: 28 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:33] 🛒 LOJA: None, None, None, None, None
+[15:00:33]  ⬇️ SINERGIA: SHEPHERD nível 0
+[15:00:35] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:41] --- FIM DO ROUND 4-6 | GOLD: 28 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:41] 🛒 LOJA: None, None, None, None, None
+[15:00:42] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:49] --- FIM DO ROUND 4-7 | GOLD: 28 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:49] 🛒 LOJA: None, None, None, None, None
+[15:00:50] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:00:57] --- FIM DO ROUND 5-1 | GOLD: 28 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:00:57] 🛒 LOJA: None, None, None, None, None
+[15:00:58] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:01:04] --- FIM DO ROUND 5-2 | GOLD: 28 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:04] 🛒 LOJA: None, None, None, None, None
+[15:01:06] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:01:12] --- FIM DO ROUND 5-3 | GOLD: 28 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:12] 🛒 LOJA: None, None, None, None, None
+[15:01:13] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:01:20] --- FIM DO ROUND 5-4 | GOLD: 28 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:20] 🛒 LOJA: None, None, None, None, None
+[15:01:21] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:01:27] --- FIM DO ROUND 5-5 | GOLD: 28 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:27] 🛒 LOJA: None, None, None, None, None
+[15:01:29] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:01:35] --- FIM DO ROUND 5-6 | GOLD: 28 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:35] 🛒 LOJA: None, None, None, None, None
+[15:01:37] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:01:43] --- FIM DO ROUND 5-7 | GOLD: 28 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:43] 🛒 LOJA: None, None, None, None, None
+[15:01:44] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:01:51] --- FIM DO ROUND 6-1 | GOLD: 28 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:51] 🛒 LOJA: None, None, None, None, None
+[15:01:52] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:01:58] --- FIM DO ROUND 6-2 | GOLD: 28 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:01:58] 🛒 LOJA: None, None, None, None, None
+[15:02:00] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:02:06] --- FIM DO ROUND 6-3 | GOLD: 28 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:02:06] 🛒 LOJA: None, None, None, None, None
+[15:02:08] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:02:14] --- FIM DO ROUND 6-4 | GOLD: 28 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:02:14] 🛒 LOJA: None, None, None, None, None
+[15:02:15] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:02:22] --- FIM DO ROUND 6-5 | GOLD: 28 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:02:22] 🛒 LOJA: None, None, None, None, None
+[15:02:23] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    GOLD: 28 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:02:29] --- FIM DO ROUND 6-6 | GOLD: 28 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi
+    RENDA PRÓXIMO ROUND: +0 base, +0 juros, +0 sequência, +0 vitória (total: +0)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:02:29] 🛒 LOJA: None, None, None, None, None
+
+========================================
+ GAME OVER - RELATÓRIO FINAL
+========================================

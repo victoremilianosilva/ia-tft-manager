@@ -1,0 +1,525 @@
+==========================================================
+TFT AI LOG · JOGADOR 4
+Partida: deab505d-38f1-4d34-a82c-54e120304142
+Seed: 20261016 | Política: determinística
+Checkpoint SHA-256: 537cceac484d842fd0a4178ac2432a2a4f7dfc1141002eb0e004f195f1c5a0fc
+Impacto (i): custo × estrelas × 2 (contribuição nativa da engine)
+==========================================================
+--- INÍCIO DA PARTIDA · JOGADOR 4 ---
+[13:06:29] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.30
+[13:06:29] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.05
+[13:06:30] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: -0.05
+[13:06:31] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.05
+[13:06:31] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: -0.05
+[13:06:32] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: -0.04
+[13:06:33] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.03
+[13:06:34] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: -0.05
+[13:06:34] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: -0.04
+
+[13:06:35] --- FIM DO ROUND 1-1 | GOLD: 2 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:06:35] 🛒 LOJA: Rek'Sai(i:2.0), Poppy(i:2.0), Nasus(i:2.0), Teemo(i:2.0), Caitlyn(i:2.0)
+[13:06:36] COMPROU: Caitlyn (Custo 1 | i:2.0) | Rew: +0.05
+[13:06:36] COMPROU: Teemo (Custo 1 | i:2.0) | Rew: +0.05
+[13:06:37] MOVE Bench -> Board: Teemo (i:2.0) <-> Vazio | Rew: +0.20
+[13:06:38] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Teemo (i:2.0) | Rew: +0.17
+[13:06:39] MOVE Bench -> Board: Teemo (i:2.0) <-> Vazio | Rew: +0.47
+[13:06:39] MOVE Board -> Board: Caitlyn (i:2.0) <-> Vazio | Rew: -0.04
+[13:06:40] MOVE Board -> Board: Teemo (i:2.0) <-> Caitlyn (i:2.0) | Rew: +0.05
+[13:06:41] MOVE Board -> Board: Caitlyn (i:2.0) <-> Vazio | Rew: +0.02
+[13:06:41] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Teemo (i:2.0) | Rew: -0.05
+
+[13:06:42] --- FIM DO ROUND 1-2 | GOLD: 2 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Tee|C|1*|i:2.0]       [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:06:42] 🛒 LOJA: Aatrox(i:2.0), Nasus(i:2.0), Pyke(i:4.0), Caitlyn(i:2.0), Bel'Veth(i:4.0)
+[13:06:43] COMPROU: Caitlyn (Custo 1 | i:2.0) | Rew: +0.05
+[13:06:43]  ⬆️ SINERGIA: FATEWEAVER nível 1
+[13:06:43] COMPROU: Nasus (Custo 1 | i:2.0) | Rew: +0.05
+[13:06:44] MOVE Bench -> Board: Nasus (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.14
+[13:06:45] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Teemo (i:2.0) | Rew: -0.04
+[13:06:46] MOVE Bench -> Board: Teemo (i:2.0) <-> Nasus (i:2.0) | Rew: -0.03
+[13:06:46] MOVE Bench -> Board: Nasus (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.04
+[13:06:47] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Teemo (i:2.0) | Rew: -0.04
+[13:06:48] MOVE Bench -> Board: Teemo (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.19
+[13:06:48] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Twisted Fate (i:2.0) | Rew: +0.08
+
+[13:06:49] --- FIM DO ROUND 1-3 | GOLD: 3 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Nas|F|1*|i:2.0]       [ . ]        [Tee|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Cai|1*|i:2.0][Twi|1*|i:2.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:06:49] 🛒 LOJA: Briar(i:2.0), Rek'Sai(i:2.0), Meepsie(i:4.0), Poppy(i:2.0), Briar(i:2.0)
+[13:06:50] COMPROU: Briar (Custo 1 | i:2.0) | Rew: +0.05
+[13:06:51] COMPROU: Poppy (Custo 1 | i:2.0) | Rew: +0.05
+[13:06:51] COMPROU: Briar (Custo 1 | i:2.0) | Rew: +0.05
+[13:06:52] VENDEU: Briar (i:2.0)        | Rew: -0.15
+[13:06:53] COMPROU: Rek'Sai (Custo 1 | i:2.0) | Rew: +0.05
+
+[13:08:19] --- FIM DO ROUND 1-4 | GOLD: 4 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Nas|F|1*|i:2.0]       [ . ]        [Tee|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Cai|1*|i:2.0][Twi|1*|i:2.0][Bri|1*|i:2.0]
+[Pop|1*|i:2.0][Rek|1*|i:2.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:08:19] 🛒 LOJA: Teemo(i:2.0), Rek'Sai(i:2.0), Pyke(i:4.0), Cho'Gath(i:2.0), Pyke(i:4.0)
+[13:08:20] BUY XP                       | Rew: +0.02
+[13:08:21] VENDEU: Rek'Sai (i:2.0)      | Rew: +0.05
+[13:08:21] COMPROU: Cho'Gath (Custo 1 | i:2.0) | Rew: +0.05
+[13:08:22] VENDEU: Cho'Gath (i:2.0)     | Rew: +0.05
+[13:08:23] COMPROU: Teemo (Custo 1 | i:2.0) | Rew: +0.05
+[13:08:23]  ⬆️ SINERGIA: SPACE GROOVE nível 1
+[13:08:24] VENDEU: Teemo (i:2.0)        | Rew: -0.15
+[13:08:24]  ⬇️ SINERGIA: SPACE GROOVE nível 0
+[13:08:24] COMPROU: Rek'Sai (Custo 1 | i:2.0) | Rew: +0.05
+[13:08:25] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Vazio | Rew: +0.46
+[13:08:26] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.09
+
+[13:08:26] --- FIM DO ROUND 2-1 | GOLD: 5 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Nas|F|1*|i:2.0]       [ . ]        [Tee|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Cai|1*|i:2.0][Rek|1*|i:2.0][Bri|1*|i:2.0]
+[Pop|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:08:26] 🛒 LOJA: Viktor(i:6.0), Caitlyn(i:2.0), Gnar(i:4.0), Aatrox(i:2.0), Teemo(i:2.0)
+[13:08:27] BUY XP                       | Rew: +1.52
+[13:08:28] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Vazio | Rew: +0.46
+[13:08:29] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Twisted Fate (i:2.0) | Rew: +0.03
+[13:08:29] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.13
+[13:08:30] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.10
+[13:08:31] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Twisted Fate (i:2.0) | Rew: +0.03
+[13:08:31] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.10
+[13:08:32] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.10
+[13:08:33] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Twisted Fate (i:2.0) | Rew: +0.04
+
+[13:08:33] --- FIM DO ROUND 2-2 | GOLD: 7 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Nas|F|1*|i:2.0]       [ . ]        [Tee|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Rek|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Twi|1*|i:2.0]   [VAZIO]    [Bri|1*|i:2.0]
+[Pop|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:08:33] 🛒 LOJA: Briar(i:2.0), Cho'Gath(i:2.0), Poppy(i:2.0), Viktor(i:6.0), Caitlyn(i:2.0)
+[13:08:34] BUY XP                       | Rew: +0.02
+[13:08:35] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.04
+[13:08:36] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Caitlyn (i:2.0) | Rew: +0.00
+[13:08:36] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Twisted Fate (i:2.0) | Rew: +0.04
+[13:08:37] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.04
+[13:08:38] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.10
+[13:08:38] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.12
+[13:08:39] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.03
+[13:08:40] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.09
+
+[13:08:40] --- FIM DO ROUND 2-3 | GOLD: 9 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Nas|F|1*|i:2.0]       [ . ]        [Tee|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Rek|1*|i:2.0]   [VAZIO]    [Bri|1*|i:2.0]
+[Pop|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:08:40] 🛒 LOJA: Lissandra(i:2.0), Pyke(i:4.0), Ezreal(i:2.0), Kindred(i:8.0), Lissandra(i:2.0)
+[13:08:41] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.13
+[13:08:42] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.04
+
+[13:09:22] --- FIM DO ROUND 2-4 | GOLD: 14 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Nas|F|1*|i:2.0]       [ . ]        [Tee|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Rek|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Cai|1*|i:2.0]   [VAZIO]    [Bri|1*|i:2.0]
+[Pop|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:09:22] 🛒 LOJA: Leona(i:2.0), Viktor(i:6.0), Pantheon(i:4.0), Fizz(i:6.0), Lissandra(i:2.0)
+[13:09:22] BUY XP                       | Rew: +0.02
+[13:09:23] BUY XP                       | Rew: +0.02
+[13:09:24] BUY XP                       | Rew: +0.52
+[13:09:25] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Vazio | Rew: +0.62
+[13:09:25] MOVE Bench -> Board: Poppy (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.05
+[13:09:26] COMPROU: Lissandra (Custo 1 | i:2.0) | Rew: +0.05
+[13:09:27] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.13
+[13:09:27] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Poppy (i:2.0) | Rew: +0.13
+[13:09:28] MOVE Bench -> Board: Poppy (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.05
+
+[13:09:29] --- FIM DO ROUND 2-5 | GOLD: 6 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Nas|F|1*|i:2.0]       [ . ]        [Tee|C|1*|i:2.0]       [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Lis|1*|i:2.0]   [VAZIO]    [Bri|1*|i:2.0]
+[Rek|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:09:29] 🛒 LOJA: Cho'Gath(i:2.0), Nasus(i:2.0), Zoe(i:4.0), Twisted Fate(i:2.0), Nunu & Willump(i:8.0)
+[13:09:29] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.13
+[13:09:30] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Poppy (i:2.0) | Rew: +0.03
+[13:09:31] MOVE Bench -> Board: Poppy (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.05
+[13:09:32] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.10
+[13:09:32] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.12
+[13:09:33] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.03
+[13:09:34] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.10
+[13:09:34] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.13
+[13:09:35] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Poppy (i:2.0) | Rew: +0.03
+
+[13:09:36] --- FIM DO ROUND 2-6 | GOLD: 12 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Nas|F|1*|i:2.0]       [ . ]        [Tee|C|1*|i:2.0]       [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Rek|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Lis|1*|i:2.0]   [VAZIO]    [Bri|1*|i:2.0]
+[Pop|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:09:36] 🛒 LOJA: Ornn(i:6.0), Twisted Fate(i:2.0), Poppy(i:2.0), Bel'Veth(i:4.0), Mordekaiser(i:4.0)
+[13:09:36] MOVE Bench -> Board: Poppy (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.04
+[13:09:37] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.10
+[13:09:38] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Poppy (i:2.0) | Rew: +0.05
+[13:09:39] MOVE Bench -> Board: Poppy (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.05
+[13:09:39] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.10
+[13:09:40] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Caitlyn (i:2.0) | Rew: +0.00
+[13:09:41] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.10
+[13:09:41] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Poppy (i:2.0) | Rew: -0.05
+[13:09:42] MOVE Bench -> Board: Poppy (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.05
+
+[13:09:43] --- FIM DO ROUND 2-7 | GOLD: 18 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Nas|F|1*|i:2.0]       [ . ]        [Tee|C|1*|i:2.0]       [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]        [Rek|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Lis|1*|i:2.0]   [VAZIO]    [Bri|1*|i:2.0]
+[Cai|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:09:43] 🛒 LOJA: Twisted Fate(i:2.0), Pyke(i:4.0), Kai'Sa(i:6.0), Bel'Veth(i:4.0), Pantheon(i:4.0)
+[13:09:44] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.10
+[13:09:44] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Poppy (i:2.0) | Rew: -0.04
+[13:09:45] MOVE Bench -> Board: Poppy (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.03
+[13:09:46] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.13
+[13:09:46] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.10
+[13:09:47] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Twisted Fate (i:2.0) | Rew: +0.03
+[13:09:48] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.12
+[13:09:48] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.10
+[13:09:49] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Poppy (i:2.0) | Rew: +0.05
+
+[13:09:50] --- FIM DO ROUND 3-1 | GOLD: 24 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Nas|F|1*|i:2.0]       [ . ]        [Tee|C|1*|i:2.0]       [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Rek|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Lis|1*|i:2.0]   [VAZIO]    [Bri|1*|i:2.0]
+[Pop|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:09:50] 🛒 LOJA: Fizz(i:6.0), Ezreal(i:2.0), Akali(i:4.0), Rek'Sai(i:2.0), Rek'Sai(i:2.0)
+[13:09:51] MOVE Bench -> Board: Poppy (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.05
+[13:09:51] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.13
+[13:09:52] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Poppy (i:2.0) | Rew: +0.13
+[13:09:53] MOVE Bench -> Board: Poppy (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.05
+[13:09:53] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.13
+[13:09:54] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.03
+[13:09:55] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.10
+[13:09:56] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Poppy (i:2.0) | Rew: -0.05
+[13:09:56] MOVE Bench -> Board: Poppy (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.05
+
+[13:09:57] --- FIM DO ROUND 3-2 | GOLD: 32 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Nas|F|1*|i:2.0]       [ . ]        [Tee|C|1*|i:2.0]       [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]        [Rek|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Lis|1*|i:2.0]   [VAZIO]    [Bri|1*|i:2.0]
+[Cai|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:09:57] 🛒 LOJA: Urgot(i:6.0), Briar(i:2.0), Pantheon(i:4.0), Rhaast(i:6.0), Jax(i:4.0)
+[13:09:58] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.10
+[13:09:58] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Poppy (i:2.0) | Rew: -0.05
+[13:09:59] MOVE Bench -> Board: Poppy (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.05
+[13:10:00] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.10
+[13:10:00] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.10
+[13:10:01] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Caitlyn (i:2.0) | Rew: +0.00
+[13:10:02] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.10
+[13:10:03] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.10
+[13:10:03] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Poppy (i:2.0) | Rew: +0.05
+
+[13:10:04] --- FIM DO ROUND 3-3 | GOLD: 41 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Nas|F|1*|i:2.0]       [ . ]        [Tee|C|1*|i:2.0]       [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Rek|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Lis|1*|i:2.0]   [VAZIO]    [Bri|1*|i:2.0]
+[Pop|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:10:04] 🛒 LOJA: Gwen(i:4.0), Pantheon(i:4.0), Ornn(i:6.0), Gnar(i:4.0), Briar(i:2.0)
+[13:14:23] MOVE Bench -> Board: Poppy (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.05
+[13:14:24] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.10
+[13:14:24] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Poppy (i:2.0) | Rew: +0.05
+[13:14:25] MOVE Bench -> Board: Poppy (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.05
+[13:14:26] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.10
+[13:14:26] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Teemo (i:2.0) | Rew: +0.06
+[13:14:27] MOVE Bench -> Board: Teemo (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.09
+[13:14:28] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Poppy (i:2.0) | Rew: -0.05
+[13:14:28] MOVE Bench -> Board: Poppy (i:2.0) <-> Teemo (i:2.0) | Rew: -0.08
+
+[13:14:29] --- FIM DO ROUND 3-4 | GOLD: 51 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Nas|F|1*|i:2.0]       [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]        [Rek|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Lis|1*|i:2.0]   [VAZIO]    [Bri|1*|i:2.0]
+[Tee|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:14:29] 🛒 LOJA: Bel'Veth(i:4.0), Pantheon(i:4.0), Illaoi(i:6.0), Milio(i:4.0), Diana(i:6.0)
+[13:14:30] MOVE Bench -> Board: Teemo (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.09
+[13:14:31] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Poppy (i:2.0) | Rew: -0.05
+[13:14:31] MOVE Bench -> Board: Poppy (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.05
+[13:14:32] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.10
+[13:14:33] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Teemo (i:2.0) | Rew: -0.09
+[13:14:33] MOVE Bench -> Board: Teemo (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.05
+[13:14:34] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.10
+[13:14:35] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Teemo (i:2.0) | Rew: -0.09
+[13:14:36] MOVE Bench -> Board: Teemo (i:2.0) <-> Poppy (i:2.0) | Rew: -0.01
+
+[13:14:36] --- FIM DO ROUND 3-5 | GOLD: 62 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Nas|F|1*|i:2.0]       [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]        [Tee|C|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Rek|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Lis|1*|i:2.0]   [VAZIO]    [Bri|1*|i:2.0]
+[Pop|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:14:36] 🛒 LOJA: Poppy(i:2.0), Illaoi(i:6.0), Fizz(i:6.0), Pantheon(i:4.0), Twisted Fate(i:2.0)
+[13:14:37] MOVE Bench -> Board: Poppy (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.05
+[13:14:38] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.10
+[13:14:38] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Poppy (i:2.0) | Rew: +0.05
+[13:14:39] MOVE Bench -> Board: Poppy (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.05
+[13:14:40] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.10
+[13:14:40] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Twisted Fate (i:2.0) | Rew: +0.04
+[13:14:41] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.13
+[13:14:42] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Poppy (i:2.0) | Rew: -0.05
+[13:14:43] MOVE Bench -> Board: Poppy (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.13
+
+[13:14:43] --- FIM DO ROUND 3-6 | GOLD: 74 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Nas|F|1*|i:2.0]       [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]        [Tee|C|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]        [Rek|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Lis|1*|i:2.0]   [VAZIO]    [Bri|1*|i:2.0]
+[Twi|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:14:43] 🛒 LOJA: Mordekaiser(i:4.0), Akali(i:4.0), Ornn(i:6.0), Twisted Fate(i:2.0), Bel'Veth(i:4.0)
+[13:14:44] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.13
+[13:14:45] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Poppy (i:2.0) | Rew: -0.05
+[13:14:45] MOVE Bench -> Board: Poppy (i:2.0) <-> Teemo (i:2.0) | Rew: +0.01
+[13:14:46] MOVE Bench -> Board: Teemo (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.09
+[13:14:47] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.12
+[13:14:47] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Teemo (i:2.0) | Rew: +0.05
+[13:14:48] MOVE Bench -> Board: Teemo (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.09
+[13:14:49] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.13
+[13:14:50] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Poppy (i:2.0) | Rew: +0.03
+
+[13:14:50] --- FIM DO ROUND 3-7 | GOLD: 85 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Nas|F|1*|i:2.0]       [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]        [Tee|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Rek|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Lis|1*|i:2.0]   [VAZIO]    [Bri|1*|i:2.0]
+[Pop|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:14:50] 🛒 LOJA: Twisted Fate(i:2.0), Jinx(i:4.0), Mordekaiser(i:4.0), Bel'Veth(i:4.0), Diana(i:6.0)
+[13:14:51] MOVE Bench -> Board: Poppy (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.05
+[13:14:52] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Teemo (i:2.0) | Rew: -0.09
+[13:14:52] MOVE Bench -> Board: Teemo (i:2.0) <-> Poppy (i:2.0) | Rew: +0.09
+[13:14:53] MOVE Bench -> Board: Poppy (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.05
+[13:14:54] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Teemo (i:2.0) | Rew: -0.09
+[13:14:55] MOVE Bench -> Board: Teemo (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.05
+[13:14:55] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.10
+[13:14:56] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Poppy (i:2.0) | Rew: -0.05
+[13:14:57] MOVE Bench -> Board: Poppy (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.05
+
+[13:14:57] --- FIM DO ROUND 4-1 | GOLD: 95 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Nas|F|1*|i:2.0]       [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]        [Rek|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Tee|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Lis|1*|i:2.0]   [VAZIO]    [Bri|1*|i:2.0]
+[Cai|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:14:57] 🛒 LOJA: Teemo(i:2.0), Lissandra(i:2.0), Teemo(i:2.0), Samira(i:6.0), Pantheon(i:4.0)
+[13:14:58] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.10
+[13:14:59] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Poppy (i:2.0) | Rew: -0.05
+[13:14:59] MOVE Bench -> Board: Poppy (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.03
+[13:15:00] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.13
+[13:15:01] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.10
+[13:15:02] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Twisted Fate (i:2.0) | Rew: +0.04
+[13:15:02] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Rek'Sai (i:2.0) | Rew: +0.12
+[13:15:03] MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Caitlyn (i:2.0) | Rew: -0.10
+[13:15:04] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Poppy (i:2.0) | Rew: +0.05
+
+[13:15:04] --- FIM DO ROUND 4-2 | GOLD: 106 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Nas|F|1*|i:2.0]       [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Rek|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Tee|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Lis|1*|i:2.0]   [VAZIO]    [Bri|1*|i:2.0]
+[Pop|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:15:04] 🛒 LOJA: Miss Fortune(i:6.0), Maokai(i:6.0), Pantheon(i:4.0), Samira(i:6.0), Miss Fortune(i:6.0)

@@ -1,0 +1,141 @@
+==========================================================
+TFT AI LOG · JOGADOR 8
+Partida: ee82aef5-513c-4fa0-a9e8-7eb4b801637b
+Seed: 20261016 | Política: determinística
+Checkpoint SHA-256: fe59b57cd6bff4d62132680ae7b7af701ee2acd18dd0b25886aa7aa5e2ef7166
+Impacto (i): custo × estrelas × 2 (contribuição nativa da engine)
+==========================================================
+--- INÍCIO DA PARTIDA · JOGADOR 8 ---
+[10:41:22] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.30
+[10:41:23] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:24] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:24] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:25] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:26] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:27] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:27] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:28] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.02
+
+[10:41:29] --- FIM DO ROUND 1-1 | GOLD: 2 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:41:29] 🛒 LOJA: Cho'Gath(i:2.0), Teemo(i:2.0), Caitlyn(i:2.0), Aatrox(i:2.0), Teemo(i:2.0)
+[10:41:29] COMPROU: Aatrox (Custo 1 | i:2.0) | Rew: +0.05
+[10:41:30] MOVE Bench -> Board: Aatrox (i:2.0) <-> Vazio | Rew: +0.28
+[10:41:31] COMPROU: Caitlyn (Custo 1 | i:2.0) | Rew: +0.05
+[10:41:31] MOVE Bench -> Board: Caitlyn (i:2.0) <-> Vazio | Rew: +0.65
+[10:41:32] MOVE Board -> Board: Caitlyn (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:33] MOVE Board -> Board: Caitlyn (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:34] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:34] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:35] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.02
+
+[10:41:36] --- FIM DO ROUND 1-2 | GOLD: 2 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Cai|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:41:36] 🛒 LOJA: Aatrox(i:2.0), Rek'Sai(i:2.0), Leona(i:2.0), Ezreal(i:2.0), Rek'Sai(i:2.0)
+[10:41:36] COMPROU: Ezreal (Custo 1 | i:2.0) | Rew: +0.05
+[10:41:37] MOVE Bench -> Board: Ezreal (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.13
+[10:41:38] MOVE Bench -> Board: Aatrox (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.00
+[10:41:38] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Ezreal (i:2.0) | Rew: -0.00
+[10:41:39] MOVE Bench -> Board: Ezreal (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.14
+[10:41:40] MOVE Bench -> Board: Aatrox (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.10
+[10:41:41] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Ezreal (i:2.0) | Rew: -0.10
+[10:41:41] MOVE Bench -> Board: Ezreal (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.13
+[10:41:42] MOVE Bench -> Board: Aatrox (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.00
+
+[10:41:43] --- FIM DO ROUND 1-3 | GOLD: 4 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Ezr|F|1*|i:2.0]  [Cai|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Twi|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:41:43] 🛒 LOJA: Caitlyn(i:2.0), Talon(i:2.0), Lissandra(i:2.0), Lissandra(i:2.0), Poppy(i:2.0)
+[10:41:43] BUY XP                       | Rew: +1.52
+[10:41:44] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.46
+[10:41:45] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Aatrox (i:2.0) | Rew: +0.02
+[10:41:45] MOVE Board -> Board: Aatrox (i:2.0) <-> Caitlyn (i:2.0) | Rew: +0.02
+[10:41:46] MOVE Board -> Board: Caitlyn (i:2.0) <-> Twisted Fate (i:2.0) | Rew: +0.02
+[10:41:47] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Aatrox (i:2.0) | Rew: +0.02
+[10:41:48] MOVE Board -> Board: Aatrox (i:2.0) <-> Caitlyn (i:2.0) | Rew: +0.02
+[10:41:48] MOVE Board -> Board: Caitlyn (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:49] MOVE Board -> Board: Caitlyn (i:2.0) <-> Aatrox (i:2.0) | Rew: +0.02
+
+[10:41:50] --- FIM DO ROUND 1-4 | GOLD: 4 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Cai|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Ezr|F|1*|i:2.0]  [Twi|C|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:41:50] 🛒 LOJA: Aatrox(i:2.0), Rek'Sai(i:2.0), Meepsie(i:4.0), Teemo(i:2.0), Teemo(i:2.0)
+[10:41:50] BUY XP                       | Rew: +0.02
+[10:41:51] MOVE Board -> Board: Aatrox (i:2.0) <-> Twisted Fate (i:2.0) | Rew: +0.02
+[10:41:52] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Caitlyn (i:2.0) | Rew: +0.02
+[10:41:53] MOVE Board -> Board: Caitlyn (i:2.0) <-> Aatrox (i:2.0) | Rew: +0.02
+[10:41:53] MOVE Board -> Board: Aatrox (i:2.0) <-> Twisted Fate (i:2.0) | Rew: +0.02
+[10:41:54] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Caitlyn (i:2.0) | Rew: +0.02
+[10:41:55] MOVE Board -> Board: Caitlyn (i:2.0) <-> Aatrox (i:2.0) | Rew: +0.02
+[10:41:55] MOVE Board -> Board: Aatrox (i:2.0) <-> Twisted Fate (i:2.0) | Rew: +0.02
+[10:41:56] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Caitlyn (i:2.0) | Rew: +0.02
+
+[10:41:57] --- FIM DO ROUND 2-1 | GOLD: 5 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Cai|F|1*|i:2.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Ezr|F|1*|i:2.0]  [Aat|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:41:57] 🛒 LOJA: Veigar(i:2.0), Mordekaiser(i:4.0), Briar(i:2.0), Viktor(i:6.0), Caitlyn(i:2.0)
+[10:41:57] BUY XP                       | Rew: +0.02
+[10:41:58] COMPROU: Briar (Custo 1 | i:2.0) | Rew: +0.05

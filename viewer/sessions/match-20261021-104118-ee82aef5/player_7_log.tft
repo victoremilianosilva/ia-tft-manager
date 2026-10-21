@@ -1,0 +1,140 @@
+==========================================================
+TFT AI LOG · JOGADOR 7
+Partida: ee82aef5-513c-4fa0-a9e8-7eb4b801637b
+Seed: 20261016 | Política: determinística
+Checkpoint SHA-256: fe59b57cd6bff4d62132680ae7b7af701ee2acd18dd0b25886aa7aa5e2ef7166
+Impacto (i): custo × estrelas × 2 (contribuição nativa da engine)
+==========================================================
+--- INÍCIO DA PARTIDA · JOGADOR 7 ---
+[10:41:22] MOVE Bench -> Board: Briar (i:2.0) <-> Vazio | Rew: +0.29
+[10:41:23] MOVE Board -> Board: Briar (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:24] MOVE Board -> Board: Briar (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:24] MOVE Board -> Board: Briar (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:25] MOVE Board -> Board: Briar (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:26] MOVE Board -> Board: Briar (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:27] MOVE Board -> Board: Briar (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:27] MOVE Board -> Board: Briar (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:28] MOVE Board -> Board: Briar (i:2.0) <-> Vazio | Rew: +0.02
+
+[10:41:29] --- FIM DO ROUND 1-1 | GOLD: 2 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Bri|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:41:29] 🛒 LOJA: Talon(i:2.0), Caitlyn(i:2.0), Talon(i:2.0), Leona(i:2.0), Twisted Fate(i:2.0)
+[10:41:29] COMPROU: Leona (Custo 1 | i:2.0) | Rew: +0.05
+[10:41:30] MOVE Bench -> Board: Leona (i:2.0) <-> Vazio | Rew: +0.24
+[10:41:31] COMPROU: Talon (Custo 1 | i:2.0) | Rew: +0.05
+[10:41:31] MOVE Bench -> Board: Talon (i:2.0) <-> Leona (i:2.0) | Rew: +0.05
+[10:41:32] MOVE Bench -> Board: Leona (i:2.0) <-> Vazio | Rew: +0.47
+[10:41:33] MOVE Board -> Board: Talon (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:34] MOVE Board -> Board: Talon (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:34] MOVE Board -> Board: Briar (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:35] MOVE Board -> Board: Briar (i:2.0) <-> Vazio | Rew: +0.02
+
+[10:41:36] --- FIM DO ROUND 1-2 | GOLD: 2 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]  [Tal|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:41:36] 🛒 LOJA: Gnar(i:4.0), Briar(i:2.0), Rek'Sai(i:2.0), Jinx(i:4.0), Akali(i:4.0)
+[10:41:36] MOVE Board -> Board: Briar (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:37] MOVE Board -> Board: Briar (i:2.0) <-> Talon (i:2.0) | Rew: +0.02
+[10:41:38] MOVE Board -> Board: Talon (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:38] MOVE Board -> Board: Talon (i:2.0) <-> Briar (i:2.0) | Rew: +0.02
+[10:41:39] MOVE Board -> Board: Briar (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:40] MOVE Board -> Board: Briar (i:2.0) <-> Talon (i:2.0) | Rew: +0.02
+[10:41:41] MOVE Board -> Board: Talon (i:2.0) <-> Vazio | Rew: +0.02
+[10:41:41] MOVE Board -> Board: Talon (i:2.0) <-> Briar (i:2.0) | Rew: +0.02
+[10:41:42] MOVE Board -> Board: Briar (i:2.0) <-> Vazio | Rew: +0.02
+
+[10:41:43] --- FIM DO ROUND 1-3 | GOLD: 5 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]  [Tal|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:41:43] 🛒 LOJA: Gnar(i:4.0), Cho'Gath(i:2.0), Poppy(i:2.0), Cho'Gath(i:2.0), Veigar(i:2.0)
+[10:41:43] BUY XP                       | Rew: +1.52
+[10:41:44] MOVE Board -> Board: Briar (i:2.0) <-> Talon (i:2.0) | Rew: +0.02
+[10:41:45] COMPROU: Cho'Gath (Custo 1 | i:2.0) | Rew: +0.05
+[10:41:45] MOVE Bench -> Board: Cho'Gath (i:2.0) <-> Vazio | Rew: +0.45
+[10:41:46] MOVE Board -> Board: Cho'Gath (i:2.0) <-> Talon (i:2.0) | Rew: +0.02
+[10:41:47] MOVE Board -> Board: Talon (i:2.0) <-> Briar (i:2.0) | Rew: +0.02
+[10:41:48] MOVE Board -> Board: Briar (i:2.0) <-> Cho'Gath (i:2.0) | Rew: +0.02
+[10:41:48] MOVE Board -> Board: Cho'Gath (i:2.0) <-> Talon (i:2.0) | Rew: +0.02
+[10:41:49] MOVE Board -> Board: Talon (i:2.0) <-> Briar (i:2.0) | Rew: +0.02
+
+[10:41:50] --- FIM DO ROUND 1-4 | GOLD: 4 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Tal|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]  [Cho|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:41:50] 🛒 LOJA: Akali(i:4.0), Teemo(i:2.0), Zoe(i:4.0), Gwen(i:4.0), Rek'Sai(i:2.0)
+[10:41:50] BUY XP                       | Rew: +0.02
+[10:41:51] MOVE Board -> Board: Briar (i:2.0) <-> Cho'Gath (i:2.0) | Rew: +0.02
+[10:41:52] MOVE Board -> Board: Cho'Gath (i:2.0) <-> Talon (i:2.0) | Rew: +0.02
+[10:41:53] MOVE Board -> Board: Talon (i:2.0) <-> Briar (i:2.0) | Rew: +0.02
+[10:41:53] MOVE Board -> Board: Briar (i:2.0) <-> Cho'Gath (i:2.0) | Rew: +0.02
+[10:41:54] MOVE Board -> Board: Cho'Gath (i:2.0) <-> Talon (i:2.0) | Rew: +0.02
+[10:41:55] MOVE Board -> Board: Talon (i:2.0) <-> Briar (i:2.0) | Rew: +0.02
+[10:41:55] MOVE Board -> Board: Briar (i:2.0) <-> Cho'Gath (i:2.0) | Rew: +0.02
+[10:41:56] MOVE Board -> Board: Cho'Gath (i:2.0) <-> Talon (i:2.0) | Rew: +0.02
+
+[10:41:57] --- FIM DO ROUND 2-1 | GOLD: 6 ---
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Cho|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Tal|F|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]  [Bri|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:41:57] 🛒 LOJA: Briar(i:2.0), Jax(i:4.0), Pyke(i:4.0), Aurelion Sol(i:8.0), Ezreal(i:2.0)
+[10:41:57] BUY XP                       | Rew: +0.02
+[10:41:58] COMPROU: Pyke (Custo 2 | i:4.0) | Rew: +0.05
