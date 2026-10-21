@@ -197,6 +197,11 @@ class PlayerJsonLogWriter:
             "round_base_gold": audit.get("round_base_gold", 0),
             "round_interest": audit.get("round_interest", 0),
             "round_streak_gold": audit.get("round_streak_gold", 0),
+            "round_win_gold": audit.get("round_win_gold", 0),
+            "round_total_income": (
+                int(audit.get("round_gold", 0) or 0)
+                + int(audit.get("round_win_gold", 0) or 0)
+            ),
             "strategy_name": (audit.get("strategy_info") or {}).get("strategy_name", "ECON"),
             "strategy_id": (audit.get("strategy_info") or {}).get("strategy", 0),
             "comp_direction": (audit.get("strategy_info") or {}).get("composition_direction", ""),
@@ -330,10 +335,11 @@ class PlayerJsonLogWriter:
                 f"    STRATEGY: {after_state.get('strategy_name', 'ECON')} | "
                 f"COMP DIRECTION: {after_state.get('comp_direction') or '—'} | "
                 f"FOCUS: {after_state.get('comp_focus') or '—'}\n"
-                f"    RENDA: +{after_state.get('round_base_gold', 0)} base, "
+                f"    RENDA PRÓXIMO ROUND: +{after_state.get('round_base_gold', 0)} base, "
                 f"+{after_state.get('round_interest', 0)} juros, "
-                f"+{after_state.get('round_streak_gold', 0)} sequência "
-                f"(total rodada: +{after_state.get('round_gold', 0)})\n"
+                f"+{after_state.get('round_streak_gold', 0)} sequência, "
+                f"+{after_state.get('round_win_gold', 0)} vitória "
+                f"(total: +{after_state.get('round_total_income', after_state.get('round_gold', 0))})\n"
             ),
             tag="round_msg",
             data={
@@ -535,7 +541,8 @@ class PlayerJsonLogWriter:
                     f"    GOLD: {after_state.get('gold', '?')} | renda base "
                     f"+{after_state.get('round_base_gold', 0)} | juros "
                     f"+{after_state.get('round_interest', 0)} | sequência "
-                    f"+{after_state.get('round_streak_gold', 0)}\n"
+                    f"+{after_state.get('round_streak_gold', 0)} | vitória "
+                    f"+{after_state.get('round_win_gold', 0)}\n"
                 )
                 self._append_entry(
                     player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
