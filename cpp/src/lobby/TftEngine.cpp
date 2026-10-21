@@ -1783,6 +1783,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         const double old_synergy_score = lobby.synergy_score(player_id);
         const double old_positioning_score = lobby.positioning_score(player_id);
         bool sold_core_unit = false;
+        bool sold_unit_protects_upgrade = false;
+        double sold_unit_fit_score = 0.0;
+        bool buy_completes_upgrade = false;
         bool bought_unit_successfully = false;
         bool bought_upgrade = false;
         bool board_capacity_violation = false;
@@ -1825,6 +1828,16 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     candidate_comp_score = unit_composition_score(
                         strategy_before, *def, offer->star);
                     has_candidate_comp_score = true;
+                    int same_star_copies = 0;
+                    for (const auto& unit : this->board) {
+                        if (unit && unit->champion_internal_id == offer->champion_internal_id &&
+                            unit->star == offer->star) ++same_star_copies;
+                    }
+                    for (const auto& unit : this->bench) {
+                        if (unit && unit->champion_internal_id == offer->champion_internal_id &&
+                            unit->star == offer->star) ++same_star_copies;
+                    }
+                    buy_completes_upgrade = same_star_copies >= 2;
                 }
             }
         } else if (type == 3) {
@@ -2135,15 +2148,29 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
 
                 if (definition) {
                     if (!this->strategy.empty()) {
-                        // CompositionManager.is_core_unit() checks the
-                        // UnitManager internal ID (unit["id"]), not apiName.
-                        // Keep SELL reward semantics identical to Python.
-                        const auto& core_unit_ids = this->strategy.back().core_unit_ids;
+                        const auto& current_strategy = this->strategy.back();
+                        const auto& core_unit_ids = current_strategy.core_unit_ids;
                         sold_core_unit = std::find(
                             core_unit_ids.begin(), core_unit_ids.end(),
                             unit.champion_internal_id
                         ) != core_unit_ids.end();
+                        sold_unit_fit_score = std::clamp(
+                            unit_composition_score(current_strategy, *definition, unit.star) / 22.5,
+                            0.0, 1.0);
                     }
+                    int same_star_copies = 0;
+                    for (const auto& candidate : this->board) {
+                        if (candidate &&
+                            candidate->champion_internal_id == unit.champion_internal_id &&
+                            candidate->star == unit.star) ++same_star_copies;
+                    }
+                    for (const auto& candidate : this->bench) {
+                        if (candidate &&
+                            candidate->champion_internal_id == unit.champion_internal_id &&
+                            candidate->star == unit.star) ++same_star_copies;
+                    }
+                    // Selling one of a pair removes an immediate path toward a merge.
+                    sold_unit_protects_upgrade = same_star_copies >= 2;
                     const auto sell_value =
                         EconomyEngine::get_sell_value(
                             definition->cost,
@@ -2192,10 +2219,11 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             success = bought_unit_successfully;
             action_reward = !success ? -0.10 : (bought_upgrade ? 0.30 : 0.05);
             if (success && has_candidate_comp_score && board_comp_score_count > 1) {
-                // Só aplica bônus quando há uma composição mínima estabelecida
-                // (2+ unidades no tabuleiro). Compras iniciais mantêm +0.05.
-                action_reward += 0.10 * std::tanh(
-                    composition_quality_delta / 5.0);
+                action_reward += reward_model::purchase_quality(
+                    composition_quality_delta, false);
+            }
+            if (success && buy_completes_upgrade) {
+                action_reward += 0.12;
             }
         } else if (type == 1) {
             success = economy.gold == old_gold - EconomyEngine::REROLL_COST;
@@ -2277,10 +2305,19 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             }
         } else if (type == 5) {
             success = economy.gold > old_gold;
-            action_reward = success ? (sold_core_unit ? -0.15 : 0.05) : -0.10;
+            action_reward = success
+                ? reward_model::sale_quality(
+                    sold_unit_fit_score, sold_core_unit,
+                    sold_unit_protects_upgrade, old_bench_count >= static_cast<int>(kBenchSlots))
+                : -0.10;
         } else {
             success = true;
         }
+
+        // Give spending decisions immediate feedback for the opportunity cost
+        // of liquid gold and the interest breakpoints. This is a potential delta,
+        // not a per-step bonus, so repeatedly PASSing cannot farm reward.
+        action_reward += reward_model::gold_change_reward(old_gold, economy.gold);
 
         // MiniTFTEnv.step() returns the action-specific reward directly.
         // RewardManager's broader state components are not called by the
