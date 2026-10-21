@@ -568,8 +568,8 @@ struct TFTEngine::Impl {
             kExtraObservationDim + kSynergyObservationDim +
             kPositioningObservationDim + observation_trait_names.size() +
             kCapacityObservationDim +
-            2 * observation_trait_names.size() + kCompositionUnitSlots;
-            + kStrategicCandidateObservationDim;
+            2 * observation_trait_names.size() + kCompositionUnitSlots +
+            kStrategicCandidateObservationDim;
     }
 
     std::vector<float> build_observations() const {
