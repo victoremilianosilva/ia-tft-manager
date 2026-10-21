@@ -336,6 +336,32 @@ void test_reset_preserves_execution_metrics_like_python() {
     (void)nasus;
 }
 
+void test_mask_diagnostics_accumulate_and_survive_reset() {
+    AntiLoopEngine engine;
+    MaskDiagnostics diagnostics;
+    diagnostics.board_move_candidates = 12;
+    diagnostics.board_move_valid = 8;
+    diagnostics.board_move_blocked_anti_loop = 2;
+    diagnostics.board_move_blocked_seen_state = 2;
+    diagnostics.bench_move_candidates = 5;
+    diagnostics.bench_move_valid = 4;
+    diagnostics.bench_move_blocked_anti_loop = 1;
+    diagnostics.blocked_cycle = 2;
+
+    engine.record_mask_diagnostics(diagnostics);
+    engine.reset();
+
+    const auto metrics = engine.get_metrics();
+    assert(metrics.mask.board_move_candidates == 12);
+    assert(metrics.mask.board_move_valid == 8);
+    assert(metrics.mask.board_move_blocked_anti_loop == 2);
+    assert(metrics.mask.board_move_blocked_seen_state == 2);
+    assert(metrics.mask.bench_move_candidates == 5);
+    assert(metrics.mask.bench_move_valid == 4);
+    assert(metrics.mask.bench_move_blocked_anti_loop == 1);
+    assert(metrics.mask.blocked_cycle == 2);
+}
+
 void test_reset_clears_move_and_state_history() {
     AntiLoopEngine engine;
     const auto nasus = make_unit("nasus-1", 1);
@@ -375,6 +401,7 @@ int main() {
     test_move_queries_do_not_mutate_history();
     test_reset_clears_move_and_state_history();
     test_reset_preserves_execution_metrics_like_python();
+    test_mask_diagnostics_accumulate_and_survive_reset();
 
     return 0;
 }
