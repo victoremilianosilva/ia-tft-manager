@@ -51,6 +51,10 @@ constexpr std::size_t kExtraObservationDim = 5;
 constexpr std::size_t kSynergyObservationDim = 5;
 constexpr std::size_t kPositioningObservationDim = 4;
 constexpr std::size_t kCapacityObservationDim = 2;
+// Composition-aware features: direction and core-trait flags, plus fit scores
+// for each board, bench, and shop slot.
+constexpr std::size_t kCompositionUnitSlots =
+    kBoardSlots + kBenchSlots + kShopSlots;
 
 std::int32_t stage_damage(std::uint32_t stage) noexcept {
     switch (stage) {
@@ -529,7 +533,8 @@ struct TFTEngine::Impl {
             kBenchObservationDim + kShopObservationDim +
             kExtraObservationDim + kSynergyObservationDim +
             kPositioningObservationDim + observation_trait_names.size() +
-            kCapacityObservationDim;
+            kCapacityObservationDim +
+            2 * observation_trait_names.size() + kCompositionUnitSlots;
     }
 
     std::vector<float> build_observations() const {
@@ -695,6 +700,67 @@ struct TFTEngine::Impl {
             // 9) CAPACITY.
             out[offset++] = static_cast<float>(std::max(0, economy.level - board_count)) / 9.0f;
             out[offset++] = static_cast<float>(kBenchSlots - bench_count) / 9.0f;
+
+            // 10) COMPOSITION DIRECTION: explicit, stable one-hot over the
+            // catalog trait order. This is derived from board + bench state.
+            for (const auto& trait : observation_trait_names) {
+                out[offset++] =
+                    !strategy.composition_direction.empty() &&
+                    strategy.composition_direction == trait ? 1.0f : 0.0f;
+            }
+
+            // 11) CORE TRAITS: explicit flags, aligned with the same trait order.
+            for (const auto& trait : observation_trait_names) {
+                out[offset++] =
+                    std::find(strategy.core_traits.begin(),
+                              strategy.core_traits.end(), trait) !=
+                    strategy.core_traits.end() ? 1.0f : 0.0f;
+            }
+
+            // 12) COMPOSITION FIT: normalized per-unit compatibility score.
+            // The score is exposed for all candidates, including shop units,
+            // so PPO can compare a purchase against the current comp direction.
+            const auto append_unit_fit = [&](const UnitInstance* unit) {
+                if (!unit) {
+                    out[offset++] = 0.0f;
+                    return;
+                }
+                const auto* def = catalog->find_by_id(unit->champion_internal_id);
+                if (!def) {
+                    out[offset++] = 0.0f;
+                    return;
+                }
+                double score = 0.0;
+                if (std::find(strategy.core_unit_ids.begin(),
+                              strategy.core_unit_ids.end(),
+                              def->internal_id) != strategy.core_unit_ids.end())
+                    score += 5.0;
+                if (!strategy.composition_direction.empty() &&
+                    std::find(def->traits.begin(), def->traits.end(),
+                              strategy.composition_direction) != def->traits.end())
+                    score += 3.0;
+                for (const auto& trait : def->traits) {
+                    if (std::find(strategy.core_traits.begin(),
+                                  strategy.core_traits.end(), trait) !=
+                        strategy.core_traits.end())
+                        score += 2.0;
+                }
+                if (unit->star >= 2) score += 2.0;
+                if (unit->star >= 3) score += 4.0;
+                score += static_cast<double>(def->cost) * 0.5;
+                out[offset++] = static_cast<float>(
+                    std::clamp(score / 22.5, 0.0, 1.0));
+            };
+            for (const auto& unit : player_envs[i].board)
+                append_unit_fit(unit ? &*unit : nullptr);
+            for (const auto& unit : player_envs[i].bench)
+                append_unit_fit(unit ? &*unit : nullptr);
+            for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
+                const auto* unit = player_envs[i].shop
+                    ? player_envs[i].shop->get_unit(static_cast<std::int32_t>(slot))
+                    : nullptr;
+                append_unit_fit(unit);
+            }
         }
         return observations;
     }
@@ -1641,6 +1707,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         const auto old_level = economy.level;
         const auto old_xp = economy.xp;
         int old_board_count = 0, old_bench_count = 0;
+        const double old_synergy_score = lobby.synergy_score(player_id);
         bool sold_core_unit = false;
         bool bought_unit_successfully = false;
         bool bought_upgrade = false;
@@ -2024,6 +2091,12 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 // Incentiva a policy a usar toda a capacidade disponível do nível.
                 // O bônus só ocorre quando a unidade realmente aumenta a equipe,
                 // evitando recompensar substituições ou reposicionamentos.
+                // Small, bounded shaping signal: reward board deployments that
+                // improve active trait milestones, without overpowering terminal
+                // placement/combat rewards or hard-coding a target composition.
+                action_reward += 0.10 * std::tanh(
+                    lobby.synergy_score(player_id) - old_synergy_score);
+
                 if (new_board_count > old_board_count) {
                     action_reward += 0.25;
                     const int board_capacity = std::min(
