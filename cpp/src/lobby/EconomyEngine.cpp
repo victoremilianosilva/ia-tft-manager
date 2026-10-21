@@ -249,8 +249,9 @@ RoundEconomyResult EconomyEngine::resolve_round(
         get_xp_to_next(economy)
     };
 
-    // Preserva o contrato do Python: bônus de vitória é acumulado
-    // até a resolução da rodada e zerado depois de reportado.
+    // Preserva o bônus de vitória resolvido para auditoria/logs antes de
+    // zerar o acumulador que será usado na próxima rodada.
+    economy.last_round_win_gold = economy.round_win_gold;
     economy.round_win_gold = 0;
 
     return result;

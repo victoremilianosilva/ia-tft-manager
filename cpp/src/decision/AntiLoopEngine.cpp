@@ -321,21 +321,15 @@ bool AntiLoopEngine::is_oscillating(
         return false;
     }
 
-    // O Python examina os seis registros mais recentes antes
-    // de filtrar os movimentos relevantes para a unidade.
-    const std::size_t start =
-        history_.move_history.size() > 6
-            ? history_.move_history.size() - 6
-            : 0;
-
+    // Filtra primeiro pela unidade e pelo tipo de movimento; só então limita
+    // o histórico. Antes, movimentos de outras unidades consumiam a janela de
+    // seis registros e escondiam oscilações quando a política alternava peças.
     std::vector<std::pair<std::int32_t, std::int32_t>> relevant;
 
     const bool candidate_is_swap =
         move_type.has_value() && *move_type == "board_swap";
 
-    for (std::size_t i = start; i < history_.move_history.size(); ++i) {
-        const auto& move = history_.move_history[i];
-
+    for (const auto& move : history_.move_history) {
         if (move.unit != unit) {
             continue;
         }
@@ -351,6 +345,10 @@ bool AntiLoopEngine::is_oscillating(
         if (include) {
             relevant.emplace_back(move.source, move.target);
         }
+    }
+
+    if (relevant.size() > 6) {
+        relevant.erase(relevant.begin(), relevant.end() - 6);
     }
 
     if (relevant.empty()) {

@@ -20,6 +20,8 @@ struct PlayerEconomy {
     std::int32_t round_streak_gold = 0;
     std::int32_t round_base_gold = 0;
     std::int32_t round_win_gold = 0;
+    // Último bônus de vitória resolvido; round_win_gold é o acumulador atual.
+    std::int32_t last_round_win_gold = 0;
 };
 
 struct BuyXpResult {

@@ -33,9 +33,12 @@ struct UnitIdentity {
         // Se qualquer unidade possui UUID, ambas precisam ter
         // UUID igual. Não fazemos fallback para id nesse caso.
         if (uuid.has_value() || other.uuid.has_value()) {
+            // UUID identifica a instância, mas star também faz parte do estado:
+            // a mesma unidade 1★ evoluída para 2★ não é a mesma assinatura.
             return uuid.has_value()
                 && other.uuid.has_value()
-                && uuid == other.uuid;
+                && uuid == other.uuid
+                && star == other.star;
         }
 
         // Equivale à identidade Python: id + star.
