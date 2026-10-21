@@ -377,6 +377,7 @@ py::dict anti_loop_to_dict(
     std::uint64_t mask_bench_move_candidates = 0;
     std::uint64_t mask_bench_move_valid = 0;
     std::uint64_t mask_bench_move_blocked_anti_loop = 0;
+    std::uint64_t mask_bench_move_blocked_seen_state = 0;
     std::uint64_t mask_blocked_reverse = 0;
     std::uint64_t mask_blocked_oscillation = 0;
     std::uint64_t mask_blocked_explicit = 0;
@@ -400,6 +401,7 @@ py::dict anti_loop_to_dict(
         mask_bench_move_candidates += metric.mask_bench_move_candidates;
         mask_bench_move_valid += metric.mask_bench_move_valid;
         mask_bench_move_blocked_anti_loop += metric.mask_bench_move_blocked_anti_loop;
+        mask_bench_move_blocked_seen_state += metric.mask_bench_move_blocked_seen_state;
         mask_blocked_reverse += metric.mask_blocked_reverse;
         mask_blocked_oscillation += metric.mask_blocked_oscillation;
         mask_blocked_explicit += metric.mask_blocked_explicit;
@@ -423,6 +425,7 @@ py::dict anti_loop_to_dict(
     result["mask_bench_move_candidates"] = mask_bench_move_candidates;
     result["mask_bench_move_valid"] = mask_bench_move_valid;
     result["mask_bench_move_blocked_anti_loop"] = mask_bench_move_blocked_anti_loop;
+    result["mask_bench_move_blocked_seen_state"] = mask_bench_move_blocked_seen_state;
     result["mask_blocked_reverse"] = mask_blocked_reverse;
     result["mask_blocked_oscillation"] = mask_blocked_oscillation;
     result["mask_blocked_explicit"] = mask_blocked_explicit;
