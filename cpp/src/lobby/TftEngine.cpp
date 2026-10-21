@@ -2244,7 +2244,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             // +0.05 for a normal purchase, +0.30 for any completed upgrade.
             success = bought_unit_successfully;
             action_reward = !success ? -0.10 : (bought_upgrade ? 0.30 : 0.05);
-            if (success && has_candidate_comp_score && board_comp_score_count > 1) {
+            if (success && has_candidate_comp_score) {
+                // Also guide early purchases before the board has a stable comp.
+                // composition_quality_delta is candidate-vs-board when a board
+                // exists, or the candidate's strategic score when it is empty.
                 action_reward += reward_model::purchase_quality(
                     composition_quality_delta, false);
             }
