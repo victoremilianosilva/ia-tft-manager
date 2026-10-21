@@ -56,6 +56,7 @@ struct MaskDiagnostics {
     std::uint64_t bench_move_candidates = 0;
     std::uint64_t bench_move_valid = 0;
     std::uint64_t bench_move_blocked_anti_loop = 0;
+    std::uint64_t bench_move_blocked_seen_state = 0;
 
     std::uint64_t blocked_reverse = 0;
     std::uint64_t blocked_oscillation = 0;
