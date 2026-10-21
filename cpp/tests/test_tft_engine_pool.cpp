@@ -272,8 +272,10 @@ int main(int argc, char** argv) {
         const auto bought = engine.step(actions);
         require(bought.players[0].gold >= 0,
                 "Compra deixou ouro negativo.");
-        require(std::abs(bought.rewards[0] - 0.05f) < 1e-6f,
-                "Compra normal deve entregar exatamente +0.05 de recompensa, sem recompensa de combate em equipes vazias.");
+        require(std::abs(bought.rewards[0] - bought.action_rewards[0]) < 1e-6f,
+                "Compra sem combate deve retornar apenas a recompensa da acao.");
+        require(bought.action_rewards[0] > -0.25f && bought.action_rewards[0] < 0.50f,
+                "Recompensa de compra com shaping economico deve permanecer limitada.");
 
         // CompositionManager/StrategyManager devem refletir as unidades
         // compradas no snapshot público, sem depender de combate.
