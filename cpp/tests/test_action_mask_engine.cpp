@@ -7,6 +7,7 @@
 #include <cassert>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 using namespace tft::decision;
 
@@ -237,6 +238,62 @@ void test_invalid_move_pairs_are_not_enabled() {
     assert(masks.bench_to_board_target_masks[2][4] == MASK_ENABLED);
 }
 
+// Regression scenario based on the Nasus/Briar oscillation observed in
+// rounds 1-3, 1-4, and 2-1. Each move is legal on its own, but the last
+// move would recreate the initial board layout after several unrelated moves.
+void test_nasus_briar_loop_across_rounds_is_masked() {
+    PlayerState state;
+    state.economy.gold = 10;
+    state.economy.level = 3;
+    state.board[3] = make_unit("nasus");
+    state.board[10] = make_unit("briar");
+
+    AntiLoopEngine anti_loop;
+    ActionMaskEngine engine;
+
+    auto register_current_state = [&]() {
+        anti_loop.register_state(anti_loop.make_board_signature(state));
+    };
+    auto apply_legal_move = [&](std::size_t source, std::size_t target,
+                                const char* move_type) {
+        const auto masks = engine.generate_masks(state, anti_loop);
+        assert(masks.board_move_target_masks[source][target] == MASK_ENABLED);
+
+        const auto moving_unit = state.board[source]->identity;
+        std::swap(state.board[source], state.board[target]);
+        anti_loop.register_move(
+            move_type,
+            static_cast<std::int32_t>(source),
+            static_cast<std::int32_t>(target),
+            moving_unit
+        );
+        register_current_state();
+    };
+
+    // Round 1-3: initial formation and first Nasus/Briar swap.
+    register_current_state();
+    apply_legal_move(3, 10, "board_swap");
+
+    // Round 1-4: reposition Nasus and Briar independently.
+    apply_legal_move(10, 12, "board_move");
+    apply_legal_move(3, 11, "board_move");
+
+    // Round 2-1: Nasus returns to slot 3. Moving Briar back to slot 10
+    // would recreate the already-seen 1-3 layout, without improving it.
+    apply_legal_move(12, 3, "board_move");
+
+    const auto nasus_briar_cycle = engine.generate_masks(state, anti_loop);
+    assert(state.board[3].has_value());
+    assert(state.board[11].has_value());
+    assert(!state.board[10].has_value());
+
+    // This is the regression assertion: the cycle-closing action must be
+    // masked, even though it is not the immediate reverse of the last move.
+    assert(
+        nasus_briar_cycle.board_move_target_masks[11][10] == MASK_DISABLED
+    );
+}
+
 void test_eliminated_player_can_only_pass() {
     PlayerState state;
     state.is_alive = false;
@@ -293,6 +350,7 @@ int main() {
     test_buy_is_disabled_when_bench_is_full();
     test_bench_to_board_can_replace_when_physical_grid_is_full();
     test_invalid_move_pairs_are_not_enabled();
+    test_nasus_briar_loop_across_rounds_is_masked();
     test_eliminated_player_can_only_pass();
     test_invalid_economy_is_rejected();
 

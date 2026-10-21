@@ -2144,36 +2144,47 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 ? -0.25
                 : (anti_loop_blocked
                     ? reward_model::blocked_move()
-                    : (success ? (type == 4 ? 0.02 : 0.0) : -0.10));
-            if (type == 3 && success && !board_capacity_violation) {
+                    : (success ? 0.0 : -0.10));
+
+            if (success && !board_capacity_violation && !anti_loop_blocked) {
                 const double positioning_delta =
                     lobby.positioning_score(player_id) - old_positioning_score;
                 const double synergy_delta =
                     lobby.synergy_score(player_id) - old_synergy_score;
 
-                // Small bounded signals are relative to the previous board.
-                // A weak deployment that changes nothing should not receive an
-                // unconditional positive reward merely for occupying a slot.
+                // Both deployments and board-to-board moves must earn reward
+                // from an actual improvement. A successful layout mutation is
+                // not progress by itself: this was the source of repeated
+                // Nasus/Briar shuffling (+0.02 for every board move).
                 action_reward += 0.05 * std::tanh(positioning_delta);
                 action_reward += 0.10 * std::tanh(synergy_delta);
-                action_reward += 0.10 * std::tanh(
-                    composition_quality_delta / 5.0);
 
-                const bool composition_improved =
-                    old_board_count == 0 ||
-                    composition_quality_delta > 1e-6 ||
-                    synergy_delta > 1e-6 ||
-                    positioning_delta > 1e-6;
+                if (type == 3) {
+                    action_reward += 0.10 * std::tanh(
+                        composition_quality_delta / 5.0);
 
-                if (new_board_count > old_board_count && composition_improved) {
-                    action_reward += 0.25;
-                    const int board_capacity = std::min(
-                        economy.level, static_cast<int>(kBoardSlots));
-                    if (new_board_count == board_capacity) {
-                        // Capacity bonus only applies when the deployment
-                        // improves composition, synergy, or positioning.
-                        action_reward += reward_model::board_capacity_completion();
+                    const bool composition_improved =
+                        old_board_count == 0 ||
+                        composition_quality_delta > 1e-6 ||
+                        synergy_delta > 1e-6 ||
+                        positioning_delta > 1e-6;
+
+                    if (new_board_count > old_board_count && composition_improved) {
+                        action_reward += 0.25;
+                        const int board_capacity = std::min(
+                            economy.level, static_cast<int>(kBoardSlots));
+                        if (new_board_count == board_capacity) {
+                            // Capacity bonus only applies when the deployment
+                            // improves composition, synergy, or positioning.
+                            action_reward += reward_model::board_capacity_completion();
+                        }
                     }
+                } else if (
+                    std::abs(positioning_delta) <= 1e-6 &&
+                    std::abs(synergy_delta) <= 1e-6
+                ) {
+                    // No measurable gain: discourage moving units for its own sake.
+                    action_reward = -0.05;
                 }
             }
         } else if (type == 5) {

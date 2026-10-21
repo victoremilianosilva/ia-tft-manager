@@ -188,15 +188,36 @@ bool ActionMaskEngine::is_valid_board_move(
         return false;
     }
 
+    const auto target_index = to_board_index(target);
+    if (!target_index.has_value()) {
+        return false;
+    }
+
     const auto move_type = *result.move_type;
     const auto unit = identity_of(state.board[*source_index]);
 
-    return !anti_loop.should_block_move(
+    if (anti_loop.should_block_move(
         move_type_name(move_type),
         source,
         target,
         unit
+    )) {
+        return false;
+    }
+
+    // Prevent returning to a previously visited board layout, even when
+    // the individual move is not an immediate reversal (e.g. after BUY_XP
+    // or across rounds). This catches multi-unit oscillations such as
+    // Nasus/Briar swapping positions over 1-3, 1-4, and 2-1.
+    PlayerState next_state = state;
+    std::swap(
+        next_state.board[*source_index],
+        next_state.board[*target_index]
     );
+    const auto resulting_signature =
+        anti_loop.make_board_signature(next_state);
+
+    return !anti_loop.was_state_seen(resulting_signature);
 }
 
 bool ActionMaskEngine::is_valid_bench_to_board_move(
