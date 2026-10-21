@@ -595,6 +595,7 @@ PYBIND11_MODULE(tft_engine, module) {
                     p["round_base_gold"] = player.round_base_gold;
                     p["round_interest"] = player.round_interest;
                     p["round_streak_gold"] = player.round_streak_gold;
+                    p["round_win_gold"] = player.round_win_gold;
                     py::list board, bench, shop;
                     for (const auto& unit : player.board) board.append(unit_to_dict(unit));
                     for (const auto& unit : player.bench) bench.append(unit_to_dict(unit));
