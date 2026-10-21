@@ -137,6 +137,12 @@ class CppTFTLobbyWrapper:
     def get_action_masks(self):
         return self._engine.get_action_masks()
 
+    def get_strategy_snapshots(self):
+        """Return complete native strategy/composition diagnostics for the viewer."""
+        snapshots = self._engine.get_strategies()
+        return [dict(snapshot) if isinstance(snapshot, dict) else {"strategy": int(snapshot)}
+                for snapshot in snapshots]
+
     def get_strategies(self):
         """Return native strategy snapshots as the enum expected by Trainer logs."""
         from engine_contracts import Strategy
