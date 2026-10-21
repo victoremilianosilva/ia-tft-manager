@@ -2132,9 +2132,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             // +0.05 for a normal purchase, +0.30 for any completed upgrade.
             success = bought_unit_successfully;
             action_reward = !success ? -0.10 : (bought_upgrade ? 0.30 : 0.05);
-            if (success && has_candidate_comp_score && board_comp_score_count > 0) {
-                // Só compara a compra com a composição quando já existe uma
-                // equipe de referência. A abertura vazia mantém o contrato +0.05.
+            if (success && has_candidate_comp_score && board_comp_score_count > 1) {
+                // Só aplica bônus quando há uma composição mínima estabelecida
+                // (2+ unidades no tabuleiro). Compras iniciais mantêm +0.05.
                 action_reward += 0.10 * std::tanh(
                     composition_quality_delta / 5.0);
             }
