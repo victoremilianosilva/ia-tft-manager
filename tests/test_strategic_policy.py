@@ -66,6 +66,32 @@ def test_sale_head_can_prefer_the_least_compatible_unit():
     assert logits[0, 1] > logits[0, 0]
 
 
+def test_sale_head_can_preserve_core_and_upgrade_copies():
+    hidden_size = 16
+    policy = TFTPolicy(obs_dim=400, action_dims=ACTION_DIMS, hidden_size=hidden_size)
+    first, second = policy.sell_head[0], policy.sell_head[2]
+    with torch.no_grad():
+        first.weight.zero_()
+        first.bias.zero_()
+        second.weight.zero_()
+        second.bias.zero_()
+        # Penalize core flag (feature 4) and owned-copy count (feature 5).
+        first.weight[0, hidden_size + ACTION_DIMS[0] + 4] = 1.0
+        first.weight[1, hidden_size + ACTION_DIMS[0] + 5] = 1.0
+        second.weight[0, 0] = -1.0
+        second.weight[0, 1] = -1.0
+
+    context = torch.zeros(1, hidden_size + ACTION_DIMS[0])
+    candidates = torch.zeros(1, 9, 8)
+    candidates[0, 0, 4:6] = torch.tensor([1.0, 0.9])  # core + upgrade copies
+    candidates[0, 1, 4:6] = torch.tensor([0.0, 0.1])  # non-core + few copies
+    candidates[0, 2, 4:6] = torch.tensor([0.0, 0.2])
+
+    logits = policy._candidate_logits(policy.sell_head, context, candidates)
+
+    assert int(logits.argmax(dim=-1).item()) == 1
+
+
 def test_policy_forward_accepts_new_candidate_observation_contract():
     obs_dim = 400
     policy = TFTPolicy(obs_dim=obs_dim, action_dims=ACTION_DIMS, hidden_size=32)
