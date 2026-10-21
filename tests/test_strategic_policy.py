@@ -23,13 +23,13 @@ def test_candidate_features_are_aligned_with_bench_and_shop_slots():
     policy = TFTPolicy(obs_dim=400, action_dims=ACTION_DIMS, hidden_size=16)
     obs = torch.zeros(2, 400)
     tail = obs[:, -policy.candidate_observation_dim:]
-    tail[:, : 9 * 7] = 1.0
-    tail[:, 9 * 7:] = 2.0
+    tail[:, : 9 * 8] = 1.0
+    tail[:, 9 * 8:] = 2.0
 
     bench, shop = policy._candidate_features(obs)
 
-    assert bench.shape == (2, 9, 7)
-    assert shop.shape == (2, 5, 7)
+    assert bench.shape == (2, 9, 8)
+    assert shop.shape == (2, 5, 8)
     assert torch.all(bench == 1.0)
     assert torch.all(shop == 2.0)
 
@@ -40,7 +40,7 @@ def test_purchase_head_can_rank_the_best_offer_by_slot_local_fit():
     _make_candidate_scorer_prefer_feature(policy.shop_head, hidden_size, feature_index=0)
 
     context = torch.zeros(1, hidden_size + ACTION_DIMS[0])
-    candidates = torch.zeros(1, 5, 7)
+    candidates = torch.zeros(1, 5, 8)
     candidates[0, :, 0] = torch.tensor([0.1, 0.9, 0.2, 0.4, 0.3])
 
     logits = policy._candidate_logits(policy.shop_head, context, candidates)
@@ -57,7 +57,7 @@ def test_sale_head_can_prefer_the_least_compatible_unit():
     _make_candidate_scorer_prefer_feature(policy.sell_head, hidden_size, feature_index=0, sign=-1.0)
 
     context = torch.zeros(1, hidden_size + ACTION_DIMS[0])
-    candidates = torch.zeros(1, 9, 7)
+    candidates = torch.zeros(1, 9, 8)
     candidates[0, :, 0] = torch.tensor([0.9, 0.1, 0.8, 0.2, 0.7, 0.3, 0.6, 0.4, 0.5])
 
     logits = policy._candidate_logits(policy.sell_head, context, candidates)
