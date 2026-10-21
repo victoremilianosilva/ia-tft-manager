@@ -283,18 +283,8 @@ def audit_text(path: Path, report: dict) -> None:
                               current_round, line_no,
                               "Possível alternância de duas unidades; confirme no JSON estruturado.",
                               [a[6], b[6], c[6], d[6]])
-        sm = STRATEGY_RE.search(line)
-        if sm:
-            strategy, comp, focus = [x.strip() for x in sm.groups()]
-            comp = "" if comp in ("—", "-", "None") else comp
-            comps.append((line_no, current_round, comp, focus, strategy))
-            recent = comps[-5:]
-            nonempty = [x[2] for x in recent if x[2]]
-            if len(nonempty) >= 4 and len(set(nonempty)) >= 3:
-                add_issue(report, "MEDIUM", "COMP_DIRECTION_CHURN", f"Jogador {player_id}",
-                          current_round, line_no,
-                          "Direção da composição mudou repetidamente; pode ser adaptação legítima.",
-                          [{"line": x[0], "round": x[1], "comp": x[2], "focus": x[3]} for x in recent])
+        # A direção da composição é auditada no JSON estruturado; não duplicar o mesmo estado
+        # lendo-o novamente no .tft. O .tft aqui serve para corroborar loops de movimento.
 
 
 def markdown_report(report: dict) -> str:
@@ -322,7 +312,7 @@ def markdown_report(report: dict) -> str:
               "- Achados CRITICAL/HIGH são sinais fortes para investigar, não prova isolada da causa.",
               "- Troca de comp direction pode ser legítima conforme loja, unidades, nível e economia.",
               "- A checagem de fusão conta apenas unidades compradas no tabuleiro+banco, nunca as da loja.",
-              "- Quando JSON e TFT coexistem, somente JSON é analisado para evitar duplicação dos mesmos eventos.",
+              "- JSON e TFT são usados de forma complementar: JSON para estado/estratégia; TFT para corroborar loops de movimento. Alertas de composição do TFT foram desativados para não duplicar episódios.",
               "- A auditoria não pode decidir se uma compra era ótima sem comparar loja, ouro, limite do banco, máscaras e avaliação de composição no mesmo estado.",
               "- Uma fusão só pode ser confirmada com segurança se o log registrar cópias elegíveis antes/depois e o evento de merge; contar cópias é apenas um indício.", ""]
     return "\n".join(lines)
@@ -344,14 +334,13 @@ def main() -> int:
         default_out = source.parent / "audit"
     elif source.is_dir():
         json_files = sorted(source.glob("player_*_log.json"))
+        tft_files = sorted(source.glob("player_*_log.tft"))
         if not json_files:
             json_files = sorted(source.rglob("player_*_log.json"))
-        if json_files:
-            files = json_files
-        else:
-            files = sorted(source.glob("player_*_log.tft"))
-            if not files:
-                files = sorted(source.rglob("player_*_log.tft"))
+        if not tft_files:
+            tft_files = sorted(source.rglob("player_*_log.tft"))
+        # JSON fornece estado estruturado; TFT complementa movimentos que o JSON não reconstrói bem.
+        files = json_files + tft_files)
         default_out = source / "audit"
     else:
         parser.error(f"caminho não existe: {source}")
