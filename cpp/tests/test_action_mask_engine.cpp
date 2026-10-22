@@ -297,6 +297,32 @@ void test_nasus_briar_loop_across_rounds_is_masked() {
     );
 }
 
+void test_seen_state_from_five_rounds_ago_is_blocked_by_shared_legality() {
+    PlayerState previously_seen;
+    previously_seen.economy.gold = 10;
+    previously_seen.economy.level = 3;
+    previously_seen.board[3] = make_unit("nasus");
+    previously_seen.board[10] = make_unit("briar");
+
+    PlayerState current = previously_seen;
+    current.board[3].reset();
+    current.board[12] = previously_seen.board[3];
+
+    AntiLoopEngine anti_loop;
+    anti_loop.begin_round(21);
+    (void)anti_loop.register_state(anti_loop.make_board_signature(previously_seen));
+    anti_loop.begin_round(26);
+
+    ActionMaskEngine engine;
+    const auto masks = engine.generate_masks(current, anti_loop);
+    assert(masks.board_move_target_masks[12][3] == MASK_DISABLED);
+
+    std::string reason;
+    assert(!engine.is_board_move_allowed(current, anti_loop, 12, 3, &reason));
+    assert(reason == "cycle");
+    assert(engine.is_board_move_allowed(current, anti_loop, 12, 4));
+}
+
 void test_mask_diagnostics_count_real_candidates_and_seen_state_blocks() {
     PlayerState state;
     state.economy.gold = 0;
@@ -430,6 +456,7 @@ int main() {
     test_bench_to_board_can_replace_when_physical_grid_is_full();
     test_invalid_move_pairs_are_not_enabled();
     test_nasus_briar_loop_across_rounds_is_masked();
+    test_seen_state_from_five_rounds_ago_is_blocked_by_shared_legality();
     test_mask_diagnostics_count_real_candidates_and_seen_state_blocks();
     test_mask_diagnostics_count_bench_replacement_loop();
     test_bench_move_mask_rejects_repeated_position();
