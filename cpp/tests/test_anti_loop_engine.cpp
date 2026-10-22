@@ -143,6 +143,27 @@ void test_allows_first_cycle_closure() {
     assert(!engine.is_cycle_move("board_move", 12, 3, nasus));
 }
 
+void test_blocks_candidate_closing_loop_after_unit_revisits_position() {
+    AntiLoopEngine engine;
+    const auto nasus = make_unit("nasus-cycle", 1);
+    const auto teemo = make_unit("teemo-interleaved", 2);
+
+    // Nasus revisits slot 3 (0 -> 3 -> 5 -> 3). Teemo's moves are
+    // interleaved and must not reset Nasus's trajectory.
+    engine.register_move("board_move", 0, 3, nasus);
+    engine.register_move("board_move", 1, 4, teemo);
+    engine.register_move("board_move", 3, 5, nasus);
+    engine.register_move("board_move", 4, 6, teemo);
+    engine.register_move("board_move", 5, 3, nasus);
+    engine.register_move("board_move", 6, 7, teemo);
+
+    // Returning Nasus from 3 to 0 would repeat the path after the prior
+    // revisit; the first, not-yet-repeated cycle closure remains allowed.
+    assert(engine.is_cycle_move("board_move", 3, 0, nasus));
+    assert(engine.should_block_move("board_move", 3, 0, nasus));
+    assert(!engine.is_cycle_move("board_move", 3, 0, teemo));
+}
+
 void test_blocks_persistent_three_position_cycle() {
     AntiLoopEngine engine;
     const auto nasus = make_unit("nasus-1", 1);
