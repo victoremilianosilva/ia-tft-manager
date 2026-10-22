@@ -61,6 +61,12 @@ def test_sale_head_can_prefer_the_least_compatible_unit():
     candidates[0, :, 0] = torch.tensor([0.9, 0.1, 0.8, 0.2, 0.7, 0.3, 0.6, 0.4, 0.5])
 
     logits = policy._candidate_logits(policy.sell_head, context, candidates)
+    # The action head is conditional: empty bench slots are excluded by the
+    # same validity mask used by the real action-selection path.
+    valid_candidates = torch.tensor(
+        [[True, True, True, False, False, False, False, False, False]]
+    )
+    logits = policy._mask_logits(logits, valid_candidates)
 
     assert int(logits.argmax(dim=-1).item()) == 1
     assert logits[0, 1] > logits[0, 0]
@@ -88,6 +94,12 @@ def test_sale_head_can_preserve_core_and_upgrade_copies():
     candidates[0, 2, 4:6] = torch.tensor([0.0, 0.2])
 
     logits = policy._candidate_logits(policy.sell_head, context, candidates)
+    # Only the first three bench slots contain units in this scenario. Apply
+    # the same validity mask as the production SELL action path before ranking.
+    valid_candidates = torch.tensor(
+        [[True, True, True, False, False, False, False, False, False]]
+    )
+    logits = policy._mask_logits(logits, valid_candidates)
 
     assert int(logits.argmax(dim=-1).item()) == 1
 

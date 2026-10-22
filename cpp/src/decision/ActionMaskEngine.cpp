@@ -234,16 +234,10 @@ bool ActionMaskEngine::is_valid_board_move(
     // Nasus/Briar swapping positions over 1-3, 1-4, and 2-1.
     // Reuse the signature created once per mask batch. Mutate only the
     // two affected slots, query the index, then restore it before returning.
-    std::swap(
-        current_signature.board[*source_index],
-        current_signature.board[*target_index]
-    );
+    current_signature.swap_board_slots(*source_index, *target_index);
     const bool resulting_state_seen =
         anti_loop.was_state_seen(current_signature);
-    std::swap(
-        current_signature.board[*source_index],
-        current_signature.board[*target_index]
-    );
+    current_signature.swap_board_slots(*source_index, *target_index);
 
     if (resulting_state_seen) {
         ++diagnostics.board_move_blocked_seen_state;
@@ -300,16 +294,10 @@ bool ActionMaskEngine::is_valid_bench_to_board_move(
 
     // A implantação/substituição também pode recriar um estado completo
     // já visitado. Simula board <-> bench sem alterar o estado original.
-    std::swap(
-        current_signature.board[*target_index],
-        current_signature.bench[*bench_index]
-    );
+    current_signature.swap_board_bench(*target_index, *bench_index);
     const bool resulting_state_seen =
         anti_loop.was_state_seen(current_signature);
-    std::swap(
-        current_signature.board[*target_index],
-        current_signature.bench[*bench_index]
-    );
+    current_signature.swap_board_bench(*target_index, *bench_index);
 
     if (resulting_state_seen) {
         ++diagnostics.bench_move_blocked_seen_state;

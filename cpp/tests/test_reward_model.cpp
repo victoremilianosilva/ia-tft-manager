@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <stdexcept>
 
 namespace {
 void require_close(double actual, double expected, const std::string& name) {
@@ -62,6 +63,16 @@ int main() {
     require_close(gold_potential(10), 0.10, "interest breakpoint potential");
     require_close(gold_change_reward(10, 9), -0.082, "spending below interest breakpoint");
     require_close(gold_change_reward(9, 10), 0.082, "saving to interest breakpoint");
+    require_close(movement_no_progress_penalty(0.0, 0.0, 0.0), -0.05,
+                  "no-progress movement baseline penalty");
+    if (!(movement_no_progress_penalty(0.0, -2.0, -1.0) <
+          movement_no_progress_penalty(0.0, 0.0, 0.0))) {
+        throw std::runtime_error("movement degradation must increase penalty");
+    }
+    if (!(movement_no_progress_penalty(-4.0, 0.0, 0.0) <
+          movement_no_progress_penalty(0.0, 0.0, 0.0))) {
+        throw std::runtime_error("composition degradation must increase penalty");
+    }
     require_close(purchase_quality(5.0, false), 0.10 * std::tanh(1.0),
                   "composition-aware purchase reward");
     require_close(purchase_quality(0.0, true), 0.12,

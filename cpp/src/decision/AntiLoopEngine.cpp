@@ -42,26 +42,52 @@ void hash_identity(std::size_t& seed, const UnitIdentity& identity) noexcept {
 
 } // namespace
 
+namespace {
+std::size_t slot_contribution(
+    bool is_bench, std::size_t slot, const std::optional<UnitIdentity>& unit
+) noexcept {
+    if (!unit.has_value()) return 0;
+    std::size_t seed = is_bench ? static_cast<std::size_t>(0xB3A5U)
+                                : static_cast<std::size_t>(0xB04DU);
+    hash_combine(seed, slot);
+    hash_identity(seed, *unit);
+    return seed;
+}
+} // namespace
+
 std::size_t PositionSignatureHash::operator()(
     const PositionSignature& signature
 ) const noexcept {
-    std::size_t seed = 0;
+    if (signature.hash_cached) return signature.cached_hash;
 
-    for (const auto& slot : signature.board) {
-        hash_combine(seed, slot.has_value() ? 1U : 0U);
-        if (slot.has_value()) {
-            hash_identity(seed, *slot);
-        }
-    }
+    std::size_t result = 0;
+    for (std::size_t i = 0; i < signature.board.size(); ++i)
+        result ^= slot_contribution(false, i, signature.board[i]);
+    for (std::size_t i = 0; i < signature.bench.size(); ++i)
+        result ^= slot_contribution(true, i, signature.bench[i]);
 
-    for (const auto& slot : signature.bench) {
-        hash_combine(seed, slot.has_value() ? 1U : 0U);
-        if (slot.has_value()) {
-            hash_identity(seed, *slot);
-        }
-    }
+    signature.cached_hash = result;
+    signature.hash_cached = true;
+    return result;
+}
 
-    return seed;
+void PositionSignature::swap_board_slots(std::size_t first, std::size_t second) {
+    (void)PositionSignatureHash{}(*this);
+    if (first == second) return;
+    cached_hash ^= slot_contribution(false, first, board[first]);
+    cached_hash ^= slot_contribution(false, second, board[second]);
+    std::swap(board[first], board[second]);
+    cached_hash ^= slot_contribution(false, first, board[first]);
+    cached_hash ^= slot_contribution(false, second, board[second]);
+}
+
+void PositionSignature::swap_board_bench(std::size_t board_slot, std::size_t bench_slot) {
+    (void)PositionSignatureHash{}(*this);
+    cached_hash ^= slot_contribution(false, board_slot, board[board_slot]);
+    cached_hash ^= slot_contribution(true, bench_slot, bench[bench_slot]);
+    std::swap(board[board_slot], bench[bench_slot]);
+    cached_hash ^= slot_contribution(false, board_slot, board[board_slot]);
+    cached_hash ^= slot_contribution(true, bench_slot, bench[bench_slot]);
 }
 
 AntiLoopEngine::AntiLoopEngine()
@@ -73,11 +99,34 @@ AntiLoopEngine::AntiLoopEngine(AntiLoopConfig config)
 }
 
 void AntiLoopEngine::reset() {
-    // O Python limpa os históricos, mas mantém as métricas.
     const auto metrics = history_.metrics;
-
+    const auto state_window_rounds = history_.state_window_rounds;
     history_ = AntiLoopHistory{};
     history_.metrics = metrics;
+    history_.state_window_rounds = state_window_rounds;
+}
+
+void AntiLoopEngine::begin_round(std::uint32_t round_number) {
+    history_.current_round = std::max<std::uint32_t>(1, round_number);
+    history_.position_history.clear();
+    history_.move_history.clear();
+    history_.blocked_moves.clear();
+    history_.last_move.reset();
+    history_.last_board_signature.reset();
+
+    auto& visits = history_.state_visits;
+    visits.erase(
+        std::remove_if(visits.begin(), visits.end(), [&](const StateVisit& visit) {
+            return history_.current_round > visit.last_seen_round
+                && history_.current_round - visit.last_seen_round > history_.state_window_rounds;
+        }),
+        visits.end()
+    );
+    history_.state_visit_index.clear();
+    history_.state_visit_index.reserve(visits.size());
+    for (std::size_t i = 0; i < visits.size(); ++i) {
+        history_.state_visit_index.emplace(visits[i].signature, i);
+    }
 }
 
 MoveKey AntiLoopEngine::make_move_key(
@@ -137,14 +186,21 @@ StateRegistrationResult AntiLoopEngine::register_state(
     if (indexed == history_.state_visit_index.end()) {
         visit_index = history_.state_visits.size();
         history_.state_visits.push_back(
-            StateVisit{signature, 1, config_.loop_threshold <= 1}
+            StateVisit{signature, 1, config_.loop_threshold <= 1, history_.current_round}
         );
         history_.state_visit_index.emplace(signature, visit_index);
     } else {
         visit_index = indexed->second;
         auto& visit = history_.state_visits[visit_index];
-        ++visit.visits;
-        visit.repeated = visit.visits >= config_.loop_threshold;
+        if (history_.current_round > visit.last_seen_round
+            && history_.current_round - visit.last_seen_round > history_.state_window_rounds) {
+            visit.visits = 1;
+            visit.repeated = config_.loop_threshold <= 1;
+        } else {
+            ++visit.visits;
+            visit.repeated = visit.visits >= config_.loop_threshold;
+        }
+        visit.last_seen_round = history_.current_round;
     }
 
     history_.last_board_signature = signature;
@@ -280,11 +336,29 @@ bool AntiLoopEngine::is_reverse_move(
     std::int32_t target,
     const std::optional<UnitIdentity>& unit
 ) const {
-    if (!history_.last_move.has_value()) {
-        return false;
-    }
+    if (history_.move_history.empty()) return false;
 
-    const auto& last = *history_.last_move;
+    // Unrelated actions must not hide the latest relevant reverse candidate.
+    const MoveRecord* last_ptr = nullptr;
+    for (auto it = history_.move_history.rbegin(); it != history_.move_history.rend(); ++it) {
+        if (move_type == "board_swap" && it->move_type == "board_swap") {
+            const bool same_pair = (it->source == source && it->target == target)
+                || (it->source == target && it->target == source);
+            if (same_pair) { last_ptr = &*it; break; }
+        }
+        const bool board_move_candidate =
+            move_type == "board_move" || move_type == "board_swap";
+        const bool same_unit_move =
+            board_move_candidate
+                ? (it->move_type == "board_move" || it->move_type == "board_swap")
+                : it->move_type == move_type;
+        if (it->unit == unit && same_unit_move) {
+            last_ptr = &*it;
+            break;
+        }
+    }
+    if (last_ptr == nullptr) return false;
+    const auto& last = *last_ptr;
 
     // Um swap pode ser desfeito por qualquer uma das unidades
     // que passaram a ocupar o par de posições.
@@ -399,13 +473,8 @@ std::optional<std::string> AntiLoopEngine::normalize_bench_move(
         return "bench_to_board";
     }
 
-    if (
-        move_type == "MOVE_BOARD_TO_BENCH"
-        || move_type == "board_to_bench"
-    ) {
-        return "board_to_bench";
-    }
-
+    // The action space has no board-to-bench action. A displaced unit is
+    // tracked through MoveRecord::displaced_unit on bench_to_board instead.
     return std::nullopt;
 }
 
@@ -446,53 +515,9 @@ bool AntiLoopEngine::is_bench_board_loop(
         }
     }
 
-    struct BenchTransition {
-        std::string type;
-        std::int32_t source;
-        std::int32_t target;
-    };
-
-    std::vector<BenchTransition> recent;
-
-    for (const auto& move : history_.move_history) {
-        if (move.unit != unit) {
-            continue;
-        }
-
-        const auto normalized = normalize_bench_move(move.move_type);
-
-        if (normalized.has_value()) {
-            recent.push_back({
-                *normalized,
-                move.source,
-                move.target
-            });
-        }
-    }
-
-    if (recent.size() < 2) {
-        return false;
-    }
-
-    const auto& previous = recent[recent.size() - 2];
-    const auto& last = recent.back();
-
-    const bool reversed_transition =
-        previous.type != last.type
-        && previous.source == last.target
-        && previous.target == last.source;
-
-    if (!reversed_transition) {
-        return false;
-    }
-
-    return (
-        *candidate_type == previous.type
-        && source.has_value()
-        && target.has_value()
-        && *source == previous.source
-        && *target == previous.target
-    );
+    // Non-immediate multi-round cycles are handled by the rolling
+    // visited-state window; the executor has no board_to_bench action.
+    return false;
 }
 
 bool AntiLoopEngine::is_cycle_move(
@@ -508,8 +533,9 @@ bool AntiLoopEngine::is_cycle_move(
         return false;
     }
 
+    // Filter by stable unit identity before applying the history window:
+    // movements by other units must not hide this unit's trajectory.
     std::vector<std::pair<std::int32_t, std::int32_t>> recent;
-
     for (const auto& move : history_.move_history) {
         if (
             (move.move_type == "board_move"
@@ -520,49 +546,42 @@ bool AntiLoopEngine::is_cycle_move(
         }
     }
 
-    if (recent.size() > 8) {
-        recent.erase(
-            recent.begin(),
-            recent.end() - 8
-        );
+    constexpr std::size_t kRecentMoves = 8;
+    if (recent.size() > kRecentMoves) {
+        recent.erase(recent.begin(), recent.end() - kRecentMoves);
     }
+    if (recent.empty()) return false;
 
-    if (recent.empty()) {
-        return false;
-    }
-
-    bool started = false;
-    std::optional<std::int32_t> expected_position;
-    bool cycle_completed = false;
-
+    // Build the current continuous trajectory. If this unit was moved by
+    // another mechanism and the recorded endpoints no longer connect, start
+    // a new segment rather than inventing a cycle across a discontinuity.
+    std::vector<std::int32_t> positions;
     for (const auto& [src, dst] : recent) {
-        if (!started) {
-            if (src == target) {
-                started = true;
-                expected_position = dst;
-            }
-
-            continue;
-        }
-
-        // Uma quebra na continuidade invalida a sequência.
-        if (src != *expected_position) {
-            return false;
-        }
-
-        expected_position = dst;
-
-        if (dst == target) {
-            cycle_completed = true;
+        if (positions.empty() || positions.back() != src) {
+            positions = {src, dst};
+        } else {
+            positions.push_back(dst);
         }
     }
 
-    // O ciclo só bloqueia quando já se completou anteriormente
-    // e a sequência terminou na origem do movimento candidato.
-    return started
-        && cycle_completed
-        && expected_position.has_value()
-        && *expected_position == source;
+    // The candidate must continue the unit's latest trajectory and return to
+    // a position it has already occupied. To avoid rejecting a legitimate
+    // first cycle closure, require evidence of a prior revisit in the history
+    // (an existing loop/oscillation), not merely a path that would close once.
+    if (positions.size() < 4 || positions.back() != source) return false;
+
+    const auto repeated_position = [&positions]() {
+        for (std::size_t i = 0; i + 1 < positions.size(); ++i) {
+            for (std::size_t j = i + 1; j < positions.size(); ++j) {
+                if (positions[i] == positions[j]) return true;
+            }
+        }
+        return false;
+    };
+
+    if (!repeated_position()) return false;
+
+    return std::find(positions.begin(), positions.end(), target) != positions.end();
 }
 
 std::optional<std::string> AntiLoopEngine::get_block_reason(
@@ -586,9 +605,7 @@ std::optional<std::string> AntiLoopEngine::get_block_reason(
 
     const bool is_bench_candidate =
         move_type == "bench_to_board"
-        || move_type == "board_to_bench"
-        || move_type == "MOVE_BENCH_TO_BOARD"
-        || move_type == "MOVE_BOARD_TO_BENCH";
+        || move_type == "MOVE_BENCH_TO_BOARD";
 
     if (
         is_bench_candidate
@@ -643,15 +660,11 @@ double AntiLoopEngine::evaluate_move_risk(
         risk += 0.8;
     }
 
-    if (
-        is_bench_board_loop(
-            unit,
-            move_type,
-            source,
-            target
-        )
-    ) {
+    if (is_bench_board_loop(unit, move_type, source, target)) {
         risk += 0.9;
+    }
+    if (is_cycle_move(move_type, source, target, unit)) {
+        risk += 0.85;
     }
 
     return std::min(1.0, risk);
@@ -660,8 +673,11 @@ double AntiLoopEngine::evaluate_move_risk(
 bool AntiLoopEngine::was_state_seen(
     const PositionSignature& signature
 ) const {
-    return history_.state_visit_index.find(signature)
-        != history_.state_visit_index.end();
+    const auto indexed = history_.state_visit_index.find(signature);
+    if (indexed == history_.state_visit_index.end()) return false;
+    const auto& visit = history_.state_visits[indexed->second];
+    return history_.current_round <= visit.last_seen_round
+        || history_.current_round - visit.last_seen_round <= history_.state_window_rounds;
 }
 
 std::uint32_t AntiLoopEngine::get_state_visits(
@@ -672,7 +688,10 @@ std::uint32_t AntiLoopEngine::get_state_visits(
         return 0;
     }
 
-    return history_.state_visits[indexed->second].visits;
+    const auto& visit = history_.state_visits[indexed->second];
+    if (history_.current_round > visit.last_seen_round
+        && history_.current_round - visit.last_seen_round > history_.state_window_rounds) return 0;
+    return visit.visits;
 }
 
 AntiLoopStateSummary AntiLoopEngine::get_state() const {

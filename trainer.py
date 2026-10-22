@@ -209,13 +209,16 @@ class Trainer:
                 map_location=self.device
             )
 
-            self.policy.load_state_dict(
+            migrated_checkpoint = self.policy.load_compatible_state_dict(
                 checkpoint["policy"]
             )
-
-            print(
-                "✅ Pesos da política carregados."
-            )
+            if migrated_checkpoint:
+                print(
+                    "⚠️ Checkpoint migrado para a observação temporal e a nova cabeça "
+                    "MOVE_BENCH. O estado do optimizer/scheduler será reiniciado."
+                )
+            else:
+                print("✅ Pesos da política carregados sem migração.")
 
             # --------------------------------------------------------
             # OPTIMIZER
@@ -227,17 +230,17 @@ class Trainer:
                 eps=1e-5
             )
 
-            if "optimizer" in checkpoint:
+            if "optimizer" in checkpoint and not migrated_checkpoint:
 
                 self.optimizer.load_state_dict(
                     checkpoint["optimizer"]
                 )
 
-                print(
-                    "✅ Estado do optimizer restaurado."
-                )
+                print("✅ Estado do optimizer restaurado.")
                 restored_lr = [float(group["lr"]) for group in self.optimizer.param_groups]
                 print(f"📉 LR efetiva após restaurar optimizer: {restored_lr}")
+            elif migrated_checkpoint:
+                print("ℹ️ Optimizer reiniciado porque as formas dos pesos mudaram.")
 
             # --------------------------------------------------------
             # SCHEDULER
@@ -251,19 +254,19 @@ class Trainer:
                 )
             )
 
-            if "scheduler" in checkpoint:
+            if "scheduler" in checkpoint and not migrated_checkpoint:
 
                 self.scheduler.load_state_dict(
                     checkpoint["scheduler"]
                 )
 
-                print(
-                    "✅ Estado do scheduler restaurado."
-                )
+                print("✅ Estado do scheduler restaurado.")
                 print(
                     f"🗓️ Scheduler restaurado | last_epoch={self.scheduler.last_epoch} | "
                     f"LR atual={[float(group['lr']) for group in self.optimizer.param_groups]}"
                 )
+            elif migrated_checkpoint:
+                print("ℹ️ Scheduler reiniciado para a arquitetura atual.")
 
             # --------------------------------------------------------
             # Controlled LR override (opt-in via TFT_PPO_LR)
@@ -1157,17 +1160,41 @@ class Trainer:
                 # 🤖 POLICY
                 # ====================================================
 
+                head_entropy_diagnostics = None
                 with torch.no_grad():
+                    if step % 10 == 0:
+                        (
+                            actions,
+                            logprobs,
+                            _,
+                            values,
+                            head_entropy_diagnostics,
+                        ) = self.policy.get_action_and_value_with_entropy_diagnostics(
+                            obs, masks=masks
+                        )
+                    else:
+                        actions, logprobs, _, values = self.policy.get_action(
+                            obs, masks=masks
+                        )
 
-                    (
-                        actions,
-                        logprobs,
-                        _,
-                        values
-                    ) = self.policy.get_action(
-                        obs,
-                        masks=masks
-                    )
+                # Sample entropy diagnostics every ten rollout steps to avoid
+                # CPU synchronization/logging overhead on every action batch.
+                if head_entropy_diagnostics:
+                    entropy_by_head = {}
+                    for player_records in head_entropy_diagnostics:
+                        for record in player_records:
+                            bucket = entropy_by_head.setdefault(record["head"], [[], []])
+                            bucket[0].append(float(record["entropy_nats"]))
+                            bucket[1].append(float(record["entropy_normalized"]))
+                    entropy_step = update * rollout_steps + step
+                    for head, (nats, normalized) in entropy_by_head.items():
+                        if nats:
+                            self.writer.add_scalar(
+                                f"policy_entropy/{head}_nats", float(np.mean(nats)), entropy_step
+                            )
+                            self.writer.add_scalar(
+                                f"policy_entropy/{head}_normalized", float(np.mean(normalized)), entropy_step
+                            )
 
                 # ====================================================
                 # 📊 ACTION LOGGING

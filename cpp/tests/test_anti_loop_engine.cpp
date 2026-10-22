@@ -104,8 +104,10 @@ void test_detects_bench_board_oscillation() {
     AntiLoopEngine engine;
     const auto nasus = make_unit("nasus-1", 1);
 
-    engine.register_move("MOVE_BENCH_TO_BOARD", 2, 12, nasus);
-    engine.register_move("MOVE_BOARD_TO_BENCH", 12, 2, nasus);
+    const auto lissandra = make_unit("lissandra-1", 2);
+    // The executor records a replacement as bench_to_board and stores the
+    // displaced unit, rather than emitting a separate board_to_bench action.
+    engine.register_move("MOVE_BENCH_TO_BOARD", 2, 12, lissandra, nasus);
 
     assert(
         engine.is_bench_board_loop(
@@ -139,6 +141,27 @@ void test_allows_first_cycle_closure() {
 
     // Ainda não houve um ciclo completo no histórico.
     assert(!engine.is_cycle_move("board_move", 12, 3, nasus));
+}
+
+void test_blocks_candidate_closing_loop_after_unit_revisits_position() {
+    AntiLoopEngine engine;
+    const auto nasus = make_unit("nasus-cycle", 1);
+    const auto teemo = make_unit("teemo-interleaved", 2);
+
+    // Nasus revisits slot 3 (0 -> 3 -> 5 -> 3). Teemo's moves are
+    // interleaved and must not reset Nasus's trajectory.
+    engine.register_move("board_move", 0, 3, nasus);
+    engine.register_move("board_move", 1, 4, teemo);
+    engine.register_move("board_move", 3, 5, nasus);
+    engine.register_move("board_move", 4, 6, teemo);
+    engine.register_move("board_move", 5, 3, nasus);
+    engine.register_move("board_move", 6, 7, teemo);
+
+    // Returning Nasus from 3 to 0 would repeat the path after the prior
+    // revisit; the first, not-yet-repeated cycle closure remains allowed.
+    assert(engine.is_cycle_move("board_move", 3, 0, nasus));
+    assert(engine.should_block_move("board_move", 3, 0, nasus));
+    assert(!engine.is_cycle_move("board_move", 3, 0, teemo));
 }
 
 void test_blocks_persistent_three_position_cycle() {
@@ -362,6 +385,55 @@ void test_mask_diagnostics_accumulate_and_survive_reset() {
     assert(metrics.mask.blocked_cycle == 2);
 }
 
+void test_incremental_signature_hash_matches_full_recomputation() {
+    const auto nasus = make_unit("nasus-1", 1);
+    PositionSignature signature = make_signature(nasus, 3);
+    const auto original_hash = PositionSignatureHash{}(signature);
+
+    signature.swap_board_slots(3, 4);
+    PositionSignature expected_board;
+    expected_board.board[4] = nasus;
+    const auto moved_hash = PositionSignatureHash{}(signature);
+    const auto expected_hash = PositionSignatureHash{}(expected_board);
+    assert(moved_hash == expected_hash);
+    assert(moved_hash != original_hash);
+
+    signature.bench[2] = make_unit("briar-1", 2);
+    signature.hash_cached = false;
+    const auto before_swap = PositionSignatureHash{}(signature);
+    signature.swap_board_bench(4, 2);
+    PositionSignature expected_replacement;
+    expected_replacement.board[4] = make_unit("briar-1", 2);
+    expected_replacement.bench[2] = nasus;
+    const auto replacement_hash = PositionSignatureHash{}(signature);
+    const auto expected_replacement_hash = PositionSignatureHash{}(expected_replacement);
+    assert(replacement_hash == expected_replacement_hash);
+    assert(replacement_hash != before_swap);
+}
+
+void test_round_window_expires_old_states_and_clears_local_history() {
+    AntiLoopEngine engine;
+    const auto nasus = make_unit("nasus-1", 1);
+    const auto signature = make_signature(nasus, 3);
+    engine.register_move("board_move", 3, 4, nasus);
+    engine.block_move("board_move", 4, 12, nasus);
+    engine.register_state(signature);
+
+    engine.begin_round(2);
+    assert(engine.get_state().move_history_size == 0);
+    assert(engine.get_state().blocked_moves == 0);
+    assert(!engine.get_state().last_move.has_value());
+    assert(engine.was_state_seen(signature));
+
+    // Four rounds are retained (round 1 remains visible through round 5),
+    // but the signature expires at round 6.
+    engine.begin_round(5);
+    assert(engine.was_state_seen(signature));
+    engine.begin_round(6);
+    assert(!engine.was_state_seen(signature));
+    assert(engine.get_state_visits(signature) == 0);
+}
+
 void test_reset_clears_move_and_state_history() {
     AntiLoopEngine engine;
     const auto nasus = make_unit("nasus-1", 1);
@@ -399,6 +471,8 @@ int main() {
 
     test_state_change_releases_explicit_move_block();
     test_move_queries_do_not_mutate_history();
+    test_incremental_signature_hash_matches_full_recomputation();
+    test_round_window_expires_old_states_and_clears_local_history();
     test_reset_clears_move_and_state_history();
     test_reset_preserves_execution_metrics_like_python();
     test_mask_diagnostics_accumulate_and_survive_reset();

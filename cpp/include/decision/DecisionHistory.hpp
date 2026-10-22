@@ -17,7 +17,16 @@ struct PositionSignature {
     std::array<std::optional<UnitIdentity>, BOARD_SIZE> board{};
     std::array<std::optional<UnitIdentity>, BENCH_SIZE> bench{};
 
-    bool operator==(const PositionSignature&) const = default;
+    // XOR/Zobrist-style hash cache. Equality deliberately ignores the cache.
+    mutable std::size_t cached_hash = 0;
+    mutable bool hash_cached = false;
+
+    bool operator==(const PositionSignature& other) const {
+        return board == other.board && bench == other.bench;
+    }
+
+    void swap_board_slots(std::size_t first, std::size_t second);
+    void swap_board_bench(std::size_t board_slot, std::size_t bench_slot);
 };
 
 struct PositionSignatureHash {
@@ -31,6 +40,7 @@ struct StateVisit {
     PositionSignature signature;
     std::uint32_t visits = 0;
     bool repeated = false;
+    std::uint32_t last_seen_round = 1;
 };
 
 // Movimento efetivamente registrado.
@@ -97,7 +107,7 @@ struct AntiLoopHistory {
     std::vector<BlockedMoveRecord> blocked_moves;
     std::vector<StateVisit> state_visits;
     // Índice O(1) médio para consultas e registro de estados já conhecidos.
-    // O índice aponta para state_visits, cuja ordem é estável até reset().
+    // O índice é reconstruído quando a janela por rodada remove estados antigos.
     std::unordered_map<PositionSignature, std::size_t, PositionSignatureHash>
         state_visit_index;
 
@@ -105,6 +115,8 @@ struct AntiLoopHistory {
     std::optional<MoveRecord> last_move;
 
     ExecutionMetrics metrics;
+    std::uint32_t current_round = 1;
+    std::uint32_t state_window_rounds = 4;
 };
 
 } // namespace tft::decision

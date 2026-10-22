@@ -44,8 +44,12 @@ public:
     AntiLoopEngine();
     explicit AntiLoopEngine(AntiLoopConfig config);
     
-    // Reset limpa os históricos, mas preserva as métricas acumuladas.
+    // Reset de episódio preserva métricas acumuladas.
     void reset();
+
+    // Inicia uma nova preparação: heurísticas locais são limpas e estados
+    // visitados expiram após uma janela limitada de rodadas.
+    void begin_round(std::uint32_t round_number);
 
     // Identidade do movimento e assinatura do posicionamento.
     [[nodiscard]] MoveKey make_move_key(

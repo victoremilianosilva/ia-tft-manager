@@ -59,6 +59,8 @@ constexpr std::size_t kCompositionUnitSlots =
 constexpr std::size_t kCandidateFeatureDim = 8;
 constexpr std::size_t kStrategicCandidateObservationDim =
     (kBenchSlots + kShopSlots) * kCandidateFeatureDim;
+constexpr std::size_t kActionMemoryObservationDim = 1 + kBoardSlots;
+constexpr std::uint32_t kActionMemoryHorizon = 10;
 
 std::int32_t stage_damage(std::uint32_t stage) noexcept {
     switch (stage) {
@@ -175,6 +177,10 @@ struct TFTEngine::Impl {
         std::unique_ptr<ShopEngine> shop;
         std::array<std::optional<UnitInstance>, kBenchSlots> bench{};
         std::array<std::optional<UnitInstance>, kBoardSlots> board{};
+        // Temporal context for the feed-forward policy: actions left this round
+        // and age (in actions) of the unit occupying each board slot.
+        std::array<std::uint32_t, kBoardSlots> board_move_age{};
+        std::uint32_t actions_taken_this_round{0};
         decision::AntiLoopEngine anti_loop;
         PlayerInfo info{};
         PlayerActionMasks action_masks{};
@@ -524,6 +530,8 @@ struct TFTEngine::Impl {
 
             player_envs[i].bench.fill(std::nullopt);
             player_envs[i].board.fill(std::nullopt);
+            player_envs[i].board_move_age.fill(kActionMemoryHorizon);
+            player_envs[i].actions_taken_this_round = 0;
 
             // Impede que o histórico de uma partida anterior
             // interfira no novo episódio.
@@ -569,7 +577,7 @@ struct TFTEngine::Impl {
             kPositioningObservationDim + observation_trait_names.size() +
             kCapacityObservationDim +
             2 * observation_trait_names.size() + kCompositionUnitSlots +
-            kStrategicCandidateObservationDim;
+            kActionMemoryObservationDim + kStrategicCandidateObservationDim;
     }
 
     std::vector<float> build_observations() const {
@@ -781,7 +789,21 @@ struct TFTEngine::Impl {
                 append_unit_fit(unit);
             }
 
-            // 13) PER-CANDIDATE DECISION FEATURES. These are explicit slot-local
+            // 13) TEMPORAL ACTION MEMORY. These features are inserted before the
+            // candidate tail so policy.py can continue reading candidate features
+            // from the end of the observation without changing its offsets.
+            out[offset++] = static_cast<float>(kActionMemoryHorizon -
+                std::min(player_envs[i].actions_taken_this_round, kActionMemoryHorizon)) /
+                static_cast<float>(kActionMemoryHorizon);
+            for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+                const auto age = player_envs[i].board[slot]
+                    ? std::min(player_envs[i].board_move_age[slot], kActionMemoryHorizon)
+                    : kActionMemoryHorizon;
+                out[offset++] = static_cast<float>(age) /
+                    static_cast<float>(kActionMemoryHorizon);
+            }
+
+            // 14) PER-CANDIDATE DECISION FEATURES. These are explicit slot-local
             // features so the policy can compare offers/sale candidates rather than
             // infer which global features correspond to each output index.
             const auto count_same_champion = [&](const UnitInstance& candidate) {
@@ -1465,6 +1487,7 @@ struct TFTEngine::Impl {
         for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
             if (player_envs[i].info.alive) {
                 round_actions[i] = 0;
+                player_envs[i].actions_taken_this_round = 0;
                 round_finished[i] = false;
             } else {
                 round_finished[i] = true;
@@ -1799,6 +1822,16 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         const auto type = action[0];
 
         const auto shop_slot = action[1];
+        actions_taken_this_round = std::min<std::uint32_t>(
+            kActionMemoryHorizon, actions_taken_this_round + 1);
+        for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+            if (board[slot]) {
+                board_move_age[slot] = std::min<std::uint32_t>(
+                    kActionMemoryHorizon, board_move_age[slot] + 1);
+            } else {
+                board_move_age[slot] = kActionMemoryHorizon;
+            }
+        }
 
         auto& economy = this->economy;
         auto& shop = *this->shop;
@@ -2069,6 +2102,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         }
 
                         anti_loop.record_successful_move(move_type);
+                        board_move_age[target_index] = 0;
                         lobby.register_position_state(player_id);
                     }
                 }
@@ -2153,6 +2187,12 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     }
 
                     anti_loop.record_successful_move(move_type);
+                    board_move_age[target_index] = 0;
+                    if (move_type == "board_swap") {
+                        board_move_age[source_index] = 0;
+                    } else {
+                        board_move_age[source_index] = kActionMemoryHorizon;
+                    }
 
                     lobby.register_position_state(player_id);
                 }
@@ -2321,15 +2361,20 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             // improves composition, synergy, or positioning.
                             action_reward += reward_model::board_capacity_completion();
                         }
+                    } else if (new_board_count <= old_board_count && !composition_improved) {
+                        // A replacement that neither grows the team nor improves
+                        // fit/synergy/positioning must not be a free action.
+                        action_reward += reward_model::movement_no_progress_penalty(
+                            composition_quality_delta, synergy_delta, positioning_delta);
                     }
                 } else if (
                     positioning_delta <= 1e-6 &&
                     synergy_delta <= 1e-6
                 ) {
-                    // Penaliza também movimentos que pioram o tabuleiro.
-                    // A versão anterior só penalizava deltas exatamente zero,
-                    // permitindo ciclos com pequenas oscilações negativas.
-                    action_reward = -0.05;
+                    // Preserve the delta-based shaping above and add a baseline
+                    // cost plus extra penalty proportional to actual degradation.
+                    action_reward += reward_model::movement_no_progress_penalty(
+                        0.0, synergy_delta, positioning_delta);
                 }
             }
         } else if (type == 5) {
@@ -2631,6 +2676,19 @@ StepResult TFTEngine::step(
 
             impl_->stage = stage_for_round(public_round);
 
+            // Start a fresh anti-loop local history for the new preparation,
+            // while retaining only signatures from the previous four rounds.
+            for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+                auto& player_env = impl_->player_envs[i];
+                player_env.anti_loop.begin_round(public_round);
+                if (player_env.info.alive) {
+                    impl_->register_position_state(i);
+                    // The old-round masks were generated before begin_round;
+                    // rebuild them now so the first next-round action sees the
+                    // cleared local history and the fresh visited-state window.
+                    impl_->refresh_masks(i);
+                }
+            }
             impl_->reset_round_completion();
         }
     }
@@ -2797,6 +2855,7 @@ bool TFTEngine::set_unit_for_testing(
             return false;
         impl_->player_envs[player_index].board[static_cast<std::size_t>(slot)] =
             std::move(unit);
+        impl_->player_envs[player_index].board_move_age[static_cast<std::size_t>(slot)] = kActionMemoryHorizon;
     } else {
         if (slot < 0 || static_cast<std::size_t>(slot) >= kBenchSlots)
             return false;

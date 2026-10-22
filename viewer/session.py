@@ -95,6 +95,8 @@ class ViewerSession:
         self._preparation_started_at: float | None = None
         self._preparation_round: tuple[int, int] | None = None
         self._passed_players: set[int] = set()
+        self._round_action_counts = [0] * 8
+        self._non_improving_movement_streak = [0] * 8
         self._backline_fallback_checked = False
 
     def load_checkpoint(self, checkpoint: str | Path, seed: int, deterministic: bool,
@@ -117,17 +119,24 @@ class ViewerSession:
         if not isinstance(state_dict, dict) or not state_dict:
             raise ValueError("O checkpoint não contém state_dict de política.")
         if obs_dim is None:
-            # Infer the input dimension from the global MLP first layer when available.
+            # Validate old checkpoint metadata, but construct the live policy
+            # from the observation dimension produced by the current native engine.
             weight = state_dict.get("global_mlp.0.weight")
             if weight is None:
                 raise ValueError("Checkpoint sem obs_dim e sem global_mlp.0.weight para inferir a arquitetura.")
             obs_dim = int(weight.shape[1]) + 140
-        self.policy = TFTPolicy(int(obs_dim), list(action_dims), hidden_size=int(hidden_size))
-        missing, unexpected = self.policy.load_state_dict(state_dict, strict=False)
-        if missing or unexpected:
-            raise ValueError(
-                "Checkpoint incompatível com TFTPolicy atual. "
-                f"Parâmetros ausentes={missing[:8]}, extras={unexpected[:8]}"
+        self.lobby = CppTFTLobbyWrapper(seed=int(seed), catalog_path=str(CATALOG))
+        self.obs = self.lobby.reset(seed=int(seed))
+        current_obs_dim = int(self.obs.shape[-1])
+        self.policy = TFTPolicy(current_obs_dim, list(action_dims), hidden_size=int(hidden_size))
+        try:
+            migrated_checkpoint = self.policy.load_compatible_state_dict(state_dict)
+        except RuntimeError as exc:
+            raise ValueError(f"Checkpoint incompatível com TFTPolicy atual: {exc}") from exc
+        if migrated_checkpoint:
+            print(
+                "Checkpoint migrado: colunas novas da observação e condicionamento "
+                "MOVE_BENCH inicializados sem alterar os pesos antigos compatíveis."
             )
         self.policy.eval()
         for parameter in self.policy.parameters():
@@ -138,11 +147,11 @@ class ViewerSession:
         self._preparation_started_at = None
         self._preparation_round = None
         self._passed_players.clear()
+        self._round_action_counts = [0] * 8
+        self._non_improving_movement_streak = [0] * 8
         self._backline_fallback_checked = False
         self.checkpoint_sha256 = digest
         self.match_id = str(uuid.uuid4())
-        self.lobby = CppTFTLobbyWrapper(seed=int(seed), catalog_path=str(CATALOG))
-        self.obs = self.lobby.reset(seed=int(seed))
         self.masks = self.lobby.get_action_masks()
         self.public_state = self.lobby.get_public_state()
         self._refresh_audit_snapshot()
@@ -171,7 +180,7 @@ class ViewerSession:
                 "engine": "cpp",
                 "created_at": datetime.now(timezone.utc).isoformat(),
                 "policy_class": "TFTPolicy",
-                "observation_dim": int(obs_dim),
+                "observation_dim": current_obs_dim,
                 "action_dims": list(action_dims),
                 "log_format": "legacy-style UTF-8 TFT text log, one file per player",
                 "player_log_files": log_files,
@@ -335,6 +344,8 @@ class ViewerSession:
                 self._preparation_round = round_key
                 self._preparation_started_at = time.monotonic()
                 self._passed_players.clear()
+                self._round_action_counts = [0] * 8
+                self._non_improving_movement_streak = [0] * 8
                 self._backline_fallback_checked = False
 
         before = self._snapshot_for_event()
@@ -345,19 +356,35 @@ class ViewerSession:
             if not player.get("alive", True):
                 actions.append([6, 0, 0, 0, 0, 0])
                 diagnostics.append({"action_name": "PASS", "action": [6, 0, 0, 0, 0, 0], "status": "eliminated_seat"})
-            elif wall_clock_enabled and player_id in self._passed_players:
+            elif self.config.deterministic and self._non_improving_movement_streak[player_id] >= 2:
                 action = [6, 0, 0, 0, 0, 0]
                 actions.append(action)
                 diagnostics.append({
                     "action_name": "PASS", "action": action,
-                    "status": "waiting_for_preparation_deadline",
+                    "status": "no_positive_movement_reward",
                 })
+                if wall_clock_enabled:
+                    self._passed_players.add(player_id)
+            elif wall_clock_enabled and (
+                player_id in self._passed_players or self._round_action_counts[player_id] >= 10
+            ):
+                action = [6, 0, 0, 0, 0, 0]
+                actions.append(action)
+                status = (
+                    "viewer_action_limit_reached"
+                    if self._round_action_counts[player_id] >= 10
+                    else "waiting_for_preparation_deadline"
+                )
+                diagnostics.append({"action_name": "PASS", "action": action, "status": status})
+                self._passed_players.add(player_id)
             else:
                 action, diag = self._action_for_player(player_id)
                 actions.append(action)
                 diagnostics.append(diag)
-                if wall_clock_enabled and action[0] == 6:
-                    self._passed_players.add(player_id)
+                if wall_clock_enabled:
+                    self._round_action_counts[player_id] += 1
+                    if action[0] == 6:
+                        self._passed_players.add(player_id)
         self._emit("decision_batch", {
             "before": before,
             "players": [
@@ -387,6 +414,9 @@ class ViewerSession:
                     {},
                 )
                 if not player.get("alive", True):
+                    continue
+                round_action_counts = getattr(self, "_round_action_counts", None)
+                if round_action_counts is not None and round_action_counts[player_id] >= 10:
                     continue
                 fallback = self._backline_fallback_action(player_id)
                 if fallback is None:
@@ -433,6 +463,27 @@ class ViewerSession:
         self.last_policy = diagnostics
         self.last_rewards = np.asarray(rewards, dtype=np.float32)
         self.last_info = info
+
+        # Deterministic argmax can otherwise chain novel but useless moves.
+        # Use the engine's realized action reward as feedback: after two
+        # consecutive non-positive movement rewards, prefer PASS for this round.
+        action_rewards = info.get("action_rewards")
+        if action_rewards is not None:
+            try:
+                reward_values = np.asarray(action_rewards, dtype=np.float32).reshape(-1)
+                for player_id, action in enumerate(actions):
+                    if player_id >= len(reward_values):
+                        break
+                    if int(action[0]) in (3, 4):
+                        if float(reward_values[player_id]) <= 0.0:
+                            self._non_improving_movement_streak[player_id] += 1
+                        else:
+                            self._non_improving_movement_streak[player_id] = 0
+                    elif int(action[0]) != 6:
+                        self._non_improving_movement_streak[player_id] = 0
+            except (TypeError, ValueError):
+                pass
+
         self.masks = self.lobby.get_action_masks()
         self.public_state = self.lobby.get_public_state()
         self._refresh_audit_snapshot()
@@ -442,6 +493,8 @@ class ViewerSession:
             self._preparation_started_at = None
             self._preparation_round = None
             self._passed_players.clear()
+            self._round_action_counts = [0] * 8
+            self._non_improving_movement_streak = [0] * 8
             self._backline_fallback_checked = False
         self.step_count += 1
         after = self._snapshot_for_event()

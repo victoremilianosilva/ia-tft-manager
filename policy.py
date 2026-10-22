@@ -74,12 +74,82 @@ class TFTPolicy(nn.Module):
             nn.Linear(256, 1),
         )
         self.bench_head = nn.Linear(hidden_size + self.num_action_types, action_dims[2])
-        self.bench_to_board_head = nn.Linear(hidden_size + self.num_action_types, action_dims[3])
+        self.bench_to_board_head = nn.Linear(
+            hidden_size + self.num_action_types + action_dims[2] + self.candidate_feature_dim,
+            action_dims[3],
+        )
         self.board_source_head = nn.Linear(hidden_size + self.num_action_types, action_dims[4])
         self.board_move_target_head = nn.Linear(
             hidden_size + self.num_action_types + action_dims[4], action_dims[5]
         )
         self.value_head = nn.Linear(hidden_size, 1)
+
+    def load_compatible_state_dict(self, state_dict):
+        """Load current weights or migrate the two known input-shape changes.
+
+        Temporal observation features are inserted immediately before the fixed
+        candidate tail. The old global encoder columns are shifted around that
+        insertion; new temporal columns and new bench-target conditioning columns
+        start at zero so inference initially preserves the old logits.
+        """
+        target = self.state_dict()
+        missing = sorted(set(target) - set(state_dict))
+        unexpected = sorted(set(state_dict) - set(target))
+        if missing or unexpected:
+            raise RuntimeError(
+                f"Checkpoint keys incompatible: missing={missing[:8]}, "
+                f"unexpected={unexpected[:8]}"
+            )
+
+        migrated = False
+        loaded = {}
+        for key, target_value in target.items():
+            source_value = state_dict[key]
+            if source_value.shape == target_value.shape:
+                loaded[key] = source_value
+                continue
+
+            if (
+                key == "global_mlp.0.weight"
+                and source_value.ndim == 2
+                and target_value.ndim == 2
+                and source_value.shape[0] == target_value.shape[0]
+                and target_value.shape[1] > source_value.shape[1]
+            ):
+                added = target_value.shape[1] - source_value.shape[1]
+                insertion = source_value.shape[1] - self.candidate_observation_dim
+                expanded = torch.zeros_like(target_value)
+                if 0 <= insertion <= source_value.shape[1]:
+                    expanded[:, :insertion] = source_value[:, :insertion]
+                    expanded[:, insertion + added:] = source_value[:, insertion:]
+                else:
+                    # Older checkpoints without the explicit candidate tail:
+                    # preserve their known columns and initialize the new tail.
+                    expanded[:, :source_value.shape[1]] = source_value
+                loaded[key] = expanded
+                migrated = True
+                continue
+
+            if (
+                key == "bench_to_board_head.weight"
+                and source_value.ndim == 2
+                and target_value.ndim == 2
+                and source_value.shape[0] == target_value.shape[0]
+                and source_value.shape[1] < target_value.shape[1]
+            ):
+                expanded = torch.zeros_like(target_value)
+                expanded[:, :source_value.shape[1]] = source_value
+                loaded[key] = expanded
+                migrated = True
+                continue
+
+            raise RuntimeError(
+                f"Checkpoint shape incompatível em {key}: "
+                f"{tuple(source_value.shape)} != {tuple(target_value.shape)}"
+            )
+
+        self.load_state_dict(loaded, strict=True)
+        return migrated
 
     def encode(self, obs):
         """ Fatia cirurgicamente o tabuleiro do meio do vetor de estado e processa em 2D """
@@ -124,6 +194,24 @@ class TFTPolicy(nn.Module):
             -1, self.action_dims[1], self.candidate_feature_dim
         )
         return bench, shop
+
+    def _bench_to_board_logits(self, conditioned, selected_slots, bench_candidate_features):
+        """Score board destinations conditioned on the selected bench unit."""
+        slot_onehot = F.one_hot(
+            selected_slots.long(),
+            num_classes=self.action_dims[2],
+        ).to(dtype=conditioned.dtype)
+        selected_features = bench_candidate_features.gather(
+            1,
+            selected_slots.long().view(-1, 1, 1).expand(
+                -1, 1, self.candidate_feature_dim
+            ),
+        ).squeeze(1).to(dtype=conditioned.dtype)
+        target_input = torch.cat(
+            [conditioned, slot_onehot, selected_features],
+            dim=-1,
+        )
+        return self.bench_to_board_head(target_input)
 
     @staticmethod
     def _candidate_logits(head, conditioned, candidate_features):
@@ -233,44 +321,82 @@ class TFTPolicy(nn.Module):
             obs, masks=masks, deterministic=deterministic, collect_diagnostics=True
         )
 
+    def get_action_and_value_with_entropy_diagnostics(self, obs, masks=None, deterministic=False):
+        """Retorna entropia por cabeça sem materializar probabilidades/top-k completos."""
+        return self._get_action_and_value_impl(
+            obs, masks=masks, deterministic=deterministic, collect_entropy_diagnostics=True
+        )
+
     def _get_action_and_value_impl(
-        self, obs, masks=None, deterministic=False, collect_diagnostics=False
+        self, obs, masks=None, deterministic=False, collect_diagnostics=False,
+        collect_entropy_diagnostics=False
     ):
         device = obs.device
         batch_size = obs.shape[0]
-        # One list per player; diagnostic rows are captured from the exact
-        # masked logits that feed the action sampling below.
         player_diagnostics = [[] for _ in range(batch_size)]
         bench_candidate_features, shop_candidate_features = self._candidate_features(obs)
 
         def record_distribution(name, logits, chosen, row_indices, applied_mask=None):
-            if not collect_diagnostics:
+            if not collect_diagnostics and not collect_entropy_diagnostics:
                 return
             probabilities = torch.softmax(logits, dim=-1).detach()
             selected = chosen.detach().long()
             row_ids = row_indices.detach().long().tolist()
-            selected_values = selected.tolist()
-            mask_values = (
-                applied_mask.detach().bool().tolist()
-                if applied_mask is not None else None
+            if applied_mask is not None:
+                valid_counts = applied_mask.to(
+                    device=probabilities.device, dtype=torch.bool
+                ).sum(dim=-1).clamp_min(1)
+            else:
+                valid_counts = torch.full(
+                    (probabilities.shape[0],), probabilities.shape[-1],
+                    device=probabilities.device, dtype=torch.long,
+                )
+            entropy_nats = -(
+                probabilities * probabilities.clamp_min(
+                    torch.finfo(probabilities.dtype).tiny
+                ).log()
+            ).sum(dim=-1)
+            max_entropy = valid_counts.to(probabilities.dtype).log()
+            normalized_entropy = torch.where(
+                max_entropy > 0,
+                entropy_nats / max_entropy.clamp_min(torch.finfo(probabilities.dtype).tiny),
+                torch.zeros_like(entropy_nats),
             )
-            top_count = min(3, probabilities.shape[-1])
-            top_probs, top_indices = probabilities.topk(top_count, dim=-1)
-            top_probs = top_probs.detach().tolist()
-            top_indices = top_indices.detach().tolist()
-            all_probs = probabilities.tolist()
+            entropy_values = entropy_nats.detach().tolist()
+            normalized_entropy_values = normalized_entropy.detach().tolist()
+
+            # Training only needs compact entropy scalars. The viewer's full
+            # diagnostics retain masks, probabilities, selected action and top-k.
+            if collect_diagnostics:
+                selected_values = selected.tolist()
+                mask_values = (
+                    applied_mask.detach().bool().tolist()
+                    if applied_mask is not None else None
+                )
+                top_count = min(3, probabilities.shape[-1])
+                top_probs, top_indices = probabilities.topk(top_count, dim=-1)
+                top_probs = top_probs.detach().tolist()
+                top_indices = top_indices.detach().tolist()
+                all_probs = probabilities.tolist()
+
             for row, player_id in enumerate(row_ids):
-                player_diagnostics[player_id].append({
+                item = {
                     "head": name,
-                    "mask": mask_values[row] if mask_values is not None else None,
-                    "probabilities": all_probs[row],
-                    "selected": int(selected_values[row]),
-                    "selected_probability": float(all_probs[row][selected_values[row]]),
-                    "top_choices": [
-                        {"index": int(index), "probability": float(probability)}
-                        for index, probability in zip(top_indices[row], top_probs[row])
-                    ],
-                })
+                    "entropy_nats": float(entropy_values[row]),
+                    "entropy_normalized": float(normalized_entropy_values[row]),
+                }
+                if collect_diagnostics:
+                    item.update({
+                        "mask": mask_values[row] if mask_values is not None else None,
+                        "probabilities": all_probs[row],
+                        "selected": int(selected_values[row]),
+                        "selected_probability": float(all_probs[row][selected_values[row]]),
+                        "top_choices": [
+                            {"index": int(index), "probability": float(probability)}
+                            for index, probability in zip(top_indices[row], top_probs[row])
+                        ],
+                    })
+                player_diagnostics[player_id].append(item)
 
         features = self.encode(obs)
 
@@ -351,7 +477,11 @@ class TFTPolicy(nn.Module):
             )
 
             # Board target condicionado ao slot selecionado no banco
-            logits = self.bench_to_board_head(conditioned[move_bench_mask])
+            logits = self._bench_to_board_logits(
+                conditioned[move_bench_mask],
+                sampled,
+                bench_candidate_features[move_bench_mask],
+            )
 
             if masks is not None:
                 batch_indices = torch.where(move_bench_mask)[0]
@@ -464,7 +594,7 @@ class TFTPolicy(nn.Module):
 
         value = self.value_head(features).squeeze(-1)
 
-        if collect_diagnostics:
+        if collect_diagnostics or collect_entropy_diagnostics:
             return actions, total_logprob, total_entropy, value, player_diagnostics
         return actions, total_logprob, total_entropy, value, None
 
@@ -541,7 +671,11 @@ class TFTPolicy(nn.Module):
             total_entropy[move_bench_mask] += dist.entropy()
 
             # Target condicionado ao slot selecionado no banco
-            logits = self.bench_to_board_head(conditioned[move_bench_mask])
+            logits = self._bench_to_board_logits(
+                conditioned[move_bench_mask],
+                selected_bench_slots,
+                bench_candidate_features[move_bench_mask],
+            )
 
             batch_indices = torch.where(move_bench_mask)[0]
 
