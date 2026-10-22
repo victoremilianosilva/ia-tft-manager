@@ -94,6 +94,12 @@ def test_sale_head_can_preserve_core_and_upgrade_copies():
     candidates[0, 2, 4:6] = torch.tensor([0.0, 0.2])
 
     logits = policy._candidate_logits(policy.sell_head, context, candidates)
+    # Only the first three bench slots contain units in this scenario. Apply
+    # the same validity mask as the production SELL action path before ranking.
+    valid_candidates = torch.tensor(
+        [[True, True, True, False, False, False, False, False, False]]
+    )
+    logits = policy._mask_logits(logits, valid_candidates)
 
     assert int(logits.argmax(dim=-1).item()) == 1
 
