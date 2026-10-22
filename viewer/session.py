@@ -124,11 +124,14 @@ class ViewerSession:
                 raise ValueError("Checkpoint sem obs_dim e sem global_mlp.0.weight para inferir a arquitetura.")
             obs_dim = int(weight.shape[1]) + 140
         self.policy = TFTPolicy(int(obs_dim), list(action_dims), hidden_size=int(hidden_size))
-        missing, unexpected = self.policy.load_state_dict(state_dict, strict=False)
-        if missing or unexpected:
-            raise ValueError(
-                "Checkpoint incompatível com TFTPolicy atual. "
-                f"Parâmetros ausentes={missing[:8]}, extras={unexpected[:8]}"
+        try:
+            migrated_checkpoint = self.policy.load_compatible_state_dict(state_dict)
+        except RuntimeError as exc:
+            raise ValueError(f"Checkpoint incompatível com TFTPolicy atual: {exc}") from exc
+        if migrated_checkpoint:
+            print(
+                "Checkpoint migrado: colunas novas da observação e condicionamento "
+                "MOVE_BENCH inicializados sem alterar os pesos antigos compatíveis."
             )
         self.policy.eval()
         for parameter in self.policy.parameters():
