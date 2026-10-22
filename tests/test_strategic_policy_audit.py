@@ -1,7 +1,16 @@
 """Tests for the multi-seed strategic policy audit helpers."""
+from io import StringIO
+from pathlib import Path
+
 import numpy as np
 
-from scripts.audit_strategic_policy import _action_dict, _json_masks, _player_gold
+from scripts.audit_strategic_policy import (
+    _action_dict,
+    _json_masks,
+    _player_gold,
+    _player_output_paths,
+    _write_player_record,
+)
 
 
 class _FakeLobby:
@@ -42,3 +51,21 @@ def test_audit_mask_serialization_preserves_exact_mask_values():
         "shop_mask": np.array([0, 1], dtype=np.bool_),
     })
     assert result == {"type_mask": [1, 0, 1], "shop_mask": [0, 1]}
+
+
+def test_audit_creates_eight_deterministic_player_output_paths(tmp_path):
+    paths = _player_output_paths(tmp_path / "strategic_policy.jsonl")
+
+    assert list(paths) == list(range(8))
+    assert paths[0] == tmp_path / "strategic_policy" / "player_0.jsonl"
+    assert paths[7] == tmp_path / "strategic_policy" / "player_7.jsonl"
+
+
+def test_audit_routes_each_record_only_to_its_player_file():
+    handles = {player_id: StringIO() for player_id in range(8)}
+    record = {"player_id": 3, "step": 12}
+
+    _write_player_record(handles, 3, record)
+
+    assert handles[3].getvalue() == '{"player_id": 3, "step": 12}\\n'
+    assert all(not handle.getvalue() for player_id, handle in handles.items() if player_id != 3)
