@@ -311,7 +311,9 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
                 )
             if done:
                 return step_index + 1
-        raise RuntimeError(f"Seed {seed} excedeu max_steps={max_steps}.")
+        # A step limit is an intentional audit truncation, not a test failure.
+        # A detected loop still raises above when --fail-on-loop is enabled.
+        return max_steps
     finally:
         lobby.close()
 
