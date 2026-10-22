@@ -377,7 +377,7 @@ void test_incremental_signature_hash_matches_full_recomputation() {
     assert(moved_hash == expected_hash);
     assert(moved_hash != original_hash);
 
-    signature.bench[2] = make_unit("briar-1", 2).identity;
+    signature.bench[2] = make_unit("briar-1", 2);
     signature.hash_cached = false;
     const auto before_swap = PositionSignatureHash{}(signature);
     signature.swap_board_bench(4, 2);
