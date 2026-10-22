@@ -227,8 +227,10 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
                     diagnostics[player_id] = diag[row]
 
             mask_valid = [_mask_allows(actions[i], masks[i]) if i in alive else True for i in range(8)]
-            observations, _, done, info = lobby.step(actions)
+            observations, rewards, done, info = lobby.step(actions)
             observations = np.asarray(observations, dtype=np.float32)
+            action_rewards = np.asarray(info.get("action_rewards", np.zeros(8)), dtype=np.float32).reshape(-1)
+            total_rewards = np.asarray(rewards, dtype=np.float32).reshape(-1)
             after_snapshot = lobby.get_audit_snapshot()
             after_players = after_snapshot["players"]
             strategies_after = lobby.get_strategy_snapshots()
@@ -240,6 +242,15 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
                 action = actions[player_id]
                 before_sig, after_sig = _signature(before), _signature(after)
                 executed = _effect_for_action(action, before, after)
+                action_reward = float(action_rewards[player_id]) if player_id < len(action_rewards) else None
+                if executed:
+                    execution_status = "state_changed"
+                elif int(action[0]) == 6:
+                    execution_status = "pass"
+                elif action_reward is not None and action_reward < 0:
+                    execution_status = "blocked_or_invalid_no_state_change"
+                else:
+                    execution_status = "no_state_change_observed"
                 loop = None
                 if int(action[0]) in MOVEMENT_TYPES and executed and after_sig in visited[player_id]:
                     prior = visited[player_id][after_sig]
@@ -268,6 +279,9 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
                     "selected_action": action,
                     "selected_action_mask_valid": bool(mask_valid[player_id]),
                     "action_effect_observed": bool(executed),
+                    "execution_status": execution_status,
+                    "action_reward": action_reward,
+                    "total_reward": float(total_rewards[player_id]) if player_id < len(total_rewards) else None,
                     "action_diagnostics": diagnostics[player_id],
                     "native_mask": _json_masks(masks[player_id]),
                     "board_bench_signature_before": repr(before_sig),
