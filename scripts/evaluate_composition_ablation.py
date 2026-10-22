@@ -74,7 +74,14 @@ def _run_match(policy, seed: int, ablate: bool, max_steps: int):
         snapshots = env.get_strategy_snapshots()
         trait_count = len((snapshots[0] or {}).get("active_traits", {}))
         if trait_count <= 0:
-            raise RuntimeError("Could not derive the fixed catalog trait count from StrategyInfo.")
+            # Observation layout: 433 fixed values plus four trait-aligned
+            # vectors (trait counts, direction, core flags, and focus weights).
+            remainder = int(observations_np.shape[-1]) - 433
+            if remainder <= 0 or remainder % 4:
+                raise RuntimeError(
+                    "Could not derive trait count from StrategyInfo or observation dimension."
+                )
+            trait_count = remainder // 4
 
         totals = np.zeros(8, dtype=np.float64)
         action_counts = np.zeros(len(ACTION_NAMES), dtype=np.int64)
