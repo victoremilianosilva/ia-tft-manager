@@ -1,0 +1,1512 @@
+==========================================================
+TFT AI LOG · JOGADOR 1
+Partida: c90620d9-706b-45f0-a794-fa0db9fc5085
+Seed: 20261016 | Política: determinística
+Checkpoint SHA-256: a21854eacdd9e000c4ff1052298974960ab0deb4b72d0a14139f5507ec4c6cfb
+Impacto (i): custo × estrelas × 2 (contribuição nativa da engine)
+==========================================================
+--- INÍCIO DA PARTIDA · JOGADOR 1 ---
+[09:58:46] MOVE Bench -> Board: Nasus (i:2.0) <-> Vazio | Rew: +0.30
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Nasus
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[09:58:47] MOVE Board -> Board: Nasus (i:2.0) <-> Vazio | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Nasus
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[09:58:47] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Nasus
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[09:58:52] --- FIM DO ROUND 1-1 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Nasus
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[09:58:52] 🛒 LOJA: Ezreal(i:2.0), Briar(i:2.0), Briar(i:2.0), Twisted Fate(i:2.0), Veigar(i:2.0)
+[09:58:53] COMPROU: Twisted Fate (Custo 1 | i:2.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Nasus
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+[09:58:54] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.25
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Nasus
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+[09:58:55] COMPROU: Veigar (Custo 1 | i:2.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Nasus
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+[09:58:56] MOVE Bench -> Board: Veigar (i:2.0) <-> Vazio | Rew: +0.52
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Nasus
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+[09:58:56] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Nasus
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+
+[09:58:59] --- FIM DO ROUND 1-2 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Nasus
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[09:58:59] 🛒 LOJA: Lissandra(i:2.0), Pyke(i:4.0), Aatrox(i:2.0), Teemo(i:2.0), Teemo(i:2.0)
+[09:59:00] COMPROU: Pyke (Custo 2 | i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Pyke
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+[09:59:01] MOVE Bench -> Board: Pyke (i:4.0) <-> Veigar (i:2.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Pyke
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+[09:59:02] MOVE Bench -> Board: Veigar (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.20
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Pyke
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+[09:59:03] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Pyke
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+
+[09:59:06] --- FIM DO ROUND 1-3 | GOLD: 3 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Pyke
+    RENDA PRÓXIMO ROUND: +3 base, +0 juros, +0 sequência, +0 vitória (total: +3)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Twi|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[09:59:06] 🛒 LOJA: Nasus(i:2.0), Aatrox(i:2.0), Caitlyn(i:2.0), Briar(i:2.0), Cho'Gath(i:2.0)
+[09:59:07] COMPROU: Aatrox (Custo 1 | i:2.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Pyke
+    GOLD: 2 | renda base +3 | juros +0 | sequência +0 | vitória +0
+[09:59:08] COMPROU: Briar (Custo 1 | i:2.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Pyke
+    GOLD: 1 | renda base +3 | juros +0 | sequência +0 | vitória +0
+[09:59:09] COMPROU: Cho'Gath (Custo 1 | i:2.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Pyke
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+[09:59:10] MOVE Bench -> Board: Aatrox (i:2.0) <-> Pyke (i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Pyke
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+[09:59:10] MOVE Bench -> Board: Pyke (i:4.0) <-> Veigar (i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Pyke
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+[09:59:11] MOVE Bench -> Board: Veigar (i:2.0) <-> Aatrox (i:2.0) | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Pyke
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+[09:59:12] MOVE Bench -> Board: Aatrox (i:2.0) <-> Pyke (i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Pyke
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+[09:59:13] MOVE Bench -> Board: Pyke (i:4.0) <-> Veigar (i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Pyke
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+
+[09:59:13] --- FIM DO ROUND 1-4 | GOLD: 4 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Pyke
+    RENDA PRÓXIMO ROUND: +4 base, +0 juros, +0 sequência, +0 vitória (total: +4)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Twi|1*|i:2.0][Vei|1*|i:2.0][Bri|1*|i:2.0]
+[Cho|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[09:59:13] 🛒 LOJA: Leona(i:2.0), Caitlyn(i:2.0), Milio(i:4.0), Twisted Fate(i:2.0), Veigar(i:2.0)
+[09:59:14] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Pyke
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+[09:59:15] MOVE Bench -> Board: Veigar (i:2.0) <-> Vazio | Rew: +0.48
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+[09:59:15] MOVE Bench -> Board: Cho'Gath (i:2.0) <-> Pyke (i:4.0) | Rew: -0.21
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+[09:59:16] MOVE Bench -> Board: Pyke (i:4.0) <-> Aatrox (i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+[09:59:17] MOVE Bench -> Board: Aatrox (i:2.0) <-> Cho'Gath (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+[09:59:18] MOVE Bench -> Board: Cho'Gath (i:2.0) <-> Pyke (i:4.0) | Rew: -0.21
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+[09:59:18] MOVE Bench -> Board: Pyke (i:4.0) <-> Aatrox (i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pyke
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+[09:59:19] MOVE Bench -> Board: Aatrox (i:2.0) <-> Veigar (i:2.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Pyke
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+[09:59:20] MOVE Bench -> Board: Veigar (i:2.0) <-> Pyke (i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Pyke
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+
+[09:59:20] --- FIM DO ROUND 2-1 | GOLD: 5 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Pyke
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Cho|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Twi|1*|i:2.0]   [VAZIO]    [Bri|1*|i:2.0]
+[Pyk|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[09:59:20] 🛒 LOJA: Aurora(i:6.0), Mordekaiser(i:4.0), Milio(i:4.0), Gnar(i:4.0), Bel'Veth(i:4.0)
+[09:59:22] BUY XP                       | Rew: +1.51
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Pyke
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[09:59:22] MOVE Bench -> Board: Pyke (i:4.0) <-> Cho'Gath (i:2.0) | Rew: +0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Pyke
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[09:59:23] VENDEU: Twisted Fate (i:2.0) | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Pyke
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[09:59:25] COMPROU: Bel'Veth (Custo 2 | i:4.0) | Rew: -0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Primordian | FOCUS: TFT17_Belveth
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[09:59:25] MOVE Bench -> Board: Cho'Gath (i:2.0) <-> Veigar (i:2.0) | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: Primordian | FOCUS: TFT17_Belveth
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[09:59:26] MOVE Bench -> Board: Veigar (i:2.0) <-> Pyke (i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Primordian | FOCUS: TFT17_Belveth
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[09:59:27] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Primordian | FOCUS: TFT17_Belveth
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[09:59:27] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Vazio | Rew: +0.60
+    STRATEGY: STABILIZE | COMP DIRECTION: Primordian | FOCUS: TFT17_Belveth
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[09:59:28] --- FIM DO ROUND 2-2 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Primordian | FOCUS: TFT17_Belveth
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Cho|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]       [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]    [Bri|1*|i:2.0]
+[Pyk|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[09:59:28] 🛒 LOJA: Leona(i:2.0), Ornn(i:6.0), Pyke(i:4.0), Zoe(i:4.0), Pantheon(i:4.0)
+[09:59:30] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Primordian | FOCUS: TFT17_Belveth
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[09:59:30] COMPROU: Zoe (Custo 2 | i:4.0) | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Primordian | FOCUS: TFT17_Belveth
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[09:59:31] VENDEU: Briar (i:2.0)        | Rew: +0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: N.O.V.A. | FOCUS: TFT17_Belveth
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[09:59:32] COMPROU: Leona (Custo 1 | i:2.0) | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Belveth
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[09:59:33] MOVE Bench -> Board: Leona (i:2.0) <-> Cho'Gath (i:2.0) | Rew: +0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Belveth
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[09:59:34] VENDEU: Cho'Gath (i:2.0)     | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Belveth
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[09:59:34] VENDEU: Pyke (i:4.0)         | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Belveth
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[09:59:35] COMPROU: Ornn (Custo 3 | i:6.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+
+[09:59:36] --- FIM DO ROUND 2-3 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]       [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Zoe|1*|i:4.0][Orn|1*|i:6.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[09:59:36] 🛒 LOJA: Akali(i:4.0), Gragas(i:4.0), Meepsie(i:4.0), Urgot(i:6.0), Nasus(i:2.0)
+[09:59:38] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[09:59:39] COMPROU: Urgot (Custo 3 | i:6.0) | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[09:59:39] VENDEU: Zoe (i:4.0)          | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[09:59:40] COMPROU: Gragas (Custo 2 | i:4.0) | Rew: -0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[09:59:41] VENDEU: Gragas (i:4.0)       | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[09:59:42] COMPROU: Meepsie (Custo 2 | i:4.0) | Rew: -0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[09:59:43] VENDEU: Meepsie (i:4.0)      | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[09:59:44] COMPROU: Akali (Custo 2 | i:4.0) | Rew: -0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Marauder | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[09:59:44]  ⬆️ SINERGIA: MARAUDER nível 1
+
+[09:59:44] --- FIM DO ROUND 2-4 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Marauder | FOCUS: TFT17_Urgot
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]       [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Aka|1*|i:4.0][Orn|1*|i:6.0][Urg|1*|i:6.0]
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[09:59:44] 🛒 LOJA: Zoe(i:4.0), Pyke(i:4.0), Bel'Veth(i:4.0), Gnar(i:4.0), Rhaast(i:6.0)
+[09:59:46] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Marauder | FOCUS: TFT17_Urgot
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[09:59:46] COMPROU: Bel'Veth (Custo 2 | i:4.0) | Rew: +0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: Marauder | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[09:59:47] MOVE Bench -> Board: Ornn (i:6.0) <-> Leona (i:2.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Marauder | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[09:59:48] VENDEU: Leona (i:2.0)        | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Marauder | FOCUS: TFT17_Urgot
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[09:59:48] VENDEU: Akali (i:4.0)        | Rew: +0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Marauder | FOCUS: TFT17_Urgot
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[09:59:49] COMPROU: Rhaast (Custo 3 | i:6.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Marauder | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[09:59:51] VENDEU: Rhaast (i:6.0)       | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Marauder | FOCUS: TFT17_Urgot
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[09:59:52] --- FIM DO ROUND 2-5 | GOLD: 8 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Marauder | FOCUS: TFT17_Urgot
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Orn|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]       [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]    [Urg|1*|i:6.0]
+[Bel|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[09:59:52] 🛒 LOJA: Viktor(i:6.0), Pantheon(i:4.0), Briar(i:2.0), Illaoi(i:6.0), Gnar(i:4.0)
+[09:59:54] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Marauder | FOCUS: TFT17_Urgot
+    GOLD: 4 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[09:59:55] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Marauder | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[09:59:56] VENDEU: Bel'Veth (i:4.0)     | Rew: -0.16
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[09:59:56]  ⬇️ SINERGIA: MARAUDER nível 0
+[09:59:56] COMPROU: Pantheon (Custo 2 | i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[09:59:57] VENDEU: Pantheon (i:4.0)     | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[09:59:58] COMPROU: Gnar (Custo 2 | i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[09:59:58] VENDEU: Gnar (i:4.0)         | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[09:59:59] COMPROU: Briar (Custo 1 | i:2.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[10:00:01] --- FIM DO ROUND 2-6 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Orn|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Bri|F|1*|i:2.0]       [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]    [Urg|1*|i:6.0]
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:00:01] 🛒 LOJA: Twisted Fate(i:2.0), Veigar(i:2.0), Jinx(i:4.0), Gragas(i:4.0), Jax(i:4.0)
+[10:00:03] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:00:04] COMPROU: Jax (Custo 2 | i:4.0) | Rew: +0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:00:04]  ⬆️ SINERGIA: BASTION nível 1
+[10:00:05] COMPROU: Twisted Fate (Custo 1 | i:2.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:00:05] VENDEU: Twisted Fate (i:2.0) | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:00:06] COMPROU: Veigar (Custo 1 | i:2.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:00:07] VENDEU: Veigar (i:2.0)       | Rew: -0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:00:07] VENDEU: Jax (i:4.0)          | Rew: +0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:00:07]  ⬇️ SINERGIA: BASTION nível 0
+[10:00:08] COMPROU: Gragas (Custo 2 | i:4.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:00:09] VENDEU: Gragas (i:4.0)       | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+
+[10:00:12] --- FIM DO ROUND 2-7 | GOLD: 8 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Orn|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Bri|F|1*|i:2.0]       [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]    [Urg|1*|i:6.0]
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:00:12] 🛒 LOJA: Gragas(i:4.0), Caitlyn(i:2.0), Akali(i:4.0), Ornn(i:6.0), Bel'Veth(i:4.0)
+[10:00:14] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 4 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:00:15] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:00:15] VENDEU: Urgot (i:6.0)        | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:00:16] COMPROU: Ornn (Custo 3 | i:6.0) | Rew: +0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:00:16]  ⬆️ SINERGIA: BASTION nível 1
+[10:00:16]  ⬆️ SINERGIA: SPACE GROOVE nível 1
+[10:00:17] MOVE Bench -> Board: Ornn (i:6.0) <-> Ornn (i:6.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:00:17] MOVE Bench -> Board: Ornn (i:6.0) <-> Veigar (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:00:18] MOVE Bench -> Board: Veigar (i:2.0) <-> Ornn (i:6.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:00:19] MOVE Bench -> Board: Ornn (i:6.0) <-> Ornn (i:6.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:00:19] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[10:00:22] --- FIM DO ROUND 3-1 | GOLD: 5 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Bri|F|1*|i:2.0]       [ . ]        [Orn|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Orn|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:00:22] 🛒 LOJA: Aurelion Sol(i:8.0), Samira(i:6.0), Gnar(i:4.0), Gragas(i:4.0), Veigar(i:2.0)
+[10:00:25] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:00:26] COMPROU: Veigar (Custo 1 | i:2.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:00:27] MOVE Bench -> Board: Veigar (i:2.0) <-> Veigar (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:00:27] MOVE Bench -> Board: Veigar (i:2.0) <-> Ornn (i:6.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:00:28] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[10:00:34] --- FIM DO ROUND 3-2 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Bri|F|1*|i:2.0]       [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Orn|1*|i:6.0][Orn|1*|i:6.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:00:34] 🛒 LOJA: Diana(i:6.0), Maokai(i:6.0), Rhaast(i:6.0), Miss Fortune(i:6.0), Bel'Veth(i:4.0)
+[10:00:36] BUY XP                       | Rew: +1.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:00:37] COMPROU: Bel'Veth (Custo 2 | i:4.0) | Rew: +0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:00:37]  ⬆️ SINERGIA: PRIMORDIAN nível 1
+[10:00:38] MOVE Bench -> Board: Ornn (i:6.0) <-> Veigar (i:2.0) | Rew: +0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:00:38] MOVE Bench -> Board: Veigar (i:2.0) <-> Veigar (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:00:39] MOVE Bench -> Board: Veigar (i:2.0) <-> Ornn (i:6.0) | Rew: -0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:00:40] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:00:42] MOVE Bench -> Board: Ornn (i:6.0) <-> Vazio | Rew: +0.65
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[10:00:45] --- FIM DO ROUND 3-3 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Bri|F|1*|i:2.0]  [Orn|T|1*|i:6.0]  [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [Orn|1*|i:6.0][Bel|1*|i:4.0]
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:00:45] 🛒 LOJA: Aurora(i:6.0), Poppy(i:2.0), Pantheon(i:4.0), Zoe(i:4.0), Jinx(i:4.0)
+[10:00:48] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:00:48] COMPROU: Pantheon (Custo 2 | i:4.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:00:48]  ⬆️ SINERGIA: REPLICATOR nível 1
+[10:00:49] VENDEU: Bel'Veth (i:4.0)     | Rew: -0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:00:49]  ⬇️ SINERGIA: PRIMORDIAN nível 0
+[10:00:50] COMPROU: Zoe (Custo 2 | i:4.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:00:50] VENDEU: Zoe (i:4.0)          | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:00:51] COMPROU: Jinx (Custo 2 | i:4.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:00:52] VENDEU: Jinx (i:4.0)         | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:00:53] COMPROU: Poppy (Custo 1 | i:2.0) | Rew: +0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:00:53]  ⬆️ SINERGIA: MEEPLE nível 1
+[10:00:53] VENDEU: Poppy (i:2.0)        | Rew: +0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:00:53]  ⬇️ SINERGIA: MEEPLE nível 0
+
+[10:00:56] --- FIM DO ROUND 3-4 | GOLD: 8 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Bri|F|1*|i:2.0]  [Orn|T|1*|i:6.0]  [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Pan|1*|i:4.0][Orn|1*|i:6.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:00:56] 🛒 LOJA: Rhaast(i:6.0), Zoe(i:4.0), Pantheon(i:4.0), Poppy(i:2.0), Poppy(i:2.0)
+[10:01:00] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:00] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:01] MOVE Bench -> Board: Ornn (i:6.0) <-> Veigar (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:02] VENDEU: Veigar (i:2.0)       | Rew: -0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:02]  ⬇️ SINERGIA: REPLICATOR nível 0
+[10:01:02] COMPROU: Poppy (Custo 1 | i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:03] VENDEU: Poppy (i:2.0)        | Rew: +0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:04] COMPROU: Poppy (Custo 1 | i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:04] VENDEU: Poppy (i:2.0)        | Rew: +0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:05] VENDEU: Pantheon (i:4.0)     | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[10:01:08] --- FIM DO ROUND 3-5 | GOLD: 9 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Orn|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Bri|F|1*|i:2.0]  [Orn|T|1*|i:6.0]  [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:01:08] 🛒 LOJA: Nunu & Willump(i:8.0), Lissandra(i:2.0), Ornn(i:6.0), Milio(i:4.0), Zoe(i:4.0)
+[10:01:12] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 5 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:12] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:13] COMPROU: Lissandra (Custo 1 | i:2.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:14] VENDEU: Lissandra (i:2.0)    | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:14] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[10:01:21] --- FIM DO ROUND 3-6 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Orn|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Bri|F|1*|i:2.0]  [Orn|T|1*|i:6.0]  [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:01:21] 🛒 LOJA: Urgot(i:6.0), Diana(i:6.0), Vex(i:10.0), Fizz(i:6.0), Fizz(i:6.0)
+[10:01:24] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:01:25] COMPROU: Urgot (Custo 3 | i:6.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:01:26] VENDEU: Urgot (i:6.0)        | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:01:26] COMPROU: Diana (Custo 3 | i:6.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:01:27] VENDEU: Diana (i:6.0)        | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:01:28] COMPROU: Fizz (Custo 3 | i:6.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:01:28] VENDEU: Fizz (i:6.0)         | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:01:29] COMPROU: Fizz (Custo 3 | i:6.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:01:30] VENDEU: Fizz (i:6.0)         | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+
+[10:01:33] --- FIM DO ROUND 3-7 | GOLD: 8 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Orn|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Bri|F|1*|i:2.0]  [Orn|T|1*|i:6.0]  [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:01:33] 🛒 LOJA: Miss Fortune(i:6.0), Rhaast(i:6.0), Miss Fortune(i:6.0), Lulu(i:6.0), Miss Fortune(i:6.0)
+[10:01:37] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 4 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:01:38] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:01:38] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[10:01:46] --- FIM DO ROUND 4-1 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Orn|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Bri|F|1*|i:2.0]  [Orn|T|1*|i:6.0]  [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:01:46] 🛒 LOJA: Diana(i:6.0), Samira(i:6.0), Ornn(i:6.0), Briar(i:2.0), Pyke(i:4.0)
+[10:01:50] COMPROU: Ornn (Custo 3 | i:6.0) | Rew: +0.50
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:01:50]  ⬇️ SINERGIA: BASTION nível 0
+[10:01:50]  ⬇️ SINERGIA: SPACE GROOVE nível 0
+[10:01:51] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:01:52] MOVE Bench -> Board: Ornn (i:12.0) <-> Vazio | Rew: +0.40
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:01:52] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+
+[10:01:59] --- FIM DO ROUND 4-2 | GOLD: 5 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]       [Orn|T|2*|i:12.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Bri|F|1*|i:2.0]       [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:01:59] 🛒 LOJA: Lulu(i:6.0), Aatrox(i:2.0), Xayah(i:8.0), Twisted Fate(i:2.0), Veigar(i:2.0)
+[10:02:04] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:02:04] COMPROU: Twisted Fate (Custo 1 | i:2.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:02:05] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Ornn (i:12.0) | Rew: -0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:02:06] MOVE Bench -> Board: Ornn (i:12.0) <-> Veigar (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:02:06] MOVE Bench -> Board: Veigar (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:02:07] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Ornn (i:12.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:02:08] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:02:09] MOVE Bench -> Board: Ornn (i:12.0) <-> Vazio | Rew: +0.65
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[10:02:13] --- FIM DO ROUND 4-3 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Bri|F|1*|i:2.0] [Orn|T|2*|i:12.0]  [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:02:13] 🛒 LOJA: Diana(i:6.0), Miss Fortune(i:6.0), Fizz(i:6.0), Gragas(i:4.0), Miss Fortune(i:6.0)
+[10:02:18] COMPROU: Diana (Custo 3 | i:6.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:02:18] COMPROU: Miss Fortune (Custo 3 | i:6.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:02:19] VENDEU: Miss Fortune (i:6.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:02:20] COMPROU: Fizz (Custo 3 | i:6.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:02:20] VENDEU: Diana (i:6.0)        | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:02:21] COMPROU: Miss Fortune (Custo 3 | i:6.0) | Rew: -0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:02:22] MOVE Bench -> Board: Fizz (i:6.0) <-> Veigar (i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:02:23] VENDEU: Veigar (i:2.0)       | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:02:23] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Vazio | Rew: +0.58
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[10:02:27] --- FIM DO ROUND 4-4 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Fiz|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Bri|F|1*|i:2.0] [Orn|T|2*|i:12.0]  [Twi|C|1*|i:2.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:02:27] 🛒 LOJA: Xayah(i:8.0), Master Yi(i:8.0), Kindred(i:8.0), Meepsie(i:4.0), Tahm Kench(i:8.0)
+[10:02:32] COMPROU: Tahm Kench (Custo 4 | i:8.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:02:32] COMPROU: Meepsie (Custo 2 | i:4.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:02:33] VENDEU: Meepsie (i:4.0)      | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:02:34] VENDEU: Tahm Kench (i:8.0)   | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 7 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:02:35] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:02:35] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[10:02:42] --- FIM DO ROUND 4-5 | GOLD: 9 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Fiz|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Bri|F|1*|i:2.0] [Orn|T|2*|i:12.0]  [Twi|C|1*|i:2.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:02:42] 🛒 LOJA: Kai'Sa(i:6.0), Samira(i:6.0), Gnar(i:4.0), Ezreal(i:2.0), Aurelion Sol(i:8.0)
+[10:02:46] COMPROU: Aurelion Sol (Custo 4 | i:8.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:02:46] COMPROU: Kai'Sa (Custo 3 | i:6.0) | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Rogue | FOCUS: TFT17_Ornn
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:02:46]  ⬆️ SINERGIA: ROGUE nível 1
+[10:02:47] COMPROU: Gnar (Custo 2 | i:4.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Rogue | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:02:48] VENDEU: Gnar (i:4.0)         | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Rogue | FOCUS: TFT17_Ornn
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:02:49] COMPROU: Ezreal (Custo 1 | i:2.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Rogue | FOCUS: TFT17_Ornn
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:02:49] VENDEU: Ezreal (i:2.0)       | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Rogue | FOCUS: TFT17_Ornn
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:02:50] VENDEU: Kai'Sa (i:6.0)       | Rew: +0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:02:50]  ⬇️ SINERGIA: ROGUE nível 0
+[10:02:51] COMPROU: Samira (Custo 3 | i:6.0) | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Ornn
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:02:51]  ⬆️ SINERGIA: SPACE GROOVE nível 1
+[10:02:52] VENDEU: Samira (i:6.0)       | Rew: +0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:02:52]  ⬇️ SINERGIA: SPACE GROOVE nível 0
+
+[10:02:56] --- FIM DO ROUND 4-6 | GOLD: 12 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Fiz|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Bri|F|1*|i:2.0] [Orn|T|2*|i:12.0]  [Twi|C|1*|i:2.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Aur|1*|i:8.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:02:56] 🛒 LOJA: Corki(i:8.0), Xayah(i:8.0), Meepsie(i:4.0), Gragas(i:4.0), Master Yi(i:8.0)
+[10:03:01] COMPROU: Master Yi (Custo 4 | i:8.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 8 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:02] COMPROU: Corki (Custo 4 | i:8.0) | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:03] COMPROU: Xayah (Custo 4 | i:8.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:03] VENDEU: Xayah (i:8.0)        | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:04] COMPROU: Meepsie (Custo 2 | i:4.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Ornn
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:04]  ⬆️ SINERGIA: MEEPLE nível 1
+[10:03:05] COMPROU: Gragas (Custo 2 | i:4.0) | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:05] VENDEU: Gragas (i:4.0)       | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Ornn
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:06] VENDEU: Meepsie (i:4.0)      | Rew: +0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:06]  ⬇️ SINERGIA: MEEPLE nível 0
+[10:03:07] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+
+[10:03:12] --- FIM DO ROUND 4-7 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Fiz|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Bri|F|1*|i:2.0] [Orn|T|2*|i:12.0]  [Twi|C|1*|i:2.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Aur|1*|i:8.0][Mas|1*|i:8.0][Cor|1*|i:8.0]
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:03:12] 🛒 LOJA: Urgot(i:6.0), Viktor(i:6.0), Shen(i:10.0), The Mighty Mech(i:8.0), Nami(i:8.0)
+[10:03:17] COMPROU: Shen (Custo 5 | i:10.0) | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:17]  ⬆️ SINERGIA: BASTION nível 1
+[10:03:17] VENDEU: Master Yi (i:8.0)    | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 5 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:18] COMPROU: The Mighty Mech (Custo 4 | i:8.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:19] VENDEU: The Mighty Mech (i:8.0) | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 5 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:20] COMPROU: Nami (Custo 4 | i:8.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:20]  ⬆️ SINERGIA: SPACE GROOVE nível 1
+[10:03:20] VENDEU: Nami (i:8.0)         | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 5 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:20]  ⬇️ SINERGIA: SPACE GROOVE nível 0
+[10:03:21] COMPROU: Urgot (Custo 3 | i:6.0) | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:22] VENDEU: Urgot (i:6.0)        | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 5 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:22] COMPROU: Viktor (Custo 3 | i:6.0) | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:22]  ⬆️ SINERGIA: CONDUIT nível 1
+
+[10:03:27] --- FIM DO ROUND 5-1 | GOLD: 9 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Fiz|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Bri|F|1*|i:2.0] [Orn|T|2*|i:12.0]  [Twi|C|1*|i:2.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Aur|1*|i:8.0][Vik|1*|i:6.0][Cor|1*|i:8.0]
+[She|1*|i:10.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:03:27] 🛒 LOJA: Rammus(i:8.0), Lissandra(i:2.0), Kindred(i:8.0), Gragas(i:4.0), Fizz(i:6.0)
+[10:03:32] COMPROU: Rammus (Custo 4 | i:8.0) | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 5 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:32]  ⬆️ SINERGIA: MEEPLE nível 1
+[10:03:33] COMPROU: Kindred (Custo 4 | i:8.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:33]  ⬆️ SINERGIA: CHALLENGER nível 1
+[10:03:34] COMPROU: Lissandra (Custo 1 | i:2.0) | Rew: -0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:34] VENDEU: Lissandra (i:2.0)    | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:35] VENDEU: Viktor (i:6.0)       | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:35]  ⬇️ SINERGIA: CONDUIT nível 0
+[10:03:36] COMPROU: Fizz (Custo 3 | i:6.0) | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:36]  ⬆️ SINERGIA: ROGUE nível 1
+[10:03:36] VENDEU: Fizz (i:6.0)         | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:36]  ⬇️ SINERGIA: ROGUE nível 0
+[10:03:37] COMPROU: Gragas (Custo 2 | i:4.0) | Rew: -0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:38] VENDEU: Gragas (i:4.0)       | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +1
+
+[10:03:43] --- FIM DO ROUND 5-2 | GOLD: 11 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Fiz|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Bri|F|1*|i:2.0] [Orn|T|2*|i:12.0]  [Twi|C|1*|i:2.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Aur|1*|i:8.0]   [VAZIO]    [Cor|1*|i:8.0]
+[She|1*|i:10.0][Ram|1*|i:8.0][Kin|1*|i:8.0]
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:03:43] 🛒 LOJA: Nami(i:8.0), Jinx(i:4.0), Corki(i:8.0), Ornn(i:6.0), Briar(i:2.0)
+[10:03:48] COMPROU: Corki (Custo 4 | i:8.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 7 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:48]  ⬆️ SINERGIA: FATEWEAVER nível 1
+[10:03:49] COMPROU: Nami (Custo 4 | i:8.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:49]  ⬆️ SINERGIA: SPACE GROOVE nível 1
+[10:03:50] COMPROU: Ornn (Custo 3 | i:6.0) | Rew: +0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:50] VENDEU: Aurelion Sol (i:8.0) | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:51] COMPROU: Jinx (Custo 2 | i:4.0) | Rew: -0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:52] COMPROU: Briar (Custo 1 | i:2.0) | Rew: -0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:52]  ⬆️ SINERGIA: ANIMA nível 1
+[10:03:52]  ⬆️ SINERGIA: PRIMORDIAN nível 1
+[10:03:52]  ⬆️ SINERGIA: ROGUE nível 1
+[10:03:53] VENDEU: Briar (i:2.0)        | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:53]  ⬇️ SINERGIA: ANIMA nível 0
+[10:03:53]  ⬇️ SINERGIA: PRIMORDIAN nível 0
+[10:03:53]  ⬇️ SINERGIA: ROGUE nível 0
+[10:03:53] VENDEU: Jinx (i:4.0)         | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:54] VENDEU: Kindred (i:8.0)      | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 8 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:54]  ⬇️ SINERGIA: CHALLENGER nível 0
+
+[10:04:00] --- FIM DO ROUND 5-3 | GOLD: 16 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +2 sequência, +1 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Fiz|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Bri|F|1*|i:2.0] [Orn|T|2*|i:12.0]  [Twi|C|1*|i:2.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [Cor|1*|i:8.0][Cor|1*|i:8.0]
+[She|1*|i:10.0][Ram|1*|i:8.0]   [VAZIO]    
+[Nam|1*|i:8.0][Orn|1*|i:6.0]   [VAZIO]    
+----------------------------------
+[10:04:00] 🛒 LOJA: Akali(i:4.0), Zoe(i:4.0), Veigar(i:2.0), Mordekaiser(i:4.0), Jax(i:4.0)
+[10:04:06] COMPROU: Jax (Custo 2 | i:4.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 14 | renda base +5 | juros +0 | sequência +2 | vitória +1
+[10:04:06]  ⬆️ SINERGIA: BASTION nível 2
+[10:04:07] COMPROU: Mordekaiser (Custo 2 | i:4.0) | Rew: -0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 12 | renda base +5 | juros +0 | sequência +2 | vitória +1
+[10:04:07] COMPROU: Zoe (Custo 2 | i:4.0) | Rew: -0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 10 | renda base +5 | juros +0 | sequência +2 | vitória +1
+[10:04:07]  ⬆️ SINERGIA: CONDUIT nível 1
+[10:04:08] VENDEU: Zoe (i:4.0)          | Rew: +0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 12 | renda base +5 | juros +0 | sequência +2 | vitória +1
+[10:04:08]  ⬇️ SINERGIA: CONDUIT nível 0
+[10:04:09] COMPROU: Akali (Custo 2 | i:4.0) | Rew: -0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 10 | renda base +5 | juros +0 | sequência +2 | vitória +1
+[10:04:09] VENDEU: Mordekaiser (i:4.0)  | Rew: +0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 12 | renda base +5 | juros +0 | sequência +2 | vitória +1
+[10:04:10] COMPROU: Veigar (Custo 1 | i:2.0) | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 11 | renda base +5 | juros +0 | sequência +2 | vitória +1
+[10:04:10]  ⬆️ SINERGIA: REPLICATOR nível 1
+[10:04:11] VENDEU: Veigar (i:2.0)       | Rew: +0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 12 | renda base +5 | juros +0 | sequência +2 | vitória +1
+[10:04:11]  ⬇️ SINERGIA: REPLICATOR nível 0
+[10:04:12] VENDEU: Akali (i:4.0)        | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 14 | renda base +5 | juros +0 | sequência +2 | vitória +1
+
+[10:04:17] --- FIM DO ROUND 5-4 | GOLD: 22 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +2 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Fiz|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Bri|F|1*|i:2.0] [Orn|T|2*|i:12.0]  [Twi|C|1*|i:2.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Jax|1*|i:4.0][Cor|1*|i:8.0][Cor|1*|i:8.0]
+[She|1*|i:10.0][Ram|1*|i:8.0]   [VAZIO]    
+[Nam|1*|i:8.0][Orn|1*|i:6.0]   [VAZIO]    
+----------------------------------
+[10:04:17] 🛒 LOJA: Teemo(i:2.0), Blitzcrank(i:10.0), Pantheon(i:4.0), Gwen(i:4.0), Miss Fortune(i:6.0)
+[10:04:23] COMPROU: Blitzcrank (Custo 5 | i:10.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 17 | renda base +5 | juros +1 | sequência +2 | vitória +0
+[10:04:24] COMPROU: Miss Fortune (Custo 3 | i:6.0) | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 14 | renda base +5 | juros +1 | sequência +2 | vitória +0
+[10:04:24]  ⬆️ SINERGIA: CHALLENGER nível 1
+[10:04:24]  ⬆️ SINERGIA: REPLICATOR nível 1
+[10:04:24] VENDEU: Jax (i:4.0)          | Rew: +0.11
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 16 | renda base +5 | juros +1 | sequência +2 | vitória +0
+[10:04:24]  ⬇️ SINERGIA: BASTION nível 1
+[10:04:25] COMPROU: Pantheon (Custo 2 | i:4.0) | Rew: -0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 14 | renda base +5 | juros +1 | sequência +2 | vitória +0
+[10:04:26] VENDEU: Pantheon (i:4.0)     | Rew: +0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 16 | renda base +5 | juros +1 | sequência +2 | vitória +0
+[10:04:26] COMPROU: Gwen (Custo 2 | i:4.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Ornn
+    GOLD: 14 | renda base +5 | juros +1 | sequência +2 | vitória +0
+[10:04:26]  ⬆️ SINERGIA: ROGUE nível 1
+[10:04:26]  ⬆️ SINERGIA: SPACE GROOVE nível 2
+[10:04:27] VENDEU: Gwen (i:4.0)         | Rew: +0.11
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 16 | renda base +5 | juros +1 | sequência +2 | vitória +0
+[10:04:27]  ⬇️ SINERGIA: ROGUE nível 0
+[10:04:27]  ⬇️ SINERGIA: SPACE GROOVE nível 1
+[10:04:28] COMPROU: Teemo (Custo 1 | i:2.0) | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Ornn
+    GOLD: 15 | renda base +5 | juros +1 | sequência +2 | vitória +0
+[10:04:28]  ⬆️ SINERGIA: SPACE GROOVE nível 2
+[10:04:28] VENDEU: Teemo (i:2.0)        | Rew: +0.11
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 16 | renda base +5 | juros +1 | sequência +2 | vitória +0
+[10:04:28]  ⬇️ SINERGIA: SPACE GROOVE nível 1
+
+[10:04:34] --- FIM DO ROUND 5-5 | GOLD: 24 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +2 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Fiz|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Bri|F|1*|i:2.0] [Orn|T|2*|i:12.0]  [Twi|C|1*|i:2.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [Cor|1*|i:8.0][Cor|1*|i:8.0]
+[She|1*|i:10.0][Ram|1*|i:8.0][Bli|1*|i:10.0]
+[Nam|1*|i:8.0][Orn|1*|i:6.0][Mis|1*|i:6.0]
+----------------------------------
+[10:04:34] 🛒 LOJA: Morgana(i:8.0), Samira(i:6.0), Pyke(i:4.0), Kindred(i:8.0), Veigar(i:2.0)
+[10:04:40] COMPROU: Morgana (Custo 4 | i:8.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 20 | renda base +5 | juros +1 | sequência +2 | vitória +0
+[10:04:40]  ⬆️ SINERGIA: CONDUIT nível 1
+[10:04:40] VENDEU: Miss Fortune (i:6.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 23 | renda base +5 | juros +1 | sequência +2 | vitória +0
+[10:04:40]  ⬇️ SINERGIA: CHALLENGER nível 0
+[10:04:40]  ⬇️ SINERGIA: CONDUIT nível 0
+[10:04:40]  ⬇️ SINERGIA: REPLICATOR nível 0
+[10:04:41] COMPROU: Kindred (Custo 4 | i:8.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 19 | renda base +5 | juros +1 | sequência +2 | vitória +0
+[10:04:41]  ⬆️ SINERGIA: CHALLENGER nível 1
+[10:04:42] VENDEU: Morgana (i:8.0)      | Rew: +0.21
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 23 | renda base +5 | juros +1 | sequência +2 | vitória +0
+[10:04:43] COMPROU: Samira (Custo 3 | i:6.0) | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Space Groove | FOCUS: TFT17_Ornn
+    GOLD: 20 | renda base +5 | juros +1 | sequência +2 | vitória +0
+[10:04:43]  ⬆️ SINERGIA: SPACE GROOVE nível 2
+[10:04:43] VENDEU: Samira (i:6.0)       | Rew: +0.11
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 23 | renda base +5 | juros +1 | sequência +2 | vitória +0
+[10:04:43]  ⬇️ SINERGIA: SPACE GROOVE nível 1
+[10:04:44] COMPROU: Pyke (Custo 2 | i:4.0) | Rew: -0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 21 | renda base +5 | juros +1 | sequência +2 | vitória +0
+[10:04:45] VENDEU: Pyke (i:4.0)         | Rew: +0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 23 | renda base +5 | juros +1 | sequência +2 | vitória +0
+[10:04:45] COMPROU: Veigar (Custo 1 | i:2.0) | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 22 | renda base +5 | juros +1 | sequência +2 | vitória +0
+[10:04:45]  ⬆️ SINERGIA: REPLICATOR nível 1
+
+[10:04:51] --- FIM DO ROUND 5-6 | GOLD: 29 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +0 sequência, +0 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Fiz|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Bri|F|1*|i:2.0] [Orn|T|2*|i:12.0]  [Twi|C|1*|i:2.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Vei|1*|i:2.0][Cor|1*|i:8.0][Cor|1*|i:8.0]
+[She|1*|i:10.0][Ram|1*|i:8.0][Bli|1*|i:10.0]
+[Nam|1*|i:8.0][Orn|1*|i:6.0][Kin|1*|i:8.0]
+----------------------------------
+[10:04:51] 🛒 LOJA: Aurora(i:6.0), Pyke(i:4.0), The Mighty Mech(i:8.0), Gragas(i:4.0), Aurora(i:6.0)
+[10:04:57] VENDEU: Veigar (i:2.0)       | Rew: +0.20
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 30 | renda base +5 | juros +2 | sequência +0 | vitória +0
+[10:04:57]  ⬇️ SINERGIA: REPLICATOR nível 0
+[10:04:58] COMPROU: The Mighty Mech (Custo 4 | i:8.0) | Rew: -0.07
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 26 | renda base +5 | juros +2 | sequência +0 | vitória +0
+[10:04:59] VENDEU: The Mighty Mech (i:8.0) | Rew: +0.21
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 30 | renda base +5 | juros +2 | sequência +0 | vitória +0
+[10:04:59] COMPROU: Aurora (Custo 3 | i:6.0) | Rew: -0.08
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 27 | renda base +5 | juros +2 | sequência +0 | vitória +0
+[10:05:00] VENDEU: Aurora (i:6.0)       | Rew: +0.21
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 30 | renda base +5 | juros +2 | sequência +0 | vitória +0
+[10:05:01] COMPROU: Aurora (Custo 3 | i:6.0) | Rew: -0.08
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 27 | renda base +5 | juros +2 | sequência +0 | vitória +0
+[10:05:02] VENDEU: Aurora (i:6.0)       | Rew: +0.21
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 30 | renda base +5 | juros +2 | sequência +0 | vitória +0
+[10:05:02] COMPROU: Gragas (Custo 2 | i:4.0) | Rew: -0.08
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 28 | renda base +5 | juros +2 | sequência +0 | vitória +0
+[10:05:03] VENDEU: Gragas (i:4.0)       | Rew: +0.21
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 30 | renda base +5 | juros +2 | sequência +0 | vitória +0
+
+[10:05:10] --- FIM DO ROUND 5-7 | GOLD: 38 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +3 juros, +0 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Fiz|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]  [Bri|F|1*|i:2.0] [Orn|T|2*|i:12.0]  [Twi|C|1*|i:2.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [Cor|1*|i:8.0][Cor|1*|i:8.0]
+[She|1*|i:10.0][Ram|1*|i:8.0][Bli|1*|i:10.0]
+[Nam|1*|i:8.0][Orn|1*|i:6.0][Kin|1*|i:8.0]
+----------------------------------
+[10:05:10] 🛒 LOJA: Bel'Veth(i:4.0), Zoe(i:4.0), Ornn(i:6.0), Nunu & Willump(i:8.0), Nunu & Willump(i:8.0)
+[10:05:16] COMPROU: Nunu & Willump (Custo 4 | i:8.0) | Rew: +0.01
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 34 | renda base +5 | juros +3 | sequência +0 | vitória +0
+[10:05:16]  ⬆️ SINERGIA: VANGUARD nível 1
+[10:05:17] VENDEU: Nunu & Willump (i:8.0) | Rew: +0.13
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 38 | renda base +5 | juros +3 | sequência +0 | vitória +0
+[10:05:17]  ⬇️ SINERGIA: VANGUARD nível 0
+[10:05:18] COMPROU: Nunu & Willump (Custo 4 | i:8.0) | Rew: +0.01
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 34 | renda base +5 | juros +3 | sequência +0 | vitória +0
+[10:05:18]  ⬆️ SINERGIA: VANGUARD nível 1
+[10:05:18] VENDEU: Nunu & Willump (i:8.0) | Rew: +0.13
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 38 | renda base +5 | juros +3 | sequência +0 | vitória +0
+[10:05:18]  ⬇️ SINERGIA: VANGUARD nível 0
+[10:05:19] COMPROU: Ornn (Custo 3 | i:6.0) | Rew: +0.14
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 35 | renda base +5 | juros +3 | sequência +0 | vitória +0
+[10:05:19]  ⬆️ SINERGIA: BASTION nível 2
+[10:05:19]  ⬆️ SINERGIA: SPACE GROOVE nível 2
+[10:05:20] VENDEU: Kindred (i:8.0)      | Rew: +0.13
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 39 | renda base +5 | juros +3 | sequência +0 | vitória +0
+[10:05:20]  ⬇️ SINERGIA: CHALLENGER nível 0
+[10:05:21] COMPROU: Zoe (Custo 2 | i:4.0) | Rew: -0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 37 | renda base +5 | juros +3 | sequência +0 | vitória +0
+[10:05:21] VENDEU: Zoe (i:4.0)          | Rew: +0.13
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 39 | renda base +5 | juros +3 | sequência +0 | vitória +0
+[10:05:22] COMPROU: Bel'Veth (Custo 2 | i:4.0) | Rew: -0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 37 | renda base +5 | juros +3 | sequência +0 | vitória +0
+[10:05:22]  ⬆️ SINERGIA: CHALLENGER nível 1
+[10:05:22]  ⬆️ SINERGIA: PRIMORDIAN nível 1
+
+[10:05:29] --- FIM DO ROUND 6-1 | GOLD: 37 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +3 juros, +0 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:05:29] 🛒 LOJA: None, None, None, None, None
+[10:05:29]  ⬇️ SINERGIA: BASTION nível 0
+[10:05:29]  ⬇️ SINERGIA: CHALLENGER nível 0
+[10:05:29]  ⬇️ SINERGIA: FATEWEAVER nível 0
+[10:05:29]  ⬇️ SINERGIA: MEEPLE nível 0
+[10:05:29]  ⬇️ SINERGIA: PRIMORDIAN nível 0
+[10:05:29]  ⬇️ SINERGIA: SPACE GROOVE nível 0
+[10:05:35] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 37 | renda base +5 | juros +3 | sequência +0 | vitória +0
+
+[10:05:47] --- FIM DO ROUND 6-2 | GOLD: 37 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +3 juros, +0 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:05:47] 🛒 LOJA: None, None, None, None, None
+[10:05:54] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    GOLD: 37 | renda base +5 | juros +3 | sequência +0 | vitória +0
+
+[10:06:07] --- FIM DO ROUND 6-3 | GOLD: 37 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Ornn
+    RENDA PRÓXIMO ROUND: +5 base, +3 juros, +0 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:06:07] 🛒 LOJA: None, None, None, None, None
+
+========================================
+ GAME OVER - RELATÓRIO FINAL
+========================================

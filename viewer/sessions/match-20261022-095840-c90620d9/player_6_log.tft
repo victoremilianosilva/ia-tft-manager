@@ -1,0 +1,1422 @@
+==========================================================
+TFT AI LOG · JOGADOR 6
+Partida: c90620d9-706b-45f0-a794-fa0db9fc5085
+Seed: 20261016 | Política: determinística
+Checkpoint SHA-256: a21854eacdd9e000c4ff1052298974960ab0deb4b72d0a14139f5507ec4c6cfb
+Impacto (i): custo × estrelas × 2 (contribuição nativa da engine)
+==========================================================
+--- INÍCIO DA PARTIDA · JOGADOR 6 ---
+[09:58:46] MOVE Bench -> Board: Veigar (i:2.0) <-> Vazio | Rew: +0.31
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Veigar
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+[09:58:47] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Veigar
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[09:58:52] --- FIM DO ROUND 1-1 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Veigar
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[09:58:52] 🛒 LOJA: Leona(i:2.0), Lissandra(i:2.0), Pantheon(i:4.0), Rek'Sai(i:2.0), Rek'Sai(i:2.0)
+[09:58:53] COMPROU: Pantheon (Custo 2 | i:4.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_Pantheon
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+[09:58:54] MOVE Bench -> Board: Pantheon (i:4.0) <-> Veigar (i:2.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_Pantheon
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+[09:58:55] MOVE Bench -> Board: Veigar (i:2.0) <-> Vazio | Rew: +0.29
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_Pantheon
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+[09:58:56] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_Pantheon
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+
+[09:58:59] --- FIM DO ROUND 1-2 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_Pantheon
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[09:58:59] 🛒 LOJA: Caitlyn(i:2.0), Lissandra(i:2.0), Teemo(i:2.0), Meepsie(i:4.0), Jinx(i:4.0)
+[09:59:00] COMPROU: Meepsie (Custo 2 | i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pantheon
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+[09:59:01] MOVE Bench -> Board: Meepsie (i:4.0) <-> Veigar (i:2.0) | Rew: -0.21
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_IvernMinion
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+[09:59:02] MOVE Bench -> Board: Veigar (i:2.0) <-> Pantheon (i:4.0) | Rew: +0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_IvernMinion
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+[09:59:03] MOVE Bench -> Board: Pantheon (i:4.0) <-> Meepsie (i:4.0) | Rew: -0.16
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_Pantheon
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+[09:59:03] MOVE Bench -> Board: Meepsie (i:4.0) <-> Veigar (i:2.0) | Rew: -0.29
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_Pantheon
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+[09:59:04] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_Pantheon
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+[09:59:05] MOVE Bench -> Board: Veigar (i:2.0) <-> Vazio | Rew: +0.60
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_Pantheon
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+
+[09:59:06] --- FIM DO ROUND 1-3 | GOLD: 3 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_Pantheon
+    RENDA PRÓXIMO ROUND: +3 base, +0 juros, +0 sequência, +0 vitória (total: +3)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]       [ . ]             [ . ]        [Mee|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[09:59:06] 🛒 LOJA: Jax(i:4.0), Veigar(i:2.0), Veigar(i:2.0), Poppy(i:2.0), Poppy(i:2.0)
+[09:59:07] COMPROU: Jax (Custo 2 | i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Replicator | FOCUS: TFT17_Pantheon
+    GOLD: 1 | renda base +3 | juros +0 | sequência +0 | vitória +0
+[09:59:08] COMPROU: Poppy (Custo 1 | i:2.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pantheon
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+[09:59:08]  ⬆️ SINERGIA: MEEPLE nível 1
+[09:59:09] MOVE Bench -> Board: Poppy (i:2.0) <-> Pantheon (i:4.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_IvernMinion
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+[09:59:10] MOVE Bench -> Board: Pantheon (i:4.0) <-> Meepsie (i:4.0) | Rew: -0.16
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pantheon
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+[09:59:10] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pantheon
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+
+[09:59:13] --- FIM DO ROUND 1-4 | GOLD: 4 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pantheon
+    RENDA PRÓXIMO ROUND: +4 base, +0 juros, +0 sequência, +0 vitória (total: +4)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]       [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+[Jax|1*|i:4.0][Mee|1*|i:4.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[09:59:13] 🛒 LOJA: Akali(i:4.0), Talon(i:2.0), Lulu(i:6.0), Aatrox(i:2.0), Twisted Fate(i:2.0)
+[09:59:14] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pantheon
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+[09:59:15] MOVE Bench -> Board: Meepsie (i:4.0) <-> Poppy (i:2.0) | Rew: +0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_IvernMinion
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+[09:59:15] MOVE Bench -> Board: Poppy (i:2.0) <-> Pantheon (i:4.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_IvernMinion
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+[09:59:16] MOVE Bench -> Board: Pantheon (i:4.0) <-> Meepsie (i:4.0) | Rew: -0.16
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pantheon
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+[09:59:17] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pantheon
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+[09:59:20] MOVE Bench -> Board: Jax (i:4.0) <-> Vazio | Rew: +0.56
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pantheon
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+
+[09:59:20] --- FIM DO ROUND 2-1 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pantheon
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Jax|T|1*|i:4.0]       [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [Mee|1*|i:4.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[09:59:20] 🛒 LOJA: Miss Fortune(i:6.0), Zoe(i:4.0), Gragas(i:4.0), Teemo(i:2.0), Briar(i:2.0)
+[09:59:22] BUY XP                       | Rew: +1.51
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pantheon
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[09:59:22] COMPROU: Gragas (Custo 2 | i:4.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pantheon
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[09:59:23] MOVE Bench -> Board: Meepsie (i:4.0) <-> Pantheon (i:4.0) | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_IvernMinion
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[09:59:25] MOVE Bench -> Board: Pantheon (i:4.0) <-> Poppy (i:2.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_IvernMinion
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[09:59:25] MOVE Bench -> Board: Poppy (i:2.0) <-> Meepsie (i:4.0) | Rew: -0.17
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pantheon
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[09:59:26] MOVE Bench -> Board: Meepsie (i:4.0) <-> Pantheon (i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_IvernMinion
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[09:59:27] MOVE Bench -> Board: Pantheon (i:4.0) <-> Poppy (i:2.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pantheon
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[09:59:27] MOVE Bench -> Board: Gragas (i:4.0) <-> Vazio | Rew: +0.47
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pantheon
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+
+[09:59:28] --- FIM DO ROUND 2-2 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pantheon
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Jax|T|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Mee|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [Pop|1*|i:2.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[09:59:28] 🛒 LOJA: Meepsie(i:4.0), Maokai(i:6.0), Leona(i:2.0), Akali(i:4.0), Ezreal(i:2.0)
+[09:59:30] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Pantheon
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[09:59:30] COMPROU: Maokai (Custo 3 | i:6.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Maokai
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[09:59:30]  ⬆️ SINERGIA: BRAWLER nível 1
+[09:59:31] MOVE Bench -> Board: Poppy (i:2.0) <-> Pantheon (i:4.0) | Rew: -0.24
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Maokai
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[09:59:32] MOVE Bench -> Board: Pantheon (i:4.0) <-> Meepsie (i:4.0) | Rew: -0.16
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Maokai
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[09:59:33] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Maokai
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+
+[09:59:36] --- FIM DO ROUND 2-3 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Maokai
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Jax|T|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+[Mao|1*|i:6.0][Mee|1*|i:4.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[09:59:36] 🛒 LOJA: Maokai(i:6.0), Aatrox(i:2.0), Twisted Fate(i:2.0), Twisted Fate(i:2.0), Briar(i:2.0)
+[09:59:38] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Meeple | FOCUS: TFT17_Maokai
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[09:59:39] COMPROU: Maokai (Custo 3 | i:6.0) | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Maokai
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[09:59:39] MOVE Bench -> Board: Meepsie (i:4.0) <-> Poppy (i:2.0) | Rew: +0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Maokai
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[09:59:40] MOVE Bench -> Board: Poppy (i:2.0) <-> Pantheon (i:4.0) | Rew: -0.24
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Maokai
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[09:59:41] MOVE Bench -> Board: Pantheon (i:4.0) <-> Meepsie (i:4.0) | Rew: +0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Maokai
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[09:59:42] MOVE Bench -> Board: Meepsie (i:4.0) <-> Poppy (i:2.0) | Rew: +0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Maokai
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[09:59:43] MOVE Bench -> Board: Poppy (i:2.0) <-> Pantheon (i:4.0) | Rew: -0.24
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Maokai
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[09:59:44] MOVE Bench -> Board: Pantheon (i:4.0) <-> Jax (i:4.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Maokai
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+
+[09:59:44] --- FIM DO ROUND 2-4 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Maokai
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Pan|T|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Mee|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+[Mao|1*|i:6.0][Jax|1*|i:4.0][Mao|1*|i:6.0]
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[09:59:44] 🛒 LOJA: Leona(i:2.0), Zoe(i:4.0), Pyke(i:4.0), Rek'Sai(i:2.0), Poppy(i:2.0)
+[09:59:46] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Maokai
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[09:59:46] COMPROU: Zoe (Custo 2 | i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Maokai
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[09:59:47] MOVE Bench -> Board: Jax (i:4.0) <-> Poppy (i:2.0) | Rew: -0.11
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Maokai
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[09:59:48] MOVE Bench -> Board: Poppy (i:2.0) <-> Meepsie (i:4.0) | Rew: -0.17
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Maokai
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[09:59:48] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Maokai
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[09:59:52] --- FIM DO ROUND 2-5 | GOLD: 7 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Maokai
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Pan|T|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+[Mao|1*|i:6.0][Mee|1*|i:4.0][Mao|1*|i:6.0]
+[Zoe|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[09:59:52] 🛒 LOJA: Leona(i:2.0), Milio(i:4.0), Gragas(i:4.0), Urgot(i:6.0), Lulu(i:6.0)
+[09:59:54] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Maokai
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[09:59:55] COMPROU: Urgot (Custo 3 | i:6.0) | Rew: +0.07
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[09:59:56] MOVE Bench -> Board: Meepsie (i:4.0) <-> Jax (i:4.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[09:59:56] MOVE Bench -> Board: Jax (i:4.0) <-> Poppy (i:2.0) | Rew: -0.11
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[09:59:57] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+
+[10:00:01] --- FIM DO ROUND 2-6 | GOLD: 8 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +2 sequência, +1 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Mee|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Pan|T|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Jax|T|1*|i:4.0]  [Mao|F|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [Pop|1*|i:2.0][Mao|1*|i:6.0]
+[Zoe|1*|i:4.0][Urg|1*|i:6.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:00:01] 🛒 LOJA: Urgot(i:6.0), Rhaast(i:6.0), Aatrox(i:2.0), Cho'Gath(i:2.0), Gnar(i:4.0)
+[10:00:03] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 4 | renda base +5 | juros +0 | sequência +2 | vitória +1
+[10:00:04] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +2 | vitória +1
+[10:00:05] MOVE Bench -> Board: Poppy (i:2.0) <-> Meepsie (i:4.0) | Rew: -0.21
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +2 | vitória +1
+[10:00:05] MOVE Bench -> Board: Meepsie (i:4.0) <-> Jax (i:4.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +2 | vitória +1
+[10:00:06] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +2 | vitória +1
+
+[10:00:12] --- FIM DO ROUND 2-7 | GOLD: 7 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +2 sequência, +0 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Pan|T|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Mee|T|1*|i:4.0]  [Mao|F|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [Jax|1*|i:4.0][Mao|1*|i:6.0]
+[Zoe|1*|i:4.0][Urg|1*|i:6.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:00:12] 🛒 LOJA: Bel'Veth(i:4.0), Fizz(i:6.0), Jax(i:4.0), Pantheon(i:4.0), Rammus(i:8.0)
+[10:00:14] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 3 | renda base +5 | juros +0 | sequência +2 | vitória +0
+[10:00:15] COMPROU: Fizz (Custo 3 | i:6.0) | Rew: -0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +2 | vitória +0
+[10:00:15] MOVE Bench -> Board: Jax (i:4.0) <-> Poppy (i:2.0) | Rew: -0.11
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +2 | vitória +0
+[10:00:16] VENDEU: Poppy (i:2.0)        | Rew: +0.08
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 1 | renda base +5 | juros +0 | sequência +2 | vitória +0
+[10:00:17] VENDEU: Zoe (i:4.0)          | Rew: +0.10
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 3 | renda base +5 | juros +0 | sequência +2 | vitória +0
+[10:00:17] COMPROU: Bel'Veth (Custo 2 | i:4.0) | Rew: -0.03
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 1 | renda base +5 | juros +0 | sequência +2 | vitória +0
+[10:00:18] VENDEU: Bel'Veth (i:4.0)     | Rew: +0.10
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 3 | renda base +5 | juros +0 | sequência +2 | vitória +0
+[10:00:19] COMPROU: Pantheon (Custo 2 | i:4.0) | Rew: +0.09
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 1 | renda base +5 | juros +0 | sequência +2 | vitória +0
+[10:00:19]  ⬆️ SINERGIA: BRAWLER nível 2
+[10:00:19]  ⬆️ SINERGIA: REPLICATOR nível 1
+[10:00:19] VENDEU: Fizz (i:6.0)         | Rew: +0.09
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 4 | renda base +5 | juros +0 | sequência +2 | vitória +0
+[10:00:19]  ⬇️ SINERGIA: MEEPLE nível 0
+
+[10:00:22] --- FIM DO ROUND 3-1 | GOLD: 9 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Pan|T|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Mee|T|1*|i:4.0]  [Mao|F|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [Pan|1*|i:4.0][Mao|1*|i:6.0]
+   [VAZIO]    [Urg|1*|i:6.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:00:22] 🛒 LOJA: Twisted Fate(i:2.0), Lulu(i:6.0), Nasus(i:2.0), Veigar(i:2.0), Bel'Veth(i:4.0)
+[10:00:25] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:00:26] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:00:27] COMPROU: Twisted Fate (Custo 1 | i:2.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:00:27] MOVE Bench -> Board: Pantheon (i:4.0) <-> Jax (i:4.0) | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:00:28] MOVE Bench -> Board: Jax (i:4.0) <-> Meepsie (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:00:29] MOVE Bench -> Board: Meepsie (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.25
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:00:29] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[10:00:34] --- FIM DO ROUND 3-2 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Mee|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Pan|T|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Jax|T|1*|i:4.0]  [Mao|F|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+[Twi|1*|i:2.0][Pan|1*|i:4.0][Mao|1*|i:6.0]
+   [VAZIO]    [Urg|1*|i:6.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:00:34] 🛒 LOJA: Mordekaiser(i:4.0), Gnar(i:4.0), Lulu(i:6.0), Pyke(i:4.0), Miss Fortune(i:6.0)
+[10:00:36] BUY XP                       | Rew: +1.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:00:37] COMPROU: Mordekaiser (Custo 2 | i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:00:38] MOVE Bench -> Board: Pantheon (i:4.0) <-> Meepsie (i:4.0) | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:00:38] MOVE Bench -> Board: Meepsie (i:4.0) <-> Jax (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:00:39] MOVE Bench -> Board: Jax (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.25
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:00:40] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:00:42] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.49
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+
+[10:00:45] --- FIM DO ROUND 3-3 | GOLD: 7 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Pan|T|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Mee|T|1*|i:4.0]  [Mao|F|1*|i:6.0]  [Twi|C|1*|i:2.0]       [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [Pan|1*|i:4.0][Mao|1*|i:6.0]
+[Mor|1*|i:4.0][Urg|1*|i:6.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:00:45] 🛒 LOJA: Nunu & Willump(i:8.0), Fizz(i:6.0), Morgana(i:8.0), The Mighty Mech(i:8.0), Jax(i:4.0)
+[10:00:48] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:00:48] COMPROU: Fizz (Custo 3 | i:6.0) | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:00:48]  ⬆️ SINERGIA: MEEPLE nível 1
+[10:00:49] MOVE Bench -> Board: Pantheon (i:4.0) <-> Jax (i:4.0) | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:00:50] MOVE Bench -> Board: Jax (i:4.0) <-> Meepsie (i:4.0) | Rew: -0.13
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:00:50] MOVE Bench -> Board: Meepsie (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.24
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:00:51] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+
+[10:00:56] --- FIM DO ROUND 3-4 | GOLD: 6 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Mee|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Pan|T|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Jax|T|1*|i:4.0]  [Mao|F|1*|i:6.0]  [Twi|C|1*|i:2.0]       [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+[Fiz|1*|i:6.0][Pan|1*|i:4.0][Mao|1*|i:6.0]
+[Mor|1*|i:4.0][Urg|1*|i:6.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:00:56] 🛒 LOJA: Viktor(i:6.0), Lulu(i:6.0), Pyke(i:4.0), Ornn(i:6.0), Aurora(i:6.0)
+[10:01:00] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:00] COMPROU: Pyke (Custo 2 | i:4.0) | Rew: -0.03
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:01] MOVE Bench -> Board: Pantheon (i:4.0) <-> Meepsie (i:4.0) | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:02] MOVE Bench -> Board: Meepsie (i:4.0) <-> Jax (i:4.0) | Rew: +0.04
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:02] MOVE Bench -> Board: Jax (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.25
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:03] MOVE Bench -> Board: Pantheon (i:4.0) <-> Meepsie (i:4.0) | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:04] MOVE Bench -> Board: Meepsie (i:4.0) <-> Jax (i:4.0) | Rew: +0.04
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:04] MOVE Bench -> Board: Jax (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.25
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:05] MOVE Bench -> Board: Pantheon (i:4.0) <-> Meepsie (i:4.0) | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[10:01:08] --- FIM DO ROUND 3-5 | GOLD: 7 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Jax|T|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Pan|T|1*|i:4.0]  [Mao|F|1*|i:6.0]  [Twi|C|1*|i:2.0]       [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+[Fiz|1*|i:6.0][Mee|1*|i:4.0][Mao|1*|i:6.0]
+[Mor|1*|i:4.0][Urg|1*|i:6.0][Pyk|1*|i:4.0]
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:01:08] 🛒 LOJA: Jinx(i:4.0), Gnar(i:4.0), Aurora(i:6.0), Aurora(i:6.0), Miss Fortune(i:6.0)
+[10:01:12] COMPROU: Miss Fortune (Custo 3 | i:6.0) | Rew: -0.04
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:01:12] COMPROU: Aurora (Custo 3 | i:6.0) | Rew: -0.04
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:01:12]  ⬆️ SINERGIA: VOYAGER nível 1
+[10:01:13] VENDEU: Mordekaiser (i:4.0)  | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:01:14] COMPROU: Aurora (Custo 3 | i:6.0) | Rew: -0.04
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:01:14] MOVE Bench -> Board: Pyke (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.29
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:01:15] VENDEU: Meepsie (i:4.0)      | Rew: +0.08
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:01:15]  ⬇️ SINERGIA: MEEPLE nível 0
+[10:01:16] COMPROU: Gnar (Custo 2 | i:4.0) | Rew: +0.07
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:01:16]  ⬆️ SINERGIA: MEEPLE nível 1
+[10:01:16] VENDEU: Pantheon (i:4.0)     | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:01:16]  ⬇️ SINERGIA: REPLICATOR nível 0
+[10:01:17] COMPROU: Jinx (Custo 2 | i:4.0) | Rew: -0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:01:17]  ⬆️ SINERGIA: ANIMA nível 1
+
+[10:01:21] --- FIM DO ROUND 3-6 | GOLD: 5 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Jax|T|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Pan|T|1*|i:4.0]  [Mao|F|1*|i:6.0]  [Twi|C|1*|i:2.0]       [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+[Fiz|1*|i:6.0][Gna|1*|i:4.0][Mao|1*|i:6.0]
+[Aur|1*|i:6.0][Urg|1*|i:6.0][Jin|1*|i:4.0]
+[Mis|1*|i:6.0][Aur|1*|i:6.0]   [VAZIO]    
+----------------------------------
+[10:01:21] 🛒 LOJA: Jhin(i:10.0), Jinx(i:4.0), Meepsie(i:4.0), Morgana(i:8.0), Teemo(i:2.0)
+[10:01:24] COMPROU: Jhin (Custo 5 | i:10.0) | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:01:25] VENDEU: Jinx (i:4.0)         | Rew: +0.13
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:01:25]  ⬇️ SINERGIA: ANIMA nível 0
+[10:01:26] COMPROU: Meepsie (Custo 2 | i:4.0) | Rew: +0.06
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:01:26] VENDEU: Meepsie (i:4.0)      | Rew: +0.11
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:01:27] COMPROU: Jinx (Custo 2 | i:4.0) | Rew: -0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:01:27]  ⬆️ SINERGIA: ANIMA nível 1
+[10:01:28] VENDEU: Jinx (i:4.0)         | Rew: +0.13
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:01:28]  ⬇️ SINERGIA: ANIMA nível 0
+[10:01:28] COMPROU: Teemo (Custo 1 | i:2.0) | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:01:29] VENDEU: Teemo (i:2.0)        | Rew: +0.13
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:01:30] VENDEU: Miss Fortune (i:6.0) | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[10:01:33] --- FIM DO ROUND 3-7 | GOLD: 10 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Jax|T|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Pan|T|1*|i:4.0]  [Mao|F|1*|i:6.0]  [Twi|C|1*|i:2.0]       [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+[Fiz|1*|i:6.0][Gna|1*|i:4.0][Mao|1*|i:6.0]
+[Aur|1*|i:6.0][Urg|1*|i:6.0]   [VAZIO]    
+   [VAZIO]    [Aur|1*|i:6.0][Jhi|1*|i:10.0]
+----------------------------------
+[10:01:33] 🛒 LOJA: Bel'Veth(i:4.0), Gwen(i:4.0), Maokai(i:6.0), Ezreal(i:2.0), Lulu(i:6.0)
+[10:01:37] BUY XP                       | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 6 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:01:38] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:01:38] COMPROU: Bel'Veth (Custo 2 | i:4.0) | Rew: -0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:01:39] MOVE Bench -> Board: Gnar (i:4.0) <-> Pyke (i:4.0) | Rew: +0.08
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:01:40] MOVE Bench -> Board: Pyke (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.24
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:01:40] MOVE Bench -> Board: Pantheon (i:4.0) <-> Gnar (i:4.0) | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:01:41] MOVE Bench -> Board: Gnar (i:4.0) <-> Pyke (i:4.0) | Rew: +0.08
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:01:42] MOVE Bench -> Board: Pyke (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.25
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:01:42] MOVE Bench -> Board: Pantheon (i:4.0) <-> Jax (i:4.0) | Rew: +0.08
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[10:01:46] --- FIM DO ROUND 4-1 | GOLD: 6 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Pan|T|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Gna|F|1*|i:4.0]  [Mao|F|1*|i:6.0]  [Twi|C|1*|i:2.0]       [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+[Fiz|1*|i:6.0][Jax|1*|i:4.0][Mao|1*|i:6.0]
+[Aur|1*|i:6.0][Urg|1*|i:6.0][Bel|1*|i:4.0]
+   [VAZIO]    [Aur|1*|i:6.0][Jhi|1*|i:10.0]
+----------------------------------
+[10:01:46] 🛒 LOJA: Tahm Kench(i:8.0), Gwen(i:4.0), Ornn(i:6.0), Ornn(i:6.0), Urgot(i:6.0)
+[10:01:50] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:51] COMPROU: Gwen (Custo 2 | i:4.0) | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:52] MOVE Bench -> Board: Gwen (i:4.0) <-> Pyke (i:4.0) | Rew: -0.00
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:52] MOVE Bench -> Board: Pyke (i:4.0) <-> Gnar (i:4.0) | Rew: -0.20
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:01:53] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[10:01:59] --- FIM DO ROUND 4-2 | GOLD: 6 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Gwe|A|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Pan|T|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Pyk|F|1*|i:4.0]  [Mao|F|1*|i:6.0]  [Twi|C|1*|i:2.0]       [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+[Fiz|1*|i:6.0][Jax|1*|i:4.0][Mao|1*|i:6.0]
+[Aur|1*|i:6.0][Urg|1*|i:6.0][Bel|1*|i:4.0]
+[Gna|1*|i:4.0][Aur|1*|i:6.0][Jhi|1*|i:10.0]
+----------------------------------
+[10:01:59] 🛒 LOJA: Gragas(i:4.0), Kindred(i:8.0), Mordekaiser(i:4.0), Caitlyn(i:2.0), Bel'Veth(i:4.0)
+[10:02:04] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:02:04] MOVE Bench -> Board: Gnar (i:4.0) <-> Gwen (i:4.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:02:05] MOVE Bench -> Board: Gwen (i:4.0) <-> Pyke (i:4.0) | Rew: -0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:02:06] MOVE Bench -> Board: Pyke (i:4.0) <-> Gnar (i:4.0) | Rew: -0.20
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:02:06] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+
+[10:02:13] --- FIM DO ROUND 4-3 | GOLD: 7 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Pan|T|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Gwe|A|1*|i:4.0]  [Mao|F|1*|i:6.0]  [Twi|C|1*|i:2.0]       [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+[Fiz|1*|i:6.0][Jax|1*|i:4.0][Mao|1*|i:6.0]
+[Aur|1*|i:6.0][Urg|1*|i:6.0][Bel|1*|i:4.0]
+[Gna|1*|i:4.0][Aur|1*|i:6.0][Jhi|1*|i:10.0]
+----------------------------------
+[10:02:13] 🛒 LOJA: Twisted Fate(i:2.0), Rhaast(i:6.0), Diana(i:6.0), Caitlyn(i:2.0), Akali(i:4.0)
+[10:02:18] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:02:18] MOVE Bench -> Board: Gnar (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:02:19] MOVE Bench -> Board: Pantheon (i:4.0) <-> Pyke (i:4.0) | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:02:20] MOVE Bench -> Board: Pyke (i:4.0) <-> Gwen (i:4.0) | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:02:20] MOVE Bench -> Board: Gwen (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.27
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:02:21] MOVE Bench -> Board: Pantheon (i:4.0) <-> Pyke (i:4.0) | Rew: +0.09
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:02:22] MOVE Bench -> Board: Pyke (i:4.0) <-> Gwen (i:4.0) | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:02:23] MOVE Bench -> Board: Gwen (i:4.0) <-> Gnar (i:4.0) | Rew: -0.04
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:02:23] MOVE Bench -> Board: Gnar (i:4.0) <-> Pyke (i:4.0) | Rew: +0.08
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[10:02:27] --- FIM DO ROUND 4-4 | GOLD: 8 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Gna|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Gwe|A|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Pan|T|1*|i:4.0]  [Mao|F|1*|i:6.0]  [Twi|C|1*|i:2.0]       [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+[Fiz|1*|i:6.0][Jax|1*|i:4.0][Mao|1*|i:6.0]
+[Aur|1*|i:6.0][Urg|1*|i:6.0][Bel|1*|i:4.0]
+[Pyk|1*|i:4.0][Aur|1*|i:6.0][Jhi|1*|i:10.0]
+----------------------------------
+[10:02:27] 🛒 LOJA: Pantheon(i:4.0), Meepsie(i:4.0), Milio(i:4.0), Leona(i:2.0), Illaoi(i:6.0)
+[10:02:32] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 4 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:02:32] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:02:33] MOVE Bench -> Board: Pyke (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.24
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:02:34] MOVE Bench -> Board: Pantheon (i:4.0) <-> Gnar (i:4.0) | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:02:35] MOVE Bench -> Board: Gnar (i:4.0) <-> Pyke (i:4.0) | Rew: +0.08
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:02:35] MOVE Bench -> Board: Pyke (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.25
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:02:36] MOVE Bench -> Board: Pantheon (i:4.0) <-> Twisted Fate (i:2.0) | Rew: +0.03
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:02:37] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Pyke (i:4.0) | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:02:37] MOVE Bench -> Board: Pyke (i:4.0) <-> Gnar (i:4.0) | Rew: -0.20
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[10:02:42] --- FIM DO ROUND 4-5 | GOLD: 6 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Gwe|A|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Pyk|F|1*|i:4.0]  [Mao|F|1*|i:6.0]  [Pan|T|1*|i:4.0]       [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+[Fiz|1*|i:6.0][Jax|1*|i:4.0][Mao|1*|i:6.0]
+[Aur|1*|i:6.0][Urg|1*|i:6.0][Bel|1*|i:4.0]
+[Gna|1*|i:4.0][Aur|1*|i:6.0][Jhi|1*|i:10.0]
+----------------------------------
+[10:02:42] 🛒 LOJA: Fizz(i:6.0), Veigar(i:2.0), Riven(i:8.0), The Mighty Mech(i:8.0), Milio(i:4.0)
+[10:02:46] VENDEU: Jax (i:4.0)          | Rew: +0.13
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 8 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:02:46] COMPROU: The Mighty Mech (Custo 4 | i:8.0) | Rew: +0.03
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 4 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:02:47] VENDEU: Bel'Veth (i:4.0)     | Rew: +0.13
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 6 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:02:48] COMPROU: Riven (Custo 4 | i:8.0) | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:02:48]  ⬆️ SINERGIA: ROGUE nível 1
+[10:02:49] VENDEU: Gnar (i:4.0)         | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 4 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:02:49]  ⬇️ SINERGIA: BRAWLER nível 1
+[10:02:49]  ⬇️ SINERGIA: MEEPLE nível 0
+[10:02:49] COMPROU: Fizz (Custo 3 | i:6.0) | Rew: +0.04
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:02:49]  ⬆️ SINERGIA: MEEPLE nível 1
+[10:02:50] VENDEU: Fizz (i:6.0)         | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 4 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:02:50]  ⬇️ SINERGIA: MEEPLE nível 0
+[10:02:51] COMPROU: Milio (Custo 2 | i:4.0) | Rew: -0.00
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[10:02:51]  ⬆️ SINERGIA: TIMEBREAKER nível 1
+[10:02:52] MOVE Bench -> Board: Milio (i:4.0) <-> Vazio | Rew: +0.50
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+
+[10:02:56] --- FIM DO ROUND 4-6 | GOLD: 9 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Gwe|A|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Pyk|F|1*|i:4.0]  [Mao|F|1*|i:6.0]  [Pan|T|1*|i:4.0]  [Mil|C|1*|i:4.0] 
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [The|1*|i:8.0][Mao|1*|i:6.0]
+[Aur|1*|i:6.0][Urg|1*|i:6.0][Riv|1*|i:8.0]
+[Fiz|1*|i:6.0][Aur|1*|i:6.0][Jhi|1*|i:10.0]
+----------------------------------
+[10:02:56] 🛒 LOJA: Master Yi(i:8.0), LeBlanc(i:8.0), Tahm Kench(i:8.0), Ornn(i:6.0), Illaoi(i:6.0)
+[10:03:01] COMPROU: Tahm Kench (Custo 4 | i:8.0) | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 5 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:01]  ⬆️ SINERGIA: BRAWLER nível 2
+[10:03:02] VENDEU: Fizz (i:6.0)         | Rew: +0.12
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 8 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:02]  ⬇️ SINERGIA: ROGUE nível 0
+[10:03:03] COMPROU: LeBlanc (Custo 4 | i:8.0) | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:03] VENDEU: Aurora (i:6.0)       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 7 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:04] COMPROU: Master Yi (Custo 4 | i:8.0) | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:04]  ⬆️ SINERGIA: PSIONIC nível 1
+[10:03:05] VENDEU: Aurora (i:6.0)       | Rew: +0.12
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 6 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:05]  ⬇️ SINERGIA: VOYAGER nível 0
+[10:03:05] COMPROU: Ornn (Custo 3 | i:6.0) | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:06] VENDEU: Ornn (i:6.0)         | Rew: +0.13
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 6 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[10:03:07] COMPROU: Illaoi (Custo 3 | i:6.0) | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+
+[10:03:12] --- FIM DO ROUND 4-7 | GOLD: 9 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Gwe|A|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Pyk|F|1*|i:4.0]  [Mao|F|1*|i:6.0]  [Pan|T|1*|i:4.0]  [Mil|C|1*|i:4.0] 
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+[Tah|1*|i:8.0][The|1*|i:8.0][Mao|1*|i:6.0]
+[Mas|1*|i:8.0][Urg|1*|i:6.0][Riv|1*|i:8.0]
+[LeB|1*|i:8.0][Ill|1*|i:6.0][Jhi|1*|i:10.0]
+----------------------------------
+[10:03:12] 🛒 LOJA: Kindred(i:8.0), The Mighty Mech(i:8.0), Gragas(i:4.0), Fizz(i:6.0), Fiora(i:10.0)
+[10:03:17] VENDEU: Illaoi (i:6.0)       | Rew: +0.21
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Jhin
+    GOLD: 12 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:17] COMPROU: Fiora (Custo 5 | i:10.0) | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 7 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:17]  ⬆️ SINERGIA: MARAUDER nível 1
+[10:03:18] VENDEU: Urgot (i:6.0)        | Rew: +0.19
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 10 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:18]  ⬇️ SINERGIA: BRAWLER nível 1
+[10:03:18]  ⬇️ SINERGIA: MARAUDER nível 0
+[10:03:19] COMPROU: The Mighty Mech (Custo 4 | i:8.0) | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 6 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:19]  ⬆️ SINERGIA: VOYAGER nível 1
+[10:03:20] VENDEU: Maokai (i:6.0)       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 9 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:20] COMPROU: Kindred (Custo 4 | i:8.0) | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 5 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:21] VENDEU: LeBlanc (i:8.0)      | Rew: +0.13
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 9 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:22] COMPROU: Fizz (Custo 3 | i:6.0) | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 6 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:22]  ⬆️ SINERGIA: ROGUE nível 1
+[10:03:22] VENDEU: Fizz (i:6.0)         | Rew: +0.12
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 9 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:22]  ⬇️ SINERGIA: ROGUE nível 0
+
+[10:03:27] --- FIM DO ROUND 5-1 | GOLD: 14 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Gwe|A|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Pyk|F|1*|i:4.0]  [Mao|F|1*|i:6.0]  [Pan|T|1*|i:4.0]  [Mil|C|1*|i:4.0] 
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+[Tah|1*|i:8.0][The|1*|i:8.0][Kin|1*|i:8.0]
+[Mas|1*|i:8.0][The|1*|i:8.0][Riv|1*|i:8.0]
+   [VAZIO]    [Fio|1*|i:10.0][Jhi|1*|i:10.0]
+----------------------------------
+[10:03:27] 🛒 LOJA: Fizz(i:6.0), Aurelion Sol(i:8.0), Diana(i:6.0), Illaoi(i:6.0), Meepsie(i:4.0)
+[10:03:32] COMPROU: Aurelion Sol (Custo 4 | i:8.0) | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 10 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:03:32]  ⬆️ SINERGIA: MECHA nível 1
+[10:03:33] VENDEU: Aurelion Sol (i:8.0) | Rew: +0.13
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 14 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:03:33]  ⬇️ SINERGIA: MECHA nível 0
+[10:03:34] COMPROU: Diana (Custo 3 | i:6.0) | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 11 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:03:34] BUY XP                       | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 7 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:03:35] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:03:36] VENDEU: Diana (i:6.0)        | Rew: +0.13
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 6 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:03:36] COMPROU: Illaoi (Custo 3 | i:6.0) | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:03:37] VENDEU: Illaoi (i:6.0)       | Rew: +0.13
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 6 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:03:38] COMPROU: Fizz (Custo 3 | i:6.0) | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[10:03:38]  ⬆️ SINERGIA: ROGUE nível 1
+
+[10:03:43] --- FIM DO ROUND 5-2 | GOLD: 9 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Gwe|A|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Pyk|F|1*|i:4.0]  [Mao|F|1*|i:6.0]  [Pan|T|1*|i:4.0]  [Mil|C|1*|i:4.0] 
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+[Tah|1*|i:8.0][The|1*|i:8.0][Kin|1*|i:8.0]
+[Mas|1*|i:8.0][The|1*|i:8.0][Riv|1*|i:8.0]
+[Fiz|1*|i:6.0][Fio|1*|i:10.0][Jhi|1*|i:10.0]
+----------------------------------
+[10:03:43] 🛒 LOJA: Riven(i:8.0), Nunu & Willump(i:8.0), Mordekaiser(i:4.0), Samira(i:6.0), Karma(i:8.0)
+[10:03:48] VENDEU: Fizz (i:6.0)         | Rew: +0.20
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 12 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:48]  ⬇️ SINERGIA: ROGUE nível 0
+[10:03:49] COMPROU: Nunu & Willump (Custo 4 | i:8.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 8 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:50] VENDEU: Nunu & Willump (i:8.0) | Rew: +0.21
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 12 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:50] COMPROU: Riven (Custo 4 | i:8.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 8 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:50]  ⬆️ SINERGIA: ROGUE nível 1
+[10:03:51] VENDEU: Master Yi (i:8.0)    | Rew: +0.21
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 12 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:51]  ⬇️ SINERGIA: PSIONIC nível 0
+[10:03:52] COMPROU: Karma (Custo 4 | i:8.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 8 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:53] VENDEU: Kindred (i:8.0)      | Rew: +0.21
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 12 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:53] COMPROU: Samira (Custo 3 | i:6.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 9 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[10:03:54] VENDEU: Samira (i:6.0)       | Rew: +0.21
+    STRATEGY: STABILIZE | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 12 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[10:04:00] --- FIM DO ROUND 5-3 | GOLD: 19 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +1 sequência, +0 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Gwe|A|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Pyk|F|1*|i:4.0]  [Mao|F|1*|i:6.0]  [Pan|T|1*|i:4.0]  [Mil|C|1*|i:4.0] 
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+[Tah|1*|i:8.0][The|1*|i:8.0]   [VAZIO]    
+[Kar|1*|i:8.0][The|1*|i:8.0][Riv|1*|i:8.0]
+[Riv|1*|i:8.0][Fio|1*|i:10.0][Jhi|1*|i:10.0]
+----------------------------------
+[10:04:00] 🛒 LOJA: Morgana(i:8.0), Lulu(i:6.0), Talon(i:2.0), Bard(i:10.0), Bel'Veth(i:4.0)
+[10:04:06] COMPROU: Bard (Custo 5 | i:10.0) | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 14 | renda base +5 | juros +1 | sequência +1 | vitória +0
+[10:04:07] VENDEU: The Mighty Mech (i:8.0) | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 18 | renda base +5 | juros +1 | sequência +1 | vitória +0
+[10:04:07] COMPROU: Morgana (Custo 4 | i:8.0) | Rew: +0.01
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 14 | renda base +5 | juros +1 | sequência +1 | vitória +0
+[10:04:08] VENDEU: Morgana (i:8.0)      | Rew: +0.13
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 18 | renda base +5 | juros +1 | sequência +1 | vitória +0
+[10:04:09] COMPROU: Lulu (Custo 3 | i:6.0) | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 15 | renda base +5 | juros +1 | sequência +1 | vitória +0
+[10:04:09]  ⬆️ SINERGIA: REPLICATOR nível 1
+[10:04:09] VENDEU: Lulu (i:6.0)         | Rew: +0.12
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 18 | renda base +5 | juros +1 | sequência +1 | vitória +0
+[10:04:09]  ⬇️ SINERGIA: REPLICATOR nível 0
+[10:04:10] COMPROU: Bel'Veth (Custo 2 | i:4.0) | Rew: -0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 16 | renda base +5 | juros +1 | sequência +1 | vitória +0
+[10:04:11] VENDEU: Bel'Veth (i:4.0)     | Rew: +0.13
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 18 | renda base +5 | juros +1 | sequência +1 | vitória +0
+[10:04:12] COMPROU: Talon (Custo 1 | i:2.0) | Rew: +0.03
+    STRATEGY: ALL_IN | COMP DIRECTION: Rogue | FOCUS: TFT17_Fiora
+    GOLD: 17 | renda base +5 | juros +1 | sequência +1 | vitória +0
+
+[10:04:17] --- FIM DO ROUND 5-4 | GOLD: 24 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Rogue | FOCUS: TFT17_Fiora
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +1 sequência, +0 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]  [Gwe|A|1*|i:4.0]  [Gra|T|1*|i:4.0]  [Pyk|F|1*|i:4.0]  [Mao|F|1*|i:6.0]  [Pan|T|1*|i:4.0]  [Mil|C|1*|i:4.0] 
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+[Tah|1*|i:8.0][Tal|1*|i:2.0][Bar|1*|i:10.0]
+[Kar|1*|i:8.0][The|1*|i:8.0][Riv|1*|i:8.0]
+[Riv|1*|i:8.0][Fio|1*|i:10.0][Jhi|1*|i:10.0]
+----------------------------------
+[10:04:17] 🛒 LOJA: Pantheon(i:4.0), Miss Fortune(i:6.0), Aurora(i:6.0), Nami(i:8.0), Viktor(i:6.0)
+[10:04:23] VENDEU: Talon (i:2.0)        | Rew: +0.11
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 25 | renda base +5 | juros +1 | sequência +1 | vitória +0
+[10:04:24] COMPROU: Nami (Custo 4 | i:8.0) | Rew: +0.01
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 21 | renda base +5 | juros +1 | sequência +1 | vitória +0
+[10:04:24]  ⬆️ SINERGIA: REPLICATOR nível 1
+[10:04:24] VENDEU: The Mighty Mech (i:8.0) | Rew: +0.13
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 25 | renda base +5 | juros +1 | sequência +1 | vitória +0
+[10:04:24]  ⬇️ SINERGIA: VOYAGER nível 0
+[10:04:25] COMPROU: Miss Fortune (Custo 3 | i:6.0) | Rew: +0.04
+    STRATEGY: ALL_IN | COMP DIRECTION: Replicator | FOCUS: TFT17_Fiora
+    GOLD: 22 | renda base +5 | juros +1 | sequência +1 | vitória +0
+[10:04:26] VENDEU: Miss Fortune (i:6.0) | Rew: +0.11
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 25 | renda base +5 | juros +1 | sequência +1 | vitória +0
+[10:04:26] COMPROU: Aurora (Custo 3 | i:6.0) | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 22 | renda base +5 | juros +1 | sequência +1 | vitória +0
+[10:04:26]  ⬆️ SINERGIA: VOYAGER nível 1
+[10:04:27] VENDEU: Aurora (i:6.0)       | Rew: +0.13
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 25 | renda base +5 | juros +1 | sequência +1 | vitória +0
+[10:04:27]  ⬇️ SINERGIA: VOYAGER nível 0
+[10:04:28] COMPROU: Viktor (Custo 3 | i:6.0) | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 22 | renda base +5 | juros +1 | sequência +1 | vitória +0
+[10:04:28]  ⬆️ SINERGIA: PSIONIC nível 1
+[10:04:28] VENDEU: Viktor (i:6.0)       | Rew: +0.13
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 25 | renda base +5 | juros +1 | sequência +1 | vitória +0
+[10:04:28]  ⬇️ SINERGIA: PSIONIC nível 0
+
+[10:04:34] --- FIM DO ROUND 5-5 | GOLD: 25 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +1 sequência, +0 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:04:34] 🛒 LOJA: None, None, None, None, None
+[10:04:34]  ⬇️ SINERGIA: BRAWLER nível 0
+[10:04:34]  ⬇️ SINERGIA: REPLICATOR nível 0
+[10:04:34]  ⬇️ SINERGIA: ROGUE nível 0
+[10:04:34]  ⬇️ SINERGIA: TIMEBREAKER nível 0
+[10:04:40] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 25 | renda base +5 | juros +1 | sequência +1 | vitória +0
+
+[10:04:51] --- FIM DO ROUND 5-6 | GOLD: 25 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +1 sequência, +0 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:04:51] 🛒 LOJA: None, None, None, None, None
+[10:04:57] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 25 | renda base +5 | juros +1 | sequência +1 | vitória +0
+
+[10:05:10] --- FIM DO ROUND 5-7 | GOLD: 25 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +1 sequência, +0 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:05:10] 🛒 LOJA: None, None, None, None, None
+[10:05:16] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 25 | renda base +5 | juros +1 | sequência +1 | vitória +0
+
+[10:05:29] --- FIM DO ROUND 6-1 | GOLD: 25 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +1 sequência, +0 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:05:29] 🛒 LOJA: None, None, None, None, None
+[10:05:35] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 25 | renda base +5 | juros +1 | sequência +1 | vitória +0
+
+[10:05:47] --- FIM DO ROUND 6-2 | GOLD: 25 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +1 sequência, +0 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:05:47] 🛒 LOJA: None, None, None, None, None
+[10:05:54] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    GOLD: 25 | renda base +5 | juros +1 | sequência +1 | vitória +0
+
+[10:06:07] --- FIM DO ROUND 6-3 | GOLD: 25 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Fiora
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +1 sequência, +0 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[10:06:07] 🛒 LOJA: None, None, None, None, None
+
+========================================
+ GAME OVER - RELATÓRIO FINAL
+========================================

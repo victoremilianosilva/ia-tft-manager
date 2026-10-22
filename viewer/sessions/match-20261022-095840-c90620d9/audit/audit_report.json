@@ -1,0 +1,4433 @@
+{
+  "source": "viewer\\sessions\\match-20261022-095840-c90620d9",
+  "log_files": [
+    "viewer\\sessions\\match-20261022-095840-c90620d9\\player_1_log.json",
+    "viewer\\sessions\\match-20261022-095840-c90620d9\\player_2_log.json",
+    "viewer\\sessions\\match-20261022-095840-c90620d9\\player_3_log.json",
+    "viewer\\sessions\\match-20261022-095840-c90620d9\\player_4_log.json",
+    "viewer\\sessions\\match-20261022-095840-c90620d9\\player_5_log.json",
+    "viewer\\sessions\\match-20261022-095840-c90620d9\\player_6_log.json",
+    "viewer\\sessions\\match-20261022-095840-c90620d9\\player_7_log.json",
+    "viewer\\sessions\\match-20261022-095840-c90620d9\\player_8_log.json",
+    "viewer\\sessions\\match-20261022-095840-c90620d9\\player_1_log.tft",
+    "viewer\\sessions\\match-20261022-095840-c90620d9\\player_2_log.tft",
+    "viewer\\sessions\\match-20261022-095840-c90620d9\\player_3_log.tft",
+    "viewer\\sessions\\match-20261022-095840-c90620d9\\player_4_log.tft",
+    "viewer\\sessions\\match-20261022-095840-c90620d9\\player_5_log.tft",
+    "viewer\\sessions\\match-20261022-095840-c90620d9\\player_6_log.tft",
+    "viewer\\sessions\\match-20261022-095840-c90620d9\\player_7_log.tft",
+    "viewer\\sessions\\match-20261022-095840-c90620d9\\player_8_log.tft"
+  ],
+  "players_seen": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8"
+  ],
+  "entries_read": 4528,
+  "diagnostics_missing": 0,
+  "issues": [
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 1",
+      "round": "2-1",
+      "step": 45,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 1,
+          "round": "1-1",
+          "comp": "Space Groove",
+          "focus": "TFT17_Nasus",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 20,
+          "round": "1-3",
+          "comp": "Space Groove",
+          "focus": "TFT17_Pyke",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 39,
+          "round": "2-1",
+          "comp": "Meeple",
+          "focus": "TFT17_Pyke",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 45,
+          "round": "2-1",
+          "comp": "N.O.V.A.",
+          "focus": "TFT17_Pyke",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 1",
+      "round": "2-3",
+      "step": 59,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 1,
+          "round": "1-1",
+          "comp": "Space Groove",
+          "focus": "TFT17_Nasus",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 20,
+          "round": "1-3",
+          "comp": "Space Groove",
+          "focus": "TFT17_Pyke",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 39,
+          "round": "2-1",
+          "comp": "Meeple",
+          "focus": "TFT17_Pyke",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 45,
+          "round": "2-1",
+          "comp": "N.O.V.A.",
+          "focus": "TFT17_Pyke",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 51,
+          "round": "2-2",
+          "comp": "Primordian",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 59,
+          "round": "2-3",
+          "comp": "N.O.V.A.",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 1",
+      "round": "2-4",
+      "step": 73,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 39,
+          "round": "2-1",
+          "comp": "Meeple",
+          "focus": "TFT17_Pyke",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 45,
+          "round": "2-1",
+          "comp": "N.O.V.A.",
+          "focus": "TFT17_Pyke",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 51,
+          "round": "2-2",
+          "comp": "Primordian",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 59,
+          "round": "2-3",
+          "comp": "N.O.V.A.",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 60,
+          "round": "2-3",
+          "comp": "Vanguard",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 64,
+          "round": "2-3",
+          "comp": "Bastion",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 67,
+          "round": "2-4",
+          "comp": "Bastion",
+          "focus": "TFT17_Urgot",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 73,
+          "round": "2-4",
+          "comp": "Marauder",
+          "focus": "TFT17_Urgot",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 1",
+      "round": "2-6",
+      "step": 85,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 45,
+          "round": "2-1",
+          "comp": "N.O.V.A.",
+          "focus": "TFT17_Pyke",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 51,
+          "round": "2-2",
+          "comp": "Primordian",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 59,
+          "round": "2-3",
+          "comp": "N.O.V.A.",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 60,
+          "round": "2-3",
+          "comp": "Vanguard",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 64,
+          "round": "2-3",
+          "comp": "Bastion",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 67,
+          "round": "2-4",
+          "comp": "Bastion",
+          "focus": "TFT17_Urgot",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 73,
+          "round": "2-4",
+          "comp": "Marauder",
+          "focus": "TFT17_Urgot",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 85,
+          "round": "2-6",
+          "comp": "Bastion",
+          "focus": "TFT17_Urgot",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 1",
+      "round": "3-1",
+      "step": 104,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 51,
+          "round": "2-2",
+          "comp": "Primordian",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 59,
+          "round": "2-3",
+          "comp": "N.O.V.A.",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 60,
+          "round": "2-3",
+          "comp": "Vanguard",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 64,
+          "round": "2-3",
+          "comp": "Bastion",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 67,
+          "round": "2-4",
+          "comp": "Bastion",
+          "focus": "TFT17_Urgot",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 73,
+          "round": "2-4",
+          "comp": "Marauder",
+          "focus": "TFT17_Urgot",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 85,
+          "round": "2-6",
+          "comp": "Bastion",
+          "focus": "TFT17_Urgot",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 104,
+          "round": "3-1",
+          "comp": "Bastion",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 1",
+      "round": "3-7",
+      "step": 163,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 59,
+          "round": "2-3",
+          "comp": "N.O.V.A.",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 60,
+          "round": "2-3",
+          "comp": "Vanguard",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 64,
+          "round": "2-3",
+          "comp": "Bastion",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 67,
+          "round": "2-4",
+          "comp": "Bastion",
+          "focus": "TFT17_Urgot",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 73,
+          "round": "2-4",
+          "comp": "Marauder",
+          "focus": "TFT17_Urgot",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 85,
+          "round": "2-6",
+          "comp": "Bastion",
+          "focus": "TFT17_Urgot",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 104,
+          "round": "3-1",
+          "comp": "Bastion",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 163,
+          "round": "3-7",
+          "comp": "Bastion",
+          "focus": "TFT17_Urgot",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 1",
+      "round": "4-6",
+      "step": 223,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 73,
+          "round": "2-4",
+          "comp": "Marauder",
+          "focus": "TFT17_Urgot",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 85,
+          "round": "2-6",
+          "comp": "Bastion",
+          "focus": "TFT17_Urgot",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 104,
+          "round": "3-1",
+          "comp": "Bastion",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 163,
+          "round": "3-7",
+          "comp": "Bastion",
+          "focus": "TFT17_Urgot",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 164,
+          "round": "3-7",
+          "comp": "Bastion",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 200,
+          "round": "4-3",
+          "comp": "Bastion",
+          "focus": "TFT17_Ornn",
+          "strategy": "ECON"
+        },
+        {
+          "step": 201,
+          "round": "4-3",
+          "comp": "Bastion",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 223,
+          "round": "4-6",
+          "comp": "Rogue",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 1",
+      "round": "4-7",
+      "step": 236,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 164,
+          "round": "3-7",
+          "comp": "Bastion",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 200,
+          "round": "4-3",
+          "comp": "Bastion",
+          "focus": "TFT17_Ornn",
+          "strategy": "ECON"
+        },
+        {
+          "step": 201,
+          "round": "4-3",
+          "comp": "Bastion",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 223,
+          "round": "4-6",
+          "comp": "Rogue",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 228,
+          "round": "4-6",
+          "comp": "Bastion",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 229,
+          "round": "4-6",
+          "comp": "Space Groove",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 230,
+          "round": "4-6",
+          "comp": "Bastion",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 236,
+          "round": "4-7",
+          "comp": "Meeple",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 1",
+      "round": "5-5",
+      "step": 287,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 201,
+          "round": "4-3",
+          "comp": "Bastion",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 223,
+          "round": "4-6",
+          "comp": "Rogue",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 228,
+          "round": "4-6",
+          "comp": "Bastion",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 229,
+          "round": "4-6",
+          "comp": "Space Groove",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 230,
+          "round": "4-6",
+          "comp": "Bastion",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 236,
+          "round": "4-7",
+          "comp": "Meeple",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 239,
+          "round": "4-7",
+          "comp": "Bastion",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 287,
+          "round": "5-5",
+          "comp": "Space Groove",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 1",
+      "round": "5-6",
+      "step": 296,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 230,
+          "round": "4-6",
+          "comp": "Bastion",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 236,
+          "round": "4-7",
+          "comp": "Meeple",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 239,
+          "round": "4-7",
+          "comp": "Bastion",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 287,
+          "round": "5-5",
+          "comp": "Space Groove",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 288,
+          "round": "5-5",
+          "comp": "Bastion",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 289,
+          "round": "5-5",
+          "comp": "Space Groove",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 290,
+          "round": "5-5",
+          "comp": "Bastion",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 296,
+          "round": "5-6",
+          "comp": "Space Groove",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 2",
+      "round": "1-4",
+      "step": 29,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 1,
+          "round": "1-1",
+          "comp": "Dark Star",
+          "focus": "TFT17_Chogath",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 12,
+          "round": "1-2",
+          "comp": "Arbiter",
+          "focus": "TFT17_Leona",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 13,
+          "round": "1-2",
+          "comp": "Dark Star",
+          "focus": "TFT17_Chogath",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 16,
+          "round": "1-2",
+          "comp": "Arbiter",
+          "focus": "TFT17_Leona",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 20,
+          "round": "1-3",
+          "comp": "Arbiter",
+          "focus": "TFT17_Milio",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 22,
+          "round": "1-3",
+          "comp": "Dark Star",
+          "focus": "TFT17_Milio",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 29,
+          "round": "1-4",
+          "comp": "Timebreaker",
+          "focus": "TFT17_Milio",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 2",
+      "round": "2-3",
+      "step": 57,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 12,
+          "round": "1-2",
+          "comp": "Arbiter",
+          "focus": "TFT17_Leona",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 13,
+          "round": "1-2",
+          "comp": "Dark Star",
+          "focus": "TFT17_Chogath",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 16,
+          "round": "1-2",
+          "comp": "Arbiter",
+          "focus": "TFT17_Leona",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 20,
+          "round": "1-3",
+          "comp": "Arbiter",
+          "focus": "TFT17_Milio",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 22,
+          "round": "1-3",
+          "comp": "Dark Star",
+          "focus": "TFT17_Milio",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 29,
+          "round": "1-4",
+          "comp": "Timebreaker",
+          "focus": "TFT17_Milio",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 30,
+          "round": "1-4",
+          "comp": "Timebreaker",
+          "focus": "TFT17_Pantheon",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 57,
+          "round": "2-3",
+          "comp": "Timebreaker",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 2",
+      "round": "2-6",
+      "step": 83,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 16,
+          "round": "1-2",
+          "comp": "Arbiter",
+          "focus": "TFT17_Leona",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 20,
+          "round": "1-3",
+          "comp": "Arbiter",
+          "focus": "TFT17_Milio",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 22,
+          "round": "1-3",
+          "comp": "Dark Star",
+          "focus": "TFT17_Milio",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 29,
+          "round": "1-4",
+          "comp": "Timebreaker",
+          "focus": "TFT17_Milio",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 30,
+          "round": "1-4",
+          "comp": "Timebreaker",
+          "focus": "TFT17_Pantheon",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 57,
+          "round": "2-3",
+          "comp": "Timebreaker",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 63,
+          "round": "2-3",
+          "comp": "Space Groove",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 83,
+          "round": "2-6",
+          "comp": "Space Groove",
+          "focus": "TFT17_MasterYi",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 2",
+      "round": "2-7",
+      "step": 97,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 30,
+          "round": "1-4",
+          "comp": "Timebreaker",
+          "focus": "TFT17_Pantheon",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 57,
+          "round": "2-3",
+          "comp": "Timebreaker",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 63,
+          "round": "2-3",
+          "comp": "Space Groove",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 83,
+          "round": "2-6",
+          "comp": "Space Groove",
+          "focus": "TFT17_MasterYi",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 89,
+          "round": "2-6",
+          "comp": "Replicator",
+          "focus": "TFT17_MasterYi",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 90,
+          "round": "2-6",
+          "comp": "Space Groove",
+          "focus": "TFT17_MasterYi",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 91,
+          "round": "2-6",
+          "comp": "Space Groove",
+          "focus": "TFT17_MasterYi",
+          "strategy": "ECON"
+        },
+        {
+          "step": 97,
+          "round": "2-7",
+          "comp": "Timebreaker",
+          "focus": "TFT17_MasterYi",
+          "strategy": "ECON"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 2",
+      "round": "3-2",
+      "step": 114,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 57,
+          "round": "2-3",
+          "comp": "Timebreaker",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 63,
+          "round": "2-3",
+          "comp": "Space Groove",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 83,
+          "round": "2-6",
+          "comp": "Space Groove",
+          "focus": "TFT17_MasterYi",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 89,
+          "round": "2-6",
+          "comp": "Replicator",
+          "focus": "TFT17_MasterYi",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 90,
+          "round": "2-6",
+          "comp": "Space Groove",
+          "focus": "TFT17_MasterYi",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 91,
+          "round": "2-6",
+          "comp": "Space Groove",
+          "focus": "TFT17_MasterYi",
+          "strategy": "ECON"
+        },
+        {
+          "step": 97,
+          "round": "2-7",
+          "comp": "Timebreaker",
+          "focus": "TFT17_MasterYi",
+          "strategy": "ECON"
+        },
+        {
+          "step": 114,
+          "round": "3-2",
+          "comp": "Shepherd",
+          "focus": "TFT17_MasterYi",
+          "strategy": "ECON"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 2",
+      "round": "3-3",
+      "step": 123,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 63,
+          "round": "2-3",
+          "comp": "Space Groove",
+          "focus": "TFT17_Ornn",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 83,
+          "round": "2-6",
+          "comp": "Space Groove",
+          "focus": "TFT17_MasterYi",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 89,
+          "round": "2-6",
+          "comp": "Replicator",
+          "focus": "TFT17_MasterYi",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 90,
+          "round": "2-6",
+          "comp": "Space Groove",
+          "focus": "TFT17_MasterYi",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 91,
+          "round": "2-6",
+          "comp": "Space Groove",
+          "focus": "TFT17_MasterYi",
+          "strategy": "ECON"
+        },
+        {
+          "step": 97,
+          "round": "2-7",
+          "comp": "Timebreaker",
+          "focus": "TFT17_MasterYi",
+          "strategy": "ECON"
+        },
+        {
+          "step": 114,
+          "round": "3-2",
+          "comp": "Shepherd",
+          "focus": "TFT17_MasterYi",
+          "strategy": "ECON"
+        },
+        {
+          "step": 123,
+          "round": "3-3",
+          "comp": "Replicator",
+          "focus": "TFT17_MasterYi",
+          "strategy": "ECON"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 2",
+      "round": "3-4",
+      "step": 132,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 97,
+          "round": "2-7",
+          "comp": "Timebreaker",
+          "focus": "TFT17_MasterYi",
+          "strategy": "ECON"
+        },
+        {
+          "step": 114,
+          "round": "3-2",
+          "comp": "Shepherd",
+          "focus": "TFT17_MasterYi",
+          "strategy": "ECON"
+        },
+        {
+          "step": 123,
+          "round": "3-3",
+          "comp": "Replicator",
+          "focus": "TFT17_MasterYi",
+          "strategy": "ECON"
+        },
+        {
+          "step": 124,
+          "round": "3-3",
+          "comp": "Shepherd",
+          "focus": "TFT17_MasterYi",
+          "strategy": "ECON"
+        },
+        {
+          "step": 127,
+          "round": "3-3",
+          "comp": "Replicator",
+          "focus": "TFT17_MasterYi",
+          "strategy": "ECON"
+        },
+        {
+          "step": 128,
+          "round": "3-3",
+          "comp": "Timebreaker",
+          "focus": "TFT17_MasterYi",
+          "strategy": "ECON"
+        },
+        {
+          "step": 130,
+          "round": "3-3",
+          "comp": "Replicator",
+          "focus": "TFT17_MasterYi",
+          "strategy": "ECON"
+        },
+        {
+          "step": 132,
+          "round": "3-4",
+          "comp": "Space Groove",
+          "focus": "TFT17_Pantheon",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 2",
+      "round": "4-2",
+      "step": 191,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 128,
+          "round": "3-3",
+          "comp": "Timebreaker",
+          "focus": "TFT17_MasterYi",
+          "strategy": "ECON"
+        },
+        {
+          "step": 130,
+          "round": "3-3",
+          "comp": "Replicator",
+          "focus": "TFT17_MasterYi",
+          "strategy": "ECON"
+        },
+        {
+          "step": 132,
+          "round": "3-4",
+          "comp": "Space Groove",
+          "focus": "TFT17_Pantheon",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 134,
+          "round": "3-4",
+          "comp": "Replicator",
+          "focus": "TFT17_Pantheon",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 137,
+          "round": "3-4",
+          "comp": "Brawler",
+          "focus": "TFT17_Pantheon",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 138,
+          "round": "3-4",
+          "comp": "Replicator",
+          "focus": "TFT17_Pantheon",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 140,
+          "round": "3-4",
+          "comp": "Replicator",
+          "focus": "TFT17_Pantheon",
+          "strategy": "ECON"
+        },
+        {
+          "step": 191,
+          "round": "4-2",
+          "comp": "Replicator",
+          "focus": "TFT17_Pantheon",
+          "strategy": "WINSTREAK"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 2",
+      "round": "4-5",
+      "step": 221,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 132,
+          "round": "3-4",
+          "comp": "Space Groove",
+          "focus": "TFT17_Pantheon",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 134,
+          "round": "3-4",
+          "comp": "Replicator",
+          "focus": "TFT17_Pantheon",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 137,
+          "round": "3-4",
+          "comp": "Brawler",
+          "focus": "TFT17_Pantheon",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 138,
+          "round": "3-4",
+          "comp": "Replicator",
+          "focus": "TFT17_Pantheon",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 140,
+          "round": "3-4",
+          "comp": "Replicator",
+          "focus": "TFT17_Pantheon",
+          "strategy": "ECON"
+        },
+        {
+          "step": 191,
+          "round": "4-2",
+          "comp": "Replicator",
+          "focus": "TFT17_Pantheon",
+          "strategy": "WINSTREAK"
+        },
+        {
+          "step": 192,
+          "round": "4-3",
+          "comp": "Replicator",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "WINSTREAK"
+        },
+        {
+          "step": 221,
+          "round": "4-5",
+          "comp": "Replicator",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ECON"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 2",
+      "round": "6-1",
+      "step": 315,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 134,
+          "round": "3-4",
+          "comp": "Replicator",
+          "focus": "TFT17_Pantheon",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 137,
+          "round": "3-4",
+          "comp": "Brawler",
+          "focus": "TFT17_Pantheon",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 138,
+          "round": "3-4",
+          "comp": "Replicator",
+          "focus": "TFT17_Pantheon",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 140,
+          "round": "3-4",
+          "comp": "Replicator",
+          "focus": "TFT17_Pantheon",
+          "strategy": "ECON"
+        },
+        {
+          "step": 191,
+          "round": "4-2",
+          "comp": "Replicator",
+          "focus": "TFT17_Pantheon",
+          "strategy": "WINSTREAK"
+        },
+        {
+          "step": 192,
+          "round": "4-3",
+          "comp": "Replicator",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "WINSTREAK"
+        },
+        {
+          "step": 221,
+          "round": "4-5",
+          "comp": "Replicator",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ECON"
+        },
+        {
+          "step": 315,
+          "round": "6-1",
+          "comp": "Conduit",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ECON"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 3",
+      "round": "2-2",
+      "step": 49,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 1,
+          "round": "1-1",
+          "comp": "Anima",
+          "focus": "TFT17_Briar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 20,
+          "round": "1-3",
+          "comp": "Bastion",
+          "focus": "TFT17_Jax",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 31,
+          "round": "1-4",
+          "comp": "Bastion",
+          "focus": "TFT17_Pyke",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 33,
+          "round": "1-4",
+          "comp": "Bastion",
+          "focus": "TFT17_Jax",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 34,
+          "round": "1-4",
+          "comp": "Bastion",
+          "focus": "TFT17_Pyke",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 41,
+          "round": "2-1",
+          "comp": "Bastion",
+          "focus": "TFT17_Jax",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 49,
+          "round": "2-2",
+          "comp": "Space Groove",
+          "focus": "TFT17_Jax",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 3",
+      "round": "2-5",
+      "step": 79,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 49,
+          "round": "2-2",
+          "comp": "Space Groove",
+          "focus": "TFT17_Jax",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 50,
+          "round": "2-2",
+          "comp": "Space Groove",
+          "focus": "TFT17_Pyke",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 51,
+          "round": "2-2",
+          "comp": "Space Groove",
+          "focus": "TFT17_Jax",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 53,
+          "round": "2-2",
+          "comp": "Space Groove",
+          "focus": "TFT17_Pyke",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 54,
+          "round": "2-2",
+          "comp": "Space Groove",
+          "focus": "TFT17_Jax",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 58,
+          "round": "2-3",
+          "comp": "Bastion",
+          "focus": "TFT17_Jax",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 67,
+          "round": "2-4",
+          "comp": "Bastion",
+          "focus": "TFT17_Diana",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 79,
+          "round": "2-5",
+          "comp": "Primordian",
+          "focus": "TFT17_Diana",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 3",
+      "round": "3-1",
+      "step": 107,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 50,
+          "round": "2-2",
+          "comp": "Space Groove",
+          "focus": "TFT17_Pyke",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 51,
+          "round": "2-2",
+          "comp": "Space Groove",
+          "focus": "TFT17_Jax",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 53,
+          "round": "2-2",
+          "comp": "Space Groove",
+          "focus": "TFT17_Pyke",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 54,
+          "round": "2-2",
+          "comp": "Space Groove",
+          "focus": "TFT17_Jax",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 58,
+          "round": "2-3",
+          "comp": "Bastion",
+          "focus": "TFT17_Jax",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 67,
+          "round": "2-4",
+          "comp": "Bastion",
+          "focus": "TFT17_Diana",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 79,
+          "round": "2-5",
+          "comp": "Primordian",
+          "focus": "TFT17_Diana",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 107,
+          "round": "3-1",
+          "comp": "Primordian",
+          "focus": "TFT17_Jax",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 3",
+      "round": "3-3",
+      "step": 126,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 51,
+          "round": "2-2",
+          "comp": "Space Groove",
+          "focus": "TFT17_Jax",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 53,
+          "round": "2-2",
+          "comp": "Space Groove",
+          "focus": "TFT17_Pyke",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 54,
+          "round": "2-2",
+          "comp": "Space Groove",
+          "focus": "TFT17_Jax",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 58,
+          "round": "2-3",
+          "comp": "Bastion",
+          "focus": "TFT17_Jax",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 67,
+          "round": "2-4",
+          "comp": "Bastion",
+          "focus": "TFT17_Diana",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 79,
+          "round": "2-5",
+          "comp": "Primordian",
+          "focus": "TFT17_Diana",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 107,
+          "round": "3-1",
+          "comp": "Primordian",
+          "focus": "TFT17_Jax",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 126,
+          "round": "3-3",
+          "comp": "Primordian",
+          "focus": "TFT17_Jax",
+          "strategy": "ECON"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 3",
+      "round": "4-4",
+      "step": 204,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 53,
+          "round": "2-2",
+          "comp": "Space Groove",
+          "focus": "TFT17_Pyke",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 54,
+          "round": "2-2",
+          "comp": "Space Groove",
+          "focus": "TFT17_Jax",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 58,
+          "round": "2-3",
+          "comp": "Bastion",
+          "focus": "TFT17_Jax",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 67,
+          "round": "2-4",
+          "comp": "Bastion",
+          "focus": "TFT17_Diana",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 79,
+          "round": "2-5",
+          "comp": "Primordian",
+          "focus": "TFT17_Diana",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 107,
+          "round": "3-1",
+          "comp": "Primordian",
+          "focus": "TFT17_Jax",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 126,
+          "round": "3-3",
+          "comp": "Primordian",
+          "focus": "TFT17_Jax",
+          "strategy": "ECON"
+        },
+        {
+          "step": 204,
+          "round": "4-4",
+          "comp": "Space Groove",
+          "focus": "TFT17_Jax",
+          "strategy": "ECON"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 3",
+      "round": "4-6",
+      "step": 224,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 58,
+          "round": "2-3",
+          "comp": "Bastion",
+          "focus": "TFT17_Jax",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 67,
+          "round": "2-4",
+          "comp": "Bastion",
+          "focus": "TFT17_Diana",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 79,
+          "round": "2-5",
+          "comp": "Primordian",
+          "focus": "TFT17_Diana",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 107,
+          "round": "3-1",
+          "comp": "Primordian",
+          "focus": "TFT17_Jax",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 126,
+          "round": "3-3",
+          "comp": "Primordian",
+          "focus": "TFT17_Jax",
+          "strategy": "ECON"
+        },
+        {
+          "step": 204,
+          "round": "4-4",
+          "comp": "Space Groove",
+          "focus": "TFT17_Jax",
+          "strategy": "ECON"
+        },
+        {
+          "step": 205,
+          "round": "4-4",
+          "comp": "Primordian",
+          "focus": "TFT17_Jax",
+          "strategy": "ECON"
+        },
+        {
+          "step": 224,
+          "round": "4-6",
+          "comp": "Primordian",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 3",
+      "round": "5-1",
+      "step": 246,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 79,
+          "round": "2-5",
+          "comp": "Primordian",
+          "focus": "TFT17_Diana",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 107,
+          "round": "3-1",
+          "comp": "Primordian",
+          "focus": "TFT17_Jax",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 126,
+          "round": "3-3",
+          "comp": "Primordian",
+          "focus": "TFT17_Jax",
+          "strategy": "ECON"
+        },
+        {
+          "step": 204,
+          "round": "4-4",
+          "comp": "Space Groove",
+          "focus": "TFT17_Jax",
+          "strategy": "ECON"
+        },
+        {
+          "step": 205,
+          "round": "4-4",
+          "comp": "Primordian",
+          "focus": "TFT17_Jax",
+          "strategy": "ECON"
+        },
+        {
+          "step": 224,
+          "round": "4-6",
+          "comp": "Primordian",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 225,
+          "round": "4-6",
+          "comp": "Primordian",
+          "focus": "TFT17_Belveth",
+          "strategy": "ECON"
+        },
+        {
+          "step": 246,
+          "round": "5-1",
+          "comp": "Vanguard",
+          "focus": "TFT17_Belveth",
+          "strategy": "ECON"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 3",
+      "round": "5-2",
+      "step": 256,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 204,
+          "round": "4-4",
+          "comp": "Space Groove",
+          "focus": "TFT17_Jax",
+          "strategy": "ECON"
+        },
+        {
+          "step": 205,
+          "round": "4-4",
+          "comp": "Primordian",
+          "focus": "TFT17_Jax",
+          "strategy": "ECON"
+        },
+        {
+          "step": 224,
+          "round": "4-6",
+          "comp": "Primordian",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 225,
+          "round": "4-6",
+          "comp": "Primordian",
+          "focus": "TFT17_Belveth",
+          "strategy": "ECON"
+        },
+        {
+          "step": 246,
+          "round": "5-1",
+          "comp": "Vanguard",
+          "focus": "TFT17_Belveth",
+          "strategy": "ECON"
+        },
+        {
+          "step": 251,
+          "round": "5-1",
+          "comp": "Vanguard",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 253,
+          "round": "5-2",
+          "comp": "Challenger",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 256,
+          "round": "5-2",
+          "comp": "Vanguard",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 3",
+      "round": "5-4",
+      "step": 278,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 205,
+          "round": "4-4",
+          "comp": "Primordian",
+          "focus": "TFT17_Jax",
+          "strategy": "ECON"
+        },
+        {
+          "step": 224,
+          "round": "4-6",
+          "comp": "Primordian",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 225,
+          "round": "4-6",
+          "comp": "Primordian",
+          "focus": "TFT17_Belveth",
+          "strategy": "ECON"
+        },
+        {
+          "step": 246,
+          "round": "5-1",
+          "comp": "Vanguard",
+          "focus": "TFT17_Belveth",
+          "strategy": "ECON"
+        },
+        {
+          "step": 251,
+          "round": "5-1",
+          "comp": "Vanguard",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 253,
+          "round": "5-2",
+          "comp": "Challenger",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 256,
+          "round": "5-2",
+          "comp": "Vanguard",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 278,
+          "round": "5-4",
+          "comp": "Challenger",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 3",
+      "round": "5-5",
+      "step": 287,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 251,
+          "round": "5-1",
+          "comp": "Vanguard",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 253,
+          "round": "5-2",
+          "comp": "Challenger",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 256,
+          "round": "5-2",
+          "comp": "Vanguard",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 278,
+          "round": "5-4",
+          "comp": "Challenger",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 282,
+          "round": "5-5",
+          "comp": "Psionic",
+          "focus": "TFT17_Sona",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 283,
+          "round": "5-5",
+          "comp": "Challenger",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 284,
+          "round": "5-5",
+          "comp": "Psionic",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 287,
+          "round": "5-5",
+          "comp": "Challenger",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 4",
+      "round": "1-3",
+      "step": 20,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 1,
+          "round": "1-1",
+          "comp": "Stargazer",
+          "focus": "TFT17_TwistedFate",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 12,
+          "round": "1-2",
+          "comp": "Meeple",
+          "focus": "TFT17_Poppy",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 14,
+          "round": "1-2",
+          "comp": "Space Groove",
+          "focus": "TFT17_Teemo",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 20,
+          "round": "1-3",
+          "comp": "Space Groove",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 4",
+      "round": "1-4",
+      "step": 29,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 1,
+          "round": "1-1",
+          "comp": "Stargazer",
+          "focus": "TFT17_TwistedFate",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 12,
+          "round": "1-2",
+          "comp": "Meeple",
+          "focus": "TFT17_Poppy",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 14,
+          "round": "1-2",
+          "comp": "Space Groove",
+          "focus": "TFT17_Teemo",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 20,
+          "round": "1-3",
+          "comp": "Space Groove",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 21,
+          "round": "1-3",
+          "comp": "Primordian",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 29,
+          "round": "1-4",
+          "comp": "Shepherd",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 4",
+      "round": "2-1",
+      "step": 39,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 21,
+          "round": "1-3",
+          "comp": "Primordian",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 29,
+          "round": "1-4",
+          "comp": "Shepherd",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 30,
+          "round": "1-4",
+          "comp": "Meeple",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 31,
+          "round": "1-4",
+          "comp": "Meeple",
+          "focus": "TFT17_IvernMinion",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 33,
+          "round": "1-4",
+          "comp": "Meeple",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 34,
+          "round": "1-4",
+          "comp": "Meeple",
+          "focus": "TFT17_IvernMinion",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 35,
+          "round": "1-4",
+          "comp": "Meeple",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 39,
+          "round": "2-1",
+          "comp": "Meeple",
+          "focus": "TFT17_IvernMinion",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 4",
+      "round": "4-5",
+      "step": 216,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 126,
+          "round": "3-3",
+          "comp": "Bastion",
+          "focus": "TFT17_Poppy",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 140,
+          "round": "3-4",
+          "comp": "Bastion",
+          "focus": "TFT17_Poppy",
+          "strategy": "ECON"
+        },
+        {
+          "step": 143,
+          "round": "3-5",
+          "comp": "Bastion",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 150,
+          "round": "3-5",
+          "comp": "Bastion",
+          "focus": "TFT17_Belveth",
+          "strategy": "ECON"
+        },
+        {
+          "step": 151,
+          "round": "3-5",
+          "comp": "Bastion",
+          "focus": "TFT17_Belveth",
+          "strategy": "WINSTREAK"
+        },
+        {
+          "step": 154,
+          "round": "3-6",
+          "comp": "Meeple",
+          "focus": "TFT17_Belveth",
+          "strategy": "WINSTREAK"
+        },
+        {
+          "step": 215,
+          "round": "4-5",
+          "comp": "Meeple",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "WINSTREAK"
+        },
+        {
+          "step": 216,
+          "round": "4-5",
+          "comp": "Brawler",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "WINSTREAK"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 4",
+      "round": "5-1",
+      "step": 245,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 143,
+          "round": "3-5",
+          "comp": "Bastion",
+          "focus": "TFT17_Belveth",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 150,
+          "round": "3-5",
+          "comp": "Bastion",
+          "focus": "TFT17_Belveth",
+          "strategy": "ECON"
+        },
+        {
+          "step": 151,
+          "round": "3-5",
+          "comp": "Bastion",
+          "focus": "TFT17_Belveth",
+          "strategy": "WINSTREAK"
+        },
+        {
+          "step": 154,
+          "round": "3-6",
+          "comp": "Meeple",
+          "focus": "TFT17_Belveth",
+          "strategy": "WINSTREAK"
+        },
+        {
+          "step": 215,
+          "round": "4-5",
+          "comp": "Meeple",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "WINSTREAK"
+        },
+        {
+          "step": 216,
+          "round": "4-5",
+          "comp": "Brawler",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "WINSTREAK"
+        },
+        {
+          "step": 221,
+          "round": "4-5",
+          "comp": "Brawler",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ECON"
+        },
+        {
+          "step": 245,
+          "round": "5-1",
+          "comp": "Space Groove",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ECON"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 4",
+      "round": "5-2",
+      "step": 254,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 150,
+          "round": "3-5",
+          "comp": "Bastion",
+          "focus": "TFT17_Belveth",
+          "strategy": "ECON"
+        },
+        {
+          "step": 151,
+          "round": "3-5",
+          "comp": "Bastion",
+          "focus": "TFT17_Belveth",
+          "strategy": "WINSTREAK"
+        },
+        {
+          "step": 154,
+          "round": "3-6",
+          "comp": "Meeple",
+          "focus": "TFT17_Belveth",
+          "strategy": "WINSTREAK"
+        },
+        {
+          "step": 215,
+          "round": "4-5",
+          "comp": "Meeple",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "WINSTREAK"
+        },
+        {
+          "step": 216,
+          "round": "4-5",
+          "comp": "Brawler",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "WINSTREAK"
+        },
+        {
+          "step": 221,
+          "round": "4-5",
+          "comp": "Brawler",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ECON"
+        },
+        {
+          "step": 245,
+          "round": "5-1",
+          "comp": "Space Groove",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ECON"
+        },
+        {
+          "step": 254,
+          "round": "5-2",
+          "comp": "Brawler",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ECON"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 4",
+      "round": "5-3",
+      "step": 263,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 215,
+          "round": "4-5",
+          "comp": "Meeple",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "WINSTREAK"
+        },
+        {
+          "step": 216,
+          "round": "4-5",
+          "comp": "Brawler",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "WINSTREAK"
+        },
+        {
+          "step": 221,
+          "round": "4-5",
+          "comp": "Brawler",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ECON"
+        },
+        {
+          "step": 245,
+          "round": "5-1",
+          "comp": "Space Groove",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ECON"
+        },
+        {
+          "step": 254,
+          "round": "5-2",
+          "comp": "Brawler",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ECON"
+        },
+        {
+          "step": 255,
+          "round": "5-2",
+          "comp": "Space Groove",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ECON"
+        },
+        {
+          "step": 260,
+          "round": "5-2",
+          "comp": "Shepherd",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ECON"
+        },
+        {
+          "step": 263,
+          "round": "5-3",
+          "comp": "Space Groove",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ECON"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 4",
+      "round": "5-4",
+      "step": 276,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 255,
+          "round": "5-2",
+          "comp": "Space Groove",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ECON"
+        },
+        {
+          "step": 260,
+          "round": "5-2",
+          "comp": "Shepherd",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ECON"
+        },
+        {
+          "step": 263,
+          "round": "5-3",
+          "comp": "Space Groove",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ECON"
+        },
+        {
+          "step": 264,
+          "round": "5-3",
+          "comp": "Shepherd",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ECON"
+        },
+        {
+          "step": 269,
+          "round": "5-3",
+          "comp": "Rogue",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ECON"
+        },
+        {
+          "step": 270,
+          "round": "5-3",
+          "comp": "Shepherd",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ECON"
+        },
+        {
+          "step": 271,
+          "round": "5-3",
+          "comp": "Shepherd",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 276,
+          "round": "5-4",
+          "comp": "Space Groove",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 4",
+      "round": "5-5",
+      "step": 285,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 269,
+          "round": "5-3",
+          "comp": "Rogue",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ECON"
+        },
+        {
+          "step": 270,
+          "round": "5-3",
+          "comp": "Shepherd",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ECON"
+        },
+        {
+          "step": 271,
+          "round": "5-3",
+          "comp": "Shepherd",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 276,
+          "round": "5-4",
+          "comp": "Space Groove",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 277,
+          "round": "5-4",
+          "comp": "Shepherd",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 278,
+          "round": "5-4",
+          "comp": "Challenger",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 279,
+          "round": "5-4",
+          "comp": "Shepherd",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 285,
+          "round": "5-5",
+          "comp": "Challenger",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 4",
+      "round": "5-7",
+      "step": 303,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 270,
+          "round": "5-3",
+          "comp": "Shepherd",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ECON"
+        },
+        {
+          "step": 271,
+          "round": "5-3",
+          "comp": "Shepherd",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 276,
+          "round": "5-4",
+          "comp": "Space Groove",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 277,
+          "round": "5-4",
+          "comp": "Shepherd",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 278,
+          "round": "5-4",
+          "comp": "Challenger",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 279,
+          "round": "5-4",
+          "comp": "Shepherd",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 285,
+          "round": "5-5",
+          "comp": "Challenger",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 303,
+          "round": "5-7",
+          "comp": "Rogue",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 4",
+      "round": "6-2",
+      "step": 331,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 271,
+          "round": "5-3",
+          "comp": "Shepherd",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 276,
+          "round": "5-4",
+          "comp": "Space Groove",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 277,
+          "round": "5-4",
+          "comp": "Shepherd",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 278,
+          "round": "5-4",
+          "comp": "Challenger",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 279,
+          "round": "5-4",
+          "comp": "Shepherd",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 285,
+          "round": "5-5",
+          "comp": "Challenger",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 303,
+          "round": "5-7",
+          "comp": "Rogue",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 331,
+          "round": "6-2",
+          "comp": "Rogue",
+          "focus": "TFT17_MissFortune_TraitClone",
+          "strategy": "ALL_IN"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 6",
+      "round": "5-5",
+      "step": 285,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 130,
+          "round": "3-3",
+          "comp": "Brawler",
+          "focus": "TFT17_Urgot",
+          "strategy": "ECON"
+        },
+        {
+          "step": 162,
+          "round": "3-7",
+          "comp": "Brawler",
+          "focus": "TFT17_Jhin",
+          "strategy": "ECON"
+        },
+        {
+          "step": 243,
+          "round": "5-1",
+          "comp": "Brawler",
+          "focus": "TFT17_Fiora",
+          "strategy": "ECON"
+        },
+        {
+          "step": 261,
+          "round": "5-2",
+          "comp": "Brawler",
+          "focus": "TFT17_Fiora",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 271,
+          "round": "5-3",
+          "comp": "Brawler",
+          "focus": "TFT17_Fiora",
+          "strategy": "ALL_IN"
+        },
+        {
+          "step": 280,
+          "round": "5-4",
+          "comp": "Rogue",
+          "focus": "TFT17_Fiora",
+          "strategy": "ALL_IN"
+        },
+        {
+          "step": 282,
+          "round": "5-5",
+          "comp": "Brawler",
+          "focus": "TFT17_Fiora",
+          "strategy": "ALL_IN"
+        },
+        {
+          "step": 285,
+          "round": "5-5",
+          "comp": "Replicator",
+          "focus": "TFT17_Fiora",
+          "strategy": "ALL_IN"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 7",
+      "round": "1-2",
+      "step": 15,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 1,
+          "round": "1-1",
+          "comp": "Anima",
+          "focus": "TFT17_Briar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 12,
+          "round": "1-2",
+          "comp": "Arbiter",
+          "focus": "TFT17_Briar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 13,
+          "round": "1-2",
+          "comp": "Anima",
+          "focus": "TFT17_Briar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 15,
+          "round": "1-2",
+          "comp": "Stargazer",
+          "focus": "TFT17_Briar",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 7",
+      "round": "1-4",
+      "step": 29,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 1,
+          "round": "1-1",
+          "comp": "Anima",
+          "focus": "TFT17_Briar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 12,
+          "round": "1-2",
+          "comp": "Arbiter",
+          "focus": "TFT17_Briar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 13,
+          "round": "1-2",
+          "comp": "Anima",
+          "focus": "TFT17_Briar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 15,
+          "round": "1-2",
+          "comp": "Stargazer",
+          "focus": "TFT17_Briar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 20,
+          "round": "1-3",
+          "comp": "Stargazer",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 22,
+          "round": "1-3",
+          "comp": "Anima",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 29,
+          "round": "1-4",
+          "comp": "Meeple",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 7",
+      "round": "2-1",
+      "step": 39,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 1,
+          "round": "1-1",
+          "comp": "Anima",
+          "focus": "TFT17_Briar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 12,
+          "round": "1-2",
+          "comp": "Arbiter",
+          "focus": "TFT17_Briar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 13,
+          "round": "1-2",
+          "comp": "Anima",
+          "focus": "TFT17_Briar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 15,
+          "round": "1-2",
+          "comp": "Stargazer",
+          "focus": "TFT17_Briar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 20,
+          "round": "1-3",
+          "comp": "Stargazer",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 22,
+          "round": "1-3",
+          "comp": "Anima",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 29,
+          "round": "1-4",
+          "comp": "Meeple",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 39,
+          "round": "2-1",
+          "comp": "Anima",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 7",
+      "round": "2-2",
+      "step": 50,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 13,
+          "round": "1-2",
+          "comp": "Anima",
+          "focus": "TFT17_Briar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 15,
+          "round": "1-2",
+          "comp": "Stargazer",
+          "focus": "TFT17_Briar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 20,
+          "round": "1-3",
+          "comp": "Stargazer",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 22,
+          "round": "1-3",
+          "comp": "Anima",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 29,
+          "round": "1-4",
+          "comp": "Meeple",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 39,
+          "round": "2-1",
+          "comp": "Anima",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 41,
+          "round": "2-1",
+          "comp": "Arbiter",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 50,
+          "round": "2-2",
+          "comp": "Fateweaver",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 7",
+      "round": "2-3",
+      "step": 62,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 15,
+          "round": "1-2",
+          "comp": "Stargazer",
+          "focus": "TFT17_Briar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 20,
+          "round": "1-3",
+          "comp": "Stargazer",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 22,
+          "round": "1-3",
+          "comp": "Anima",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 29,
+          "round": "1-4",
+          "comp": "Meeple",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 39,
+          "round": "2-1",
+          "comp": "Anima",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 41,
+          "round": "2-1",
+          "comp": "Arbiter",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 50,
+          "round": "2-2",
+          "comp": "Fateweaver",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 62,
+          "round": "2-3",
+          "comp": "Meeple",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 7",
+      "round": "2-4",
+      "step": 72,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 29,
+          "round": "1-4",
+          "comp": "Meeple",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 39,
+          "round": "2-1",
+          "comp": "Anima",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 41,
+          "round": "2-1",
+          "comp": "Arbiter",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 50,
+          "round": "2-2",
+          "comp": "Fateweaver",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 62,
+          "round": "2-3",
+          "comp": "Meeple",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 68,
+          "round": "2-4",
+          "comp": "N.O.V.A.",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 70,
+          "round": "2-4",
+          "comp": "Fateweaver",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 72,
+          "round": "2-4",
+          "comp": "Meeple",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 7",
+      "round": "2-6",
+      "step": 84,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 41,
+          "round": "2-1",
+          "comp": "Arbiter",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 50,
+          "round": "2-2",
+          "comp": "Fateweaver",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 62,
+          "round": "2-3",
+          "comp": "Meeple",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 68,
+          "round": "2-4",
+          "comp": "N.O.V.A.",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 70,
+          "round": "2-4",
+          "comp": "Fateweaver",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 72,
+          "round": "2-4",
+          "comp": "Meeple",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 77,
+          "round": "2-5",
+          "comp": "N.O.V.A.",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 84,
+          "round": "2-6",
+          "comp": "Meeple",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 7",
+      "round": "2-7",
+      "step": 93,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 68,
+          "round": "2-4",
+          "comp": "N.O.V.A.",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 70,
+          "round": "2-4",
+          "comp": "Fateweaver",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 72,
+          "round": "2-4",
+          "comp": "Meeple",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 77,
+          "round": "2-5",
+          "comp": "N.O.V.A.",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 84,
+          "round": "2-6",
+          "comp": "Meeple",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 85,
+          "round": "2-6",
+          "comp": "N.O.V.A.",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 87,
+          "round": "2-6",
+          "comp": "Meeple",
+          "focus": "TFT17_Gnar",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 93,
+          "round": "2-7",
+          "comp": "Meeple",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 7",
+      "round": "3-2",
+      "step": 114,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 93,
+          "round": "2-7",
+          "comp": "Meeple",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 94,
+          "round": "2-7",
+          "comp": "N.O.V.A.",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 96,
+          "round": "2-7",
+          "comp": "Meeple",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 98,
+          "round": "2-7",
+          "comp": "N.O.V.A.",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 102,
+          "round": "3-1",
+          "comp": "Meeple",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 106,
+          "round": "3-1",
+          "comp": "N.O.V.A.",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 109,
+          "round": "3-1",
+          "comp": "Meeple",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 114,
+          "round": "3-2",
+          "comp": "Bastion",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 7",
+      "round": "3-3",
+      "step": 126,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 102,
+          "round": "3-1",
+          "comp": "Meeple",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 106,
+          "round": "3-1",
+          "comp": "N.O.V.A.",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 109,
+          "round": "3-1",
+          "comp": "Meeple",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 114,
+          "round": "3-2",
+          "comp": "Bastion",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 115,
+          "round": "3-2",
+          "comp": "Meeple",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 116,
+          "round": "3-2",
+          "comp": "Bastion",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 117,
+          "round": "3-2",
+          "comp": "Stargazer",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 126,
+          "round": "3-3",
+          "comp": "Meeple",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 7",
+      "round": "3-5",
+      "step": 149,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 109,
+          "round": "3-1",
+          "comp": "Meeple",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 114,
+          "round": "3-2",
+          "comp": "Bastion",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 115,
+          "round": "3-2",
+          "comp": "Meeple",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 116,
+          "round": "3-2",
+          "comp": "Bastion",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 117,
+          "round": "3-2",
+          "comp": "Stargazer",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 126,
+          "round": "3-3",
+          "comp": "Meeple",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 132,
+          "round": "3-4",
+          "comp": "Meeple",
+          "focus": "TFT17_Urgot",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 149,
+          "round": "3-5",
+          "comp": "Brawler",
+          "focus": "TFT17_Urgot",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 7",
+      "round": "3-6",
+      "step": 158,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 116,
+          "round": "3-2",
+          "comp": "Bastion",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 117,
+          "round": "3-2",
+          "comp": "Stargazer",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 126,
+          "round": "3-3",
+          "comp": "Meeple",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 132,
+          "round": "3-4",
+          "comp": "Meeple",
+          "focus": "TFT17_Urgot",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 149,
+          "round": "3-5",
+          "comp": "Brawler",
+          "focus": "TFT17_Urgot",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 152,
+          "round": "3-6",
+          "comp": "Brawler",
+          "focus": "TFT17_AurelionSol",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 154,
+          "round": "3-6",
+          "comp": "Meeple",
+          "focus": "TFT17_AurelionSol",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 158,
+          "round": "3-6",
+          "comp": "Meeple",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 7",
+      "round": "3-7",
+      "step": 167,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 126,
+          "round": "3-3",
+          "comp": "Meeple",
+          "focus": "TFT17_Lulu",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 132,
+          "round": "3-4",
+          "comp": "Meeple",
+          "focus": "TFT17_Urgot",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 149,
+          "round": "3-5",
+          "comp": "Brawler",
+          "focus": "TFT17_Urgot",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 152,
+          "round": "3-6",
+          "comp": "Brawler",
+          "focus": "TFT17_AurelionSol",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 154,
+          "round": "3-6",
+          "comp": "Meeple",
+          "focus": "TFT17_AurelionSol",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 158,
+          "round": "3-6",
+          "comp": "Meeple",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 166,
+          "round": "3-7",
+          "comp": "Voyager",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 167,
+          "round": "3-7",
+          "comp": "Meeple",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 7",
+      "round": "4-2",
+      "step": 184,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 132,
+          "round": "3-4",
+          "comp": "Meeple",
+          "focus": "TFT17_Urgot",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 149,
+          "round": "3-5",
+          "comp": "Brawler",
+          "focus": "TFT17_Urgot",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 152,
+          "round": "3-6",
+          "comp": "Brawler",
+          "focus": "TFT17_AurelionSol",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 154,
+          "round": "3-6",
+          "comp": "Meeple",
+          "focus": "TFT17_AurelionSol",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 158,
+          "round": "3-6",
+          "comp": "Meeple",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 166,
+          "round": "3-7",
+          "comp": "Voyager",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 167,
+          "round": "3-7",
+          "comp": "Meeple",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 184,
+          "round": "4-2",
+          "comp": "Replicator",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 7",
+      "round": "4-3",
+      "step": 196,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 152,
+          "round": "3-6",
+          "comp": "Brawler",
+          "focus": "TFT17_AurelionSol",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 154,
+          "round": "3-6",
+          "comp": "Meeple",
+          "focus": "TFT17_AurelionSol",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 158,
+          "round": "3-6",
+          "comp": "Meeple",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 166,
+          "round": "3-7",
+          "comp": "Voyager",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 167,
+          "round": "3-7",
+          "comp": "Meeple",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 184,
+          "round": "4-2",
+          "comp": "Replicator",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 188,
+          "round": "4-2",
+          "comp": "Meeple",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 196,
+          "round": "4-3",
+          "comp": "Brawler",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 7",
+      "round": "4-4",
+      "step": 205,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 158,
+          "round": "3-6",
+          "comp": "Meeple",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 166,
+          "round": "3-7",
+          "comp": "Voyager",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 167,
+          "round": "3-7",
+          "comp": "Meeple",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 184,
+          "round": "4-2",
+          "comp": "Replicator",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 188,
+          "round": "4-2",
+          "comp": "Meeple",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 196,
+          "round": "4-3",
+          "comp": "Brawler",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 197,
+          "round": "4-3",
+          "comp": "Meeple",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 205,
+          "round": "4-4",
+          "comp": "Brawler",
+          "focus": "TFT17_Fizz",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 7",
+      "round": "4-5",
+      "step": 216,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 166,
+          "round": "3-7",
+          "comp": "Voyager",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 167,
+          "round": "3-7",
+          "comp": "Meeple",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 184,
+          "round": "4-2",
+          "comp": "Replicator",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 188,
+          "round": "4-2",
+          "comp": "Meeple",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 196,
+          "round": "4-3",
+          "comp": "Brawler",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 197,
+          "round": "4-3",
+          "comp": "Meeple",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 205,
+          "round": "4-4",
+          "comp": "Brawler",
+          "focus": "TFT17_Fizz",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 216,
+          "round": "4-5",
+          "comp": "Voyager",
+          "focus": "TFT17_Fizz",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 7",
+      "round": "4-7",
+      "step": 236,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 184,
+          "round": "4-2",
+          "comp": "Replicator",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 188,
+          "round": "4-2",
+          "comp": "Meeple",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 196,
+          "round": "4-3",
+          "comp": "Brawler",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 197,
+          "round": "4-3",
+          "comp": "Meeple",
+          "focus": "TFT17_Kindred",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 205,
+          "round": "4-4",
+          "comp": "Brawler",
+          "focus": "TFT17_Fizz",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 216,
+          "round": "4-5",
+          "comp": "Voyager",
+          "focus": "TFT17_Fizz",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 217,
+          "round": "4-5",
+          "comp": "Brawler",
+          "focus": "TFT17_Fizz",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 236,
+          "round": "4-7",
+          "comp": "Voyager",
+          "focus": "TFT17_Fizz",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 7",
+      "round": "5-1",
+      "step": 249,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 216,
+          "round": "4-5",
+          "comp": "Voyager",
+          "focus": "TFT17_Fizz",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 217,
+          "round": "4-5",
+          "comp": "Brawler",
+          "focus": "TFT17_Fizz",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 236,
+          "round": "4-7",
+          "comp": "Voyager",
+          "focus": "TFT17_Fizz",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 237,
+          "round": "4-7",
+          "comp": "Brawler",
+          "focus": "TFT17_Fizz",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 238,
+          "round": "4-7",
+          "comp": "N.O.V.A.",
+          "focus": "TFT17_Fizz",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 239,
+          "round": "4-7",
+          "comp": "Brawler",
+          "focus": "TFT17_Fizz",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 243,
+          "round": "5-1",
+          "comp": "Meeple",
+          "focus": "TFT17_Fizz",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 249,
+          "round": "5-1",
+          "comp": "Voyager",
+          "focus": "TFT17_Fizz",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 8",
+      "round": "1-4",
+      "step": 29,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 1,
+          "round": "1-1",
+          "comp": "Stargazer",
+          "focus": "TFT17_TwistedFate",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 12,
+          "round": "1-2",
+          "comp": "Space Groove",
+          "focus": "TFT17_Teemo",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 13,
+          "round": "1-2",
+          "comp": "Stargazer",
+          "focus": "TFT17_TwistedFate",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 29,
+          "round": "1-4",
+          "comp": "Bastion",
+          "focus": "TFT17_TwistedFate",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 8",
+      "round": "2-1",
+      "step": 38,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 12,
+          "round": "1-2",
+          "comp": "Space Groove",
+          "focus": "TFT17_Teemo",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 13,
+          "round": "1-2",
+          "comp": "Stargazer",
+          "focus": "TFT17_TwistedFate",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 29,
+          "round": "1-4",
+          "comp": "Bastion",
+          "focus": "TFT17_TwistedFate",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 30,
+          "round": "1-4",
+          "comp": "Bastion",
+          "focus": "TFT17_Lissandra",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 31,
+          "round": "1-4",
+          "comp": "Dark Star",
+          "focus": "TFT17_Lissandra",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 32,
+          "round": "1-4",
+          "comp": "Shepherd",
+          "focus": "TFT17_Lissandra",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 33,
+          "round": "1-4",
+          "comp": "Dark Star",
+          "focus": "TFT17_Lissandra",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 38,
+          "round": "2-1",
+          "comp": "Shepherd",
+          "focus": "TFT17_IvernMinion",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 8",
+      "round": "2-3",
+      "step": 57,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 29,
+          "round": "1-4",
+          "comp": "Bastion",
+          "focus": "TFT17_TwistedFate",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 30,
+          "round": "1-4",
+          "comp": "Bastion",
+          "focus": "TFT17_Lissandra",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 31,
+          "round": "1-4",
+          "comp": "Dark Star",
+          "focus": "TFT17_Lissandra",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 32,
+          "round": "1-4",
+          "comp": "Shepherd",
+          "focus": "TFT17_Lissandra",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 33,
+          "round": "1-4",
+          "comp": "Dark Star",
+          "focus": "TFT17_Lissandra",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 38,
+          "round": "2-1",
+          "comp": "Shepherd",
+          "focus": "TFT17_IvernMinion",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 40,
+          "round": "2-1",
+          "comp": "Shepherd",
+          "focus": "TFT17_Teemo",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 57,
+          "round": "2-3",
+          "comp": "Shepherd",
+          "focus": "TFT17_Illaoi",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 8",
+      "round": "2-7",
+      "step": 96,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 33,
+          "round": "1-4",
+          "comp": "Dark Star",
+          "focus": "TFT17_Lissandra",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 38,
+          "round": "2-1",
+          "comp": "Shepherd",
+          "focus": "TFT17_IvernMinion",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 40,
+          "round": "2-1",
+          "comp": "Shepherd",
+          "focus": "TFT17_Teemo",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 57,
+          "round": "2-3",
+          "comp": "Shepherd",
+          "focus": "TFT17_Illaoi",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 58,
+          "round": "2-3",
+          "comp": "Shepherd",
+          "focus": "TFT17_Lissandra",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 66,
+          "round": "2-4",
+          "comp": "Dark Star",
+          "focus": "TFT17_Lissandra",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 91,
+          "round": "2-6",
+          "comp": "Dark Star",
+          "focus": "TFT17_Lissandra",
+          "strategy": "LOSS_STREAK"
+        },
+        {
+          "step": 96,
+          "round": "2-7",
+          "comp": "Conduit",
+          "focus": "TFT17_Lissandra",
+          "strategy": "LOSS_STREAK"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 8",
+      "round": "3-3",
+      "step": 122,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 38,
+          "round": "2-1",
+          "comp": "Shepherd",
+          "focus": "TFT17_IvernMinion",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 40,
+          "round": "2-1",
+          "comp": "Shepherd",
+          "focus": "TFT17_Teemo",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 57,
+          "round": "2-3",
+          "comp": "Shepherd",
+          "focus": "TFT17_Illaoi",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 58,
+          "round": "2-3",
+          "comp": "Shepherd",
+          "focus": "TFT17_Lissandra",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 66,
+          "round": "2-4",
+          "comp": "Dark Star",
+          "focus": "TFT17_Lissandra",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 91,
+          "round": "2-6",
+          "comp": "Dark Star",
+          "focus": "TFT17_Lissandra",
+          "strategy": "LOSS_STREAK"
+        },
+        {
+          "step": 96,
+          "round": "2-7",
+          "comp": "Conduit",
+          "focus": "TFT17_Lissandra",
+          "strategy": "LOSS_STREAK"
+        },
+        {
+          "step": 122,
+          "round": "3-3",
+          "comp": "Dark Star",
+          "focus": "TFT17_Lissandra",
+          "strategy": "LOSS_STREAK"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 8",
+      "round": "3-5",
+      "step": 145,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 58,
+          "round": "2-3",
+          "comp": "Shepherd",
+          "focus": "TFT17_Lissandra",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 66,
+          "round": "2-4",
+          "comp": "Dark Star",
+          "focus": "TFT17_Lissandra",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 91,
+          "round": "2-6",
+          "comp": "Dark Star",
+          "focus": "TFT17_Lissandra",
+          "strategy": "LOSS_STREAK"
+        },
+        {
+          "step": 96,
+          "round": "2-7",
+          "comp": "Conduit",
+          "focus": "TFT17_Lissandra",
+          "strategy": "LOSS_STREAK"
+        },
+        {
+          "step": 122,
+          "round": "3-3",
+          "comp": "Dark Star",
+          "focus": "TFT17_Lissandra",
+          "strategy": "LOSS_STREAK"
+        },
+        {
+          "step": 127,
+          "round": "3-3",
+          "comp": "Replicator",
+          "focus": "TFT17_Lissandra",
+          "strategy": "LOSS_STREAK"
+        },
+        {
+          "step": 129,
+          "round": "3-3",
+          "comp": "Dark Star",
+          "focus": "TFT17_Lissandra",
+          "strategy": "LOSS_STREAK"
+        },
+        {
+          "step": 145,
+          "round": "3-5",
+          "comp": "Replicator",
+          "focus": "TFT17_Lissandra",
+          "strategy": "LOSS_STREAK"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 8",
+      "round": "3-6",
+      "step": 154,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 96,
+          "round": "2-7",
+          "comp": "Conduit",
+          "focus": "TFT17_Lissandra",
+          "strategy": "LOSS_STREAK"
+        },
+        {
+          "step": 122,
+          "round": "3-3",
+          "comp": "Dark Star",
+          "focus": "TFT17_Lissandra",
+          "strategy": "LOSS_STREAK"
+        },
+        {
+          "step": 127,
+          "round": "3-3",
+          "comp": "Replicator",
+          "focus": "TFT17_Lissandra",
+          "strategy": "LOSS_STREAK"
+        },
+        {
+          "step": 129,
+          "round": "3-3",
+          "comp": "Dark Star",
+          "focus": "TFT17_Lissandra",
+          "strategy": "LOSS_STREAK"
+        },
+        {
+          "step": 145,
+          "round": "3-5",
+          "comp": "Replicator",
+          "focus": "TFT17_Lissandra",
+          "strategy": "LOSS_STREAK"
+        },
+        {
+          "step": 146,
+          "round": "3-5",
+          "comp": "Dark Star",
+          "focus": "TFT17_Lissandra",
+          "strategy": "LOSS_STREAK"
+        },
+        {
+          "step": 151,
+          "round": "3-5",
+          "comp": "Dark Star",
+          "focus": "TFT17_Lissandra",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 154,
+          "round": "3-6",
+          "comp": "Replicator",
+          "focus": "TFT17_Lissandra",
+          "strategy": "STABILIZE"
+        }
+      ]
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "COMP_DIRECTION_CHURN",
+      "player": "Jogador 8",
+      "round": "3-7",
+      "step": 168,
+      "message": "Episódio de mudanças repetidas de composição; revisar as transições listadas.",
+      "evidence": [
+        {
+          "step": 127,
+          "round": "3-3",
+          "comp": "Replicator",
+          "focus": "TFT17_Lissandra",
+          "strategy": "LOSS_STREAK"
+        },
+        {
+          "step": 129,
+          "round": "3-3",
+          "comp": "Dark Star",
+          "focus": "TFT17_Lissandra",
+          "strategy": "LOSS_STREAK"
+        },
+        {
+          "step": 145,
+          "round": "3-5",
+          "comp": "Replicator",
+          "focus": "TFT17_Lissandra",
+          "strategy": "LOSS_STREAK"
+        },
+        {
+          "step": 146,
+          "round": "3-5",
+          "comp": "Dark Star",
+          "focus": "TFT17_Lissandra",
+          "strategy": "LOSS_STREAK"
+        },
+        {
+          "step": 151,
+          "round": "3-5",
+          "comp": "Dark Star",
+          "focus": "TFT17_Lissandra",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 154,
+          "round": "3-6",
+          "comp": "Replicator",
+          "focus": "TFT17_Lissandra",
+          "strategy": "STABILIZE"
+        },
+        {
+          "step": 161,
+          "round": "3-6",
+          "comp": "Replicator",
+          "focus": "TFT17_Lissandra",
+          "strategy": "ALL_IN"
+        },
+        {
+          "step": 168,
+          "round": "3-7",
+          "comp": "Conduit",
+          "focus": "TFT17_Lissandra",
+          "strategy": "ALL_IN"
+        }
+      ]
+    }
+  ],
+  "notes": [],
+  "mask_note_added": false,
+  "summary": {
+    "MEDIUM": 69
+  }
+}
