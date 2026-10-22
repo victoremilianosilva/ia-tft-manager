@@ -579,6 +579,10 @@ int main(int argc, char** argv) {
         }
         require(comp_engine.stage() >= 3,
                 "Fixture nao alcancou stage 3 para validar o comp lock.");
+        // Stage is advanced after combat resolution; let the strategy update
+        // run twice in the newly opened stage-3 preparation phase.
+        (void)comp_engine.step(pass_actions);
+        (void)comp_engine.step(pass_actions);
         auto comp_state = comp_engine.get_strategies()[0].back();
         require(comp_state.composition_locked,
                 "Composicao dominante com seis unidades nao ativou o lock no stage 3.");
