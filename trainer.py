@@ -230,17 +230,17 @@ class Trainer:
                 eps=1e-5
             )
 
-            if "optimizer" in checkpoint:
+            if "optimizer" in checkpoint and not migrated_checkpoint:
 
                 self.optimizer.load_state_dict(
                     checkpoint["optimizer"]
                 )
 
-                print(
-                    "✅ Estado do optimizer restaurado."
-                )
+                print("✅ Estado do optimizer restaurado.")
                 restored_lr = [float(group["lr"]) for group in self.optimizer.param_groups]
                 print(f"📉 LR efetiva após restaurar optimizer: {restored_lr}")
+            elif migrated_checkpoint:
+                print("ℹ️ Optimizer reiniciado porque as formas dos pesos mudaram.")
 
             # --------------------------------------------------------
             # SCHEDULER
