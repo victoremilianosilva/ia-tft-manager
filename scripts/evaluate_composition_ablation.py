@@ -37,12 +37,29 @@ ACTION_NAMES = ("BUY", "REROLL", "BUY_XP", "MOVE_BENCH", "MOVE_BOARD", "SELL", "
 CANDIDATE_FEATURE_DIM = 8
 
 
+def infer_trait_count_from_observation_dim(obs_dim: int, fixed_dim: int = 433, vectors_per_trait: int = 4) -> int:
+    """Infer the full trait catalog from the observation contract, not active match traits."""
+    remainder = int(obs_dim) - int(fixed_dim)
+    if fixed_dim <= 0 or vectors_per_trait <= 0 or remainder <= 0 or remainder % vectors_per_trait:
+        raise ValueError(
+            f"Observation dimension {obs_dim} is incompatible with layout "
+            f"{fixed_dim} + {vectors_per_trait}*trait_count"
+        )
+    trait_count = remainder // vectors_per_trait
+    if trait_count <= 0:
+        raise ValueError(f"Invalid inferred trait count: {trait_count}")
+    return trait_count
+
+
 def zero_composition_controls(observations: torch.Tensor, trait_count: int, candidate_dim: int):
     """Zero [trait focus weights, locked flag, strength] without touching candidate tail."""
+    if candidate_dim <= 0 or trait_count <= 0:
+        raise ValueError(f"Invalid composition layout: traits={trait_count}, candidate_dim={candidate_dim}")
     control_dim = int(trait_count) + 2
-    start = observations.shape[-1] - int(candidate_dim) - control_dim
+    candidate_start = observations.shape[-1] - int(candidate_dim)
+    start = candidate_start - control_dim
     end = start + control_dim
-    if trait_count <= 0 or start < 0 or end > observations.shape[-1] - candidate_dim:
+    if start < 0 or end != candidate_start:
         raise ValueError(
             f"Invalid composition slice: obs={observations.shape[-1]}, "
             f"traits={trait_count}, candidate_dim={candidate_dim}"
@@ -71,17 +88,11 @@ def _run_match(policy, seed: int, ablate: bool, max_steps: int):
     env = CppTFTLobbyWrapper(seed=seed)
     try:
         observations_np = env.reset(seed=seed)
-        snapshots = env.get_strategy_snapshots()
-        trait_count = len((snapshots[0] or {}).get("active_traits", {}))
-        if trait_count <= 0:
-            # Observation layout: 433 fixed values plus four trait-aligned
-            # vectors (trait counts, direction, core flags, and focus weights).
-            remainder = int(observations_np.shape[-1]) - 433
-            if remainder <= 0 or remainder % 4:
-                raise RuntimeError(
-                    "Could not derive trait count from StrategyInfo or observation dimension."
-                )
-            trait_count = remainder // 4
+        # active_traits may list only traits active in this match; use the full observation layout.
+        try:
+            trait_count = infer_trait_count_from_observation_dim(int(observations_np.shape[-1]))
+        except ValueError as exc:
+            raise RuntimeError("Could not infer the full trait catalog from the observation dimension.") from exc
 
         totals = np.zeros(8, dtype=np.float64)
         action_counts = np.zeros(len(ACTION_NAMES), dtype=np.int64)
