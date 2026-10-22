@@ -280,10 +280,36 @@ class TFTPolicy(nn.Module):
             top_probs = top_probs.detach().tolist()
             top_indices = top_indices.detach().tolist()
             all_probs = probabilities.tolist()
+            entropy_nats = -(
+                probabilities * probabilities.clamp_min(
+                    torch.finfo(probabilities.dtype).tiny
+                ).log()
+            ).sum(dim=-1)
+            if applied_mask is not None:
+                valid_counts = applied_mask.to(
+                    device=probabilities.device, dtype=torch.bool
+                ).sum(dim=-1).clamp_min(1)
+            else:
+                valid_counts = torch.full(
+                    (probabilities.shape[0],),
+                    probabilities.shape[-1],
+                    device=probabilities.device,
+                    dtype=torch.long,
+                )
+            max_entropy = valid_counts.to(probabilities.dtype).log()
+            normalized_entropy = torch.where(
+                max_entropy > 0,
+                entropy_nats / max_entropy.clamp_min(torch.finfo(probabilities.dtype).tiny),
+                torch.zeros_like(entropy_nats),
+            )
+            entropy_values = entropy_nats.detach().tolist()
+            normalized_entropy_values = normalized_entropy.detach().tolist()
             for row, player_id in enumerate(row_ids):
                 player_diagnostics[player_id].append({
                     "head": name,
                     "mask": mask_values[row] if mask_values is not None else None,
+                    "entropy_nats": float(entropy_values[row]),
+                    "entropy_normalized": float(normalized_entropy_values[row]),
                     "probabilities": all_probs[row],
                     "selected": int(selected_values[row]),
                     "selected_probability": float(all_probs[row][selected_values[row]]),
