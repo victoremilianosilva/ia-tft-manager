@@ -1,6 +1,5 @@
 """Tests for the multi-seed strategic policy audit helpers."""
 from io import StringIO
-from pathlib import Path
 
 import numpy as np
 
@@ -67,5 +66,5 @@ def test_audit_routes_each_record_only_to_its_player_file():
 
     _write_player_record(handles, 3, record)
 
-    assert handles[3].getvalue() == '{"player_id": 3, "step": 12}\\n'
+    assert handles[3].getvalue() == '{"player_id": 3, "step": 12}\n'
     assert all(not handle.getvalue() for player_id, handle in handles.items() if player_id != 3)
