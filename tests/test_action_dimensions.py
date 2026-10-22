@@ -101,3 +101,102 @@ def test_candidate_observation_tail_aligns_bench_and_shop_slots():
     assert shop.shape == (2, 5, 8)
     assert torch.all(bench == 1.0)
     assert torch.all(shop == 2.0)
+
+
+
+def test_checkpoint_migration_inserts_composition_features_before_candidate_tail():
+    old_obs_dim = 400
+    added_composition_features = 20
+    new_obs_dim = old_obs_dim + added_composition_features
+    hidden_size = 16
+
+    old_policy = TFTPolicy(
+        obs_dim=old_obs_dim,
+        action_dims=Trainer.ACTION_DIMS,
+        hidden_size=hidden_size,
+    )
+    new_policy = TFTPolicy(
+        obs_dim=new_obs_dim,
+        action_dims=Trainer.ACTION_DIMS,
+        hidden_size=hidden_size,
+    )
+
+    old_weight = old_policy.global_mlp[0].weight.detach().clone()
+    migrated = new_policy.load_compatible_state_dict(old_policy.state_dict())
+
+    assert migrated is True
+    new_weight = new_policy.global_mlp[0].weight.detach()
+    candidate_tail_dim = new_policy.candidate_observation_dim
+    insertion = old_weight.shape[1] - candidate_tail_dim
+
+    # Existing non-candidate columns are preserved exactly; the newly added
+    # composition fields are zero-initialized; candidate columns shift intact.
+    assert torch.equal(new_weight[:, :insertion], old_weight[:, :insertion])
+    assert torch.count_nonzero(
+        new_weight[:, insertion:insertion + added_composition_features]
+    ).item() == 0
+    assert torch.equal(
+        new_weight[:, insertion + added_composition_features:],
+        old_weight[:, insertion:],
+    )
+
+
+def test_policy_accepts_observation_with_composition_control_features():
+    obs_dim = 420
+    policy = TFTPolicy(
+        obs_dim=obs_dim,
+        action_dims=Trainer.ACTION_DIMS,
+        hidden_size=32,
+    )
+    observations = torch.zeros(2, obs_dim)
+    values = policy.get_value(observations)
+    actions, log_prob, entropy, values_again = policy.get_action_and_value(
+        observations,
+        deterministic=True,
+    )
+
+    assert values.shape == (2,)
+    assert values_again.shape == (2,)
+    assert actions.shape == (2, Trainer.ACTION_DIM)
+    assert log_prob.shape == (2,)
+    assert entropy.shape == (2,)
+
+
+def test_composition_focus_and_lock_features_reach_policy_encoder():
+    obs_dim = 420
+    hidden_size = 16
+    policy = TFTPolicy(
+        obs_dim=obs_dim,
+        action_dims=Trainer.ACTION_DIMS,
+        hidden_size=hidden_size,
+    )
+    # In this fixture the composition-control block has 18 trait weights plus
+    # lock and strength. It sits immediately before the 112-value candidate tail.
+    control_dim = 20
+    first_control_index = obs_dim - policy.candidate_observation_dim - control_dim
+    first_global_index = first_control_index - policy.board_flat_dim
+    locked_index = first_global_index + control_dim - 2
+
+    with torch.no_grad():
+        for parameter in policy.parameters():
+            parameter.zero_()
+        policy.global_mlp[0].weight[0, first_global_index] = 1.0
+        policy.global_mlp[0].weight[1, locked_index] = 1.0
+        policy.global_mlp[2].weight[0, 0] = 1.0
+        policy.global_mlp[2].weight[0, 1] = 1.0
+        policy.fusion[0].weight[0, 4 * 7 * 64] = 1.0
+        policy.fusion[2].weight[0, 0] = 1.0
+
+    baseline = torch.zeros(1, obs_dim)
+    focus_changed = baseline.clone()
+    focus_changed[0, first_control_index] = 1.0
+    lock_changed = baseline.clone()
+    lock_changed[0, first_control_index + 18] = 1.0
+
+    baseline_encoded = policy.encode(baseline)
+    focus_encoded = policy.encode(focus_changed)
+    lock_encoded = policy.encode(lock_changed)
+
+    assert first_global_index < locked_index
+    assert not torch.equal(baseline_encoded, focus_encoded)
+    assert not torch.equal(baseline_encoded, lock_encoded)

@@ -85,12 +85,12 @@ class TFTPolicy(nn.Module):
         self.value_head = nn.Linear(hidden_size, 1)
 
     def load_compatible_state_dict(self, state_dict):
-        """Load current weights or migrate the two known input-shape changes.
+        """Load current weights or migrate supported input-shape changes.
 
-        Temporal observation features are inserted immediately before the fixed
-        candidate tail. The old global encoder columns are shifted around that
-        insertion; new temporal columns and new bench-target conditioning columns
-        start at zero so inference initially preserves the old logits.
+        New global observation features must be inserted immediately before the
+        fixed candidate tail. Existing global encoder columns are shifted around
+        that insertion; new columns and new bench-target conditioning columns start
+        at zero so inference initially preserves the old logits.
         """
         target = self.state_dict()
         missing = sorted(set(target) - set(state_dict))
