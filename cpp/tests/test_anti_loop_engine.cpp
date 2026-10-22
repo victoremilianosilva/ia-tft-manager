@@ -385,28 +385,6 @@ void test_round_window_expires_old_states_and_clears_local_history() {
     assert(engine.get_state_visits(signature) == 0);
 }
 
-void test_round_window_expires_old_states_and_clears_local_history() {
-    AntiLoopEngine engine;
-    const auto nasus = make_unit("nasus-1", 1);
-    const auto signature = make_signature(nasus, 3);
-    engine.register_move("board_move", 3, 4, nasus);
-    (void)engine.block_move("board_move", 4, 12, nasus);
-    engine.register_state(signature);
-
-    engine.begin_round(2);
-    assert(engine.get_state().move_history_size == 0);
-    assert(engine.get_state().blocked_moves == 0);
-    assert(!engine.get_state().last_move.has_value());
-    assert(engine.was_state_seen(signature));
-
-    // Round 1 remains in the four-round window through round 5, but expires at 6.
-    engine.begin_round(5);
-    assert(engine.was_state_seen(signature));
-    engine.begin_round(6);
-    assert(!engine.was_state_seen(signature));
-    assert(engine.get_state_visits(signature) == 0);
-}
-
 void test_reset_clears_move_and_state_history() {
     AntiLoopEngine engine;
     const auto nasus = make_unit("nasus-1", 1);
@@ -444,7 +422,6 @@ int main() {
 
     test_state_change_releases_explicit_move_block();
     test_move_queries_do_not_mutate_history();
-    test_round_window_expires_old_states_and_clears_local_history();
     test_round_window_expires_old_states_and_clears_local_history();
     test_reset_clears_move_and_state_history();
     test_reset_preserves_execution_metrics_like_python();
