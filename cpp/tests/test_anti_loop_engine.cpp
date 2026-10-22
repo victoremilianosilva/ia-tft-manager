@@ -362,6 +362,32 @@ void test_mask_diagnostics_accumulate_and_survive_reset() {
     assert(metrics.mask.blocked_cycle == 2);
 }
 
+void test_incremental_signature_hash_matches_full_recomputation() {
+    const auto nasus = make_unit("nasus-1", 1);
+    PositionSignature signature = make_signature(nasus, 3);
+    const auto original_hash = PositionSignatureHash{}(signature);
+
+    signature.swap_board_slots(3, 4);
+    PositionSignature expected_board;
+    expected_board.board[4] = nasus;
+    const auto moved_hash = PositionSignatureHash{}(signature);
+    const auto expected_hash = PositionSignatureHash{}(expected_board);
+    assert(moved_hash == expected_hash);
+    assert(moved_hash != original_hash);
+
+    signature.bench[2] = make_unit("briar-1", 2).identity;
+    signature.hash_cached = false;
+    const auto before_swap = PositionSignatureHash{}(signature);
+    signature.swap_board_bench(4, 2);
+    PositionSignature expected_replacement;
+    expected_replacement.board[4] = make_unit("briar-1", 2).identity;
+    expected_replacement.bench[2] = nasus;
+    const auto replacement_hash = PositionSignatureHash{}(signature);
+    const auto expected_replacement_hash = PositionSignatureHash{}(expected_replacement);
+    assert(replacement_hash == expected_replacement_hash);
+    assert(replacement_hash != before_swap);
+}
+
 void test_round_window_expires_old_states_and_clears_local_history() {
     AntiLoopEngine engine;
     const auto nasus = make_unit("nasus-1", 1);
@@ -422,6 +448,7 @@ int main() {
 
     test_state_change_releases_explicit_move_block();
     test_move_queries_do_not_mutate_history();
+    test_incremental_signature_hash_matches_full_recomputation();
     test_round_window_expires_old_states_and_clears_local_history();
     test_reset_clears_move_and_state_history();
     test_reset_preserves_execution_metrics_like_python();
