@@ -73,11 +73,34 @@ AntiLoopEngine::AntiLoopEngine(AntiLoopConfig config)
 }
 
 void AntiLoopEngine::reset() {
-    // O Python limpa os históricos, mas mantém as métricas.
     const auto metrics = history_.metrics;
-
+    const auto state_window_rounds = history_.state_window_rounds;
     history_ = AntiLoopHistory{};
     history_.metrics = metrics;
+    history_.state_window_rounds = state_window_rounds;
+}
+
+void AntiLoopEngine::begin_round(std::uint32_t round_number) {
+    history_.current_round = std::max<std::uint32_t>(1, round_number);
+    history_.position_history.clear();
+    history_.move_history.clear();
+    history_.blocked_moves.clear();
+    history_.last_move.reset();
+    history_.last_board_signature.reset();
+
+    auto& visits = history_.state_visits;
+    visits.erase(
+        std::remove_if(visits.begin(), visits.end(), [&](const StateVisit& visit) {
+            return history_.current_round > visit.last_seen_round
+                && history_.current_round - visit.last_seen_round > history_.state_window_rounds;
+        }),
+        visits.end()
+    );
+    history_.state_visit_index.clear();
+    history_.state_visit_index.reserve(visits.size());
+    for (std::size_t i = 0; i < visits.size(); ++i) {
+        history_.state_visit_index.emplace(visits[i].signature, i);
+    }
 }
 
 MoveKey AntiLoopEngine::make_move_key(
@@ -137,14 +160,21 @@ StateRegistrationResult AntiLoopEngine::register_state(
     if (indexed == history_.state_visit_index.end()) {
         visit_index = history_.state_visits.size();
         history_.state_visits.push_back(
-            StateVisit{signature, 1, config_.loop_threshold <= 1}
+            StateVisit{signature, 1, config_.loop_threshold <= 1, history_.current_round}
         );
         history_.state_visit_index.emplace(signature, visit_index);
     } else {
         visit_index = indexed->second;
         auto& visit = history_.state_visits[visit_index];
-        ++visit.visits;
-        visit.repeated = visit.visits >= config_.loop_threshold;
+        if (history_.current_round > visit.last_seen_round
+            && history_.current_round - visit.last_seen_round > history_.state_window_rounds) {
+            visit.visits = 1;
+            visit.repeated = config_.loop_threshold <= 1;
+        } else {
+            ++visit.visits;
+            visit.repeated = visit.visits >= config_.loop_threshold;
+        }
+        visit.last_seen_round = history_.current_round;
     }
 
     history_.last_board_signature = signature;
@@ -280,11 +310,23 @@ bool AntiLoopEngine::is_reverse_move(
     std::int32_t target,
     const std::optional<UnitIdentity>& unit
 ) const {
-    if (!history_.last_move.has_value()) {
-        return false;
-    }
+    if (history_.move_history.empty()) return false;
 
-    const auto& last = *history_.last_move;
+    // Unrelated actions must not hide the latest relevant reverse candidate.
+    const MoveRecord* last_ptr = nullptr;
+    for (auto it = history_.move_history.rbegin(); it != history_.move_history.rend(); ++it) {
+        if (move_type == "board_swap" && it->move_type == "board_swap") {
+            const bool same_pair = (it->source == source && it->target == target)
+                || (it->source == target && it->target == source);
+            if (same_pair) { last_ptr = &*it; break; }
+        }
+        if (it->unit == unit && it->move_type == move_type) {
+            last_ptr = &*it;
+            break;
+        }
+    }
+    if (last_ptr == nullptr) return false;
+    const auto& last = *last_ptr;
 
     // Um swap pode ser desfeito por qualquer uma das unidades
     // que passaram a ocupar o par de posições.
@@ -643,15 +685,11 @@ double AntiLoopEngine::evaluate_move_risk(
         risk += 0.8;
     }
 
-    if (
-        is_bench_board_loop(
-            unit,
-            move_type,
-            source,
-            target
-        )
-    ) {
+    if (is_bench_board_loop(unit, move_type, source, target)) {
         risk += 0.9;
+    }
+    if (is_cycle_move(move_type, source, target, unit)) {
+        risk += 0.85;
     }
 
     return std::min(1.0, risk);
@@ -660,8 +698,11 @@ double AntiLoopEngine::evaluate_move_risk(
 bool AntiLoopEngine::was_state_seen(
     const PositionSignature& signature
 ) const {
-    return history_.state_visit_index.find(signature)
-        != history_.state_visit_index.end();
+    const auto indexed = history_.state_visit_index.find(signature);
+    if (indexed == history_.state_visit_index.end()) return false;
+    const auto& visit = history_.state_visits[indexed->second];
+    return history_.current_round <= visit.last_seen_round
+        || history_.current_round - visit.last_seen_round <= history_.state_window_rounds;
 }
 
 std::uint32_t AntiLoopEngine::get_state_visits(
@@ -672,7 +713,10 @@ std::uint32_t AntiLoopEngine::get_state_visits(
         return 0;
     }
 
-    return history_.state_visits[indexed->second].visits;
+    const auto& visit = history_.state_visits[indexed->second];
+    if (history_.current_round > visit.last_seen_round
+        && history_.current_round - visit.last_seen_round > history_.state_window_rounds) return 0;
+    return visit.visits;
 }
 
 AntiLoopStateSummary AntiLoopEngine::get_state() const {
