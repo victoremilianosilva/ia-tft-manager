@@ -184,6 +184,10 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
             before_snapshot = lobby.get_audit_snapshot()
             before_players = before_snapshot["players"]
             strategies_before = lobby.get_strategy_snapshots()
+            strategic_before_all = [
+                _strategic_summary(lobby, player_id, before_players[player_id], strategies_before[player_id])
+                for player_id in range(8)
+            ]
             masks = lobby.get_action_masks()
             alive = [
                 player_id for player_id, info in enumerate(lobby.players)
@@ -229,9 +233,7 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
                         "step": step_index, "action": action,
                     }
 
-                strategic_before = _strategic_summary(
-                    lobby, player_id, before, strategies_before[player_id]
-                )
+                strategic_before = strategic_before_all[player_id]
                 strategic_after = _strategic_summary(
                     lobby, player_id, after, strategies_after[player_id]
                 )
