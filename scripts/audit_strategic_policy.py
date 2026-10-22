@@ -92,7 +92,7 @@ def _write_player_record(output_handles, player_id, record):
     """Write a record only to the file owned by its player."""
     if player_id not in output_handles:
         raise ValueError(f"Não existe arquivo de saída para o jogador {player_id}.")
-    output_handles[player_id].write(json.dumps(record, ensure_ascii=False) + "\\n")
+    output_handles[player_id].write(json.dumps(record, ensure_ascii=False) + "\n")
 
 
 def load_policy(checkpoint_path: Path, obs_dim: int):
@@ -174,7 +174,7 @@ def audit_seed(policy, device, seed, output_handles, max_steps):
                     "action_reward": float(action_rewards[player_id]) if player_id < len(action_rewards) else None,
                     "total_reward": float(total_rewards[player_id]) if player_id < len(total_rewards) else None,
                 }
-                output_handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+                _write_player_record(output_handles, player_id, record)
                 total_logged += 1
 
             if done:
