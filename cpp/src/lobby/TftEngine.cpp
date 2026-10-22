@@ -2361,7 +2361,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             // improves composition, synergy, or positioning.
                             action_reward += reward_model::board_capacity_completion();
                         }
-                    } else if (!composition_improved) {
+                    } else if (new_board_count <= old_board_count && !composition_improved) {
                         // A replacement that neither grows the team nor improves
                         // fit/synergy/positioning must not be a free action.
                         action_reward += reward_model::movement_no_progress_penalty(
