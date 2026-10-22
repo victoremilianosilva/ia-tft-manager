@@ -2631,6 +2631,13 @@ StepResult TFTEngine::step(
 
             impl_->stage = stage_for_round(public_round);
 
+            // Start a fresh anti-loop local history for the new preparation,
+            // while retaining only signatures from the previous four rounds.
+            for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+                auto& player_env = impl_->player_envs[i];
+                player_env.anti_loop.begin_round(public_round);
+                if (player_env.info.alive) impl_->register_position_state(i);
+            }
             impl_->reset_round_completion();
         }
     }
