@@ -637,6 +637,8 @@ class PlayerJsonLogWriter:
                 f"LOCK: {'LOCKED' if after_state.get('composition_locked') else 'OPEN'} | "
                 f"STRENGTH: {float(after_state.get('composition_strength', 0.0) or 0.0):.2f}\n"
                 f"FOCUS WEIGHTS: {', '.join(f'{name} {float(weight):.2f}' for name, weight in sorted((after_state.get('composition_focus_weights') or {}).items(), key=lambda item: float(item[1]), reverse=True)[:5]) or '—'}\n"
+                    f"    STRATEGY REASON: {after_state.get('strategy_reason') or '—'} | CONF: {float(after_state.get('strategy_confidence', 0.0) or 0.0):.2f}\n"
+                    f"    CORE UNITS: {', '.join(map(str, after_state.get('core_units') or [])) or '—'} | CORE TRAITS: {', '.join(map(str, after_state.get('core_traits') or [])) or '—'}\n"
                     f"    COMP BEFORE -> AFTER: dir={before_state.get('comp_direction') or '—'} -> {after_state.get('comp_direction') or '—'} | foco={before_state.get('comp_focus') or '—'} -> {after_state.get('comp_focus') or '—'} | lock={before_state.get('composition_locked', False)} -> {after_state.get('composition_locked', False)} | strength={float(before_state.get('composition_strength', 0.0) or 0.0):.2f} -> {float(after_state.get('composition_strength', 0.0) or 0.0):.2f}\n"
                     f"    GOLD: {after_state.get('gold', '?')} | renda base "
                     f"+{after_state.get('round_base_gold', 0)} | juros "
