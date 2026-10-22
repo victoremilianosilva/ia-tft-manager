@@ -158,6 +158,9 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
     assert comp_diag["after"]["direction"] == "Prankster"
     assert comp_diag["after"]["reason"] == "board fit changed"
     assert comp_diag["after"]["core_units"] == ["TFT_Test_Briar"]
+    assert comp_diag["unit_fit"]["unit"] == "Briar"
+    assert comp_diag["unit_fit"]["core_unit_match"] is True
+    assert comp_diag["unit_fit"]["focus_fit_score"] == 0.0
     assert action_entry["payload"]["state_after"]["composition_focus_weights"]["Space Groove"] == 2.5
     log_text = (tmp_path / "match-test" / "player_1_log.tft").read_text(encoding="utf-8")
     assert "LOCK: LOCKED" in log_text
@@ -168,6 +171,7 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
     assert "COMP BEFORE -> AFTER: dir=Space Groove -> Prankster" in log_text
     assert "foco=Teemo -> Briar" in log_text
     assert "STRATEGY REASON: board fit changed" in log_text
+    assert "FIT UNIDADE: Briar | core=SIM | fit=0.00" in log_text
     assert "RENDA PRÓXIMO ROUND: +5 base, +2 juros, +1 sequência, +1 vitória (total: +9)" in (
         tmp_path / "match-test" / "player_1_log.tft"
     ).read_text(encoding="utf-8")
