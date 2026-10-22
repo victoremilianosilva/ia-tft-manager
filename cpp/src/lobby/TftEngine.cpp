@@ -2681,7 +2681,13 @@ StepResult TFTEngine::step(
             for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
                 auto& player_env = impl_->player_envs[i];
                 player_env.anti_loop.begin_round(public_round);
-                if (player_env.info.alive) impl_->register_position_state(i);
+                if (player_env.info.alive) {
+                    impl_->register_position_state(i);
+                    // The old-round masks were generated before begin_round;
+                    // rebuild them now so the first next-round action sees the
+                    // cleared local history and the fresh visited-state window.
+                    impl_->refresh_masks(i);
+                }
             }
             impl_->reset_round_completion();
         }
