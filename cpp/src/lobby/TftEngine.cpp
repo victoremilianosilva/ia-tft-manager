@@ -1548,11 +1548,11 @@ struct TFTEngine::Impl {
 
         // _should_lock_comp(): stage 4+ requires an active offensive synergy;
         // STABILIZE can release the lock after three rounds without a win.
-        if (info.strategy == 1 && info.comp_stabilize_start_round >= 0 &&
+        const bool stabilize_lock_suppressed =
+            info.strategy == 1 && info.comp_stabilize_start_round >= 0 &&
             current_round - info.comp_stabilize_start_round >= 3 &&
-            economy.win_streak == 0) {
-            info.composition_locked = false;
-        } else {
+            economy.win_streak == 0;
+        if (!stabilize_lock_suppressed) {
             bool has_offensive_synergy = false;
             if (current_stage >= 4) {
                 for (const auto& [trait, count] : board_trait_counts) {
