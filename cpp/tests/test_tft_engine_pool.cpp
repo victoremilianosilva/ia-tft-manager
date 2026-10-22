@@ -46,7 +46,9 @@ int main(int argc, char** argv) {
         const std::size_t legacy_observation_dim = 248 + trait_order.size();
         const std::size_t expected_observation_dim =
             legacy_observation_dim + 2 * trait_order.size() +
-            tft::kBoardSlots + tft::kBenchSlots + tft::kShopSlots + 8 * (tft::kBenchSlots + tft::kShopSlots);
+            tft::kBoardSlots + tft::kBenchSlots + tft::kShopSlots +
+            1 + tft::kBoardSlots +
+            8 * (tft::kBenchSlots + tft::kShopSlots);
         require(engine.observation_dim() == expected_observation_dim,
                 "Dimensao PPO nao inclui os novos recursos de composicao.");
 
