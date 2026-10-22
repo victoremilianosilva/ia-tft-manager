@@ -67,6 +67,7 @@ jobs:
           tests/test_strategic_policy.py
           tests/test_evaluate_checkpoints.py
           tests/test_viewer_policy_diagnostics.py
+          tests/test_viewer_preparation.py
           tests/test_viewer_player_logs.py
 
       - name: Publish native test reports
