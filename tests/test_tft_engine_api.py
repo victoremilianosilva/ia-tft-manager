@@ -490,13 +490,19 @@ def test_anti_loop_detects_unit_oscillation_with_other_units_interleaved():
         move(4, 6)  # B: 4 -> 6
         move(5, 3)  # A: 5 -> 3
         move(6, 7)  # B: 6 -> 7
-        move(3, 0)  # A: 3 -> 0
-        move(7, 8)  # B: 7 -> 8
 
+        # A's 3 -> 0 closes the cycle back through its earlier positions. The
+        # engine must mask it instead of executing a state already seen recently.
         masks = native.get_action_masks()[0]
-        assert not bool(masks["board_move_target_masks"][0][3]), (
-            "AntiLoop must mask A's 0 -> 3 return after two visits to slot 3, "
-            "even when B's moves are interleaved."
+        assert not bool(masks["board_move_target_masks"][3][0]), (
+            "AntiLoop must block A's 3 -> 0 cycle closure even when B's moves "
+            "are interleaved."
+        )
+
+        move(7, 8)  # B: 7 -> 8, another spacer move
+        masks = native.get_action_masks()[0]
+        assert not bool(masks["board_move_target_masks"][3][0]), (
+            "A's cycle must remain blocked after another unit moves in between."
         )
     finally:
         engine.close()
