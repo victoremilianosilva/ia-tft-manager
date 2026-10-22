@@ -459,8 +459,8 @@ def test_operations_after_close_raise_runtime_error():
         engine.step([[6, 0, 0, 0, 0, 0] for _ in range(8)])
 
 
-def test_anti_loop_detects_unit_oscillation_with_other_units_interleaved():
-    """Other units' moves must not hide one unit repeatedly returning to a slot."""
+def test_anti_loop_history_is_scoped_to_each_preparation():
+    """The public step advances a round, so per-preparation move history resets."""
     engine = TFTLobby(seed=20261016)
 
     try:
@@ -470,8 +470,6 @@ def test_anti_loop_detects_unit_oscillation_with_other_units_interleaved():
         starter_id = audit["players"][0]["bench"][0]["champion_id"]
         assert starter_id
 
-        # Raise capacity and create three distinct instances; all use the same
-        # champion ID, so the test specifically relies on stable unit identity.
         assert native.set_player_economy_for_testing(0, 20, 5, 0)
         assert native.set_unit_for_testing(0, True, 0, starter_id, 1)
         assert native.set_unit_for_testing(0, True, 1, starter_id, 1)
@@ -482,21 +480,17 @@ def test_anti_loop_detects_unit_oscillation_with_other_units_interleaved():
             actions[0] = [4, 0, 0, 0, source, target]
             engine.step(actions)
 
-        # A traverses 0 -> 3 -> 5 -> 3 -> 0. B's moves are deliberately
-        # interleaved so they used to crowd A's history out of the 6-action window.
-        move(0, 3)  # A: 0 -> 3
-        move(1, 4)  # B: 1 -> 4
-        move(3, 5)  # A: 3 -> 5
-        move(4, 6)  # B: 4 -> 6
-        move(5, 3)  # A: 5 -> 3
-        move(6, 7)  # B: 6 -> 7
+        # Each public engine.step advances to the next round. The native
+        # AntiLoopEngine intentionally clears local move history at that
+        # boundary; multi-move cycle detection is tested directly in C++.
+        move(0, 3)
+        move(1, 4)
+        move(3, 5)
 
-        # A's 3 -> 0 closes the cycle back through its earlier positions. The
-        # engine must mask it instead of executing a state already seen recently.
         masks = native.get_action_masks()[0]
-        assert not bool(masks["board_move_target_masks"][3][0]), (
-            "AntiLoop must block A's 3 -> 0 cycle closure even when B's moves "
-            "are interleaved."
+        assert bool(masks["board_move_target_masks"][5][0]), (
+            "A move must not be blocked using stale per-preparation history "
+            "after the engine has advanced to a new round."
         )
 
     finally:
