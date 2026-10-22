@@ -1,0 +1,2373 @@
+==========================================================
+TFT AI LOG · JOGADOR 3
+Partida: 41d3c7ad-ba55-48b4-a622-f1c21e438d1e
+Seed: 20261016 | Política: determinística
+Checkpoint SHA-256: 0ce147c51adc8dc482d401fbdbd9e586034ad9678a9114f2cead317de1434d49
+Impacto (i): custo × estrelas × 2 (contribuição nativa da engine)
+==========================================================
+--- INÍCIO DA PARTIDA · JOGADOR 3 ---
+[15:06:11] MOVE Bench -> Board: Briar (i:2.0) <-> Vazio | Rew: +0.29
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Briar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.80, Primordian 0.60, Rogue 0.60
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Briar | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=— -> TFT17_Briar | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Briar | core=SIM | fit=5.00 | Anima=3.80, Primordian=0.60, Rogue=0.60
+[15:06:12] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Briar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.80, Primordian 0.60, Rogue 0.60
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Briar | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Briar -> TFT17_Briar | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:06:17] --- FIM DO ROUND 1-1 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Briar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.80, Primordian 0.60, Rogue 0.60
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Bri|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:06:17] 🛒 LOJA: Nasus(i:2.0), Rek'Sai(i:2.0), Talon(i:2.0), Poppy(i:2.0), Nasus(i:2.0)
+[15:06:18] COMPROU: Poppy (Custo 1 | i:2.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Briar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.62, Primordian 0.57, Rogue 0.57, Bastion 0.12, Meeple 0.12
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Briar, TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Briar -> TFT17_Briar | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=0.24 | Meeple=0.12, Bastion=0.12
+[15:06:19] MOVE Bench -> Board: Poppy (i:2.0) <-> Briar (i:2.0) | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Briar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.48, Primordian 0.55, Rogue 0.55, Bastion 0.21, Meeple 0.21
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Briar, TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Briar -> TFT17_Briar | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=0.42 | Meeple=0.21, Bastion=0.21
+[15:06:20] MOVE Bench -> Board: Briar (i:2.0) <-> Vazio | Rew: +0.30
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Briar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.38, Primordian 0.53, Rogue 0.53, Bastion 0.28, Meeple 0.28
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Briar, TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Briar -> TFT17_Briar | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Briar | core=SIM | fit=4.45 | Anima=3.38, Primordian=0.53, Rogue=0.53
+[15:06:20] COMPROU: Nasus (Custo 1 | i:2.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Briar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.30, Primordian 0.52, Rogue 0.52, Bastion 0.33, Meeple 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Briar, TFT17_Poppy, TFT17_Nasus | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Briar -> TFT17_Briar | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=SIM | fit=0.00 | nenhum trait de foco
+[15:06:21] MOVE Bench -> Board: Nasus (i:2.0) <-> Poppy (i:2.0) | Rew: -0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Briar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.24, Primordian 0.51, Rogue 0.51, Bastion 0.37, Meeple 0.37
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Briar, TFT17_Nasus, TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Briar -> TFT17_Briar | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=SIM | fit=0.00 | nenhum trait de foco
+[15:06:22] MOVE Bench -> Board: Poppy (i:2.0) <-> Briar (i:2.0) | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Briar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.20, Primordian 0.51, Rogue 0.51, Bastion 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Briar, TFT17_Nasus, TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Briar -> TFT17_Briar | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=0.79 | Meeple=0.39, Bastion=0.39
+[15:06:22] MOVE Bench -> Board: Briar (i:2.0) <-> Nasus (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Briar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.17, Primordian 0.50, Rogue 0.50, Bastion 0.42, Meeple 0.42
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Briar, TFT17_Poppy, TFT17_Nasus | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Briar -> TFT17_Briar | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Briar | core=SIM | fit=4.17 | Anima=3.17, Primordian=0.50, Rogue=0.50
+[15:06:23] MOVE Bench -> Board: Nasus (i:2.0) <-> Poppy (i:2.0) | Rew: -0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Briar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.14, Primordian 0.50, Rogue 0.50, Bastion 0.43, Meeple 0.43
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Briar, TFT17_Nasus, TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Briar -> TFT17_Briar | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=SIM | fit=0.00 | nenhum trait de foco
+[15:06:24] MOVE Bench -> Board: Poppy (i:2.0) <-> Vazio | Rew: +0.51
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Briar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.12, Primordian 0.49, Rogue 0.49, Bastion 0.45, Meeple 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Briar, TFT17_Nasus, TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Briar -> TFT17_Briar | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=0.89 | Meeple=0.45, Bastion=0.45
+
+[15:06:24] --- FIM DO ROUND 1-2 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Briar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.10, Primordian 0.49, Rogue 0.49, Bastion 0.46, Meeple 0.46
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Bri|F|1*|i:2.0]       [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:06:24] 🛒 LOJA: Jax(i:4.0), Aatrox(i:2.0), Briar(i:2.0), Briar(i:2.0), Briar(i:2.0)
+[15:06:25] MOVE Board -> Board: Briar (i:2.0) <-> Vazio | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Briar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.09, Primordian 0.49, Rogue 0.49, Bastion 0.47, Meeple 0.47
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Briar, TFT17_Nasus, TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Briar -> TFT17_Briar | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Briar | core=SIM | fit=4.06 | Anima=3.09, Primordian=0.49, Rogue=0.49
+[15:06:26] COMPROU: Jax (Custo 2 | i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 2.43, Bastion 1.14, Primordian 0.48, Rogue 0.48, Meeple 0.47
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Briar -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=1.14 | Bastion=1.14
+[15:06:26] MOVE Bench -> Board: Jax (i:4.0) <-> Nasus (i:2.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 1.85, Bastion 1.79, Primordian 0.46, Rogue 0.46, Meeple 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Poppy | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=1.79 | Bastion=1.79
+[15:06:27] MOVE Bench -> Board: Nasus (i:2.0) <-> Briar (i:2.0) | Rew: -0.20
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.26, Anima 1.43, Primordian 0.44, Rogue 0.44, Meeple 0.43
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=SIM | fit=0.00 | nenhum trait de foco
+[15:06:28] MOVE Bench -> Board: Briar (i:2.0) <-> Jax (i:4.0) | Rew: -0.23
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.47, Anima 1.19, Primordian 0.45, Rogue 0.45, Meeple 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Briar | core=SIM | fit=2.08 | Anima=1.19, Primordian=0.45, Rogue=0.45
+[15:06:29] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.64, Anima 1.01, Primordian 0.45, Rogue 0.45, Meeple 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+
+[15:06:31] --- FIM DO ROUND 1-3 | GOLD: 3 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.01, Anima 0.60, Primordian 0.46, Rogue 0.46, Meeple 0.46
+    RENDA PRÓXIMO ROUND: +3 base, +0 juros, +0 sequência, +0 vitória (total: +3)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Jax|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:06:31] 🛒 LOJA: Veigar(i:2.0), Poppy(i:2.0), Lissandra(i:2.0), Pyke(i:4.0), Akali(i:4.0)
+[15:06:32] MOVE Bench -> Board: Jax (i:4.0) <-> Nasus (i:2.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.13, Anima 0.54, Primordian 0.44, Rogue 0.44, Meeple 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Poppy | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.13 | Bastion=3.13
+[15:06:33] MOVE Bench -> Board: Nasus (i:2.0) <-> Briar (i:2.0) | Rew: -0.20
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.21, Anima 0.50, Primordian 0.43, Rogue 0.43, Meeple 0.43
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=SIM | fit=0.00 | nenhum trait de foco
+[15:06:33] MOVE Bench -> Board: Briar (i:2.0) <-> Poppy (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.19, Anima 0.49, Primordian 0.44, Rogue 0.44, Meeple 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Briar | core=SIM | fit=1.37 | Anima=0.49, Primordian=0.44, Rogue=0.44
+[15:06:34] MOVE Bench -> Board: Poppy (i:2.0) <-> Nasus (i:2.0) | Rew: -0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.26, Anima 0.46, Primordian 0.43, Rogue 0.43, Meeple 0.43
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Poppy | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=3.68 | Meeple=0.43, Bastion=3.26
+[15:06:35] MOVE Bench -> Board: Nasus (i:2.0) <-> Jax (i:4.0) | Rew: -0.32
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.22, Anima 0.46, Primordian 0.44, Rogue 0.44, Meeple 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=SIM | fit=0.00 | nenhum trait de foco
+[15:06:36] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.20, Anima 0.47, Primordian 0.45, Rogue 0.45, Meeple 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +3 | juros +0 | sequência +0 | vitória +0
+
+[15:06:38] --- FIM DO ROUND 1-4 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.14, Anima 0.47, Primordian 0.46, Rogue 0.46, Meeple 0.46
+    RENDA PRÓXIMO ROUND: +4 base, +0 juros, +0 sequência, +0 vitória (total: +4)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Bri|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Jax|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:06:38] 🛒 LOJA: Lissandra(i:2.0), Akali(i:4.0), Ezreal(i:2.0), Milio(i:4.0), Zoe(i:4.0)
+[15:06:39] MOVE Bench -> Board: Jax (i:4.0) <-> Vazio | Rew: +0.61
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.22, Anima 0.45, Primordian 0.44, Rogue 0.44, Meeple 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.22 | Bastion=3.22
+[15:06:40] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.28, Anima 0.43, Primordian 0.43, Rogue 0.43, Meeple 0.43
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +4 | juros +0 | sequência +0 | vitória +0
+[15:06:41] MOVE Board -> Board: Jax (i:4.0) <-> Nasus (i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.32, Anima 0.42, Primordian 0.42, Rogue 0.42, Meeple 0.42
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.32 | Bastion=3.32
+[15:06:41] MOVE Board -> Board: Nasus (i:2.0) <-> Vazio | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.35, Anima 0.41, Primordian 0.41, Rogue 0.41, Meeple 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Poppy | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=não | fit=0.00 | nenhum trait de foco
+[15:06:42] MOVE Board -> Board: Briar (i:2.0) <-> Jax (i:4.0) | Rew: -0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.37, Anima 0.41, Primordian 0.41, Rogue 0.41, Meeple 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Poppy | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Briar | core=SIM | fit=1.22 | Anima=0.41, Primordian=0.41, Rogue=0.41
+[15:06:43] MOVE Board -> Board: Jax (i:4.0) <-> Nasus (i:2.0) | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.38, Anima 0.40, Primordian 0.40, Rogue 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Poppy | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.38 | Bastion=3.38
+[15:06:43] MOVE Board -> Board: Nasus (i:2.0) <-> Vazio | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.39, Anima 0.40, Primordian 0.40, Rogue 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=SIM | fit=0.00 | nenhum trait de foco
+[15:06:44] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.40, Anima 0.40, Primordian 0.40, Rogue 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +4 | juros +0 | sequência +0 | vitória +0
+
+[15:06:45] --- FIM DO ROUND 2-1 | GOLD: 9 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.41, Anima 0.40, Primordian 0.40, Rogue 0.40, Meeple 0.40
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]  [Jax|T|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:06:45] 🛒 LOJA: Pantheon(i:4.0), Aurora(i:6.0), Teemo(i:2.0), Pantheon(i:4.0), Akali(i:4.0)
+[15:06:47] BUY XP                       | Rew: +1.51
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.40, Primordian 0.40, Rogue 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[15:06:48] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.40, Primordian 0.40, Rogue 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[15:06:48] COMPROU: Teemo (Custo 1 | i:2.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.40, Primordian 0.40, Rogue 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Space Groove, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Teemo | core=não | fit=0.00 | nenhum trait de foco
+[15:06:49] MOVE Bench -> Board: Teemo (i:2.0) <-> Vazio | Rew: +0.49
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.40, Primordian 0.40, Rogue 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Space Groove, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Teemo | core=não | fit=0.00 | nenhum trait de foco
+[15:06:50] MOVE Board -> Board: Teemo (i:2.0) <-> Briar (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.40, Primordian 0.40, Rogue 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Space Groove, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Teemo | core=não | fit=0.00 | nenhum trait de foco
+[15:06:50] MOVE Board -> Board: Briar (i:2.0) <-> Jax (i:4.0) | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Space Groove, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Briar | core=SIM | fit=1.18 | Anima=0.39, Primordian=0.39, Rogue=0.39
+[15:06:51] MOVE Board -> Board: Jax (i:4.0) <-> Nasus (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Teemo | CORE TRAITS: Bastion, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Jax | core=SIM | fit=3.42 | Bastion=3.42
+[15:06:52] MOVE Board -> Board: Nasus (i:2.0) <-> Vazio | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Nasus | core=SIM | fit=0.00 | nenhum trait de foco
+[15:06:52] MOVE Board -> Board: Poppy (i:2.0) <-> Teemo (i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Poppy | core=não | fit=3.82 | Meeple=0.39, Bastion=3.42
+
+[15:06:53] --- FIM DO ROUND 2-2 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Tee|C|1*|i:2.0]  [Bri|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:06:53] 🛒 LOJA: Lulu(i:6.0), Veigar(i:2.0), Jax(i:4.0), Jinx(i:4.0), Milio(i:4.0)
+[15:06:55] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[15:06:55] COMPROU: Jax (Custo 2 | i:4.0) | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Jax | core=SIM | fit=3.42 | Bastion=3.42
+[15:06:55]  ⬆️ SINERGIA: BASTION nível 1
+[15:06:56] MOVE Bench -> Board: Jax (i:4.0) <-> Teemo (i:2.0) | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Jax | core=SIM | fit=3.42 | Bastion=3.42
+[15:06:57] MOVE Bench -> Board: Teemo (i:2.0) <-> Briar (i:2.0) | Rew: -0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Teemo | core=não | fit=0.00 | nenhum trait de foco
+[15:06:57] MOVE Bench -> Board: Briar (i:2.0) <-> Jax (i:4.0) | Rew: -0.29
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Briar | core=SIM | fit=1.18 | Anima=0.39, Primordian=0.39, Rogue=0.39
+[15:06:58] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+
+[15:07:01] --- FIM DO ROUND 2-3 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Jax|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:01] 🛒 LOJA: Ezreal(i:2.0), Jinx(i:4.0), Maokai(i:6.0), Talon(i:2.0), Diana(i:6.0)
+[15:07:02] MOVE Bench -> Board: Jax (i:4.0) <-> Teemo (i:2.0) | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 6 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.42 | Bastion=3.42
+[15:07:03] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[15:07:04] MOVE Bench -> Board: Teemo (i:2.0) <-> Briar (i:2.0) | Rew: -0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=não | fit=0.00 | nenhum trait de foco
+[15:07:04] MOVE Bench -> Board: Briar (i:2.0) <-> Jax (i:4.0) | Rew: -0.29
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Briar | core=SIM | fit=1.18 | Anima=0.39, Primordian=0.39, Rogue=0.39
+[15:07:05] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[15:07:09] --- FIM DO ROUND 2-4 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Tee|C|1*|i:2.0]  [Jax|T|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Jax|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:09] 🛒 LOJA: Bel'Veth(i:4.0), Bel'Veth(i:4.0), Akali(i:4.0), Miss Fortune(i:6.0), Rek'Sai(i:2.0)
+[15:07:11] MOVE Bench -> Board: Jax (i:4.0) <-> Teemo (i:2.0) | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.42 | Bastion=3.42
+[15:07:12] BUY XP                       | Rew: +0.51
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[15:07:12] MOVE Bench -> Board: Teemo (i:2.0) <-> Vazio | Rew: +0.48
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=não | fit=0.00 | nenhum trait de foco
+[15:07:13] MOVE Board -> Board: Teemo (i:2.0) <-> Poppy (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=não | fit=0.00 | nenhum trait de foco
+[15:07:14] MOVE Board -> Board: Poppy (i:2.0) <-> Jax (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=3.82 | Meeple=0.39, Bastion=3.42
+[15:07:14] MOVE Board -> Board: Jax (i:4.0) <-> Briar (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Nasus | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.42 | Bastion=3.42
+[15:07:15] MOVE Board -> Board: Briar (i:2.0) <-> Nasus (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Teemo | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Briar | core=SIM | fit=1.18 | Anima=0.39, Primordian=0.39, Rogue=0.39
+[15:07:16] MOVE Board -> Board: Nasus (i:2.0) <-> Vazio | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jax | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jax, TFT17_Briar, TFT17_Teemo | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_Jax | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=não | fit=0.00 | nenhum trait de foco
+[15:07:16] COMPROU: Miss Fortune (Custo 3 | i:6.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jax -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=0.00 | nenhum trait de foco
+
+[15:07:17] --- FIM DO ROUND 2-5 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Mis|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:17] 🛒 LOJA: Aatrox(i:2.0), Rek'Sai(i:2.0), Akali(i:4.0), Pantheon(i:4.0), Jinx(i:4.0)
+[15:07:19] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Jax (i:4.0) | Rew: -0.17
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 6 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=0.00 | nenhum trait de foco
+[15:07:19] MOVE Bench -> Board: Jax (i:4.0) <-> Poppy (i:2.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 6 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Jax | core=SIM | fit=3.42 | Bastion=3.42
+[15:07:20] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[15:07:21] MOVE Bench -> Board: Poppy (i:2.0) <-> Miss Fortune (i:6.0) | Rew: -0.18
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Poppy | core=não | fit=3.82 | Meeple=0.39, Bastion=3.42
+[15:07:21] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Jax (i:4.0) | Rew: -0.17
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=0.00 | nenhum trait de foco
+[15:07:22] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+
+[15:07:25] --- FIM DO ROUND 2-6 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Jax|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:25] 🛒 LOJA: Urgot(i:6.0), Rek'Sai(i:2.0), Aurora(i:6.0), Akali(i:4.0), Aatrox(i:2.0)
+[15:07:27] MOVE Bench -> Board: Jax (i:4.0) <-> Poppy (i:2.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.42 | Bastion=3.42
+[15:07:28] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[15:07:28] MOVE Bench -> Board: Poppy (i:2.0) <-> Jax (i:4.0) | Rew: -0.23
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=3.82 | Meeple=0.39, Bastion=3.42
+[15:07:29] MOVE Bench -> Board: Jax (i:4.0) <-> Jax (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.42 | Bastion=3.42
+[15:07:30] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[15:07:33] --- FIM DO ROUND 2-7 | GOLD: 8 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Jax|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:33] 🛒 LOJA: Jax(i:4.0), Veigar(i:2.0), Gnar(i:4.0), Gragas(i:4.0), Rhaast(i:6.0)
+[15:07:35] MOVE Bench -> Board: Jax (i:4.0) <-> Miss Fortune (i:6.0) | Rew: +0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.42, Anima 0.39, Primordian 0.39, Rogue 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 8 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.42 | Bastion=3.42
+[15:07:36] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Jax (i:4.0) | Rew: -0.17
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 3.98
+FOCUS WEIGHTS: Bastion 3.61, Space Groove 0.39, Anima 0.33, Primordian 0.33, Rogue 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=— -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 3.98
+    GOLD: 8 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=0.00 | nenhum trait de foco
+[15:07:37] MOVE Bench -> Board: Jax (i:4.0) <-> Jax (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 3.98
+FOCUS WEIGHTS: Bastion 3.38, Space Groove 0.63, Anima 0.33, Primordian 0.33, Rogue 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=3.98 -> 3.98
+    GOLD: 8 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.38 | Bastion=3.38
+[15:07:37] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 4.01
+FOCUS WEIGHTS: Bastion 3.43, Space Groove 0.73, Anima 0.28, Primordian 0.28, Rogue 0.28
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=3.98 -> 4.01
+    GOLD: 8 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[15:07:42] --- FIM DO ROUND 3-1 | GOLD: 14 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 4.03
+FOCUS WEIGHTS: Bastion 3.18, Space Groove 0.99, Anima 0.28, Primordian 0.28, Rogue 0.28
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Mis|T|1*|i:6.0]  [Jax|T|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Jax|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:42] 🛒 LOJA: Bel'Veth(i:4.0), Talon(i:2.0), Veigar(i:2.0), Gragas(i:4.0), Diana(i:6.0)
+[15:07:44] MOVE Bench -> Board: Jax (i:4.0) <-> Miss Fortune (i:6.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 5.10
+FOCUS WEIGHTS: Bastion 3.24, Space Groove 0.92, Stargazer 0.36, Anima 0.24, Primordian 0.24
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=4.03 -> 5.10
+    GOLD: 14 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Jax | core=SIM | fit=3.60 | Stargazer=0.36, Bastion=3.24
+[15:07:45] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Poppy (i:2.0) | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 5.10
+FOCUS WEIGHTS: Bastion 2.98, Space Groove 0.93, Stargazer 0.57, Anima 0.26, Primordian 0.26
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=5.10 -> 5.10
+    GOLD: 14 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=0.00 | nenhum trait de foco
+[15:07:45] MOVE Bench -> Board: Poppy (i:2.0) <-> Jax (i:4.0) | Rew: -0.23
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 4.03
+FOCUS WEIGHTS: Bastion 3.15, Space Groove 0.89, Stargazer 0.49, Anima 0.24, Primordian 0.24
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=5.10 -> 4.03
+    GOLD: 14 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Poppy | core=não | fit=3.15 | Bastion=3.15
+[15:07:46] MOVE Bench -> Board: Jax (i:4.0) <-> Jax (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 4.03
+FOCUS WEIGHTS: Bastion 3.04, Space Groove 0.96, Stargazer 0.47, Anima 0.27, Primordian 0.27
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=4.03 -> 4.03
+    GOLD: 14 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Jax | core=SIM | fit=3.51 | Stargazer=0.47, Bastion=3.04
+[15:07:47] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 4.04
+FOCUS WEIGHTS: Bastion 3.19, Space Groove 0.91, Stargazer 0.43, Anima 0.24, Primordian 0.24
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=4.03 -> 4.04
+    GOLD: 14 | renda base +5 | juros +0 | sequência +0 | vitória +1
+
+[15:07:50] --- FIM DO ROUND 3-2 | GOLD: 22 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 4.04
+FOCUS WEIGHTS: Bastion 3.21, Space Groove 0.91, Stargazer 0.40, Anima 0.24, Primordian 0.24
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +1 sequência, +1 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]  [Jax|T|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Jax|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:50] 🛒 LOJA: Xayah(i:8.0), Bel'Veth(i:4.0), Jinx(i:4.0), Miss Fortune(i:6.0), Nasus(i:2.0)
+[15:07:52] MOVE Bench -> Board: Jax (i:4.0) <-> Poppy (i:2.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 4.04
+FOCUS WEIGHTS: Bastion 2.96, Space Groove 0.93, Stargazer 0.60, Anima 0.26, Primordian 0.26
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=4.04 -> 4.04
+    GOLD: 22 | renda base +5 | juros +1 | sequência +1 | vitória +1
+    FIT UNIDADE: Jax | core=SIM | fit=3.55 | Stargazer=0.60, Bastion=2.96
+[15:07:53] MOVE Bench -> Board: Poppy (i:2.0) <-> Jax (i:4.0) | Rew: -0.23
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 4.03
+FOCUS WEIGHTS: Bastion 3.14, Space Groove 0.89, Stargazer 0.50, Anima 0.24, Primordian 0.24
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=4.04 -> 4.03
+    GOLD: 22 | renda base +5 | juros +1 | sequência +1 | vitória +1
+    FIT UNIDADE: Poppy | core=não | fit=3.14 | Bastion=3.14
+[15:07:54] MOVE Bench -> Board: Jax (i:4.0) <-> Jax (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 4.03
+FOCUS WEIGHTS: Bastion 3.04, Space Groove 0.96, Stargazer 0.48, Anima 0.26, Primordian 0.26
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=4.03 -> 4.03
+    GOLD: 22 | renda base +5 | juros +1 | sequência +1 | vitória +1
+    FIT UNIDADE: Jax | core=SIM | fit=3.51 | Stargazer=0.48, Bastion=3.04
+[15:07:54] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 4.04
+FOCUS WEIGHTS: Bastion 3.18, Space Groove 0.91, Stargazer 0.43, Anima 0.24, Primordian 0.24
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=4.03 -> 4.04
+    GOLD: 22 | renda base +5 | juros +1 | sequência +1 | vitória +1
+
+[15:07:59] --- FIM DO ROUND 3-3 | GOLD: 31 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 4.04
+FOCUS WEIGHTS: Bastion 3.08, Space Groove 0.97, Stargazer 0.41, Anima 0.27, Primordian 0.27
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +1 sequência, +1 vitória (total: +9)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Jax|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:59] 🛒 LOJA: Bel'Veth(i:4.0), Fizz(i:6.0), Gwen(i:4.0), Rhaast(i:6.0), Cho'Gath(i:2.0)
+[15:08:01] MOVE Bench -> Board: Jax (i:4.0) <-> Miss Fortune (i:6.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.11
+FOCUS WEIGHTS: Bastion 2.87, Space Groove 0.88, Stargazer 0.60, Anima 0.32, Primordian 0.32
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=4.04 -> 3.11
+    GOLD: 31 | renda base +5 | juros +2 | sequência +1 | vitória +1
+    FIT UNIDADE: Jax | core=SIM | fit=3.47 | Stargazer=0.60, Bastion=2.87
+[15:08:01] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Jax (i:4.0) | Rew: -0.22
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.11
+FOCUS WEIGHTS: Bastion 2.63, Space Groove 0.96, Stargazer 0.60, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.11 -> 3.11
+    GOLD: 31 | renda base +5 | juros +2 | sequência +1 | vitória +1
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=0.00 | nenhum trait de foco
+[15:08:02] MOVE Bench -> Board: Jax (i:4.0) <-> Poppy (i:2.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.90
+FOCUS WEIGHTS: Bastion 2.64, Space Groove 0.88, Stargazer 0.70, Anima 0.39, Primordian 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.11 -> 2.90
+    GOLD: 31 | renda base +5 | juros +2 | sequência +1 | vitória +1
+    FIT UNIDADE: Jax | core=SIM | fit=3.34 | Stargazer=0.70, Bastion=2.64
+[15:08:03] MOVE Bench -> Board: Poppy (i:2.0) <-> Miss Fortune (i:6.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.90
+FOCUS WEIGHTS: Bastion 2.40, Space Groove 0.92, Stargazer 0.82, Anima 0.43, Primordian 0.43
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.90 -> 2.90
+    GOLD: 31 | renda base +5 | juros +2 | sequência +1 | vitória +1
+    FIT UNIDADE: Poppy | core=não | fit=2.40 | Bastion=2.40
+[15:08:04] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Briar (i:2.0) | Rew: +0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.90
+FOCUS WEIGHTS: Bastion 2.53, Space Groove 0.86, Stargazer 0.81, Anima 0.40, Primordian 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.90 -> 2.90
+    GOLD: 31 | renda base +5 | juros +2 | sequência +1 | vitória +1
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=0.00 | nenhum trait de foco
+[15:08:04] MOVE Bench -> Board: Briar (i:2.0) <-> Poppy (i:2.0) | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.90
+FOCUS WEIGHTS: Bastion 2.34, Space Groove 0.91, Stargazer 0.88, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.90 -> 2.90
+    GOLD: 31 | renda base +5 | juros +2 | sequência +1 | vitória +1
+    FIT UNIDADE: Briar | core=SIM | fit=0.88 | Anima=0.44, Primordian=0.44
+[15:08:05] MOVE Bench -> Board: Poppy (i:2.0) <-> Jax (i:4.0) | Rew: -0.23
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.76
+FOCUS WEIGHTS: Bastion 2.58, Space Groove 0.89, Stargazer 0.69, Anima 0.42, Primordian 0.42
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.90 -> 2.76
+    GOLD: 31 | renda base +5 | juros +2 | sequência +1 | vitória +1
+    FIT UNIDADE: Poppy | core=não | fit=2.58 | Bastion=2.58
+[15:08:06] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.76
+FOCUS WEIGHTS: Bastion 2.45, Space Groove 0.96, Stargazer 0.66, Anima 0.46, Primordian 0.46
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.76 -> 2.76
+    GOLD: 31 | renda base +5 | juros +2 | sequência +1 | vitória +1
+
+[15:08:07] --- FIM DO ROUND 3-4 | GOLD: 40 ---
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.79
+FOCUS WEIGHTS: Bastion 2.66, Space Groove 0.92, Stargazer 0.55, Anima 0.44, Primordian 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +3 juros, +1 sequência, +0 vitória (total: +9)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Mis|T|1*|i:6.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Jax|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:08:07] 🛒 LOJA: Urgot(i:6.0), Rhaast(i:6.0), Nunu & Willump(i:8.0), Gnar(i:4.0), Pantheon(i:4.0)
+[15:08:10] MOVE Bench -> Board: Jax (i:4.0) <-> Briar (i:2.0) | Rew: +0.14
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.79
+FOCUS WEIGHTS: Bastion 2.41, Space Groove 0.94, Stargazer 0.73, Anima 0.46, Primordian 0.46
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.79 -> 2.79
+    GOLD: 40 | renda base +5 | juros +3 | sequência +1 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.14 | Stargazer=0.73, Bastion=2.41
+[15:08:11] MOVE Bench -> Board: Briar (i:2.0) <-> Jax (i:4.0) | Rew: -0.33
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.77
+FOCUS WEIGHTS: Bastion 2.62, Space Groove 0.90, Stargazer 0.62, Anima 0.43, Primordian 0.43
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.79 -> 2.77
+    GOLD: 40 | renda base +5 | juros +3 | sequência +1 | vitória +0
+    FIT UNIDADE: Briar | core=SIM | fit=0.86 | Anima=0.43, Primordian=0.43
+[15:08:11] MOVE Bench -> Board: Jax (i:4.0) <-> Jax (i:4.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.77
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.97, Stargazer 0.61, Anima 0.47, Primordian 0.47
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.77 -> 2.77
+    GOLD: 40 | renda base +5 | juros +3 | sequência +1 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.09 | Stargazer=0.61, Bastion=2.48
+[15:08:12] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.79
+FOCUS WEIGHTS: Bastion 2.66, Space Groove 0.92, Stargazer 0.56, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.77 -> 2.79
+    GOLD: 40 | renda base +5 | juros +3 | sequência +1 | vitória +0
+
+[15:08:16] --- FIM DO ROUND 3-5 | GOLD: 49 ---
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.79
+FOCUS WEIGHTS: Bastion 2.51, Space Groove 0.98, Stargazer 0.56, Anima 0.48, Primordian 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +4 juros, +0 sequência, +0 vitória (total: +9)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Mis|T|1*|i:6.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Jax|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:08:16] 🛒 LOJA: Akali(i:4.0), Veigar(i:2.0), Urgot(i:6.0), Poppy(i:2.0), Gnar(i:4.0)
+[15:08:19] MOVE Bench -> Board: Jax (i:4.0) <-> Poppy (i:2.0) | Rew: +0.09
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.86
+FOCUS WEIGHTS: Bastion 2.58, Space Groove 0.89, Stargazer 0.68, Anima 0.42, Primordian 0.42
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.79 -> 2.86
+    GOLD: 49 | renda base +5 | juros +4 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.26 | Stargazer=0.68, Bastion=2.58
+[15:08:20] MOVE Bench -> Board: Poppy (i:2.0) <-> Jax (i:4.0) | Rew: -0.23
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.86
+FOCUS WEIGHTS: Bastion 2.45, Space Groove 0.96, Stargazer 0.65, Anima 0.47, Primordian 0.47
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.86 -> 2.86
+    GOLD: 49 | renda base +5 | juros +4 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=2.45 | Bastion=2.45
+[15:08:20] MOVE Bench -> Board: Jax (i:4.0) <-> Jax (i:4.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.78
+FOCUS WEIGHTS: Bastion 2.64, Space Groove 0.91, Stargazer 0.58, Anima 0.43, Primordian 0.43
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.86 -> 2.78
+    GOLD: 49 | renda base +5 | juros +4 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.22 | Stargazer=0.58, Bastion=2.64
+[15:08:21] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.78
+FOCUS WEIGHTS: Bastion 2.49, Space Groove 0.97, Stargazer 0.59, Anima 0.47, Primordian 0.47
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.78 -> 2.78
+    GOLD: 49 | renda base +5 | juros +4 | sequência +0 | vitória +0
+
+[15:08:25] --- FIM DO ROUND 3-6 | GOLD: 60 ---
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.79
+FOCUS WEIGHTS: Bastion 2.67, Space Groove 0.92, Stargazer 0.53, Anima 0.44, Primordian 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Mis|T|1*|i:6.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]  [Jax|T|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Jax|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:08:25] 🛒 LOJA: Nasus(i:2.0), Lissandra(i:2.0), Kai'Sa(i:6.0), Veigar(i:2.0), Rhaast(i:6.0)
+[15:08:28] MOVE Bench -> Board: Jax (i:4.0) <-> Poppy (i:2.0) | Rew: +0.09
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.79
+FOCUS WEIGHTS: Bastion 2.42, Space Groove 0.94, Stargazer 0.72, Anima 0.46, Primordian 0.46
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.79 -> 2.79
+    GOLD: 60 | renda base +5 | juros +5 | sequência +0 | vitória +1
+    FIT UNIDADE: Jax | core=SIM | fit=3.14 | Stargazer=0.72, Bastion=2.42
+[15:08:29] MOVE Bench -> Board: Poppy (i:2.0) <-> Miss Fortune (i:6.0) | Rew: -0.09
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.90
+FOCUS WEIGHTS: Bastion 2.54, Space Groove 0.87, Stargazer 0.76, Anima 0.42, Primordian 0.42
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.79 -> 2.90
+    GOLD: 60 | renda base +5 | juros +5 | sequência +0 | vitória +1
+    FIT UNIDADE: Poppy | core=não | fit=2.54 | Bastion=2.54
+[15:08:30] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Jax (i:4.0) | Rew: -0.22
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.90
+FOCUS WEIGHTS: Bastion 2.43, Space Groove 0.95, Stargazer 0.70, Anima 0.46, Primordian 0.46
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.90 -> 2.90
+    GOLD: 60 | renda base +5 | juros +5 | sequência +0 | vitória +1
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=0.00 | nenhum trait de foco
+[15:08:30] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.78
+FOCUS WEIGHTS: Bastion 2.63, Space Groove 0.91, Stargazer 0.60, Anima 0.43, Primordian 0.43
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.90 -> 2.78
+    GOLD: 60 | renda base +5 | juros +5 | sequência +0 | vitória +1
+
+[15:08:35] --- FIM DO ROUND 3-7 | GOLD: 70 ---
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.79
+FOCUS WEIGHTS: Bastion 2.51, Space Groove 0.98, Stargazer 0.56, Anima 0.48, Primordian 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Mis|T|1*|i:6.0]  [Jax|T|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Jax|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:08:35] 🛒 LOJA: Gragas(i:4.0), Tahm Kench(i:8.0), Urgot(i:6.0), Gragas(i:4.0), Rhaast(i:6.0)
+[15:08:38] MOVE Bench -> Board: Jax (i:4.0) <-> Poppy (i:2.0) | Rew: +0.09
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.86
+FOCUS WEIGHTS: Bastion 2.58, Space Groove 0.89, Stargazer 0.68, Anima 0.42, Primordian 0.42
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.79 -> 2.86
+    GOLD: 70 | renda base +5 | juros +5 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.26 | Stargazer=0.68, Bastion=2.58
+[15:08:39] MOVE Bench -> Board: Poppy (i:2.0) <-> Miss Fortune (i:6.0) | Rew: -0.09
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.86
+FOCUS WEIGHTS: Bastion 2.37, Space Groove 0.93, Stargazer 0.81, Anima 0.45, Primordian 0.45
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.86 -> 2.86
+    GOLD: 70 | renda base +5 | juros +5 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=2.37 | Bastion=2.37
+[15:08:39] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Jax (i:4.0) | Rew: -0.22
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.76
+FOCUS WEIGHTS: Bastion 2.60, Space Groove 0.90, Stargazer 0.66, Anima 0.43, Primordian 0.43
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.86 -> 2.76
+    GOLD: 70 | renda base +5 | juros +5 | sequência +0 | vitória +0
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=0.00 | nenhum trait de foco
+[15:08:40] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.76
+FOCUS WEIGHTS: Bastion 2.46, Space Groove 0.96, Stargazer 0.64, Anima 0.47, Primordian 0.47
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.76 -> 2.76
+    GOLD: 70 | renda base +5 | juros +5 | sequência +0 | vitória +0
+
+[15:08:44] --- FIM DO ROUND 4-1 | GOLD: 80 ---
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.79
+FOCUS WEIGHTS: Bastion 2.67, Space Groove 0.92, Stargazer 0.53, Anima 0.44, Primordian 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Jax|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:08:44] 🛒 LOJA: Ezreal(i:2.0), Mordekaiser(i:4.0), Pyke(i:4.0), Gnar(i:4.0), Miss Fortune(i:6.0)
+[15:08:48] MOVE Bench -> Board: Jax (i:4.0) <-> Poppy (i:2.0) | Rew: +0.09
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.79
+FOCUS WEIGHTS: Bastion 2.42, Space Groove 0.94, Stargazer 0.72, Anima 0.46, Primordian 0.46
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.79 -> 2.79
+    GOLD: 80 | renda base +5 | juros +5 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.14 | Stargazer=0.72, Bastion=2.42
+[15:08:49] MOVE Bench -> Board: Poppy (i:2.0) <-> Jax (i:4.0) | Rew: -0.23
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.78
+FOCUS WEIGHTS: Bastion 2.62, Space Groove 0.90, Stargazer 0.61, Anima 0.43, Primordian 0.43
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.79 -> 2.78
+    GOLD: 80 | renda base +5 | juros +5 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=2.62 | Bastion=2.62
+[15:08:49] MOVE Bench -> Board: Jax (i:4.0) <-> Jax (i:4.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.78
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.97, Stargazer 0.61, Anima 0.47, Primordian 0.47
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.78 -> 2.78
+    GOLD: 80 | renda base +5 | juros +5 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.09 | Stargazer=0.61, Bastion=2.48
+[15:08:50] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.79
+FOCUS WEIGHTS: Bastion 2.66, Space Groove 0.92, Stargazer 0.56, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.78 -> 2.79
+    GOLD: 80 | renda base +5 | juros +5 | sequência +0 | vitória +0
+
+[15:08:54] --- FIM DO ROUND 4-2 | GOLD: 91 ---
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.79
+FOCUS WEIGHTS: Bastion 2.51, Space Groove 0.98, Stargazer 0.56, Anima 0.48, Primordian 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Jax|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:08:54] 🛒 LOJA: Maokai(i:6.0), LeBlanc(i:8.0), Ornn(i:6.0), Illaoi(i:6.0), Veigar(i:2.0)
+[15:08:58] MOVE Bench -> Board: Jax (i:4.0) <-> Poppy (i:2.0) | Rew: +0.09
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.86
+FOCUS WEIGHTS: Bastion 2.58, Space Groove 0.89, Stargazer 0.68, Anima 0.42, Primordian 0.42
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.79 -> 2.86
+    GOLD: 91 | renda base +5 | juros +5 | sequência +0 | vitória +1
+    FIT UNIDADE: Jax | core=SIM | fit=3.26 | Stargazer=0.68, Bastion=2.58
+[15:08:58] MOVE Bench -> Board: Poppy (i:2.0) <-> Jax (i:4.0) | Rew: -0.23
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.86
+FOCUS WEIGHTS: Bastion 2.45, Space Groove 0.96, Stargazer 0.65, Anima 0.47, Primordian 0.47
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.86 -> 2.86
+    GOLD: 91 | renda base +5 | juros +5 | sequência +0 | vitória +1
+    FIT UNIDADE: Poppy | core=não | fit=2.45 | Bastion=2.45
+[15:08:59] MOVE Bench -> Board: Jax (i:4.0) <-> Teemo (i:2.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.80
+FOCUS WEIGHTS: Bastion 2.65, Stargazer 0.75, Space Groove 0.74, Anima 0.43, Primordian 0.43
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.86 -> 2.80
+    GOLD: 91 | renda base +5 | juros +5 | sequência +0 | vitória +1
+    FIT UNIDADE: Jax | core=SIM | fit=3.39 | Stargazer=0.75, Bastion=2.65
+[15:09:00] MOVE Bench -> Board: Teemo (i:2.0) <-> Poppy (i:2.0) | Rew: -0.00
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.80
+FOCUS WEIGHTS: Bastion 2.40, Stargazer 0.84, Space Groove 0.84, Anima 0.46, Primordian 0.46
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.80 -> 2.80
+    GOLD: 91 | renda base +5 | juros +5 | sequência +0 | vitória +1
+    FIT UNIDADE: Teemo | core=não | fit=0.84 | Space Groove=0.84
+[15:09:01] MOVE Bench -> Board: Poppy (i:2.0) <-> Jax (i:4.0) | Rew: -0.23
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.77
+FOCUS WEIGHTS: Bastion 2.62, Space Groove 0.85, Stargazer 0.68, Anima 0.43, Primordian 0.43
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.80 -> 2.77
+    GOLD: 91 | renda base +5 | juros +5 | sequência +0 | vitória +1
+    FIT UNIDADE: Poppy | core=não | fit=2.62 | Bastion=2.62
+[15:09:01] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.77
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.94, Stargazer 0.65, Anima 0.47, Primordian 0.47
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.77 -> 2.77
+    GOLD: 91 | renda base +5 | juros +5 | sequência +0 | vitória +1
+
+[15:09:04] --- FIM DO ROUND 4-3 | GOLD: 103 ---
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.79
+FOCUS WEIGHTS: Bastion 2.67, Space Groove 0.92, Stargazer 0.53, Anima 0.44, Primordian 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +1 vitória (total: +12)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]  [Jax|T|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Tee|C|1*|i:2.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Jax|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:09:04] 🛒 LOJA: Illaoi(i:6.0), Teemo(i:2.0), Teemo(i:2.0), Viktor(i:6.0), Gragas(i:4.0)
+[15:09:08] MOVE Bench -> Board: Jax (i:4.0) <-> Vazio | Rew: +0.64
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.79
+FOCUS WEIGHTS: Bastion 2.42, Space Groove 0.94, Stargazer 0.72, Anima 0.46, Primordian 0.46
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.79 -> 2.79
+    GOLD: 103 | renda base +5 | juros +5 | sequência +1 | vitória +1
+    FIT UNIDADE: Jax | core=SIM | fit=3.14 | Stargazer=0.72, Bastion=2.42
+[15:09:08] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.90
+FOCUS WEIGHTS: Bastion 2.54, Space Groove 0.87, Stargazer 0.76, Anima 0.42, Primordian 0.42
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.79 -> 2.90
+    GOLD: 99 | renda base +5 | juros +5 | sequência +1 | vitória +1
+[15:09:09] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.90
+FOCUS WEIGHTS: Bastion 2.34, Space Groove 0.92, Stargazer 0.85, Anima 0.45, Primordian 0.45
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.90 -> 2.90
+    GOLD: 95 | renda base +5 | juros +5 | sequência +1 | vitória +1
+[15:09:10] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.89
+FOCUS WEIGHTS: Bastion 2.50, Space Groove 0.86, Stargazer 0.82, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.90 -> 2.89
+    GOLD: 91 | renda base +5 | juros +5 | sequência +1 | vitória +1
+[15:09:10] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.89
+FOCUS WEIGHTS: Bastion 2.32, Space Groove 0.91, Stargazer 0.89, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.89 -> 2.89
+    GOLD: 87 | renda base +5 | juros +5 | sequência +1 | vitória +1
+[15:09:11] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.49, Space Groove 0.86, Stargazer 0.84, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.89 -> 2.88
+    GOLD: 83 | renda base +5 | juros +5 | sequência +1 | vitória +1
+[15:09:12] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 79 | renda base +5 | juros +5 | sequência +1 | vitória +1
+[15:09:12] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 75 | renda base +5 | juros +5 | sequência +1 | vitória +1
+[15:09:13] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 71 | renda base +5 | juros +5 | sequência +1 | vitória +1
+
+[15:09:14] --- FIM DO ROUND 4-4 | GOLD: 82 ---
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]        [Jax|T|1*|i:4.0]       [ . ]        [Pop|T|1*|i:2.0]  [Jax|T|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Tee|C|1*|i:2.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:09:14] 🛒 LOJA: Rhaast(i:6.0), Jax(i:4.0), Pantheon(i:4.0), Urgot(i:6.0), Samira(i:6.0)
+[15:09:17] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 78 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:18] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 74 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:19] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 70 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:20] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 66 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:20] BUY XP                       | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 62 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:21] BUY XP                       | Rew: +1.02
+    STRATEGY: FAST8 | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Economia suficiente para acelerar nível | CONF: 0.75
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 58 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:22] BUY XP                       | Rew: +0.02
+    STRATEGY: FAST8 | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Economia suficiente para acelerar nível | CONF: 0.75
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 54 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:22] BUY XP                       | Rew: +0.02
+    STRATEGY: FAST8 | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Economia suficiente para acelerar nível | CONF: 0.75
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 50 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:23] BUY XP                       | Rew: -0.07
+    STRATEGY: FAST8 | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Economia suficiente para acelerar nível | CONF: 0.75
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 46 | renda base +5 | juros +5 | sequência +1 | vitória +0
+
+[15:09:24] --- FIM DO ROUND 4-5 | GOLD: 55 ---
+    STRATEGY: FAST8 | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    RENDA PRÓXIMO ROUND: +5 base, +4 juros, +0 sequência, +0 vitória (total: +9)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]        [Jax|T|1*|i:4.0]       [ . ]        [Pop|T|1*|i:2.0]  [Jax|T|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Tee|C|1*|i:2.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:09:24] 🛒 LOJA: Aurora(i:6.0), Ornn(i:6.0), Bel'Veth(i:4.0), Xayah(i:8.0), Xayah(i:8.0)
+[15:09:27] BUY XP                       | Rew: +0.02
+    STRATEGY: FAST8 | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Economia suficiente para acelerar nível | CONF: 0.75
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 51 | renda base +5 | juros +4 | sequência +0 | vitória +0
+[15:09:28] BUY XP                       | Rew: -0.07
+    STRATEGY: FAST8 | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Economia suficiente para acelerar nível | CONF: 0.75
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 47 | renda base +5 | juros +4 | sequência +0 | vitória +0
+[15:09:29] BUY XP                       | Rew: +0.01
+    STRATEGY: FAST8 | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Economia suficiente para acelerar nível | CONF: 0.75
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 43 | renda base +5 | juros +4 | sequência +0 | vitória +0
+[15:09:29] BUY XP                       | Rew: -0.07
+    STRATEGY: FAST8 | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Economia suficiente para acelerar nível | CONF: 0.75
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 39 | renda base +5 | juros +4 | sequência +0 | vitória +0
+[15:09:30] BUY XP                       | Rew: +0.01
+    STRATEGY: FAST8 | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Economia suficiente para acelerar nível | CONF: 0.75
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 35 | renda base +5 | juros +4 | sequência +0 | vitória +0
+[15:09:31] BUY XP                       | Rew: +0.01
+    STRATEGY: FAST8 | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Economia suficiente para acelerar nível | CONF: 0.75
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 31 | renda base +5 | juros +4 | sequência +0 | vitória +0
+[15:09:31] BUY XP                       | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 27 | renda base +5 | juros +4 | sequência +0 | vitória +0
+[15:09:32] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 23 | renda base +5 | juros +4 | sequência +0 | vitória +0
+[15:09:33] BUY XP                       | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 19 | renda base +5 | juros +4 | sequência +0 | vitória +0
+
+[15:09:34] --- FIM DO ROUND 4-6 | GOLD: 27 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +0 sequência, +1 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]        [Jax|T|1*|i:4.0]       [ . ]        [Pop|T|1*|i:2.0]  [Jax|T|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Tee|C|1*|i:2.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:09:34] 🛒 LOJA: Maokai(i:6.0), Tahm Kench(i:8.0), Jax(i:4.0), Morgana(i:8.0), Jinx(i:4.0)
+[15:09:38] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 23 | renda base +5 | juros +2 | sequência +0 | vitória +1
+[15:09:39] BUY XP                       | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 19 | renda base +5 | juros +2 | sequência +0 | vitória +1
+[15:09:39] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 15 | renda base +5 | juros +2 | sequência +0 | vitória +1
+[15:09:40] BUY XP                       | Rew: +0.51
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 11 | renda base +5 | juros +2 | sequência +0 | vitória +1
+[15:09:41] BUY XP                       | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 7 | renda base +5 | juros +2 | sequência +0 | vitória +1
+[15:09:41] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 3 | renda base +5 | juros +2 | sequência +0 | vitória +1
+[15:09:42] MOVE Board -> Board: Jax (i:4.0) <-> Jax (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 3 | renda base +5 | juros +2 | sequência +0 | vitória +1
+    FIT UNIDADE: Jax | core=SIM | fit=3.33 | Stargazer=0.85, Bastion=2.48
+[15:09:43] MOVE Board -> Board: Jax (i:4.0) <-> Teemo (i:2.0) | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 3 | renda base +5 | juros +2 | sequência +0 | vitória +1
+    FIT UNIDADE: Jax | core=SIM | fit=3.21 | Stargazer=0.90, Bastion=2.31
+[15:09:43] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 3 | renda base +5 | juros +2 | sequência +0 | vitória +1
+
+[15:09:44] --- FIM DO ROUND 4-7 | GOLD: 8 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]        [Tee|C|1*|i:2.0]       [ . ]        [Pop|T|1*|i:2.0]  [Jax|T|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:09:44] 🛒 LOJA: Lissandra(i:2.0), Gragas(i:4.0), Lissandra(i:2.0), Zoe(i:4.0), Samira(i:6.0)
+[15:09:48] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 4 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[15:09:49] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[15:09:50] MOVE Board -> Board: Teemo (i:2.0) <-> Jax (i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=não | fit=0.91 | Space Groove=0.91
+[15:09:50] MOVE Board -> Board: Jax (i:4.0) <-> Jax (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.33 | Stargazer=0.85, Bastion=2.48
+[15:09:51] MOVE Board -> Board: Jax (i:4.0) <-> Poppy (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.21 | Stargazer=0.90, Bastion=2.31
+[15:09:52] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[15:09:55] --- FIM DO ROUND 5-1 | GOLD: 5 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]        [Pop|T|1*|i:2.0]       [ . ]        [Jax|T|1*|i:4.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:09:55] 🛒 LOJA: Mordekaiser(i:4.0), Twisted Fate(i:2.0), Shen(i:10.0), Miss Fortune(i:6.0), Illaoi(i:6.0)
+[15:09:59] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[15:10:00] MOVE Board -> Board: Poppy (i:2.0) <-> Teemo (i:2.0) | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=2.31 | Bastion=2.31
+[15:10:00] MOVE Board -> Board: Teemo (i:2.0) <-> Jax (i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=não | fit=0.85 | Space Groove=0.85
+[15:10:01] MOVE Board -> Board: Jax (i:4.0) <-> Jax (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Stargazer, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.21 | Stargazer=0.90, Bastion=2.31
+[15:10:02] MOVE Board -> Board: Jax (i:4.0) <-> Nasus (i:2.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.33 | Stargazer=0.85, Bastion=2.48
+[15:10:02] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[15:10:05] --- FIM DO ROUND 5-2 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]        [Nas|F|1*|i:2.0]       [ . ]        [Tee|C|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:10:05] 🛒 LOJA: Aurelion Sol(i:8.0), Kai'Sa(i:6.0), Shen(i:10.0), Caitlyn(i:2.0), Nunu & Willump(i:8.0)
+[15:10:09] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.88
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Jax, TFT17_Briar | CORE TRAITS: Bastion, Space Groove, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.88
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[15:10:10] COMPROU: Kai'Sa (Custo 3 | i:6.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.38
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.88 -> 2.38
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Kai'Sa | core=SIM | fit=0.00 | nenhum trait de foco
+[15:10:11] MOVE Bench -> Board: Kai'Sa (i:6.0) <-> Vazio | Rew: +0.35
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.38
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.38 -> 2.38
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Kai'Sa | core=SIM | fit=0.00 | nenhum trait de foco
+[15:10:12] MOVE Board -> Board: Nasus (i:2.0) <-> Poppy (i:2.0) | Rew: -0.11
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.38 -> 2.45
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Nasus | core=não | fit=0.85 | Space Groove=0.85
+[15:10:12] MOVE Board -> Board: Poppy (i:2.0) <-> Jax (i:4.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Poppy | core=não | fit=2.31 | Bastion=2.31
+[15:10:13] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+
+[15:10:16] --- FIM DO ROUND 5-3 | GOLD: 5 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]        [Jax|T|1*|i:4.0]       [ . ]        [Tee|C|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+ [Kai|C|1*|i:6.0]       [ . ]             [ . ]        [Pop|T|1*|i:2.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:10:16] 🛒 LOJA: Master Yi(i:8.0), Illaoi(i:6.0), Samira(i:6.0), LeBlanc(i:8.0), LeBlanc(i:8.0)
+[15:10:20] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[15:10:21] MOVE Board -> Board: Jax (i:4.0) <-> Nasus (i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.21 | Stargazer=0.90, Bastion=2.31
+[15:10:21] MOVE Board -> Board: Nasus (i:2.0) <-> Poppy (i:2.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=não | fit=0.85 | Space Groove=0.85
+[15:10:22] MOVE Board -> Board: Poppy (i:2.0) <-> Teemo (i:2.0) | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=2.31 | Bastion=2.31
+[15:10:23] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[15:10:26] --- FIM DO ROUND 5-4 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]        [Tee|C|1*|i:2.0]       [ . ]        [Pop|T|1*|i:2.0]  [Jax|T|1*|i:4.0]       [ . ]             [ . ]       
+ [Kai|C|1*|i:6.0]       [ . ]             [ . ]        [Nas|F|1*|i:2.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:10:26] 🛒 LOJA: Sona(i:10.0), Gwen(i:4.0), Master Yi(i:8.0), Karma(i:8.0), Rammus(i:8.0)
+[15:10:31] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[15:10:31] MOVE Board -> Board: Teemo (i:2.0) <-> Jax (i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=não | fit=0.85 | Space Groove=0.85
+[15:10:32] MOVE Board -> Board: Jax (i:4.0) <-> Nasus (i:2.0) | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=3.21 | Stargazer=0.90, Bastion=2.31
+[15:10:33] MOVE Board -> Board: Nasus (i:2.0) <-> Poppy (i:2.0) | Rew: -0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=não | fit=0.85 | Space Groove=0.85
+[15:10:33] MOVE Board -> Board: Poppy (i:2.0) <-> Jax (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=2.31 | Bastion=2.31
+[15:10:34] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[15:10:37] --- FIM DO ROUND 5-5 | GOLD: 8 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Bri|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]        [Jax|T|1*|i:4.0]       [ . ]        [Nas|F|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Kai|C|1*|i:6.0]       [ . ]             [ . ]        [Jax|T|1*|i:4.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:10:37] 🛒 LOJA: Aurora(i:6.0), Urgot(i:6.0), Aurelion Sol(i:8.0), Urgot(i:6.0), Bard(i:10.0)
+[15:10:42] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 4 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[15:10:43] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[15:10:43] MOVE Board -> Board: Jax (i:4.0) <-> Teemo (i:2.0) | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Jax | core=SIM | fit=3.33 | Stargazer=0.85, Bastion=2.48
+[15:10:44] MOVE Board -> Board: Teemo (i:2.0) <-> Jax (i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Teemo | core=não | fit=0.91 | Space Groove=0.91
+[15:10:45] MOVE Board -> Board: Jax (i:4.0) <-> Nasus (i:2.0) | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Jax | core=SIM | fit=3.33 | Stargazer=0.85, Bastion=2.48
+[15:10:45] MOVE Board -> Board: Nasus (i:2.0) <-> Poppy (i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Nasus | core=não | fit=0.91 | Space Groove=0.91
+[15:10:46] MOVE Board -> Board: Poppy (i:2.0) <-> Vazio | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Poppy | core=não | fit=2.48 | Bastion=2.48
+[15:10:47] MOVE Board -> Board: Teemo (i:2.0) <-> Jax (i:4.0) | Rew: -0.11
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Teemo | core=não | fit=0.91 | Space Groove=0.91
+[15:10:47] MOVE Board -> Board: Jax (i:4.0) <-> Jax (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Jax | core=SIM | fit=3.33 | Stargazer=0.85, Bastion=2.48
+
+[15:10:48] --- FIM DO ROUND 5-6 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]  [Bri|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Kai|C|1*|i:6.0]       [ . ]             [ . ]        [Jax|T|1*|i:4.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:10:48] 🛒 LOJA: Pantheon(i:4.0), Urgot(i:6.0), Karma(i:8.0), Lulu(i:6.0), Master Yi(i:8.0)
+[15:10:53] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Kaisa, TFT17_Jax | CORE TRAITS: Bastion, Rogue, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[15:10:54] COMPROU: Urgot (Custo 3 | i:6.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Urgot, TFT17_Kaisa | CORE TRAITS: Bastion, Rogue, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Urgot | core=SIM | fit=0.00 | nenhum trait de foco
+[15:10:55] MOVE Bench -> Board: Urgot (i:6.0) <-> Vazio | Rew: +0.58
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_MissFortune_TraitClone, TFT17_Kaisa | CORE TRAITS: Bastion, Rogue, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_Urgot | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Urgot | core=SIM | fit=0.00 | nenhum trait de foco
+[15:10:55] MOVE Board -> Board: Urgot (i:6.0) <-> Teemo (i:2.0) | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_MissFortune_TraitClone, TFT17_Kaisa | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Urgot | core=SIM | fit=0.00 | nenhum trait de foco
+[15:10:56] MOVE Board -> Board: Teemo (i:2.0) <-> Jax (i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_MissFortune_TraitClone, TFT17_Kaisa | CORE TRAITS: Bastion, Rogue, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Teemo | core=não | fit=0.91 | Space Groove=0.91
+[15:10:57] MOVE Board -> Board: Jax (i:4.0) <-> Jax (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_MissFortune_TraitClone, TFT17_Kaisa | CORE TRAITS: Bastion, Rogue, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Jax | core=não | fit=3.33 | Stargazer=0.85, Bastion=2.48
+[15:10:57] MOVE Board -> Board: Jax (i:4.0) <-> Nasus (i:2.0) | Rew: -0.11
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_MissFortune_TraitClone, TFT17_Kaisa | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Jax | core=não | fit=3.21 | Stargazer=0.90, Bastion=2.31
+[15:10:58] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_MissFortune_TraitClone, TFT17_Kaisa | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+
+[15:10:59] --- FIM DO ROUND 5-7 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]  [Bri|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]        [Nas|F|1*|i:2.0]       [ . ]        [Jax|T|1*|i:4.0]  [Urg|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Kai|C|1*|i:6.0]       [ . ]             [ . ]        [Tee|C|1*|i:2.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:10:59] 🛒 LOJA: Nunu & Willump(i:8.0), Bard(i:10.0), The Mighty Mech(i:8.0), Zed(i:10.0), Illaoi(i:6.0)
+[15:11:04] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_MissFortune_TraitClone, TFT17_Kaisa | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[15:11:05] MOVE Board -> Board: Nasus (i:2.0) <-> Urgot (i:6.0) | Rew: -0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_MissFortune_TraitClone, TFT17_Kaisa | CORE TRAITS: Bastion, Rogue, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Nasus | core=não | fit=0.91 | Space Groove=0.91
+[15:11:06] MOVE Board -> Board: Urgot (i:6.0) <-> Teemo (i:2.0) | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_MissFortune_TraitClone, TFT17_Kaisa | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=0.00 | nenhum trait de foco
+[15:11:06] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_MissFortune_TraitClone, TFT17_Kaisa | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[15:11:11] --- FIM DO ROUND 6-1 | GOLD: 7 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]  [Bri|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]        [Tee|C|1*|i:2.0]       [ . ]        [Jax|T|1*|i:4.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+ [Kai|C|1*|i:6.0]       [ . ]             [ . ]        [Urg|T|1*|i:6.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:11:11] 🛒 LOJA: Kai'Sa(i:6.0), Pyke(i:4.0), Gnar(i:4.0), Zed(i:10.0), Graves(i:10.0)
+[15:11:16] MOVE Board -> Board: Teemo (i:2.0) <-> Nasus (i:2.0) | Rew: +0.05
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_MissFortune_TraitClone, TFT17_Kaisa | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 7 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=não | fit=0.91 | Space Groove=0.91
+[15:11:16] MOVE Board -> Board: Nasus (i:2.0) <-> Urgot (i:6.0) | Rew: -0.09
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_MissFortune_TraitClone, TFT17_Kaisa | CORE TRAITS: Bastion, Rogue, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 7 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=não | fit=0.85 | Space Groove=0.85
+[15:11:17] MOVE Board -> Board: Urgot (i:6.0) <-> Jax (i:4.0) | Rew: -0.05
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_MissFortune_TraitClone, TFT17_Kaisa | CORE TRAITS: Bastion, Rogue, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 7 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=0.00 | nenhum trait de foco
+[15:11:18] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.48, Space Groove 0.85, Stargazer 0.85, Anima 0.41, Primordian 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_MissFortune_TraitClone, TFT17_Kaisa | CORE TRAITS: Bastion, Rogue, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 7 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[15:11:22] --- FIM DO ROUND 6-2 | GOLD: 12 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Bastion 2.31, Space Groove 0.91, Stargazer 0.90, Anima 0.44, Primordian 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]  [Bri|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]        [Jax|T|1*|i:4.0]       [ . ]        [Urg|T|1*|i:6.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Kai|C|1*|i:6.0]       [ . ]             [ . ]        [Nas|F|1*|i:2.0]  [Mis|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:11:22] 🛒 LOJA: Illaoi(i:6.0), Miss Fortune(i:6.0), Miss Fortune(i:6.0), Riven(i:8.0), Ornn(i:6.0)
+[15:11:28] COMPROU: Riven (Custo 4 | i:8.0) | Rew: -0.06
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Riven | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Bastion 2.05, Space Groove 0.85, Stargazer 0.85, Rogue 0.84, Anima 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Riven, TFT17_Urgot, TFT17_MissFortune_TraitClone | CORE TRAITS: Bastion, Rogue, Stargazer
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Urgot -> TFT17_Riven | lock=True -> True | strength=2.45 -> 2.53
+    GOLD: 8 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Riven | core=SIM | fit=0.84 | Rogue=0.84
+[15:11:28]  ⬆️ SINERGIA: ROGUE nível 1
+[15:11:28] MOVE Bench -> Board: Riven (i:8.0) <-> Jax (i:4.0) | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Bastion | FOCUS: TFT17_Riven | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Bastion 1.57, Rogue 1.37, Space Groove 0.90, Stargazer 0.72, Anima 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Riven, TFT17_Urgot, TFT17_MissFortune_TraitClone | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Riven -> TFT17_Riven | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 8 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Riven | core=SIM | fit=1.37 | Rogue=1.37
+[15:11:29] MOVE Bench -> Board: Jax (i:4.0) <-> Kai'Sa (i:6.0) | Rew: -0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Rogue | FOCUS: TFT17_Riven | LOCK: LOCKED | STRENGTH: 2.48
+FOCUS WEIGHTS: Rogue 1.93, Bastion 1.14, Space Groove 0.82, Stargazer 0.73, Anima 0.39
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Riven, TFT17_Urgot, TFT17_MissFortune_TraitClone | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Bastion -> Rogue | foco=TFT17_Riven -> TFT17_Riven | lock=True -> True | strength=2.53 -> 2.48
+    GOLD: 8 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=não | fit=1.87 | Stargazer=0.73, Bastion=1.14
+[15:11:30] MOVE Bench -> Board: Kai'Sa (i:6.0) <-> Riven (i:8.0) | Rew: -0.04
+    STRATEGY: ALL_IN | COMP DIRECTION: Rogue | FOCUS: TFT17_Riven | LOCK: LOCKED | STRENGTH: 2.48
+FOCUS WEIGHTS: Rogue 1.92, Bastion 1.03, Space Groove 0.85, Stargazer 0.80, Anima 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Riven, TFT17_Urgot, TFT17_MissFortune_TraitClone | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Rogue -> Rogue | foco=TFT17_Riven -> TFT17_Riven | lock=True -> True | strength=2.48 -> 2.48
+    GOLD: 8 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Kai'Sa | core=não | fit=1.92 | Rogue=1.92
+[15:11:30] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Rogue | FOCUS: TFT17_Riven | LOCK: LOCKED | STRENGTH: 2.65
+FOCUS WEIGHTS: Rogue 2.20, Bastion 0.88, Space Groove 0.79, Stargazer 0.76, Anima 0.38
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Riven, TFT17_Urgot, TFT17_MissFortune_TraitClone | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Rogue -> Rogue | foco=TFT17_Riven -> TFT17_Riven | lock=True -> True | strength=2.48 -> 2.65
+    GOLD: 8 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[15:11:33] MOVE Bench -> Board: Riven (i:8.0) <-> Vazio | Rew: +0.61
+    STRATEGY: ALL_IN | COMP DIRECTION: Rogue | FOCUS: TFT17_Riven | LOCK: LOCKED | STRENGTH: 2.71
+FOCUS WEIGHTS: Rogue 2.29, Bastion 0.79, Space Groove 0.78, Stargazer 0.77, Anima 0.37
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Riven, TFT17_Urgot, TFT17_MissFortune_TraitClone | CORE TRAITS: Bastion, Rogue, Space Groove
+    COMP BEFORE -> AFTER: dir=Rogue -> Rogue | foco=TFT17_Riven -> TFT17_Riven | lock=True -> True | strength=2.68 -> 2.71
+    GOLD: 8 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Riven | core=SIM | fit=2.29 | Rogue=2.29
+
+[15:11:34] --- FIM DO ROUND 6-3 | GOLD: 8 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Rogue | FOCUS: TFT17_Riven | LOCK: LOCKED | STRENGTH: 2.71
+FOCUS WEIGHTS: Rogue 2.11, Bastion 0.83, Space Groove 0.83, Stargazer 0.82, Anima 0.40
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:11:34] 🛒 LOJA: None, None, None, None, None
+[15:11:34]  ⬇️ SINERGIA: BASTION nível 0
+[15:11:34]  ⬇️ SINERGIA: ROGUE nível 0
+
+========================================
+ GAME OVER - RELATÓRIO FINAL
+========================================

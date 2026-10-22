@@ -1,0 +1,1918 @@
+==========================================================
+TFT AI LOG · JOGADOR 4
+Partida: 41d3c7ad-ba55-48b4-a622-f1c21e438d1e
+Seed: 20261016 | Política: determinística
+Checkpoint SHA-256: 0ce147c51adc8dc482d401fbdbd9e586034ad9678a9114f2cead317de1434d49
+Impacto (i): custo × estrelas × 2 (contribuição nativa da engine)
+==========================================================
+--- INÍCIO DA PARTIDA · JOGADOR 4 ---
+[15:06:11] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.31
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 4.32, Fateweaver 0.68
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=— -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=5.00 | Stargazer=4.32, Fateweaver=0.68
+[15:06:12] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 4.32, Fateweaver 0.68
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:06:17] --- FIM DO ROUND 1-1 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 4.32, Fateweaver 0.68
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:06:17] 🛒 LOJA: Rek'Sai(i:2.0), Poppy(i:2.0), Nasus(i:2.0), Teemo(i:2.0), Caitlyn(i:2.0)
+[15:06:18] COMPROU: Poppy (Custo 1 | i:2.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 4.11, Fateweaver 0.65, Bastion 0.12, Meeple 0.12
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=0.24 | Meeple=0.12, Bastion=0.12
+[15:06:19] MOVE Bench -> Board: Poppy (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.94, Fateweaver 0.62, Bastion 0.22, Meeple 0.22
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=0.43 | Meeple=0.22, Bastion=0.22
+[15:06:20] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.30
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.82, Fateweaver 0.60, Bastion 0.29, Meeple 0.29
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=4.42 | Stargazer=3.82, Fateweaver=0.60
+[15:06:20] COMPROU: Teemo (Custo 1 | i:2.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.63, Fateweaver 0.57, Bastion 0.34, Meeple 0.34, Shepherd 0.12
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_TwistedFate, TFT17_Teemo | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=0.12 | Shepherd=0.12
+[15:06:21] MOVE Bench -> Board: Teemo (i:2.0) <-> Poppy (i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Teemo | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.49, Fateweaver 0.55, Bastion 0.37, Meeple 0.37, Shepherd 0.21
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Teemo, TFT17_TwistedFate, TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Teemo | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=0.21 | Shepherd=0.21
+[15:06:22] MOVE Bench -> Board: Poppy (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Teemo | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.39, Fateweaver 0.53, Bastion 0.40, Meeple 0.40, Shepherd 0.28
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Teemo, TFT17_Poppy, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Teemo -> TFT17_Teemo | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=0.80 | Meeple=0.40, Bastion=0.40
+[15:06:22] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Teemo (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.31, Fateweaver 0.52, Bastion 0.42, Meeple 0.42, Shepherd 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Poppy, TFT17_Teemo | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Teemo -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=3.83 | Stargazer=3.31, Fateweaver=0.52
+[15:06:23] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.25, Fateweaver 0.51, Bastion 0.44, Meeple 0.44, Shepherd 0.37
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Poppy, TFT17_Teemo | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+[15:06:24] MOVE Bench -> Board: Teemo (i:2.0) <-> Vazio | Rew: +0.55
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.20, Fateweaver 0.51, Bastion 0.45, Meeple 0.45, Shepherd 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Poppy, TFT17_Teemo | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=0.40 | Shepherd=0.39
+
+[15:06:24] --- FIM DO ROUND 1-2 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.14, Fateweaver 0.50, Bastion 0.46, Meeple 0.46, Shepherd 0.43
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Tee|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:06:24] 🛒 LOJA: Aatrox(i:2.0), Nasus(i:2.0), Pyke(i:4.0), Caitlyn(i:2.0), Bel'Veth(i:4.0)
+[15:06:25] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.12, Fateweaver 0.49, Bastion 0.47, Meeple 0.47, Shepherd 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Poppy, TFT17_Teemo | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=3.62 | Stargazer=3.12, Fateweaver=0.49
+[15:06:26] COMPROU: Bel'Veth (Custo 2 | i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.11, Fateweaver 0.49, Bastion 0.47, Meeple 0.47, Shepherd 0.46
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_TwistedFate, TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=0.00 | nenhum trait de foco
+[15:06:26] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Poppy (i:2.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.10, Fateweaver 0.49, Bastion 0.48, Meeple 0.48, Shepherd 0.46
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_TwistedFate, TFT17_Teemo | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=0.00 | nenhum trait de foco
+[15:06:27] MOVE Bench -> Board: Poppy (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.28
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.09, Fateweaver 0.49, Bastion 0.48, Meeple 0.48, Shepherd 0.47
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Poppy, TFT17_Teemo | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=0.95 | Meeple=0.48, Bastion=0.48
+[15:06:28] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Bel'Veth (i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.08, Fateweaver 0.49, Bastion 0.48, Meeple 0.48, Shepherd 0.47
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Poppy, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=3.57 | Stargazer=3.08, Fateweaver=0.49
+[15:06:29] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.08, Fateweaver 0.49, Bastion 0.48, Meeple 0.48, Shepherd 0.47
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Poppy, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+
+[15:06:31] --- FIM DO ROUND 1-3 | GOLD: 3 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.07, Fateweaver 0.48, Bastion 0.48, Meeple 0.48, Shepherd 0.48
+    RENDA PRÓXIMO ROUND: +3 base, +0 juros, +0 sequência, +0 vitória (total: +3)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Tee|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Bel|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:06:31] 🛒 LOJA: Briar(i:2.0), Rek'Sai(i:2.0), Meepsie(i:4.0), Poppy(i:2.0), Briar(i:2.0)
+[15:06:32] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Poppy (i:2.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.07, Fateweaver 0.48, Bastion 0.48, Meeple 0.48, Shepherd 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_TwistedFate, TFT17_Teemo | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=0.00 | nenhum trait de foco
+[15:06:33] MOVE Bench -> Board: Poppy (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.30
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.07, Fateweaver 0.48, Bastion 0.48, Meeple 0.48, Shepherd 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Poppy, TFT17_Teemo | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=0.97 | Meeple=0.48, Bastion=0.48
+[15:06:33] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Teemo (i:2.0) | Rew: -0.20
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.07, Fateweaver 0.48, Bastion 0.48, Meeple 0.48, Shepherd 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Poppy, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=3.55 | Stargazer=3.07, Fateweaver=0.48
+[15:06:34] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.07, Fateweaver 0.48, Bastion 0.48, Meeple 0.48, Shepherd 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Poppy, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +3 | juros +0 | sequência +0 | vitória +0
+
+[15:06:38] --- FIM DO ROUND 1-4 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.06, Fateweaver 0.48, Bastion 0.48, Meeple 0.48, Shepherd 0.48
+    RENDA PRÓXIMO ROUND: +4 base, +0 juros, +0 sequência, +0 vitória (total: +4)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Bel|T|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Tee|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:06:38] 🛒 LOJA: Teemo(i:2.0), Rek'Sai(i:2.0), Pyke(i:4.0), Cho'Gath(i:2.0), Pyke(i:4.0)
+[15:06:39] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.06, Fateweaver 0.48, Bastion 0.48, Meeple 0.48, Shepherd 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Poppy, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +4 | juros +0 | sequência +0 | vitória +0
+[15:06:40] MOVE Bench -> Board: Teemo (i:2.0) <-> Vazio | Rew: +0.47
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.06, Fateweaver 0.48, Bastion 0.48, Meeple 0.48, Shepherd 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=0.48 | Shepherd=0.48
+[15:06:41] MOVE Board -> Board: Teemo (i:2.0) <-> Bel'Veth (i:4.0) | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.06, Fateweaver 0.48, Bastion 0.48, Meeple 0.48, Shepherd 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=0.48 | Shepherd=0.48
+[15:06:41] MOVE Board -> Board: Bel'Veth (i:4.0) <-> Vazio | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.06, Fateweaver 0.48, Bastion 0.48, Meeple 0.48, Shepherd 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=0.00 | nenhum trait de foco
+[15:06:42] COMPROU: Teemo (Custo 1 | i:2.0) | Rew: +0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.41, Shepherd 1.15, Fateweaver 0.48, Bastion 0.48, Meeple 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=1.15 | Shepherd=1.15
+[15:06:43] MOVE Bench -> Board: Teemo (i:2.0) <-> Poppy (i:2.0) | Rew: +0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 1.83, Shepherd 1.80, Fateweaver 0.46, Bastion 0.46, Meeple 0.46
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_TwistedFate | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=1.80 | Shepherd=1.80
+[15:06:43] MOVE Bench -> Board: Poppy (i:2.0) <-> Bel'Veth (i:4.0) | Rew: -0.21
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.26, Stargazer 1.42, Fateweaver 0.44, Bastion 0.44, Meeple 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=0.88 | Meeple=0.44, Bastion=0.44
+[15:06:44] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Teemo (i:2.0) | Rew: -0.27
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.48, Stargazer 1.18, Fateweaver 0.45, Bastion 0.45, Meeple 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=0.00 | nenhum trait de foco
+[15:06:45] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.64, Stargazer 1.00, Fateweaver 0.45, Bastion 0.45, Meeple 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +4 | juros +0 | sequência +0 | vitória +0
+
+[15:06:45] --- FIM DO ROUND 2-1 | GOLD: 8 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.85, Stargazer 0.77, Fateweaver 0.46, Bastion 0.46, Meeple 0.46
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Bel|T|1*|i:4.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Tee|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:06:45] 🛒 LOJA: Viktor(i:6.0), Caitlyn(i:2.0), Gnar(i:4.0), Aatrox(i:2.0), Teemo(i:2.0)
+[15:06:47] MOVE Bench -> Board: Teemo (i:2.0) <-> Poppy (i:2.0) | Rew: +0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.02, Stargazer 0.66, Fateweaver 0.44, Bastion 0.44, Meeple 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_TwistedFate | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 8 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Teemo | core=SIM | fit=3.02 | Shepherd=3.02
+[15:06:48] MOVE Bench -> Board: Poppy (i:2.0) <-> Bel'Veth (i:4.0) | Rew: -0.21
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.13, Stargazer 0.58, Fateweaver 0.43, Bastion 0.43, Meeple 0.43
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 8 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Poppy | core=SIM | fit=0.86 | Meeple=0.43, Bastion=0.43
+[15:06:48] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Teemo (i:2.0) | Rew: -0.19
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.13, Stargazer 0.56, Fateweaver 0.44, Bastion 0.44, Meeple 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 8 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=0.00 | nenhum trait de foco
+[15:06:49] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.13, Stargazer 0.53, Fateweaver 0.45, Bastion 0.45, Meeple 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 8 | renda base +5 | juros +0 | sequência +0 | vitória +1
+
+[15:06:53] --- FIM DO ROUND 2-2 | GOLD: 13 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.13, Stargazer 0.48, Fateweaver 0.47, Bastion 0.47, Meeple 0.47
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Bel|T|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Tee|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:06:53] 🛒 LOJA: Briar(i:2.0), Cho'Gath(i:2.0), Poppy(i:2.0), Gwen(i:4.0), Caitlyn(i:2.0)
+[15:06:55] MOVE Bench -> Board: Teemo (i:2.0) <-> Poppy (i:2.0) | Rew: +0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.21, Stargazer 0.45, Fateweaver 0.45, Bastion 0.45, Meeple 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_TwistedFate | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 13 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=3.21 | Shepherd=3.21
+[15:06:55] MOVE Bench -> Board: Poppy (i:2.0) <-> Teemo (i:2.0) | Rew: -0.34
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.19, Stargazer 0.46, Fateweaver 0.45, Bastion 0.45, Meeple 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 13 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=0.90 | Meeple=0.45, Bastion=0.45
+[15:06:56] MOVE Bench -> Board: Teemo (i:2.0) <-> Teemo (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.17, Stargazer 0.46, Fateweaver 0.46, Bastion 0.46, Meeple 0.46
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 13 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=3.17 | Shepherd=3.17
+[15:06:57] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.16, Stargazer 0.46, Fateweaver 0.46, Bastion 0.46, Meeple 0.46
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 13 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[15:07:01] --- FIM DO ROUND 2-3 | GOLD: 20 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.13, Stargazer 0.47, Fateweaver 0.47, Bastion 0.47, Meeple 0.47
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +0 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Bel|T|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Tee|C|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Tee|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:01] 🛒 LOJA: Lissandra(i:2.0), Pyke(i:4.0), Ezreal(i:2.0), Kindred(i:8.0), Lissandra(i:2.0)
+[15:07:02] MOVE Bench -> Board: Teemo (i:2.0) <-> Vazio | Rew: +0.62
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.21, Stargazer 0.45, Fateweaver 0.45, Bastion 0.45, Meeple 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 20 | renda base +5 | juros +1 | sequência +0 | vitória +1
+    FIT UNIDADE: Teemo | core=SIM | fit=3.21 | Shepherd=3.21
+[15:07:03] BUY XP                       | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.27, Stargazer 0.43, Fateweaver 0.43, Bastion 0.43, Meeple 0.43
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 16 | renda base +5 | juros +1 | sequência +0 | vitória +1
+[15:07:04] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.31, Stargazer 0.42, Fateweaver 0.42, Bastion 0.42, Meeple 0.42
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 12 | renda base +5 | juros +1 | sequência +0 | vitória +1
+[15:07:04] BUY XP                       | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.35, Stargazer 0.41, Fateweaver 0.41, Bastion 0.41, Meeple 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 8 | renda base +5 | juros +1 | sequência +0 | vitória +1
+[15:07:05] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.37, Stargazer 0.41, Fateweaver 0.41, Bastion 0.41, Meeple 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +5 | juros +1 | sequência +0 | vitória +1
+[15:07:06] BUY XP                       | Rew: +1.51
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.38, Stargazer 0.40, Fateweaver 0.40, Bastion 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +1 | sequência +0 | vitória +1
+[15:07:07] MOVE Board -> Board: Teemo (i:2.0) <-> Bel'Veth (i:4.0) | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.39, Stargazer 0.40, Fateweaver 0.40, Bastion 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +1 | sequência +0 | vitória +1
+    FIT UNIDADE: Teemo | core=SIM | fit=3.39 | Shepherd=3.39
+[15:07:07] MOVE Board -> Board: Bel'Veth (i:4.0) <-> Poppy (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.40, Stargazer 0.40, Fateweaver 0.40, Bastion 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +1 | sequência +0 | vitória +1
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=0.00 | nenhum trait de foco
+[15:07:08] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.41, Stargazer 0.40, Fateweaver 0.40, Bastion 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +1 | sequência +0 | vitória +1
+
+[15:07:09] --- FIM DO ROUND 2-4 | GOLD: 5 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.41, Stargazer 0.40, Fateweaver 0.40, Bastion 0.40, Meeple 0.40
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Tee|C|1*|i:2.0]       [ . ]             [ . ]        [Pop|T|1*|i:2.0]  [Bel|T|1*|i:4.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:09] 🛒 LOJA: Leona(i:2.0), Viktor(i:6.0), Pantheon(i:4.0), Karma(i:8.0), Lissandra(i:2.0)
+[15:07:11] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.42, Stargazer 0.40, Fateweaver 0.40, Bastion 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[15:07:12] COMPROU: Leona (Custo 1 | i:2.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.42, Stargazer 0.40, Fateweaver 0.40, Bastion 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=0.00 | nenhum trait de foco
+[15:07:12] MOVE Bench -> Board: Leona (i:2.0) <-> Teemo (i:2.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.34, Stargazer 0.41, Fateweaver 0.41, Bastion 0.41, Meeple 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Leona | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Leona | core=SIM | fit=0.00 | nenhum trait de foco
+[15:07:13] MOVE Bench -> Board: Teemo (i:2.0) <-> Vazio | Rew: +0.63
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.37, Stargazer 0.41, Fateweaver 0.41, Bastion 0.41, Meeple 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Leona | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=3.37 | Shepherd=3.37
+[15:07:14] MOVE Board -> Board: Teemo (i:2.0) <-> Teemo (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.38, Stargazer 0.40, Fateweaver 0.40, Bastion 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Leona | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=3.38 | Shepherd=3.38
+[15:07:14] MOVE Board -> Board: Teemo (i:2.0) <-> Vazio | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.39, Stargazer 0.40, Fateweaver 0.40, Bastion 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Leona | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=3.39 | Shepherd=3.39
+[15:07:15] MOVE Board -> Board: Poppy (i:2.0) <-> Teemo (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.40, Stargazer 0.40, Fateweaver 0.40, Bastion 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=0.80 | Meeple=0.40, Bastion=0.40
+[15:07:16] MOVE Board -> Board: Teemo (i:2.0) <-> Teemo (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.41, Stargazer 0.40, Fateweaver 0.40, Bastion 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=3.41 | Shepherd=3.41
+[15:07:16] MOVE Board -> Board: Teemo (i:2.0) <-> Bel'Veth (i:4.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.41, Stargazer 0.40, Fateweaver 0.40, Bastion 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=3.41 | Shepherd=3.41
+
+[15:07:17] --- FIM DO ROUND 2-5 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.42, Stargazer 0.40, Fateweaver 0.40, Bastion 0.40, Meeple 0.40
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Tee|C|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Leo|T|1*|i:2.0]       [ . ]             [ . ]        [Bel|T|1*|i:4.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:17] 🛒 LOJA: Cho'Gath(i:2.0), Nasus(i:2.0), Zoe(i:4.0), Twisted Fate(i:2.0), Nunu & Willump(i:8.0)
+[15:07:19] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.42, Stargazer 0.40, Fateweaver 0.40, Bastion 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Poppy | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[15:07:19] COMPROU: Zoe (Custo 2 | i:4.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.42, Stargazer 0.40, Fateweaver 0.40, Bastion 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Zoe | core=SIM | fit=0.00 | nenhum trait de foco
+[15:07:20] MOVE Bench -> Board: Zoe (i:4.0) <-> Leona (i:2.0) | Rew: +0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.42, Stargazer 0.40, Fateweaver 0.40, Bastion 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Zoe | core=SIM | fit=0.00 | nenhum trait de foco
+[15:07:21] MOVE Bench -> Board: Leona (i:2.0) <-> Bel'Veth (i:4.0) | Rew: -0.17
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.42, Stargazer 0.40, Fateweaver 0.40, Bastion 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Leona | core=não | fit=0.00 | nenhum trait de foco
+[15:07:21] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Zoe (i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.42, Stargazer 0.39, Fateweaver 0.39, Bastion 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=0.00 | nenhum trait de foco
+[15:07:22] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.42, Stargazer 0.39, Fateweaver 0.39, Bastion 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+
+[15:07:25] --- FIM DO ROUND 2-6 | GOLD: 8 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.42, Stargazer 0.39, Fateweaver 0.39, Bastion 0.39, Meeple 0.39
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Tee|C|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]       [ . ]             [ . ]        [Leo|T|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Zoe|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:25] 🛒 LOJA: Ornn(i:6.0), Twisted Fate(i:2.0), Poppy(i:2.0), Bel'Veth(i:4.0), Mordekaiser(i:4.0)
+[15:07:27] MOVE Bench -> Board: Zoe (i:4.0) <-> Leona (i:2.0) | Rew: +0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.42, Stargazer 0.39, Fateweaver 0.39, Bastion 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 8 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Zoe | core=SIM | fit=0.00 | nenhum trait de foco
+[15:07:28] MOVE Bench -> Board: Leona (i:2.0) <-> Bel'Veth (i:4.0) | Rew: -0.17
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.42, Stargazer 0.39, Fateweaver 0.39, Bastion 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 8 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Leona | core=não | fit=0.00 | nenhum trait de foco
+[15:07:28] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Teemo (i:2.0) | Rew: -0.27
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.73, Arbiter 1.03, Stargazer 0.42, Fateweaver 0.42, Bastion 0.42
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 8 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=0.00 | nenhum trait de foco
+[15:07:29] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.08, Arbiter 1.70, Stargazer 0.41, Fateweaver 0.41, Bastion 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 8 | renda base +5 | juros +0 | sequência +1 | vitória +1
+
+[15:07:33] --- FIM DO ROUND 2-7 | GOLD: 14 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 3.19, Shepherd 0.65, Stargazer 0.39, Fateweaver 0.39, Bastion 0.39
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Tee|C|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Leo|T|1*|i:2.0]       [ . ]             [ . ]        [Zoe|C|1*|i:4.0]  [Bel|T|1*|i:4.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Tee|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:33] 🛒 LOJA: Twisted Fate(i:2.0), Pyke(i:4.0), Kai'Sa(i:6.0), Bel'Veth(i:4.0), Pantheon(i:4.0)
+[15:07:35] MOVE Bench -> Board: Teemo (i:2.0) <-> Leona (i:2.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 2.23, Shepherd 1.38, Stargazer 0.47, Fateweaver 0.47, Bastion 0.47
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 14 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=1.38 | Shepherd=1.38
+[15:07:36] MOVE Bench -> Board: Leona (i:2.0) <-> Zoe (i:4.0) | Rew: -0.31
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.07
+FOCUS WEIGHTS: Shepherd 2.17, Arbiter 1.45, Stargazer 0.47, Fateweaver 0.45, Bastion 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=— -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=0.00 -> 2.07
+    GOLD: 14 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=1.45 | Arbiter=1.45
+[15:07:37] MOVE Bench -> Board: Zoe (i:4.0) <-> Teemo (i:2.0) | Rew: -0.19
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.07
+FOCUS WEIGHTS: Arbiter 1.87, Shepherd 1.60, Stargazer 0.52, Fateweaver 0.51, Bastion 0.51
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.07 -> 2.07
+    GOLD: 14 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Zoe | core=SIM | fit=1.87 | Arbiter=1.87
+[15:07:37] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 1.99
+FOCUS WEIGHTS: Arbiter 2.44, Shepherd 1.12, Stargazer 0.50, Fateweaver 0.48, Bastion 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Arbiter | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.07 -> 1.99
+    GOLD: 14 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[15:07:42] --- FIM DO ROUND 3-1 | GOLD: 20 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.62
+FOCUS WEIGHTS: Arbiter 2.78, Shepherd 0.64, Stargazer 0.53, Bastion 0.53, Fateweaver 0.53
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +0 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Tee|C|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Zoe|C|1*|i:4.0]       [ . ]             [ . ]        [Leo|T|1*|i:2.0]  [Bel|T|1*|i:4.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Tee|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:42] 🛒 LOJA: Fizz(i:6.0), Ezreal(i:2.0), Akali(i:4.0), Rek'Sai(i:2.0), Rek'Sai(i:2.0)
+[15:07:44] MOVE Bench -> Board: Teemo (i:2.0) <-> Leona (i:2.0) | Rew: +0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.09
+FOCUS WEIGHTS: Arbiter 2.27, Shepherd 1.25, Stargazer 0.50, Bastion 0.49, Fateweaver 0.49
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Arbiter -> Arbiter | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.62 -> 2.09
+    GOLD: 20 | renda base +5 | juros +1 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=1.25 | Shepherd=1.25
+[15:07:45] MOVE Bench -> Board: Leona (i:2.0) <-> Zoe (i:4.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.09
+FOCUS WEIGHTS: Shepherd 1.75, Arbiter 1.66, Stargazer 0.54, Bastion 0.53, Fateweaver 0.53
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Arbiter -> Arbiter | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.09 -> 2.09
+    GOLD: 20 | renda base +5 | juros +1 | sequência +0 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=1.66 | Arbiter=1.66
+[15:07:45] MOVE Bench -> Board: Zoe (i:4.0) <-> Teemo (i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 1.94
+FOCUS WEIGHTS: Arbiter 2.32, Shepherd 1.20, Stargazer 0.51, Bastion 0.49, Fateweaver 0.49
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Arbiter -> Arbiter | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.09 -> 1.94
+    GOLD: 20 | renda base +5 | juros +1 | sequência +0 | vitória +0
+    FIT UNIDADE: Zoe | core=SIM | fit=2.32 | Arbiter=2.32
+[15:07:46] MOVE Bench -> Board: Teemo (i:2.0) <-> Leona (i:2.0) | Rew: +0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 1.94
+FOCUS WEIGHTS: Shepherd 1.71, Arbiter 1.69, Stargazer 0.54, Bastion 0.53, Fateweaver 0.53
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Arbiter -> Arbiter | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=1.94 -> 1.94
+    GOLD: 20 | renda base +5 | juros +1 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=1.71 | Shepherd=1.71
+[15:07:47] MOVE Bench -> Board: Leona (i:2.0) <-> Teemo (i:2.0) | Rew: -0.28
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 1.95
+FOCUS WEIGHTS: Arbiter 2.34, Shepherd 1.18, Stargazer 0.51, Bastion 0.49, Fateweaver 0.49
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Arbiter -> Arbiter | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=1.94 -> 1.95
+    GOLD: 20 | renda base +5 | juros +1 | sequência +0 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=2.34 | Arbiter=2.34
+[15:07:47] MOVE Bench -> Board: Teemo (i:2.0) <-> Teemo (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 1.95
+FOCUS WEIGHTS: Arbiter 2.42, Shepherd 0.99, Stargazer 0.54, Bastion 0.53, Fateweaver 0.53
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Arbiter -> Arbiter | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=1.95 -> 1.95
+    GOLD: 20 | renda base +5 | juros +1 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=0.99 | Shepherd=0.99
+[15:07:48] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.08
+FOCUS WEIGHTS: Arbiter 2.74, Shepherd 0.79, Stargazer 0.51, Bastion 0.49, Fateweaver 0.49
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Arbiter -> Arbiter | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=1.95 -> 2.08
+    GOLD: 20 | renda base +5 | juros +1 | sequência +0 | vitória +0
+
+[15:07:50] --- FIM DO ROUND 3-2 | GOLD: 28 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.62
+FOCUS WEIGHTS: Arbiter 2.93, Shepherd 0.61, Stargazer 0.49, Bastion 0.49, Fateweaver 0.49
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +1 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Zoe|C|1*|i:4.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Tee|C|1*|i:2.0]       [ . ]             [ . ]        [Leo|T|1*|i:2.0]  [Bel|T|1*|i:4.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Tee|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:50] 🛒 LOJA: Urgot(i:6.0), Briar(i:2.0), Pantheon(i:4.0), Rhaast(i:6.0), Jax(i:4.0)
+[15:07:52] MOVE Bench -> Board: Teemo (i:2.0) <-> Leona (i:2.0) | Rew: +0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.62
+FOCUS WEIGHTS: Arbiter 2.06, Shepherd 1.35, Stargazer 0.53, Bastion 0.53, Fateweaver 0.53
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Arbiter -> Arbiter | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.62 -> 2.62
+    GOLD: 28 | renda base +5 | juros +2 | sequência +1 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=1.35 | Shepherd=1.35
+[15:07:53] MOVE Bench -> Board: Leona (i:2.0) <-> Teemo (i:2.0) | Rew: -0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.02
+FOCUS WEIGHTS: Arbiter 2.54, Shepherd 0.98, Stargazer 0.50, Bastion 0.49, Fateweaver 0.49
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Arbiter -> Arbiter | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.62 -> 2.02
+    GOLD: 28 | renda base +5 | juros +2 | sequência +1 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=2.54 | Arbiter=2.54
+[15:07:54] MOVE Bench -> Board: Teemo (i:2.0) <-> Zoe (i:4.0) | Rew: -0.11
+    STRATEGY: STABILIZE | COMP DIRECTION: Arbiter | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.02
+FOCUS WEIGHTS: Arbiter 1.83, Shepherd 1.58, Stargazer 0.54, Bastion 0.53, Fateweaver 0.53
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Arbiter -> Arbiter | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.02 -> 2.02
+    GOLD: 28 | renda base +5 | juros +2 | sequência +1 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=1.58 | Shepherd=1.58
+[15:07:54] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.09
+FOCUS WEIGHTS: Shepherd 2.28, Arbiter 1.24, Stargazer 0.51, Bastion 0.49, Fateweaver 0.49
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Arbiter -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.02 -> 2.09
+    GOLD: 28 | renda base +5 | juros +2 | sequência +1 | vitória +0
+
+[15:07:59] --- FIM DO ROUND 3-3 | GOLD: 36 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.85
+FOCUS WEIGHTS: Shepherd 2.78, Arbiter 0.64, Stargazer 0.53, Bastion 0.53, Fateweaver 0.53
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +1 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Tee|C|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Leo|T|1*|i:2.0]       [ . ]             [ . ]        [Tee|C|1*|i:2.0]  [Bel|T|1*|i:4.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Zoe|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:59] 🛒 LOJA: Gwen(i:4.0), Pantheon(i:4.0), Ornn(i:6.0), Gnar(i:4.0), Briar(i:2.0)
+[15:08:01] MOVE Bench -> Board: Zoe (i:4.0) <-> Leona (i:2.0) | Rew: +0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.86
+FOCUS WEIGHTS: Shepherd 2.95, Arbiter 0.60, Stargazer 0.49, Bastion 0.49, Fateweaver 0.49
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.85 -> 2.86
+    GOLD: 36 | renda base +5 | juros +2 | sequência +1 | vitória +0
+    FIT UNIDADE: Zoe | core=SIM | fit=0.60 | Arbiter=0.60
+[15:08:01] MOVE Bench -> Board: Leona (i:2.0) <-> Teemo (i:2.0) | Rew: -0.34
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.86
+FOCUS WEIGHTS: Shepherd 2.08, Arbiter 1.34, Stargazer 0.53, Bastion 0.53, Fateweaver 0.53
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.86 -> 2.86
+    GOLD: 36 | renda base +5 | juros +2 | sequência +1 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=1.34 | Arbiter=1.34
+[15:08:02] MOVE Bench -> Board: Teemo (i:2.0) <-> Zoe (i:4.0) | Rew: +0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.68
+FOCUS WEIGHTS: Shepherd 2.56, Arbiter 0.98, Stargazer 0.49, Bastion 0.49, Fateweaver 0.49
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.86 -> 2.68
+    GOLD: 36 | renda base +5 | juros +2 | sequência +1 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=2.56 | Shepherd=2.56
+[15:08:03] MOVE Bench -> Board: Zoe (i:4.0) <-> Leona (i:2.0) | Rew: +0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.68
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.86, Stargazer 0.53, Bastion 0.53, Fateweaver 0.53
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.68 -> 2.68
+    GOLD: 36 | renda base +5 | juros +2 | sequência +1 | vitória +0
+    FIT UNIDADE: Zoe | core=SIM | fit=0.86 | Arbiter=0.86
+[15:08:04] MOVE Bench -> Board: Leona (i:2.0) <-> Teemo (i:2.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 1.97
+FOCUS WEIGHTS: Shepherd 2.15, Arbiter 1.37, Stargazer 0.50, Bastion 0.49, Fateweaver 0.49
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.68 -> 1.97
+    GOLD: 36 | renda base +5 | juros +2 | sequência +1 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=1.37 | Arbiter=1.37
+[15:08:04] MOVE Bench -> Board: Teemo (i:2.0) <-> Bel'Veth (i:4.0) | Rew: +0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 1.97
+FOCUS WEIGHTS: Shepherd 2.22, Arbiter 1.25, Stargazer 0.52, Bastion 0.51, Fateweaver 0.51
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=1.97 -> 1.97
+    GOLD: 36 | renda base +5 | juros +2 | sequência +1 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=2.22 | Shepherd=2.22
+[15:08:05] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Leona (i:2.0) | Rew: +0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.72
+FOCUS WEIGHTS: Shepherd 2.64, Arbiter 0.93, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=1.97 -> 2.72
+    GOLD: 36 | renda base +5 | juros +2 | sequência +1 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=0.00 | nenhum trait de foco
+[15:08:06] MOVE Bench -> Board: Leona (i:2.0) <-> Zoe (i:4.0) | Rew: -0.31
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.72
+FOCUS WEIGHTS: Shepherd 2.60, Arbiter 0.83, Stargazer 0.52, Bastion 0.52, Fateweaver 0.52
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.72 -> 2.72
+    GOLD: 36 | renda base +5 | juros +2 | sequência +1 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=0.83 | Arbiter=0.83
+[15:08:06] MOVE Bench -> Board: Zoe (i:4.0) <-> Bel'Veth (i:4.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.75, Arbiter 0.85, Stargazer 0.47, Bastion 0.47, Fateweaver 0.47
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.72 -> 2.91
+    GOLD: 36 | renda base +5 | juros +2 | sequência +1 | vitória +0
+    FIT UNIDADE: Zoe | core=SIM | fit=0.85 | Arbiter=0.85
+
+[15:08:07] --- FIM DO ROUND 3-4 | GOLD: 45 ---
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.73, Arbiter 0.91, Stargazer 0.45, Bastion 0.45, Fateweaver 0.45
+    RENDA PRÓXIMO ROUND: +5 base, +3 juros, +1 sequência, +0 vitória (total: +9)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Tee|C|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Zoe|C|1*|i:4.0]       [ . ]             [ . ]        [Leo|T|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Bel|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:08:07] 🛒 LOJA: Bel'Veth(i:4.0), Pantheon(i:4.0), Illaoi(i:6.0), Milio(i:4.0), Diana(i:6.0)
+[15:08:10] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Leona (i:2.0) | Rew: +0.06
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.66, Arbiter 0.82, Stargazer 0.51, Bastion 0.51, Fateweaver 0.51
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 45 | renda base +5 | juros +3 | sequência +1 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=0.00 | nenhum trait de foco
+[15:08:11] MOVE Bench -> Board: Leona (i:2.0) <-> Zoe (i:4.0) | Rew: -0.08
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.83
+FOCUS WEIGHTS: Shepherd 2.88, Arbiter 0.70, Stargazer 0.47, Bastion 0.47, Fateweaver 0.47
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.83
+    GOLD: 45 | renda base +5 | juros +3 | sequência +1 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=0.70 | Arbiter=0.70
+[15:08:11] MOVE Bench -> Board: Zoe (i:4.0) <-> Teemo (i:2.0) | Rew: -0.19
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.83
+FOCUS WEIGHTS: Shepherd 2.04, Arbiter 1.40, Stargazer 0.52, Bastion 0.52, Fateweaver 0.52
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.83 -> 2.83
+    GOLD: 45 | renda base +5 | juros +3 | sequência +1 | vitória +0
+    FIT UNIDADE: Zoe | core=SIM | fit=1.40 | Arbiter=1.40
+[15:08:12] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Arbiter | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 1.90
+FOCUS WEIGHTS: Arbiter 2.18, Shepherd 1.35, Stargazer 0.50, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Arbiter | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.83 -> 1.90
+    GOLD: 45 | renda base +5 | juros +3 | sequência +1 | vitória +0
+
+[15:08:16] --- FIM DO ROUND 3-5 | GOLD: 55 ---
+    STRATEGY: ECON | COMP DIRECTION: Arbiter | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.62
+FOCUS WEIGHTS: Arbiter 2.77, Shepherd 0.64, Stargazer 0.53, Bastion 0.53, Fateweaver 0.53
+    RENDA PRÓXIMO ROUND: +5 base, +4 juros, +1 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Zoe|C|1*|i:4.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Leo|T|1*|i:2.0]       [ . ]             [ . ]        [Bel|T|1*|i:4.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Tee|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:08:16] 🛒 LOJA: Poppy(i:2.0), Illaoi(i:6.0), Fizz(i:6.0), Pantheon(i:4.0), Twisted Fate(i:2.0)
+[15:08:19] MOVE Bench -> Board: Teemo (i:2.0) <-> Leona (i:2.0) | Rew: +0.06
+    STRATEGY: ECON | COMP DIRECTION: Arbiter | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.09
+FOCUS WEIGHTS: Arbiter 2.27, Shepherd 1.26, Stargazer 0.50, Bastion 0.49, Fateweaver 0.49
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Arbiter -> Arbiter | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.62 -> 2.09
+    GOLD: 55 | renda base +5 | juros +4 | sequência +1 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=1.26 | Shepherd=1.26
+[15:08:20] MOVE Bench -> Board: Leona (i:2.0) <-> Bel'Veth (i:4.0) | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Arbiter | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.09
+FOCUS WEIGHTS: Arbiter 1.79, Shepherd 1.68, Stargazer 0.52, Bastion 0.51, Fateweaver 0.51
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Arbiter -> Arbiter | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.09 -> 2.09
+    GOLD: 55 | renda base +5 | juros +4 | sequência +1 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=1.79 | Arbiter=1.79
+[15:08:20] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Teemo (i:2.0) | Rew: -0.06
+    STRATEGY: ECON | COMP DIRECTION: Arbiter | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 1.97
+FOCUS WEIGHTS: Arbiter 2.39, Shepherd 1.16, Stargazer 0.50, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Arbiter -> Arbiter | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.09 -> 1.97
+    GOLD: 55 | renda base +5 | juros +4 | sequência +1 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=0.00 | nenhum trait de foco
+[15:08:21] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Arbiter | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 1.97
+FOCUS WEIGHTS: Arbiter 2.45, Shepherd 0.98, Stargazer 0.53, Bastion 0.52, Fateweaver 0.52
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Arbiter -> Arbiter | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=1.97 -> 1.97
+    GOLD: 55 | renda base +5 | juros +4 | sequência +1 | vitória +0
+
+[15:08:25] --- FIM DO ROUND 3-6 | GOLD: 66 ---
+    STRATEGY: ECON | COMP DIRECTION: Arbiter | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.63
+FOCUS WEIGHTS: Arbiter 2.94, Shepherd 0.60, Stargazer 0.49, Bastion 0.49, Fateweaver 0.49
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Zoe|C|1*|i:4.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]       [ . ]             [ . ]        [Leo|T|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Tee|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:08:25] 🛒 LOJA: Mordekaiser(i:4.0), Akali(i:4.0), Ornn(i:6.0), Twisted Fate(i:2.0), Bel'Veth(i:4.0)
+[15:08:28] MOVE Bench -> Board: Teemo (i:2.0) <-> Leona (i:2.0) | Rew: +0.12
+    STRATEGY: ECON | COMP DIRECTION: Arbiter | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.63
+FOCUS WEIGHTS: Arbiter 2.07, Shepherd 1.34, Stargazer 0.53, Bastion 0.53, Fateweaver 0.53
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Arbiter -> Arbiter | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.63 -> 2.63
+    GOLD: 66 | renda base +5 | juros +5 | sequência +0 | vitória +1
+    FIT UNIDADE: Teemo | core=SIM | fit=1.34 | Shepherd=1.34
+[15:08:29] MOVE Bench -> Board: Leona (i:2.0) <-> Bel'Veth (i:4.0) | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Arbiter | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.20
+FOCUS WEIGHTS: Arbiter 2.00, Shepherd 1.58, Stargazer 0.48, Bastion 0.47, Fateweaver 0.47
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Arbiter -> Arbiter | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.63 -> 2.20
+    GOLD: 66 | renda base +5 | juros +5 | sequência +0 | vitória +1
+    FIT UNIDADE: Leona | core=não | fit=2.00 | Arbiter=2.00
+[15:08:30] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Zoe (i:4.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Arbiter | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.20
+FOCUS WEIGHTS: Shepherd 1.95, Arbiter 1.50, Stargazer 0.53, Bastion 0.52, Fateweaver 0.52
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Arbiter -> Arbiter | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.20 -> 2.20
+    GOLD: 66 | renda base +5 | juros +5 | sequência +0 | vitória +1
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=0.00 | nenhum trait de foco
+[15:08:30] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.16
+FOCUS WEIGHTS: Shepherd 2.48, Arbiter 1.06, Stargazer 0.50, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Arbiter -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.20 -> 2.16
+    GOLD: 66 | renda base +5 | juros +5 | sequência +0 | vitória +1
+
+[15:08:35] --- FIM DO ROUND 3-7 | GOLD: 76 ---
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.85
+FOCUS WEIGHTS: Shepherd 2.79, Arbiter 0.63, Stargazer 0.53, Bastion 0.53, Fateweaver 0.53
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Bel|T|1*|i:4.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Leo|T|1*|i:2.0]       [ . ]             [ . ]        [Tee|C|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Zoe|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:08:35] 🛒 LOJA: Twisted Fate(i:2.0), Jinx(i:4.0), Mordekaiser(i:4.0), Bel'Veth(i:4.0), Diana(i:6.0)
+[15:08:38] MOVE Bench -> Board: Zoe (i:4.0) <-> Leona (i:2.0) | Rew: +0.08
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.86
+FOCUS WEIGHTS: Shepherd 2.95, Arbiter 0.59, Stargazer 0.49, Bastion 0.49, Fateweaver 0.49
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.85 -> 2.86
+    GOLD: 76 | renda base +5 | juros +5 | sequência +0 | vitória +0
+    FIT UNIDADE: Zoe | core=SIM | fit=0.59 | Arbiter=0.59
+[15:08:39] MOVE Bench -> Board: Leona (i:2.0) <-> Teemo (i:2.0) | Rew: -0.34
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.86
+FOCUS WEIGHTS: Shepherd 2.08, Arbiter 1.34, Stargazer 0.53, Bastion 0.53, Fateweaver 0.53
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.86 -> 2.86
+    GOLD: 76 | renda base +5 | juros +5 | sequência +0 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=1.34 | Arbiter=1.34
+[15:08:39] MOVE Bench -> Board: Teemo (i:2.0) <-> Zoe (i:4.0) | Rew: +0.07
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.68
+FOCUS WEIGHTS: Shepherd 2.56, Arbiter 0.98, Stargazer 0.49, Bastion 0.49, Fateweaver 0.49
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.86 -> 2.68
+    GOLD: 76 | renda base +5 | juros +5 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=2.56 | Shepherd=2.56
+[15:08:40] MOVE Bench -> Board: Zoe (i:4.0) <-> Leona (i:2.0) | Rew: +0.13
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.68
+FOCUS WEIGHTS: Shepherd 2.56, Arbiter 0.86, Stargazer 0.53, Bastion 0.53, Fateweaver 0.53
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.68 -> 2.68
+    GOLD: 76 | renda base +5 | juros +5 | sequência +0 | vitória +0
+    FIT UNIDADE: Zoe | core=SIM | fit=0.86 | Arbiter=0.86
+[15:08:41] MOVE Bench -> Board: Leona (i:2.0) <-> Teemo (i:2.0) | Rew: -0.09
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 1.97
+FOCUS WEIGHTS: Shepherd 2.15, Arbiter 1.37, Stargazer 0.50, Bastion 0.49, Fateweaver 0.49
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.68 -> 1.97
+    GOLD: 76 | renda base +5 | juros +5 | sequência +0 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=1.37 | Arbiter=1.37
+[15:08:42] MOVE Bench -> Board: Teemo (i:2.0) <-> Poppy (i:2.0) | Rew: +0.07
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 1.97
+FOCUS WEIGHTS: Shepherd 2.22, Arbiter 1.25, Stargazer 0.52, Bastion 0.51, Fateweaver 0.51
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=1.97 -> 1.97
+    GOLD: 76 | renda base +5 | juros +5 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=2.22 | Shepherd=2.22
+[15:08:42] MOVE Bench -> Board: Poppy (i:2.0) <-> Leona (i:2.0) | Rew: -0.13
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.72
+FOCUS WEIGHTS: Shepherd 2.64, Arbiter 0.93, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=1.97 -> 2.72
+    GOLD: 76 | renda base +5 | juros +5 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=0.48 | Bastion=0.48
+[15:08:43] MOVE Bench -> Board: Leona (i:2.0) <-> Zoe (i:4.0) | Rew: -0.31
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.72
+FOCUS WEIGHTS: Shepherd 2.60, Arbiter 0.83, Stargazer 0.52, Bastion 0.52, Fateweaver 0.52
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.72 -> 2.72
+    GOLD: 76 | renda base +5 | juros +5 | sequência +0 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=0.83 | Arbiter=0.83
+[15:08:44] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.81
+FOCUS WEIGHTS: Shepherd 2.85, Arbiter 0.70, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.72 -> 2.81
+    GOLD: 76 | renda base +5 | juros +5 | sequência +0 | vitória +0
+
+[15:08:44] --- FIM DO ROUND 4-1 | GOLD: 86 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.84
+FOCUS WEIGHTS: Shepherd 2.92, Arbiter 0.63, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Bel|T|1*|i:4.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]        [Leo|T|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Zoe|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:08:44] 🛒 LOJA: Teemo(i:2.0), Lissandra(i:2.0), Teemo(i:2.0), Samira(i:6.0), Pantheon(i:4.0)
+[15:08:48] MOVE Bench -> Board: Zoe (i:4.0) <-> Poppy (i:2.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.84
+FOCUS WEIGHTS: Shepherd 2.67, Arbiter 0.81, Stargazer 0.51, Bastion 0.51, Fateweaver 0.51
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.84 -> 2.84
+    GOLD: 86 | renda base +5 | juros +5 | sequência +0 | vitória +0
+    FIT UNIDADE: Zoe | core=SIM | fit=0.81 | Arbiter=0.81
+[15:08:49] MOVE Bench -> Board: Poppy (i:2.0) <-> Leona (i:2.0) | Rew: -0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.84
+FOCUS WEIGHTS: Shepherd 2.89, Arbiter 0.69, Stargazer 0.47, Bastion 0.47, Fateweaver 0.47
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.84 -> 2.84
+    GOLD: 86 | renda base +5 | juros +5 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=0.47 | Bastion=0.47
+[15:08:49] MOVE Bench -> Board: Leona (i:2.0) <-> Zoe (i:4.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.84
+FOCUS WEIGHTS: Shepherd 2.75, Arbiter 0.69, Stargazer 0.52, Bastion 0.52, Fateweaver 0.52
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.84 -> 2.84
+    GOLD: 86 | renda base +5 | juros +5 | sequência +0 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=0.69 | Arbiter=0.69
+[15:08:50] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.85
+FOCUS WEIGHTS: Shepherd 2.93, Arbiter 0.62, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.84 -> 2.85
+    GOLD: 86 | renda base +5 | juros +5 | sequência +0 | vitória +0
+
+[15:08:54] --- FIM DO ROUND 4-2 | GOLD: 97 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.86
+FOCUS WEIGHTS: Shepherd 2.80, Arbiter 0.62, Stargazer 0.53, Bastion 0.53, Fateweaver 0.53
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Bel|T|1*|i:4.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Leo|T|1*|i:2.0]       [ . ]             [ . ]        [Pop|T|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Zoe|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:08:54] 🛒 LOJA: Miss Fortune(i:6.0), Maokai(i:6.0), Pantheon(i:4.0), Samira(i:6.0), Miss Fortune(i:6.0)
+[15:08:58] MOVE Bench -> Board: Zoe (i:4.0) <-> Bel'Veth (i:4.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.95
+FOCUS WEIGHTS: Shepherd 2.85, Arbiter 0.74, Stargazer 0.47, Bastion 0.47, Fateweaver 0.47
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.86 -> 2.95
+    GOLD: 97 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Zoe | core=SIM | fit=0.74 | Arbiter=0.74
+[15:08:58] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Leona (i:2.0) | Rew: +0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.95
+FOCUS WEIGHTS: Shepherd 2.73, Arbiter 0.72, Stargazer 0.52, Bastion 0.52, Fateweaver 0.52
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.95 -> 2.95
+    GOLD: 97 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=0.00 | nenhum trait de foco
+[15:08:59] MOVE Bench -> Board: Leona (i:2.0) <-> Poppy (i:2.0) | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.94
+FOCUS WEIGHTS: Shepherd 2.82, Arbiter 0.79, Stargazer 0.46, Bastion 0.46, Fateweaver 0.46
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.95 -> 2.94
+    GOLD: 97 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=0.79 | Arbiter=0.79
+[15:09:00] MOVE Bench -> Board: Poppy (i:2.0) <-> Bel'Veth (i:4.0) | Rew: -0.21
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.94
+FOCUS WEIGHTS: Shepherd 2.61, Arbiter 0.91, Stargazer 0.49, Bastion 0.49, Fateweaver 0.49
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.94 -> 2.94
+    GOLD: 97 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=0.49 | Bastion=0.49
+[15:09:01] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Leona (i:2.0) | Rew: +0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.83
+FOCUS WEIGHTS: Shepherd 2.85, Arbiter 0.74, Stargazer 0.47, Bastion 0.47, Fateweaver 0.47
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.94 -> 2.83
+    GOLD: 97 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=0.00 | nenhum trait de foco
+[15:09:01] MOVE Bench -> Board: Leona (i:2.0) <-> Poppy (i:2.0) | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.83
+FOCUS WEIGHTS: Shepherd 2.63, Arbiter 0.88, Stargazer 0.50, Bastion 0.50, Fateweaver 0.50
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Arbiter, Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.83 -> 2.83
+    GOLD: 97 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=0.88 | Arbiter=0.88
+[15:09:02] MOVE Bench -> Board: Poppy (i:2.0) <-> Zoe (i:4.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.83
+FOCUS WEIGHTS: Shepherd 2.86, Arbiter 0.73, Stargazer 0.47, Bastion 0.47, Fateweaver 0.47
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.83 -> 2.83
+    GOLD: 97 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=0.47 | Bastion=0.47
+[15:09:03] MOVE Bench -> Board: Zoe (i:4.0) <-> Leona (i:2.0) | Rew: +0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.83
+FOCUS WEIGHTS: Shepherd 2.74, Arbiter 0.71, Stargazer 0.52, Bastion 0.52, Fateweaver 0.52
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.83 -> 2.83
+    GOLD: 97 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Zoe | core=SIM | fit=0.71 | Arbiter=0.71
+[15:09:03] MOVE Bench -> Board: Leona (i:2.0) <-> Bel'Veth (i:4.0) | Rew: -0.17
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.94
+FOCUS WEIGHTS: Shepherd 2.82, Arbiter 0.79, Stargazer 0.46, Bastion 0.46, Fateweaver 0.46
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.83 -> 2.94
+    GOLD: 97 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=0.79 | Arbiter=0.79
+
+[15:09:04] --- FIM DO ROUND 4-3 | GOLD: 108 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.92
+FOCUS WEIGHTS: Shepherd 2.75, Arbiter 0.89, Stargazer 0.45, Bastion 0.45, Fateweaver 0.45
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Zoe|C|1*|i:4.0]       [ . ]             [ . ]        [Leo|T|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Bel|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:09:04] 🛒 LOJA: Pantheon(i:4.0), Diana(i:6.0), Miss Fortune(i:6.0), Rhaast(i:6.0), Lulu(i:6.0)
+[15:09:08] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Vazio | Rew: +0.55
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.92
+FOCUS WEIGHTS: Shepherd 2.57, Arbiter 0.97, Stargazer 0.49, Bastion 0.49, Fateweaver 0.49
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.92 -> 2.92
+    GOLD: 108 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=0.00 | nenhum trait de foco
+[15:09:08] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.73, Arbiter 0.92, Stargazer 0.45, Bastion 0.45, Fateweaver 0.45
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.92 -> 2.91
+    GOLD: 104 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:09] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.56, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 100 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:10] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.73, Arbiter 0.93, Stargazer 0.45, Bastion 0.45, Fateweaver 0.45
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 96 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:10] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.56, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 92 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:11] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.72, Arbiter 0.94, Stargazer 0.45, Bastion 0.45, Fateweaver 0.45
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 88 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:12] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 84 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:12] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.72, Arbiter 0.94, Stargazer 0.45, Bastion 0.45, Fateweaver 0.45
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 80 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:13] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 76 | renda base +5 | juros +5 | sequência +1 | vitória +0
+
+[15:09:14] --- FIM DO ROUND 4-4 | GOLD: 87 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]        [Bel|T|1*|i:4.0]       [ . ]        [Pop|T|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Zoe|C|1*|i:4.0]       [ . ]             [ . ]        [Leo|T|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:09:14] 🛒 LOJA: Tahm Kench(i:8.0), Miss Fortune(i:6.0), Maokai(i:6.0), Kai'Sa(i:6.0), Kai'Sa(i:6.0)
+[15:09:17] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.72, Arbiter 0.94, Stargazer 0.45, Bastion 0.45, Fateweaver 0.45
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 83 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:18] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 79 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:19] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.72, Arbiter 0.94, Stargazer 0.45, Bastion 0.45, Fateweaver 0.45
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 75 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:20] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 71 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:20] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.72, Arbiter 0.94, Stargazer 0.45, Bastion 0.45, Fateweaver 0.45
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 67 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:21] BUY XP                       | Rew: +1.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 63 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:22] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.72, Arbiter 0.94, Stargazer 0.45, Bastion 0.45, Fateweaver 0.45
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 59 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:22] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 55 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:23] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.72, Arbiter 0.94, Stargazer 0.45, Bastion 0.45, Fateweaver 0.45
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 51 | renda base +5 | juros +5 | sequência +1 | vitória +0
+
+[15:09:24] --- FIM DO ROUND 4-5 | GOLD: 51 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:09:24] 🛒 LOJA: None, None, None, None, None
+[15:09:27] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 51 | renda base +5 | juros +5 | sequência +1 | vitória +0
+
+[15:09:34] --- FIM DO ROUND 4-6 | GOLD: 51 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:09:34] 🛒 LOJA: None, None, None, None, None
+[15:09:38] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 51 | renda base +5 | juros +5 | sequência +1 | vitória +0
+
+[15:09:44] --- FIM DO ROUND 4-7 | GOLD: 51 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:09:44] 🛒 LOJA: None, None, None, None, None
+[15:09:48] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 51 | renda base +5 | juros +5 | sequência +1 | vitória +0
+
+[15:09:55] --- FIM DO ROUND 5-1 | GOLD: 51 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:09:55] 🛒 LOJA: None, None, None, None, None
+[15:09:59] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 51 | renda base +5 | juros +5 | sequência +1 | vitória +0
+
+[15:10:05] --- FIM DO ROUND 5-2 | GOLD: 51 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:10:05] 🛒 LOJA: None, None, None, None, None
+[15:10:09] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 51 | renda base +5 | juros +5 | sequência +1 | vitória +0
+
+[15:10:16] --- FIM DO ROUND 5-3 | GOLD: 51 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:10:16] 🛒 LOJA: None, None, None, None, None
+[15:10:20] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 51 | renda base +5 | juros +5 | sequência +1 | vitória +0
+
+[15:10:26] --- FIM DO ROUND 5-4 | GOLD: 51 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:10:26] 🛒 LOJA: None, None, None, None, None
+[15:10:31] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 51 | renda base +5 | juros +5 | sequência +1 | vitória +0
+
+[15:10:37] --- FIM DO ROUND 5-5 | GOLD: 51 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:10:37] 🛒 LOJA: None, None, None, None, None
+[15:10:42] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 51 | renda base +5 | juros +5 | sequência +1 | vitória +0
+
+[15:10:48] --- FIM DO ROUND 5-6 | GOLD: 51 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:10:48] 🛒 LOJA: None, None, None, None, None
+[15:10:53] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 51 | renda base +5 | juros +5 | sequência +1 | vitória +0
+
+[15:10:59] --- FIM DO ROUND 5-7 | GOLD: 51 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:10:59] 🛒 LOJA: None, None, None, None, None
+[15:11:04] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 51 | renda base +5 | juros +5 | sequência +1 | vitória +0
+
+[15:11:11] --- FIM DO ROUND 6-1 | GOLD: 51 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:11:11] 🛒 LOJA: None, None, None, None, None
+[15:11:16] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 51 | renda base +5 | juros +5 | sequência +1 | vitória +0
+
+[15:11:22] --- FIM DO ROUND 6-2 | GOLD: 51 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:11:22] 🛒 LOJA: None, None, None, None, None
+[15:11:28] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Belveth, TFT17_Zoe, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Belveth -> TFT17_Belveth | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 51 | renda base +5 | juros +5 | sequência +1 | vitória +0
+
+[15:11:34] --- FIM DO ROUND 6-3 | GOLD: 51 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Shepherd | FOCUS: TFT17_Belveth | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Shepherd 2.55, Arbiter 0.99, Stargazer 0.48, Bastion 0.48, Fateweaver 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:11:34] 🛒 LOJA: None, None, None, None, None
+
+========================================
+ GAME OVER - RELATÓRIO FINAL
+========================================

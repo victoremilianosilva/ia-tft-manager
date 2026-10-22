@@ -1,0 +1,2015 @@
+==========================================================
+TFT AI LOG · JOGADOR 1
+Partida: 41d3c7ad-ba55-48b4-a622-f1c21e438d1e
+Seed: 20261016 | Política: determinística
+Checkpoint SHA-256: 0ce147c51adc8dc482d401fbdbd9e586034ad9678a9114f2cead317de1434d49
+Impacto (i): custo × estrelas × 2 (contribuição nativa da engine)
+==========================================================
+--- INÍCIO DA PARTIDA · JOGADOR 1 ---
+[15:06:11] MOVE Bench -> Board: Nasus (i:2.0) <-> Vazio | Rew: +0.29
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Nasus | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 4.32, Vanguard 0.68
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Nasus | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=— -> TFT17_Nasus | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=SIM | fit=5.00 | Space Groove=4.32, Vanguard=0.68
+[15:06:12] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Nasus | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 4.32, Vanguard 0.68
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Nasus | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Nasus -> TFT17_Nasus | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[15:06:17] --- FIM DO ROUND 1-1 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Nasus | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 4.32, Vanguard 0.68
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Nas|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:06:17] 🛒 LOJA: Ezreal(i:2.0), Briar(i:2.0), Briar(i:2.0), Twisted Fate(i:2.0), Veigar(i:2.0)
+[15:06:18] COMPROU: Twisted Fate (Custo 1 | i:2.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Nasus | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 4.11, Vanguard 0.65, Fateweaver 0.12, Stargazer 0.12
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Nasus, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Nasus -> TFT17_Nasus | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=0.24 | Stargazer=0.12, Fateweaver=0.12
+[15:06:19] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Nasus (i:2.0) | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.94, Vanguard 0.62, Fateweaver 0.22, Stargazer 0.22
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Nasus | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Nasus -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=0.43 | Stargazer=0.22, Fateweaver=0.22
+[15:06:20] MOVE Bench -> Board: Nasus (i:2.0) <-> Vazio | Rew: +0.30
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.82, Vanguard 0.60, Fateweaver 0.29, Stargazer 0.29
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Nasus | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=SIM | fit=4.42 | Space Groove=3.82, Vanguard=0.60
+[15:06:20] COMPROU: Veigar (Custo 1 | i:2.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.63, Vanguard 0.57, Fateweaver 0.34, Stargazer 0.34, Meeple 0.12
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Nasus, TFT17_Veigar | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=SIM | fit=0.12 | Meeple=0.12
+[15:06:21] MOVE Bench -> Board: Veigar (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Veigar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.49, Vanguard 0.55, Fateweaver 0.37, Stargazer 0.37, Meeple 0.21
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Veigar, TFT17_Nasus, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_Veigar | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=SIM | fit=0.21 | Meeple=0.21
+[15:06:22] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Nasus (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Veigar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.39, Vanguard 0.53, Fateweaver 0.40, Stargazer 0.40, Meeple 0.28
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Veigar, TFT17_TwistedFate, TFT17_Nasus | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Veigar -> TFT17_Veigar | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=0.80 | Stargazer=0.40, Fateweaver=0.40
+[15:06:22] MOVE Bench -> Board: Nasus (i:2.0) <-> Veigar (i:2.0) | Rew: -0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Nasus | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.31, Vanguard 0.52, Fateweaver 0.42, Stargazer 0.42, Meeple 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Nasus, TFT17_TwistedFate, TFT17_Veigar | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Veigar -> TFT17_Nasus | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=SIM | fit=3.83 | Space Groove=3.31, Vanguard=0.52
+[15:06:23] MOVE Bench -> Board: Veigar (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Nasus | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.25, Vanguard 0.51, Fateweaver 0.44, Stargazer 0.44, Meeple 0.37
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Nasus, TFT17_Veigar, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Nasus -> TFT17_Nasus | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=SIM | fit=0.37 | Meeple=0.37
+[15:06:24] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.55
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Nasus | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.20, Vanguard 0.51, Fateweaver 0.45, Stargazer 0.45, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Nasus, TFT17_Veigar, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Nasus -> TFT17_Nasus | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=0.90 | Stargazer=0.45, Fateweaver=0.45
+
+[15:06:24] --- FIM DO ROUND 1-2 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Nasus | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.14, Vanguard 0.50, Fateweaver 0.46, Stargazer 0.46, Meeple 0.43
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Nas|F|1*|i:2.0]       [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:06:24] 🛒 LOJA: Lissandra(i:2.0), Pyke(i:4.0), Aatrox(i:2.0), Teemo(i:2.0), Teemo(i:2.0)
+[15:06:25] MOVE Board -> Board: Nasus (i:2.0) <-> Vazio | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Nasus | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.12, Vanguard 0.49, Fateweaver 0.47, Stargazer 0.47, Meeple 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Nasus, TFT17_Veigar, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Nasus -> TFT17_Nasus | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=SIM | fit=3.62 | Space Groove=3.12, Vanguard=0.49
+[15:06:26] COMPROU: Pyke (Custo 2 | i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.11, Vanguard 0.49, Fateweaver 0.47, Stargazer 0.47, Meeple 0.46
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_Nasus, TFT17_Veigar | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Nasus -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pyke | core=SIM | fit=0.00 | nenhum trait de foco
+[15:06:26] MOVE Bench -> Board: Pyke (i:4.0) <-> Veigar (i:2.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.10, Vanguard 0.49, Fateweaver 0.48, Stargazer 0.48, Meeple 0.46
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_Nasus, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pyke | core=SIM | fit=0.00 | nenhum trait de foco
+[15:06:27] MOVE Bench -> Board: Veigar (i:2.0) <-> Nasus (i:2.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.09, Vanguard 0.49, Fateweaver 0.48, Stargazer 0.48, Meeple 0.47
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_Veigar, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=SIM | fit=0.47 | Meeple=0.47
+[15:06:28] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.08, Vanguard 0.49, Fateweaver 0.48, Stargazer 0.48, Meeple 0.47
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_Veigar, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+
+[15:06:31] --- FIM DO ROUND 1-3 | GOLD: 3 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.07, Vanguard 0.48, Fateweaver 0.48, Stargazer 0.48, Meeple 0.48
+    RENDA PRÓXIMO ROUND: +3 base, +0 juros, +0 sequência, +0 vitória (total: +3)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Nas|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:06:31] 🛒 LOJA: Nasus(i:2.0), Aatrox(i:2.0), Caitlyn(i:2.0), Briar(i:2.0), Cho'Gath(i:2.0)
+[15:06:32] MOVE Bench -> Board: Nasus (i:2.0) <-> Pyke (i:4.0) | Rew: -0.21
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.07, Vanguard 0.48, Fateweaver 0.48, Stargazer 0.48, Meeple 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_Veigar, TFT17_Nasus | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=SIM | fit=3.55 | Space Groove=3.07, Vanguard=0.48
+[15:06:33] MOVE Bench -> Board: Pyke (i:4.0) <-> Veigar (i:2.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.07, Vanguard 0.48, Fateweaver 0.48, Stargazer 0.48, Meeple 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_Nasus, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pyke | core=SIM | fit=0.00 | nenhum trait de foco
+[15:06:33] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.07, Vanguard 0.48, Fateweaver 0.48, Stargazer 0.48, Meeple 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_Nasus, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +3 | juros +0 | sequência +0 | vitória +0
+
+[15:06:38] --- FIM DO ROUND 1-4 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.06, Vanguard 0.48, Fateweaver 0.48, Stargazer 0.48, Meeple 0.48
+    RENDA PRÓXIMO ROUND: +4 base, +0 juros, +0 sequência, +0 vitória (total: +4)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Pyk|F|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Vei|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:06:38] 🛒 LOJA: Leona(i:2.0), Caitlyn(i:2.0), Milio(i:4.0), Twisted Fate(i:2.0), Veigar(i:2.0)
+[15:06:39] MOVE Bench -> Board: Veigar (i:2.0) <-> Vazio | Rew: +0.47
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.06, Vanguard 0.48, Fateweaver 0.48, Stargazer 0.48, Meeple 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_Veigar, TFT17_Nasus | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=SIM | fit=0.48 | Meeple=0.48
+[15:06:40] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.06, Vanguard 0.48, Fateweaver 0.48, Stargazer 0.48, Meeple 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_Veigar, TFT17_Nasus | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +4 | juros +0 | sequência +0 | vitória +0
+[15:06:41] MOVE Board -> Board: Veigar (i:2.0) <-> Pyke (i:4.0) | Rew: -0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.06, Vanguard 0.48, Fateweaver 0.48, Stargazer 0.48, Meeple 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_Veigar, TFT17_Nasus | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=SIM | fit=0.48 | Meeple=0.48
+[15:06:41] MOVE Board -> Board: Pyke (i:4.0) <-> Vazio | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.06, Vanguard 0.48, Fateweaver 0.48, Stargazer 0.48, Meeple 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_Veigar, TFT17_Nasus | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pyke | core=SIM | fit=0.00 | nenhum trait de foco
+[15:06:42] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Veigar (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.06, Vanguard 0.48, Fateweaver 0.48, Stargazer 0.48, Meeple 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_TwistedFate, TFT17_Nasus | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=0.97 | Stargazer=0.48, Fateweaver=0.48
+[15:06:43] MOVE Board -> Board: Veigar (i:2.0) <-> Pyke (i:4.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 3.06, Vanguard 0.48, Fateweaver 0.48, Stargazer 0.48, Meeple 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_TwistedFate, TFT17_Nasus | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=não | fit=0.48 | Meeple=0.48
+[15:06:43] COMPROU: Twisted Fate (Custo 1 | i:2.0) | Rew: +0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 2.39, Stargazer 1.14, Fateweaver 0.52, Vanguard 0.48, Meeple 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_TwistedFate, TFT17_Nasus | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=1.66 | Stargazer=1.14, Fateweaver=0.52
+[15:06:44] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Nasus (i:2.0) | Rew: +0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Space Groove 1.73, Stargazer 1.70, Fateweaver 0.71, Vanguard 0.43, Meeple 0.43
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_TwistedFate, TFT17_Veigar | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=2.41 | Stargazer=1.70, Fateweaver=0.71
+[15:06:45] MOVE Bench -> Board: Nasus (i:2.0) <-> Veigar (i:2.0) | Rew: -0.30
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.08, Space Groove 1.28, Fateweaver 0.84, Vanguard 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_TwistedFate, TFT17_Nasus | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=SIM | fit=1.68 | Space Groove=1.28, Vanguard=0.40
+
+[15:06:45] --- FIM DO ROUND 2-1 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.52, Fateweaver 0.98, Space Groove 0.77, Vanguard 0.36, Meeple 0.36
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Vei|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:06:45] 🛒 LOJA: Aurora(i:6.0), Mordekaiser(i:4.0), Milio(i:4.0), Gnar(i:4.0), Bel'Veth(i:4.0)
+[15:06:47] MOVE Bench -> Board: Veigar (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.24
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.65, Fateweaver 0.89, Space Groove 0.69, Vanguard 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_TwistedFate, TFT17_Veigar | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=SIM | fit=0.39 | Meeple=0.39
+[15:06:48] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Nasus (i:2.0) | Rew: +0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.73, Fateweaver 0.96, Space Groove 0.57, Vanguard 0.37, Meeple 0.37
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_TwistedFate, TFT17_Veigar | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=3.69 | Stargazer=2.73, Fateweaver=0.96
+[15:06:48] MOVE Bench -> Board: Nasus (i:2.0) <-> Veigar (i:2.0) | Rew: -0.30
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.78, Fateweaver 1.01, Space Groove 0.50, Vanguard 0.36, Meeple 0.36
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_TwistedFate, TFT17_Nasus | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=SIM | fit=0.85 | Space Groove=0.50, Vanguard=0.36
+[15:06:49] MOVE Bench -> Board: Veigar (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.24
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.84, Fateweaver 0.90, Space Groove 0.49, Vanguard 0.38, Meeple 0.38
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_TwistedFate, TFT17_Veigar | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=SIM | fit=0.38 | Meeple=0.38
+[15:06:50] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.89, Fateweaver 0.83, Space Groove 0.48, Vanguard 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_TwistedFate, TFT17_Veigar | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[15:06:53] --- FIM DO ROUND 2-2 | GOLD: 13 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.01, Fateweaver 0.64, Space Groove 0.46, Vanguard 0.45, Meeple 0.45
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]  [Twi|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Twi|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:06:53] 🛒 LOJA: Leona(i:2.0), Milio(i:4.0), Pyke(i:4.0), Zoe(i:4.0), Rek'Sai(i:2.0)
+[15:06:55] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Nasus (i:2.0) | Rew: +0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.97, Fateweaver 0.79, Space Groove 0.42, Vanguard 0.41, Meeple 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_TwistedFate, TFT17_Veigar | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 13 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=3.76 | Stargazer=2.97, Fateweaver=0.79
+[15:06:55] MOVE Bench -> Board: Nasus (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.34
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.98, Fateweaver 0.75, Space Groove 0.43, Vanguard 0.42, Meeple 0.42
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_TwistedFate, TFT17_Veigar | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 13 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Nasus | core=não | fit=0.85 | Space Groove=0.43, Vanguard=0.42
+[15:06:56] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.00, Fateweaver 0.71, Space Groove 0.43, Vanguard 0.43, Meeple 0.43
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_TwistedFate, TFT17_Veigar | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 13 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=3.71 | Stargazer=3.00, Fateweaver=0.71
+[15:06:57] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.01, Fateweaver 0.68, Space Groove 0.44, Vanguard 0.44, Meeple 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_TwistedFate, TFT17_Veigar | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 13 | renda base +5 | juros +0 | sequência +0 | vitória +1
+
+[15:07:01] --- FIM DO ROUND 2-3 | GOLD: 19 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.03, Fateweaver 0.62, Space Groove 0.45, Vanguard 0.45, Meeple 0.45
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +0 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Twi|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:01] 🛒 LOJA: Akali(i:4.0), Gragas(i:4.0), Meepsie(i:4.0), Urgot(i:6.0), Nasus(i:2.0)
+[15:07:02] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.62
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.98, Fateweaver 0.77, Space Groove 0.41, Vanguard 0.41, Meeple 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_TwistedFate, TFT17_Veigar | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 19 | renda base +5 | juros +1 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=3.76 | Stargazer=2.98, Fateweaver=0.77
+[15:07:03] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.95, Fateweaver 0.88, Space Groove 0.39, Vanguard 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_TwistedFate, TFT17_Veigar | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 15 | renda base +5 | juros +1 | sequência +0 | vitória +0
+[15:07:04] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.93, Fateweaver 0.96, Space Groove 0.37, Vanguard 0.37, Meeple 0.37
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_TwistedFate, TFT17_Veigar | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 11 | renda base +5 | juros +1 | sequência +0 | vitória +0
+[15:07:04] BUY XP                       | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.92, Fateweaver 1.01, Space Groove 0.36, Vanguard 0.36, Meeple 0.36
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_TwistedFate, TFT17_Veigar | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +5 | juros +1 | sequência +0 | vitória +0
+[15:07:05] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.91, Fateweaver 1.04, Space Groove 0.35, Vanguard 0.35, Meeple 0.35
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_TwistedFate, TFT17_Veigar | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +1 | sequência +0 | vitória +0
+[15:07:06] COMPROU: Urgot (Custo 3 | i:6.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.90, Fateweaver 1.06, Space Groove 0.34, Vanguard 0.34, Meeple 0.34
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Pyke, TFT17_TwistedFate | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +1 | sequência +0 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=0.00 | nenhum trait de foco
+[15:07:07] MOVE Bench -> Board: Urgot (i:6.0) <-> Twisted Fate (i:2.0) | Rew: -0.25
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.94, Fateweaver 0.94, Space Groove 0.37, Vanguard 0.37, Meeple 0.37
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Pyke, TFT17_TwistedFate | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +1 | sequência +0 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=0.00 | nenhum trait de foco
+[15:07:07] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.96, Fateweaver 0.86, Space Groove 0.39, Vanguard 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Pyke, TFT17_TwistedFate | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +1 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=3.82 | Stargazer=2.96, Fateweaver=0.86
+[15:07:08] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.98, Fateweaver 0.79, Space Groove 0.41, Vanguard 0.41, Meeple 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Pyke, TFT17_TwistedFate | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +1 | sequência +0 | vitória +0
+
+[15:07:09] --- FIM DO ROUND 2-4 | GOLD: 5 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.00, Fateweaver 0.71, Space Groove 0.43, Vanguard 0.43, Meeple 0.43
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Urg|T|1*|i:6.0]       [ . ]             [ . ]        [Twi|C|1*|i:2.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Twi|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:09] 🛒 LOJA: Zoe(i:4.0), Pyke(i:4.0), Bel'Veth(i:4.0), Gnar(i:4.0), Rhaast(i:6.0)
+[15:07:11] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Urgot (i:6.0) | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.97, Fateweaver 0.84, Space Groove 0.40, Vanguard 0.40, Meeple 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Pyke, TFT17_TwistedFate | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=3.80 | Stargazer=2.97, Fateweaver=0.84
+[15:07:12] MOVE Bench -> Board: Urgot (i:6.0) <-> Twisted Fate (i:2.0) | Rew: -0.25
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.98, Fateweaver 0.78, Space Groove 0.41, Vanguard 0.41, Meeple 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Pyke, TFT17_TwistedFate | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=0.00 | nenhum trait de foco
+[15:07:12] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.99, Fateweaver 0.73, Space Groove 0.42, Vanguard 0.42, Meeple 0.42
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Pyke, TFT17_TwistedFate | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=3.73 | Stargazer=2.99, Fateweaver=0.73
+[15:07:13] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.00, Fateweaver 0.70, Space Groove 0.43, Vanguard 0.43, Meeple 0.43
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Pyke, TFT17_TwistedFate | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[15:07:17] --- FIM DO ROUND 2-5 | GOLD: 11 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.03, Fateweaver 0.62, Space Groove 0.45, Vanguard 0.45, Meeple 0.45
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]        [Urg|T|1*|i:6.0]  [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Twi|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:17] 🛒 LOJA: Viktor(i:6.0), Pantheon(i:4.0), Briar(i:2.0), Illaoi(i:6.0), Gnar(i:4.0)
+[15:07:19] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.63
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.98, Fateweaver 0.78, Space Groove 0.41, Vanguard 0.41, Meeple 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Pyke, TFT17_TwistedFate | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 11 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=3.76 | Stargazer=2.98, Fateweaver=0.78
+[15:07:19] BUY XP                       | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.95, Fateweaver 0.88, Space Groove 0.39, Vanguard 0.39, Meeple 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Pyke, TFT17_TwistedFate | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[15:07:20] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.93, Fateweaver 0.96, Space Groove 0.37, Vanguard 0.37, Meeple 0.37
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Pyke, TFT17_TwistedFate | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[15:07:21] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Veigar (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.92, Fateweaver 1.01, Space Groove 0.36, Vanguard 0.36, Meeple 0.36
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Pyke, TFT17_TwistedFate | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=3.92 | Stargazer=2.92, Fateweaver=1.01
+[15:07:21] MOVE Board -> Board: Veigar (i:2.0) <-> Nasus (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.91, Fateweaver 1.04, Space Groove 0.35, Vanguard 0.35, Meeple 0.35
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Pyke, TFT17_TwistedFate | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Veigar | core=não | fit=0.35 | Meeple=0.35
+[15:07:22] MOVE Board -> Board: Nasus (i:2.0) <-> Vazio | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.90, Fateweaver 1.06, Space Groove 0.34, Vanguard 0.34, Meeple 0.34
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Pyke, TFT17_TwistedFate | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Nasus | core=não | fit=0.69 | Space Groove=0.34, Vanguard=0.34
+[15:07:23] COMPROU: Illaoi (Custo 3 | i:6.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.88, Fateweaver 1.07, Vanguard 0.37, Space Groove 0.34, Meeple 0.34
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Illaoi | core=SIM | fit=0.37 | Vanguard=0.37
+[15:07:23] MOVE Bench -> Board: Illaoi (i:6.0) <-> Twisted Fate (i:2.0) | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.17, Vanguard 1.23, Fateweaver 0.90, Space Groove 0.35, Meeple 0.35
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Illaoi | core=SIM | fit=1.23 | Vanguard=1.23
+[15:07:24] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Urgot (i:6.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.29, Vanguard 1.13, Fateweaver 0.92, Space Groove 0.33, Meeple 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Twisted Fate | core=não | fit=3.21 | Stargazer=2.29, Fateweaver=0.92
+
+[15:07:25] --- FIM DO ROUND 2-6 | GOLD: 5 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.41, Vanguard 1.03, Fateweaver 0.95, Space Groove 0.30, Meeple 0.30
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Ill|T|1*|i:6.0]       [ . ]             [ . ]        [Twi|C|1*|i:2.0]  [Vei|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Urg|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:25] 🛒 LOJA: Twisted Fate(i:2.0), Veigar(i:2.0), Jinx(i:4.0), Gragas(i:4.0), Jax(i:4.0)
+[15:07:27] MOVE Bench -> Board: Urgot (i:6.0) <-> Illaoi (i:6.0) | Rew: -0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.55, Fateweaver 0.99, Vanguard 0.84, Space Groove 0.31, Meeple 0.31
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=0.00 | nenhum trait de foco
+[15:07:28] MOVE Bench -> Board: Illaoi (i:6.0) <-> Twisted Fate (i:2.0) | Rew: +0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 1.94, Vanguard 1.55, Fateweaver 0.85, Space Groove 0.33, Meeple 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Illaoi | core=SIM | fit=1.55 | Vanguard=1.55
+[15:07:28] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Urgot (i:6.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.14, Vanguard 1.34, Fateweaver 0.89, Space Groove 0.32, Meeple 0.32
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=3.03 | Stargazer=2.14, Fateweaver=0.89
+[15:07:29] MOVE Bench -> Board: Urgot (i:6.0) <-> Veigar (i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.27, Vanguard 1.21, Fateweaver 0.91, Space Groove 0.31, Meeple 0.31
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=0.00 | nenhum trait de foco
+[15:07:30] MOVE Bench -> Board: Veigar (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.18
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 1.81, Stargazer 1.74, Fateweaver 0.79, Space Groove 0.33, Meeple 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=não | fit=0.33 | Meeple=0.33
+[15:07:30] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Illaoi (i:6.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.10, Vanguard 1.36, Fateweaver 0.89, Space Groove 0.33, Meeple 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=2.98 | Stargazer=2.10, Fateweaver=0.89
+[15:07:31] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.33, Vanguard 1.06, Fateweaver 0.95, Space Groove 0.33, Meeple 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[15:07:33] --- FIM DO ROUND 2-7 | GOLD: 10 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.72, Fateweaver 1.06, Vanguard 0.56, Space Groove 0.33, Meeple 0.33
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]       [ . ]             [ . ]        [Twi|C|1*|i:2.0]  [Urg|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Ill|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:33] 🛒 LOJA: Gragas(i:4.0), Caitlyn(i:2.0), Akali(i:4.0), Ornn(i:6.0), Bel'Veth(i:4.0)
+[15:07:35] MOVE Bench -> Board: Illaoi (i:6.0) <-> Veigar (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.65, Fateweaver 1.02, Vanguard 0.70, Space Groove 0.31, Meeple 0.31
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 10 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Illaoi | core=SIM | fit=0.70 | Vanguard=0.70
+[15:07:36] MOVE Bench -> Board: Veigar (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.18
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 3.39
+FOCUS WEIGHTS: Vanguard 1.91, Stargazer 1.72, Fateweaver 0.78, Meeple 0.31, Space Groove 0.28
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> Vanguard | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 3.39
+    GOLD: 10 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=não | fit=0.31 | Meeple=0.31
+[15:07:37] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Illaoi (i:6.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 3.39
+FOCUS WEIGHTS: Stargazer 2.08, Vanguard 1.43, Fateweaver 0.88, Meeple 0.32, Space Groove 0.29
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Illaoi -> TFT17_Urgot | lock=False -> False | strength=3.39 -> 3.39
+    GOLD: 10 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=2.96 | Stargazer=2.08, Fateweaver=0.88
+[15:07:37] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 4.06
+FOCUS WEIGHTS: Stargazer 2.63, Vanguard 0.96, Fateweaver 0.86, Meeple 0.30, Space Groove 0.25
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Vanguard -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=3.39 -> 4.06
+    GOLD: 10 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[15:07:42] --- FIM DO ROUND 3-1 | GOLD: 17 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 4.13
+FOCUS WEIGHTS: Stargazer 3.04, Fateweaver 0.97, Vanguard 0.43, Meeple 0.30, Space Groove 0.27
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +1 sequência, +0 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]        [Vei|C|1*|i:2.0]  [Urg|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Ill|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:42] 🛒 LOJA: Aurelion Sol(i:8.0), Samira(i:6.0), Gnar(i:4.0), Gragas(i:4.0), Veigar(i:2.0)
+[15:07:44] MOVE Bench -> Board: Illaoi (i:6.0) <-> Urgot (i:6.0) | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.27
+FOCUS WEIGHTS: Stargazer 3.04, Fateweaver 0.87, Vanguard 0.58, Meeple 0.28, Space Groove 0.23
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Illaoi | lock=False -> False | strength=4.13 -> 4.27
+    GOLD: 17 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Illaoi | core=SIM | fit=0.58 | Vanguard=0.58
+[15:07:45] MOVE Bench -> Board: Urgot (i:6.0) <-> Twisted Fate (i:2.0) | Rew: -0.18
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 4.27
+FOCUS WEIGHTS: Stargazer 2.29, Vanguard 1.37, Fateweaver 0.76, Meeple 0.31, Space Groove 0.27
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Illaoi -> TFT17_Urgot | lock=False -> False | strength=4.27 -> 4.27
+    GOLD: 17 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=0.00 | nenhum trait de foco
+[15:07:45] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Veigar (i:2.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 4.25
+FOCUS WEIGHTS: Stargazer 2.64, Vanguard 1.08, Fateweaver 0.77, Meeple 0.28, Space Groove 0.23
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=4.27 -> 4.25
+    GOLD: 17 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=3.41 | Stargazer=2.64, Fateweaver=0.77
+[15:07:46] MOVE Bench -> Board: Veigar (i:2.0) <-> Urgot (i:6.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.25
+FOCUS WEIGHTS: Stargazer 2.59, Vanguard 1.04, Fateweaver 0.84, Meeple 0.28, Space Groove 0.25
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Illaoi | lock=False -> False | strength=4.25 -> 4.25
+    GOLD: 17 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Veigar | core=não | fit=0.28 | Meeple=0.28
+[15:07:47] MOVE Bench -> Board: Urgot (i:6.0) <-> Twisted Fate (i:2.0) | Rew: -0.19
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 3.43
+FOCUS WEIGHTS: Vanguard 2.11, Stargazer 1.69, Fateweaver 0.67, Meeple 0.29, Space Groove 0.24
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Stargazer -> Vanguard | foco=TFT17_Illaoi -> TFT17_Urgot | lock=False -> False | strength=4.25 -> 3.43
+    GOLD: 17 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=0.00 | nenhum trait de foco
+[15:07:47] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 3.43
+FOCUS WEIGHTS: Vanguard 2.45, Stargazer 1.34, Fateweaver 0.62, Meeple 0.32, Space Groove 0.28
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=3.43 -> 3.43
+    GOLD: 17 | renda base +5 | juros +1 | sequência +1 | vitória +0
+
+[15:07:50] --- FIM DO ROUND 3-2 | GOLD: 24 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 3.65
+FOCUS WEIGHTS: Vanguard 3.42, Stargazer 0.53, Fateweaver 0.46, Meeple 0.32, Space Groove 0.27
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +1 sequência, +0 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Vei|C|1*|i:2.0]       [ . ]             [ . ]        [Urg|T|1*|i:6.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Twi|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:50] 🛒 LOJA: Diana(i:6.0), Maokai(i:6.0), Rhaast(i:6.0), Miss Fortune(i:6.0), Bel'Veth(i:4.0)
+[15:07:52] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Veigar (i:2.0) | Rew: +0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 3.65
+FOCUS WEIGHTS: Vanguard 3.09, Stargazer 0.68, Fateweaver 0.64, Meeple 0.31, Space Groove 0.27
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=3.65 -> 3.65
+    GOLD: 24 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=1.32 | Stargazer=0.68, Fateweaver=0.64
+[15:07:53] MOVE Bench -> Board: Veigar (i:2.0) <-> Nasus (i:2.0) | Rew: -0.28
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 3.88
+FOCUS WEIGHTS: Vanguard 1.89, Stargazer 1.84, Fateweaver 0.73, Meeple 0.29, Space Groove 0.24
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Vanguard -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=3.65 -> 3.88
+    GOLD: 24 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Veigar | core=não | fit=0.29 | Meeple=0.29
+[15:07:54] MOVE Bench -> Board: Nasus (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.30
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 3.88
+FOCUS WEIGHTS: Vanguard 2.29, Stargazer 1.44, Fateweaver 0.66, Meeple 0.32, Space Groove 0.28
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=3.88 -> 3.88
+    GOLD: 24 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Nasus | core=não | fit=2.58 | Space Groove=0.28, Vanguard=2.29
+[15:07:54] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 3.55
+FOCUS WEIGHTS: Vanguard 2.85, Stargazer 1.02, Fateweaver 0.56, Meeple 0.31, Space Groove 0.26
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Vanguard | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=3.88 -> 3.55
+    GOLD: 24 | renda base +5 | juros +1 | sequência +1 | vitória +0
+
+[15:07:59] --- FIM DO ROUND 3-3 | GOLD: 32 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 3.65
+FOCUS WEIGHTS: Vanguard 3.40, Stargazer 0.49, Fateweaver 0.47, Meeple 0.34, Space Groove 0.30
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +0 sequência, +1 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Nas|F|1*|i:2.0]       [ . ]             [ . ]        [Urg|T|1*|i:6.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Twi|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:07:59] 🛒 LOJA: Akali(i:4.0), Poppy(i:2.0), Pantheon(i:4.0), Leona(i:2.0), Veigar(i:2.0)
+[15:08:01] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Urgot (i:6.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.11
+FOCUS WEIGHTS: Vanguard 3.22, Stargazer 0.62, Fateweaver 0.61, Meeple 0.30, Space Groove 0.25
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Urgot -> TFT17_Illaoi | lock=False -> False | strength=3.65 -> 4.11
+    GOLD: 32 | renda base +5 | juros +2 | sequência +0 | vitória +1
+    FIT UNIDADE: Twisted Fate | core=não | fit=1.23 | Stargazer=0.62, Fateweaver=0.61
+[15:08:01] MOVE Bench -> Board: Urgot (i:6.0) <-> Nasus (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 4.11
+FOCUS WEIGHTS: Vanguard 2.31, Stargazer 1.34, Fateweaver 0.77, Meeple 0.31, Space Groove 0.27
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Illaoi -> TFT17_Urgot | lock=False -> False | strength=4.11 -> 4.11
+    GOLD: 32 | renda base +5 | juros +2 | sequência +0 | vitória +1
+    FIT UNIDADE: Urgot | core=SIM | fit=0.00 | nenhum trait de foco
+[15:08:02] MOVE Bench -> Board: Nasus (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 3.55
+FOCUS WEIGHTS: Vanguard 2.86, Stargazer 0.96, Fateweaver 0.62, Meeple 0.31, Space Groove 0.25
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=4.11 -> 3.55
+    GOLD: 32 | renda base +5 | juros +2 | sequência +0 | vitória +1
+    FIT UNIDADE: Nasus | core=não | fit=3.11 | Space Groove=0.25, Vanguard=2.86
+[15:08:03] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Urgot (i:6.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 3.55
+FOCUS WEIGHTS: Vanguard 2.19, Stargazer 1.50, Fateweaver 0.74, Meeple 0.30, Space Groove 0.27
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Urgot -> TFT17_Illaoi | lock=False -> False | strength=3.55 -> 3.55
+    GOLD: 32 | renda base +5 | juros +2 | sequência +0 | vitória +1
+    FIT UNIDADE: Twisted Fate | core=não | fit=2.25 | Stargazer=1.50, Fateweaver=0.74
+[15:08:04] MOVE Bench -> Board: Urgot (i:6.0) <-> Illaoi (i:6.0) | Rew: -0.20
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 3.99
+FOCUS WEIGHTS: Stargazer 2.30, Vanguard 1.38, Fateweaver 0.79, Meeple 0.29, Space Groove 0.24
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Vanguard -> Stargazer | foco=TFT17_Illaoi -> TFT17_Urgot | lock=False -> False | strength=3.55 -> 3.99
+    GOLD: 32 | renda base +5 | juros +2 | sequência +0 | vitória +1
+    FIT UNIDADE: Urgot | core=SIM | fit=0.00 | nenhum trait de foco
+[15:08:04] MOVE Bench -> Board: Illaoi (i:6.0) <-> Twisted Fate (i:2.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 3.99
+FOCUS WEIGHTS: Vanguard 1.94, Stargazer 1.77, Fateweaver 0.70, Meeple 0.31, Space Groove 0.28
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Illaoi | lock=False -> False | strength=3.99 -> 3.99
+    GOLD: 32 | renda base +5 | juros +2 | sequência +0 | vitória +1
+    FIT UNIDADE: Illaoi | core=SIM | fit=1.94 | Vanguard=1.94
+[15:08:05] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 3.51
+FOCUS WEIGHTS: Vanguard 2.64, Stargazer 1.21, Fateweaver 0.59, Meeple 0.31, Space Groove 0.26
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Vanguard | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=3.99 -> 3.51
+    GOLD: 32 | renda base +5 | juros +2 | sequência +0 | vitória +1
+
+[15:08:07] --- FIM DO ROUND 3-4 | GOLD: 40 ---
+    STRATEGY: ECON | COMP DIRECTION: Vanguard | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 3.64
+FOCUS WEIGHTS: Vanguard 3.37, Stargazer 0.57, Fateweaver 0.47, Meeple 0.32, Space Groove 0.27
+    RENDA PRÓXIMO ROUND: +5 base, +3 juros, +0 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Ill|T|1*|i:6.0]       [ . ]             [ . ]        [Nas|F|1*|i:2.0]  [Urg|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Twi|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:08:07] 🛒 LOJA: Pantheon(i:4.0), Zoe(i:4.0), Pantheon(i:4.0), Poppy(i:2.0), Poppy(i:2.0)
+[15:08:10] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Nasus (i:2.0) | Rew: +0.03
+    STRATEGY: ECON | COMP DIRECTION: Vanguard | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 3.64
+FOCUS WEIGHTS: Vanguard 2.41, Stargazer 1.31, Fateweaver 0.67, Meeple 0.32, Space Groove 0.29
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=3.64 -> 3.64
+    GOLD: 40 | renda base +5 | juros +3 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=1.98 | Stargazer=1.31, Fateweaver=0.67
+[15:08:11] MOVE Bench -> Board: Nasus (i:2.0) <-> Illaoi (i:6.0) | Rew: -0.28
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 3.96
+FOCUS WEIGHTS: Stargazer 2.19, Vanguard 1.51, Fateweaver 0.75, Meeple 0.30, Space Groove 0.25
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Vanguard -> Stargazer | foco=TFT17_Illaoi -> TFT17_Urgot | lock=False -> False | strength=3.64 -> 3.96
+    GOLD: 40 | renda base +5 | juros +3 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=não | fit=1.76 | Space Groove=0.25, Vanguard=1.51
+[15:08:11] MOVE Bench -> Board: Illaoi (i:6.0) <-> Twisted Fate (i:2.0) | Rew: -0.03
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 3.96
+FOCUS WEIGHTS: Vanguard 2.02, Stargazer 1.69, Fateweaver 0.67, Meeple 0.32, Space Groove 0.29
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Illaoi | lock=False -> False | strength=3.96 -> 3.96
+    GOLD: 40 | renda base +5 | juros +3 | sequência +0 | vitória +0
+    FIT UNIDADE: Illaoi | core=SIM | fit=2.02 | Vanguard=2.02
+[15:08:12] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Vanguard | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 3.52
+FOCUS WEIGHTS: Vanguard 2.69, Stargazer 1.16, Fateweaver 0.57, Meeple 0.31, Space Groove 0.26
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Vanguard | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=3.96 -> 3.52
+    GOLD: 40 | renda base +5 | juros +3 | sequência +0 | vitória +0
+
+[15:08:16] --- FIM DO ROUND 3-5 | GOLD: 51 ---
+    STRATEGY: ECON | COMP DIRECTION: Vanguard | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 3.65
+FOCUS WEIGHTS: Vanguard 3.40, Stargazer 0.50, Fateweaver 0.47, Meeple 0.34, Space Groove 0.30
+    RENDA PRÓXIMO ROUND: +5 base, +4 juros, +1 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Nas|F|1*|i:2.0]       [ . ]             [ . ]        [Ill|T|1*|i:6.0]  [Urg|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Twi|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:08:16] 🛒 LOJA: Nunu & Willump(i:8.0), Lissandra(i:2.0), Zoe(i:4.0), Milio(i:4.0), Zoe(i:4.0)
+[15:08:19] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Nasus (i:2.0) | Rew: +0.03
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 3.86
+FOCUS WEIGHTS: Vanguard 2.06, Stargazer 1.74, Fateweaver 0.64, Meeple 0.31, Space Groove 0.26
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Vanguard -> Stargazer | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=3.65 -> 3.86
+    GOLD: 51 | renda base +5 | juros +4 | sequência +1 | vitória +1
+    FIT UNIDADE: Twisted Fate | core=não | fit=2.37 | Stargazer=1.74, Fateweaver=0.64
+[15:08:20] MOVE Bench -> Board: Nasus (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.30
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 3.86
+FOCUS WEIGHTS: Vanguard 2.41, Stargazer 1.37, Fateweaver 0.60, Meeple 0.33, Space Groove 0.29
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=3.86 -> 3.86
+    GOLD: 51 | renda base +5 | juros +4 | sequência +1 | vitória +1
+    FIT UNIDADE: Nasus | core=não | fit=2.70 | Space Groove=0.29, Vanguard=2.41
+[15:08:20] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Vanguard | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 3.56
+FOCUS WEIGHTS: Vanguard 2.92, Stargazer 0.98, Fateweaver 0.53, Meeple 0.32, Space Groove 0.26
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Stargazer -> Vanguard | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=3.86 -> 3.56
+    GOLD: 51 | renda base +5 | juros +4 | sequência +1 | vitória +1
+    FIT UNIDADE: Twisted Fate | core=não | fit=1.50 | Stargazer=0.98, Fateweaver=0.53
+[15:08:21] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Vanguard | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 3.56
+FOCUS WEIGHTS: Vanguard 3.01, Stargazer 0.83, Fateweaver 0.52, Meeple 0.34, Space Groove 0.30
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=3.56 -> 3.56
+    GOLD: 51 | renda base +5 | juros +4 | sequência +1 | vitória +1
+
+[15:08:25] --- FIM DO ROUND 3-6 | GOLD: 63 ---
+    STRATEGY: ECON | COMP DIRECTION: Vanguard | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 3.66
+FOCUS WEIGHTS: Vanguard 3.50, Stargazer 0.46, Fateweaver 0.45, Meeple 0.32, Space Groove 0.27
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +1 vitória (total: +12)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]        [Ill|T|1*|i:6.0]  [Urg|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Twi|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:08:25] 🛒 LOJA: Gwen(i:4.0), Meepsie(i:4.0), Nunu & Willump(i:8.0), Gnar(i:4.0), Jinx(i:4.0)
+[15:08:28] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Illaoi (i:6.0) | Rew: -0.04
+    STRATEGY: ECON | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 3.66
+FOCUS WEIGHTS: Vanguard 2.31, Stargazer 1.20, Fateweaver 0.70, Meeple 0.41, Space Groove 0.38
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Illaoi -> TFT17_Urgot | lock=True -> True | strength=3.66 -> 3.66
+    GOLD: 63 | renda base +5 | juros +5 | sequência +1 | vitória +1
+    FIT UNIDADE: Twisted Fate | core=não | fit=1.90 | Stargazer=1.20, Fateweaver=0.70
+[15:08:29] MOVE Bench -> Board: Illaoi (i:6.0) <-> Twisted Fate (i:2.0) | Rew: +0.04
+    STRATEGY: ECON | COMP DIRECTION: Vanguard | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.55
+FOCUS WEIGHTS: Vanguard 2.66, Stargazer 0.90, Fateweaver 0.63, Meeple 0.42, Space Groove 0.40
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Urgot -> TFT17_Illaoi | lock=True -> True | strength=3.66 -> 2.55
+    GOLD: 63 | renda base +5 | juros +5 | sequência +1 | vitória +1
+    FIT UNIDADE: Illaoi | core=SIM | fit=2.66 | Vanguard=2.66
+[15:08:30] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Vanguard | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.55
+FOCUS WEIGHTS: Vanguard 2.60, Stargazer 0.81, Fateweaver 0.64, Meeple 0.48, Space Groove 0.47
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.55 -> 2.55
+    GOLD: 63 | renda base +5 | juros +5 | sequência +1 | vitória +1
+    FIT UNIDADE: Twisted Fate | core=não | fit=1.45 | Stargazer=0.81, Fateweaver=0.64
+[15:08:30] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Illaoi (i:6.0) | Rew: -0.04
+    STRATEGY: ECON | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.11
+FOCUS WEIGHTS: Vanguard 2.07, Stargazer 1.28, Fateweaver 0.75, Meeple 0.46, Space Groove 0.44
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Illaoi -> TFT17_Urgot | lock=True -> True | strength=2.55 -> 2.11
+    GOLD: 63 | renda base +5 | juros +5 | sequência +1 | vitória +1
+    FIT UNIDADE: Twisted Fate | core=não | fit=2.03 | Stargazer=1.28, Fateweaver=0.75
+[15:08:31] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.11
+FOCUS WEIGHTS: Stargazer 1.69, Vanguard 1.47, Fateweaver 0.88, Meeple 0.49, Space Groove 0.47
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.11 -> 2.11
+    GOLD: 63 | renda base +5 | juros +5 | sequência +1 | vitória +1
+
+[15:08:35] --- FIM DO ROUND 3-7 | GOLD: 74 ---
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.85
+FOCUS WEIGHTS: Stargazer 2.48, Fateweaver 0.98, Vanguard 0.59, Meeple 0.48, Space Groove 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Nas|F|1*|i:2.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]        [Twi|C|1*|i:2.0]  [Urg|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Ill|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:08:35] 🛒 LOJA: Mordekaiser(i:4.0), Rhaast(i:6.0), Miss Fortune(i:6.0), Lulu(i:6.0), Miss Fortune(i:6.0)
+[15:08:38] MOVE Bench -> Board: Illaoi (i:6.0) <-> Nasus (i:2.0) | Rew: +0.13
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.86
+FOCUS WEIGHTS: Stargazer 2.66, Fateweaver 0.92, Vanguard 0.54, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Illaoi | lock=True -> True | strength=2.85 -> 2.86
+    GOLD: 74 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Illaoi | core=SIM | fit=0.54 | Vanguard=0.54
+[15:08:39] MOVE Bench -> Board: Nasus (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.30
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.86
+FOCUS WEIGHTS: Stargazer 1.89, Vanguard 1.30, Fateweaver 0.82, Meeple 0.49, Space Groove 0.49
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.86 -> 2.86
+    GOLD: 74 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Nasus | core=não | fit=1.80 | Space Groove=0.49, Vanguard=1.30
+[15:08:39] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 1.90
+FOCUS WEIGHTS: Stargazer 1.77, Vanguard 1.60, Fateweaver 0.69, Meeple 0.48, Space Groove 0.46
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.86 -> 1.90
+    GOLD: 74 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=2.46 | Stargazer=1.77, Fateweaver=0.69
+[15:08:40] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 1.90
+FOCUS WEIGHTS: Vanguard 1.95, Stargazer 1.34, Fateweaver 0.68, Meeple 0.52, Space Groove 0.51
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=1.90 -> 1.90
+    GOLD: 74 | renda base +5 | juros +5 | sequência +1 | vitória +0
+
+[15:08:44] --- FIM DO ROUND 4-1 | GOLD: 84 ---
+    STRATEGY: ECON | COMP DIRECTION: Vanguard | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.61
+FOCUS WEIGHTS: Vanguard 2.87, Stargazer 0.59, Fateweaver 0.58, Meeple 0.48, Space Groove 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Nas|F|1*|i:2.0]       [ . ]             [ . ]        [Twi|C|1*|i:2.0]  [Urg|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Twi|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:08:44] 🛒 LOJA: Mordekaiser(i:4.0), Jax(i:4.0), Ornn(i:6.0), Briar(i:2.0), Caitlyn(i:2.0)
+[15:08:48] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Nasus (i:2.0) | Rew: +0.03
+    STRATEGY: ECON | COMP DIRECTION: Vanguard | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.61
+FOCUS WEIGHTS: Vanguard 1.94, Stargazer 1.28, Fateweaver 0.78, Meeple 0.50, Space Groove 0.50
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.61 -> 2.61
+    GOLD: 84 | renda base +5 | juros +5 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=2.06 | Stargazer=1.28, Fateweaver=0.78
+[15:08:49] MOVE Bench -> Board: Nasus (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.03
+    STRATEGY: ECON | COMP DIRECTION: Vanguard | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.00
+FOCUS WEIGHTS: Vanguard 2.45, Stargazer 0.94, Fateweaver 0.67, Meeple 0.48, Space Groove 0.47
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.61 -> 2.00
+    GOLD: 84 | renda base +5 | juros +5 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=não | fit=2.91 | Space Groove=0.47, Vanguard=2.45
+[15:08:49] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Vanguard | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.00
+FOCUS WEIGHTS: Vanguard 2.47, Stargazer 0.83, Fateweaver 0.67, Meeple 0.52, Space Groove 0.51
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.00 -> 2.00
+    GOLD: 84 | renda base +5 | juros +5 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=1.50 | Stargazer=0.83, Fateweaver=0.67
+[15:08:50] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Vanguard | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.09
+FOCUS WEIGHTS: Vanguard 2.73, Stargazer 0.70, Fateweaver 0.61, Meeple 0.49, Space Groove 0.47
+    STRATEGY REASON: Economia forte | CONF: 0.85
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Vanguard, Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.00 -> 2.09
+    GOLD: 84 | renda base +5 | juros +5 | sequência +0 | vitória +0
+
+[15:08:54] --- FIM DO ROUND 4-2 | GOLD: 95 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.62
+FOCUS WEIGHTS: Vanguard 2.73, Stargazer 0.62, Fateweaver 0.61, Meeple 0.52, Space Groove 0.52
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]        [Nas|F|1*|i:2.0]  [Urg|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Twi|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:08:54] 🛒 LOJA: Zoe(i:4.0), Aatrox(i:2.0), Diana(i:6.0), Twisted Fate(i:2.0), Veigar(i:2.0)
+[15:08:58] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Illaoi (i:6.0) | Rew: -0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.12
+FOCUS WEIGHTS: Vanguard 2.14, Stargazer 1.19, Fateweaver 0.74, Meeple 0.47, Space Groove 0.46
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Illaoi -> TFT17_Urgot | lock=True -> True | strength=2.62 -> 2.12
+    GOLD: 95 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=1.92 | Stargazer=1.19, Fateweaver=0.74
+[15:08:58] MOVE Bench -> Board: Illaoi (i:6.0) <-> Twisted Fate (i:2.0) | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.12
+FOCUS WEIGHTS: Vanguard 2.28, Stargazer 0.98, Fateweaver 0.71, Meeple 0.52, Space Groove 0.51
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Urgot -> TFT17_Illaoi | lock=True -> True | strength=2.12 -> 2.12
+    GOLD: 95 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Illaoi | core=SIM | fit=2.28 | Vanguard=2.28
+[15:08:59] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Nasus (i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.05
+FOCUS WEIGHTS: Vanguard 1.91, Stargazer 1.38, Fateweaver 0.78, Meeple 0.47, Space Groove 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.12 -> 2.05
+    GOLD: 95 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=2.16 | Stargazer=1.38, Fateweaver=0.78
+[15:09:00] MOVE Bench -> Board: Nasus (i:2.0) <-> Illaoi (i:6.0) | Rew: -0.28
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.05
+FOCUS WEIGHTS: Stargazer 1.74, Vanguard 1.37, Fateweaver 0.90, Meeple 0.50, Space Groove 0.49
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Illaoi -> TFT17_Urgot | lock=True -> True | strength=2.05 -> 2.05
+    GOLD: 95 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Nasus | core=não | fit=1.86 | Space Groove=0.49, Vanguard=1.37
+[15:09:01] MOVE Bench -> Board: Illaoi (i:6.0) <-> Urgot (i:6.0) | Rew: +0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.24
+FOCUS WEIGHTS: Stargazer 2.19, Vanguard 1.08, Fateweaver 0.85, Meeple 0.45, Space Groove 0.43
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Vanguard -> Stargazer | foco=TFT17_Urgot -> TFT17_Illaoi | lock=True -> True | strength=2.05 -> 2.24
+    GOLD: 95 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Illaoi | core=SIM | fit=1.08 | Vanguard=1.08
+[15:09:01] MOVE Bench -> Board: Urgot (i:6.0) <-> Nasus (i:2.0) | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.24
+FOCUS WEIGHTS: Stargazer 2.22, Fateweaver 0.94, Vanguard 0.89, Meeple 0.48, Space Groove 0.47
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Illaoi -> TFT17_Urgot | lock=True -> True | strength=2.24 -> 2.24
+    GOLD: 95 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=0.00 | nenhum trait de foco
+[15:09:02] MOVE Bench -> Board: Nasus (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.30
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 1.95
+FOCUS WEIGHTS: Stargazer 1.95, Vanguard 1.37, Fateweaver 0.75, Meeple 0.47, Space Groove 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.24 -> 1.95
+    GOLD: 95 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Nasus | core=não | fit=1.82 | Space Groove=0.45, Vanguard=1.37
+[15:09:03] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Urgot (i:6.0) | Rew: +0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 1.95
+FOCUS WEIGHTS: Stargazer 2.01, Vanguard 1.20, Fateweaver 0.85, Meeple 0.48, Space Groove 0.47
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Illaoi | lock=True -> True | strength=1.95 -> 1.95
+    GOLD: 95 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=2.85 | Stargazer=2.01, Fateweaver=0.85
+[15:09:03] MOVE Bench -> Board: Urgot (i:6.0) <-> Nasus (i:2.0) | Rew: +0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.75
+FOCUS WEIGHTS: Stargazer 2.41, Vanguard 0.86, Fateweaver 0.86, Meeple 0.44, Space Groove 0.43
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Illaoi -> TFT17_Urgot | lock=True -> True | strength=1.95 -> 2.75
+    GOLD: 95 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=0.00 | nenhum trait de foco
+
+[15:09:04] --- FIM DO ROUND 4-3 | GOLD: 106 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.83
+FOCUS WEIGHTS: Stargazer 2.59, Fateweaver 0.90, Vanguard 0.63, Meeple 0.44, Space Groove 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]        [Urg|T|1*|i:6.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Nas|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:09:04] 🛒 LOJA: Mordekaiser(i:4.0), Bel'Veth(i:4.0), Gnar(i:4.0), Teemo(i:2.0), Mordekaiser(i:4.0)
+[15:09:08] MOVE Bench -> Board: Nasus (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.30
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.83
+FOCUS WEIGHTS: Stargazer 1.85, Vanguard 1.35, Fateweaver 0.81, Meeple 0.49, Space Groove 0.49
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.83 -> 2.83
+    GOLD: 106 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Nasus | core=não | fit=1.85 | Space Groove=0.49, Vanguard=1.35
+[15:09:08] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 1.90
+FOCUS WEIGHTS: Vanguard 2.13, Stargazer 1.24, Fateweaver 0.69, Meeple 0.48, Space Groove 0.46
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Vanguard | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.83 -> 1.90
+    GOLD: 106 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=1.93 | Stargazer=1.24, Fateweaver=0.69
+[15:09:09] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 1.90
+FOCUS WEIGHTS: Vanguard 2.27, Stargazer 1.02, Fateweaver 0.68, Meeple 0.52, Space Groove 0.51
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=1.90 -> 1.90
+    GOLD: 106 | renda base +5 | juros +5 | sequência +1 | vitória +0
+
+[15:09:14] --- FIM DO ROUND 4-4 | GOLD: 117 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.62
+FOCUS WEIGHTS: Vanguard 2.73, Stargazer 0.62, Fateweaver 0.61, Meeple 0.52, Space Groove 0.52
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Nas|F|1*|i:2.0]       [ . ]             [ . ]        [Urg|T|1*|i:6.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Twi|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:09:14] 🛒 LOJA: Diana(i:6.0), Master Yi(i:8.0), Aurora(i:6.0), Cho'Gath(i:2.0), Miss Fortune(i:6.0)
+[15:09:17] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Nasus (i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.12
+FOCUS WEIGHTS: Vanguard 2.14, Stargazer 1.19, Fateweaver 0.74, Meeple 0.47, Space Groove 0.46
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.62 -> 2.12
+    GOLD: 117 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=1.92 | Stargazer=1.19, Fateweaver=0.74
+[15:09:18] MOVE Bench -> Board: Nasus (i:2.0) <-> Urgot (i:6.0) | Rew: -0.19
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.12
+FOCUS WEIGHTS: Vanguard 1.64, Stargazer 1.57, Fateweaver 0.84, Meeple 0.48, Space Groove 0.47
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Urgot -> TFT17_Illaoi | lock=True -> True | strength=2.12 -> 2.12
+    GOLD: 117 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Nasus | core=não | fit=2.11 | Space Groove=0.47, Vanguard=1.64
+[15:09:19] MOVE Bench -> Board: Urgot (i:6.0) <-> Twisted Fate (i:2.0) | Rew: -0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 1.95
+FOCUS WEIGHTS: Vanguard 2.28, Stargazer 1.09, Fateweaver 0.70, Meeple 0.47, Space Groove 0.45
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Illaoi -> TFT17_Urgot | lock=True -> True | strength=2.12 -> 1.95
+    GOLD: 117 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=0.00 | nenhum trait de foco
+[15:09:20] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 1.95
+FOCUS WEIGHTS: Vanguard 2.37, Stargazer 0.93, Fateweaver 0.69, Meeple 0.51, Space Groove 0.50
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=1.95 -> 1.95
+    GOLD: 117 | renda base +5 | juros +5 | sequência +1 | vitória +0
+
+[15:09:24] --- FIM DO ROUND 4-5 | GOLD: 128 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.62
+FOCUS WEIGHTS: Vanguard 2.88, Stargazer 0.59, Fateweaver 0.58, Meeple 0.48, Space Groove 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Urg|T|1*|i:6.0]       [ . ]             [ . ]        [Nas|F|1*|i:2.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Twi|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:09:24] 🛒 LOJA: Gragas(i:4.0), Samira(i:6.0), Gnar(i:4.0), Ezreal(i:2.0), Maokai(i:6.0)
+[15:09:27] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.53
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.62
+FOCUS WEIGHTS: Vanguard 2.54, Stargazer 0.75, Fateweaver 0.75, Meeple 0.48, Space Groove 0.48
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.62 -> 2.62
+    GOLD: 128 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=1.50 | Stargazer=0.75, Fateweaver=0.75
+[15:09:28] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.82
+FOCUS WEIGHTS: Vanguard 2.15, Stargazer 1.22, Fateweaver 0.78, Meeple 0.43, Space Groove 0.43
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.62 -> 2.82
+    GOLD: 124 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:29] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Vanguard | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.82
+FOCUS WEIGHTS: Vanguard 1.64, Stargazer 1.59, Fateweaver 0.86, Meeple 0.45, Space Groove 0.45
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Vanguard -> Vanguard | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.82 -> 2.82
+    GOLD: 120 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:29] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.22
+FOCUS WEIGHTS: Stargazer 2.11, Vanguard 1.22, Fateweaver 0.83, Meeple 0.43, Space Groove 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Vanguard -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.82 -> 2.22
+    GOLD: 116 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:30] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.22
+FOCUS WEIGHTS: Stargazer 2.10, Vanguard 1.11, Fateweaver 0.89, Meeple 0.45, Space Groove 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.22 -> 2.22
+    GOLD: 112 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:31] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.86
+FOCUS WEIGHTS: Stargazer 2.37, Vanguard 0.96, Fateweaver 0.85, Meeple 0.41, Space Groove 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.22 -> 2.86
+    GOLD: 108 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:31] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.86
+FOCUS WEIGHTS: Stargazer 2.25, Vanguard 0.96, Fateweaver 0.90, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.86 -> 2.86
+    GOLD: 104 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:32] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.89
+FOCUS WEIGHTS: Stargazer 2.45, Vanguard 0.88, Fateweaver 0.85, Meeple 0.41, Space Groove 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.86 -> 2.89
+    GOLD: 100 | renda base +5 | juros +5 | sequência +1 | vitória +0
+[15:09:33] BUY XP                       | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.89
+FOCUS WEIGHTS: Stargazer 2.29, Vanguard 0.92, Fateweaver 0.91, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.89 -> 2.89
+    GOLD: 96 | renda base +5 | juros +5 | sequência +1 | vitória +0
+
+[15:09:34] --- FIM DO ROUND 4-6 | GOLD: 108 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.90
+FOCUS WEIGHTS: Stargazer 2.30, Vanguard 0.91, Fateweaver 0.91, Meeple 0.44, Space Groove 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +2 sequência, +0 vitória (total: +12)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Urg|T|1*|i:6.0]       [ . ]             [ . ]        [Nas|F|1*|i:2.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 3 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:09:34] 🛒 LOJA: Illaoi(i:6.0), Diana(i:6.0), Meepsie(i:4.0), Teemo(i:2.0), Urgot(i:6.0)
+[15:09:38] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.48, Fateweaver 0.86, Vanguard 0.85, Meeple 0.41, Space Groove 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.90 -> 2.91
+    GOLD: 104 | renda base +5 | juros +5 | sequência +2 | vitória +0
+[15:09:39] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 100 | renda base +5 | juros +5 | sequência +2 | vitória +0
+[15:09:39] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.48, Fateweaver 0.86, Vanguard 0.85, Meeple 0.41, Space Groove 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 96 | renda base +5 | juros +5 | sequência +2 | vitória +0
+[15:09:40] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 92 | renda base +5 | juros +5 | sequência +2 | vitória +0
+[15:09:41] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.48, Fateweaver 0.86, Vanguard 0.85, Meeple 0.41, Space Groove 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 88 | renda base +5 | juros +5 | sequência +2 | vitória +0
+[15:09:41] BUY XP                       | Rew: +1.52
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 84 | renda base +5 | juros +5 | sequência +2 | vitória +0
+[15:09:42] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.48, Fateweaver 0.86, Vanguard 0.85, Meeple 0.41, Space Groove 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 80 | renda base +5 | juros +5 | sequência +2 | vitória +0
+[15:09:43] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 76 | renda base +5 | juros +5 | sequência +2 | vitória +0
+[15:09:43] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.48, Fateweaver 0.86, Vanguard 0.85, Meeple 0.41, Space Groove 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 72 | renda base +5 | juros +5 | sequência +2 | vitória +0
+
+[15:09:44] --- FIM DO ROUND 4-7 | GOLD: 84 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.48, Fateweaver 0.86, Vanguard 0.85, Meeple 0.41, Space Groove 0.41
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +2 sequência, +0 vitória (total: +12)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Urg|T|1*|i:6.0]       [ . ]             [ . ]        [Nas|F|1*|i:2.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 3 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:09:44] 🛒 LOJA: Urgot(i:6.0), Viktor(i:6.0), Shen(i:10.0), The Mighty Mech(i:8.0), Nami(i:8.0)
+[15:09:48] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 80 | renda base +5 | juros +5 | sequência +2 | vitória +0
+[15:09:49] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.48, Fateweaver 0.86, Vanguard 0.85, Meeple 0.41, Space Groove 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 76 | renda base +5 | juros +5 | sequência +2 | vitória +0
+[15:09:50] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 72 | renda base +5 | juros +5 | sequência +2 | vitória +0
+[15:09:50] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.48, Fateweaver 0.86, Vanguard 0.85, Meeple 0.41, Space Groove 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 68 | renda base +5 | juros +5 | sequência +2 | vitória +0
+[15:09:51] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 64 | renda base +5 | juros +5 | sequência +2 | vitória +0
+[15:09:52] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.48, Fateweaver 0.86, Vanguard 0.85, Meeple 0.41, Space Groove 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 60 | renda base +5 | juros +5 | sequência +2 | vitória +0
+[15:09:53] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 56 | renda base +5 | juros +5 | sequência +2 | vitória +0
+[15:09:53] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.48, Fateweaver 0.86, Vanguard 0.85, Meeple 0.41, Space Groove 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 52 | renda base +5 | juros +5 | sequência +2 | vitória +0
+[15:09:54] BUY XP                       | Rew: -0.06
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 48 | renda base +5 | juros +5 | sequência +2 | vitória +0
+
+[15:09:55] --- FIM DO ROUND 5-1 | GOLD: 58 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +4 juros, +0 sequência, +1 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Urg|T|1*|i:6.0]       [ . ]             [ . ]        [Nas|F|1*|i:2.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Pyk|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 3 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:09:55] 🛒 LOJA: Rammus(i:8.0), Lissandra(i:2.0), Kindred(i:8.0), Gragas(i:4.0), Fizz(i:6.0)
+[15:09:59] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.48, Fateweaver 0.86, Vanguard 0.85, Meeple 0.41, Space Groove 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 54 | renda base +5 | juros +4 | sequência +0 | vitória +1
+[15:10:00] BUY XP                       | Rew: +0.02
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 50 | renda base +5 | juros +4 | sequência +0 | vitória +1
+[15:10:00] BUY XP                       | Rew: -0.07
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.48, Fateweaver 0.86, Vanguard 0.85, Meeple 0.41, Space Groove 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 46 | renda base +5 | juros +4 | sequência +0 | vitória +1
+[15:10:01] BUY XP                       | Rew: +0.51
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 42 | renda base +5 | juros +4 | sequência +0 | vitória +1
+[15:10:02] BUY XP                       | Rew: -0.07
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.48, Fateweaver 0.86, Vanguard 0.85, Meeple 0.41, Space Groove 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 38 | renda base +5 | juros +4 | sequência +0 | vitória +1
+[15:10:02] BUY XP                       | Rew: +0.01
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 34 | renda base +5 | juros +4 | sequência +0 | vitória +1
+[15:10:03] BUY XP                       | Rew: +0.01
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.48, Fateweaver 0.86, Vanguard 0.85, Meeple 0.41, Space Groove 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 30 | renda base +5 | juros +4 | sequência +0 | vitória +1
+[15:10:04] BUY XP                       | Rew: -0.07
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 26 | renda base +5 | juros +4 | sequência +0 | vitória +1
+[15:10:05] BUY XP                       | Rew: +0.01
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.48, Fateweaver 0.86, Vanguard 0.85, Meeple 0.41, Space Groove 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 22 | renda base +5 | juros +4 | sequência +0 | vitória +1
+
+[15:10:05] --- FIM DO ROUND 5-2 | GOLD: 22 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +4 juros, +0 sequência, +1 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:10:05] 🛒 LOJA: None, None, None, None, None
+[15:10:09] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 22 | renda base +5 | juros +4 | sequência +0 | vitória +1
+
+[15:10:16] --- FIM DO ROUND 5-3 | GOLD: 22 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +4 juros, +0 sequência, +1 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:10:16] 🛒 LOJA: None, None, None, None, None
+[15:10:20] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 22 | renda base +5 | juros +4 | sequência +0 | vitória +1
+
+[15:10:26] --- FIM DO ROUND 5-4 | GOLD: 22 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +4 juros, +0 sequência, +1 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:10:26] 🛒 LOJA: None, None, None, None, None
+[15:10:31] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 22 | renda base +5 | juros +4 | sequência +0 | vitória +1
+
+[15:10:37] --- FIM DO ROUND 5-5 | GOLD: 22 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +4 juros, +0 sequência, +1 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:10:37] 🛒 LOJA: None, None, None, None, None
+[15:10:42] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 22 | renda base +5 | juros +4 | sequência +0 | vitória +1
+
+[15:10:48] --- FIM DO ROUND 5-6 | GOLD: 22 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +4 juros, +0 sequência, +1 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:10:48] 🛒 LOJA: None, None, None, None, None
+[15:10:53] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 22 | renda base +5 | juros +4 | sequência +0 | vitória +1
+
+[15:10:59] --- FIM DO ROUND 5-7 | GOLD: 22 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +4 juros, +0 sequência, +1 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:10:59] 🛒 LOJA: None, None, None, None, None
+[15:11:04] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 22 | renda base +5 | juros +4 | sequência +0 | vitória +1
+
+[15:11:11] --- FIM DO ROUND 6-1 | GOLD: 22 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +4 juros, +0 sequência, +1 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:11:11] 🛒 LOJA: None, None, None, None, None
+[15:11:16] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 22 | renda base +5 | juros +4 | sequência +0 | vitória +1
+
+[15:11:22] --- FIM DO ROUND 6-2 | GOLD: 22 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +4 juros, +0 sequência, +1 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:11:22] 🛒 LOJA: None, None, None, None, None
+[15:11:28] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Pyke | CORE TRAITS: Stargazer, Fateweaver, Vanguard
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.91 -> 2.91
+    GOLD: 22 | renda base +5 | juros +4 | sequência +0 | vitória +1
+
+[15:11:34] --- FIM DO ROUND 6-3 | GOLD: 22 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.91
+FOCUS WEIGHTS: Stargazer 2.31, Fateweaver 0.91, Vanguard 0.90, Meeple 0.44, Space Groove 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +4 juros, +0 sequência, +1 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[15:11:34] 🛒 LOJA: None, None, None, None, None
+
+========================================
+ GAME OVER - RELATÓRIO FINAL
+========================================
