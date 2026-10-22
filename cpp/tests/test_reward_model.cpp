@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <stdexcept>
 
 namespace {
 void require_close(double actual, double expected, const std::string& name) {
