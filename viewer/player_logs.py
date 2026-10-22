@@ -206,6 +206,9 @@ class PlayerJsonLogWriter:
             "strategy_id": (audit.get("strategy_info") or {}).get("strategy", 0),
             "comp_direction": (audit.get("strategy_info") or {}).get("composition_direction", ""),
             "comp_focus": (audit.get("strategy_info") or {}).get("composition_focus", ""),
+            "composition_locked": bool((audit.get("strategy_info") or {}).get("composition_locked", False)),
+            "composition_strength": float((audit.get("strategy_info") or {}).get("composition_strength", 0.0) or 0.0),
+            "composition_focus_weights": dict((audit.get("strategy_info") or {}).get("composition_focus_weights", {}) or {}),
             "strategy_confidence": (audit.get("strategy_info") or {}).get("confidence", 0.0),
             "strategy_reason": (audit.get("strategy_info") or {}).get("reason", ""),
             "core_units": list((audit.get("strategy_info") or {}).get("core_units", []) or []),
@@ -334,7 +337,10 @@ class PlayerJsonLogWriter:
                 f"\n[{timestamp}] --- FIM DO ROUND {stage}-{round_in_stage} | GOLD: {after_state.get('gold', '?')} ---\n"
                 f"    STRATEGY: {after_state.get('strategy_name', 'ECON')} | "
                 f"COMP DIRECTION: {after_state.get('comp_direction') or '—'} | "
-                f"FOCUS: {after_state.get('comp_focus') or '—'}\n"
+                f"FOCUS: {after_state.get('comp_focus') or '—'} | "
+                f"LOCK: {'LOCKED' if after_state.get('composition_locked') else 'OPEN'} | "
+                f"STRENGTH: {float(after_state.get('composition_strength', 0.0) or 0.0):.2f}\n"
+                f"FOCUS WEIGHTS: {', '.join(f'{name} {float(weight):.2f}' for name, weight in sorted((after_state.get('composition_focus_weights') or {}).items(), key=lambda item: float(item[1]), reverse=True)[:5]) or '—'}\n"
                 f"    RENDA PRÓXIMO ROUND: +{after_state.get('round_base_gold', 0)} base, "
                 f"+{after_state.get('round_interest', 0)} juros, "
                 f"+{after_state.get('round_streak_gold', 0)} sequência, "
@@ -537,7 +543,10 @@ class PlayerJsonLogWriter:
                     f"[{timestamp}] {self._action_text(action, before_audit):28} | Rew: {reward:+.2f}\n"
                     f"    STRATEGY: {after_state.get('strategy_name', 'ECON')} | "
                     f"COMP DIRECTION: {after_state.get('comp_direction') or '—'} | "
-                    f"FOCUS: {after_state.get('comp_focus') or '—'}\n"
+                    f"FOCUS: {after_state.get('comp_focus') or '—'} | "
+                f"LOCK: {'LOCKED' if after_state.get('composition_locked') else 'OPEN'} | "
+                f"STRENGTH: {float(after_state.get('composition_strength', 0.0) or 0.0):.2f}\n"
+                f"FOCUS WEIGHTS: {', '.join(f'{name} {float(weight):.2f}' for name, weight in sorted((after_state.get('composition_focus_weights') or {}).items(), key=lambda item: float(item[1]), reverse=True)[:5]) or '—'}\n"
                     f"    GOLD: {after_state.get('gold', '?')} | renda base "
                     f"+{after_state.get('round_base_gold', 0)} | juros "
                     f"+{after_state.get('round_interest', 0)} | sequência "

@@ -44,6 +44,27 @@ def _value(player, *keys, default=0):
     return default
 
 
+def _composition_focus_weights_text(strategy):
+    weights = strategy.get("composition_focus_weights") or {}
+    if not isinstance(weights, dict):
+        return "—"
+    ranked = sorted(weights.items(), key=lambda item: float(item[1] or 0.0), reverse=True)[:5]
+    return ", ".join(f"{name} {float(weight or 0.0):.2f}" for name, weight in ranked) or "—"
+
+
+def _composition_status_text(strategy):
+    locked = bool(strategy.get("composition_locked", False))
+    lock_text = "LOCKED" if locked else "OPEN"
+    strength = float(strategy.get("composition_strength", 0.0) or 0.0)
+    direction = strategy.get("composition_direction") or "—"
+    focus = strategy.get("composition_focus") or "—"
+    weights = _composition_focus_weights_text(strategy)
+    return (
+        f"Comp direction: {direction} | Lock: {lock_text} | "
+        f"Strength: {strength:.2f} | Focus: {focus} | Focus weights: {weights}"
+    )
+
+
 def _format_unit(unit):
     return unit_label(unit) or "·"
 
@@ -334,8 +355,9 @@ class PlayerCard(QFrame):
         self.metrics.setText(f"HP {hp}   OURO {gold}   NV {level}   XP {xp}")
         strategy = audit.get("strategy_info") or {}
         strategy_name = strategy.get("strategy_name") or "ECON"
-        comp_direction = strategy.get("composition_direction") or "—"
-        self.strategy_line.setText(f"Strategy: {strategy_name} | Comp direction: {comp_direction}")
+        self.strategy_line.setText(
+            f"Strategy: {strategy_name}\n{_composition_status_text(strategy)}"
+        )
         board = audit.get("board", [])
         for i, cell in enumerate(self.cells):
             unit = board[i] if i < len(board) else None
@@ -932,9 +954,8 @@ class ViewerWindow(QMainWindow):
             f"Nível: {_value(player, 'level', default='—')}   ·   XP: {_value(player, 'xp', default='—')}\n"
             f"Colocação: {_value(player, 'placement', default='—')}   ·   "
             f"Status: {'ELIMINADO' if player.get('eliminated') or not player.get('alive', True) else 'VIVO'}\n"
-            f"Strategy: {strategy.get('strategy_name', 'ECON')}   ·   "
-            f"Comp direction: {strategy.get('composition_direction') or '—'}   ·   "
-            f"Focus: {strategy.get('composition_focus') or '—'}"
+            f"Strategy: {strategy.get('strategy_name', 'ECON')}\n"
+            f"{_composition_status_text(strategy)}"
         )
         summary.setWordWrap(True)
         outer.addWidget(summary)
@@ -1028,9 +1049,8 @@ class ViewerWindow(QMainWindow):
             f"Ouro: {_value(player, 'gold', default='—')}\nNível: {_value(player, 'level', default='—')} · "
             f"XP: {_value(player, 'xp', default='—')}\nColocação: {_value(player, 'placement', default='—')}\n"
             f"Strategy: {strategy.get('strategy_name', 'ECON')} · "
-            f"Comp direction: {strategy.get('composition_direction') or '—'}\n"
-            f"Focus: {strategy.get('composition_focus') or '—'} · "
             f"Confiança: {float(strategy.get('confidence', 0.0) or 0.0):.2f}\n"
+            f"{_composition_status_text(strategy)}\n"
             f"Core traits: {core_traits_text}\nTraits ativos: {traits_text}"
         )
         lines = ["TABULEIRO:"]
