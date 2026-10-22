@@ -116,7 +116,7 @@ struct AntiLoopHistory {
 
     ExecutionMetrics metrics;
     std::uint32_t current_round = 1;
-    std::uint32_t state_window_rounds = 4;
+    std::uint32_t state_window_rounds = 8;
 };
 
 } // namespace tft::decision
