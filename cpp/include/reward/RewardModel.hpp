@@ -124,6 +124,20 @@ inline double sale_quality(double fit_score, bool core_unit,
         (frees_bench_space ? 0.03 : 0.0);
 }
 
+// Shared no-progress penalty for both board repositioning and bench-to-board
+// replacement. Negative deltas add proportional cost instead of being flattened
+// by a fixed assignment in the action executor.
+inline double movement_no_progress_penalty(
+    double composition_delta,
+    double synergy_delta,
+    double positioning_delta
+) noexcept {
+    return -0.05
+        - 0.10 * std::tanh(std::max(0.0, -composition_delta) / 5.0)
+        - 0.10 * std::tanh(std::max(0.0, -synergy_delta))
+        - 0.05 * std::tanh(std::max(0.0, -positioning_delta));
+}
+
 inline double clamp_total(double total) noexcept {
     return std::clamp(total, -5.0, 5.0);
 }
