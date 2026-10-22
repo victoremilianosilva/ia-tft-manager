@@ -84,6 +84,73 @@ class TFTPolicy(nn.Module):
         )
         self.value_head = nn.Linear(hidden_size, 1)
 
+    def load_compatible_state_dict(self, state_dict):
+        """Load current weights or migrate the two known input-shape changes.
+
+        Temporal observation features are inserted immediately before the fixed
+        candidate tail. The old global encoder columns are shifted around that
+        insertion; new temporal columns and new bench-target conditioning columns
+        start at zero so inference initially preserves the old logits.
+        """
+        target = self.state_dict()
+        missing = sorted(set(target) - set(state_dict))
+        unexpected = sorted(set(state_dict) - set(target))
+        if missing or unexpected:
+            raise RuntimeError(
+                f"Checkpoint keys incompatible: missing={missing[:8]}, "
+                f"unexpected={unexpected[:8]}"
+            )
+
+        migrated = False
+        loaded = {}
+        for key, target_value in target.items():
+            source_value = state_dict[key]
+            if source_value.shape == target_value.shape:
+                loaded[key] = source_value
+                continue
+
+            if (
+                key == "global_mlp.0.weight"
+                and source_value.ndim == 2
+                and target_value.ndim == 2
+                and source_value.shape[0] == target_value.shape[0]
+                and target_value.shape[1] > source_value.shape[1]
+            ):
+                added = target_value.shape[1] - source_value.shape[1]
+                insertion = source_value.shape[1] - self.candidate_observation_dim
+                expanded = torch.zeros_like(target_value)
+                if 0 <= insertion <= source_value.shape[1]:
+                    expanded[:, :insertion] = source_value[:, :insertion]
+                    expanded[:, insertion + added:] = source_value[:, insertion:]
+                else:
+                    # Older checkpoints without the explicit candidate tail:
+                    # preserve their known columns and initialize the new tail.
+                    expanded[:, :source_value.shape[1]] = source_value
+                loaded[key] = expanded
+                migrated = True
+                continue
+
+            if (
+                key == "bench_to_board_head.weight"
+                and source_value.ndim == 2
+                and target_value.ndim == 2
+                and source_value.shape[0] == target_value.shape[0]
+                and source_value.shape[1] < target_value.shape[1]
+            ):
+                expanded = torch.zeros_like(target_value)
+                expanded[:, :source_value.shape[1]] = source_value
+                loaded[key] = expanded
+                migrated = True
+                continue
+
+            raise RuntimeError(
+                f"Checkpoint shape incompatível em {key}: "
+                f"{tuple(source_value.shape)} != {tuple(target_value.shape)}"
+            )
+
+        self.load_state_dict(loaded, strict=True)
+        return migrated
+
     def encode(self, obs):
         """ Fatia cirurgicamente o tabuleiro do meio do vetor de estado e processa em 2D """
         # FIX: se o env mudar de dimensão, o erro aparece aqui com mensagem clara
