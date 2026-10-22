@@ -96,6 +96,7 @@ class ViewerSession:
         self._preparation_round: tuple[int, int] | None = None
         self._passed_players: set[int] = set()
         self._round_action_counts = [0] * 8
+        self._non_improving_movement_streak = [0] * 8
         self._backline_fallback_checked = False
 
     def load_checkpoint(self, checkpoint: str | Path, seed: int, deterministic: bool,
@@ -143,6 +144,7 @@ class ViewerSession:
         self._preparation_round = None
         self._passed_players.clear()
         self._round_action_counts = [0] * 8
+        self._non_improving_movement_streak = [0] * 8
         self._backline_fallback_checked = False
         self.checkpoint_sha256 = digest
         self.match_id = str(uuid.uuid4())
@@ -341,6 +343,7 @@ class ViewerSession:
                 self._preparation_started_at = time.monotonic()
                 self._passed_players.clear()
                 self._round_action_counts = [0] * 8
+                self._non_improving_movement_streak = [0] * 8
                 self._backline_fallback_checked = False
 
         before = self._snapshot_for_event()
@@ -351,6 +354,15 @@ class ViewerSession:
             if not player.get("alive", True):
                 actions.append([6, 0, 0, 0, 0, 0])
                 diagnostics.append({"action_name": "PASS", "action": [6, 0, 0, 0, 0, 0], "status": "eliminated_seat"})
+            elif self.config.deterministic and self._non_improving_movement_streak[player_id] >= 2:
+                action = [6, 0, 0, 0, 0, 0]
+                actions.append(action)
+                diagnostics.append({
+                    "action_name": "PASS", "action": action,
+                    "status": "no_positive_movement_reward",
+                })
+                if wall_clock_enabled:
+                    self._passed_players.add(player_id)
             elif wall_clock_enabled and (
                 player_id in self._passed_players or self._round_action_counts[player_id] >= 10
             ):
@@ -448,6 +460,27 @@ class ViewerSession:
         self.last_policy = diagnostics
         self.last_rewards = np.asarray(rewards, dtype=np.float32)
         self.last_info = info
+
+        # Deterministic argmax can otherwise chain novel but useless moves.
+        # Use the engine's realized action reward as feedback: after two
+        # consecutive non-positive movement rewards, prefer PASS for this round.
+        action_rewards = info.get("action_rewards")
+        if action_rewards is not None:
+            try:
+                reward_values = np.asarray(action_rewards, dtype=np.float32).reshape(-1)
+                for player_id, action in enumerate(actions):
+                    if player_id >= len(reward_values):
+                        break
+                    if int(action[0]) in (3, 4):
+                        if float(reward_values[player_id]) <= 0.0:
+                            self._non_improving_movement_streak[player_id] += 1
+                        else:
+                            self._non_improving_movement_streak[player_id] = 0
+                    elif int(action[0]) != 6:
+                        self._non_improving_movement_streak[player_id] = 0
+            except (TypeError, ValueError):
+                pass
+
         self.masks = self.lobby.get_action_masks()
         self.public_state = self.lobby.get_public_state()
         self._refresh_audit_snapshot()
@@ -458,6 +491,7 @@ class ViewerSession:
             self._preparation_round = None
             self._passed_players.clear()
             self._round_action_counts = [0] * 8
+            self._non_improving_movement_streak = [0] * 8
             self._backline_fallback_checked = False
         self.step_count += 1
         after = self._snapshot_for_event()
