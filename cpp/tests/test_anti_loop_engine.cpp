@@ -104,8 +104,10 @@ void test_detects_bench_board_oscillation() {
     AntiLoopEngine engine;
     const auto nasus = make_unit("nasus-1", 1);
 
-    engine.register_move("MOVE_BENCH_TO_BOARD", 2, 12, nasus);
-    engine.register_move("MOVE_BOARD_TO_BENCH", 12, 2, nasus);
+    const auto lissandra = make_unit("lissandra-1", 2);
+    // The executor records a replacement as bench_to_board and stores the
+    // displaced unit, rather than emitting a separate board_to_bench action.
+    engine.register_move("MOVE_BENCH_TO_BOARD", 2, 12, lissandra, nasus);
 
     assert(
         engine.is_bench_board_loop(
