@@ -271,6 +271,11 @@ py::list strategies_to_list(
             item["composition_focus"] = "";
             item["composition_focus_id"] = -1;
             item["composition_direction"] = "";
+            item["composition_locked"] = false;
+            item["comp_direction_update_steps"] = 0;
+            item["comp_stabilize_start_round"] = -1;
+            item["composition_strength"] = 0.0;
+            item["composition_focus_weights"] = py::dict();
             item["core_units"] = py::list();
             item["core_unit_ids"] = py::list();
             item["core_traits"] = py::list();
@@ -304,6 +309,14 @@ py::list strategies_to_list(
             item["composition_focus"] = strategy.composition_focus;
             item["composition_focus_id"] = strategy.composition_focus_id;
             item["composition_direction"] = strategy.composition_direction;
+            item["composition_locked"] = strategy.composition_locked;
+            item["comp_direction_update_steps"] = strategy.comp_direction_update_steps;
+            item["comp_stabilize_start_round"] = strategy.comp_stabilize_start_round;
+            item["composition_strength"] = strategy.composition_strength;
+            py::dict composition_focus_weights;
+            for (const auto& [trait, weight] : strategy.composition_focus_weights)
+                composition_focus_weights[py::str(trait)] = weight;
+            item["composition_focus_weights"] = std::move(composition_focus_weights);
             item["core_units"] = strategy.core_units;
             item["core_unit_ids"] = strategy.core_unit_ids;
             item["core_traits"] = strategy.core_traits;
