@@ -398,6 +398,8 @@ class ViewerSession:
                 )
                 if not player.get("alive", True):
                     continue
+                if self._round_action_counts[player_id] >= 10:
+                    continue
                 fallback = self._backline_fallback_action(player_id)
                 if fallback is None:
                     continue
