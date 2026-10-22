@@ -80,9 +80,9 @@ def test_native_composition_score_rewards_two_star_upgrade_separately():
         lobby.reset(seed=20261023)
         native = lobby._engine
 
-        one_star = float(native.get_unit_comp_score(0, "Nasus", 1))
-        two_star = float(native.get_unit_comp_score(0, "Nasus", 2))
-        three_star = float(native.get_unit_comp_score(0, "Nasus", 3))
+        one_star = float(native.get_unit_comp_score(0, "TFT17_Nasus", 1))
+        two_star = float(native.get_unit_comp_score(0, "TFT17_Nasus", 2))
+        three_star = float(native.get_unit_comp_score(0, "TFT17_Nasus", 3))
 
         assert two_star > one_star, (
             "O sinal estratégico nativo não valoriza Nasus 2★ acima de 1★: "
