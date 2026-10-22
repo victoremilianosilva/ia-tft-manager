@@ -320,7 +320,13 @@ bool AntiLoopEngine::is_reverse_move(
                 || (it->source == target && it->target == source);
             if (same_pair) { last_ptr = &*it; break; }
         }
-        if (it->unit == unit && it->move_type == move_type) {
+        const bool board_move_candidate =
+            move_type == "board_move" || move_type == "board_swap";
+        const bool same_unit_move =
+            board_move_candidate
+                ? (it->move_type == "board_move" || it->move_type == "board_swap")
+                : it->move_type == move_type;
+        if (it->unit == unit && same_unit_move) {
             last_ptr = &*it;
             break;
         }
