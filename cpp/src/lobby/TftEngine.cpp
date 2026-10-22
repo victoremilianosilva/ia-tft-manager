@@ -1513,8 +1513,11 @@ struct TFTEngine::Impl {
         // _update_comp_focus() is evaluated on every decision step, separately
         // from the direction refresh that runs every other step.
         for (auto& [trait, weight] : focus) weight *= 0.95;
-        for (const auto& [trait, count] : board_trait_counts) {
-            const int level = trait_level(trait, count);
+        for (const auto& [trait, count] : trait_counts) {
+            const auto board_count = board_trait_counts.find(trait);
+            const int active_count = board_count == board_trait_counts.end()
+                ? 0 : board_count->second;
+            const int level = trait_level(trait, active_count);
             if (level > 0) focus[trait] += 0.25 + 0.25 * level;
             else focus[trait] += 0.10 + 0.05 * count;
         }
