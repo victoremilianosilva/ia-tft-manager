@@ -107,7 +107,7 @@ struct AntiLoopHistory {
     std::vector<BlockedMoveRecord> blocked_moves;
     std::vector<StateVisit> state_visits;
     // Índice O(1) médio para consultas e registro de estados já conhecidos.
-    // O índice aponta para state_visits, cuja ordem é estável até reset().
+    // O índice é reconstruído quando a janela por rodada remove estados antigos.
     std::unordered_map<PositionSignature, std::size_t, PositionSignatureHash>
         state_visit_index;
 
