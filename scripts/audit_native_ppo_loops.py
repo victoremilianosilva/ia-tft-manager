@@ -118,11 +118,27 @@ def _strategic_summary(lobby, player_id, player, strategy):
             "star": int(unit.get("star", 1)),
             "composition_score": unit_score,
         })
+    core_units = list(strategy.get("core_units", []))
+    core_traits = list(strategy.get("core_traits", []))
+    active_traits = strategy.get("active_traits", {})
+    board_names = {str(u.get("champion_id", "")) for u in board_units}
+    bench_names = {str(u.get("champion_id", "")) for u in bench_units}
+    core_trait_counts = {
+        trait: int(active_traits.get(trait, 0)) for trait in core_traits
+    }
     return {
         "board_composition_score": score,
         "board_unit_scores": scored_units,
         "board_unit_count": len(board_units),
         "bench_unit_count": len(bench_units),
+        "board_star_counts": {
+            str(star): sum(int(u.get("star", 1)) == star for u in board_units)
+            for star in (1, 2, 3)
+        },
+        "bench_star_counts": {
+            str(star): sum(int(u.get("star", 1)) == star for u in bench_units)
+            for star in (1, 2, 3)
+        },
         "board_two_star_count": sum(int(u.get("star", 1)) >= 2 for u in board_units),
         "bench_two_star_count": sum(int(u.get("star", 1)) >= 2 for u in bench_units),
         "composition_direction": strategy.get("composition_direction", ""),
@@ -130,10 +146,14 @@ def _strategic_summary(lobby, player_id, player, strategy):
         "composition_focus": strategy.get("composition_focus", ""),
         "composition_focus_weights": strategy.get("composition_focus_weights", {}),
         "composition_strength": float(strategy.get("composition_strength", 0.0)),
-        "core_units": strategy.get("core_units", []),
+        "core_units": core_units,
         "core_unit_ids": strategy.get("core_unit_ids", []),
-        "core_traits": strategy.get("core_traits", []),
-        "active_traits": strategy.get("active_traits", {}),
+        "core_units_on_board": sorted(board_names.intersection(map(str, core_units))),
+        "core_units_in_bench": sorted(bench_names.intersection(map(str, core_units))),
+        "core_traits": core_traits,
+        "core_trait_counts": core_trait_counts,
+        "core_traits_active_count": sum(count > 0 for count in core_trait_counts.values()),
+        "active_traits": active_traits,
     }
 
 
