@@ -1160,34 +1160,41 @@ class Trainer:
                 # 🤖 POLICY
                 # ====================================================
 
+                head_entropy_diagnostics = None
                 with torch.no_grad():
-                    (
-                        actions,
-                        logprobs,
-                        _,
-                        values,
-                        head_entropy_diagnostics,
-                    ) = self.policy.get_action_and_value_with_entropy_diagnostics(
-                        obs, masks=masks
-                    )
+                    if step % 10 == 0:
+                        (
+                            actions,
+                            logprobs,
+                            _,
+                            values,
+                            head_entropy_diagnostics,
+                        ) = self.policy.get_action_and_value_with_entropy_diagnostics(
+                            obs, masks=masks
+                        )
+                    else:
+                        actions, logprobs, _, values = self.policy.get_action(
+                            obs, masks=masks
+                        )
 
-                # Log entropy per conditional head before considering changes to
-                # the global entropy coefficient.
-                entropy_by_head = {}
-                for player_records in (head_entropy_diagnostics or []):
-                    for record in player_records:
-                        bucket = entropy_by_head.setdefault(record["head"], [[], []])
-                        bucket[0].append(float(record["entropy_nats"]))
-                        bucket[1].append(float(record["entropy_normalized"]))
-                entropy_step = update * rollout_steps + step
-                for head, (nats, normalized) in entropy_by_head.items():
-                    if nats:
-                        self.writer.add_scalar(
-                            f"policy_entropy/{head}_nats", float(np.mean(nats)), entropy_step
-                        )
-                        self.writer.add_scalar(
-                            f"policy_entropy/{head}_normalized", float(np.mean(normalized)), entropy_step
-                        )
+                # Sample entropy diagnostics every ten rollout steps to avoid
+                # CPU synchronization/logging overhead on every action batch.
+                if head_entropy_diagnostics:
+                    entropy_by_head = {}
+                    for player_records in head_entropy_diagnostics:
+                        for record in player_records:
+                            bucket = entropy_by_head.setdefault(record["head"], [[], []])
+                            bucket[0].append(float(record["entropy_nats"]))
+                            bucket[1].append(float(record["entropy_normalized"]))
+                    entropy_step = update * rollout_steps + step
+                    for head, (nats, normalized) in entropy_by_head.items():
+                        if nats:
+                            self.writer.add_scalar(
+                                f"policy_entropy/{head}_nats", float(np.mean(nats)), entropy_step
+                            )
+                            self.writer.add_scalar(
+                                f"policy_entropy/{head}_normalized", float(np.mean(normalized)), entropy_step
+                            )
 
                 # ====================================================
                 # 📊 ACTION LOGGING
