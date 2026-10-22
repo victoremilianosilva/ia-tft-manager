@@ -370,6 +370,11 @@ void test_bench_move_mask_rejects_repeated_position() {
     assert(masks.bench_to_board_target_masks[2][10] == MASK_DISABLED);
     assert(masks.diagnostics.bench_move_blocked_seen_state == 1);
     assert(masks.diagnostics.bench_move_valid > 0);
+
+    std::string reason;
+    assert(!engine.is_bench_to_board_move_allowed(state, anti_loop, 2, 10, &reason));
+    assert(reason == "cycle");
+    assert(engine.is_bench_to_board_move_allowed(state, anti_loop, 2, 11));
 }
 
 void test_mask_diagnostics_count_bench_replacement_loop() {
