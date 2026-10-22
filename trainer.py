@@ -254,19 +254,19 @@ class Trainer:
                 )
             )
 
-            if "scheduler" in checkpoint:
+            if "scheduler" in checkpoint and not migrated_checkpoint:
 
                 self.scheduler.load_state_dict(
                     checkpoint["scheduler"]
                 )
 
-                print(
-                    "✅ Estado do scheduler restaurado."
-                )
+                print("✅ Estado do scheduler restaurado.")
                 print(
                     f"🗓️ Scheduler restaurado | last_epoch={self.scheduler.last_epoch} | "
                     f"LR atual={[float(group['lr']) for group in self.optimizer.param_groups]}"
                 )
+            elif migrated_checkpoint:
+                print("ℹ️ Scheduler reiniciado para a arquitetura atual.")
 
             # --------------------------------------------------------
             # Controlled LR override (opt-in via TFT_PPO_LR)
