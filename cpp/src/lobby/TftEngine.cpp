@@ -2321,15 +2321,20 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             // improves composition, synergy, or positioning.
                             action_reward += reward_model::board_capacity_completion();
                         }
+                    } else if (!composition_improved) {
+                        // A replacement that neither grows the team nor improves
+                        // fit/synergy/positioning must not be a free action.
+                        action_reward += reward_model::movement_no_progress_penalty(
+                            composition_quality_delta, synergy_delta, positioning_delta);
                     }
                 } else if (
                     positioning_delta <= 1e-6 &&
                     synergy_delta <= 1e-6
                 ) {
-                    // Penaliza também movimentos que pioram o tabuleiro.
-                    // A versão anterior só penalizava deltas exatamente zero,
-                    // permitindo ciclos com pequenas oscilações negativas.
-                    action_reward = -0.05;
+                    // Preserve the delta-based shaping above and add a baseline
+                    // cost plus extra penalty proportional to actual degradation.
+                    action_reward += reward_model::movement_no_progress_penalty(
+                        0.0, synergy_delta, positioning_delta);
                 }
             }
         } else if (type == 5) {
