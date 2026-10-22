@@ -425,11 +425,10 @@ void test_round_window_expires_old_states_and_clears_local_history() {
     assert(!engine.get_state().last_move.has_value());
     assert(engine.was_state_seen(signature));
 
-    // Four rounds are retained (round 1 remains visible through round 5),
-    // but the signature expires at round 6.
-    engine.begin_round(5);
+    // Keep exact layouts long enough to catch the observed round 21 -> 26 loop.
+    engine.begin_round(9);
     assert(engine.was_state_seen(signature));
-    engine.begin_round(6);
+    engine.begin_round(10);
     assert(!engine.was_state_seen(signature));
     assert(engine.get_state_visits(signature) == 0);
 }
