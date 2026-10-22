@@ -473,13 +473,8 @@ std::optional<std::string> AntiLoopEngine::normalize_bench_move(
         return "bench_to_board";
     }
 
-    if (
-        move_type == "MOVE_BOARD_TO_BENCH"
-        || move_type == "board_to_bench"
-    ) {
-        return "board_to_bench";
-    }
-
+    // The action space has no board-to-bench action. A displaced unit is
+    // tracked through MoveRecord::displaced_unit on bench_to_board instead.
     return std::nullopt;
 }
 
@@ -660,9 +655,7 @@ std::optional<std::string> AntiLoopEngine::get_block_reason(
 
     const bool is_bench_candidate =
         move_type == "bench_to_board"
-        || move_type == "board_to_bench"
-        || move_type == "MOVE_BENCH_TO_BOARD"
-        || move_type == "MOVE_BOARD_TO_BENCH";
+        || move_type == "MOVE_BENCH_TO_BOARD";
 
     if (
         is_bench_candidate
