@@ -220,6 +220,64 @@ class PlayerJsonLogWriter:
             "shop": [self._unit_info(u, i, "shop") for i, u in enumerate(audit.get("shop", []))],
         }
 
+
+    def _unit_composition_fit(self, action, before_audit, after_state):
+        """Estimate how the acted-on unit aligns with the current comp focus/core."""
+        action_type = int(action[0])
+        slot = location = None
+        if action_type == 0:
+            slot, location = int(action[1]), "shop"
+        elif action_type == 3:
+            slot, location = int(action[2]), "bench"
+        elif action_type == 4:
+            slot, location = int(action[4]), "board"
+        elif action_type == 5:
+            slot, location = int(action[2]), "bench"
+        if location is None:
+            return None
+        raw = self._unit_at((before_audit or {}).get(location, []), slot)
+        if not raw or not raw.get("occupied", True):
+            return None
+        unit = self._unit_info(raw, slot, location)
+        traits = [str(trait) for trait in unit.get("traits", []) if trait]
+        weights = {
+            str(key).casefold(): float(value or 0.0)
+            for key, value in (after_state.get("composition_focus_weights") or {}).items()
+        }
+        weighted_traits = [
+            {"trait": trait, "weight": weights.get(trait.casefold(), 0.0)}
+            for trait in traits
+        ]
+        core_units = {str(value).casefold() for value in (after_state.get("core_units") or [])}
+        identities = {
+            str(unit.get("champion_id") or "").casefold(),
+            str(unit.get("name") or "").casefold(),
+        }
+        return {
+            "unit": unit.get("name"),
+            "champion_id": unit.get("champion_id"),
+            "source": location,
+            "slot": slot,
+            "traits": traits,
+            "core_unit_match": bool(identities & core_units),
+            "focus_trait_matches": [item for item in weighted_traits if item["weight"] > 0],
+            "focus_fit_score": round(sum(item["weight"] for item in weighted_traits), 4),
+        }
+
+    @staticmethod
+    def _unit_composition_fit_text(unit_fit):
+        if not unit_fit:
+            return ""
+        matches = ", ".join(
+            f"{item['trait']}={item['weight']:.2f}"
+            for item in unit_fit.get("focus_trait_matches", [])
+        ) or "nenhum trait de foco"
+        return (
+            f"    FIT UNIDADE: {unit_fit.get('unit') or unit_fit.get('champion_id')} | "
+            f"core={'SIM' if unit_fit.get('core_unit_match') else 'não'} | "
+            f"fit={float(unit_fit.get('focus_fit_score', 0.0) or 0.0):.2f} | {matches}\n"
+        )
+
     def _compact_unit(self, unit: dict | None, slot: int = 0, location: str = "unknown") -> str:
         if not unit or not unit.get("occupied", True):
             return "Vazio"
@@ -511,6 +569,38 @@ class PlayerJsonLogWriter:
                 "placement_reward": placement_rewards[player_id] if isinstance(placement_rewards, list) and player_id < len(placement_rewards) else None,
                 "state_changed": before_state != after_state,
                 "state_before": before_state, "state_after": after_state,
+                "composition_diagnostics": {
+                    "before": {
+                        "direction": before_state.get("comp_direction"),
+                        "focus": before_state.get("comp_focus"),
+                        "locked": before_state.get("composition_locked", False),
+                        "strength": before_state.get("composition_strength", 0.0),
+                    },
+                    "after": {
+                        "direction": after_state.get("comp_direction"),
+                        "focus": after_state.get("comp_focus"),
+                        "locked": after_state.get("composition_locked", False),
+                        "strength": after_state.get("composition_strength", 0.0),
+                        "reason": after_state.get("strategy_reason"),
+                        "core_units": after_state.get("core_units"),
+                        "core_traits": after_state.get("core_traits"),
+                        "active_traits": after_state.get("active_traits"),
+                        "focus_weights": after_state.get("composition_focus_weights"),
+                        "strategy_scores": after_state.get("strategy_scores"),
+                    },
+                    "direction_changed": before_state.get("comp_direction") != after_state.get("comp_direction"),
+                    "focus_changed": before_state.get("comp_focus") != after_state.get("comp_focus"),
+                    "lock_changed": before_state.get("composition_locked") != after_state.get("composition_locked"),
+                    "strength_changed": before_state.get("composition_strength") != after_state.get("composition_strength"),
+                    "strategy_reason": after_state.get("strategy_reason"),
+                    "core_units": after_state.get("core_units"),
+                    "core_traits": after_state.get("core_traits"),
+                    "active_traits": after_state.get("active_traits"),
+                    "focus_weights": after_state.get("composition_focus_weights"),
+                    "strategy_scores": after_state.get("strategy_scores"),
+                    "policy_status": diagnostic.get("status"),
+                    "unit_fit": self._unit_composition_fit(action, before_audit, after_state),
+                },
                 "policy_diagnostics": diagnostic, "engine_events": player_events,
             }
 
@@ -547,11 +637,15 @@ class PlayerJsonLogWriter:
                 f"LOCK: {'LOCKED' if after_state.get('composition_locked') else 'OPEN'} | "
                 f"STRENGTH: {float(after_state.get('composition_strength', 0.0) or 0.0):.2f}\n"
                 f"FOCUS WEIGHTS: {', '.join(f'{name} {float(weight):.2f}' for name, weight in sorted((after_state.get('composition_focus_weights') or {}).items(), key=lambda item: float(item[1]), reverse=True)[:5]) or '—'}\n"
+                    f"    STRATEGY REASON: {after_state.get('strategy_reason') or '—'} | CONF: {float(after_state.get('strategy_confidence', 0.0) or 0.0):.2f}\n"
+                    f"    CORE UNITS: {', '.join(map(str, after_state.get('core_units') or [])) or '—'} | CORE TRAITS: {', '.join(map(str, after_state.get('core_traits') or [])) or '—'}\n"
+                    f"    COMP BEFORE -> AFTER: dir={before_state.get('comp_direction') or '—'} -> {after_state.get('comp_direction') or '—'} | foco={before_state.get('comp_focus') or '—'} -> {after_state.get('comp_focus') or '—'} | lock={before_state.get('composition_locked', False)} -> {after_state.get('composition_locked', False)} | strength={float(before_state.get('composition_strength', 0.0) or 0.0):.2f} -> {float(after_state.get('composition_strength', 0.0) or 0.0):.2f}\n"
                     f"    GOLD: {after_state.get('gold', '?')} | renda base "
                     f"+{after_state.get('round_base_gold', 0)} | juros "
                     f"+{after_state.get('round_interest', 0)} | sequência "
                     f"+{after_state.get('round_streak_gold', 0)} | vitória "
                     f"+{after_state.get('round_win_gold', 0)}\n"
+                    + self._unit_composition_fit_text(primary_data["composition_diagnostics"]["unit_fit"])
                 )
                 self._append_entry(
                     player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,

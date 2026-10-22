@@ -87,6 +87,12 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
     after = json.loads(json.dumps(before))
     after["audit_players"][0]["board"][0] = after["audit_players"][0]["bench"][0]
     after["audit_players"][0]["bench"][0] = _unit()
+    # Simulate a real strategy recomputation after the board changes.
+    after["audit_players"][0]["strategy_info"]["composition_direction"] = "Prankster"
+    after["audit_players"][0]["strategy_info"]["composition_focus"] = "Briar"
+    after["audit_players"][0]["strategy_info"]["composition_locked"] = False
+    after["audit_players"][0]["strategy_info"]["composition_strength"] = 2.0
+    after["audit_players"][0]["strategy_info"]["reason"] = "board fit changed"
     # Only player 1 gets the unit; other players' state remains independent.
     actions = [[3, 0, 0, 0, 0, 0] for _ in range(8)]
 
@@ -140,17 +146,32 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
     assert action_entry["payload"]["state_after"]["board"][0]["name"] == "Briar"
     assert action_entry["payload"]["state_after"]["bench"][0]["occupied"] is False
     assert action_entry["payload"]["state_after"]["strategy_name"] == "STABILIZE"
-    assert action_entry["payload"]["state_after"]["comp_direction"] == "Space Groove"
-    assert action_entry["payload"]["state_after"]["comp_focus"] == "Teemo"
-    assert action_entry["payload"]["state_after"]["composition_locked"] is True
-    assert action_entry["payload"]["state_after"]["composition_strength"] == 3.25
+    assert action_entry["payload"]["state_after"]["comp_direction"] == "Prankster"
+    assert action_entry["payload"]["state_after"]["comp_focus"] == "Briar"
+    assert action_entry["payload"]["state_after"]["composition_locked"] is False
+    assert action_entry["payload"]["state_after"]["composition_strength"] == 2.0
+    comp_diag = action_entry["payload"]["composition_diagnostics"]
+    assert comp_diag["direction_changed"] is True
+    assert comp_diag["focus_changed"] is True
+    assert comp_diag["lock_changed"] is True
+    assert comp_diag["before"]["direction"] == "Space Groove"
+    assert comp_diag["after"]["direction"] == "Prankster"
+    assert comp_diag["after"]["reason"] == "board fit changed"
+    assert comp_diag["after"]["core_units"] == ["TFT_Test_Briar"]
+    assert comp_diag["unit_fit"]["unit"] == "Briar"
+    assert comp_diag["unit_fit"]["core_unit_match"] is True
+    assert comp_diag["unit_fit"]["focus_fit_score"] == 0.0
     assert action_entry["payload"]["state_after"]["composition_focus_weights"]["Space Groove"] == 2.5
     log_text = (tmp_path / "match-test" / "player_1_log.tft").read_text(encoding="utf-8")
-    assert "LOCK: LOCKED" in log_text
-    assert "STRENGTH: 3.25" in log_text
+    assert "LOCK: OPEN" in log_text
+    assert "STRENGTH: 2.00" in log_text
     assert "FOCUS WEIGHTS: Space Groove 2.50, Prankster 1.20" in log_text
     assert "STRATEGY: STABILIZE" in (tmp_path / "match-test" / "player_1_log.tft").read_text(encoding="utf-8")
-    assert "COMP DIRECTION: Space Groove" in (tmp_path / "match-test" / "player_1_log.tft").read_text(encoding="utf-8")
+    assert "COMP DIRECTION: Prankster" in (tmp_path / "match-test" / "player_1_log.tft").read_text(encoding="utf-8")
+    assert "COMP BEFORE -> AFTER: dir=Space Groove -> Prankster" in log_text
+    assert "foco=Teemo -> Briar" in log_text
+    assert "STRATEGY REASON: board fit changed" in log_text
+    assert "FIT UNIDADE: Briar | core=SIM | fit=0.00" in log_text
     assert "RENDA PRÓXIMO ROUND: +5 base, +2 juros, +1 sequência, +1 vitória (total: +9)" in (
         tmp_path / "match-test" / "player_1_log.tft"
     ).read_text(encoding="utf-8")
