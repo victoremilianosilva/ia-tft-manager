@@ -793,7 +793,7 @@ struct TFTEngine::Impl {
             // candidate tail so policy.py can continue reading candidate features
             // from the end of the observation without changing its offsets.
             out[offset++] = static_cast<float>(kActionMemoryHorizon -
-                std::min(this->round_actions[i], kActionMemoryHorizon)) /
+                std::min(player_envs[i].actions_taken_this_round, kActionMemoryHorizon)) /
                 static_cast<float>(kActionMemoryHorizon);
             for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
                 const auto age = player_envs[i].board[slot]
