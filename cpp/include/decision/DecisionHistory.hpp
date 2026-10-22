@@ -17,7 +17,16 @@ struct PositionSignature {
     std::array<std::optional<UnitIdentity>, BOARD_SIZE> board{};
     std::array<std::optional<UnitIdentity>, BENCH_SIZE> bench{};
 
-    bool operator==(const PositionSignature&) const = default;
+    // XOR/Zobrist-style hash cache. Equality deliberately ignores the cache.
+    mutable std::size_t cached_hash = 0;
+    mutable bool hash_cached = false;
+
+    bool operator==(const PositionSignature& other) const {
+        return board == other.board && bench == other.bench;
+    }
+
+    void swap_board_slots(std::size_t first, std::size_t second);
+    void swap_board_bench(std::size_t board_slot, std::size_t bench_slot);
 };
 
 struct PositionSignatureHash {
