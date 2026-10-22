@@ -80,3 +80,39 @@ def test_sampling_and_evaluate_actions_use_identical_bench_target_distribution()
     assert actions.shape == (1, 6)
     assert actions[0, 0].item() == 3
     assert torch.allclose(sampled_logprob, evaluated_logprob, atol=1e-6, rtol=1e-6)
+
+
+def test_legacy_checkpoint_migrates_new_observation_and_bench_target_inputs():
+    policy, _ = _policy_and_observation()
+    old_state = policy.state_dict()
+    old_global = old_state["global_mlp.0.weight"][:, :-29].clone()
+    old_bench_target = old_state["bench_to_board_head.weight"][:, :-17].clone()
+    old_state["global_mlp.0.weight"] = old_global
+    old_state["bench_to_board_head.weight"] = old_bench_target
+
+    restored = TFTPolicy(obs_dim=OBS_DIM, action_dims=ACTION_DIMS, hidden_size=64)
+    assert restored.load_compatible_state_dict(old_state)
+
+    migrated_global = restored.state_dict()["global_mlp.0.weight"]
+    insertion = old_global.shape[1] - restored.candidate_observation_dim
+    assert torch.allclose(migrated_global[:, :insertion], old_global[:, :insertion])
+    assert torch.count_nonzero(migrated_global[:, insertion:insertion + 29]) == 0
+    assert torch.allclose(
+        migrated_global[:, insertion + 29:],
+        old_global[:, insertion:],
+    )
+
+    migrated_target = restored.state_dict()["bench_to_board_head.weight"]
+    assert torch.allclose(migrated_target[:, :-17], old_bench_target)
+    assert torch.count_nonzero(migrated_target[:, -17:]) == 0
+
+
+def test_entropy_only_diagnostics_are_compact_and_finite():
+    policy, obs = _policy_and_observation()
+    with torch.no_grad():
+        _, _, _, _, diagnostics = policy.get_action_and_value_with_entropy_diagnostics(obs)
+    assert diagnostics and diagnostics[0]
+    for record in diagnostics[0]:
+        assert torch.isfinite(torch.tensor(record["entropy_nats"]))
+        assert 0.0 <= record["entropy_normalized"] <= 1.00001
+        assert "probabilities" not in record
