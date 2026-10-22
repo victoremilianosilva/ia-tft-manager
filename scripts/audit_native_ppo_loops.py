@@ -209,6 +209,7 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
                 for player_id in range(8)
             ]
             masks = lobby.get_action_masks()
+            metrics_before = lobby.get_anti_loop_metrics()
             alive = [
                 player_id for player_id, info in enumerate(lobby.players)
                 if info.alive and not info.eliminated
@@ -283,7 +284,9 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
                     "xp_after": int(after["xp"]),
                     "strategy_before": strategic_before,
                     "strategy_after": strategic_after,
-                    "anti_loop_metrics": metrics,
+                    "anti_loop_metrics_before": metrics_before,
+                    "anti_loop_metrics_after": metrics,
+                    "engine_events": info.get("events", []),
                     "loop_detected": loop,
                 }
                 output.write(json.dumps(record, ensure_ascii=False) + "\n")
