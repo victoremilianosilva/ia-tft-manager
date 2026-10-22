@@ -3,6 +3,9 @@
 Example:
   python scripts/audit_strategic_policy.py --checkpoint checkpoints/latest.pt --seeds 11,12,13 --output reports/strategic_policy.jsonl
 
+The --output path is used as a base name; records are written to
+reports/strategic_policy/player_0.jsonl through player_7.jsonl.
+
 This is an observational audit, not a pass/fail claim that an untrained policy is strategic.
 It records selected actions, masked action probabilities, masks, gold before/after,
 and action/total rewards so the results can be compared across checkpoints.
@@ -12,6 +15,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from contextlib import ExitStack
 from pathlib import Path
 
 import numpy as np
@@ -78,6 +82,19 @@ def _json_masks(player_masks):
     }
 
 
+def _player_output_paths(output_path: Path):
+    """Return one JSONL path per player, derived from the legacy --output path."""
+    output_dir = output_path.parent / output_path.stem
+    return {player_id: output_dir / f"player_{player_id}.jsonl" for player_id in range(8)}
+
+
+def _write_player_record(output_handles, player_id, record):
+    """Write a record only to the file owned by its player."""
+    if player_id not in output_handles:
+        raise ValueError(f"Não existe arquivo de saída para o jogador {player_id}.")
+    output_handles[player_id].write(json.dumps(record, ensure_ascii=False) + "\\n")
+
+
 def load_policy(checkpoint_path: Path, obs_dim: int):
     device = torch.device("cpu")
     checkpoint = torch.load(checkpoint_path, map_location=device)
@@ -95,7 +112,7 @@ def load_policy(checkpoint_path: Path, obs_dim: int):
     return policy, device
 
 
-def audit_seed(policy, device, seed, output_handle, max_steps):
+def audit_seed(policy, device, seed, output_handles, max_steps):
     lobby = CppTFTLobbyWrapper(seed=seed)
     try:
         observations = np.asarray(lobby.reset(seed=seed), dtype=np.float32)
@@ -196,15 +213,25 @@ def main():
         probe.close()
 
     policy, device = load_policy(args.checkpoint, obs_dim)
-    args.output.parent.mkdir(parents=True, exist_ok=True)
+    output_paths = _player_output_paths(args.output)
+    output_dir = args.output.parent / args.output.stem
+    output_dir.mkdir(parents=True, exist_ok=True)
     count = 0
-    with args.output.open("w", encoding="utf-8") as handle:
-        for seed in seeds:
-            logged = audit_seed(policy, device, seed, handle, args.max_steps)
-            count += logged
-            print(f"seed={seed}: {logged} decisões registradas")
 
-    print(f"JSONL: {args.output}")
+    # Open all eight files, including players eliminated before the first action.
+    with ExitStack() as stack:
+        output_handles = {
+            player_id: stack.enter_context(path.open("w", encoding="utf-8"))
+            for player_id, path in output_paths.items()
+        }
+        for seed in seeds:
+            logged = audit_seed(policy, device, seed, output_handles, args.max_steps)
+            count += logged
+            print(f"seed={seed}: {logged} registros jogador/step")
+
+    print(f"Relatórios por jogador: {output_dir}")
+    for player_id, path in output_paths.items():
+        print(f"  jogador {player_id}: {path}")
     print(f"Seeds: {len(seeds)} | registros jogador/step: {count}")
 
 
