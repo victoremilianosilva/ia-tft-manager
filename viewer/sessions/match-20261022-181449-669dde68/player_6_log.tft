@@ -1,0 +1,2460 @@
+==========================================================
+TFT AI LOG · JOGADOR 6
+Partida: 669dde68-bdc9-4705-8019-58bdb6b105dc
+Seed: 20261016 | Política: determinística
+Checkpoint SHA-256: b1a793f5498177a61c477e1a23341326d4c7d3974c682b54d2f05a817c75ca34
+Impacto (i): custo × estrelas × 2 (contribuição nativa da engine)
+==========================================================
+--- INÍCIO DA PARTIDA · JOGADOR 6 ---
+[18:14:50] MOVE Bench -> Board: Veigar (i:2.0) <-> Vazio | Rew: +0.31
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Veigar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 4.32, Replicator 0.68
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Veigar | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=— -> TFT17_Veigar | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=SIM | fit=5.00 | Meeple=4.32, Replicator=0.68
+[18:14:51] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Veigar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 4.32, Replicator 0.68
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Veigar | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Veigar -> TFT17_Veigar | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[18:14:57] --- FIM DO ROUND 1-1 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Veigar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 4.32, Replicator 0.68
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:14:57] 🛒 LOJA: Leona(i:2.0), Lissandra(i:2.0), Pantheon(i:4.0), Rek'Sai(i:2.0), Rek'Sai(i:2.0)
+[18:14:57] COMPROU: Pantheon (Custo 2 | i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.43, Replicator 1.33, Brawler 0.12, Timebreaker 0.12
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pantheon, TFT17_Veigar | CORE TRAITS: Replicator
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Veigar -> TFT17_Pantheon | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pantheon | core=SIM | fit=1.57 | Timebreaker=0.12, Brawler=0.12, Replicator=1.33
+[18:14:58] MOVE Bench -> Board: Pantheon (i:4.0) <-> Vazio | Rew: +0.31
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 2.62, Replicator 1.97, Brawler 0.20, Timebreaker 0.20
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pantheon, TFT17_Veigar | CORE TRAITS: Replicator
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pantheon | core=SIM | fit=2.38 | Timebreaker=0.20, Brawler=0.20, Replicator=1.97
+[18:14:59] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Replicator 2.44, Meeple 2.03, Brawler 0.26, Timebreaker 0.26
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pantheon, TFT17_Veigar | CORE TRAITS: Replicator
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+
+[18:15:04] --- FIM DO ROUND 1-2 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Replicator 3.61, Meeple 0.56, Brawler 0.42, Timebreaker 0.42
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:15:04] 🛒 LOJA: Caitlyn(i:2.0), Lissandra(i:2.0), Teemo(i:2.0), Meepsie(i:4.0), Jinx(i:4.0)
+[18:15:04] COMPROU: Meepsie (Custo 2 | i:4.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Replicator 3.53, Meeple 0.55, Brawler 0.41, Timebreaker 0.41, Shepherd 0.11
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pantheon, TFT17_IvernMinion, TFT17_Veigar | CORE TRAITS: Replicator, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Meepsie | core=SIM | fit=0.66 | Meeple=0.55, Shepherd=0.11
+[18:15:05] MOVE Bench -> Board: Meepsie (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_IvernMinion | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Replicator 2.65, Meeple 1.36, Brawler 0.40, Timebreaker 0.40, Shepherd 0.19
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_IvernMinion, TFT17_Pantheon, TFT17_Veigar | CORE TRAITS: Meeple, Replicator
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pantheon -> TFT17_IvernMinion | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Meepsie | core=SIM | fit=1.55 | Meeple=1.36, Shepherd=0.19
+[18:15:06] MOVE Bench -> Board: Pantheon (i:4.0) <-> Vazio | Rew: +0.54
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_IvernMinion | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Replicator 2.73, Meeple 1.28, Brawler 0.38, Timebreaker 0.38, Shepherd 0.24
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_IvernMinion, TFT17_Pantheon, TFT17_Veigar | CORE TRAITS: Meeple, Replicator
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_IvernMinion -> TFT17_IvernMinion | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pantheon | core=SIM | fit=3.49 | Timebreaker=0.38, Brawler=0.38, Replicator=2.73
+[18:15:07] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_IvernMinion | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Replicator 2.78, Meeple 1.22, Brawler 0.36, Timebreaker 0.36, Shepherd 0.27
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_IvernMinion, TFT17_Pantheon, TFT17_Veigar | CORE TRAITS: Meeple, Replicator
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_IvernMinion -> TFT17_IvernMinion | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+
+[18:15:11] --- FIM DO ROUND 1-3 | GOLD: 3 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_IvernMinion | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Replicator 2.88, Meeple 1.12, Brawler 0.34, Timebreaker 0.34, Shepherd 0.33
+    RENDA PRÓXIMO ROUND: +3 base, +0 juros, +0 sequência, +0 vitória (total: +3)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Mee|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:15:11] 🛒 LOJA: Jax(i:4.0), Veigar(i:2.0), Veigar(i:2.0), Poppy(i:2.0), Poppy(i:2.0)
+[18:15:12] COMPROU: Jax (Custo 2 | i:4.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_IvernMinion | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Replicator 2.88, Meeple 1.12, Brawler 0.33, Timebreaker 0.33, Shepherd 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_IvernMinion, TFT17_Pantheon, TFT17_Jax | CORE TRAITS: Meeple, Replicator
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_IvernMinion -> TFT17_IvernMinion | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=0.00 | nenhum trait de foco
+[18:15:12] MOVE Bench -> Board: Jax (i:4.0) <-> Veigar (i:2.0) | Rew: -0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_IvernMinion | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Replicator 2.92, Meeple 0.98, Brawler 0.37, Timebreaker 0.37, Shepherd 0.36
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_IvernMinion, TFT17_Pantheon, TFT17_Jax | CORE TRAITS: Meeple, Replicator
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_IvernMinion -> TFT17_IvernMinion | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=0.00 | nenhum trait de foco
+[18:15:13] VENDEU: Veigar (i:2.0)       | Rew: +0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_IvernMinion | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Replicator 2.96, Meeple 0.86, Brawler 0.39, Timebreaker 0.39, Shepherd 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_IvernMinion, TFT17_Pantheon, TFT17_Jax | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_IvernMinion -> TFT17_IvernMinion | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=não | fit=3.82 | Meeple=0.86, Replicator=2.96
+[18:15:14] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_IvernMinion | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Replicator 2.98, Meeple 0.77, Brawler 0.42, Timebreaker 0.42, Shepherd 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_IvernMinion, TFT17_Pantheon, TFT17_Jax | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_IvernMinion -> TFT17_IvernMinion | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +3 | juros +0 | sequência +0 | vitória +0
+
+[18:15:18] --- FIM DO ROUND 1-4 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_IvernMinion | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Replicator 3.05, Meeple 0.52, Brawler 0.47, Timebreaker 0.47, Shepherd 0.47
+    RENDA PRÓXIMO ROUND: +4 base, +0 juros, +0 sequência, +0 vitória (total: +4)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Mee|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:15:18] 🛒 LOJA: Akali(i:4.0), Talon(i:2.0), Lulu(i:6.0), Aatrox(i:2.0), Twisted Fate(i:2.0)
+[18:15:19] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_IvernMinion | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Replicator 3.06, Meeple 0.51, Brawler 0.48, Timebreaker 0.48, Shepherd 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_IvernMinion, TFT17_Pantheon, TFT17_Jax | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_IvernMinion -> TFT17_IvernMinion | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +4 | juros +0 | sequência +0 | vitória +0
+[18:15:19] COMPROU: Twisted Fate (Custo 1 | i:2.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_IvernMinion | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Replicator 2.59, Stargazer 0.85, Meeple 0.54, Brawler 0.51, Timebreaker 0.51
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_IvernMinion, TFT17_Pantheon, TFT17_Jax | CORE TRAITS: Stargazer
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_IvernMinion -> TFT17_IvernMinion | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=0.85 | Stargazer=0.85
+[18:15:20] VENDEU: Twisted Fate (i:2.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_IvernMinion | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Replicator 2.71, Stargazer 0.76, Meeple 0.53, Brawler 0.50, Timebreaker 0.50
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_IvernMinion, TFT17_Pantheon, TFT17_Jax | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_IvernMinion -> TFT17_IvernMinion | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=0.76 | Stargazer=0.76
+[18:15:21] COMPROU: Akali (Custo 2 | i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_IvernMinion | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Replicator 2.79, Stargazer 0.69, Meeple 0.52, Brawler 0.50, Timebreaker 0.50
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_IvernMinion, TFT17_Pantheon, TFT17_Jax | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_IvernMinion -> TFT17_IvernMinion | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=não | fit=0.00 | nenhum trait de foco
+[18:15:21] VENDEU: Akali (i:4.0)        | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_IvernMinion | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Replicator 2.86, Stargazer 0.64, Meeple 0.51, Brawler 0.50, Timebreaker 0.50
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_IvernMinion, TFT17_Pantheon, TFT17_Jax | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_IvernMinion -> TFT17_IvernMinion | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=não | fit=0.00 | nenhum trait de foco
+[18:15:22] COMPROU: Talon (Custo 1 | i:2.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_IvernMinion | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Replicator 2.26, Stargazer 1.27, Meeple 0.50, Brawler 0.49, Timebreaker 0.49
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_IvernMinion, TFT17_Pantheon, TFT17_Jax | CORE TRAITS: Stargazer
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_IvernMinion -> TFT17_IvernMinion | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Talon | core=não | fit=1.27 | Stargazer=1.27
+[18:15:23] VENDEU: Talon (i:2.0)        | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_IvernMinion | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Replicator 2.46, Stargazer 1.07, Meeple 0.49, Brawler 0.49, Timebreaker 0.49
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_IvernMinion, TFT17_Pantheon, TFT17_Jax | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_IvernMinion -> TFT17_IvernMinion | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Talon | core=não | fit=1.07 | Stargazer=1.07
+[18:15:23] COMPROU: Aatrox (Custo 1 | i:2.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_IvernMinion | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Replicator 2.11, Stargazer 0.99, Bastion 0.85, Meeple 0.53, Brawler 0.52
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_IvernMinion, TFT17_Pantheon, TFT17_Jax | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_IvernMinion -> TFT17_IvernMinion | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Aatrox | core=não | fit=0.85 | Bastion=0.85
+[18:15:24] MOVE Bench -> Board: Aatrox (i:2.0) <-> Vazio | Rew: +0.48
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_IvernMinion | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Replicator 1.62, Bastion 1.58, Stargazer 0.82, Meeple 0.49, Brawler 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_IvernMinion, TFT17_Pantheon, TFT17_Jax | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_IvernMinion -> TFT17_IvernMinion | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Aatrox | core=não | fit=1.58 | Bastion=1.58
+
+[18:15:25] --- FIM DO ROUND 2-1 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_IvernMinion | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.48, Replicator 1.02, Stargazer 0.61, Meeple 0.44, Brawler 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Mee|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0] 
+ [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:15:25] 🛒 LOJA: Miss Fortune(i:6.0), Zoe(i:4.0), Gragas(i:4.0), Teemo(i:2.0), Briar(i:2.0)
+[18:15:26] BUY XP                       | Rew: +1.51
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_IvernMinion | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.75, Replicator 0.84, Stargazer 0.55, Meeple 0.43, Brawler 0.43
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_IvernMinion, TFT17_Pantheon, TFT17_Jax | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_IvernMinion -> TFT17_IvernMinion | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[18:15:26] COMPROU: Miss Fortune (Custo 3 | i:6.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.92, Replicator 0.75, Stargazer 0.50, Meeple 0.42, Brawler 0.42
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_IvernMinion, TFT17_Pantheon | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_IvernMinion -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=0.75 | Replicator=0.75
+[18:15:27] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Meepsie (i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.91, Replicator 0.86, Stargazer 0.45, Meeple 0.39, Brawler 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=0.86 | Replicator=0.86
+[18:15:28] MOVE Bench -> Board: Meepsie (i:4.0) <-> Jax (i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.21, Replicator 1.58, Stargazer 0.43, Meeple 0.39, Brawler 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Meepsie | core=SIM | fit=0.39 | Meeple=0.39
+[18:15:28] MOVE Bench -> Board: Jax (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.21
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.54, Replicator 1.27, Stargazer 0.42, Meeple 0.39, Brawler 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Jax | core=não | fit=2.96 | Stargazer=0.42, Bastion=2.54
+[18:15:29] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Pantheon (i:4.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.77, Replicator 1.05, Stargazer 0.41, Meeple 0.39, Brawler 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_IvernMinion, TFT17_Pantheon | CORE TRAITS: Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=1.05 | Replicator=1.05
+[18:15:30] MOVE Bench -> Board: Pantheon (i:4.0) <-> Jax (i:4.0) | Rew: +0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.11, Replicator 1.71, Stargazer 0.40, Meeple 0.39, Brawler 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Pantheon | core=SIM | fit=2.10 | Brawler=0.39, Replicator=1.71
+[18:15:31] MOVE Bench -> Board: Jax (i:4.0) <-> Meepsie (i:4.0) | Rew: -0.16
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.36, Replicator 1.52, Stargazer 0.38, Meeple 0.37, Brawler 0.37
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Jax | core=não | fit=2.74 | Stargazer=0.38, Bastion=2.36
+[18:15:31] MOVE Bench -> Board: Meepsie (i:4.0) <-> Vazio | Rew: +0.54
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.53, Replicator 1.39, Stargazer 0.36, Meeple 0.36, Brawler 0.36
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Meepsie | core=SIM | fit=0.36 | Meeple=0.36
+
+[18:15:32] --- FIM DO ROUND 2-2 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.72, Replicator 1.24, Stargazer 0.35, Meeple 0.34, Brawler 0.34
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0] 
+ [Aat|F|1*|i:2.0]  [Mee|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:15:32] 🛒 LOJA: Meepsie(i:4.0), Maokai(i:6.0), Leona(i:2.0), Akali(i:4.0), Ezreal(i:2.0)
+[18:15:33] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.78, Replicator 1.20, Stargazer 0.34, Meeple 0.34, Brawler 0.34
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[18:15:33] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.81, Replicator 1.17, Stargazer 0.34, Meeple 0.34, Brawler 0.34
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+
+[18:15:39] --- FIM DO ROUND 2-3 | GOLD: 10 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Replicator 1.11, Stargazer 0.33, Meeple 0.33, Brawler 0.33
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0] 
+ [Aat|F|1*|i:2.0]  [Mee|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:15:39] 🛒 LOJA: Maokai(i:6.0), Aatrox(i:2.0), Twisted Fate(i:2.0), Twisted Fate(i:2.0), Briar(i:2.0)
+[18:15:40] BUY XP                       | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Replicator 1.11, Stargazer 0.33, Meeple 0.33, Brawler 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 6 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[18:15:40] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Replicator 1.11, Stargazer 0.33, Meeple 0.33, Brawler 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[18:15:41] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Replicator 1.11, Stargazer 0.33, Meeple 0.33, Brawler 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +1
+
+[18:15:46] --- FIM DO ROUND 2-4 | GOLD: 8 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Replicator 1.11, Stargazer 0.33, Meeple 0.33, Brawler 0.33
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0] 
+ [Aat|F|1*|i:2.0]  [Mee|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:15:46] 🛒 LOJA: Leona(i:2.0), Zoe(i:4.0), Pyke(i:4.0), Rek'Sai(i:2.0), Poppy(i:2.0)
+[18:15:47] BUY XP                       | Rew: +0.51
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Replicator 1.11, Stargazer 0.33, Meeple 0.33, Brawler 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:15:47] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Replicator 1.11, Stargazer 0.33, Meeple 0.33, Brawler 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:15:48] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Replicator 1.11, Stargazer 0.33, Meeple 0.33, Brawler 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[18:15:53] --- FIM DO ROUND 2-5 | GOLD: 7 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Replicator 1.11, Stargazer 0.33, Meeple 0.33, Brawler 0.33
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0] 
+ [Aat|F|1*|i:2.0]  [Mee|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:15:53] 🛒 LOJA: Leona(i:2.0), Milio(i:4.0), Gragas(i:4.0), Urgot(i:6.0), Lulu(i:6.0)
+[18:15:54] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Replicator 1.11, Stargazer 0.33, Meeple 0.33, Brawler 0.33
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[18:15:54] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Replicator 1.11, Stargazer 0.33, Meeple 0.33, Brawler 0.33
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+
+[18:16:00] --- FIM DO ROUND 2-6 | GOLD: 11 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Replicator 1.11, Stargazer 0.33, Meeple 0.33, Brawler 0.33
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +2 sequência, +1 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0] 
+ [Aat|F|1*|i:2.0]  [Mee|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:16:00] 🛒 LOJA: Urgot(i:6.0), Rhaast(i:6.0), Aatrox(i:2.0), Cho'Gath(i:2.0), Gnar(i:4.0)
+[18:16:01] BUY XP                       | Rew: -0.07
+    STRATEGY: WINSTREAK | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Replicator 1.11, Stargazer 0.33, Meeple 0.33, Brawler 0.33
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +5 | juros +0 | sequência +2 | vitória +1
+[18:16:02] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Replicator 1.11, Stargazer 0.33, Meeple 0.33, Brawler 0.33
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +2 | vitória +1
+[18:16:02] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Replicator 1.11, Stargazer 0.33, Meeple 0.33, Brawler 0.33
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +2 | vitória +1
+
+[18:16:07] --- FIM DO ROUND 2-7 | GOLD: 10 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Replicator 1.11, Stargazer 0.33, Meeple 0.33, Brawler 0.33
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +2 sequência, +0 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0] 
+ [Aat|F|1*|i:2.0]  [Mee|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:16:07] 🛒 LOJA: Bel'Veth(i:4.0), Fizz(i:6.0), Jax(i:4.0), Pantheon(i:4.0), Rammus(i:8.0)
+[18:16:08] BUY XP                       | Rew: -0.07
+    STRATEGY: WINSTREAK | COMP DIRECTION: — | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.65, Replicator 1.10, Stargazer 0.42, Meeple 0.42, Brawler 0.42
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 6 | renda base +5 | juros +0 | sequência +2 | vitória +0
+[18:16:09] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.47
+FOCUS WEIGHTS: Bastion 2.77, Replicator 0.99, Stargazer 0.41, Meeple 0.41, Brawler 0.41
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=— -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=0.00 -> 3.47
+    GOLD: 2 | renda base +5 | juros +0 | sequência +2 | vitória +0
+[18:16:09] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.47
+FOCUS WEIGHTS: Bastion 2.58, Replicator 1.03, Stargazer 0.46, Meeple 0.46, Brawler 0.46
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.47 -> 3.47
+    GOLD: 2 | renda base +5 | juros +0 | sequência +2 | vitória +0
+
+[18:16:14] --- FIM DO ROUND 3-1 | GOLD: 11 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.40
+FOCUS WEIGHTS: Bastion 2.55, Replicator 1.00, Stargazer 0.48, Brawler 0.48, Meeple 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +1 vitória (total: +9)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0] 
+ [Aat|F|1*|i:2.0]  [Mee|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:16:14] 🛒 LOJA: Twisted Fate(i:2.0), Lulu(i:6.0), Nasus(i:2.0), Veigar(i:2.0), Bel'Veth(i:4.0)
+[18:16:15] BUY XP                       | Rew: +0.43
+    STRATEGY: WINSTREAK | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.40
+FOCUS WEIGHTS: Bastion 2.72, Replicator 0.94, Stargazer 0.45, Brawler 0.45, Meeple 0.45
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.40 -> 3.40
+    GOLD: 7 | renda base +5 | juros +0 | sequência +3 | vitória +1
+[18:16:16] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.40
+FOCUS WEIGHTS: Bastion 2.55, Replicator 1.00, Stargazer 0.49, Brawler 0.49, Meeple 0.49
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Pantheon, TFT17_IvernMinion | CORE TRAITS: Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.40 -> 3.40
+    GOLD: 3 | renda base +5 | juros +0 | sequência +3 | vitória +1
+[18:16:16] COMPROU: Lulu (Custo 3 | i:6.0) | Rew: -0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.74
+FOCUS WEIGHTS: Bastion 2.23, Replicator 1.39, Stargazer 0.49, Brawler 0.44, Meeple 0.44
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_Pantheon | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.40 -> 2.74
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +1
+    FIT UNIDADE: Lulu | core=SIM | fit=1.88 | Stargazer=0.49, Replicator=1.39
+[18:16:16]  ⬆️ SINERGIA: REPLICATOR nível 1
+[18:16:17] MOVE Bench -> Board: Lulu (i:6.0) <-> Pantheon (i:4.0) | Rew: -0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Bastion | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.74
+FOCUS WEIGHTS: Bastion 1.69, Replicator 1.69, Stargazer 0.70, Brawler 0.46, Meeple 0.46
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.74 -> 2.74
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +1
+    FIT UNIDADE: Lulu | core=SIM | fit=2.39 | Stargazer=0.70, Replicator=1.69
+[18:16:18] MOVE Bench -> Board: Pantheon (i:4.0) <-> Jax (i:4.0) | Rew: -0.20
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.81
+FOCUS WEIGHTS: Replicator 2.33, Bastion 1.15, Stargazer 0.63, Brawler 0.45, Meeple 0.45
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_Pantheon | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Bastion -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.74 -> 2.81
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +1
+    FIT UNIDADE: Pantheon | core=SIM | fit=2.78 | Brawler=0.45, Replicator=2.33
+[18:16:18] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.81
+FOCUS WEIGHTS: Replicator 2.40, Bastion 0.96, Stargazer 0.64, Brawler 0.50, Meeple 0.50
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_Pantheon | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.81 -> 2.81
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +1
+[18:16:21] MOVE Bench -> Board: Jax (i:4.0) <-> Vazio | Rew: +0.24
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.22
+FOCUS WEIGHTS: Replicator 2.65, Bastion 0.76, Stargazer 0.71, Brawler 0.44, Meeple 0.44
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_Pantheon | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.99 -> 3.22
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +1
+    FIT UNIDADE: Jax | core=não | fit=1.47 | Stargazer=0.71, Bastion=0.76
+
+[18:16:21] --- FIM DO ROUND 3-2 | GOLD: 9 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.18
+FOCUS WEIGHTS: Replicator 2.54, Bastion 0.82, Stargazer 0.81, Brawler 0.41, Meeple 0.41
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +1 vitória (total: +9)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Lul|C|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Pan|T|1*|i:4.0] 
+ [Aat|F|1*|i:2.0]  [Mee|T|1*|i:4.0]  [Jax|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:16:21] 🛒 LOJA: Mordekaiser(i:4.0), Fizz(i:6.0), Lulu(i:6.0), Maokai(i:6.0), Miss Fortune(i:6.0)
+[18:16:22] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.18
+FOCUS WEIGHTS: Replicator 2.34, Bastion 0.89, Stargazer 0.88, Brawler 0.45, Meeple 0.45
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_Pantheon | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.18 -> 3.18
+    GOLD: 5 | renda base +5 | juros +0 | sequência +3 | vitória +1
+[18:16:23] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.16
+FOCUS WEIGHTS: Replicator 2.51, Stargazer 0.84, Bastion 0.84, Brawler 0.41, Meeple 0.41
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_Pantheon | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.18 -> 3.16
+    GOLD: 1 | renda base +5 | juros +0 | sequência +3 | vitória +1
+[18:16:23] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.16
+FOCUS WEIGHTS: Replicator 2.32, Stargazer 0.90, Bastion 0.90, Brawler 0.44, Meeple 0.44
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_Pantheon | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.16 -> 3.16
+    GOLD: 1 | renda base +5 | juros +0 | sequência +3 | vitória +1
+
+[18:16:28] --- FIM DO ROUND 3-3 | GOLD: 10 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.16
+FOCUS WEIGHTS: Replicator 2.32, Stargazer 0.90, Bastion 0.90, Brawler 0.44, Meeple 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +1 vitória (total: +9)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Lul|C|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Pan|T|1*|i:4.0] 
+ [Aat|F|1*|i:2.0]  [Mee|T|1*|i:4.0]  [Jax|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:16:28] 🛒 LOJA: Nunu & Willump(i:8.0), Fizz(i:6.0), Morgana(i:8.0), The Mighty Mech(i:8.0), Jax(i:4.0)
+[18:16:29] BUY XP                       | Rew: -0.07
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.16
+FOCUS WEIGHTS: Replicator 2.49, Stargazer 0.85, Bastion 0.85, Brawler 0.40, Meeple 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_Pantheon | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.16 -> 3.16
+    GOLD: 6 | renda base +5 | juros +0 | sequência +3 | vitória +1
+[18:16:30] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.16
+FOCUS WEIGHTS: Replicator 2.32, Stargazer 0.90, Bastion 0.90, Brawler 0.44, Meeple 0.44
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_Pantheon | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.16 -> 3.16
+    GOLD: 2 | renda base +5 | juros +0 | sequência +3 | vitória +1
+[18:16:30] COMPROU: Jax (Custo 2 | i:4.0) | Rew: +0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.32
+FOCUS WEIGHTS: Replicator 2.49, Stargazer 0.85, Bastion 0.85, Brawler 0.40, Meeple 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_Pantheon | CORE TRAITS: Stargazer, Replicator, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.16 -> 3.32
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +1
+    FIT UNIDADE: Jax | core=não | fit=1.70 | Stargazer=0.85, Bastion=0.85
+[18:16:30]  ⬆️ SINERGIA: BASTION nível 1
+[18:16:30]  ⬆️ SINERGIA: STARGAZER nível 1
+[18:16:31] MOVE Bench -> Board: Jax (i:4.0) <-> Lulu (i:6.0) | Rew: -0.04
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.32
+FOCUS WEIGHTS: Replicator 2.31, Stargazer 0.91, Bastion 0.90, Brawler 0.44, Meeple 0.44
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_Pantheon | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.32 -> 3.32
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +1
+    FIT UNIDADE: Jax | core=não | fit=1.81 | Stargazer=0.91, Bastion=0.90
+[18:16:32] MOVE Bench -> Board: Lulu (i:6.0) <-> Miss Fortune (i:6.0) | Rew: +0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.31
+FOCUS WEIGHTS: Replicator 2.48, Stargazer 0.86, Bastion 0.85, Brawler 0.40, Meeple 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_Pantheon | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.32 -> 3.31
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +1
+    FIT UNIDADE: Lulu | core=SIM | fit=3.34 | Stargazer=0.86, Replicator=2.48
+[18:16:33] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Jax (i:4.0) | Rew: +0.09
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.31
+FOCUS WEIGHTS: Replicator 2.31, Stargazer 0.91, Bastion 0.90, Brawler 0.44, Meeple 0.44
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_Pantheon | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.31 -> 3.31
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +1
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=2.31 | Replicator=2.31
+[18:16:33] MOVE Bench -> Board: Jax (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.22
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.31
+FOCUS WEIGHTS: Replicator 2.48, Stargazer 0.86, Bastion 0.85, Brawler 0.40, Meeple 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.31 -> 3.31
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +1
+    FIT UNIDADE: Jax | core=não | fit=1.71 | Stargazer=0.86, Bastion=0.85
+[18:16:34] MOVE Bench -> Board: Pantheon (i:4.0) <-> Vazio | Rew: +0.52
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.31
+FOCUS WEIGHTS: Replicator 2.31, Stargazer 0.91, Bastion 0.90, Brawler 0.44, Meeple 0.44
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.31 -> 3.31
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +1
+    FIT UNIDADE: Pantheon | core=não | fit=2.75 | Brawler=0.44, Replicator=2.31
+[18:16:35] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.48, Stargazer 0.86, Bastion 0.85, Brawler 0.40, Meeple 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.31 -> 3.35
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +1
+
+[18:16:35] --- FIM DO ROUND 3-4 | GOLD: 8 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.48, Stargazer 0.86, Bastion 0.85, Brawler 0.40, Meeple 0.40
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Mis|T|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Lul|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0] 
+ [Aat|F|1*|i:2.0]  [Mee|T|1*|i:4.0]  [Jax|T|1*|i:4.0]  [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:16:35] 🛒 LOJA: Viktor(i:6.0), Lulu(i:6.0), Pyke(i:4.0), Ornn(i:6.0), Aurora(i:6.0)
+[18:16:36] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.31, Stargazer 0.91, Bastion 0.90, Brawler 0.44, Meeple 0.44
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.35 -> 3.35
+    GOLD: 4 | renda base +5 | juros +0 | sequência +3 | vitória +0
+[18:16:37] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.49, Stargazer 0.86, Bastion 0.85, Brawler 0.40, Meeple 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.35 -> 3.35
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+[18:16:37] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.31, Stargazer 0.91, Bastion 0.90, Brawler 0.44, Meeple 0.44
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.35 -> 3.35
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[18:16:42] --- FIM DO ROUND 3-5 | GOLD: 5 ---
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.31, Stargazer 0.91, Bastion 0.90, Brawler 0.44, Meeple 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Mis|T|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Lul|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0] 
+ [Aat|F|1*|i:2.0]  [Mee|T|1*|i:4.0]  [Jax|T|1*|i:4.0]  [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:16:42] 🛒 LOJA: Jinx(i:4.0), Gnar(i:4.0), Aurora(i:6.0), Aurora(i:6.0), Miss Fortune(i:6.0)
+[18:16:43] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.49, Stargazer 0.86, Bastion 0.85, Brawler 0.40, Meeple 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.35 -> 3.35
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[18:16:44] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.31, Stargazer 0.91, Bastion 0.90, Brawler 0.44, Meeple 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.35 -> 3.35
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[18:16:49] --- FIM DO ROUND 3-6 | GOLD: 7 ---
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.49, Stargazer 0.86, Bastion 0.85, Brawler 0.40, Meeple 0.40
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Mis|T|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Lul|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0] 
+ [Aat|F|1*|i:2.0]  [Mee|T|1*|i:4.0]  [Jax|T|1*|i:4.0]  [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:16:49] 🛒 LOJA: Jhin(i:10.0), Jinx(i:4.0), Meepsie(i:4.0), Morgana(i:8.0), Teemo(i:2.0)
+[18:16:50] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.31, Stargazer 0.91, Bastion 0.90, Brawler 0.44, Meeple 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.35 -> 3.35
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:16:51] COMPROU: Meepsie (Custo 2 | i:4.0) | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.74
+FOCUS WEIGHTS: Replicator 2.46, Stargazer 0.85, Bastion 0.84, Meeple 0.44, Brawler 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.35 -> 2.74
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Meepsie | core=SIM | fit=0.44 | Meeple=0.44
+[18:16:52] VENDEU: Meepsie (i:4.0)      | Rew: -0.14
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 2.74
+FOCUS WEIGHTS: Replicator 2.30, Stargazer 0.90, Bastion 0.90, Meeple 0.46, Brawler 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.74 -> 2.74
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Meepsie | core=SIM | fit=0.46 | Meeple=0.46
+[18:16:52] COMPROU: Teemo (Custo 1 | i:2.0) | Rew: -0.04
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.48, Stargazer 0.85, Bastion 0.85, Meeple 0.41, Brawler 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=2.74 -> 3.35
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Teemo | core=não | fit=0.00 | nenhum trait de foco
+[18:16:53] VENDEU: Teemo (i:2.0)        | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.31, Stargazer 0.91, Bastion 0.90, Meeple 0.45, Brawler 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.35 -> 3.35
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Teemo | core=não | fit=0.00 | nenhum trait de foco
+[18:16:54] COMPROU: Jinx (Custo 2 | i:4.0) | Rew: -0.04
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.48, Stargazer 0.86, Bastion 0.85, Meeple 0.41, Brawler 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.35 -> 3.35
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Jinx | core=não | fit=0.00 | nenhum trait de foco
+[18:16:54] VENDEU: Jinx (i:4.0)         | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.31, Stargazer 0.91, Bastion 0.90, Meeple 0.44, Brawler 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.35 -> 3.35
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Jinx | core=não | fit=0.00 | nenhum trait de foco
+[18:16:55] MOVE Board -> Board: Meepsie (i:4.0) <-> Vazio | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.48, Stargazer 0.86, Bastion 0.85, Meeple 0.40, Brawler 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.35 -> 3.35
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Meepsie | core=SIM | fit=0.40 | Meeple=0.40
+[18:16:56] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.31, Stargazer 0.91, Bastion 0.90, Meeple 0.44, Brawler 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.35 -> 3.35
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[18:16:56] --- FIM DO ROUND 3-7 | GOLD: 9 ---
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.31, Stargazer 0.91, Bastion 0.90, Meeple 0.44, Brawler 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Mee|T|1*|i:4.0]       [ . ]             [ . ]        [Mis|T|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Lul|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0] 
+ [Aat|F|1*|i:2.0]       [ . ]        [Jax|T|1*|i:4.0]  [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:16:56] 🛒 LOJA: Bel'Veth(i:4.0), Gwen(i:4.0), Maokai(i:6.0), Ezreal(i:2.0), Lulu(i:6.0)
+[18:16:57] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.49, Stargazer 0.86, Bastion 0.85, Meeple 0.40, Brawler 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.35 -> 3.35
+    GOLD: 5 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:16:58] BUY XP                       | Rew: +0.51
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.31, Stargazer 0.91, Bastion 0.90, Meeple 0.44, Brawler 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.35 -> 3.35
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:16:59] COMPROU: Ezreal (Custo 1 | i:2.0) | Rew: -0.04
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.49, Stargazer 0.86, Bastion 0.85, Meeple 0.40, Brawler 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.35 -> 3.35
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Ezreal | core=não | fit=0.00 | nenhum trait de foco
+[18:16:59] VENDEU: Ezreal (i:2.0)       | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.31, Stargazer 0.91, Bastion 0.90, Meeple 0.44, Brawler 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Replicator, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.35 -> 3.35
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Ezreal | core=não | fit=0.00 | nenhum trait de foco
+[18:17:00] MOVE Board -> Board: Jax (i:4.0) <-> Meepsie (i:4.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.49, Stargazer 0.86, Bastion 0.85, Meeple 0.40, Brawler 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.35 -> 3.35
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Jax | core=não | fit=1.71 | Stargazer=0.86, Bastion=0.85
+[18:17:01] MOVE Board -> Board: Meepsie (i:4.0) <-> Vazio | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.31, Stargazer 0.91, Bastion 0.90, Meeple 0.44, Brawler 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.35 -> 3.35
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Meepsie | core=SIM | fit=0.44 | Meeple=0.44
+[18:17:01] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.49, Stargazer 0.86, Bastion 0.85, Meeple 0.40, Brawler 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_MissFortune_TraitClone, TFT17_Lulu, TFT17_IvernMinion | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_MissFortune_TraitClone | lock=True -> True | strength=3.35 -> 3.35
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[18:17:04] --- FIM DO ROUND 4-1 | GOLD: 7 ---
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_MissFortune_TraitClone | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.49, Stargazer 0.86, Bastion 0.85, Meeple 0.40, Brawler 0.40
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]        [Mee|T|1*|i:4.0]  [Mis|T|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Lul|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aat|F|1*|i:2.0]       [ . ]        [Jax|T|1*|i:4.0]  [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:17:04] 🛒 LOJA: Tahm Kench(i:8.0), Urgot(i:6.0), Riven(i:8.0), Riven(i:8.0), Urgot(i:6.0)
+[18:17:04] COMPROU: Tahm Kench (Custo 4 | i:8.0) | Rew: -0.03
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 3.35
+FOCUS WEIGHTS: Replicator 2.30, Stargazer 0.90, Bastion 0.90, Brawler 0.47, Meeple 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Lulu | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_MissFortune_TraitClone -> TFT17_TahmKench | lock=True -> True | strength=3.35 -> 3.35
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Tahm Kench | core=SIM | fit=0.47 | Brawler=0.47
+[18:17:05] MOVE Bench -> Board: Tahm Kench (i:8.0) <-> Miss Fortune (i:6.0) | Rew: -0.19
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.77
+FOCUS WEIGHTS: Replicator 2.38, Stargazer 0.82, Bastion 0.82, Brawler 0.60, Meeple 0.39
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Lulu | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=3.35 -> 2.77
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Tahm Kench | core=SIM | fit=0.60 | Brawler=0.60
+[18:17:06] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Lulu (i:6.0) | Rew: -0.23
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.77
+FOCUS WEIGHTS: Replicator 2.16, Stargazer 0.85, Bastion 0.85, Brawler 0.73, Meeple 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Lulu | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.77 -> 2.77
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=2.16 | Replicator=2.16
+[18:17:06] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.65
+FOCUS WEIGHTS: Replicator 2.31, Stargazer 0.79, Bastion 0.79, Brawler 0.73, Meeple 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Lulu | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.77 -> 2.65
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[18:17:10] MOVE Bench -> Board: Lulu (i:6.0) <-> Vazio | Rew: +0.64
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.64
+FOCUS WEIGHTS: Replicator 2.11, Stargazer 0.83, Bastion 0.83, Brawler 0.82, Meeple 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Lulu | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.64 -> 2.64
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Lulu | core=SIM | fit=2.94 | Stargazer=0.83, Replicator=2.11
+
+[18:17:11] --- FIM DO ROUND 4-2 | GOLD: 10 ---
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.77
+FOCUS WEIGHTS: Replicator 2.11, Stargazer 0.83, Bastion 0.83, Brawler 0.83, Meeple 0.40
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]        [Mee|T|1*|i:4.0]  [Tah|T|1*|i:8.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aat|F|1*|i:2.0]  [Lul|C|1*|i:6.0]  [Jax|T|1*|i:4.0]  [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:17:11] 🛒 LOJA: Gragas(i:4.0), Kindred(i:8.0), Miss Fortune(i:6.0), Caitlyn(i:2.0), Bel'Veth(i:4.0)
+[18:17:11] BUY XP                       | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.77
+FOCUS WEIGHTS: Replicator 2.29, Stargazer 0.79, Bastion 0.78, Brawler 0.77, Meeple 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Lulu | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.77 -> 2.77
+    GOLD: 6 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[18:17:12] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.77
+FOCUS WEIGHTS: Replicator 2.11, Stargazer 0.83, Bastion 0.83, Brawler 0.83, Meeple 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Lulu | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.77 -> 2.77
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[18:17:13] COMPROU: Bel'Veth (Custo 2 | i:4.0) | Rew: -0.03
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.77
+FOCUS WEIGHTS: Replicator 2.29, Stargazer 0.79, Bastion 0.78, Brawler 0.77, Meeple 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Lulu | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.77 -> 2.77
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Bel'Veth | core=não | fit=0.00 | nenhum trait de foco
+[18:17:13] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Tahm Kench (i:8.0) | Rew: -0.22
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.77
+FOCUS WEIGHTS: Replicator 2.19, Stargazer 0.86, Bastion 0.86, Brawler 0.68, Meeple 0.42
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Lulu | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.77 -> 2.77
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Bel'Veth | core=não | fit=0.00 | nenhum trait de foco
+[18:17:14] MOVE Bench -> Board: Tahm Kench (i:8.0) <-> Miss Fortune (i:6.0) | Rew: -0.19
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.75
+FOCUS WEIGHTS: Replicator 2.32, Stargazer 0.80, Bastion 0.80, Brawler 0.70, Meeple 0.38
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Lulu | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.77 -> 2.75
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Tahm Kench | core=SIM | fit=0.70 | Brawler=0.70
+[18:17:15] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.75
+FOCUS WEIGHTS: Replicator 2.13, Stargazer 0.84, Bastion 0.84, Brawler 0.79, Meeple 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Lulu | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.75 -> 2.75
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+
+[18:17:18] --- FIM DO ROUND 4-3 | GOLD: 7 ---
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.74
+FOCUS WEIGHTS: Replicator 2.29, Stargazer 0.79, Bastion 0.78, Brawler 0.77, Meeple 0.37
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]        [Mee|T|1*|i:4.0]  [Bel|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Tah|T|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aat|F|1*|i:2.0]  [Lul|C|1*|i:6.0]  [Jax|T|1*|i:4.0]  [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Mis|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:17:18] 🛒 LOJA: Twisted Fate(i:2.0), Rhaast(i:6.0), Xayah(i:8.0), Caitlyn(i:2.0), Akali(i:4.0)
+[18:17:18] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Bel'Veth (i:4.0) | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.74
+FOCUS WEIGHTS: Replicator 2.11, Stargazer 0.83, Bastion 0.83, Brawler 0.82, Meeple 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Lulu | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.74 -> 2.74
+    GOLD: 7 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=2.11 | Replicator=2.11
+[18:17:19] VENDEU: Bel'Veth (i:4.0)     | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.77
+FOCUS WEIGHTS: Replicator 2.29, Stargazer 0.79, Bastion 0.78, Brawler 0.77, Meeple 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Lulu | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.74 -> 2.77
+    GOLD: 9 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Bel'Veth | core=não | fit=0.00 | nenhum trait de foco
+[18:17:20] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.77
+FOCUS WEIGHTS: Replicator 2.11, Stargazer 0.83, Bastion 0.83, Brawler 0.83, Meeple 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Lulu | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.77 -> 2.77
+    GOLD: 5 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[18:17:21] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.77
+FOCUS WEIGHTS: Replicator 2.29, Stargazer 0.79, Bastion 0.78, Brawler 0.77, Meeple 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Lulu | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.77 -> 2.77
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[18:17:21] COMPROU: Twisted Fate (Custo 1 | i:2.0) | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.77
+FOCUS WEIGHTS: Replicator 1.65, Stargazer 1.29, Bastion 0.83, Brawler 0.83, Meeple 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Lulu | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.77 -> 2.77
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Twisted Fate | core=não | fit=1.29 | Stargazer=1.29
+[18:17:22] VENDEU: Twisted Fate (i:2.0) | Rew: +0.09
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.68
+FOCUS WEIGHTS: Replicator 2.06, Stargazer 1.01, Bastion 0.78, Brawler 0.78, Meeple 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Lulu | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.77 -> 2.68
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Twisted Fate | core=não | fit=1.01 | Stargazer=1.01
+[18:17:23] COMPROU: Caitlyn (Custo 1 | i:2.0) | Rew: -0.03
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.68
+FOCUS WEIGHTS: Replicator 1.99, Stargazer 0.95, Bastion 0.83, Brawler 0.83, Meeple 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Lulu | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.68 -> 2.68
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Caitlyn | core=não | fit=0.00 | nenhum trait de foco
+[18:17:23] VENDEU: Caitlyn (i:2.0)      | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.74
+FOCUS WEIGHTS: Replicator 2.23, Stargazer 0.84, Bastion 0.78, Brawler 0.78, Meeple 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Lulu | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.68 -> 2.74
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Caitlyn | core=não | fit=0.00 | nenhum trait de foco
+[18:17:24] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.74
+FOCUS WEIGHTS: Replicator 2.08, Stargazer 0.86, Bastion 0.83, Brawler 0.83, Meeple 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Lulu | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.74 -> 2.74
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+
+[18:17:25] --- FIM DO ROUND 4-4 | GOLD: 7 ---
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.76
+FOCUS WEIGHTS: Replicator 2.10, Stargazer 0.84, Bastion 0.83, Brawler 0.83, Meeple 0.40
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]        [Mee|T|1*|i:4.0]  [Mis|T|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Tah|T|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aat|F|1*|i:2.0]  [Lul|C|1*|i:6.0]  [Jax|T|1*|i:4.0]  [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:17:25] 🛒 LOJA: Pantheon(i:4.0), Meepsie(i:4.0), Milio(i:4.0), Leona(i:2.0), Illaoi(i:6.0)
+[18:17:25] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.76
+FOCUS WEIGHTS: Replicator 2.28, Stargazer 0.79, Bastion 0.78, Brawler 0.77, Meeple 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Lulu | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.76 -> 2.76
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:17:26] COMPROU: Illaoi (Custo 3 | i:6.0) | Rew: -0.03
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.76
+FOCUS WEIGHTS: Replicator 2.11, Stargazer 0.83, Bastion 0.83, Brawler 0.83, Meeple 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Illaoi | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.76 -> 2.76
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Illaoi | core=SIM | fit=0.00 | nenhum trait de foco
+[18:17:27] MOVE Bench -> Board: Illaoi (i:6.0) <-> Miss Fortune (i:6.0) | Rew: -0.20
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.74
+FOCUS WEIGHTS: Replicator 2.28, Stargazer 0.79, Bastion 0.78, Brawler 0.78, Meeple 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.76 -> 2.74
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Illaoi | core=SIM | fit=0.00 | nenhum trait de foco
+[18:17:28] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Tahm Kench (i:8.0) | Rew: +0.07
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.74
+FOCUS WEIGHTS: Replicator 2.18, Stargazer 0.86, Bastion 0.86, Brawler 0.68, Meeple 0.42
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.74 -> 2.74
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=2.18 | Replicator=2.18
+[18:17:28] MOVE Bench -> Board: Tahm Kench (i:8.0) <-> Illaoi (i:6.0) | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.78
+FOCUS WEIGHTS: Replicator 2.32, Stargazer 0.80, Bastion 0.80, Brawler 0.70, Meeple 0.38
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Illaoi | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.74 -> 2.78
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Tahm Kench | core=SIM | fit=0.70 | Brawler=0.70
+[18:17:29] MOVE Bench -> Board: Illaoi (i:6.0) <-> Miss Fortune (i:6.0) | Rew: -0.20
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.78
+FOCUS WEIGHTS: Replicator 2.13, Stargazer 0.84, Bastion 0.84, Brawler 0.79, Meeple 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.78 -> 2.78
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Illaoi | core=SIM | fit=0.00 | nenhum trait de foco
+[18:17:30] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Tahm Kench (i:8.0) | Rew: +0.07
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.72
+FOCUS WEIGHTS: Replicator 2.37, Stargazer 0.82, Bastion 0.81, Brawler 0.62, Meeple 0.38
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Illaoi | CORE TRAITS: Stargazer, Bastion, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.78 -> 2.72
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=2.37 | Replicator=2.37
+[18:17:30] MOVE Bench -> Board: Tahm Kench (i:8.0) <-> Jax (i:4.0) | Rew: +0.04
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.72
+FOCUS WEIGHTS: Replicator 2.16, Stargazer 0.85, Bastion 0.85, Brawler 0.74, Meeple 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Illaoi | CORE TRAITS: Replicator, Bastion, Stargazer
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.72 -> 2.72
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Tahm Kench | core=SIM | fit=0.74 | Brawler=0.74
+[18:17:31] VENDEU: Jax (i:4.0)          | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.63
+FOCUS WEIGHTS: Replicator 2.31, Stargazer 0.79, Bastion 0.79, Brawler 0.74, Meeple 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Illaoi | CORE TRAITS: Replicator, Brawler, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.72 -> 2.63
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Jax | core=não | fit=1.58 | Stargazer=0.79, Bastion=0.79
+[18:17:31]  ⬇️ SINERGIA: BASTION nível 0
+[18:17:31]  ⬇️ SINERGIA: STARGAZER nível 0
+
+[18:17:32] --- FIM DO ROUND 4-5 | GOLD: 9 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.62
+FOCUS WEIGHTS: Replicator 2.30, Stargazer 0.78, Bastion 0.78, Brawler 0.77, Meeple 0.37
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Tah|T|1*|i:8.0]       [ . ]        [Mee|T|1*|i:4.0]  [Mis|T|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aat|F|1*|i:2.0]  [Lul|C|1*|i:6.0]  [Jax|T|1*|i:4.0]  [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:17:32] 🛒 LOJA: Fizz(i:6.0), Veigar(i:2.0), Riven(i:8.0), The Mighty Mech(i:8.0), Milio(i:4.0)
+[18:17:32] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.62
+FOCUS WEIGHTS: Replicator 2.12, Stargazer 0.83, Bastion 0.83, Brawler 0.82, Meeple 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Illaoi | CORE TRAITS: Replicator, Brawler, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.62 -> 2.62
+    GOLD: 5 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[18:17:33] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.62
+FOCUS WEIGHTS: Replicator 2.29, Stargazer 0.78, Bastion 0.78, Brawler 0.77, Meeple 0.37
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Illaoi | CORE TRAITS: Replicator, Brawler, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.62 -> 2.62
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[18:17:34] COMPROU: Veigar (Custo 1 | i:2.0) | Rew: +0.04
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.62
+FOCUS WEIGHTS: Replicator 2.10, Stargazer 0.82, Bastion 0.82, Brawler 0.82, Meeple 0.43
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Illaoi | CORE TRAITS: Replicator, Brawler, Meeple
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.62 -> 2.62
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Veigar | core=não | fit=2.53 | Meeple=0.43, Replicator=2.10
+[18:17:35] VENDEU: Veigar (i:2.0)       | Rew: +0.07
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.62
+FOCUS WEIGHTS: Replicator 2.29, Stargazer 0.78, Bastion 0.78, Brawler 0.77, Meeple 0.38
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Illaoi | CORE TRAITS: Replicator, Brawler, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.62 -> 2.62
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Veigar | core=não | fit=2.67 | Meeple=0.38, Replicator=2.29
+[18:17:35] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.62
+FOCUS WEIGHTS: Replicator 2.11, Stargazer 0.83, Bastion 0.83, Brawler 0.83, Meeple 0.41
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Illaoi | CORE TRAITS: Replicator, Brawler, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.62 -> 2.62
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+
+[18:17:39] --- FIM DO ROUND 4-6 | GOLD: 6 ---
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.62
+FOCUS WEIGHTS: Replicator 2.11, Stargazer 0.83, Brawler 0.83, Bastion 0.83, Meeple 0.40
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Tah|T|1*|i:8.0]       [ . ]        [Mee|T|1*|i:4.0]  [Mis|T|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aat|F|1*|i:2.0]  [Lul|C|1*|i:6.0]  [Jax|T|1*|i:4.0]  [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:17:39] 🛒 LOJA: Master Yi(i:8.0), LeBlanc(i:8.0), Tahm Kench(i:8.0), Ornn(i:6.0), Illaoi(i:6.0)
+[18:17:40] COMPROU: Tahm Kench (Custo 4 | i:8.0) | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.70
+FOCUS WEIGHTS: Replicator 2.29, Brawler 0.78, Stargazer 0.78, Bastion 0.78, Meeple 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Illaoi | CORE TRAITS: Brawler, Replicator, Oracle
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.62 -> 2.70
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Tahm Kench | core=SIM | fit=0.78 | Brawler=0.78
+[18:17:40]  ⬆️ SINERGIA: BRAWLER nível 1
+[18:17:40] MOVE Bench -> Board: Tahm Kench (i:8.0) <-> Miss Fortune (i:6.0) | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.70
+FOCUS WEIGHTS: Replicator 2.11, Brawler 0.83, Stargazer 0.83, Bastion 0.83, Meeple 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Brawler, Replicator, Oracle
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.70 -> 2.70
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Tahm Kench | core=SIM | fit=0.83 | Brawler=0.83
+[18:17:41] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Illaoi (i:6.0) | Rew: +0.08
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.71
+FOCUS WEIGHTS: Replicator 2.29, Brawler 0.78, Stargazer 0.78, Bastion 0.78, Meeple 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Illaoi | CORE TRAITS: Brawler, Replicator, Oracle
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.70 -> 2.71
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=2.29 | Replicator=2.29
+[18:17:42] MOVE Bench -> Board: Illaoi (i:6.0) <-> Tahm Kench (i:8.0) | Rew: -0.19
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.71
+FOCUS WEIGHTS: Replicator 2.11, Brawler 0.83, Stargazer 0.83, Bastion 0.83, Meeple 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Brawler, Replicator, Oracle
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.71 -> 2.71
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Illaoi | core=SIM | fit=0.00 | nenhum trait de foco
+[18:17:42] MOVE Bench -> Board: Tahm Kench (i:8.0) <-> Miss Fortune (i:6.0) | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.68
+FOCUS WEIGHTS: Replicator 2.29, Brawler 0.79, Stargazer 0.78, Bastion 0.78, Meeple 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Brawler, Replicator, Oracle
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.71 -> 2.68
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Tahm Kench | core=SIM | fit=0.79 | Brawler=0.79
+[18:17:43] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.68
+FOCUS WEIGHTS: Replicator 2.11, Brawler 0.83, Stargazer 0.83, Bastion 0.83, Meeple 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Brawler, Replicator, Oracle
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.68 -> 2.68
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[18:17:46] --- FIM DO ROUND 4-7 | GOLD: 7 ---
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.68
+FOCUS WEIGHTS: Replicator 2.29, Brawler 0.79, Stargazer 0.78, Bastion 0.78, Meeple 0.37
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Tah|T|1*|i:8.0]       [ . ]        [Mee|T|1*|i:4.0]  [Ill|T|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Tah|T|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aat|F|1*|i:2.0]  [Lul|C|1*|i:6.0]  [Jax|T|1*|i:4.0]  [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Mis|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:17:46] 🛒 LOJA: Kindred(i:8.0), The Mighty Mech(i:8.0), Gragas(i:4.0), Fizz(i:6.0), Fiora(i:10.0)
+[18:17:47] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Illaoi (i:6.0) | Rew: +0.08
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.68
+FOCUS WEIGHTS: Replicator 2.11, Brawler 0.83, Stargazer 0.83, Bastion 0.83, Meeple 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_MissFortune_TraitClone, TFT17_Illaoi | CORE TRAITS: Brawler, Replicator, Oracle
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.68 -> 2.68
+    GOLD: 7 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=2.11 | Replicator=2.11
+[18:17:47] MOVE Bench -> Board: Illaoi (i:6.0) <-> Tahm Kench (i:8.0) | Rew: -0.19
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.70
+FOCUS WEIGHTS: Replicator 2.29, Brawler 0.78, Stargazer 0.78, Bastion 0.78, Meeple 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Brawler, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.68 -> 2.70
+    GOLD: 7 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Illaoi | core=SIM | fit=0.00 | nenhum trait de foco
+[18:17:48] MOVE Bench -> Board: Tahm Kench (i:8.0) <-> Miss Fortune (i:6.0) | Rew: -0.14
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.70
+FOCUS WEIGHTS: Replicator 2.11, Brawler 0.83, Stargazer 0.83, Bastion 0.83, Meeple 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Brawler, Replicator, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.70 -> 2.70
+    GOLD: 7 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Tahm Kench | core=SIM | fit=0.83 | Brawler=0.83
+[18:17:49] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.68
+FOCUS WEIGHTS: Replicator 2.29, Brawler 0.79, Stargazer 0.78, Bastion 0.78, Meeple 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Brawler, Replicator, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.70 -> 2.68
+    GOLD: 7 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[18:17:53] --- FIM DO ROUND 5-1 | GOLD: 13 ---
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.68
+FOCUS WEIGHTS: Replicator 2.11, Brawler 0.83, Stargazer 0.83, Bastion 0.83, Meeple 0.40
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]        [Mee|T|1*|i:4.0]  [Tah|T|1*|i:8.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Tah|T|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aat|F|1*|i:2.0]  [Lul|C|1*|i:6.0]  [Jax|T|1*|i:4.0]  [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Mis|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:17:53] 🛒 LOJA: Fizz(i:6.0), Aurelion Sol(i:8.0), Diana(i:6.0), Illaoi(i:6.0), Meepsie(i:4.0)
+[18:17:54] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Tahm Kench (i:8.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.70
+FOCUS WEIGHTS: Replicator 2.29, Brawler 0.78, Stargazer 0.78, Bastion 0.78, Meeple 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Brawler, Replicator, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.68 -> 2.70
+    GOLD: 13 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=2.29 | Replicator=2.29
+[18:17:54] MOVE Bench -> Board: Tahm Kench (i:8.0) <-> Tahm Kench (i:8.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.70
+FOCUS WEIGHTS: Replicator 2.11, Brawler 0.83, Stargazer 0.83, Bastion 0.83, Meeple 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Brawler, Replicator, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.70 -> 2.70
+    GOLD: 13 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Tahm Kench | core=SIM | fit=0.83 | Brawler=0.83
+[18:17:55] MOVE Bench -> Board: Tahm Kench (i:8.0) <-> Miss Fortune (i:6.0) | Rew: -0.14
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.68
+FOCUS WEIGHTS: Replicator 2.29, Brawler 0.79, Stargazer 0.78, Bastion 0.78, Meeple 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Brawler, Replicator, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.70 -> 2.68
+    GOLD: 13 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Tahm Kench | core=SIM | fit=0.79 | Brawler=0.79
+[18:17:56] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.68
+FOCUS WEIGHTS: Replicator 2.11, Brawler 0.83, Stargazer 0.83, Bastion 0.83, Meeple 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Brawler, Replicator, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.68 -> 2.68
+    GOLD: 13 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[18:18:00] --- FIM DO ROUND 5-2 | GOLD: 20 ---
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.68
+FOCUS WEIGHTS: Replicator 2.29, Brawler 0.79, Stargazer 0.78, Bastion 0.78, Meeple 0.37
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +0 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]        [Mee|T|1*|i:4.0]  [Tah|T|1*|i:8.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Tah|T|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aat|F|1*|i:2.0]  [Lul|C|1*|i:6.0]  [Jax|T|1*|i:4.0]  [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Mis|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:18:00] 🛒 LOJA: Riven(i:8.0), Nunu & Willump(i:8.0), Mordekaiser(i:4.0), Samira(i:6.0), Karma(i:8.0)
+[18:18:01] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Tahm Kench (i:8.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.68
+FOCUS WEIGHTS: Replicator 2.11, Brawler 0.83, Stargazer 0.83, Bastion 0.83, Meeple 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Brawler, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.68 -> 2.68
+    GOLD: 20 | renda base +5 | juros +1 | sequência +0 | vitória +1
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=2.11 | Replicator=2.11
+[18:18:01] MOVE Bench -> Board: Tahm Kench (i:8.0) <-> Jax (i:4.0) | Rew: +0.09
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.58
+FOCUS WEIGHTS: Replicator 2.45, Brawler 0.84, Stargazer 0.66, Bastion 0.66, Meeple 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Brawler, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.68 -> 2.58
+    GOLD: 20 | renda base +5 | juros +1 | sequência +0 | vitória +1
+    FIT UNIDADE: Tahm Kench | core=SIM | fit=0.84 | Brawler=0.84
+[18:18:02] VENDEU: Jax (i:4.0)          | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.58
+FOCUS WEIGHTS: Replicator 2.39, Brawler 0.94, Stargazer 0.61, Bastion 0.61, Meeple 0.45
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Brawler, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.58 -> 2.58
+    GOLD: 22 | renda base +5 | juros +1 | sequência +0 | vitória +1
+    FIT UNIDADE: Jax | core=não | fit=1.22 | Stargazer=0.61, Bastion=0.61
+[18:18:03] BUY XP                       | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.62
+FOCUS WEIGHTS: Replicator 2.64, Brawler 0.91, Stargazer 0.51, Bastion 0.51, Meeple 0.43
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Brawler, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.58 -> 2.62
+    GOLD: 18 | renda base +5 | juros +1 | sequência +0 | vitória +1
+[18:18:03] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.62
+FOCUS WEIGHTS: Replicator 2.51, Brawler 0.98, Stargazer 0.52, Bastion 0.52, Meeple 0.47
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Brawler, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.62 -> 2.62
+    GOLD: 14 | renda base +5 | juros +1 | sequência +0 | vitória +1
+[18:18:04] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.66
+FOCUS WEIGHTS: Replicator 2.70, Brawler 0.93, Stargazer 0.46, Bastion 0.46, Meeple 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Brawler, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.62 -> 2.66
+    GOLD: 10 | renda base +5 | juros +1 | sequência +0 | vitória +1
+[18:18:05] BUY XP                       | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.66
+FOCUS WEIGHTS: Replicator 2.54, Brawler 0.99, Stargazer 0.49, Bastion 0.49, Meeple 0.48
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Brawler, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.66 -> 2.66
+    GOLD: 6 | renda base +5 | juros +1 | sequência +0 | vitória +1
+[18:18:06] BUY XP                       | Rew: +0.51
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.67
+FOCUS WEIGHTS: Replicator 2.72, Brawler 0.94, Stargazer 0.45, Bastion 0.45, Meeple 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Brawler, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.66 -> 2.67
+    GOLD: 2 | renda base +5 | juros +1 | sequência +0 | vitória +1
+[18:18:06] COMPROU: Mordekaiser (Custo 2 | i:4.0) | Rew: -0.04
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.67
+FOCUS WEIGHTS: Replicator 2.55, Brawler 0.99, Stargazer 0.49, Bastion 0.49, Meeple 0.48
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Brawler, Vanguard
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.67 -> 2.67
+    GOLD: 0 | renda base +5 | juros +1 | sequência +0 | vitória +1
+    FIT UNIDADE: Mordekaiser | core=não | fit=0.00 | nenhum trait de foco
+
+[18:18:07] --- FIM DO ROUND 5-3 | GOLD: 7 ---
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.67
+FOCUS WEIGHTS: Replicator 2.56, Brawler 1.00, Stargazer 0.48, Bastion 0.48, Meeple 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]        [Mee|T|1*|i:4.0]  [Mis|T|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Tah|T|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aat|F|1*|i:2.0]  [Lul|C|1*|i:6.0]  [Tah|T|1*|i:8.0]  [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Mor|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:18:07] 🛒 LOJA: Graves(i:10.0), LeBlanc(i:8.0), Jax(i:4.0), Bard(i:10.0), Illaoi(i:6.0)
+[18:18:08] MOVE Bench -> Board: Mordekaiser (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.24
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.64
+FOCUS WEIGHTS: Replicator 2.73, Brawler 0.94, Stargazer 0.44, Bastion 0.44, Meeple 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Brawler, Replicator, Vanguard
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.67 -> 2.64
+    GOLD: 7 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Mordekaiser | core=não | fit=0.00 | nenhum trait de foco
+[18:18:08] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Tahm Kench (i:8.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.64
+FOCUS WEIGHTS: Replicator 2.56, Brawler 1.00, Stargazer 0.48, Bastion 0.48, Meeple 0.48
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Brawler, Vanguard
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.64 -> 2.64
+    GOLD: 7 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=2.56 | Replicator=2.56
+[18:18:09] MOVE Bench -> Board: Tahm Kench (i:8.0) <-> Mordekaiser (i:4.0) | Rew: +0.08
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.67
+FOCUS WEIGHTS: Replicator 2.73, Brawler 0.94, Stargazer 0.44, Bastion 0.44, Meeple 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Brawler, Replicator, Vanguard
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.64 -> 2.67
+    GOLD: 7 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Tahm Kench | core=SIM | fit=0.94 | Brawler=0.94
+[18:18:10] MOVE Bench -> Board: Mordekaiser (i:4.0) <-> Miss Fortune (i:6.0) | Rew: -0.24
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.67
+FOCUS WEIGHTS: Replicator 2.56, Brawler 1.00, Stargazer 0.48, Bastion 0.48, Meeple 0.48
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Brawler, Replicator, Vanguard
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.67 -> 2.67
+    GOLD: 7 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Mordekaiser | core=não | fit=0.00 | nenhum trait de foco
+[18:18:11] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Tahm Kench (i:8.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.64
+FOCUS WEIGHTS: Replicator 2.73, Brawler 0.94, Stargazer 0.44, Bastion 0.44, Meeple 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Brawler, Vanguard
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.67 -> 2.64
+    GOLD: 7 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=2.73 | Replicator=2.73
+[18:18:11] MOVE Bench -> Board: Tahm Kench (i:8.0) <-> Vazio | Rew: +0.58
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_TahmKench | LOCK: LOCKED | STRENGTH: 2.64
+FOCUS WEIGHTS: Replicator 2.56, Brawler 1.00, Stargazer 0.48, Bastion 0.48, Meeple 0.48
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_TahmKench, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Brawler, Vanguard
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_TahmKench | lock=True -> True | strength=2.64 -> 2.64
+    GOLD: 7 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Tahm Kench | core=SIM | fit=1.00 | Brawler=1.00
+[18:18:12] COMPROU: Bard (Custo 5 | i:10.0) | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Bard | LOCK: LOCKED | STRENGTH: 2.75
+FOCUS WEIGHTS: Replicator 2.71, Brawler 0.93, Meeple 0.47, Stargazer 0.44, Bastion 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Bard, TFT17_TahmKench, TFT17_Illaoi | CORE TRAITS: Conduit, Replicator, Brawler
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_TahmKench -> TFT17_Bard | lock=True -> True | strength=2.64 -> 2.75
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Bard | core=SIM | fit=0.47 | Meeple=0.47
+[18:18:12]  ⬆️ SINERGIA: CONDUIT nível 1
+[18:18:13] MOVE Bench -> Board: Bard (i:10.0) <-> Miss Fortune (i:6.0) | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Bard | LOCK: LOCKED | STRENGTH: 2.75
+FOCUS WEIGHTS: Replicator 2.44, Brawler 0.95, Meeple 0.69, Stargazer 0.46, Bastion 0.46
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Bard, TFT17_TahmKench, TFT17_Illaoi | CORE TRAITS: Conduit, Replicator, Brawler
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_Bard -> TFT17_Bard | lock=True -> True | strength=2.75 -> 2.75
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Bard | core=SIM | fit=0.69 | Meeple=0.69
+[18:18:13] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Mordekaiser (i:4.0) | Rew: +0.08
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Bard | LOCK: LOCKED | STRENGTH: 2.77
+FOCUS WEIGHTS: Replicator 2.55, Brawler 0.88, Meeple 0.74, Stargazer 0.41, Bastion 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Bard, TFT17_TahmKench, TFT17_Illaoi | CORE TRAITS: Conduit, Replicator, Brawler
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_Bard -> TFT17_Bard | lock=True -> True | strength=2.75 -> 2.77
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Miss Fortune | core=não | fit=2.55 | Replicator=2.55
+
+[18:18:14] --- FIM DO ROUND 5-4 | GOLD: 8 ---
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Bard | LOCK: LOCKED | STRENGTH: 2.76
+FOCUS WEIGHTS: Replicator 2.51, Brawler 0.86, Meeple 0.82, Stargazer 0.41, Bastion 0.41
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]        [Mee|T|1*|i:4.0] [Bar|T|1*|i:10.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aat|F|1*|i:2.0]  [Lul|C|1*|i:6.0]  [Tah|T|1*|i:8.0]  [Pan|T|1*|i:4.0]       [ . ]        [Tah|T|1*|i:8.0]       [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Mor|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:18:14] 🛒 LOJA: Pantheon(i:4.0), Miss Fortune(i:6.0), Kindred(i:8.0), Nami(i:8.0), Nami(i:8.0)
+[18:18:15] VENDEU: Mordekaiser (i:4.0)  | Rew: +0.17
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Bard | LOCK: LOCKED | STRENGTH: 2.76
+FOCUS WEIGHTS: Replicator 2.33, Brawler 0.91, Meeple 0.88, Stargazer 0.44, Bastion 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Bard, TFT17_TahmKench, TFT17_Illaoi | CORE TRAITS: Replicator, Brawler, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_Bard -> TFT17_Bard | lock=True -> True | strength=2.76 -> 2.76
+    GOLD: 10 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Mordekaiser | core=não | fit=0.00 | nenhum trait de foco
+[18:18:15]  ⬇️ SINERGIA: CONDUIT nível 0
+[18:18:15] BUY XP                       | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Bard | LOCK: LOCKED | STRENGTH: 2.69
+FOCUS WEIGHTS: Replicator 2.50, Brawler 0.86, Meeple 0.84, Stargazer 0.40, Bastion 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Bard, TFT17_TahmKench, TFT17_Illaoi | CORE TRAITS: Replicator, Brawler, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_Bard -> TFT17_Bard | lock=True -> True | strength=2.76 -> 2.69
+    GOLD: 6 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:18:16] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Bard | LOCK: LOCKED | STRENGTH: 2.69
+FOCUS WEIGHTS: Replicator 2.32, Brawler 0.91, Meeple 0.90, Stargazer 0.44, Bastion 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Bard, TFT17_TahmKench, TFT17_Illaoi | CORE TRAITS: Replicator, Brawler, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_Bard -> TFT17_Bard | lock=True -> True | strength=2.69 -> 2.69
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:18:17] COMPROU: Pantheon (Custo 2 | i:4.0) | Rew: +0.08
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Bard | LOCK: LOCKED | STRENGTH: 2.95
+FOCUS WEIGHTS: Replicator 2.50, Brawler 0.86, Meeple 0.84, Stargazer 0.40, Bastion 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Bard, TFT17_TahmKench, TFT17_Illaoi | CORE TRAITS: Replicator, Brawler, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_Bard -> TFT17_Bard | lock=True -> True | strength=2.69 -> 2.95
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Pantheon | core=não | fit=3.35 | Brawler=0.86, Replicator=2.50
+[18:18:18] VENDEU: Pantheon (i:4.0)     | Rew: -0.03
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Bard | LOCK: LOCKED | STRENGTH: 2.95
+FOCUS WEIGHTS: Replicator 2.32, Brawler 0.91, Meeple 0.90, Stargazer 0.44, Bastion 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Bard, TFT17_TahmKench, TFT17_Illaoi | CORE TRAITS: Replicator, Brawler, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_Bard -> TFT17_Bard | lock=True -> True | strength=2.95 -> 2.95
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Pantheon | core=não | fit=3.23 | Brawler=0.91, Replicator=2.32
+[18:18:18] MOVE Board -> Board: Lulu (i:6.0) <-> Illaoi (i:6.0) | Rew: -0.15
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Bard | LOCK: LOCKED | STRENGTH: 2.69
+FOCUS WEIGHTS: Replicator 2.49, Brawler 0.86, Meeple 0.84, Stargazer 0.40, Bastion 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Bard, TFT17_TahmKench, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Brawler, Meeple
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_Bard -> TFT17_Bard | lock=True -> True | strength=2.95 -> 2.69
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Lulu | core=não | fit=2.90 | Stargazer=0.40, Replicator=2.49
+[18:18:19] MOVE Board -> Board: Illaoi (i:6.0) <-> Vazio | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Bard | LOCK: LOCKED | STRENGTH: 2.69
+FOCUS WEIGHTS: Replicator 2.32, Brawler 0.91, Meeple 0.90, Stargazer 0.44, Bastion 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Bard, TFT17_TahmKench, TFT17_Illaoi | CORE TRAITS: Replicator, Brawler, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_Bard -> TFT17_Bard | lock=True -> True | strength=2.69 -> 2.69
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Illaoi | core=SIM | fit=0.00 | nenhum trait de foco
+[18:18:20] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Bard | LOCK: LOCKED | STRENGTH: 2.69
+FOCUS WEIGHTS: Replicator 2.49, Brawler 0.86, Meeple 0.85, Stargazer 0.40, Bastion 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Bard, TFT17_TahmKench, TFT17_Illaoi | CORE TRAITS: Replicator, Brawler, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_Bard -> TFT17_Bard | lock=True -> True | strength=2.69 -> 2.69
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[18:18:21] --- FIM DO ROUND 5-5 | GOLD: 9 ---
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Bard | LOCK: LOCKED | STRENGTH: 2.69
+FOCUS WEIGHTS: Replicator 2.31, Brawler 0.91, Meeple 0.90, Stargazer 0.44, Bastion 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Lul|C|1*|i:6.0]  [Ill|T|1*|i:6.0]  [Mee|T|1*|i:4.0] [Bar|T|1*|i:10.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Mis|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aat|F|1*|i:2.0]       [ . ]        [Tah|T|1*|i:8.0]  [Pan|T|1*|i:4.0]       [ . ]        [Tah|T|1*|i:8.0]       [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:18:21] 🛒 LOJA: Mordekaiser(i:4.0), Kindred(i:8.0), Vex(i:10.0), Riven(i:8.0), Lulu(i:6.0)
+[18:18:22] COMPROU: Vex (Custo 5 | i:10.0) | Rew: -0.03
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Bard | LOCK: LOCKED | STRENGTH: 2.71
+FOCUS WEIGHTS: Replicator 2.47, Brawler 0.85, Meeple 0.84, Stargazer 0.45, Bastion 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Bard, TFT17_Vex, TFT17_TahmKench | CORE TRAITS: Replicator, Brawler, Stargazer
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_Bard -> TFT17_Bard | lock=True -> True | strength=2.69 -> 2.71
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Vex | core=SIM | fit=0.45 | Stargazer=0.45
+[18:18:23] MOVE Bench -> Board: Vex (i:10.0) <-> Bard (i:10.0) | Rew: +0.04
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.71
+FOCUS WEIGHTS: Replicator 2.29, Brawler 0.90, Meeple 0.71, Stargazer 0.67, Bastion 0.43
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Vex, TFT17_Bard, TFT17_TahmKench | CORE TRAITS: Replicator, Brawler, Stargazer
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_Bard -> TFT17_Vex | lock=True -> True | strength=2.71 -> 2.71
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Vex | core=SIM | fit=0.67 | Stargazer=0.67
+[18:18:23] MOVE Bench -> Board: Bard (i:10.0) <-> Miss Fortune (i:6.0) | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.75
+FOCUS WEIGHTS: Replicator 2.37, Brawler 0.82, Meeple 0.72, Stargazer 0.71, Bastion 0.38
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Vex, TFT17_Bard, TFT17_TahmKench | CORE TRAITS: Replicator, Brawler, Stargazer
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.71 -> 2.75
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Bard | core=SIM | fit=0.72 | Meeple=0.72
+[18:18:24] VENDEU: Miss Fortune (i:6.0) | Rew: +0.08
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.75
+FOCUS WEIGHTS: Replicator 1.70, Brawler 1.31, Meeple 0.80, Stargazer 0.79, Bastion 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Vex, TFT17_Bard, TFT17_TahmKench | CORE TRAITS: Brawler, Stargazer, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.75 -> 2.75
+    GOLD: 7 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Miss Fortune | core=não | fit=1.70 | Replicator=1.70
+[18:18:24]  ⬇️ SINERGIA: REPLICATOR nível 0
+[18:18:25] COMPROU: Riven (Custo 4 | i:8.0) | Rew: -0.03
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.46
+FOCUS WEIGHTS: Brawler 1.90, Replicator 1.20, Meeple 0.77, Stargazer 0.77, Bastion 0.38
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Vex, TFT17_Bard, TFT17_TahmKench | CORE TRAITS: Brawler, Stargazer, Replicator
+    COMP BEFORE -> AFTER: dir=Replicator -> Brawler | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.75 -> 2.46
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Riven | core=não | fit=0.00 | nenhum trait de foco
+[18:18:25] VENDEU: Riven (i:8.0)        | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.46
+FOCUS WEIGHTS: Brawler 1.90, Replicator 1.06, Meeple 0.82, Stargazer 0.82, Bastion 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Vex, TFT17_Bard, TFT17_TahmKench | CORE TRAITS: Brawler, Stargazer, Replicator
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.46 -> 2.46
+    GOLD: 7 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Riven | core=não | fit=0.00 | nenhum trait de foco
+[18:18:26] COMPROU: Lulu (Custo 3 | i:6.0) | Rew: +0.03
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.76
+FOCUS WEIGHTS: Brawler 1.76, Stargazer 1.20, Replicator 0.90, Meeple 0.77, Bastion 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Vex, TFT17_Bard, TFT17_TahmKench | CORE TRAITS: Stargazer, Replicator, Brawler
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.46 -> 2.76
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Lulu | core=não | fit=2.09 | Stargazer=1.20, Replicator=0.90
+[18:18:26]  ⬆️ SINERGIA: REPLICATOR nível 1
+[18:18:26]  ⬆️ SINERGIA: STARGAZER nível 1
+[18:18:27] VENDEU: Lulu (i:6.0)         | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.76
+FOCUS WEIGHTS: Brawler 1.82, Stargazer 1.06, Replicator 0.89, Meeple 0.82, Bastion 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Vex, TFT17_Bard, TFT17_TahmKench | CORE TRAITS: Brawler, Stargazer, Replicator
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.76 -> 2.76
+    GOLD: 7 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Lulu | core=não | fit=1.95 | Stargazer=1.06, Replicator=0.89
+[18:18:27]  ⬇️ SINERGIA: REPLICATOR nível 0
+[18:18:27]  ⬇️ SINERGIA: STARGAZER nível 0
+[18:18:27] COMPROU: Kindred (Custo 4 | i:8.0) | Rew: -0.03
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.56
+FOCUS WEIGHTS: Brawler 2.15, Stargazer 0.89, Replicator 0.81, Meeple 0.78, Bastion 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Vex, TFT17_Bard, TFT17_TahmKench | CORE TRAITS: Brawler, Stargazer, Replicator
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.76 -> 2.56
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Kindred | core=não | fit=0.00 | nenhum trait de foco
+
+[18:18:28] --- FIM DO ROUND 5-6 | GOLD: 9 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.60
+FOCUS WEIGHTS: Brawler 2.25, Stargazer 0.81, Replicator 0.79, Meeple 0.78, Bastion 0.37
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Lul|C|1*|i:6.0]  [Ill|T|1*|i:6.0]  [Mee|T|1*|i:4.0] [Vex|T|1*|i:10.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]       [Bar|T|1*|i:10.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aat|F|1*|i:2.0]       [ . ]        [Tah|T|1*|i:8.0]  [Pan|T|1*|i:4.0]       [ . ]        [Tah|T|1*|i:8.0]       [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Kin|1*|i:8.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:18:28] 🛒 LOJA: Rhaast(i:6.0), Miss Fortune(i:6.0), Corki(i:8.0), Jax(i:4.0), Shen(i:10.0)
+[18:18:29] VENDEU: Kindred (i:8.0)      | Rew: +0.18
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.60
+FOCUS WEIGHTS: Brawler 2.09, Stargazer 0.85, Replicator 0.83, Meeple 0.83, Bastion 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Vex, TFT17_Bard, TFT17_TahmKench | CORE TRAITS: Brawler, Stargazer, Replicator
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.60 -> 2.60
+    GOLD: 13 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Kindred | core=não | fit=0.00 | nenhum trait de foco
+[18:18:30] BUY XP                       | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.61
+FOCUS WEIGHTS: Brawler 2.28, Stargazer 0.79, Replicator 0.78, Meeple 0.78, Bastion 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Vex, TFT17_Bard, TFT17_TahmKench | CORE TRAITS: Brawler, Stargazer, Replicator
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.60 -> 2.61
+    GOLD: 9 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:18:30] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.61
+FOCUS WEIGHTS: Brawler 2.10, Stargazer 0.83, Replicator 0.83, Meeple 0.83, Bastion 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Vex, TFT17_Bard, TFT17_TahmKench | CORE TRAITS: Brawler, Stargazer, Replicator
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.61 -> 2.61
+    GOLD: 5 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:18:31] COMPROU: Shen (Custo 5 | i:10.0) | Rew: -0.03
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.61
+FOCUS WEIGHTS: Brawler 2.27, Stargazer 0.78, Replicator 0.78, Meeple 0.77, Bastion 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Brawler, Stargazer, Replicator
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Vex -> TFT17_Shen | lock=True -> True | strength=2.61 -> 2.61
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Shen | core=SIM | fit=0.40 | Bastion=0.40
+[18:18:32] MOVE Bench -> Board: Shen (i:10.0) <-> Vex (i:10.0) | Rew: -0.13
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.61
+FOCUS WEIGHTS: Brawler 2.09, Replicator 0.82, Meeple 0.82, Stargazer 0.65, Bastion 0.61
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Bard, TFT17_Vex | CORE TRAITS: Brawler, Stargazer, Replicator
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.61 -> 2.61
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Shen | core=SIM | fit=0.61 | Bastion=0.61
+[18:18:32] MOVE Bench -> Board: Vex (i:10.0) <-> Bard (i:10.0) | Rew: +0.04
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.58
+FOCUS WEIGHTS: Brawler 2.27, Replicator 0.77, Stargazer 0.70, Bastion 0.67, Meeple 0.59
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Brawler, Stargazer, Replicator
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.61 -> 2.58
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Vex | core=SIM | fit=0.70 | Stargazer=0.70
+[18:18:33] MOVE Bench -> Board: Bard (i:10.0) <-> Shen (i:10.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.58
+FOCUS WEIGHTS: Brawler 2.09, Replicator 0.82, Stargazer 0.78, Meeple 0.72, Bastion 0.59
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Bard, TFT17_Vex | CORE TRAITS: Brawler, Stargazer, Replicator
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.58 -> 2.58
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Bard | core=SIM | fit=0.72 | Meeple=0.72
+[18:18:34] MOVE Bench -> Board: Shen (i:10.0) <-> Vex (i:10.0) | Rew: -0.13
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.27, Replicator 0.77, Meeple 0.72, Bastion 0.67, Stargazer 0.57
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Bard, TFT17_Vex | CORE TRAITS: Brawler, Stargazer, Replicator
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.58 -> 2.53
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Shen | core=SIM | fit=0.67 | Bastion=0.67
+[18:18:34] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.09, Replicator 0.82, Meeple 0.79, Bastion 0.76, Stargazer 0.54
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Bard, TFT17_Vex | CORE TRAITS: Brawler, Stargazer, Replicator
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[18:18:35] --- FIM DO ROUND 5-7 | GOLD: 6 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.56
+FOCUS WEIGHTS: Brawler 2.09, Replicator 0.82, Meeple 0.81, Bastion 0.80, Stargazer 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Lul|C|1*|i:6.0]  [Ill|T|1*|i:6.0]  [Mee|T|1*|i:4.0] [Bar|T|1*|i:10.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]       [She|T|1*|i:10.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aat|F|1*|i:2.0]       [ . ]        [Tah|T|1*|i:8.0]  [Pan|T|1*|i:4.0]       [ . ]        [Tah|T|1*|i:8.0]       [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Vex|1*|i:10.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:18:35] 🛒 LOJA: Corki(i:8.0), Nami(i:8.0), Gragas(i:4.0), Kindred(i:8.0), Riven(i:8.0)
+[18:18:37] MOVE Bench -> Board: Vex (i:10.0) <-> Bard (i:10.0) | Rew: +0.04
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.58
+FOCUS WEIGHTS: Brawler 2.26, Replicator 0.77, Bastion 0.76, Stargazer 0.61, Meeple 0.59
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Brawler, Stargazer, Replicator
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.56 -> 2.58
+    GOLD: 6 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Vex | core=SIM | fit=0.61 | Stargazer=0.61
+[18:18:37] MOVE Bench -> Board: Bard (i:10.0) <-> Tahm Kench (i:8.0) | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.58
+FOCUS WEIGHTS: Brawler 2.02, Replicator 0.79, Bastion 0.79, Stargazer 0.71, Meeple 0.69
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Brawler, Stargazer, Replicator
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.58 -> 2.58
+    GOLD: 6 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Bard | core=SIM | fit=0.69 | Meeple=0.69
+[18:18:38] VENDEU: Tahm Kench (i:8.0)   | Rew: +0.06
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.30
+FOCUS WEIGHTS: Brawler 1.75, Stargazer 1.11, Replicator 0.74, Bastion 0.74, Meeple 0.67
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Stargazer, Replicator, Shepherd
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.58 -> 2.30
+    GOLD: 10 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Tahm Kench | core=não | fit=1.75 | Brawler=1.75
+[18:18:38]  ⬇️ SINERGIA: BRAWLER nível 0
+[18:18:39] BUY XP                       | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.30
+FOCUS WEIGHTS: Stargazer 1.41, Brawler 1.30, Replicator 0.78, Bastion 0.77, Meeple 0.74
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Stargazer, Replicator, Shepherd
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.30 -> 2.30
+    GOLD: 6 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:18:39] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.31
+FOCUS WEIGHTS: Stargazer 1.87, Brawler 0.97, Replicator 0.73, Bastion 0.73, Meeple 0.69
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Stargazer, Replicator, Shepherd
+    COMP BEFORE -> AFTER: dir=Brawler -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.30 -> 2.31
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:18:40] COMPROU: Gragas (Custo 2 | i:4.0) | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.31
+FOCUS WEIGHTS: Stargazer 1.81, Brawler 0.90, Replicator 0.77, Bastion 0.77, Meeple 0.75
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Brawler, Stargazer, Replicator
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.31 -> 2.31
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Gragas | core=não | fit=0.90 | Brawler=0.90
+[18:18:40]  ⬆️ SINERGIA: BRAWLER nível 1
+[18:18:41] VENDEU: Gragas (i:4.0)       | Rew: +0.09
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.38
+FOCUS WEIGHTS: Stargazer 2.06, Brawler 0.79, Replicator 0.73, Bastion 0.73, Meeple 0.69
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Stargazer, Replicator, Shepherd
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.31 -> 2.38
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Gragas | core=não | fit=0.79 | Brawler=0.79
+[18:18:41]  ⬇️ SINERGIA: BRAWLER nível 0
+[18:18:42] MOVE Board -> Board: Pantheon (i:4.0) <-> Lulu (i:6.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.38
+FOCUS WEIGHTS: Stargazer 1.91, Brawler 0.80, Replicator 0.77, Bastion 0.77, Meeple 0.75
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Timebreaker, Brawler, Replicator
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.38 -> 2.38
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Pantheon | core=não | fit=1.57 | Brawler=0.80, Replicator=0.77
+[18:18:42] MOVE Board -> Board: Lulu (i:6.0) <-> Meepsie (i:4.0) | Rew: -0.15
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.40
+FOCUS WEIGHTS: Stargazer 2.11, Replicator 0.73, Bastion 0.73, Meeple 0.72, Brawler 0.72
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Timebreaker, Brawler, Replicator
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.38 -> 2.40
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Lulu | core=não | fit=2.84 | Stargazer=2.11, Replicator=0.73
+
+[18:18:43] --- FIM DO ROUND 6-1 | GOLD: 8 ---
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 2.12, Replicator 0.73, Bastion 0.73, Meeple 0.72, Brawler 0.70
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Pan|T|1*|i:4.0]  [Ill|T|1*|i:6.0]  [Lul|C|1*|i:6.0] [Vex|T|1*|i:10.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]       [She|T|1*|i:10.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aat|F|1*|i:2.0]       [ . ]        [Tah|T|1*|i:8.0]  [Mee|T|1*|i:4.0]       [ . ]       [Bar|T|1*|i:10.0]       [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:18:43] 🛒 LOJA: Ornn(i:6.0), The Mighty Mech(i:8.0), Corki(i:8.0), Urgot(i:6.0), Akali(i:4.0)
+[18:18:44] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 1.94, Replicator 0.77, Bastion 0.77, Meeple 0.77, Brawler 0.75
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Timebreaker, Brawler, Replicator
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:18:44] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 2.12, Replicator 0.73, Bastion 0.73, Meeple 0.73, Brawler 0.69
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Timebreaker, Brawler, Replicator
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:18:45] MOVE Board -> Board: Meepsie (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 1.94, Replicator 0.77, Bastion 0.77, Meeple 0.77, Brawler 0.75
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Meeple, Shepherd, Stargazer
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Meepsie | core=não | fit=0.77 | Meeple=0.77
+[18:18:46] MOVE Board -> Board: Pantheon (i:4.0) <-> Lulu (i:6.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 2.13, Replicator 0.73, Bastion 0.73, Meeple 0.73, Brawler 0.69
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Meeple, Shepherd, Timebreaker
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Pantheon | core=não | fit=1.42 | Brawler=0.69, Replicator=0.73
+[18:18:46] MOVE Board -> Board: Lulu (i:6.0) <-> Illaoi (i:6.0) | Rew: -0.15
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 1.94, Replicator 0.77, Bastion 0.77, Meeple 0.77, Brawler 0.75
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Meeple, Shepherd, Stargazer
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Lulu | core=não | fit=2.71 | Stargazer=1.94, Replicator=0.77
+[18:18:47] MOVE Board -> Board: Illaoi (i:6.0) <-> Vazio | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 2.13, Replicator 0.73, Bastion 0.73, Meeple 0.73, Brawler 0.69
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Meeple, Shepherd, Stargazer
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Illaoi | core=não | fit=0.00 | nenhum trait de foco
+[18:18:48] MOVE Board -> Board: Aatrox (i:2.0) <-> Meepsie (i:4.0) | Rew: -0.15
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 1.94, Replicator 0.77, Bastion 0.77, Meeple 0.77, Brawler 0.75
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Bastion, Stargazer, Replicator
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Aatrox | core=não | fit=0.77 | Bastion=0.77
+[18:18:49] MOVE Board -> Board: Meepsie (i:4.0) <-> Pantheon (i:4.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 2.13, Replicator 0.73, Bastion 0.73, Meeple 0.73, Brawler 0.69
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Bastion, Stargazer, Replicator
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Meepsie | core=não | fit=0.73 | Meeple=0.73
+[18:18:49] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 1.94, Replicator 0.77, Bastion 0.77, Meeple 0.77, Brawler 0.75
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Bastion, Stargazer, Replicator
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[18:18:50] --- FIM DO ROUND 6-2 | GOLD: 5 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 1.94, Replicator 0.77, Bastion 0.77, Meeple 0.77, Brawler 0.75
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Aat|F|1*|i:2.0]  [Lul|C|1*|i:6.0]  [Mee|T|1*|i:4.0] [Vex|T|1*|i:10.0]       [ . ]       
+      [ . ]             [ . ]        [Ill|T|1*|i:6.0] [She|T|1*|i:10.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Pan|T|1*|i:4.0]       [ . ]        [Tah|T|1*|i:8.0]       [ . ]             [ . ]       [Bar|T|1*|i:10.0]       [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:18:50] 🛒 LOJA: Master Yi(i:8.0), Morgana(i:8.0), Morgana(i:8.0), Zoe(i:4.0), Gwen(i:4.0)
+[18:18:51] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 2.13, Replicator 0.73, Bastion 0.73, Meeple 0.73, Brawler 0.69
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Bastion, Stargazer, Replicator
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[18:18:51] MOVE Board -> Board: Pantheon (i:4.0) <-> Aatrox (i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 1.94, Replicator 0.77, Bastion 0.77, Meeple 0.77, Brawler 0.75
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Timebreaker, Brawler, Replicator
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pantheon | core=não | fit=1.52 | Brawler=0.75, Replicator=0.77
+[18:18:52] MOVE Board -> Board: Aatrox (i:2.0) <-> Meepsie (i:4.0) | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 2.13, Replicator 0.73, Bastion 0.73, Meeple 0.73, Brawler 0.69
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Timebreaker, Brawler, Replicator
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Aatrox | core=não | fit=0.73 | Bastion=0.73
+[18:18:53] MOVE Board -> Board: Meepsie (i:4.0) <-> Lulu (i:6.0) | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 1.94, Replicator 0.77, Bastion 0.77, Meeple 0.77, Brawler 0.75
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Timebreaker, Brawler, Replicator
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Meepsie | core=não | fit=0.77 | Meeple=0.77
+[18:18:53] MOVE Board -> Board: Lulu (i:6.0) <-> Illaoi (i:6.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 2.13, Replicator 0.73, Bastion 0.73, Meeple 0.73, Brawler 0.69
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Timebreaker, Brawler, Replicator
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Lulu | core=não | fit=2.85 | Stargazer=2.13, Replicator=0.73
+[18:18:54] MOVE Board -> Board: Illaoi (i:6.0) <-> Vazio | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 1.94, Replicator 0.77, Bastion 0.77, Meeple 0.77, Brawler 0.75
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Timebreaker, Brawler, Replicator
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Illaoi | core=não | fit=0.00 | nenhum trait de foco
+[18:18:55] MOVE Board -> Board: Vex (i:10.0) <-> Pantheon (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 2.13, Replicator 0.73, Bastion 0.73, Meeple 0.73, Brawler 0.69
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Stargazer, Meeple, Shepherd
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Vex | core=SIM | fit=2.13 | Stargazer=2.13
+[18:18:56] MOVE Board -> Board: Pantheon (i:4.0) <-> Aatrox (i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 1.94, Replicator 0.77, Bastion 0.77, Meeple 0.77, Brawler 0.75
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Stargazer, Meeple, Shepherd
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pantheon | core=não | fit=1.52 | Brawler=0.75, Replicator=0.77
+[18:18:56] MOVE Board -> Board: Aatrox (i:2.0) <-> Meepsie (i:4.0) | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 2.13, Replicator 0.73, Bastion 0.73, Meeple 0.73, Brawler 0.69
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Stargazer, Bastion, Timebreaker
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Aatrox | core=não | fit=0.73 | Bastion=0.73
+
+[18:18:57] --- FIM DO ROUND 6-3 | GOLD: 7 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 2.13, Replicator 0.73, Bastion 0.73, Meeple 0.73, Brawler 0.69
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]       [Vex|T|1*|i:10.0]  [Aat|F|1*|i:2.0]  [Pan|T|1*|i:4.0]  [Mee|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]        [Lul|C|1*|i:6.0] [She|T|1*|i:10.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Tah|T|1*|i:8.0]       [ . ]             [ . ]       [Bar|T|1*|i:10.0]       [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:18:57] 🛒 LOJA: Caitlyn(i:2.0), Tahm Kench(i:8.0), Rek'Sai(i:2.0), Nunu & Willump(i:8.0), Rammus(i:8.0)
+[18:18:58] BUY XP                       | Rew: +0.01
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 1.94, Replicator 0.77, Bastion 0.77, Meeple 0.77, Brawler 0.75
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Stargazer, Bastion, Timebreaker
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:18:59] COMPROU: Caitlyn (Custo 1 | i:2.0) | Rew: -0.03
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 2.13, Replicator 0.73, Bastion 0.73, Meeple 0.73, Brawler 0.69
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Stargazer, N.O.V.A., Bastion
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Caitlyn | core=não | fit=0.00 | nenhum trait de foco
+[18:19:00] VENDEU: Caitlyn (i:2.0)      | Rew: +0.09
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 1.94, Replicator 0.77, Bastion 0.77, Meeple 0.77, Brawler 0.75
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Stargazer, Bastion, Timebreaker
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Caitlyn | core=não | fit=0.00 | nenhum trait de foco
+[18:19:01] COMPROU: Rek'Sai (Custo 1 | i:2.0) | Rew: -0.03
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.47
+FOCUS WEIGHTS: Stargazer 2.12, Replicator 0.73, Bastion 0.73, Brawler 0.72, Meeple 0.70
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Brawler, Stargazer, Bastion
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.47
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Rek'Sai | core=não | fit=0.72 | Brawler=0.72
+[18:19:01]  ⬆️ SINERGIA: BRAWLER nível 1
+[18:19:01] VENDEU: Rek'Sai (i:2.0)      | Rew: +0.09
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.47
+FOCUS WEIGHTS: Stargazer 1.94, Replicator 0.77, Bastion 0.77, Brawler 0.77, Meeple 0.75
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Stargazer, Bastion, Timebreaker
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.47 -> 2.47
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Rek'Sai | core=não | fit=0.77 | Brawler=0.77
+[18:19:01]  ⬇️ SINERGIA: BRAWLER nível 0
+[18:19:02] MOVE Board -> Board: Meepsie (i:4.0) <-> Vex (i:10.0) | Rew: -0.05
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 2.13, Replicator 0.73, Bastion 0.73, Meeple 0.72, Brawler 0.70
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Meeple, Shepherd, Bastion
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.47 -> 2.41
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Meepsie | core=não | fit=0.72 | Meeple=0.72
+[18:19:03] MOVE Board -> Board: Vex (i:10.0) <-> Pantheon (i:4.0) | Rew: -0.05
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 1.94, Replicator 0.77, Bastion 0.77, Meeple 0.76, Brawler 0.75
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Meeple, Shepherd, Bastion
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Vex | core=SIM | fit=1.94 | Stargazer=1.94
+[18:19:03] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 2.13, Replicator 0.73, Bastion 0.73, Meeple 0.72, Brawler 0.69
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Meeple, Shepherd, Bastion
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[18:19:05] --- FIM DO ROUND 6-4 | GOLD: 9 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 1.94, Replicator 0.77, Bastion 0.77, Meeple 0.77, Brawler 0.75
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Mee|T|1*|i:4.0]  [Aat|F|1*|i:2.0] [Vex|T|1*|i:10.0]  [Pan|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]        [Lul|C|1*|i:6.0] [She|T|1*|i:10.0]  [Ill|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]        [Tah|T|1*|i:8.0]       [ . ]             [ . ]       [Bar|T|1*|i:10.0]       [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:19:05] 🛒 LOJA: Akali(i:4.0), Miss Fortune(i:6.0), Rammus(i:8.0), Pyke(i:4.0), Fizz(i:6.0)
+[18:19:06] BUY XP                       | Rew: +0.01
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 2.13, Replicator 0.73, Bastion 0.73, Meeple 0.73, Brawler 0.69
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Meeple, Shepherd, Bastion
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 5 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:19:06] BUY XP                       | Rew: +0.01
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 1.94, Replicator 0.77, Bastion 0.77, Meeple 0.77, Brawler 0.75
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Meeple, Shepherd, Bastion
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:19:07] MOVE Board -> Board: Pantheon (i:4.0) <-> Meepsie (i:4.0) | Rew: -0.05
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 2.13, Replicator 0.73, Bastion 0.73, Meeple 0.73, Brawler 0.69
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Timebreaker, Brawler, Replicator
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Pantheon | core=não | fit=1.42 | Brawler=0.69, Replicator=0.73
+[18:19:08] MOVE Board -> Board: Meepsie (i:4.0) <-> Vex (i:10.0) | Rew: -0.05
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 1.94, Replicator 0.77, Bastion 0.77, Meeple 0.77, Brawler 0.75
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Timebreaker, Brawler, Replicator
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Meepsie | core=não | fit=0.77 | Meeple=0.77
+[18:19:08] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 2.13, Replicator 0.73, Bastion 0.73, Meeple 0.73, Brawler 0.69
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Shen, TFT17_Vex, TFT17_Bard | CORE TRAITS: Timebreaker, Brawler, Replicator
+    COMP BEFORE -> AFTER: dir=Stargazer -> Stargazer | foco=TFT17_Shen -> TFT17_Shen | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[18:19:12] --- FIM DO ROUND 6-5 | GOLD: 1 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Stargazer | FOCUS: TFT17_Shen | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Stargazer 1.94, Replicator 0.77, Bastion 0.77, Meeple 0.77, Brawler 0.75
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:19:12] 🛒 LOJA: None, None, None, None, None
+
+========================================
+ GAME OVER - RELATÓRIO FINAL
+========================================

@@ -1,0 +1,1962 @@
+==========================================================
+TFT AI LOG · JOGADOR 7
+Partida: 669dde68-bdc9-4705-8019-58bdb6b105dc
+Seed: 20261016 | Política: determinística
+Checkpoint SHA-256: b1a793f5498177a61c477e1a23341326d4c7d3974c682b54d2f05a817c75ca34
+Impacto (i): custo × estrelas × 2 (contribuição nativa da engine)
+==========================================================
+--- INÍCIO DA PARTIDA · JOGADOR 7 ---
+[18:14:50] VENDEU: Briar (i:2.0)        | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: — | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: —
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: — | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=— -> — | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Briar | core=não | fit=0.00 | nenhum trait de foco
+[18:14:51] COMPROU: Poppy (Custo 1 | i:2.0) | Rew: +0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 4.32, Bastion 0.68
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=— -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=5.00 | Meeple=4.32, Bastion=0.68
+[18:14:52] MOVE Bench -> Board: Poppy (i:2.0) <-> Vazio | Rew: +0.38
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 4.32, Bastion 0.68
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=5.00 | Meeple=4.32, Bastion=0.68
+[18:14:52] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 4.32, Bastion 0.68
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[18:14:57] --- FIM DO ROUND 1-1 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 4.32, Bastion 0.68
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:14:57] 🛒 LOJA: Talon(i:2.0), Caitlyn(i:2.0), Talon(i:2.0), Leona(i:2.0), Twisted Fate(i:2.0)
+[18:14:57] COMPROU: Leona (Custo 1 | i:2.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 4.11, Bastion 0.65, Arbiter 0.12, Vanguard 0.12
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_Leona | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Leona | core=SIM | fit=0.24 | Arbiter=0.12, Vanguard=0.12
+[18:14:58] MOVE Bench -> Board: Leona (i:2.0) <-> Poppy (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Leona | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.94, Bastion 0.62, Arbiter 0.22, Vanguard 0.22
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Leona, TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Leona | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Leona | core=SIM | fit=0.43 | Arbiter=0.22, Vanguard=0.22
+[18:14:59] MOVE Bench -> Board: Poppy (i:2.0) <-> Vazio | Rew: +0.30
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Leona | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.82, Bastion 0.60, Arbiter 0.29, Vanguard 0.29
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Leona, TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leona -> TFT17_Leona | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=4.42 | Meeple=3.82, Bastion=0.60
+[18:15:00] COMPROU: Twisted Fate (Custo 1 | i:2.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Leona | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.63, Bastion 0.57, Arbiter 0.34, Vanguard 0.34, Fateweaver 0.12
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Leona, TFT17_Poppy, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leona -> TFT17_Leona | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=0.12 | Fateweaver=0.12
+[18:15:00] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Leona (i:2.0) | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.49, Bastion 0.55, Arbiter 0.37, Vanguard 0.37, Fateweaver 0.21
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Poppy, TFT17_Leona | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leona -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=0.21 | Fateweaver=0.21
+[18:15:01] MOVE Bench -> Board: Leona (i:2.0) <-> Poppy (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.39, Bastion 0.53, Arbiter 0.40, Vanguard 0.40, Fateweaver 0.28
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Leona, TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Leona | core=SIM | fit=0.80 | Arbiter=0.40, Vanguard=0.40
+[18:15:02] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.31, Bastion 0.52, Arbiter 0.42, Vanguard 0.42, Fateweaver 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Leona, TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+[18:15:03] MOVE Bench -> Board: Poppy (i:2.0) <-> Vazio | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.20, Bastion 0.51, Arbiter 0.45, Vanguard 0.45, Fateweaver 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Leona, TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=3.71 | Meeple=3.20, Bastion=0.51
+
+[18:15:04] --- FIM DO ROUND 1-2 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.14, Bastion 0.50, Arbiter 0.46, Vanguard 0.46, Fateweaver 0.43
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:15:04] 🛒 LOJA: Gnar(i:4.0), Briar(i:2.0), Rek'Sai(i:2.0), Jinx(i:4.0), Akali(i:4.0)
+[18:15:04] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.12, Bastion 0.49, Arbiter 0.47, Vanguard 0.47, Fateweaver 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Leona, TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +2 | juros +0 | sequência +0 | vitória +0
+
+[18:15:11] --- FIM DO ROUND 1-3 | GOLD: 5 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.07, Bastion 0.48, Arbiter 0.48, Vanguard 0.48, Fateweaver 0.48
+    RENDA PRÓXIMO ROUND: +3 base, +0 juros, +0 sequência, +0 vitória (total: +3)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:15:11] 🛒 LOJA: Gnar(i:4.0), Cho'Gath(i:2.0), Poppy(i:2.0), Cho'Gath(i:2.0), Veigar(i:2.0)
+[18:15:12] BUY XP                       | Rew: +1.51
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.07, Bastion 0.48, Arbiter 0.48, Vanguard 0.48, Fateweaver 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Leona, TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +3 | juros +0 | sequência +0 | vitória +0
+[18:15:12] COMPROU: Poppy (Custo 1 | i:2.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.06, Bastion 0.52, Arbiter 0.48, Vanguard 0.48, Fateweaver 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_TwistedFate, TFT17_Leona | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=3.57 | Meeple=3.06, Bastion=0.52
+[18:15:13] MOVE Bench -> Board: Poppy (i:2.0) <-> Twisted Fate (i:2.0) | Rew: +0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.00, Bastion 0.71, Arbiter 0.43, Vanguard 0.43, Fateweaver 0.43
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_Leona, TFT17_TwistedFate | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=3.71 | Meeple=3.00, Bastion=0.71
+[18:15:14] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Leona (i:2.0) | Rew: -0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 2.97, Bastion 0.84, Arbiter 0.40, Vanguard 0.40, Fateweaver 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_TwistedFate, TFT17_Leona | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=0.40 | Fateweaver=0.40
+[18:15:14] MOVE Bench -> Board: Leona (i:2.0) <-> Poppy (i:2.0) | Rew: -0.18
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 2.98, Bastion 0.78, Arbiter 0.41, Vanguard 0.41, Fateweaver 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_Leona, TFT17_TwistedFate | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Leona | core=SIM | fit=0.83 | Arbiter=0.41, Vanguard=0.41
+[18:15:15] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.00, Bastion 0.73, Arbiter 0.42, Vanguard 0.42, Fateweaver 0.42
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_Leona, TFT17_TwistedFate | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+[18:15:17] MOVE Bench -> Board: Poppy (i:2.0) <-> Vazio | Rew: +0.58
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 2.97, Bastion 0.82, Arbiter 0.40, Vanguard 0.40, Fateweaver 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_Leona, TFT17_TwistedFate | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=3.79 | Meeple=2.97, Bastion=0.82
+
+[18:15:18] --- FIM DO ROUND 1-4 | GOLD: 4 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 2.93, Bastion 0.98, Arbiter 0.37, Vanguard 0.37, Fateweaver 0.37
+    RENDA PRÓXIMO ROUND: +4 base, +0 juros, +0 sequência, +0 vitória (total: +4)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Pop|T|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:15:18] 🛒 LOJA: Akali(i:4.0), Teemo(i:2.0), Zoe(i:4.0), Gwen(i:4.0), Rek'Sai(i:2.0)
+[18:15:19] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 2.91, Bastion 1.02, Arbiter 0.36, Vanguard 0.36, Fateweaver 0.36
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_Leona, TFT17_TwistedFate | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+[18:15:19] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 2.91, Bastion 1.05, Arbiter 0.35, Vanguard 0.35, Fateweaver 0.35
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_Leona, TFT17_TwistedFate | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+
+[18:15:25] --- FIM DO ROUND 2-1 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 2.89, Bastion 1.11, Arbiter 0.33, Vanguard 0.33, Fateweaver 0.33
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Pop|T|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:15:25] 🛒 LOJA: Briar(i:2.0), Jax(i:4.0), Pyke(i:4.0), Aurelion Sol(i:8.0), Ezreal(i:2.0)
+[18:15:26] COMPROU: Aurelion Sol (Custo 4 | i:8.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 2.89, Bastion 1.11, Arbiter 0.33, Vanguard 0.33, Fateweaver 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Poppy, TFT17_Leona | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Aurelion Sol | core=SIM | fit=0.00 | nenhum trait de foco
+[18:15:26] MOVE Bench -> Board: Aurelion Sol (i:8.0) <-> Leona (i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 2.89, Bastion 1.11, Arbiter 0.33, Vanguard 0.33, Fateweaver 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Poppy, TFT17_TwistedFate | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Aurelion Sol | core=SIM | fit=0.00 | nenhum trait de foco
+[18:15:27] MOVE Bench -> Board: Leona (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 2.89, Bastion 1.11, Arbiter 0.33, Vanguard 0.33, Fateweaver 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Poppy, TFT17_Leona | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Leona | core=SIM | fit=0.67 | Arbiter=0.33, Vanguard=0.33
+[18:15:28] VENDEU: Twisted Fate (i:2.0) | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 2.95, Bastion 1.14, Arbiter 0.34, Vanguard 0.34, Fateweaver 0.23
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Poppy, TFT17_Leona | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Twisted Fate | core=não | fit=0.23 | Fateweaver=0.23
+[18:15:28] COMPROU: Jax (Custo 2 | i:4.0) | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 2.41, Bastion 1.74, Arbiter 0.35, Vanguard 0.35, Fateweaver 0.16
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Jax, TFT17_Poppy | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Jax | core=SIM | fit=1.74 | Bastion=1.74
+[18:15:28]  ⬆️ SINERGIA: BASTION nível 1
+[18:15:29] MOVE Bench -> Board: Jax (i:4.0) <-> Aurelion Sol (i:8.0) | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.15, Meeple 2.04, Arbiter 0.35, Vanguard 0.35, Fateweaver 0.11
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Jax, TFT17_Poppy | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Jax | core=SIM | fit=2.15 | Bastion=2.15
+[18:15:30] MOVE Bench -> Board: Aurelion Sol (i:8.0) <-> Leona (i:2.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.43, Meeple 1.77, Arbiter 0.35, Vanguard 0.35, Conduit 0.11
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Jax, TFT17_Poppy | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Aurelion Sol | core=SIM | fit=0.11 | Conduit=0.11
+[18:15:31] MOVE Bench -> Board: Leona (i:2.0) <-> Vazio | Rew: +0.45
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.57, Meeple 1.56, Arbiter 0.34, Vanguard 0.34, Conduit 0.18
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Jax, TFT17_Poppy | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Leona | core=não | fit=0.69 | Arbiter=0.34, Vanguard=0.34
+[18:15:31] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.68, Meeple 1.41, Arbiter 0.34, Vanguard 0.34, Conduit 0.23
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Jax, TFT17_Poppy | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +1
+
+[18:15:32] --- FIM DO ROUND 2-2 | GOLD: 8 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.79, Meeple 1.25, Arbiter 0.34, Vanguard 0.34, Conduit 0.29
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aur|T|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0] 
+ [Pop|T|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:15:32] 🛒 LOJA: Illaoi(i:6.0), Poppy(i:2.0), Zoe(i:4.0), Talon(i:2.0), Bel'Veth(i:4.0)
+[18:15:33] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.82, Meeple 1.21, Arbiter 0.34, Vanguard 0.34, Conduit 0.30
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Jax, TFT17_Poppy | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[18:15:33] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.84, Meeple 1.18, Arbiter 0.33, Vanguard 0.33, Conduit 0.31
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Jax, TFT17_Poppy | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[18:15:34] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.86, Meeple 1.15, Arbiter 0.33, Vanguard 0.33, Conduit 0.32
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Jax, TFT17_Poppy | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+
+[18:15:39] --- FIM DO ROUND 2-3 | GOLD: 5 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Meeple 1.11, Arbiter 0.33, Vanguard 0.33, Conduit 0.33
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aur|T|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0] 
+ [Pop|T|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:15:39] 🛒 LOJA: Urgot(i:6.0), Teemo(i:2.0), Nasus(i:2.0), Akali(i:4.0), Karma(i:8.0)
+[18:15:40] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Meeple 1.11, Arbiter 0.33, Vanguard 0.33, Conduit 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Jax, TFT17_Poppy | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[18:15:40] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Meeple 1.11, Arbiter 0.33, Vanguard 0.33, Conduit 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Jax, TFT17_Poppy | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[18:15:46] --- FIM DO ROUND 2-4 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Meeple 1.11, Arbiter 0.33, Vanguard 0.33, Conduit 0.33
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aur|T|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0] 
+ [Pop|T|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:15:46] 🛒 LOJA: Samira(i:6.0), Diana(i:6.0), Cho'Gath(i:2.0), Aatrox(i:2.0), Lissandra(i:2.0)
+[18:15:47] BUY XP                       | Rew: +1.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Meeple 1.11, Arbiter 0.33, Vanguard 0.33, Conduit 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Jax, TFT17_Poppy | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[18:15:47] COMPROU: Lissandra (Custo 1 | i:2.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Meeple 1.11, Arbiter 0.33, Vanguard 0.33, Conduit 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Jax, TFT17_Lissandra | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Lissandra | core=SIM | fit=0.00 | nenhum trait de foco
+[18:15:48] MOVE Bench -> Board: Lissandra (i:2.0) <-> Jax (i:4.0) | Rew: -0.24
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Meeple 1.11, Arbiter 0.33, Vanguard 0.33, Conduit 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Jax, TFT17_Lissandra | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Lissandra | core=SIM | fit=0.00 | nenhum trait de foco
+[18:15:49] MOVE Bench -> Board: Jax (i:4.0) <-> Aurelion Sol (i:8.0) | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Meeple 1.11, Arbiter 0.33, Vanguard 0.33, Conduit 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Jax, TFT17_Lissandra | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=2.89 | Bastion=2.89
+[18:15:50] MOVE Bench -> Board: Aurelion Sol (i:8.0) <-> Lissandra (i:2.0) | Rew: +0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Meeple 1.11, Arbiter 0.33, Vanguard 0.33, Conduit 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Jax, TFT17_Lissandra | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Aurelion Sol | core=SIM | fit=0.33 | Conduit=0.33
+[18:15:50] MOVE Bench -> Board: Lissandra (i:2.0) <-> Jax (i:4.0) | Rew: -0.21
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Meeple 1.11, Arbiter 0.33, Vanguard 0.33, Conduit 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Jax, TFT17_Lissandra | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Lissandra | core=SIM | fit=0.00 | nenhum trait de foco
+[18:15:51] MOVE Bench -> Board: Jax (i:4.0) <-> Aurelion Sol (i:8.0) | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Meeple 1.11, Arbiter 0.33, Vanguard 0.33, Conduit 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Jax, TFT17_Lissandra | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=2.89 | Bastion=2.89
+[18:15:52] MOVE Bench -> Board: Aurelion Sol (i:8.0) <-> Vazio | Rew: +0.58
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Meeple 1.11, Arbiter 0.33, Vanguard 0.33, Conduit 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Jax, TFT17_Lissandra | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Aurelion Sol | core=SIM | fit=0.33 | Conduit=0.33
+[18:15:52] COMPROU: Aatrox (Custo 1 | i:2.0) | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Meeple 1.11, Arbiter 0.33, Vanguard 0.33, Conduit 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Jax, TFT17_Lissandra | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Aatrox | core=não | fit=2.89 | Bastion=2.89
+
+[18:15:53] --- FIM DO ROUND 2-5 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Meeple 1.11, Arbiter 0.33, Vanguard 0.33, Conduit 0.33
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Lis|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0] 
+ [Pop|T|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Aur|T|1*|i:8.0]       [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Aat|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:15:53] 🛒 LOJA: Jax(i:4.0), Urgot(i:6.0), Meepsie(i:4.0), Zoe(i:4.0), Gnar(i:4.0)
+[18:15:54] VENDEU: Aatrox (i:2.0)       | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Meeple 1.11, Arbiter 0.33, Vanguard 0.33, Conduit 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Jax, TFT17_Lissandra | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Aatrox | core=não | fit=2.89 | Bastion=2.89
+[18:15:54] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Meeple 1.11, Arbiter 0.33, Vanguard 0.33, Conduit 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Jax, TFT17_Lissandra | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[18:15:55] COMPROU: Urgot (Custo 3 | i:6.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.89, Meeple 1.11, Arbiter 0.33, Vanguard 0.33, Conduit 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Meeple, Mecha
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Urgot | core=SIM | fit=0.00 | nenhum trait de foco
+[18:15:56] MOVE Bench -> Board: Urgot (i:6.0) <-> Jax (i:4.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.88, Meeple 1.11, Mecha 0.36, Arbiter 0.33, Vanguard 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Urgot | core=SIM | fit=0.36 | Mecha=0.36
+[18:15:57] MOVE Bench -> Board: Jax (i:4.0) <-> Lissandra (i:2.0) | Rew: +0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.74, Meeple 1.05, Mecha 0.57, Arbiter 0.32, Vanguard 0.32
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Jax | core=SIM | fit=2.74 | Bastion=2.74
+[18:15:57] VENDEU: Lissandra (i:2.0)    | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.66, Meeple 1.02, Mecha 0.71, Arbiter 0.31, Vanguard 0.31
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Lissandra | core=não | fit=0.00 | nenhum trait de foco
+[18:15:58] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.60, Meeple 1.00, Mecha 0.80, Arbiter 0.30, Vanguard 0.30
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +1
+
+[18:16:00] --- FIM DO ROUND 2-6 | GOLD: 8 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.52, Meeple 0.97, Mecha 0.93, Arbiter 0.29, Vanguard 0.29
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Urg|T|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0] 
+ [Pop|T|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Aur|T|1*|i:8.0]       [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:16:00] 🛒 LOJA: Jax(i:4.0), Caitlyn(i:2.0), Lulu(i:6.0), Nasus(i:2.0), Mordekaiser(i:4.0)
+[18:16:01] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.51, Meeple 0.97, Mecha 0.94, Arbiter 0.29, Vanguard 0.29
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[18:16:02] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.51, Meeple 0.96, Mecha 0.95, Arbiter 0.29, Vanguard 0.29
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[18:16:02] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.50, Meeple 0.96, Mecha 0.95, Arbiter 0.29, Vanguard 0.29
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+
+[18:16:07] --- FIM DO ROUND 2-7 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.50, Meeple 0.96, Mecha 0.96, Arbiter 0.29, Vanguard 0.29
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Urg|T|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0] 
+ [Pop|T|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Aur|T|1*|i:8.0]       [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:16:07] 🛒 LOJA: Nasus(i:2.0), Akali(i:4.0), Fizz(i:6.0), Aatrox(i:2.0), Pantheon(i:4.0)
+[18:16:08] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.50, Meeple 0.96, Mecha 0.96, Arbiter 0.29, Vanguard 0.29
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:16:09] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: OPEN | STRENGTH: 4.07
+FOCUS WEIGHTS: Bastion 2.78, Mecha 0.87, Meeple 0.86, Arbiter 0.24, Vanguard 0.24
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Meeple
+    COMP BEFORE -> AFTER: dir=— -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=False -> False | strength=0.00 -> 4.07
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[18:16:14] --- FIM DO ROUND 3-1 | GOLD: 9 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 4.10
+FOCUS WEIGHTS: Bastion 2.78, Mecha 0.87, Meeple 0.86, Arbiter 0.24, Vanguard 0.24
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Urg|T|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0] 
+ [Pop|T|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Aur|T|1*|i:8.0]       [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:16:14] 🛒 LOJA: Ornn(i:6.0), Rhaast(i:6.0), Jax(i:4.0), Jax(i:4.0), Nasus(i:2.0)
+[18:16:15] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.96
+FOCUS WEIGHTS: Bastion 2.72, Mecha 0.84, Meeple 0.83, Arbiter 0.31, Vanguard 0.31
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Meeple
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=4.10 -> 2.96
+    GOLD: 5 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[18:16:16] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.96
+FOCUS WEIGHTS: Bastion 2.44, Mecha 0.89, Meeple 0.89, Arbiter 0.39, Vanguard 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Meeple
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.96 -> 2.96
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[18:16:16] COMPROU: Nasus (Custo 1 | i:2.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.35
+FOCUS WEIGHTS: Bastion 2.53, Mecha 0.84, Meeple 0.83, Vanguard 0.42, Arbiter 0.38
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Vanguard
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.96 -> 2.35
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Nasus | core=não | fit=0.42 | Vanguard=0.42
+[18:16:17] VENDEU: Nasus (i:2.0)        | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.35
+FOCUS WEIGHTS: Bastion 2.34, Mecha 0.90, Meeple 0.89, Vanguard 0.45, Arbiter 0.42
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Meeple
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.35 -> 2.35
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Nasus | core=não | fit=0.45 | Vanguard=0.45
+[18:16:18] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.81
+FOCUS WEIGHTS: Bastion 2.50, Mecha 0.85, Meeple 0.84, Vanguard 0.41, Arbiter 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Meeple
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.35 -> 2.81
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+
+[18:16:21] --- FIM DO ROUND 3-2 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.80
+FOCUS WEIGHTS: Bastion 2.48, Mecha 0.85, Meeple 0.85, Vanguard 0.41, Arbiter 0.41
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Urg|T|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0] 
+ [Pop|T|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Aur|T|1*|i:8.0]       [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:16:21] 🛒 LOJA: Fizz(i:6.0), Akali(i:4.0), Rek'Sai(i:2.0), Kai'Sa(i:6.0), Milio(i:4.0)
+[18:16:22] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.80
+FOCUS WEIGHTS: Bastion 2.31, Mecha 0.90, Meeple 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Meeple
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.80 -> 2.80
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[18:16:23] COMPROU: Milio (Custo 2 | i:4.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.80
+FOCUS WEIGHTS: Bastion 2.48, Mecha 0.85, Meeple 0.85, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Meeple
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.80 -> 2.80
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Milio | core=não | fit=0.00 | nenhum trait de foco
+[18:16:23] MOVE Bench -> Board: Milio (i:4.0) <-> Urgot (i:6.0) | Rew: -0.33
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.80
+FOCUS WEIGHTS: Bastion 2.40, Meeple 0.94, Mecha 0.75, Vanguard 0.46, Arbiter 0.46
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Milio | CORE TRAITS: Bastion, Meeple, Mecha
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.80 -> 2.80
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Milio | core=SIM | fit=0.00 | nenhum trait de foco
+[18:16:24] MOVE Bench -> Board: Urgot (i:6.0) <-> Jax (i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.76
+FOCUS WEIGHTS: Bastion 2.53, Meeple 0.87, Mecha 0.78, Vanguard 0.42, Arbiter 0.42
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Milio | CORE TRAITS: Bastion, Mecha, Meeple
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.80 -> 2.76
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=0.78 | Mecha=0.78
+[18:16:25] MOVE Bench -> Board: Jax (i:4.0) <-> Milio (i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.76
+FOCUS WEIGHTS: Bastion 2.34, Meeple 0.91, Mecha 0.86, Vanguard 0.45, Arbiter 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Meeple
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.76 -> 2.76
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jax | core=SIM | fit=2.34 | Bastion=2.34
+[18:16:25] VENDEU: Milio (i:4.0)        | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.81
+FOCUS WEIGHTS: Bastion 2.50, Meeple 0.85, Mecha 0.83, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Meeple
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.76 -> 2.81
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Milio | core=não | fit=0.00 | nenhum trait de foco
+[18:16:26] COMPROU: Akali (Custo 2 | i:4.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.81
+FOCUS WEIGHTS: Bastion 2.32, Meeple 0.90, Mecha 0.89, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Marauder
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.81 -> 2.81
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=não | fit=0.00 | nenhum trait de foco
+[18:16:27] VENDEU: Akali (i:4.0)        | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.80
+FOCUS WEIGHTS: Bastion 2.49, Meeple 0.85, Mecha 0.85, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Meeple
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.81 -> 2.80
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=não | fit=0.00 | nenhum trait de foco
+[18:16:28] COMPROU: Rek'Sai (Custo 1 | i:2.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.80
+FOCUS WEIGHTS: Bastion 2.31, Meeple 0.90, Mecha 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Brawler
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.80 -> 2.80
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Rek'Sai | core=não | fit=0.00 | nenhum trait de foco
+
+[18:16:28] --- FIM DO ROUND 3-3 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.30
+FOCUS WEIGHTS: Bastion 2.31, Mecha 0.90, Meeple 0.90, Vanguard 0.44, Arbiter 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Jax|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Urg|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0] 
+ [Pop|T|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Aur|T|1*|i:8.0]       [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Rek|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:16:28] 🛒 LOJA: Kindred(i:8.0), Urgot(i:6.0), Akali(i:4.0), Zoe(i:4.0), Twisted Fate(i:2.0)
+[18:16:29] VENDEU: Rek'Sai (i:2.0)      | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.80
+FOCUS WEIGHTS: Bastion 2.48, Mecha 0.85, Meeple 0.85, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Meeple
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.30 -> 2.80
+    GOLD: 8 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Rek'Sai | core=não | fit=0.00 | nenhum trait de foco
+[18:16:30] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.80
+FOCUS WEIGHTS: Bastion 2.31, Mecha 0.90, Meeple 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Meeple
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.80 -> 2.80
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:16:30] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.80
+FOCUS WEIGHTS: Bastion 2.48, Mecha 0.85, Meeple 0.85, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Meeple
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.80 -> 2.80
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:16:31] MOVE Board -> Board: Poppy (i:2.0) <-> Vazio | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.80
+FOCUS WEIGHTS: Bastion 2.31, Mecha 0.90, Meeple 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Meeple, Mecha
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.80 -> 2.80
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=3.21 | Meeple=0.90, Bastion=2.31
+[18:16:32] MOVE Board -> Board: Leona (i:2.0) <-> Poppy (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.80
+FOCUS WEIGHTS: Bastion 2.48, Mecha 0.85, Meeple 0.85, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Mecha, Meeple
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.80 -> 2.80
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=0.81 | Arbiter=0.41, Vanguard=0.41
+[18:16:33] MOVE Board -> Board: Poppy (i:2.0) <-> Vazio | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.80
+FOCUS WEIGHTS: Bastion 2.31, Mecha 0.90, Meeple 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Meeple, Mecha
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.80 -> 2.80
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=3.21 | Meeple=0.90, Bastion=2.31
+[18:16:33] MOVE Board -> Board: Poppy (i:2.0) <-> Leona (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.80
+FOCUS WEIGHTS: Bastion 2.48, Mecha 0.85, Meeple 0.85, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Meeple, Mecha
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.80 -> 2.80
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=3.33 | Meeple=0.85, Bastion=2.48
+[18:16:34] MOVE Board -> Board: Leona (i:2.0) <-> Poppy (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.80
+FOCUS WEIGHTS: Bastion 2.31, Mecha 0.90, Meeple 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Meeple, Mecha
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.80 -> 2.80
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=0.88 | Arbiter=0.44, Vanguard=0.44
+[18:16:35] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.80
+FOCUS WEIGHTS: Bastion 2.48, Mecha 0.85, Meeple 0.85, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Jax | CORE TRAITS: Bastion, Meeple, Mecha
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.80 -> 2.80
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[18:16:35] --- FIM DO ROUND 3-4 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.80
+FOCUS WEIGHTS: Bastion 2.48, Mecha 0.85, Meeple 0.85, Vanguard 0.41, Arbiter 0.41
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]        [Leo|T|1*|i:2.0]  [Jax|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Urg|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]        [Aur|T|1*|i:8.0]       [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:16:35] 🛒 LOJA: Lissandra(i:2.0), Fizz(i:6.0), Gragas(i:4.0), Viktor(i:6.0), Bel'Veth(i:4.0)
+[18:16:36] COMPROU: Fizz (Custo 3 | i:6.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.80
+FOCUS WEIGHTS: Bastion 2.31, Mecha 0.90, Meeple 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Bastion, Mecha
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.80 -> 2.80
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Fizz | core=SIM | fit=0.90 | Meeple=0.90
+[18:16:36]  ⬆️ SINERGIA: MEEPLE nível 1
+[18:16:37] MOVE Bench -> Board: Fizz (i:6.0) <-> Jax (i:4.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.85
+FOCUS WEIGHTS: Bastion 2.48, Meeple 0.86, Mecha 0.85, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Bastion, Mecha
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.80 -> 2.85
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Fizz | core=SIM | fit=0.86 | Meeple=0.86
+[18:16:37] VENDEU: Jax (i:4.0)          | Rew: +0.08
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.85
+FOCUS WEIGHTS: Bastion 1.83, Meeple 1.38, Mecha 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Bastion, Mecha
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.85 -> 2.85
+    GOLD: 5 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Jax | core=não | fit=1.83 | Bastion=1.83
+[18:16:37]  ⬇️ SINERGIA: BASTION nível 0
+[18:16:38] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Meeple | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.60
+FOCUS WEIGHTS: Meeple 2.02, Bastion 1.31, Mecha 0.85, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Bastion, Mecha
+    COMP BEFORE -> AFTER: dir=Bastion -> Meeple | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.85 -> 2.60
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:16:39] COMPROU: Lissandra (Custo 1 | i:2.0) | Rew: -0.04
+    STRATEGY: ECON | COMP DIRECTION: Meeple | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.60
+FOCUS WEIGHTS: Meeple 2.04, Bastion 1.17, Mecha 0.91, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Bastion, Mecha
+    COMP BEFORE -> AFTER: dir=Meeple -> Meeple | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.60 -> 2.60
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Lissandra | core=não | fit=0.00 | nenhum trait de foco
+[18:16:40] VENDEU: Lissandra (i:2.0)    | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Meeple | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.76
+FOCUS WEIGHTS: Meeple 2.35, Bastion 0.98, Mecha 0.85, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Bastion, Mecha
+    COMP BEFORE -> AFTER: dir=Meeple -> Meeple | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.60 -> 2.76
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Lissandra | core=não | fit=0.00 | nenhum trait de foco
+[18:16:40] MOVE Board -> Board: Poppy (i:2.0) <-> Poppy (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Meeple | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.76
+FOCUS WEIGHTS: Meeple 2.24, Bastion 0.98, Mecha 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Bastion, Mecha
+    COMP BEFORE -> AFTER: dir=Meeple -> Meeple | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.76 -> 2.76
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=3.21 | Meeple=2.24, Bastion=0.98
+[18:16:41] MOVE Board -> Board: Poppy (i:2.0) <-> Leona (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Meeple | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.81
+FOCUS WEIGHTS: Meeple 2.45, Bastion 0.89, Mecha 0.85, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Bastion, Mecha
+    COMP BEFORE -> AFTER: dir=Meeple -> Meeple | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.76 -> 2.81
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=3.33 | Meeple=2.45, Bastion=0.89
+[18:16:42] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Meeple | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.81
+FOCUS WEIGHTS: Meeple 2.29, Bastion 0.92, Mecha 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Bastion, Mecha
+    COMP BEFORE -> AFTER: dir=Meeple -> Meeple | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.81 -> 2.81
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[18:16:42] --- FIM DO ROUND 3-5 | GOLD: 7 ---
+    STRATEGY: ECON | COMP DIRECTION: Meeple | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.83
+FOCUS WEIGHTS: Meeple 2.31, Bastion 0.91, Mecha 0.90, Vanguard 0.44, Arbiter 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]        [Pop|T|1*|i:2.0]  [Fiz|T|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Urg|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Leo|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]        [Aur|T|1*|i:8.0]       [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:16:42] 🛒 LOJA: Nami(i:8.0), Kindred(i:8.0), Diana(i:6.0), Aurelion Sol(i:8.0), Kindred(i:8.0)
+[18:16:43] COMPROU: Aurelion Sol (Custo 4 | i:8.0) | Rew: +0.07
+    STRATEGY: ECON | COMP DIRECTION: Meeple | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Meeple 2.48, Mecha 0.86, Bastion 0.85, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Meeple -> Meeple | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.83 -> 2.41
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Aurelion Sol | core=SIM | fit=0.86 | Mecha=0.86
+[18:16:43]  ⬆️ SINERGIA: MECHA nível 1
+[18:16:44] MOVE Bench -> Board: Aurelion Sol (i:8.0) <-> Fizz (i:6.0) | Rew: -0.14
+    STRATEGY: ECON | COMP DIRECTION: Meeple | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.41
+FOCUS WEIGHTS: Meeple 1.83, Mecha 1.39, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Meeple -> Meeple | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.41 -> 2.41
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Aurelion Sol | core=SIM | fit=1.39 | Mecha=1.39
+[18:16:45] MOVE Bench -> Board: Fizz (i:6.0) <-> Urgot (i:6.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Meeple | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.38
+FOCUS WEIGHTS: Meeple 1.80, Mecha 1.53, Bastion 0.85, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Meeple -> Meeple | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.41 -> 2.38
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Fizz | core=SIM | fit=1.80 | Meeple=1.80
+[18:16:45] MOVE Bench -> Board: Urgot (i:6.0) <-> Aurelion Sol (i:8.0) | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Meeple | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.38
+FOCUS WEIGHTS: Mecha 1.77, Meeple 1.44, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Meeple -> Meeple | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.38 -> 2.38
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=1.77 | Mecha=1.77
+[18:16:46] MOVE Bench -> Board: Aurelion Sol (i:8.0) <-> Fizz (i:6.0) | Rew: -0.14
+    STRATEGY: ECON | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Mecha 2.22, Meeple 1.12, Bastion 0.85, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Meeple -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.38 -> 2.45
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Aurelion Sol | core=SIM | fit=2.22 | Mecha=2.22
+[18:16:47] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Mecha 2.16, Meeple 1.06, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:16:49] MOVE Bench -> Board: Fizz (i:6.0) <-> Vazio | Rew: +0.56
+    STRATEGY: ECON | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.56
+FOCUS WEIGHTS: Mecha 2.47, Meeple 0.88, Bastion 0.85, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.52 -> 2.56
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Fizz | core=SIM | fit=0.88 | Meeple=0.88
+
+[18:16:49] --- FIM DO ROUND 3-6 | GOLD: 9 ---
+    STRATEGY: ECON | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.56
+FOCUS WEIGHTS: Mecha 2.48, Meeple 0.86, Bastion 0.84, Vanguard 0.41, Arbiter 0.41
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]        [Pop|T|1*|i:2.0]  [Urg|T|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aur|T|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Leo|T|1*|i:2.0]  [Fiz|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Aur|T|1*|i:8.0]       [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:16:49] 🛒 LOJA: Pyke(i:4.0), Akali(i:4.0), Karma(i:8.0), Diana(i:6.0), Veigar(i:2.0)
+[18:16:50] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.56
+FOCUS WEIGHTS: Mecha 2.31, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.56 -> 2.56
+    GOLD: 5 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:16:51] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.49, Meeple 0.86, Bastion 0.84, Arbiter 0.41, Vanguard 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.56 -> 2.57
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:16:52] COMPROU: Veigar (Custo 1 | i:2.0) | Rew: -0.03
+    STRATEGY: ECON | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.31, Meeple 0.91, Bastion 0.90, Arbiter 0.44, Vanguard 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Veigar | core=não | fit=0.91 | Meeple=0.91
+[18:16:52] VENDEU: Veigar (i:2.0)       | Rew: +0.09
+    STRATEGY: ECON | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.49, Meeple 0.85, Bastion 0.84, Arbiter 0.41, Vanguard 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Veigar | core=não | fit=0.85 | Meeple=0.85
+[18:16:53] MOVE Board -> Board: Fizz (i:6.0) <-> Poppy (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.31, Meeple 0.91, Bastion 0.90, Arbiter 0.44, Vanguard 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Fizz | core=SIM | fit=0.91 | Meeple=0.91
+[18:16:54] MOVE Board -> Board: Poppy (i:2.0) <-> Poppy (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.49, Meeple 0.85, Bastion 0.84, Arbiter 0.41, Vanguard 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=1.70 | Meeple=0.85, Bastion=0.84
+[18:16:54] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Arbiter 0.44, Vanguard 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[18:16:56] --- FIM DO ROUND 3-7 | GOLD: 7 ---
+    STRATEGY: ECON | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Arbiter 0.44, Vanguard 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Fiz|T|1*|i:6.0]       [ . ]        [Pop|T|1*|i:2.0]  [Urg|T|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aur|T|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Leo|T|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Aur|T|1*|i:8.0]       [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:16:56] 🛒 LOJA: Miss Fortune(i:6.0), Gwen(i:4.0), Ornn(i:6.0), Diana(i:6.0), Nasus(i:2.0)
+[18:16:57] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.49, Meeple 0.85, Bastion 0.84, Arbiter 0.41, Vanguard 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:16:58] COMPROU: Ornn (Custo 3 | i:6.0) | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Arbiter 0.44, Vanguard 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Bastion, Mecha
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Ornn | core=não | fit=0.90 | Bastion=0.90
+[18:16:58]  ⬆️ SINERGIA: BASTION nível 1
+[18:16:59] VENDEU: Ornn (i:6.0)         | Rew: +0.09
+    STRATEGY: ECON | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.49, Meeple 0.85, Bastion 0.84, Arbiter 0.41, Vanguard 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Ornn | core=não | fit=0.84 | Bastion=0.84
+[18:16:59]  ⬇️ SINERGIA: BASTION nível 0
+[18:16:59] COMPROU: Diana (Custo 3 | i:6.0) | Rew: -0.04
+    STRATEGY: ECON | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.30, Meeple 0.90, Bastion 0.89, Arbiter 0.47, Vanguard 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Diana | core=não | fit=0.47 | Arbiter=0.47
+[18:17:00] VENDEU: Diana (i:6.0)        | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.56
+FOCUS WEIGHTS: Mecha 2.48, Meeple 0.85, Bastion 0.84, Arbiter 0.42, Vanguard 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.56
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Diana | core=não | fit=0.42 | Arbiter=0.42
+[18:17:01] COMPROU: Miss Fortune (Custo 3 | i:6.0) | Rew: -0.04
+    STRATEGY: ECON | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.56
+FOCUS WEIGHTS: Mecha 2.31, Meeple 0.90, Bastion 0.90, Arbiter 0.45, Vanguard 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.56 -> 2.56
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Miss Fortune | core=não | fit=0.00 | nenhum trait de foco
+[18:17:01] VENDEU: Miss Fortune (i:6.0) | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.49, Meeple 0.85, Bastion 0.84, Arbiter 0.41, Vanguard 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.56 -> 2.57
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Miss Fortune | core=não | fit=0.00 | nenhum trait de foco
+[18:17:02] COMPROU: Gwen (Custo 2 | i:4.0) | Rew: -0.04
+    STRATEGY: ECON | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.31, Meeple 0.90, Bastion 0.90, Arbiter 0.44, Vanguard 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Rogue
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Gwen | core=não | fit=0.00 | nenhum trait de foco
+[18:17:03] VENDEU: Gwen (i:4.0)         | Rew: +0.09
+    STRATEGY: ECON | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.49, Meeple 0.85, Bastion 0.84, Arbiter 0.41, Vanguard 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Gwen | core=não | fit=0.00 | nenhum trait de foco
+
+[18:17:04] --- FIM DO ROUND 4-1 | GOLD: 10 ---
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.49, Meeple 0.85, Bastion 0.84, Arbiter 0.41, Vanguard 0.40
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +2 sequência, +0 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Fiz|T|1*|i:6.0]       [ . ]        [Pop|T|1*|i:2.0]  [Urg|T|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aur|T|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Leo|T|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Aur|T|1*|i:8.0]       [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:17:04] 🛒 LOJA: Mordekaiser(i:4.0), Pyke(i:4.0), Samira(i:6.0), Milio(i:4.0), Pantheon(i:4.0)
+[18:17:04] BUY XP                       | Rew: -0.07
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Arbiter 0.44, Vanguard 0.44
+    STRATEGY REASON: Loss streak prolongada | CONF: 0.80
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 6 | renda base +5 | juros +0 | sequência +2 | vitória +0
+[18:17:05] BUY XP                       | Rew: +0.01
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.49, Meeple 0.85, Bastion 0.84, Arbiter 0.41, Vanguard 0.40
+    STRATEGY REASON: Loss streak prolongada | CONF: 0.80
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 2 | renda base +5 | juros +0 | sequência +2 | vitória +0
+[18:17:06] COMPROU: Mordekaiser (Custo 2 | i:4.0) | Rew: -0.04
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.30, Meeple 0.90, Bastion 0.89, Vanguard 0.47, Arbiter 0.44
+    STRATEGY REASON: Loss streak prolongada | CONF: 0.80
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Conduit
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +2 | vitória +0
+    FIT UNIDADE: Mordekaiser | core=não | fit=0.47 | Vanguard=0.47
+[18:17:06]  ⬆️ SINERGIA: CONDUIT nível 1
+[18:17:06] VENDEU: Mordekaiser (i:4.0)  | Rew: +0.09
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.56
+FOCUS WEIGHTS: Mecha 2.48, Meeple 0.85, Bastion 0.84, Vanguard 0.42, Arbiter 0.40
+    STRATEGY REASON: Loss streak prolongada | CONF: 0.80
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.56
+    GOLD: 2 | renda base +5 | juros +0 | sequência +2 | vitória +0
+    FIT UNIDADE: Mordekaiser | core=não | fit=0.42 | Vanguard=0.42
+[18:17:06]  ⬇️ SINERGIA: CONDUIT nível 0
+[18:17:07] COMPROU: Pantheon (Custo 2 | i:4.0) | Rew: -0.04
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.56
+FOCUS WEIGHTS: Mecha 2.31, Meeple 0.90, Bastion 0.90, Vanguard 0.45, Arbiter 0.44
+    STRATEGY REASON: Loss streak prolongada | CONF: 0.80
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.56 -> 2.56
+    GOLD: 0 | renda base +5 | juros +0 | sequência +2 | vitória +0
+    FIT UNIDADE: Pantheon | core=não | fit=0.00 | nenhum trait de foco
+[18:17:08] VENDEU: Pantheon (i:4.0)     | Rew: +0.10
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.49, Meeple 0.85, Bastion 0.84, Vanguard 0.41, Arbiter 0.40
+    STRATEGY REASON: Loss streak prolongada | CONF: 0.80
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.56 -> 2.57
+    GOLD: 2 | renda base +5 | juros +0 | sequência +2 | vitória +0
+    FIT UNIDADE: Pantheon | core=não | fit=0.00 | nenhum trait de foco
+[18:17:09] COMPROU: Milio (Custo 2 | i:4.0) | Rew: -0.04
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.31, Meeple 0.90, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: Loss streak prolongada | CONF: 0.80
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +2 | vitória +0
+    FIT UNIDADE: Milio | core=não | fit=0.00 | nenhum trait de foco
+[18:17:09] VENDEU: Milio (i:4.0)        | Rew: +0.10
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.49, Meeple 0.85, Bastion 0.84, Vanguard 0.41, Arbiter 0.40
+    STRATEGY REASON: Loss streak prolongada | CONF: 0.80
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 2 | renda base +5 | juros +0 | sequência +2 | vitória +0
+    FIT UNIDADE: Milio | core=não | fit=0.00 | nenhum trait de foco
+[18:17:10] COMPROU: Pyke (Custo 2 | i:4.0) | Rew: -0.04
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.31, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: Loss streak prolongada | CONF: 0.80
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +2 | vitória +0
+    FIT UNIDADE: Pyke | core=não | fit=0.00 | nenhum trait de foco
+
+[18:17:11] --- FIM DO ROUND 4-2 | GOLD: 8 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Fiz|T|1*|i:6.0]       [ . ]        [Pop|T|1*|i:2.0]  [Urg|T|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aur|T|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Leo|T|1*|i:2.0]  [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Aur|T|1*|i:8.0]       [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Pyk|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:17:11] 🛒 LOJA: Tahm Kench(i:8.0), Lulu(i:6.0), Bel'Veth(i:4.0), Gragas(i:4.0), Gwen(i:4.0)
+[18:17:11] VENDEU: Pyke (i:4.0)         | Rew: +0.18
+    STRATEGY: STABILIZE | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.49, Meeple 0.85, Bastion 0.84, Vanguard 0.41, Arbiter 0.40
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 10 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Pyke | core=não | fit=0.00 | nenhum trait de foco
+[18:17:12] BUY XP                       | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 6 | renda base +5 | juros +0 | sequência +3 | vitória +0
+[18:17:13] BUY XP                       | Rew: +1.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.49, Meeple 0.85, Bastion 0.84, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 2 | renda base +5 | juros +0 | sequência +3 | vitória +0
+[18:17:13] COMPROU: Bel'Veth (Custo 2 | i:4.0) | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=não | fit=0.00 | nenhum trait de foco
+[18:17:14] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Urgot (i:6.0) | Rew: -0.24
+    STRATEGY: STABILIZE | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.52
+FOCUS WEIGHTS: Mecha 2.49, Meeple 0.86, Bastion 0.85, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.52
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=não | fit=0.00 | nenhum trait de foco
+[18:17:15] MOVE Bench -> Board: Urgot (i:6.0) <-> Aurelion Sol (i:8.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.52
+FOCUS WEIGHTS: Mecha 2.31, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.52 -> 2.52
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=2.31 | Mecha=2.31
+[18:17:16] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.50
+FOCUS WEIGHTS: Mecha 2.49, Meeple 0.86, Bastion 0.85, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.52 -> 2.50
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+[18:17:17] MOVE Bench -> Board: Aurelion Sol (i:8.0) <-> Vazio | Rew: +0.63
+    STRATEGY: STABILIZE | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.49, Meeple 0.85, Bastion 0.84, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.50 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Aurelion Sol | core=SIM | fit=2.49 | Mecha=2.49
+
+[18:17:18] --- FIM DO ROUND 4-3 | GOLD: 8 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.49, Meeple 0.85, Bastion 0.84, Vanguard 0.41, Arbiter 0.41
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Fiz|T|1*|i:6.0]       [ . ]        [Pop|T|1*|i:2.0]  [Bel|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Urg|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Leo|T|1*|i:2.0]  [Pop|T|1*|i:2.0]  [Aur|T|1*|i:8.0]       [ . ]             [ . ]        [Aur|T|1*|i:8.0]       [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:17:18] 🛒 LOJA: Pantheon(i:4.0), Samira(i:6.0), Gnar(i:4.0), Riven(i:8.0), Karma(i:8.0)
+[18:17:18] BUY XP                       | Rew: +0.01
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 4 | renda base +5 | juros +0 | sequência +3 | vitória +0
+[18:17:19] BUY XP                       | Rew: +0.01
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.49, Meeple 0.85, Bastion 0.84, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+[18:17:20] MOVE Board -> Board: Poppy (i:2.0) <-> Fizz (i:6.0) | Rew: -0.05
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=1.80 | Meeple=0.91, Bastion=0.90
+[18:17:21] MOVE Board -> Board: Fizz (i:6.0) <-> Poppy (i:2.0) | Rew: -0.05
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.49, Meeple 0.85, Bastion 0.84, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Fizz | core=SIM | fit=0.85 | Meeple=0.85
+[18:17:21] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[18:17:25] --- FIM DO ROUND 4-4 | GOLD: 8 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]        [Fiz|T|1*|i:6.0]  [Bel|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Urg|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Leo|T|1*|i:2.0]  [Pop|T|1*|i:2.0]  [Aur|T|1*|i:8.0]       [ . ]             [ . ]        [Aur|T|1*|i:8.0]       [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:17:25] 🛒 LOJA: Aurora(i:6.0), Aurelion Sol(i:8.0), Zoe(i:4.0), Gwen(i:4.0), Urgot(i:6.0)
+[18:17:25] BUY XP                       | Rew: +0.01
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.49, Meeple 0.85, Bastion 0.84, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 4 | renda base +5 | juros +0 | sequência +3 | vitória +0
+[18:17:26] BUY XP                       | Rew: +0.01
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+[18:17:27] MOVE Board -> Board: Poppy (i:2.0) <-> Poppy (i:2.0) | Rew: -0.05
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.49, Meeple 0.85, Bastion 0.84, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=1.70 | Meeple=0.85, Bastion=0.84
+[18:17:28] MOVE Board -> Board: Poppy (i:2.0) <-> Vazio | Rew: +0.05
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=1.80 | Meeple=0.91, Bastion=0.90
+[18:17:28] MOVE Board -> Board: Leona (i:2.0) <-> Poppy (i:2.0) | Rew: -0.05
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.49, Meeple 0.85, Bastion 0.84, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=0.81 | Arbiter=0.41, Vanguard=0.41
+[18:17:29] MOVE Board -> Board: Poppy (i:2.0) <-> Fizz (i:6.0) | Rew: -0.05
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=1.80 | Meeple=0.91, Bastion=0.90
+[18:17:30] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.49, Meeple 0.85, Bastion 0.84, Vanguard 0.41, Arbiter 0.41
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[18:17:32] --- FIM DO ROUND 4-5 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:17:32] 🛒 LOJA: None, None, None, None, None
+[18:17:32]  ⬇️ SINERGIA: MECHA nível 0
+[18:17:32]  ⬇️ SINERGIA: MEEPLE nível 0
+[18:17:32] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[18:17:39] --- FIM DO ROUND 4-6 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:17:39] 🛒 LOJA: None, None, None, None, None
+[18:17:40] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[18:17:46] --- FIM DO ROUND 4-7 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:17:46] 🛒 LOJA: None, None, None, None, None
+[18:17:47] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[18:17:53] --- FIM DO ROUND 5-1 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:17:53] 🛒 LOJA: None, None, None, None, None
+[18:17:54] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[18:18:00] --- FIM DO ROUND 5-2 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:18:00] 🛒 LOJA: None, None, None, None, None
+[18:18:01] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[18:18:07] --- FIM DO ROUND 5-3 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:18:07] 🛒 LOJA: None, None, None, None, None
+[18:18:08] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[18:18:14] --- FIM DO ROUND 5-4 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:18:14] 🛒 LOJA: None, None, None, None, None
+[18:18:15] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[18:18:21] --- FIM DO ROUND 5-5 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:18:21] 🛒 LOJA: None, None, None, None, None
+[18:18:22] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[18:18:28] --- FIM DO ROUND 5-6 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:18:28] 🛒 LOJA: None, None, None, None, None
+[18:18:29] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[18:18:35] --- FIM DO ROUND 5-7 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:18:35] 🛒 LOJA: None, None, None, None, None
+[18:18:37] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[18:18:43] --- FIM DO ROUND 6-1 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:18:43] 🛒 LOJA: None, None, None, None, None
+[18:18:44] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[18:18:50] --- FIM DO ROUND 6-2 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:18:50] 🛒 LOJA: None, None, None, None, None
+[18:18:51] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[18:18:57] --- FIM DO ROUND 6-3 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:18:57] 🛒 LOJA: None, None, None, None, None
+[18:18:58] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[18:19:05] --- FIM DO ROUND 6-4 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:19:05] 🛒 LOJA: None, None, None, None, None
+[18:19:06] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_AurelionSol, TFT17_Urgot, TFT17_Fizz | CORE TRAITS: Meeple, Mecha, Bastion
+    COMP BEFORE -> AFTER: dir=Mecha -> Mecha | foco=TFT17_AurelionSol -> TFT17_AurelionSol | lock=True -> True | strength=2.57 -> 2.57
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[18:19:12] --- FIM DO ROUND 6-5 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Mecha | FOCUS: TFT17_AurelionSol | LOCK: LOCKED | STRENGTH: 2.57
+FOCUS WEIGHTS: Mecha 2.32, Meeple 0.91, Bastion 0.90, Vanguard 0.44, Arbiter 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[18:19:12] 🛒 LOJA: None, None, None, None, None
+
+========================================
+ GAME OVER - RELATÓRIO FINAL
+========================================
