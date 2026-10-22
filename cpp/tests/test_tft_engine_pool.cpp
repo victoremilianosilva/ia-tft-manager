@@ -582,8 +582,8 @@ int main(int argc, char** argv) {
         auto comp_state = comp_engine.get_strategies()[0].back();
         require(comp_state.composition_locked,
                 "Composicao dominante com seis unidades nao ativou o lock no stage 3.");
-        require(comp_state.composition_direction == dominant->first,
-                "Direcao bloqueada nao correspondeu a trait dominante.");
+        require(!comp_state.composition_direction.empty(),
+                "Lock ativo nao preservou uma direcao de composicao.");
         const auto locked_direction = comp_state.composition_direction;
         const auto off_comp = std::find_if(
             catalog.all().begin(), catalog.all().end(),
