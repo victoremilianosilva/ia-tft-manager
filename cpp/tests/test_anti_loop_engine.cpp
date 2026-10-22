@@ -382,7 +382,7 @@ void test_incremental_signature_hash_matches_full_recomputation() {
     const auto before_swap = PositionSignatureHash{}(signature);
     signature.swap_board_bench(4, 2);
     PositionSignature expected_replacement;
-    expected_replacement.board[4] = make_unit("briar-1", 2).identity;
+    expected_replacement.board[4] = make_unit("briar-1", 2);
     expected_replacement.bench[2] = nasus;
     const auto replacement_hash = PositionSignatureHash{}(signature);
     const auto expected_replacement_hash = PositionSignatureHash{}(expected_replacement);
