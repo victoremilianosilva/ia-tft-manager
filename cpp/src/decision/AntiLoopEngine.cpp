@@ -533,8 +533,9 @@ bool AntiLoopEngine::is_cycle_move(
         return false;
     }
 
+    // Filter by stable unit identity before applying the history window:
+    // movements by other units must not hide this unit's trajectory.
     std::vector<std::pair<std::int32_t, std::int32_t>> recent;
-
     for (const auto& move : history_.move_history) {
         if (
             (move.move_type == "board_move"
@@ -545,49 +546,42 @@ bool AntiLoopEngine::is_cycle_move(
         }
     }
 
-    if (recent.size() > 8) {
-        recent.erase(
-            recent.begin(),
-            recent.end() - 8
-        );
+    constexpr std::size_t kRecentMoves = 8;
+    if (recent.size() > kRecentMoves) {
+        recent.erase(recent.begin(), recent.end() - kRecentMoves);
     }
+    if (recent.empty()) return false;
 
-    if (recent.empty()) {
-        return false;
-    }
-
-    bool started = false;
-    std::optional<std::int32_t> expected_position;
-    bool cycle_completed = false;
-
+    // Build the current continuous trajectory. If this unit was moved by
+    // another mechanism and the recorded endpoints no longer connect, start
+    // a new segment rather than inventing a cycle across a discontinuity.
+    std::vector<std::int32_t> positions;
     for (const auto& [src, dst] : recent) {
-        if (!started) {
-            if (src == target) {
-                started = true;
-                expected_position = dst;
-            }
-
-            continue;
-        }
-
-        // Uma quebra na continuidade invalida a sequência.
-        if (src != *expected_position) {
-            return false;
-        }
-
-        expected_position = dst;
-
-        if (dst == target) {
-            cycle_completed = true;
+        if (positions.empty() || positions.back() != src) {
+            positions = {src, dst};
+        } else {
+            positions.push_back(dst);
         }
     }
 
-    // O ciclo só bloqueia quando já se completou anteriormente
-    // e a sequência terminou na origem do movimento candidato.
-    return started
-        && cycle_completed
-        && expected_position.has_value()
-        && *expected_position == source;
+    // The candidate must continue the unit's latest trajectory and return to
+    // a position it has already occupied. To avoid rejecting a legitimate
+    // first cycle closure, require evidence of a prior revisit in the history
+    // (an existing loop/oscillation), not merely a path that would close once.
+    if (positions.size() < 4 || positions.back() != source) return false;
+
+    const auto repeated_position = [&positions]() {
+        for (std::size_t i = 0; i + 1 < positions.size(); ++i) {
+            for (std::size_t j = i + 1; j < positions.size(); ++j) {
+                if (positions[i] == positions[j]) return true;
+            }
+        }
+        return false;
+    };
+
+    if (!repeated_position()) return false;
+
+    return std::find(positions.begin(), positions.end(), target) != positions.end();
 }
 
 std::optional<std::string> AntiLoopEngine::get_block_reason(
