@@ -415,7 +415,8 @@ class ViewerSession:
                 )
                 if not player.get("alive", True):
                     continue
-                if self._round_action_counts[player_id] >= 10:
+                round_action_counts = getattr(self, "_round_action_counts", None)
+                if round_action_counts is not None and round_action_counts[player_id] >= 10:
                     continue
                 fallback = self._backline_fallback_action(player_id)
                 if fallback is None:
