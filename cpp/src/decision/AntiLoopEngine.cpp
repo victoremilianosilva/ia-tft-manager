@@ -42,26 +42,52 @@ void hash_identity(std::size_t& seed, const UnitIdentity& identity) noexcept {
 
 } // namespace
 
+namespace {
+std::size_t slot_contribution(
+    bool is_bench, std::size_t slot, const std::optional<UnitIdentity>& unit
+) noexcept {
+    if (!unit.has_value()) return 0;
+    std::size_t seed = is_bench ? static_cast<std::size_t>(0xB3A5U)
+                                : static_cast<std::size_t>(0xB04DU);
+    hash_combine(seed, slot);
+    hash_identity(seed, *unit);
+    return seed;
+}
+} // namespace
+
 std::size_t PositionSignatureHash::operator()(
     const PositionSignature& signature
 ) const noexcept {
-    std::size_t seed = 0;
+    if (signature.hash_cached) return signature.cached_hash;
 
-    for (const auto& slot : signature.board) {
-        hash_combine(seed, slot.has_value() ? 1U : 0U);
-        if (slot.has_value()) {
-            hash_identity(seed, *slot);
-        }
-    }
+    std::size_t result = 0;
+    for (std::size_t i = 0; i < signature.board.size(); ++i)
+        result ^= slot_contribution(false, i, signature.board[i]);
+    for (std::size_t i = 0; i < signature.bench.size(); ++i)
+        result ^= slot_contribution(true, i, signature.bench[i]);
 
-    for (const auto& slot : signature.bench) {
-        hash_combine(seed, slot.has_value() ? 1U : 0U);
-        if (slot.has_value()) {
-            hash_identity(seed, *slot);
-        }
-    }
+    signature.cached_hash = result;
+    signature.hash_cached = true;
+    return result;
+}
 
-    return seed;
+void PositionSignature::swap_board_slots(std::size_t first, std::size_t second) {
+    (void)PositionSignatureHash{}(*this);
+    if (first == second) return;
+    cached_hash ^= slot_contribution(false, first, board[first]);
+    cached_hash ^= slot_contribution(false, second, board[second]);
+    std::swap(board[first], board[second]);
+    cached_hash ^= slot_contribution(false, first, board[first]);
+    cached_hash ^= slot_contribution(false, second, board[second]);
+}
+
+void PositionSignature::swap_board_bench(std::size_t board_slot, std::size_t bench_slot) {
+    (void)PositionSignatureHash{}(*this);
+    cached_hash ^= slot_contribution(false, board_slot, board[board_slot]);
+    cached_hash ^= slot_contribution(true, bench_slot, bench[bench_slot]);
+    std::swap(board[board_slot], bench[bench_slot]);
+    cached_hash ^= slot_contribution(false, board_slot, board[board_slot]);
+    cached_hash ^= slot_contribution(true, bench_slot, bench[bench_slot]);
 }
 
 AntiLoopEngine::AntiLoopEngine()
