@@ -511,6 +511,7 @@ class PlayerJsonLogWriter:
                 "placement_reward": placement_rewards[player_id] if isinstance(placement_rewards, list) and player_id < len(placement_rewards) else None,
                 "state_changed": before_state != after_state,
                 "state_before": before_state, "state_after": after_state,
+                "composition_diagnostics": {"before_direction": before_state.get("comp_direction"), "after_direction": after_state.get("comp_direction"), "direction_changed": before_state.get("comp_direction") != after_state.get("comp_direction"), "before_focus": before_state.get("comp_focus"), "after_focus": after_state.get("comp_focus"), "focus_changed": before_state.get("comp_focus") != after_state.get("comp_focus"), "before_locked": before_state.get("composition_locked"), "after_locked": after_state.get("composition_locked"), "before_strength": before_state.get("composition_strength"), "after_strength": after_state.get("composition_strength"), "strategy_reason": after_state.get("strategy_reason"), "core_units": after_state.get("core_units"), "core_traits": after_state.get("core_traits"), "active_traits": after_state.get("active_traits"), "focus_weights": after_state.get("composition_focus_weights"), "strategy_scores": after_state.get("strategy_scores"), "policy_status": diagnostic.get("status")},
                 "policy_diagnostics": diagnostic, "engine_events": player_events,
             }
 
