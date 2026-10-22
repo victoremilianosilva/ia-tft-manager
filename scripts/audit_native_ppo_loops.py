@@ -202,8 +202,8 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
                     diagnostics[player_id] = diag[row]
 
             mask_valid = [_mask_allows(actions[i], masks[i]) if i in alive else True for i in range(8)]
-            result = lobby._engine.step([_action_dict(a) for a in actions])
-            observations = np.asarray(result["observations"], dtype=np.float32)
+            observations, _, done, info = lobby.step(actions)
+            observations = np.asarray(observations, dtype=np.float32)
             after_snapshot = lobby.get_audit_snapshot()
             after_players = after_snapshot["players"]
             strategies_after = lobby.get_strategy_snapshots()
@@ -270,7 +270,7 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
                 raise RuntimeError(
                     f"Loop nativo detectado no seed={seed}, step={step_index}: {loops}"
                 )
-            if bool(result.get("lobby_done", False)):
+            if done:
                 return step_index + 1
         raise RuntimeError(f"Seed {seed} excedeu max_steps={max_steps}.")
     finally:
