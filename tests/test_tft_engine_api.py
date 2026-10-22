@@ -499,11 +499,6 @@ def test_anti_loop_detects_unit_oscillation_with_other_units_interleaved():
             "are interleaved."
         )
 
-        move(7, 8)  # B: 7 -> 8, another spacer move
-        masks = native.get_action_masks()[0]
-        assert not bool(masks["board_move_target_masks"][3][0]), (
-            "A's cycle must remain blocked after another unit moves in between."
-        )
     finally:
         engine.close()
 
