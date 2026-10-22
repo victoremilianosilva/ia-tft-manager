@@ -30,8 +30,8 @@ def test_native_mask_blocks_reverse_swap_and_executor_rejects_forced_reverse():
         native = lobby._engine
 
         assert native.set_player_economy_for_testing(0, 10, 3, 0)
-        assert native.set_unit_for_testing(0, True, 3, "Nasus", 1)
-        assert native.set_unit_for_testing(0, True, 10, "Briar", 1)
+        assert native.set_unit_for_testing(0, True, 3, "TFT17_Nasus", 1)
+        assert native.set_unit_for_testing(0, True, 10, "TFT17_Briar", 1)
 
         before = lobby.get_audit_snapshot()["players"][0]
         before_signature = _state_signature(before)
