@@ -181,7 +181,9 @@ def test_composition_focus_and_lock_features_reach_policy_encoder():
         for parameter in policy.parameters():
             parameter.zero_()
         policy.global_mlp[0].weight[0, first_global_index] = 1.0
+        policy.global_mlp[0].weight[1, locked_index] = 1.0
         policy.global_mlp[2].weight[0, 0] = 1.0
+        policy.global_mlp[2].weight[0, 1] = 1.0
         policy.fusion[0].weight[0, 4 * 7 * 64] = 1.0
         policy.fusion[2].weight[0, 0] = 1.0
 
