@@ -95,6 +95,7 @@ class ViewerSession:
         self._preparation_started_at: float | None = None
         self._preparation_round: tuple[int, int] | None = None
         self._passed_players: set[int] = set()
+        self._round_action_counts = [0] * 8
         self._backline_fallback_checked = False
 
     def load_checkpoint(self, checkpoint: str | Path, seed: int, deterministic: bool,
@@ -138,6 +139,7 @@ class ViewerSession:
         self._preparation_started_at = None
         self._preparation_round = None
         self._passed_players.clear()
+        self._round_action_counts = [0] * 8
         self._backline_fallback_checked = False
         self.checkpoint_sha256 = digest
         self.match_id = str(uuid.uuid4())
@@ -335,6 +337,7 @@ class ViewerSession:
                 self._preparation_round = round_key
                 self._preparation_started_at = time.monotonic()
                 self._passed_players.clear()
+                self._round_action_counts = [0] * 8
                 self._backline_fallback_checked = False
 
         before = self._snapshot_for_event()
@@ -345,19 +348,26 @@ class ViewerSession:
             if not player.get("alive", True):
                 actions.append([6, 0, 0, 0, 0, 0])
                 diagnostics.append({"action_name": "PASS", "action": [6, 0, 0, 0, 0, 0], "status": "eliminated_seat"})
-            elif wall_clock_enabled and player_id in self._passed_players:
+            elif wall_clock_enabled and (
+                player_id in self._passed_players or self._round_action_counts[player_id] >= 10
+            ):
                 action = [6, 0, 0, 0, 0, 0]
                 actions.append(action)
-                diagnostics.append({
-                    "action_name": "PASS", "action": action,
-                    "status": "waiting_for_preparation_deadline",
-                })
+                status = (
+                    "viewer_action_limit_reached"
+                    if self._round_action_counts[player_id] >= 10
+                    else "waiting_for_preparation_deadline"
+                )
+                diagnostics.append({"action_name": "PASS", "action": action, "status": status})
+                self._passed_players.add(player_id)
             else:
                 action, diag = self._action_for_player(player_id)
                 actions.append(action)
                 diagnostics.append(diag)
-                if wall_clock_enabled and action[0] == 6:
-                    self._passed_players.add(player_id)
+                if wall_clock_enabled:
+                    self._round_action_counts[player_id] += 1
+                    if action[0] == 6:
+                        self._passed_players.add(player_id)
         self._emit("decision_batch", {
             "before": before,
             "players": [
@@ -442,6 +452,7 @@ class ViewerSession:
             self._preparation_started_at = None
             self._preparation_round = None
             self._passed_players.clear()
+            self._round_action_counts = [0] * 8
             self._backline_fallback_checked = False
         self.step_count += 1
         after = self._snapshot_for_event()
