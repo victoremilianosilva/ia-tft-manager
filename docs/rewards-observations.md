@@ -31,7 +31,7 @@ Esses campos tornam a direção e a compatibilidade visíveis à policy, em vez 
 
 A dimensão da observação mudou novamente com os pesos de foco, o bloqueio e a força da composição. O carregador atual pode migrar checkpoints compatíveis: as colunas novas do encoder global são inicializadas em zero e a cauda de candidatos é deslocada sem perder alinhamento. Isso preserva o comportamento inicial, mas **não significa que o checkpoint já aprendeu a usar as novas features**. Para validar o efeito, faça fine-tuning com o carregador de migração ou treine do zero; não compare métricas como se a arquitetura/observação fossem idênticas.
 
-**Compatibilidade de checkpoints:** a dimensão da observação mudou. Checkpoints treinados antes desta alteração têm uma primeira camada com dimensão incompatível e não devem ser carregados como se fossem compatíveis. Inicie um novo treinamento ou implemente uma migração explícita de pesos antes de reutilizar checkpoints antigos.
+**Compatibilidade de checkpoints:** a dimensão mudou, mas `TFTPolicy.load_compatible_state_dict()` migra checkpoints que compartilham os mesmos nomes de parâmetros e diferem apenas pela inserção de features globais antes da cauda de candidatos. As novas colunas são inicializadas em zero; o checkpoint carrega, mas precisa de fine-tuning ou treinamento novo para aprender os sinais recém-adicionados.
 
 ## Terminação
 
