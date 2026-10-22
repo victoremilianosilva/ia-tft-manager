@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
         const std::size_t expected_observation_dim =
             legacy_observation_dim + 2 * trait_order.size() +
             tft::kBoardSlots + tft::kBenchSlots + tft::kShopSlots +
-            1 + tft::kBoardSlots +
+            1 + tft::kBoardSlots + trait_order.size() + 2 +
             8 * (tft::kBenchSlots + tft::kShopSlots);
         require(engine.observation_dim() == expected_observation_dim,
                 "Dimensao PPO nao inclui os novos recursos de composicao.");
@@ -74,6 +74,39 @@ int main(int argc, char** argv) {
                 "Score de compatibilidade da unidade nao chegou a observacao PPO.");
         const std::size_t candidate_features_offset =
             expected_observation_dim - 8 * (tft::kBenchSlots + tft::kShopSlots);
+        const std::size_t focus_weights_offset =
+            candidate_features_offset - trait_order.size() - 2;
+        const std::size_t locked_offset = focus_weights_offset + trait_order.size();
+        const std::size_t strength_offset = locked_offset + 1;
+        for (std::size_t trait_index = 0;
+             trait_index < trait_order.size(); ++trait_index) {
+            double expected_weight = 0.0;
+            for (const auto& [trait, weight] :
+                 strategy_after_fixture.composition_focus_weights) {
+                if (trait == trait_order[trait_index]) {
+                    expected_weight = weight;
+                    break;
+                }
+            }
+            const float expected_normalized_weight = static_cast<float>(
+                std::clamp(expected_weight / 5.0, 0.0, 1.0));
+            require(std::abs(player_observation[focus_weights_offset + trait_index] -
+                             expected_normalized_weight) < 1e-5f,
+                    "Focus weights nao estao alinhados com a ordem fixa de traits.");
+            require(player_observation[focus_weights_offset + trait_index] >= 0.0f &&
+                    player_observation[focus_weights_offset + trait_index] <= 1.0f,
+                    "Focus weight normalizado fora de [0, 1].");
+        }
+        require(player_observation[locked_offset] ==
+                    (strategy_after_fixture.composition_locked ? 1.0f : 0.0f),
+                "Estado composition_locked diverge do snapshot estrategico.");
+        require(std::abs(player_observation[strength_offset] -
+                         static_cast<float>(std::clamp(
+                             strategy_after_fixture.composition_strength / 10.0, 0.0, 1.0))) < 1e-5f,
+                "composition_strength nao esta normalizado/alinhado.");
+        require(candidate_features_offset + 8 * (tft::kBenchSlots + tft::kShopSlots) ==
+                    expected_observation_dim,
+                "Features de candidatos deixaram de ocupar a cauda da observacao.");
         require(player_observation[candidate_features_offset] > 0.0f,
                 "Features estrategicas da primeira unidade do banco ausentes.");
         const std::size_t shop_candidate_offset =
