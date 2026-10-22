@@ -31,6 +31,7 @@ struct StateVisit {
     PositionSignature signature;
     std::uint32_t visits = 0;
     bool repeated = false;
+    std::uint32_t last_seen_round = 1;
 };
 
 // Movimento efetivamente registrado.
@@ -105,6 +106,8 @@ struct AntiLoopHistory {
     std::optional<MoveRecord> last_move;
 
     ExecutionMetrics metrics;
+    std::uint32_t current_round = 1;
+    std::uint32_t state_window_rounds = 4;
 };
 
 } // namespace tft::decision
