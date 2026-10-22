@@ -577,7 +577,9 @@ struct TFTEngine::Impl {
             kPositioningObservationDim + observation_trait_names.size() +
             kCapacityObservationDim +
             2 * observation_trait_names.size() + kCompositionUnitSlots +
-            kActionMemoryObservationDim + kStrategicCandidateObservationDim;
+            kActionMemoryObservationDim +
+            observation_trait_names.size() + 2 +
+            kStrategicCandidateObservationDim;
     }
 
     std::vector<float> build_observations() const {
@@ -803,7 +805,29 @@ struct TFTEngine::Impl {
                     static_cast<float>(kActionMemoryHorizon);
             }
 
-            // 14) PER-CANDIDATE DECISION FEATURES. These are explicit slot-local
+            // 14) COMPOSITION CONTROL FEATURES. Keep these immediately before the
+            // candidate tail: policy.py extracts candidate records from the end,
+            // and checkpoint migration inserts new global features at this boundary.
+            // Focus weights use the stable catalog trait order shared by direction/core
+            // flags and are normalized from [0, 5] to [0, 1].
+            for (const auto& trait : observation_trait_names) {
+                double weight = 0.0;
+                for (const auto& [focus_trait, focus_weight] :
+                     strategy.composition_focus_weights) {
+                    if (focus_trait == trait) {
+                        weight = focus_weight;
+                        break;
+                    }
+                }
+                out[offset++] = static_cast<float>(
+                    std::clamp(weight / 5.0, 0.0, 1.0));
+            }
+            out[offset++] = strategy.composition_locked ? 1.0f : 0.0f;
+            // Strategy strength is bounded to [0, 10] by its scoring formula.
+            out[offset++] = static_cast<float>(
+                std::clamp(strategy.composition_strength / 10.0, 0.0, 1.0));
+
+            // 15) PER-CANDIDATE DECISION FEATURES. These are explicit slot-local
             // features so the policy can compare offers/sale candidates rather than
             // infer which global features correspond to each output index.
             const auto count_same_champion = [&](const UnitInstance& candidate) {
