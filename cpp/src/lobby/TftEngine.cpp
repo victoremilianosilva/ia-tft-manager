@@ -2379,14 +2379,13 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                               }
                             : std::nullopt;
                     const std::string move_type = "bench_to_board";
-                    const auto reason = anti_loop.get_block_reason(
-                        move_type,
-                        source,
-                        target,
-                        unit_identity
-                    );
+                    std::string block_reason;
+                    const bool move_allowed =
+                        lobby.action_mask_engine.is_bench_to_board_move_allowed(
+                            state, anti_loop, source, target, &block_reason
+                        );
 
-                    if (reason.has_value()) {
+                    if (!move_allowed) {
                         anti_loop_blocked = true;
                         (void)anti_loop.block_move(
                             move_type,
@@ -2394,7 +2393,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             target,
                             unit_identity
                         );
-                        anti_loop.record_execution_block(*reason);
+                        anti_loop.record_execution_block(
+                            block_reason.empty() ? "cycle" : block_reason
+                        );
                     } else {
                         (void)anti_loop.register_move(
                             move_type,
@@ -2462,15 +2463,13 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         ? "board_swap"
                         : "board_move";
 
-                const auto reason =
-                    anti_loop.get_block_reason(
-                        move_type,
-                        source,
-                        target,
-                        unit_identity
+                std::string block_reason;
+                const bool move_allowed =
+                    lobby.action_mask_engine.is_board_move_allowed(
+                        state, anti_loop, source, target, &block_reason
                     );
 
-                if (reason.has_value()) {
+                if (!move_allowed) {
                     anti_loop_blocked = true;
                     (void)anti_loop.block_move(
                         move_type,
@@ -2479,7 +2478,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         unit_identity
                     );
 
-                    anti_loop.record_execution_block(*reason);
+                    anti_loop.record_execution_block(
+                        block_reason.empty() ? "cycle" : block_reason
+                    );
                 } else {
                     (void)anti_loop.register_move(
                         move_type,

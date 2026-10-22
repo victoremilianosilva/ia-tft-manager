@@ -7,6 +7,7 @@
 
 #include <array>
 #include <cstdint>
+#include <string>
 
 namespace tft::decision {
 
@@ -54,6 +55,16 @@ public:
         bool include_board_target = true
     ) const;
 
+    // Shared full legality checks used by both mask generation and execution.
+    [[nodiscard]] bool is_board_move_allowed(
+        const PlayerState& state, const AntiLoopEngine& anti_loop,
+        RawIndex source, RawIndex target, std::string* block_reason = nullptr
+    ) const;
+    [[nodiscard]] bool is_bench_to_board_move_allowed(
+        const PlayerState& state, const AntiLoopEngine& anti_loop,
+        RawIndex bench_slot, RawIndex target, std::string* block_reason = nullptr
+    ) const;
+
 private:
     [[nodiscard]] static bool can_spend(
         const EconomyState& economy,
@@ -70,7 +81,8 @@ private:
         PositionSignature& current_signature,
         RawIndex source,
         RawIndex target,
-        MaskDiagnostics& diagnostics
+        MaskDiagnostics& diagnostics,
+        std::string* block_reason = nullptr
     );
 
     [[nodiscard]] static bool is_valid_bench_to_board_move(
@@ -79,7 +91,8 @@ private:
         PositionSignature& current_signature,
         RawIndex bench_slot,
         RawIndex target,
-        MaskDiagnostics& diagnostics
+        MaskDiagnostics& diagnostics,
+        std::string* block_reason = nullptr
     );
 
     static void validate_state(const PlayerState& state);

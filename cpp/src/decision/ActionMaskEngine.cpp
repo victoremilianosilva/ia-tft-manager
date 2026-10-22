@@ -119,8 +119,9 @@ void ActionMaskEngine::validate_state(const PlayerState& state) {
 }
 
 void ActionMaskEngine::set_fallback(ActionMaskBatch& masks) {
-    // Toda cabeça categórica deve ter pelo menos uma categoria.
-    // Esses valores dummy não habilitam tipos de ação.
+    // Heads condicionais precisam de uma categoria dummy para evitar
+    // distribuições inválidas, mas type_mask é a autoridade de legalidade:
+    // estes fallbacks nunca habilitam BUY/MOVE/SELL nem criam candidatos reais.
     if (
         std::none_of(
             masks.shop_mask.begin(),
@@ -190,15 +191,15 @@ bool ActionMaskEngine::is_valid_board_move(
     PositionSignature& current_signature,
     RawIndex source,
     RawIndex target,
-    MaskDiagnostics& diagnostics
+    MaskDiagnostics& diagnostics,
+    std::string* block_reason
 ) {
+    if (block_reason) block_reason->clear();
     const auto result = MoveValidator::validate_board_move(
-        state.board,
-        source,
-        target
+        state.board, source, target
     );
-
     if (!result.is_valid() || !result.move_type.has_value()) {
+        if (block_reason) *block_reason = "invalid";
         return false;
     }
 
@@ -216,15 +217,13 @@ bool ActionMaskEngine::is_valid_board_move(
     const auto unit = identity_of(state.board[*source_index]);
     ++diagnostics.board_move_candidates;
 
-    const auto block_reason = anti_loop.get_block_reason(
-        move_type_name(move_type),
-        source,
-        target,
-        unit
+    const auto anti_loop_reason = anti_loop.get_block_reason(
+        move_type_name(move_type), source, target, unit
     );
-    if (block_reason.has_value()) {
+    if (anti_loop_reason.has_value()) {
         ++diagnostics.board_move_blocked_anti_loop;
-        record_block_reason(diagnostics, *block_reason);
+        record_block_reason(diagnostics, *anti_loop_reason);
+        if (block_reason) *block_reason = *anti_loop_reason;
         return false;
     }
 
@@ -241,6 +240,7 @@ bool ActionMaskEngine::is_valid_board_move(
 
     if (resulting_state_seen) {
         ++diagnostics.board_move_blocked_seen_state;
+        if (block_reason) *block_reason = "cycle";
         return false;
     }
 
@@ -254,16 +254,15 @@ bool ActionMaskEngine::is_valid_bench_to_board_move(
     PositionSignature& current_signature,
     RawIndex bench_slot,
     RawIndex target,
-    MaskDiagnostics& diagnostics
+    MaskDiagnostics& diagnostics,
+    std::string* block_reason
 ) {
+    if (block_reason) block_reason->clear();
     const auto result = MoveValidator::validate_bench_to_board_move(
-        state.board,
-        state.bench,
-        bench_slot,
-        target
+        state.board, state.bench, bench_slot, target
     );
-
     if (!result.is_valid() || !result.move_type.has_value()) {
+        if (block_reason) *block_reason = "invalid";
         return false;
     }
 
@@ -280,15 +279,13 @@ bool ActionMaskEngine::is_valid_bench_to_board_move(
     const auto unit = identity_of(state.bench[*bench_index]);
     ++diagnostics.bench_move_candidates;
 
-    const auto block_reason = anti_loop.get_block_reason(
-        move_type_name(*result.move_type),
-        bench_slot,
-        target,
-        unit
+    const auto anti_loop_reason = anti_loop.get_block_reason(
+        move_type_name(*result.move_type), bench_slot, target, unit
     );
-    if (block_reason.has_value()) {
+    if (anti_loop_reason.has_value()) {
         ++diagnostics.bench_move_blocked_anti_loop;
-        record_block_reason(diagnostics, *block_reason);
+        record_block_reason(diagnostics, *anti_loop_reason);
+        if (block_reason) *block_reason = *anti_loop_reason;
         return false;
     }
 
@@ -301,6 +298,7 @@ bool ActionMaskEngine::is_valid_bench_to_board_move(
 
     if (resulting_state_seen) {
         ++diagnostics.bench_move_blocked_seen_state;
+        if (block_reason) *block_reason = "cycle";
         return false;
     }
 
@@ -308,6 +306,26 @@ bool ActionMaskEngine::is_valid_bench_to_board_move(
     return true;
 }
 
+
+bool ActionMaskEngine::is_board_move_allowed(
+    const PlayerState& state, const AntiLoopEngine& anti_loop,
+    RawIndex source, RawIndex target, std::string* block_reason
+) const {
+    auto signature = anti_loop.make_board_signature(state);
+    MaskDiagnostics diagnostics;
+    return is_valid_board_move(state, anti_loop, signature, source, target,
+                               diagnostics, block_reason);
+}
+
+bool ActionMaskEngine::is_bench_to_board_move_allowed(
+    const PlayerState& state, const AntiLoopEngine& anti_loop,
+    RawIndex bench_slot, RawIndex target, std::string* block_reason
+) const {
+    auto signature = anti_loop.make_board_signature(state);
+    MaskDiagnostics diagnostics;
+    return is_valid_bench_to_board_move(state, anti_loop, signature, bench_slot,
+                                        target, diagnostics, block_reason);
+}
 
 ActionMaskBatch ActionMaskEngine::generate_masks(
     const PlayerState& state,
