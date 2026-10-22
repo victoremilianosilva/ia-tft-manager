@@ -242,6 +242,12 @@ struct StrategyInfo {
     std::string composition_focus;
     std::int32_t composition_focus_id{-1};
     std::string composition_direction;
+    // Persistent state migrated from Python comp_direction/comp_focus logic.
+    bool composition_locked{false};
+    std::uint32_t comp_direction_update_steps{0};
+    std::int32_t comp_stabilize_start_round{-1};
+    double composition_strength{0.0};
+    std::vector<std::pair<std::string, double>> composition_focus_weights;
     std::vector<std::string> core_units;
     std::vector<std::int32_t> core_unit_ids;
     std::vector<std::string> core_traits;

@@ -1237,6 +1237,8 @@ struct TFTEngine::Impl {
         if (changed) {
             info.previous_strategy = info.strategy;
             info.strategy_age = 0;
+            if (chosen == 1)
+                info.comp_stabilize_start_round = static_cast<std::int32_t>(round + 1);
         } else {
             ++info.strategy_age;
         }
@@ -1289,7 +1291,7 @@ struct TFTEngine::Impl {
 
         info.composition_focus.clear();
         info.composition_focus_id = -1;
-        info.composition_direction.clear();
+        // Keep composition_direction persistent while composition_locked is true.
         info.core_units.clear();
         info.core_unit_ids.clear();
         info.core_traits.clear();
@@ -1300,10 +1302,300 @@ struct TFTEngine::Impl {
         for (const auto& trait : trait_order) {
             const auto count = trait_counts.at(trait);
             info.active_traits.emplace_back(trait, count);
-            if (info.composition_direction.empty() ||
-                count > trait_counts.at(info.composition_direction))
-                info.composition_direction = trait;
         }
+
+        // Port of Python _update_comp_direction(), _update_comp_focus(), and
+        // _should_lock_comp(). Python's _get_offensive_factor() helper is not
+        // part of this native engine, so champion role is used as a proxy.
+        const auto offensive_factor = [](const ChampionDefinition& def) {
+            switch (def.combat_profile.role) {
+                case 1: // carry
+                case 4: // assassin
+                    return 1.20;
+                case 3: // fighter
+                    return 1.05;
+                case 0: // tank
+                case 2: // support
+                    return 0.90;
+                default:
+                    return 1.0;
+            }
+        };
+        const auto current_stage = stage_for_round(round + 1);
+        const auto current_round = static_cast<std::int32_t>(round + 1);
+        const auto count_occupied = [](const auto& slots) {
+            return static_cast<std::size_t>(std::count_if(
+                slots.begin(), slots.end(),
+                [](const auto& unit) { return unit.has_value(); }));
+        };
+        const auto unit_count = count_occupied(player_envs[i].board) +
+            count_occupied(player_envs[i].bench);
+
+        std::map<std::string, double> focus;
+        for (const auto& [trait, value] : info.composition_focus_weights)
+            focus[trait] = value;
+
+        std::unordered_map<std::string, int> board_trait_counts;
+        for (const auto& unit : player_envs[i].board) {
+            if (!unit) continue;
+            const auto* def = catalog->find_by_id(unit->champion_internal_id);
+            if (!def) continue;
+            for (const auto& trait : def->traits) ++board_trait_counts[trait];
+        }
+        const auto trait_level = [&](const std::string& trait, int count) {
+            const auto found = trait_milestones.find(trait);
+            if (found == trait_milestones.end()) return count >= 2 ? 1 : 0;
+            int level = 0;
+            for (const int milestone : found->second) {
+                if (count >= milestone) ++level;
+            }
+            return level;
+        };
+
+        std::unordered_map<std::string, double> trait_score;
+        const auto score_composition_unit = [&](const UnitInstance& unit) {
+            const auto* def = catalog->find_by_id(unit.champion_internal_id);
+            if (!def) return;
+            const double base = 1.0 + def->cost * 0.15 +
+                (std::clamp(unit.star, 1, 3) - 1) * 0.5;
+            const double weighted = base * offensive_factor(*def);
+            for (const auto& trait : def->traits) trait_score[trait] += weighted;
+        };
+        for (const auto& unit : player_envs[i].board) if (unit) score_composition_unit(*unit);
+        for (const auto& unit : player_envs[i].bench) if (unit) score_composition_unit(*unit);
+
+        for (const auto& [trait, count] : board_trait_counts) {
+            if (trait_score.find(trait) == trait_score.end()) continue;
+            const int level = trait_level(trait, count);
+            if (level > 0) {
+                double avg_off = 0.0;
+                int matching = 0;
+                const auto accumulate_offense = [&](const auto& slots) {
+                    for (const auto& unit : slots) {
+                        if (!unit) continue;
+                        const auto* def = catalog->find_by_id(unit->champion_internal_id);
+                        if (def && std::find(def->traits.begin(), def->traits.end(), trait) != def->traits.end()) {
+                            avg_off += offensive_factor(*def);
+                            ++matching;
+                        }
+                    }
+                };
+                accumulate_offense(player_envs[i].board);
+                if (matching > 0) avg_off /= matching;
+                else avg_off = 1.0;
+                trait_score[trait] += (level * 2.0 + count * 0.3) * avg_off;
+            }
+        }
+        for (const auto& [trait, count] : trait_counts) {
+            if (board_trait_counts.find(trait) == board_trait_counts.end() ||
+                trait_level(trait, board_trait_counts[trait]) == 0) {
+                if (trait_score.find(trait) != trait_score.end())
+                    trait_score[trait] += 1.0 + count * 0.2;
+            }
+        }
+        for (auto& [trait, score] : trait_score) {
+            const auto found = focus.find(trait);
+            if (found != focus.end())
+                score *= 1.0 + std::min(0.4, found->second * 0.08);
+        }
+
+        std::vector<std::pair<std::string, double>> sorted_traits(
+            trait_score.begin(), trait_score.end());
+        std::stable_sort(sorted_traits.begin(), sorted_traits.end(),
+            [&](const auto& lhs, const auto& rhs) {
+                if (lhs.second != rhs.second) return lhs.second > rhs.second;
+                const auto left_pos = std::find(trait_order.begin(), trait_order.end(), lhs.first);
+                const auto right_pos = std::find(trait_order.begin(), trait_order.end(), rhs.first);
+                return left_pos < right_pos;
+            });
+
+        std::map<std::string, double> new_comp_traits;
+        if (current_stage <= 2) {
+            info.composition_locked = false;
+            info.composition_direction.clear();
+            info.composition_strength = 0.0;
+        } else if (unit_count == 0) {
+            info.composition_locked = false;
+            info.composition_direction.clear();
+            info.composition_strength = 0.0;
+            focus.clear();
+        } else {
+            ++info.comp_direction_update_steps;
+            if (info.comp_direction_update_steps >= 2) {
+                info.comp_direction_update_steps = 0;
+                if (!sorted_traits.empty()) {
+                    const auto& top = sorted_traits.front();
+                    const double second = sorted_traits.size() > 1
+                        ? sorted_traits[1].second : 0.0;
+                    const double gap = top.second - second;
+                    const double ratio = top.second / (second + 1e-5);
+                    if (!info.composition_locked && current_stage >= 3 &&
+                        unit_count >= 6 && (ratio > 1.6 || gap > 2.5)) {
+                        info.composition_locked = true;
+                    }
+                    if (info.composition_locked) {
+                        int active_core = 0;
+                        for (const auto& [trait, weight] : focus) {
+                            const auto found = trait_score.find(trait);
+                            if (found != trait_score.end() && found->second > 2.0)
+                                ++active_core;
+                        }
+                        if (active_core == 0) info.composition_locked = false;
+                    }
+
+                    if (info.composition_locked && !focus.empty()) {
+                        std::map<std::string, double> combined;
+                        for (const auto& [trait, weight] : focus)
+                            combined[trait] = weight * 0.6;
+                        for (const auto& [trait, score] : trait_score)
+                            combined[trait] += score * 0.4;
+                        std::vector<std::pair<std::string, double>> ordered(
+                            combined.begin(), combined.end());
+                        std::stable_sort(ordered.begin(), ordered.end(),
+                            [](const auto& lhs, const auto& rhs) {
+                                return lhs.second > rhs.second;
+                            });
+                        if (!ordered.empty()) {
+                            new_comp_traits[ordered[0].first] = ordered[0].second * 1.4;
+                            for (std::size_t index = 1;
+                                 index < std::min<std::size_t>(4, ordered.size()); ++index) {
+                                if (ordered[index].second > ordered[0].second * 0.35)
+                                    new_comp_traits[ordered[index].first] = ordered[index].second * 0.5;
+                            }
+                        }
+                    } else {
+                        new_comp_traits[top.first] = top.second * 1.4;
+                        for (std::size_t index = 1;
+                             index < std::min<std::size_t>(4, sorted_traits.size()); ++index) {
+                            if (sorted_traits[index].second > top.second * 0.35)
+                                new_comp_traits[sorted_traits[index].first] =
+                                    sorted_traits[index].second * 0.5;
+                        }
+                    }
+                }
+
+                for (auto& [trait, weight] : focus) weight *= 0.95;
+                for (auto it = focus.begin(); it != focus.end();) {
+                    if (it->second < 0.05) it = focus.erase(it);
+                    else ++it;
+                }
+                for (const auto& [trait, value] : new_comp_traits)
+                    focus[trait] += value * 0.04;
+                if (!new_comp_traits.empty()) {
+                    const auto main = std::max_element(
+                        new_comp_traits.begin(), new_comp_traits.end(),
+                        [](const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
+                    focus[main->first] += 0.8;
+                }
+                if (!info.composition_direction.empty() && !new_comp_traits.empty()) {
+                    const bool overlap = new_comp_traits.find(info.composition_direction) != new_comp_traits.end();
+                    if (!overlap && current_stage >= 4)
+                        focus[info.composition_direction] = std::max(
+                            0.1, focus[info.composition_direction]) * 1.1;
+                }
+                for (auto& [trait, weight] : focus) weight = std::min(weight, 5.0);
+                if (!new_comp_traits.empty()) {
+                    const auto main = std::max_element(
+                        new_comp_traits.begin(), new_comp_traits.end(),
+                        [](const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
+                    info.composition_direction = main->first;
+                    double total = 0.0;
+                    for (const auto& [trait, value] : new_comp_traits)
+                        total += std::min(value, 10.0);
+                    info.composition_strength = total / new_comp_traits.size();
+                } else {
+                    info.composition_direction.clear();
+                    info.composition_strength = 0.0;
+                }
+            }
+        }
+
+        // _update_comp_focus() is evaluated on every decision step, separately
+        // from the direction refresh that runs every other step.
+        for (auto& [trait, weight] : focus) weight *= 0.95;
+        for (const auto& [trait, count] : trait_counts) {
+            const auto board_count = board_trait_counts.find(trait);
+            const int active_count = board_count == board_trait_counts.end()
+                ? 0 : board_count->second;
+            const int level = trait_level(trait, active_count);
+            if (level > 0) focus[trait] += 0.25 + 0.25 * level;
+            else focus[trait] += 0.10 + 0.05 * count;
+        }
+        if (!sorted_traits.empty()) focus[sorted_traits.front().first] += 0.8;
+        if (info.composition_locked) {
+            for (auto& [trait, weight] : focus) {
+                const auto score = trait_score.find(trait);
+                if (score != trait_score.end() && score->second > 2.0)
+                    weight += 0.2;
+                else
+                    weight *= 0.9;
+            }
+        }
+        if (focus.size() > 5) {
+            std::vector<std::pair<std::string, double>> ordered(focus.begin(), focus.end());
+            std::stable_sort(ordered.begin(), ordered.end(),
+                [](const auto& lhs, const auto& rhs) { return lhs.second > rhs.second; });
+            focus.clear();
+            for (std::size_t index = 0; index < 5; ++index)
+                focus[ordered[index].first] = ordered[index].second;
+        }
+        double focus_total = 0.0;
+        for (const auto& [trait, weight] : focus) focus_total += std::max(0.0, weight);
+        if (focus_total > 0.0) {
+            for (auto& [trait, weight] : focus)
+                weight = std::min(5.0, weight * 5.0 / focus_total);
+        }
+
+        // _should_lock_comp(): stage 4+ requires an active offensive synergy;
+        // STABILIZE can release the lock after three rounds without a win.
+        const bool stabilize_lock_suppressed =
+            info.strategy == 1 && info.comp_stabilize_start_round >= 0 &&
+            current_round - info.comp_stabilize_start_round >= 3 &&
+            economy.win_streak == 0;
+        if (!stabilize_lock_suppressed) {
+            bool has_offensive_synergy = false;
+            if (current_stage >= 4) {
+                for (const auto& [trait, count] : board_trait_counts) {
+                    if (trait_level(trait, count) < 2) continue;
+                    double avg_off = 0.0;
+                    int matching = 0;
+                    const auto inspect = [&](const auto& slots) {
+                        for (const auto& unit : slots) {
+                            if (!unit) continue;
+                            const auto* def = catalog->find_by_id(unit->champion_internal_id);
+                            if (def && std::find(def->traits.begin(), def->traits.end(), trait) != def->traits.end()) {
+                                avg_off += offensive_factor(*def);
+                                ++matching;
+                            }
+                        }
+                    };
+                    inspect(player_envs[i].board);
+                    inspect(player_envs[i].bench);
+                    if (matching > 0 && avg_off / matching > 1.0) {
+                        has_offensive_synergy = true;
+                        break;
+                    }
+                }
+            }
+            if (current_stage < 4 || has_offensive_synergy) {
+                double avg_board_power = 0.0;
+                int alive_count = 0;
+                for (std::size_t other = 0; other < kPlayersPerLobby; ++other) {
+                    if (!player_envs[other].info.alive) continue;
+                    avg_board_power += board_power(other);
+                    ++alive_count;
+                }
+                if (alive_count > 0) avg_board_power /= alive_count;
+                const bool board_stable = power >= avg_board_power * 0.9;
+                if (economy.win_streak >= 3 ||
+                    (current_stage >= 4 && board_stable) ||
+                    current_stage >= 5) {
+                    info.composition_locked = true;
+                }
+            }
+        }
+        info.composition_focus_weights.assign(focus.begin(), focus.end());
+
         for (const auto& unit_id : unit_order) {
             info.unit_counts.emplace_back(unit_names[unit_id], copies_by_unit.at(unit_id));
             info.unit_counts_by_id.emplace_back(unit_id, copies_by_unit.at(unit_id));
