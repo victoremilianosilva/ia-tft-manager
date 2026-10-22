@@ -209,13 +209,16 @@ class Trainer:
                 map_location=self.device
             )
 
-            self.policy.load_state_dict(
+            migrated_checkpoint = self.policy.load_compatible_state_dict(
                 checkpoint["policy"]
             )
-
-            print(
-                "✅ Pesos da política carregados."
-            )
+            if migrated_checkpoint:
+                print(
+                    "⚠️ Checkpoint migrado para a observação temporal e a nova cabeça "
+                    "MOVE_BENCH. O estado do optimizer/scheduler será reiniciado."
+                )
+            else:
+                print("✅ Pesos da política carregados sem migração.")
 
             # --------------------------------------------------------
             # OPTIMIZER
