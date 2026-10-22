@@ -254,48 +254,41 @@ class TFTPolicy(nn.Module):
             obs, masks=masks, deterministic=deterministic, collect_diagnostics=True
         )
 
+    def get_action_and_value_with_entropy_diagnostics(self, obs, masks=None, deterministic=False):
+        """Retorna entropia por cabeça sem materializar probabilidades/top-k completos."""
+        return self._get_action_and_value_impl(
+            obs, masks=masks, deterministic=deterministic, collect_entropy_diagnostics=True
+        )
+
     def _get_action_and_value_impl(
-        self, obs, masks=None, deterministic=False, collect_diagnostics=False
+        self, obs, masks=None, deterministic=False, collect_diagnostics=False,
+        collect_entropy_diagnostics=False
     ):
         device = obs.device
         batch_size = obs.shape[0]
-        # One list per player; diagnostic rows are captured from the exact
-        # masked logits that feed the action sampling below.
         player_diagnostics = [[] for _ in range(batch_size)]
         bench_candidate_features, shop_candidate_features = self._candidate_features(obs)
 
         def record_distribution(name, logits, chosen, row_indices, applied_mask=None):
-            if not collect_diagnostics:
+            if not collect_diagnostics and not collect_entropy_diagnostics:
                 return
             probabilities = torch.softmax(logits, dim=-1).detach()
             selected = chosen.detach().long()
             row_ids = row_indices.detach().long().tolist()
-            selected_values = selected.tolist()
-            mask_values = (
-                applied_mask.detach().bool().tolist()
-                if applied_mask is not None else None
-            )
-            top_count = min(3, probabilities.shape[-1])
-            top_probs, top_indices = probabilities.topk(top_count, dim=-1)
-            top_probs = top_probs.detach().tolist()
-            top_indices = top_indices.detach().tolist()
-            all_probs = probabilities.tolist()
-            entropy_nats = -(
-                probabilities * probabilities.clamp_min(
-                    torch.finfo(probabilities.dtype).tiny
-                ).log()
-            ).sum(dim=-1)
             if applied_mask is not None:
                 valid_counts = applied_mask.to(
                     device=probabilities.device, dtype=torch.bool
                 ).sum(dim=-1).clamp_min(1)
             else:
                 valid_counts = torch.full(
-                    (probabilities.shape[0],),
-                    probabilities.shape[-1],
-                    device=probabilities.device,
-                    dtype=torch.long,
+                    (probabilities.shape[0],), probabilities.shape[-1],
+                    device=probabilities.device, dtype=torch.long,
                 )
+            entropy_nats = -(
+                probabilities * probabilities.clamp_min(
+                    torch.finfo(probabilities.dtype).tiny
+                ).log()
+            ).sum(dim=-1)
             max_entropy = valid_counts.to(probabilities.dtype).log()
             normalized_entropy = torch.where(
                 max_entropy > 0,
@@ -304,20 +297,39 @@ class TFTPolicy(nn.Module):
             )
             entropy_values = entropy_nats.detach().tolist()
             normalized_entropy_values = normalized_entropy.detach().tolist()
+
+            # Training only needs compact entropy scalars. The viewer's full
+            # diagnostics retain masks, probabilities, selected action and top-k.
+            if collect_diagnostics:
+                selected_values = selected.tolist()
+                mask_values = (
+                    applied_mask.detach().bool().tolist()
+                    if applied_mask is not None else None
+                )
+                top_count = min(3, probabilities.shape[-1])
+                top_probs, top_indices = probabilities.topk(top_count, dim=-1)
+                top_probs = top_probs.detach().tolist()
+                top_indices = top_indices.detach().tolist()
+                all_probs = probabilities.tolist()
+
             for row, player_id in enumerate(row_ids):
-                player_diagnostics[player_id].append({
+                item = {
                     "head": name,
-                    "mask": mask_values[row] if mask_values is not None else None,
                     "entropy_nats": float(entropy_values[row]),
                     "entropy_normalized": float(normalized_entropy_values[row]),
-                    "probabilities": all_probs[row],
-                    "selected": int(selected_values[row]),
-                    "selected_probability": float(all_probs[row][selected_values[row]]),
-                    "top_choices": [
-                        {"index": int(index), "probability": float(probability)}
-                        for index, probability in zip(top_indices[row], top_probs[row])
-                    ],
-                })
+                }
+                if collect_diagnostics:
+                    item.update({
+                        "mask": mask_values[row] if mask_values is not None else None,
+                        "probabilities": all_probs[row],
+                        "selected": int(selected_values[row]),
+                        "selected_probability": float(all_probs[row][selected_values[row]]),
+                        "top_choices": [
+                            {"index": int(index), "probability": float(probability)}
+                            for index, probability in zip(top_indices[row], top_probs[row])
+                        ],
+                    })
+                player_diagnostics[player_id].append(item)
 
         features = self.encode(obs)
 
@@ -515,7 +527,7 @@ class TFTPolicy(nn.Module):
 
         value = self.value_head(features).squeeze(-1)
 
-        if collect_diagnostics:
+        if collect_diagnostics or collect_entropy_diagnostics:
             return actions, total_logprob, total_entropy, value, player_diagnostics
         return actions, total_logprob, total_entropy, value, None
 
