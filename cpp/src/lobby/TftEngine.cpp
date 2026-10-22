@@ -1353,7 +1353,7 @@ struct TFTEngine::Impl {
         };
 
         std::unordered_map<std::string, double> trait_score;
-        const auto score_owned_unit = [&](const UnitInstance& unit) {
+        const auto score_composition_unit = [&](const UnitInstance& unit) {
             const auto* def = catalog->find_by_id(unit.champion_internal_id);
             if (!def) return;
             const double base = 1.0 + def->cost * 0.15 +
@@ -1361,8 +1361,8 @@ struct TFTEngine::Impl {
             const double weighted = base * offensive_factor(*def);
             for (const auto& trait : def->traits) trait_score[trait] += weighted;
         };
-        for (const auto& unit : player_envs[i].board) if (unit) score_owned_unit(*unit);
-        for (const auto& unit : player_envs[i].bench) if (unit) score_owned_unit(*unit);
+        for (const auto& unit : player_envs[i].board) if (unit) score_composition_unit(*unit);
+        for (const auto& unit : player_envs[i].bench) if (unit) score_composition_unit(*unit);
 
         for (const auto& [trait, count] : board_trait_counts) {
             if (trait_score.find(trait) == trait_score.end()) continue;
