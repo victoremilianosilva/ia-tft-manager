@@ -1158,16 +1158,33 @@ class Trainer:
                 # ====================================================
 
                 with torch.no_grad():
-
                     (
                         actions,
                         logprobs,
                         _,
-                        values
-                    ) = self.policy.get_action(
-                        obs,
-                        masks=masks
+                        values,
+                        head_entropy_diagnostics,
+                    ) = self.policy.get_action_and_value_with_entropy_diagnostics(
+                        obs, masks=masks
                     )
+
+                # Log entropy per conditional head before considering changes to
+                # the global entropy coefficient.
+                entropy_by_head = {}
+                for player_records in (head_entropy_diagnostics or []):
+                    for record in player_records:
+                        bucket = entropy_by_head.setdefault(record["head"], [[], []])
+                        bucket[0].append(float(record["entropy_nats"]))
+                        bucket[1].append(float(record["entropy_normalized"]))
+                entropy_step = update * rollout_steps + step
+                for head, (nats, normalized) in entropy_by_head.items():
+                    if nats:
+                        self.writer.add_scalar(
+                            f"policy_entropy/{head}_nats", float(np.mean(nats)), entropy_step
+                        )
+                        self.writer.add_scalar(
+                            f"policy_entropy/{head}_normalized", float(np.mean(normalized)), entropy_step
+                        )
 
                 # ====================================================
                 # 📊 ACTION LOGGING
