@@ -101,3 +101,62 @@ def test_candidate_observation_tail_aligns_bench_and_shop_slots():
     assert shop.shape == (2, 5, 8)
     assert torch.all(bench == 1.0)
     assert torch.all(shop == 2.0)
+
+
+
+def test_checkpoint_migration_inserts_composition_features_before_candidate_tail():
+    old_obs_dim = 400
+    added_composition_features = 20
+    new_obs_dim = old_obs_dim + added_composition_features
+    hidden_size = 16
+
+    old_policy = TFTPolicy(
+        obs_dim=old_obs_dim,
+        action_dims=Trainer.ACTION_DIMS,
+        hidden_size=hidden_size,
+    )
+    new_policy = TFTPolicy(
+        obs_dim=new_obs_dim,
+        action_dims=Trainer.ACTION_DIMS,
+        hidden_size=hidden_size,
+    )
+
+    old_weight = old_policy.global_mlp[0].weight.detach().clone()
+    migrated = new_policy.load_compatible_state_dict(old_policy.state_dict())
+
+    assert migrated is True
+    new_weight = new_policy.global_mlp[0].weight.detach()
+    candidate_tail_dim = new_policy.candidate_observation_dim
+    insertion = old_weight.shape[1] - candidate_tail_dim
+
+    # Existing non-candidate columns are preserved exactly; the newly added
+    # composition fields are zero-initialized; candidate columns shift intact.
+    assert torch.equal(new_weight[:, :insertion], old_weight[:, :insertion])
+    assert torch.count_nonzero(
+        new_weight[:, insertion:insertion + added_composition_features]
+    ).item() == 0
+    assert torch.equal(
+        new_weight[:, insertion + added_composition_features:],
+        old_weight[:, insertion:],
+    )
+
+
+def test_policy_accepts_observation_with_composition_control_features():
+    obs_dim = 420
+    policy = TFTPolicy(
+        obs_dim=obs_dim,
+        action_dims=Trainer.ACTION_DIMS,
+        hidden_size=32,
+    )
+    observations = torch.zeros(2, obs_dim)
+    values = policy.get_value(observations)
+    actions, log_prob, entropy, values_again = policy.get_action_and_value(
+        observations,
+        deterministic=True,
+    )
+
+    assert values.shape == (2,)
+    assert values_again.shape == (2,)
+    assert actions.shape == (2, Trainer.ACTION_DIM)
+    assert log_prob.shape == (2,)
+    assert entropy.shape == (2,)
