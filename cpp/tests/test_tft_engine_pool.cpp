@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <map>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -549,7 +550,61 @@ int main(int argc, char** argv) {
             "Reset apagou os bloqueios acumulados do AntiLoop."
         );
 
-        std::cout << "TFTEngine + loja/economia/ActionMask/AntiLoop: OK\n";
+        // Regression: a dominant trait with six owned units should lock in
+        // stage 3, and the direction must survive a small off-comp addition.
+        tft::TFTEngine comp_engine(56789, json_path);
+        std::map<std::string, std::vector<std::string>> champions_by_trait;
+        for (const auto& champion : catalog.all()) {
+            for (const auto& trait : champion.traits)
+                champions_by_trait[trait].push_back(champion.api_name);
+        }
+        auto dominant = std::find_if(
+            champions_by_trait.begin(), champions_by_trait.end(),
+            [](const auto& entry) { return entry.second.size() >= 6; });
+        require(dominant != champions_by_trait.end(),
+                "Catalogo nao possui trait com seis campeoes para testar comp lock.");
+        for (std::size_t slot = 0; slot < 6; ++slot) {
+            require(comp_engine.set_unit_for_testing(
+                        0, false, static_cast<std::int32_t>(slot),
+                        dominant->second[slot], 1),
+                    "Nao foi possivel montar fixture de seis unidades para comp lock.");
+        }
+        std::array<tft::PlayerAction, tft::kPlayersPerLobby> pass_actions{};
+        for (auto& action : pass_actions) action.values = {6, 0, 0, 0, 0, 0};
+        for (int completed_rounds = 0;
+             completed_rounds < 14 && comp_engine.stage() < 3;
+             ++completed_rounds) {
+            for (int action = 0; action < 10; ++action)
+                (void)comp_engine.step(pass_actions);
+        }
+        require(comp_engine.stage() >= 3,
+                "Fixture nao alcancou stage 3 para validar o comp lock.");
+        auto comp_state = comp_engine.get_strategies()[0].back();
+        require(comp_state.composition_locked,
+                "Composicao dominante com seis unidades nao ativou o lock no stage 3.");
+        require(comp_state.composition_direction == dominant->first,
+                "Direcao bloqueada nao correspondeu a trait dominante.");
+        const auto locked_direction = comp_state.composition_direction;
+        const auto off_comp = std::find_if(
+            catalog.all().begin(), catalog.all().end(),
+            [&](const auto& champion) {
+                return std::find(champion.traits.begin(), champion.traits.end(),
+                                 locked_direction) == champion.traits.end();
+            });
+        if (off_comp != catalog.all().end()) {
+            require(comp_engine.set_unit_for_testing(
+                        0, false, 6, off_comp->api_name, 1),
+                    "Nao foi possivel adicionar unidade fora da composicao.");
+            (void)comp_engine.set_unit_for_testing(
+                0, false, 7, off_comp->api_name, 1);
+            comp_state = comp_engine.get_strategies()[0].back();
+            require(comp_state.composition_locked,
+                    "Lock foi perdido apos adicionar uma unidade fora da composicao.");
+            require(comp_state.composition_direction == locked_direction,
+                    "Direcao mudou imediatamente apesar do lock ativo.");
+        }
+
+        std::cout << "TFTEngine + loja/economia/ActionMask/AntiLoop/CompLock: OK\n";
         return 0;
     } catch (const std::exception& e) {
         std::cerr << "TFTEngine + UnitPool: FALHOU: "
