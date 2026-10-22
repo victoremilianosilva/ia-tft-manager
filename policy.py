@@ -74,7 +74,10 @@ class TFTPolicy(nn.Module):
             nn.Linear(256, 1),
         )
         self.bench_head = nn.Linear(hidden_size + self.num_action_types, action_dims[2])
-        self.bench_to_board_head = nn.Linear(hidden_size + self.num_action_types, action_dims[3])
+        self.bench_to_board_head = nn.Linear(
+            hidden_size + self.num_action_types + action_dims[2] + self.candidate_feature_dim,
+            action_dims[3],
+        )
         self.board_source_head = nn.Linear(hidden_size + self.num_action_types, action_dims[4])
         self.board_move_target_head = nn.Linear(
             hidden_size + self.num_action_types + action_dims[4], action_dims[5]
@@ -124,6 +127,24 @@ class TFTPolicy(nn.Module):
             -1, self.action_dims[1], self.candidate_feature_dim
         )
         return bench, shop
+
+    def _bench_to_board_logits(self, conditioned, selected_slots, bench_candidate_features):
+        """Score board destinations conditioned on the selected bench unit."""
+        slot_onehot = F.one_hot(
+            selected_slots.long(),
+            num_classes=self.action_dims[2],
+        ).to(dtype=conditioned.dtype)
+        selected_features = bench_candidate_features.gather(
+            1,
+            selected_slots.long().view(-1, 1, 1).expand(
+                -1, 1, self.candidate_feature_dim
+            ),
+        ).squeeze(1).to(dtype=conditioned.dtype)
+        target_input = torch.cat(
+            [conditioned, slot_onehot, selected_features],
+            dim=-1,
+        )
+        return self.bench_to_board_head(target_input)
 
     @staticmethod
     def _candidate_logits(head, conditioned, candidate_features):
@@ -351,7 +372,11 @@ class TFTPolicy(nn.Module):
             )
 
             # Board target condicionado ao slot selecionado no banco
-            logits = self.bench_to_board_head(conditioned[move_bench_mask])
+            logits = self._bench_to_board_logits(
+                conditioned[move_bench_mask],
+                sampled,
+                bench_candidate_features[move_bench_mask],
+            )
 
             if masks is not None:
                 batch_indices = torch.where(move_bench_mask)[0]
@@ -541,7 +566,11 @@ class TFTPolicy(nn.Module):
             total_entropy[move_bench_mask] += dist.entropy()
 
             # Target condicionado ao slot selecionado no banco
-            logits = self.bench_to_board_head(conditioned[move_bench_mask])
+            logits = self._bench_to_board_logits(
+                conditioned[move_bench_mask],
+                selected_bench_slots,
+                bench_candidate_features[move_bench_mask],
+            )
 
             batch_indices = torch.where(move_bench_mask)[0]
 
