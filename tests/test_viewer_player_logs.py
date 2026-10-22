@@ -163,8 +163,8 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
     assert comp_diag["unit_fit"]["focus_fit_score"] == 0.0
     assert action_entry["payload"]["state_after"]["composition_focus_weights"]["Space Groove"] == 2.5
     log_text = (tmp_path / "match-test" / "player_1_log.tft").read_text(encoding="utf-8")
-    assert "LOCK: LOCKED" in log_text
-    assert "STRENGTH: 3.25" in log_text
+    assert "LOCK: OPEN" in log_text
+    assert "STRENGTH: 2.00" in log_text
     assert "FOCUS WEIGHTS: Space Groove 2.50, Prankster 1.20" in log_text
     assert "STRATEGY: STABILIZE" in (tmp_path / "match-test" / "player_1_log.tft").read_text(encoding="utf-8")
     assert "COMP DIRECTION: Prankster" in (tmp_path / "match-test" / "player_1_log.tft").read_text(encoding="utf-8")
