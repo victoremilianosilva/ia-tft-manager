@@ -119,12 +119,16 @@ class ViewerSession:
         if not isinstance(state_dict, dict) or not state_dict:
             raise ValueError("O checkpoint não contém state_dict de política.")
         if obs_dim is None:
-            # Infer the input dimension from the global MLP first layer when available.
+            # Validate old checkpoint metadata, but construct the live policy
+            # from the observation dimension produced by the current native engine.
             weight = state_dict.get("global_mlp.0.weight")
             if weight is None:
                 raise ValueError("Checkpoint sem obs_dim e sem global_mlp.0.weight para inferir a arquitetura.")
             obs_dim = int(weight.shape[1]) + 140
-        self.policy = TFTPolicy(int(obs_dim), list(action_dims), hidden_size=int(hidden_size))
+        self.lobby = CppTFTLobbyWrapper(seed=int(seed), catalog_path=str(CATALOG))
+        self.obs = self.lobby.reset(seed=int(seed))
+        current_obs_dim = int(self.obs.shape[-1])
+        self.policy = TFTPolicy(current_obs_dim, list(action_dims), hidden_size=int(hidden_size))
         try:
             migrated_checkpoint = self.policy.load_compatible_state_dict(state_dict)
         except RuntimeError as exc:
@@ -148,8 +152,6 @@ class ViewerSession:
         self._backline_fallback_checked = False
         self.checkpoint_sha256 = digest
         self.match_id = str(uuid.uuid4())
-        self.lobby = CppTFTLobbyWrapper(seed=int(seed), catalog_path=str(CATALOG))
-        self.obs = self.lobby.reset(seed=int(seed))
         self.masks = self.lobby.get_action_masks()
         self.public_state = self.lobby.get_public_state()
         self._refresh_audit_snapshot()
@@ -178,7 +180,7 @@ class ViewerSession:
                 "engine": "cpp",
                 "created_at": datetime.now(timezone.utc).isoformat(),
                 "policy_class": "TFTPolicy",
-                "observation_dim": int(obs_dim),
+                "observation_dim": current_obs_dim,
                 "action_dims": list(action_dims),
                 "log_format": "legacy-style UTF-8 TFT text log, one file per player",
                 "player_log_files": log_files,
