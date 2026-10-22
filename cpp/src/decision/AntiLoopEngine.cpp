@@ -515,53 +515,9 @@ bool AntiLoopEngine::is_bench_board_loop(
         }
     }
 
-    struct BenchTransition {
-        std::string type;
-        std::int32_t source;
-        std::int32_t target;
-    };
-
-    std::vector<BenchTransition> recent;
-
-    for (const auto& move : history_.move_history) {
-        if (move.unit != unit) {
-            continue;
-        }
-
-        const auto normalized = normalize_bench_move(move.move_type);
-
-        if (normalized.has_value()) {
-            recent.push_back({
-                *normalized,
-                move.source,
-                move.target
-            });
-        }
-    }
-
-    if (recent.size() < 2) {
-        return false;
-    }
-
-    const auto& previous = recent[recent.size() - 2];
-    const auto& last = recent.back();
-
-    const bool reversed_transition =
-        previous.type != last.type
-        && previous.source == last.target
-        && previous.target == last.source;
-
-    if (!reversed_transition) {
-        return false;
-    }
-
-    return (
-        *candidate_type == previous.type
-        && source.has_value()
-        && target.has_value()
-        && *source == previous.source
-        && *target == previous.target
-    );
+    // Non-immediate multi-round cycles are handled by the rolling
+    // visited-state window; the executor has no board_to_bench action.
+    return false;
 }
 
 bool AntiLoopEngine::is_cycle_move(
