@@ -42,6 +42,9 @@ def _snapshot(with_unit=False):
                 "strategy_name": "STABILIZE" if player_id == 0 else "ECON",
                 "composition_direction": "Space Groove" if player_id == 0 else "",
                 "composition_focus": "Teemo" if player_id == 0 else "",
+                "composition_locked": player_id == 0,
+                "composition_strength": 3.25 if player_id == 0 else 0.0,
+                "composition_focus_weights": {"Space Groove": 2.5, "Prankster": 1.2} if player_id == 0 else {},
                 "confidence": 0.75 if player_id == 0 else 0.0,
                 "reason": "composition fit" if player_id == 0 else "",
                 "core_units": ["TFT_Test_Briar"] if player_id == 0 else [],
@@ -139,6 +142,13 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
     assert action_entry["payload"]["state_after"]["strategy_name"] == "STABILIZE"
     assert action_entry["payload"]["state_after"]["comp_direction"] == "Space Groove"
     assert action_entry["payload"]["state_after"]["comp_focus"] == "Teemo"
+    assert action_entry["payload"]["state_after"]["composition_locked"] is True
+    assert action_entry["payload"]["state_after"]["composition_strength"] == 3.25
+    assert action_entry["payload"]["state_after"]["composition_focus_weights"]["Space Groove"] == 2.5
+    log_text = (tmp_path / "match-test" / "player_1_log.tft").read_text(encoding="utf-8")
+    assert "LOCK: LOCKED" in log_text
+    assert "STRENGTH: 3.25" in log_text
+    assert "FOCUS WEIGHTS: Space Groove 2.50, Prankster 1.20" in log_text
     assert "STRATEGY: STABILIZE" in (tmp_path / "match-test" / "player_1_log.tft").read_text(encoding="utf-8")
     assert "COMP DIRECTION: Space Groove" in (tmp_path / "match-test" / "player_1_log.tft").read_text(encoding="utf-8")
     assert "RENDA PRÓXIMO ROUND: +5 base, +2 juros, +1 sequência, +1 vitória (total: +9)" in (
