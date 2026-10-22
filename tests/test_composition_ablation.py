@@ -31,8 +31,8 @@ def test_zero_composition_controls_rejects_invalid_layout():
 def test_infer_trait_count_uses_full_observation_layout():
     from scripts.evaluate_composition_ablation import infer_trait_count_from_observation_dim
 
-    # 433 fixed features + 4 trait vectors + 14 candidate records * 8 features.
-    obs_dim = 433 + (4 * 12) + (14 * 8)
+    # The 433-feature base layout includes the fixed candidate tail.
+    obs_dim = 433 + (4 * 12)
     assert infer_trait_count_from_observation_dim(obs_dim) == 12
 
 
@@ -50,7 +50,7 @@ def test_infer_trait_count_rejects_incompatible_observation_dimension():
 def test_zero_composition_controls_zeros_all_controls_and_preserves_candidate_tail():
     trait_count = 12
     candidate_dim = 14 * 8
-    obs_dim = 433 + 4 * trait_count + candidate_dim
+    obs_dim = 433 + 4 * trait_count
     observations = torch.arange(2 * obs_dim, dtype=torch.float32).reshape(2, obs_dim)
 
     ablated = zero_composition_controls(observations, trait_count, candidate_dim)
