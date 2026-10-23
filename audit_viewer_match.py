@@ -737,6 +737,27 @@ def markdown_report(report: dict) -> str:
         lines += ["", "Os detalhes por transição ficam em audit_report.json. "
                   "‘Sem ganho mensurável’ indica falta de evidência nos campos disponíveis, não prova de decisão ruim.", ""]
 
+    if report.get("board_quality_metrics"):
+        lines += ["## Qualidade estrutural e posicionamento do tabuleiro", "",
+                  "| Jogador | Ações com métrica | Ganhos | Pioras | Neutras | Δ médio qualidade | Δ estrutural médio | Δ qualidade quando combate positivo | Δ qualidade quando combate negativo |",
+                  "|---|---:|---:|---:|---:|---:|---:|---:|---:|"]
+        for player, metrics in sorted(report["board_quality_metrics"].items()):
+            lines.append(
+                f"| {player} | {metrics['actions_with_metrics']} | "
+                f"{metrics['positive_quality_delta']} | {metrics['negative_quality_delta']} | "
+                f"{metrics['neutral_quality_delta']} | {metrics['mean_quality_delta']:.4f} | "
+                f"{metrics['mean_structural_delta']:.4f} | "
+                f"{metrics['mean_quality_delta_when_combat_reward_positive']:.4f} | "
+                f"{metrics['mean_quality_delta_when_combat_reward_negative']:.4f} |"
+            )
+            breakdown = ", ".join(
+                f"{name}: Δ {values['mean_quality_delta']:.4f} ({values['actions']} ações)"
+                for name, values in sorted(metrics.get("by_action", {}).items())
+            ) or "nenhuma ação com métrica"
+            lines.append(f"- {player} — ganho médio por ação: {breakdown}")
+        lines += ["", "A pontuação é uma heurística para auditoria, não uma verdade absoluta. "
+                  "Compare-a com recompensas e resultados de combate; correlação não prova causalidade.", ""]
+
     if report.get("purchase_sequence_metrics"):
         lines += ["## Auditoria de compras e vendas", "",
                   "| Jogador | Compras | Vendas | Revertidas ≤1 ação | ≤2 ações | ≤4 ações | Ouro perdido | Upgrades | Vendas core/par | Valor médio |",
