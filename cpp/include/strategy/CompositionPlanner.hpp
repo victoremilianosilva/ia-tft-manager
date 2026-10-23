@@ -64,6 +64,18 @@ public:
             if (found != available_copies.end() && champion.cost >= 1 && champion.cost <= 5)
                 available_by_cost[static_cast<std::size_t>(champion.cost - 1)] += std::max(0, found->second);
         }
+        const auto chance_per_shop_at_level = [&](const ChampionDefinition& champion, int level) {
+            if (champion.cost < 1 || champion.cost > 5) return 0.0;
+            const auto available = available_copies.find(champion.internal_id);
+            const double copies = available == available_copies.end()
+                ? 0.0 : static_cast<double>(std::max(0, available->second));
+            const double tier_total = available_by_cost[static_cast<std::size_t>(champion.cost - 1)];
+            const double tier_odds = shop_odds[static_cast<std::size_t>(std::clamp(level, 1, 10) - 1)]
+                [static_cast<std::size_t>(champion.cost - 1)];
+            if (copies <= 0.0 || tier_total <= 0.0 || tier_odds <= 0.0) return 0.0;
+            const double per_slot = tier_odds * copies / tier_total;
+            return 1.0 - std::pow(1.0 - std::clamp(per_slot, 0.0, 1.0), 5.0);
+        };
         const auto acquisition = [&](const ChampionDefinition& champion) {
             if (currently_offered.count(champion.internal_id) != 0)
                 return std::pair<double, double>{1.0, 0.0};
@@ -73,15 +85,27 @@ public:
             if (available_copies.empty() || champion.cost < 1 || champion.cost > 5)
                 return std::pair<double, double>{1.0, 0.0};
             const auto available = available_copies.find(champion.internal_id);
-            const double copies = available == available_copies.end() ? 0.0 : static_cast<double>(std::max(0, available->second));
+            const double copies = available == available_copies.end()
+                ? 0.0 : static_cast<double>(std::max(0, available->second));
             const double tier_total = available_by_cost[static_cast<std::size_t>(champion.cost - 1)];
-            const double tier_odds = shop_odds[static_cast<std::size_t>(safe_level - 1)][static_cast<std::size_t>(champion.cost - 1)];
-            if (copies <= 0.0 || tier_total <= 0.0 || tier_odds <= 0.0)
+            if (copies <= 0.0 || tier_total <= 0.0)
                 return std::pair<double, double>{0.0, 4.5};
-            const double per_slot = tier_odds * copies / tier_total;
-            const double per_shop = 1.0 - std::pow(1.0 - std::clamp(per_slot, 0.0, 1.0), 5.0);
-            const double penalty = 3.5 * (1.0 - std::clamp(per_shop / 0.20, 0.0, 1.0));
-            return std::pair<double, double>{per_shop, penalty};
+
+            // A composition is a forward-looking plan, not a demand to buy every
+            // unit at the current level. Blend current and near-future shop odds
+            // so a unit that becomes easier after leveling is not over-penalized.
+            const int horizon_end = std::min(10, safe_level + 2);
+            double horizon_probability = 0.0;
+            double weight_sum = 0.0;
+            constexpr double horizon_weights[] = {0.60, 0.25, 0.15};
+            for (int level = safe_level; level <= horizon_end; ++level) {
+                const double weight = horizon_weights[level - safe_level];
+                horizon_probability += weight * chance_per_shop_at_level(champion, level);
+                weight_sum += weight;
+            }
+            if (weight_sum > 0.0) horizon_probability /= weight_sum;
+            const double penalty = 3.5 * (1.0 - std::clamp(horizon_probability / 0.20, 0.0, 1.0));
+            return std::pair<double, double>{horizon_probability, penalty};
         };
         std::unordered_map<std::string, double> focus;
         for (const auto& [trait, weight] : focus_weights)
@@ -249,9 +273,13 @@ public:
                     continue;
                 }
                 const auto [per_shop, penalty] = acquisition(*champion_it);
-                const int percent = static_cast<int>(std::round(per_shop * 100.0));
+                const int horizon_percent = static_cast<int>(std::round(per_shop * 100.0));
+                const int current_percent = static_cast<int>(std::round(
+                    chance_per_shop_at_level(*champion_it, safe_level) * 100.0));
                 std::string note = champion_it->api_name.empty() ? champion_it->name : champion_it->api_name;
-                note += " (cost=" + std::to_string(champion_it->cost) + ", chance_any_shop~" + std::to_string(percent) + "%";
+                note += " (cost=" + std::to_string(champion_it->cost) +
+                    ", chance_now~" + std::to_string(current_percent) +
+                    "%, chance_horizon~" + std::to_string(horizon_percent) + "%";
                 if (per_shop <= 0.0) note += ", unavailable";
                 else if (penalty >= 2.0) note += ", hard_to_find";
                 else if (penalty >= 0.8) note += ", low_odds";
@@ -273,11 +301,14 @@ public:
                 if (currently_offered.count(champion.internal_id) != 0) continue;
                 const auto [per_shop, penalty] = acquisition(champion);
                 if (penalty < 1.5) continue;
-                const int percent = static_cast<int>(std::round(per_shop * 100.0));
+                const int horizon_percent = static_cast<int>(std::round(per_shop * 100.0));
+                const int current_percent = static_cast<int>(std::round(
+                    chance_per_shop_at_level(champion, safe_level) * 100.0));
                 std::string note = "NOT_SELECTED_CARRY: ";
                 note += champion.api_name.empty() ? champion.name : champion.api_name;
                 note += " (cost=" + std::to_string(champion.cost) +
-                    ", chance_any_shop~" + std::to_string(percent) +
+                    ", chance_now~" + std::to_string(current_percent) +
+                    "%, chance_horizon~" + std::to_string(horizon_percent) +
                     "%, hard_to_find; alternative carry preferred)";
                 plan.acquisition_notes.push_back(std::move(note));
                 ++rejected_carries;
