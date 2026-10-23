@@ -62,6 +62,16 @@ int main() {
     assert(state.direction == "Assassin");
     assert(state.change_reason == "emergency_transition");
 
+    // A viability loss unlocks even if this refresh still proposes the old
+    // direction; it must not remain locked forever on stale evidence.
+    state.locked = true;
+    result = policy.update(state, {"Assassin", 2.8, false, false});
+    assert(!result.changed);
+    assert(result.unlocked);
+    assert(!state.locked);
+    assert(state.direction == "Assassin");
+    assert(state.change_reason == "current_direction_unviable");
+
     // Invalid strengths are treated as missing evidence, not as a direction.
     state.locked = true;
     result = policy.update(state, {"Tank", std::nan(""), true, false});
