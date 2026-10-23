@@ -714,13 +714,17 @@ class PlayerJsonLogWriter:
         native_economic_events = {}
         for event in engine_events:
             match = re.search(
-                r"ECONOMIC_ACTION player(?:=|\s+)(\d+) action_cost=(\d+) sale_proceeds=(\d+)",
+                r"ECONOMIC_ACTION player(?:=|\s+)(\d+) action_cost=(\d+) sale_proceeds=(\d+) gold_before=(-?\d+) gold_after=(-?\d+) interest_before=(\d+) interest_after=(\d+)",
                 event,
             )
             if match:
                 native_economic_events[int(match.group(1))] = {
                     "action_cost": int(match.group(2)),
                     "sale_proceeds": int(match.group(3)),
+                    "gold_before": int(match.group(4)),
+                    "gold_after": int(match.group(5)),
+                    "interest_if_resolved_before": int(match.group(6)),
+                    "interest_if_resolved_after": int(match.group(7)),
                 }
         round_resolved = any(
             event.strip() == "ROUND_RESOLVED" or event.strip().startswith("ROUND_RESOLVED:")
@@ -759,7 +763,16 @@ class PlayerJsonLogWriter:
                 action, before_state, after_state, before_audit, after_audit
             )
             if player_id in native_economic_events:
+                step_gold_after = economic_diagnostics["gold_after"]
                 economic_diagnostics.update(native_economic_events[player_id])
+                economic_diagnostics["gold_after_step"] = step_gold_after
+                economic_diagnostics["gold_delta"] = (
+                    economic_diagnostics["gold_after"] - economic_diagnostics["gold_before"]
+                )
+                economic_diagnostics["potential_interest_delta"] = (
+                    economic_diagnostics["interest_if_resolved_after"]
+                    - economic_diagnostics["interest_if_resolved_before"]
+                )
                 economic_diagnostics["cost_source"] = "native_action_transition"
             else:
                 economic_diagnostics["cost_source"] = "gold_delta_fallback"
