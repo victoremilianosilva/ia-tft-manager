@@ -77,6 +77,14 @@ int main() {
                   "composition-aware purchase reward");
     require_close(purchase_quality(0.0, true), 0.12,
                   "purchase completing an upgrade");
+    require_close(purchase_pair_quality(0.0), 0.06,
+                  "pair-building baseline bonus");
+    if (!(purchase_pair_quality(10.0) > purchase_pair_quality(0.0))) {
+        throw std::runtime_error("pair reward must increase with composition fit");
+    }
+    if (!(purchase_pair_quality(10.0) < 0.10)) {
+        throw std::runtime_error("pair reward must remain smaller than upgrade completion");
+    }
     require_close(sale_quality(0.0, false, false, true), 0.13,
                   "sale of low-fit non-core unit frees space");
     require_close(sale_quality(1.0, true, true, false), -0.22,
