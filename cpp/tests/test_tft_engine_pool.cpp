@@ -89,7 +89,7 @@ int main(int argc, char** argv) {
                 }
             }
             const float expected_normalized_weight = static_cast<float>(
-                std::clamp(expected_weight / 5.0, 0.0, 1.0));
+                std::clamp(expected_weight / 10.0, 0.0, 1.0));
             require(std::abs(player_observation[focus_weights_offset + trait_index] -
                              expected_normalized_weight) < 1e-5f,
                     "Focus weights nao estao alinhados com a ordem fixa de traits.");
