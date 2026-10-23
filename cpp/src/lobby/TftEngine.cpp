@@ -155,7 +155,9 @@ double unit_composition_score(
     }
     if (star >= 2) score += 2.0;
     if (star >= 3) score += 4.0;
-    // Cost is an economy attribute, not composition fit. Adding it here made\n    // every positive-cost unit look strategically compatible even with no trait/core match.\n    return score;
+    // Cost is an economy attribute, not composition fit. Adding it here made
+    // every positive-cost unit look strategically compatible even with no trait/core match.
+    return score;
 }
 
 } // namespace
