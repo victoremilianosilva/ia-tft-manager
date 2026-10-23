@@ -418,6 +418,89 @@ def audit_composition_direction_changes(entries: list[dict], player: str, report
         report.setdefault("composition_direction_metrics", {})[player] = metrics
 
 
+def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
+    """Aggregate structural/positional gains per action alongside combat outcomes."""
+    actions = [
+        entry for entry in entries
+        if isinstance(entry, dict) and entry.get("event_type") == "action"
+        and isinstance((entry.get("payload") or {}).get("state_after"), dict)
+    ]
+    totals = {
+        "actions_with_metrics": 0, "positive_quality_delta": 0,
+        "negative_quality_delta": 0, "neutral_quality_delta": 0,
+        "quality_delta_sum": 0.0, "structural_delta_sum": 0.0,
+        "positive_combat_outcomes": 0, "negative_combat_outcomes": 0,
+        "quality_delta_when_combat_reward_positive": 0.0,
+        "quality_delta_when_combat_reward_negative": 0.0,
+        "positive_combat_samples": 0, "negative_combat_samples": 0,
+        "by_action": {},
+    }
+    by_action = defaultdict(lambda: {"actions": 0, "quality_delta_sum": 0.0,
+                                     "positive_gains": 0, "structural_delta_sum": 0.0})
+    for entry in actions:
+        payload = entry.get("payload") or {}
+        before = payload.get("state_before") or {}
+        after = payload.get("state_after") or {}
+        if after.get("board_quality_score") is None:
+            continue
+        try:
+            delta = float(after.get("board_quality_delta", 0.0) or 0.0)
+            structural_before = float(before.get("board_structural_score", 0.0) or 0.0)
+            structural_after = float(after.get("board_structural_score", 0.0) or 0.0)
+            combat = float(payload.get("combat_reward", 0.0) or 0.0)
+        except (TypeError, ValueError):
+            continue
+        action_name = str(payload.get("action_name", "UNKNOWN"))
+        bucket = by_action[action_name]
+        bucket["actions"] += 1
+        bucket["quality_delta_sum"] += delta
+        bucket["structural_delta_sum"] += structural_after - structural_before
+        bucket["positive_gains"] += int(delta > 1e-6)
+        totals["actions_with_metrics"] += 1
+        totals["quality_delta_sum"] += delta
+        totals["structural_delta_sum"] += structural_after - structural_before
+        if delta > 1e-6:
+            totals["positive_quality_delta"] += 1
+        elif delta < -1e-6:
+            totals["negative_quality_delta"] += 1
+        else:
+            totals["neutral_quality_delta"] += 1
+        if combat > 1e-6:
+            totals["positive_combat_outcomes"] += 1
+            totals["quality_delta_when_combat_reward_positive"] += delta
+            totals["positive_combat_samples"] += 1
+        elif combat < -1e-6:
+            totals["negative_combat_outcomes"] += 1
+            totals["quality_delta_when_combat_reward_negative"] += delta
+            totals["negative_combat_samples"] += 1
+    totals["mean_quality_delta"] = (
+        totals["quality_delta_sum"] / totals["actions_with_metrics"]
+        if totals["actions_with_metrics"] else 0.0
+    )
+    totals["mean_structural_delta"] = (
+        totals["structural_delta_sum"] / totals["actions_with_metrics"]
+        if totals["actions_with_metrics"] else 0.0
+    )
+    for label, sample_count, key in (
+        ("mean_quality_delta_when_combat_reward_positive", totals["positive_combat_samples"],
+         "quality_delta_when_combat_reward_positive"),
+        ("mean_quality_delta_when_combat_reward_negative", totals["negative_combat_samples"],
+         "quality_delta_when_combat_reward_negative"),
+    ):
+        totals[label] = totals[key] / sample_count if sample_count else 0.0
+    totals["by_action"] = {
+        name: {
+            **values,
+            "mean_quality_delta": values["quality_delta_sum"] / values["actions"]
+                if values["actions"] else 0.0,
+            "mean_structural_delta": values["structural_delta_sum"] / values["actions"]
+                if values["actions"] else 0.0,
+        }
+        for name, values in sorted(by_action.items())
+    }
+    report.setdefault("board_quality_metrics", {})[player] = totals
+
+
 def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_window: int) -> None:
     player_id = doc.get("player_number")
     if player_id is None:
@@ -429,6 +512,7 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
     audit_purchase_sequences(doc["entries"], player, report)
     audit_economic_actions(doc["entries"], player, report)
     audit_composition_direction_changes(doc["entries"], player, report)
+    audit_board_quality(doc["entries"], player, report)
     report["log_files"].append(str(path))
 
     entries = sorted(doc["entries"], key=lambda e: (e.get("sequence_id", 0), e.get("step", 0)))
@@ -716,6 +800,7 @@ def main() -> int:
     report = {"source": str(source), "log_files": [], "players_seen": set(),
               "purchase_sequence_metrics": {}, "economic_action_metrics": {},
               "composition_direction_metrics": {},
+              "board_quality_metrics": {},
               "entries_read": 0, "diagnostics_missing": 0, "issues": [], "notes": [],
               "mask_note_added": False}
     for path in files:
