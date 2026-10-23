@@ -48,6 +48,16 @@ def _snapshot(with_unit=False):
                 "composition_focus": "Teemo" if player_id == 0 else "",
                 "composition_locked": player_id == 0,
                 "composition_strength": 3.25 if player_id == 0 else 0.0,
+                "composition_candidate_direction": "",
+                "composition_candidate_strength": 0.0,
+                "composition_candidate_streak": 0,
+                "previous_composition_direction": "",
+                "previous_composition_strength": 0.0,
+                "composition_direction_change_was_locked": False,
+                "composition_direction_change_round": 0,
+                "composition_direction_change_focus_weight": 0.0,
+                "composition_direction_change_reason": "initial",
+                "composition_direction_change_count": 0,
                 "composition_focus_weights": {"Space Groove": 2.5, "Prankster": 1.2} if player_id == 0 else {},
                 "confidence": 0.75 if player_id == 0 else 0.0,
                 "reason": "composition fit" if player_id == 0 else "",
@@ -102,6 +112,13 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
     after["audit_players"][0]["strategy_info"]["composition_focus"] = "Briar"
     after["audit_players"][0]["strategy_info"]["composition_locked"] = False
     after["audit_players"][0]["strategy_info"]["composition_strength"] = 2.0
+    after["audit_players"][0]["strategy_info"]["previous_composition_direction"] = "Space Groove"
+    after["audit_players"][0]["strategy_info"]["previous_composition_strength"] = 3.25
+    after["audit_players"][0]["strategy_info"]["composition_direction_change_was_locked"] = True
+    after["audit_players"][0]["strategy_info"]["composition_direction_change_round"] = 4
+    after["audit_players"][0]["strategy_info"]["composition_direction_change_focus_weight"] = 1.4
+    after["audit_players"][0]["strategy_info"]["composition_direction_change_reason"] = "persistent_superior_candidate"
+    after["audit_players"][0]["strategy_info"]["composition_direction_change_count"] = 1
     after["audit_players"][0]["strategy_info"]["reason"] = "board fit changed"
     # Only player 1 gets the unit; other players' state remains independent.
     actions = [[3, 0, 0, 0, 0, 0] for _ in range(8)]
@@ -184,6 +201,18 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
     assert comp_diag["before"]["direction"] == "Space Groove"
     assert comp_diag["after"]["direction"] == "Prankster"
     assert comp_diag["after"]["reason"] == "board fit changed"
+    assert comp_diag["direction_event"] == {
+        "round": 4,
+        "from": "Space Groove",
+        "to": "Prankster",
+        "from_strength": 3.25,
+        "to_strength": 2.0,
+        "was_locked": True,
+        "focus_weight": 1.4,
+        "reason": "persistent_superior_candidate",
+        "change_count": 1,
+    }
+    assert comp_diag["candidate_direction"] == ""
     assert comp_diag["after"]["core_units"] == ["TFT_Test_Briar"]
     assert comp_diag["unit_fit"]["unit"] == "Briar"
     assert comp_diag["unit_fit"]["core_unit_match"] is True
