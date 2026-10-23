@@ -3218,6 +3218,7 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         target.xp = source.economy.xp;
         target.win_streak = source.economy.win_streak;
         target.loss_streak = source.economy.loss_streak;
+        target.gold_before_interest = source.economy.gold_before_interest;
         target.round_gold = source.economy.round_gold;
         target.round_base_gold = source.economy.round_base_gold;
         target.round_interest = source.economy.round_interest;
