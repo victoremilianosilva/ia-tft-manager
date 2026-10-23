@@ -310,15 +310,19 @@ class PlayerJsonLogWriter:
         core = {str(x).casefold() for x in (state.get("core_units") or [])}
         focus_weights = {str(k).casefold(): float(v or 0.0)
                          for k, v in (state.get("composition_focus_weights") or {}).items()}
-        compatible = 0
-        for unit in board:
-            ids = {str(unit.get("champion_id") or "").casefold(),
-                   str(unit.get("name") or "").casefold()}
-            traits = [str(t).casefold() for t in (unit.get("traits") or [])]
-            if ids & core or any(focus_weights.get(t, 0.0) > 0 for t in traits):
-                compatible += 1
+        def compatible_count(units):
+            total = 0
+            for unit in units:
+                ids = {str(unit.get("champion_id") or "").casefold(),
+                       str(unit.get("name") or "").casefold()}
+                traits = [str(t).casefold() for t in (unit.get("traits") or [])]
+                if ids & core or any(focus_weights.get(t, 0.0) > 0 for t in traits):
+                    total += 1
+            return total
+        compatible_board = compatible_count(board)
+        compatible_bench = compatible_count(bench)
         return {
-            "board_strength": cls._board_power_state(state),
+            "board_strength": float(state.get("board_power", cls._board_power_state(state)) or 0.0),
             "bench_potential_strength": round(sum(float(u.get("impact", 0.0) or 0.0) for u in bench), 4),
             "board_unit_count": len(board),
             "bench_unit_count": len(bench),
@@ -335,7 +339,9 @@ class PlayerJsonLogWriter:
             "combined_pair_count": sum(combined_pairs.values()),
             "active_synergies": synergy_levels,
             "active_trait_counts": trait_counts,
-            "composition_compatible_board_units": compatible,
+            "composition_compatible_board_units": compatible_board,
+            "composition_compatible_bench_units": compatible_bench,
+            "composition_compatible_total_units": compatible_board + compatible_bench,
             "composition_direction": state.get("comp_direction"),
             "composition_focus": state.get("comp_focus"),
             "composition_strength": float(state.get("composition_strength", 0.0) or 0.0),
@@ -495,7 +501,7 @@ class PlayerJsonLogWriter:
                 if strategic_before["active_synergies"].get(trait, 0) != strategic_after["active_synergies"].get(trait, 0)
             }
             synergy_gain = any(item["after"] > item["before"] for item in synergy_changes.values())
-            comp_gain = strategic_after["composition_compatible_board_units"] > strategic_before["composition_compatible_board_units"]
+            comp_gain = strategic_after["composition_compatible_total_units"] > strategic_before["composition_compatible_total_units"]
             if star_gain:
                 marginal_class = "IMMEDIATE_UPGRADE"
             elif pair_gain:
@@ -521,6 +527,9 @@ class PlayerJsonLogWriter:
                 "synergy_changes": synergy_changes,
                 "composition_compatible_board_delta": (
                     strategic_after["composition_compatible_board_units"] - strategic_before["composition_compatible_board_units"]
+                ),
+                "composition_compatible_bench_delta": (
+                    strategic_after["composition_compatible_bench_units"] - strategic_before["composition_compatible_bench_units"]
                 ),
             }
         diagnostics["measurable_improvement"] = bool(
