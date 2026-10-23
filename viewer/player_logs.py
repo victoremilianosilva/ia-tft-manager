@@ -607,7 +607,7 @@ class PlayerJsonLogWriter:
             tag="round_msg",
             data={
                 "action": action, "action_name": ACTION_NAMES.get(int(action[0]), "UNKNOWN"),
-                "reward": reward, "state_before": before_state, "state_after": after_state,
+                "reward": reward, "combat_reward": float(combat_rewards[player_id] or 0.0), "state_before": before_state, "state_after": after_state,
                 "policy_diagnostics": diagnostics, "engine_events": engine_events,
             },
         )
