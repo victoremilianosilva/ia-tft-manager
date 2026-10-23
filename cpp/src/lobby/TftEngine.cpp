@@ -2161,6 +2161,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         bool sold_unit_protects_upgrade = false;
         double sold_unit_fit_score = 0.0;
         bool buy_completes_upgrade = false;
+        bool buy_builds_pair = false;
         bool bought_unit_successfully = false;
         bool bought_upgrade = false;
         bool board_capacity_violation = false;
@@ -2213,6 +2214,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             unit->star == offer->star) ++same_star_copies;
                     }
                     buy_completes_upgrade = same_star_copies >= 2;
+                    // A second matching copy is valuable future upgrade potential,
+                    // but only reward it when it also fits the current comp.
+                    buy_builds_pair = same_star_copies == 1 &&
+                        offer->star == 1 && candidate_comp_score > 0.0;
                 }
             }
         } else if (type == 3) {
@@ -2610,6 +2615,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             }
             if (success && buy_completes_upgrade) {
                 action_reward += 0.12;
+            } else if (success && buy_builds_pair) {
+                action_reward += reward_model::purchase_pair_quality(
+                    candidate_comp_score);
             }
         } else if (type == 1) {
             success = economy.gold == old_gold - EconomyEngine::REROLL_COST;
