@@ -714,7 +714,7 @@ class PlayerJsonLogWriter:
         native_economic_events = {}
         for event in engine_events:
             match = re.search(
-                r"ECONOMIC_ACTION player\s+(\d+) action_cost=(\d+) sale_proceeds=(\d+)",
+                r"ECONOMIC_ACTION player(?:=|\s+)(\d+) action_cost=(\d+) sale_proceeds=(\d+)",
                 event,
             )
             if match:
