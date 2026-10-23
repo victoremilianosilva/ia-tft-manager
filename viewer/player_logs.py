@@ -213,6 +213,16 @@ class PlayerJsonLogWriter:
             "comp_focus": (audit.get("strategy_info") or {}).get("composition_focus", ""),
             "composition_locked": bool((audit.get("strategy_info") or {}).get("composition_locked", False)),
             "composition_strength": float((audit.get("strategy_info") or {}).get("composition_strength", 0.0) or 0.0),
+            "composition_candidate_direction": (audit.get("strategy_info") or {}).get("composition_candidate_direction", ""),
+            "composition_candidate_strength": float((audit.get("strategy_info") or {}).get("composition_candidate_strength", 0.0) or 0.0),
+            "composition_candidate_streak": int((audit.get("strategy_info") or {}).get("composition_candidate_streak", 0) or 0),
+            "previous_composition_direction": (audit.get("strategy_info") or {}).get("previous_composition_direction", ""),
+            "previous_composition_strength": float((audit.get("strategy_info") or {}).get("previous_composition_strength", 0.0) or 0.0),
+            "composition_direction_change_was_locked": bool((audit.get("strategy_info") or {}).get("composition_direction_change_was_locked", False)),
+            "composition_direction_change_round": int((audit.get("strategy_info") or {}).get("composition_direction_change_round", 0) or 0),
+            "composition_direction_change_focus_weight": float((audit.get("strategy_info") or {}).get("composition_direction_change_focus_weight", 0.0) or 0.0),
+            "composition_direction_change_reason": (audit.get("strategy_info") or {}).get("composition_direction_change_reason", ""),
+            "composition_direction_change_count": int((audit.get("strategy_info") or {}).get("composition_direction_change_count", 0) or 0),
             "composition_focus_weights": dict((audit.get("strategy_info") or {}).get("composition_focus_weights", {}) or {}),
             "strategy_confidence": (audit.get("strategy_info") or {}).get("confidence", 0.0),
             "strategy_reason": (audit.get("strategy_info") or {}).get("reason", ""),
@@ -819,6 +829,25 @@ class PlayerJsonLogWriter:
                         "strategy_scores": after_state.get("strategy_scores"),
                     },
                     "direction_changed": before_state.get("comp_direction") != after_state.get("comp_direction"),
+                    "direction_event": (
+                        {
+                            "round": after_state.get("composition_direction_change_round"),
+                            "from": after_state.get("previous_composition_direction"),
+                            "to": after_state.get("comp_direction"),
+                            "from_strength": after_state.get("previous_composition_strength"),
+                            "to_strength": after_state.get("composition_strength"),
+                            "was_locked": after_state.get("composition_direction_change_was_locked"),
+                            "focus_weight": after_state.get("composition_direction_change_focus_weight"),
+                            "reason": after_state.get("composition_direction_change_reason"),
+                            "change_count": after_state.get("composition_direction_change_count"),
+                        }
+                        if after_state.get("composition_direction_change_count", 0)
+                        > before_state.get("composition_direction_change_count", 0)
+                        else None
+                    ),
+                    "candidate_direction": after_state.get("composition_candidate_direction"),
+                    "candidate_strength": after_state.get("composition_candidate_strength"),
+                    "candidate_streak": after_state.get("composition_candidate_streak"),
                     "focus_changed": before_state.get("comp_focus") != after_state.get("comp_focus"),
                     "lock_changed": before_state.get("composition_locked") != after_state.get("composition_locked"),
                     "strength_changed": before_state.get("composition_strength") != after_state.get("composition_strength"),
