@@ -231,6 +231,26 @@ class PlayerJsonLogWriter:
             "strategy_reason": (audit.get("strategy_info") or {}).get("reason", ""),
             "core_units": list((audit.get("strategy_info") or {}).get("core_units", []) or []),
             "core_traits": list((audit.get("strategy_info") or {}).get("core_traits", []) or []),
+            # Planner output is kept separate from current board/bench state:
+            # planned_units are targets, not units the policy already owns.
+            "planned_units": list((audit.get("strategy_info") or {}).get("planned_units", []) or []),
+            "planned_unit_ids": list((audit.get("strategy_info") or {}).get("planned_unit_ids", []) or []),
+            "planned_traits": list((audit.get("strategy_info") or {}).get("planned_traits", []) or []),
+            "planned_main_carry_id": int(
+                (audit.get("strategy_info") or {}).get("planned_main_carry_id", -1)
+                if (audit.get("strategy_info") or {}).get("planned_main_carry_id") is not None else -1
+            ),
+            "planned_composition_score": float((audit.get("strategy_info") or {}).get("planned_composition_score", 0.0) or 0.0),
+            "planned_acquisition_notes": list((audit.get("strategy_info") or {}).get("planned_acquisition_notes", []) or []),
+            "planner_target_slots": (
+                8 if int(public.get("level", audit.get("level", 1)) or 1) <= 8
+                else min(10, int(public.get("level", audit.get("level", 1)) or 1))
+            ),
+            "planner_mode": (
+                "WAITING_FOR_DIRECTION" if not ((audit.get("strategy_info") or {}).get("planned_units", []) or [])
+                else "LEVEL_8_CORE" if int(public.get("level", audit.get("level", 1)) or 1) <= 8
+                else f"DYNAMIC_LEVEL_{min(10, int(public.get('level', audit.get('level', 1)) or 1))}"
+            ),
             "active_traits": dict((audit.get("strategy_info") or {}).get("active_traits", {}) or {}),
             "strategy_scores": dict((audit.get("strategy_info") or {}).get("strategy_scores", {}) or {}),
             "board": [self._unit_info(u, i, "board") for i, u in enumerate(audit.get("board", []))],
@@ -1034,6 +1054,9 @@ class PlayerJsonLogWriter:
                 f"FOCUS WEIGHTS: {', '.join(f'{name} {float(weight):.2f}' for name, weight in sorted((after_state.get('composition_focus_weights') or {}).items(), key=lambda item: float(item[1]), reverse=True)[:5]) or '—'}\n"
                     f"    STRATEGY REASON: {after_state.get('strategy_reason') or '—'} | CONF: {float(after_state.get('strategy_confidence', 0.0) or 0.0):.2f}\n"
                     f"    CORE UNITS: {', '.join(map(str, after_state.get('core_units') or [])) or '—'} | CORE TRAITS: {', '.join(map(str, after_state.get('core_traits') or [])) or '—'}\n"
+                    f"    COMPOSITION PLAN [{after_state.get('planner_mode', 'UNKNOWN')}]: target={after_state.get('planner_target_slots', 0)} | units={', '.join(map(str, after_state.get('planned_units') or [])) or '—'} | traits={', '.join(map(str, after_state.get('planned_traits') or [])) or '—'} | carry_id={after_state.get('planned_main_carry_id', -1)} | score={float(after_state.get('planned_composition_score', 0.0) or 0.0):.2f}\n"
+                    f"    PLAN NOTE: {('level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change' if after_state.get('planner_mode') == 'LEVEL_8_CORE' else 'the 9th/10th slots are included in the latest recalculated plan using current direction/focus/owned copies' if str(after_state.get('planner_mode', '')).startswith('DYNAMIC_LEVEL_') else 'waiting for a valid composition direction')}\n"
+                    f"    ACQUISITION CHECK: {', '.join(map(str, after_state.get('planned_acquisition_notes') or [])) or 'no missing-unit estimate available'}\n"
                     f"    COMP BEFORE -> AFTER: dir={before_state.get('comp_direction') or '—'} -> {after_state.get('comp_direction') or '—'} | foco={before_state.get('comp_focus') or '—'} -> {after_state.get('comp_focus') or '—'} | lock={before_state.get('composition_locked', False)} -> {after_state.get('composition_locked', False)} | strength={float(before_state.get('composition_strength', 0.0) or 0.0):.2f} -> {float(after_state.get('composition_strength', 0.0) or 0.0):.2f}\n"
                     f"    GOLD: {after_state.get('gold', '?')} | renda base "
                     f"+{after_state.get('round_base_gold', 0)} | juros "

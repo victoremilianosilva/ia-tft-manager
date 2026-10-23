@@ -63,6 +63,12 @@ def _snapshot(with_unit=False):
                 "reason": "composition fit" if player_id == 0 else "",
                 "core_units": ["TFT_Test_Briar"] if player_id == 0 else [],
                 "core_traits": ["Space Groove"] if player_id == 0 else [],
+                "planned_units": ["TFT_Test_Briar", "TFT_Test_Teemo", "TFT_Test_Tank"] if player_id == 0 else [],
+                "planned_unit_ids": [101, 202, 303] if player_id == 0 else [],
+                "planned_traits": ["Space Groove", "Prankster"] if player_id == 0 else [],
+                "planned_main_carry_id": 202 if player_id == 0 else -1,
+                "planned_composition_score": 17.5 if player_id == 0 else 0.0,
+                "planned_acquisition_notes": ["TFT_Test_Teemo (cost=1, chance_now~6%, chance_horizon~6%, hard_to_find)"] if player_id == 0 else [],
                 "active_traits": {"Space Groove": 2} if player_id == 0 else {},
                 "strategy_scores": {"1": 0.8} if player_id == 0 else {},
             },
@@ -200,7 +206,21 @@ def test_writes_only_tft_logs_per_player_and_keeps_structured_diagnostics_in_mem
     assert action_entry["payload"]["state_after"]["strategy_name"] == "STABILIZE"
     assert action_entry["payload"]["state_after"]["comp_direction"] == "Prankster"
     assert action_entry["payload"]["state_after"]["comp_focus"] == "Briar"
-    assert action_entry["payload"]["state_after"]["composition_locked"] is False
+    plan_state = action_entry["payload"]["state_after"]
+    assert plan_state["planned_units"] == ["TFT_Test_Briar", "TFT_Test_Teemo", "TFT_Test_Tank"]
+    assert plan_state["planned_unit_ids"] == [101, 202, 303]
+    assert plan_state["planned_traits"] == ["Space Groove", "Prankster"]
+    assert plan_state["planned_main_carry_id"] == 202
+    assert plan_state["planned_composition_score"] == 17.5
+    assert plan_state["planned_acquisition_notes"] == ["TFT_Test_Teemo (cost=1, chance_now~6%, chance_horizon~6%, hard_to_find)"]
+    assert "ACQUISITION CHECK:" in action_entry["text"]
+    assert "chance_horizon~6%" in action_entry["text"]
+    assert plan_state["planner_target_slots"] == 8
+    assert plan_state["planner_mode"] == "LEVEL_8_CORE"
+    assert "COMPOSITION PLAN [LEVEL_8_CORE]" in action_entry["text"]
+    assert "TFT_Test_Teemo" in action_entry["text"]
+    assert "level 1-8 targets the same 8-unit core" in action_entry["text"]
+    assert plan_state["composition_locked"] is False
     assert action_entry["payload"]["state_after"]["composition_strength"] == 2.0
     comp_diag = action_entry["payload"]["composition_diagnostics"]
     assert comp_diag["direction_changed"] is True

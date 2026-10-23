@@ -1939,15 +1939,36 @@ struct TFTEngine::Impl {
                 owned_copies[unit_id] = copies;
             const strategy::CompositionPlanner::FocusWeights plan_focus(
                 focus.begin(), focus.end());
+            // Plan the complete level-8 core even while the player is below
+            // level 8. At levels 9/10, recompute a larger plan from the latest
+            // direction, focus weights, and owned copies so the extra slots can
+            // adapt to the live state instead of being fixed in the early game.
+            const auto planning_slots =
+                strategy::CompositionPlanner::target_slots_for_level(economy.level);
+            strategy::CompositionPlanner::AvailableCopies available_copies;
+            std::unordered_set<std::int32_t> currently_offered;
+            for (const auto& champion : catalog->all())
+                available_copies[champion.internal_id] = pool
+                    ? pool->available(champion.internal_id) : 0;
+            const auto& current_shop = player_envs[i].shop;
+            if (current_shop) {
+                for (const auto& offer : current_shop->offers()) {
+                    if (!offer) continue;
+                    currently_offered.insert(offer->champion_internal_id);
+                    available_copies[offer->champion_internal_id] =
+                        std::max(1, available_copies[offer->champion_internal_id]);
+                }
+            }
             const auto plan = strategy::CompositionPlanner::build(
                 catalog->all(), trait_milestones, info.composition_direction,
-                plan_focus, owned_copies,
-                static_cast<std::size_t>(std::clamp(economy.level, 1, 10)));
+                plan_focus, owned_copies, planning_slots, economy.level,
+                available_copies, currently_offered);
             info.planned_units = plan.unit_names;
             info.planned_unit_ids = plan.unit_ids;
             info.planned_traits = plan.core_traits;
             info.planned_main_carry_id = plan.main_carry_id;
             info.planned_composition_score = plan.score;
+            info.planned_acquisition_notes = plan.acquisition_notes;
         }
 
         // Paridade com StrategyManager.compute_strategy_confidence().

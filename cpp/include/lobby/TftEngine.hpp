@@ -280,6 +280,8 @@ struct StrategyInfo {
     std::vector<std::string> planned_traits;
     std::int32_t planned_main_carry_id{-1};
     double planned_composition_score{0.0};
+    // Estimated chance that an unowned planned champion appears in a five-slot shop.
+    std::vector<std::string> planned_acquisition_notes;
     std::vector<std::pair<std::string, std::int32_t>> active_traits;
     std::vector<std::pair<std::string, std::int32_t>> unit_counts;
     std::vector<std::pair<std::int32_t, std::int32_t>> unit_counts_by_id;

@@ -7,16 +7,6 @@
 namespace tft {
 ShopEngine::ShopEngine(UnitPool& pool, UnitInstanceFactory& factory, std::uint64_t seed)
     : pool_(pool), factory_(factory), rng_(seed) {}
-const std::array<std::array<double, 5>, 10>& ShopEngine::odds_by_level() {
-    static const std::array<std::array<double, 5>, 10> odds{{
-        {{1.00,0.00,0.00,0.00,0.00}}, {{1.00,0.00,0.00,0.00,0.00}},
-        {{0.75,0.25,0.00,0.00,0.00}}, {{0.55,0.30,0.15,0.00,0.00}},
-        {{0.45,0.33,0.20,0.02,0.00}}, {{0.30,0.40,0.25,0.05,0.00}},
-        {{0.16,0.30,0.43,0.10,0.01}}, {{0.15,0.20,0.32,0.30,0.03}},
-        {{0.10,0.17,0.25,0.33,0.15}}, {{0.05,0.10,0.20,0.40,0.25}}
-    }};
-    return odds;
-}
 std::int32_t ShopEngine::roll_cost(std::int32_t level) {
     const auto safe_level = std::clamp(level, 1, 10);
     const auto& weights = odds_by_level()[static_cast<std::size_t>(safe_level - 1)];
