@@ -45,7 +45,7 @@ public:
         "taunt", "damage reduction", "increased armor", "bonus armor", "fortify", "unbreakable"
     };
     static constexpr std::array<std::string_view, 7> carry_keywords = {
-        "attack damage", "critical", "crit", "projectile", "rapid fire", "attack speed", "physical damage"
+        "attack damage", "critical", "crit", "projectile", "rapid fire", "attack speed"
     };
     static constexpr std::array<std::string_view, 7> support_keywords = {
         "heal", "healing", "shield allies", "buff allies", "all allies", "restore health", "grant mana"
