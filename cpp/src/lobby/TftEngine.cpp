@@ -196,6 +196,19 @@ struct TFTEngine::Impl {
         double round_reward_total{0.0};
         double total_reward{0.0};
         bool placement_reward_given{false};
+        struct RecentPurchase {
+            std::string uuid;
+            std::int32_t champion_id{-1};
+            std::int32_t star{1};
+            std::uint64_t action_serial{0};
+            int cost{0};
+            bool built_pair{false};
+            bool completed_upgrade{false};
+            double fit_score{0.0};
+            std::string comp_direction;
+        };
+        std::uint64_t action_serial{0};
+        std::vector<RecentPurchase> recent_purchases;
 
         PlayerTransition step(
             TFTEngine::Impl& lobby,
@@ -2151,6 +2164,13 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
 
         auto& economy = this->economy;
         auto& shop = *this->shop;
+        ++this->action_serial;
+        this->recent_purchases.erase(
+            std::remove_if(this->recent_purchases.begin(), this->recent_purchases.end(),
+                [this](const RecentPurchase& purchase) {
+                    return this->action_serial - purchase.action_serial > 4;
+                }),
+            this->recent_purchases.end());
         const auto old_gold = economy.gold;
         const auto old_level = economy.level;
         const auto old_xp = economy.xp;
@@ -2164,6 +2184,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         bool buy_builds_pair = false;
         bool bought_unit_successfully = false;
         bool bought_upgrade = false;
+        bool purchase_was_recently_reversed = false;
+        std::string purchase_sequence_reason;
         bool board_capacity_violation = false;
         bool anti_loop_blocked = false;
         std::array<std::string, kBoardSlots> old_board_layout{};
@@ -2324,6 +2346,19 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                                 if (++removed == 2) break;
                             }
                             bought_unit->star = star + 1;
+                        }
+                        if (bought_unit && !bought_upgrade) {
+                            this->recent_purchases.push_back(RecentPurchase{
+                                bought_unit->uuid,
+                                bought_unit->champion_internal_id,
+                                bought_unit->star,
+                                this->action_serial,
+                                definition->cost,
+                                buy_builds_pair,
+                                false,
+                                candidate_comp_score,
+                                strategy_before.composition_direction
+                            });
                         }
                         lobby.register_position_state(player_id);
                     } else {
@@ -2535,6 +2570,29 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     );
 
                 if (definition) {
+                    const std::string sold_uuid = unit.uuid;
+                    const auto recent = std::find_if(
+                        this->recent_purchases.rbegin(), this->recent_purchases.rend(),
+                        [&sold_uuid](const RecentPurchase& purchase) {
+                            return !sold_uuid.empty() && purchase.uuid == sold_uuid;
+                        });
+                    if (recent != this->recent_purchases.rend()) {
+                        const bool direction_changed = !this->strategy.empty() &&
+                            this->strategy.back().composition_direction != recent->comp_direction;
+                        if (recent->completed_upgrade) {
+                            purchase_sequence_reason = "PURCHASE_UPGRADE";
+                        } else if (old_bench_count >= static_cast<int>(kBenchSlots)) {
+                            purchase_sequence_reason = "BENCH_CAPACITY";
+                        } else if (direction_changed) {
+                            purchase_sequence_reason = "COMP_TRANSITION";
+                        } else if (recent->built_pair) {
+                            purchase_sequence_reason = "PURCHASE_REVERSED";
+                            purchase_was_recently_reversed = true;
+                        } else {
+                            purchase_sequence_reason = "PURCHASE_REVERSED";
+                            purchase_was_recently_reversed = true;
+                        }
+                    }
                     if (!this->strategy.empty()) {
                         const auto& current_strategy = this->strategy.back();
                         const auto& core_unit_ids = current_strategy.core_unit_ids;
@@ -2605,7 +2663,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             // reliable signal of success. Match MiniTFTEnv._execute_buy():
             // +0.05 for a normal purchase, +0.30 for any completed upgrade.
             success = bought_unit_successfully;
-            action_reward = !success ? -0.10 : (bought_upgrade ? 0.30 : 0.05);
+            action_reward = !success ? -0.10 : (bought_upgrade ? 0.30 : 0.0);
             if (success && has_candidate_comp_score) {
                 // Also guide early purchases before the board has a stable comp.
                 // composition_quality_delta is candidate-vs-board when a board
@@ -2709,6 +2767,16 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     sold_unit_fit_score, sold_core_unit,
                     sold_unit_protects_upgrade, old_bench_count >= static_cast<int>(kBenchSlots))
                 : -0.10;
+            if (success && purchase_was_recently_reversed &&
+                !sold_core_unit && !sold_unit_protects_upgrade &&
+                old_bench_count < static_cast<int>(kBenchSlots)) {
+                action_reward += reward_model::reversed_purchase_penalty();
+            }
+            if (success && !purchase_sequence_reason.empty()) {
+                const auto sold_uuid = old_bench_count > 0
+                    ? std::string{} : std::string{};
+                (void)sold_uuid;
+            }
         } else {
             success = true;
         }
