@@ -141,8 +141,11 @@ def main() -> int:
 
     lines += ["", "## 1. Auditoria estratégica", ""]
     strategic_md = analysis_dir / "strategic_audit.md"
-    lines.append(strategic_md.read_text(encoding="utf-8").strip()
-                  if strategic_md.exists() else "Relatório estratégico não encontrado.")
+    if strategic_md.exists():
+        lines.append(strategic_md.read_text(encoding="utf-8").strip())
+        strategic_md.unlink()  # Mantém apenas o relatório Markdown unificado como saída final.
+    else:
+        lines.append("Relatório estratégico não encontrado.")
 
     lines += ["", "## 2. Auditoria nativa: ações, máscaras e loops", ""]
     native_rows, malformed = read_jsonl(native_path)
