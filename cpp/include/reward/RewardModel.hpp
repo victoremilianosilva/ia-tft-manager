@@ -121,6 +121,12 @@ inline double purchase_pair_quality(double fit_score) noexcept {
     return 0.06 + 0.04 * std::tanh(std::max(0.0, fit_score) / 5.0);
 }
 
+// Applied only when a specific recently purchased unit is sold within four
+// actions, without an upgrade, core-unit protection, or bench-capacity reason.
+inline double reversed_purchase_penalty() noexcept {
+    return -0.12;
+}
+
 // Selling frees a bench slot and returns gold, but should protect core units
 // and copies that are close to an upgrade. fit_score is normalized to [0, 1].
 inline double sale_quality(double fit_score, bool core_unit,
