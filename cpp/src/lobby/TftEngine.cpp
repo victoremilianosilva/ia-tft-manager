@@ -2658,7 +2658,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                                 buy_builds_pair,
                                 false,
                                 false,
-                                std::max(0.0, candidate_comp_score),
+                                std::clamp(std::max(0.0, candidate_comp_score) / 32.5, 0.0, 1.0),
                                 0.0,
                                 strategy_before.composition_direction
                             });
@@ -2888,10 +2888,12 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     if (recent != this->recent_purchases.rend()) {
                         const bool direction_changed = !this->strategy.empty() &&
                             this->strategy.back().composition_direction != recent->comp_direction;
-                        if (!recent->completed_upgrade && !recent->was_deployed &&
-                            recent->fit_score <= 1e-6 &&
-                            old_bench_count < static_cast<int>(kBenchSlots) &&
-                            !direction_changed) {
+                        if (reward_model::should_penalize_reversed_purchase(
+                                recent->fit_score,
+                                recent->completed_upgrade,
+                                recent->was_deployed,
+                                old_bench_count >= static_cast<int>(kBenchSlots),
+                                direction_changed)) {
                             purchase_was_recently_reversed = true;
                             reversed_purchase_prior_reward = recent->reward;
                         }
@@ -2899,10 +2901,12 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     if (!this->strategy.empty()) {
                         const auto& current_strategy = this->strategy.back();
                         const auto& core_unit_ids = current_strategy.core_unit_ids;
-                        sold_core_unit = std::find(
-                            core_unit_ids.begin(), core_unit_ids.end(),
-                            unit.champion_internal_id
-                        ) != core_unit_ids.end();
+                        const auto& planned_unit_ids = current_strategy.planned_unit_ids;
+                        sold_core_unit =
+                            std::find(core_unit_ids.begin(), core_unit_ids.end(),
+                                unit.champion_internal_id) != core_unit_ids.end() ||
+                            std::find(planned_unit_ids.begin(), planned_unit_ids.end(),
+                                unit.champion_internal_id) != planned_unit_ids.end();
                         sold_unit_fit_score = std::clamp(
                             unit_composition_score(current_strategy, *definition, unit.star, lobby.trait_milestones) / 32.5,
                             0.0, 1.0);
