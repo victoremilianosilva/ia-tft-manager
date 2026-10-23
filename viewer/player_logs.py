@@ -709,6 +709,8 @@ class PlayerJsonLogWriter:
         round_number = int(before.get("round", 1) or 1)
         stage, round_in_stage = _round_coordinates(round_number)
         engine_events = [str(event) for event in info.get("events", [])]
+        # Native costs are captured inside PlayerEnv::step, before round income.
+        # Prefer this trace over net gold delta, which can be masked by round income.
         native_economic_events = {}
         for event in engine_events:
             match = re.search(
