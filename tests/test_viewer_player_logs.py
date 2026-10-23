@@ -94,6 +94,9 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
     after["audit_players"][0]["board_power"] = 2.0
     after["audit_players"][0]["synergy_score"] = 1.0
     after["audit_players"][0]["positioning_score"] = 0.25
+    # The engine step also resolves +5 income after this zero-cost move.
+    after["players"][0]["gold"] = 15
+    after["audit_players"][0]["gold"] = 15
     # Simulate a real strategy recomputation after the board changes.
     after["audit_players"][0]["strategy_info"]["composition_direction"] = "Prankster"
     after["audit_players"][0]["strategy_info"]["composition_focus"] = "Briar"
@@ -153,7 +156,8 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
     assert action_entry["payload"]["state_after"]["board"][0]["name"] == "Briar"
     economics = action_entry["payload"]["economic_diagnostics"]
     assert economics["gold_before"] == 10
-    assert economics["gold_after"] == 10
+    assert economics["gold_after"] == 10  # action-time balance, before round income
+    assert economics["gold_after_step"] == 15  # later snapshot includes round income
     assert economics["gold_delta"] == 0
     assert economics["board_power_delta"] == 2.0
     assert economics["gold_before_interest"] == 10
