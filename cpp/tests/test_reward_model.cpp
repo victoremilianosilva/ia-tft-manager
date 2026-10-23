@@ -77,8 +77,22 @@ int main() {
                   "composition-aware purchase reward");
     require_close(purchase_quality(0.0, true), 0.12,
                   "purchase completing an upgrade");
-    require_close(reversed_purchase_penalty(), -0.12,
+    require_close(reversed_purchase_penalty(), -0.18,
                   "targeted reversed-purchase penalty");
+    if (!should_penalize_reversed_purchase(0.10, false, false, false, false))
+        throw std::runtime_error("low-fit immediate reversal should be penalized");
+    if (!should_penalize_reversed_purchase(0.15, false, false, false, false))
+        throw std::runtime_error("threshold-fit immediate reversal should be penalized");
+    if (should_penalize_reversed_purchase(0.16, false, false, false, false))
+        throw std::runtime_error("useful unit should not trigger low-fit reversal penalty");
+    if (should_penalize_reversed_purchase(0.0, true, false, false, false))
+        throw std::runtime_error("completed upgrade must be exempt from reversal penalty");
+    if (should_penalize_reversed_purchase(0.0, false, true, false, false))
+        throw std::runtime_error("deployed unit must be exempt from reversal penalty");
+    if (should_penalize_reversed_purchase(0.0, false, false, true, false))
+        throw std::runtime_error("full bench must be exempt from reversal penalty");
+    if (should_penalize_reversed_purchase(0.0, false, false, false, true))
+        throw std::runtime_error("composition transition must be exempt from reversal penalty");
     const double reversal_adjustment = reversed_sequence_adjustment(0.02, 0.20);
     if (!(0.02 + 0.20 + reversal_adjustment <= -0.02 + 1e-9)) {
         throw std::runtime_error("reversed purchase sequence must not retain positive aggregate reward");
@@ -93,10 +107,16 @@ int main() {
     if (!(purchase_pair_quality(10.0) < 0.15)) {
         throw std::runtime_error("pair reward must remain smaller than upgrade completion");
     }
-    require_close(sale_quality(0.0, false, false, true), 0.13,
+    require_close(sale_quality(0.0, false, false, true), 0.10,
                   "sale of low-fit non-core unit frees space");
-    require_close(sale_quality(1.0, true, true, false), -0.22,
+    require_close(sale_quality(1.0, true, true, false), -0.26,
                   "sale protects core unit and upgrade copies");
+    if (!(sale_quality(0.0, false, false, false) >
+          sale_quality(0.5, false, false, false) &&
+          sale_quality(0.5, false, false, false) >
+          sale_quality(1.0, false, false, false))) {
+        throw std::runtime_error("sale reward must decrease as bench-unit fit increases");
+    }
 
     // Test A: a high-fit purchase should beat PASS even when it spends through
     // an interest threshold, while a low-value purchase should not.
