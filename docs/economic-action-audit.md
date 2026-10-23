@@ -18,7 +18,7 @@ not be inferred from the final round balance.
 
 ## Per-action fields
 
-Each action entry includes economic_diagnostics. Actual action cost and sale proceeds come from a native engine event captured before round income is resolved; older logs without that event are explicitly marked as using a gold-delta fallback.
+Each action entry includes economic_diagnostics. Actual action cost, sale proceeds, action-time gold before/after, and interest potential before/after come from a native engine event captured before round income is resolved. gold_after_step preserves the later snapshot balance if the same step also resolves a round. Older logs without that event are explicitly marked as using a gold-delta fallback.
 
 - gold_before, gold_after, gold_delta, action_cost, listed_cost, and
   sale_proceeds;
