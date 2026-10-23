@@ -9,11 +9,14 @@ def _unit(champion="", *, cost=1, star=1, impact=2.0, occupied=True):
 
 
 def _state(gold, *, bench=None, shop=None, board=None, comp="Trait"):
+    def padded(values, size):
+        values = list(values or [])
+        return values + [_unit(occupied=False) for _ in range(max(0, size - len(values)))]
     return {
         "gold": gold, "comp_direction": comp,
-        "bench": bench if bench is not None else [],
-        "shop": shop if shop is not None else [],
-        "board": board if board is not None else [],
+        "bench": padded(bench, 9),
+        "shop": padded(shop, 5),
+        "board": padded(board, 28),
         "active_traits": {},
     }
 
