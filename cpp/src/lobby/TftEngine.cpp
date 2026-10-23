@@ -3219,6 +3219,10 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         target.win_streak = source.economy.win_streak;
         target.loss_streak = source.economy.loss_streak;
         target.gold_before_interest = source.economy.gold_before_interest;
+        target.interest_if_resolved_now = impl_->economy_engine.get_interest(source.economy.gold);
+        target.board_power = impl_->board_power(i);
+        target.synergy_score = impl_->synergy_score(i);
+        target.positioning_score = impl_->positioning_score(i);
         target.round_gold = source.economy.round_gold;
         target.round_base_gold = source.economy.round_base_gold;
         target.round_interest = source.economy.round_interest;
