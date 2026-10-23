@@ -111,7 +111,8 @@ public:
 
             if (role == PositioningEngine::carry) {
                 const double protection = std::min(
-                    1.0, occupied_neighbors * 0.12 + tanks_in_front * 0.50);
+                    1.0, occupied_neighbors * 0.03 + tank_neighbors * 0.25 +
+                        tanks_in_front * 0.25);
                 if (protection < 0.35) {
                     ++result.exposed_carry_count;
                     penalty += 0.18 * (0.35 - protection) / 0.35;
