@@ -113,6 +113,14 @@ inline double purchase_quality(double fit_delta, bool completes_upgrade) noexcep
         (completes_upgrade ? 0.12 : 0.0);
 }
 
+// Small, composition-aware bonus for acquiring the second matching 1-star copy.
+// This values upgrade potential without treating every duplicate as worthwhile.
+// The caller only invokes it when exactly one matching copy already exists and
+// the candidate has positive fit with the current composition.
+inline double purchase_pair_quality(double fit_score) noexcept {
+    return 0.06 + 0.04 * std::tanh(std::max(0.0, fit_score) / 5.0);
+}
+
 // Selling frees a bench slot and returns gold, but should protect core units
 // and copies that are close to an upgrade. fit_score is normalized to [0, 1].
 inline double sale_quality(double fit_score, bool core_unit,
