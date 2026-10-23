@@ -389,6 +389,13 @@ class PlayerCard(QFrame):
         )
         strategy_row.addWidget(self.composition_button, 0, Qt.AlignmentFlag.AlignVCenter)
         root.addLayout(strategy_row)
+        self.board_legend = QLabel(
+            "FRONT · linhas 1–2    |    BACKLINE · linhas 3–4    |    "
+            "anel vermelho = papel provavelmente mal posicionado"
+        )
+        self.board_legend.setObjectName("muted")
+        self.board_legend.setWordWrap(True)
+        root.addWidget(self.board_legend)
         self.board = QGridLayout()
         self.board.setContentsMargins(0, 0, 0, 0)
         self.board.setSpacing(2)
