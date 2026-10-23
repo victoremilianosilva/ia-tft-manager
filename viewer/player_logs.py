@@ -693,6 +693,7 @@ class PlayerJsonLogWriter:
         round_number: int, stage: int, round_in_stage: int, audit: dict,
         public: dict, action: list[int], reward: float, before_state: dict,
         after_state: dict, diagnostics: dict, engine_events: list[str],
+        economic_diagnostics: dict, combat_reward: float,
     ):
         self._append_entry(
             player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
@@ -716,6 +717,11 @@ class PlayerJsonLogWriter:
             data={
                 "action": action, "action_name": ACTION_NAMES.get(int(action[0]), "UNKNOWN"),
                 "reward": reward, "state_before": before_state, "state_after": after_state,
+                "economic_diagnostics": economic_diagnostics,
+                "combat_reward": combat_reward,
+                "strategic_snapshot_before": self._strategic_snapshot(before_state),
+                "strategic_snapshot_after": self._strategic_snapshot(after_state),
+                "purchase_marginal_value": economic_diagnostics.get("purchase_marginal_value"),
                 "policy_diagnostics": diagnostics, "engine_events": engine_events,
             },
         )
@@ -977,14 +983,9 @@ class PlayerJsonLogWriter:
                     "unit_fit": self._unit_composition_fit(action, before_audit, before_state),
                 },
                 "policy_diagnostics": diagnostic, "engine_events": player_events,
-                "combat_reward": float((info.get("combat_rewards") or [0.0] * 8)[player_id] or 0.0),
                 "strategic_snapshot_before": self._strategic_snapshot(before_state),
                 "strategic_snapshot_after": self._strategic_snapshot(after_state),
-                "purchase_marginal_value": (
-                    (self._economic_diagnostics(action, before_state, after_state, before_audit, after_audit)
-                     .get("purchase_marginal_value"))
-                    if action_type == 0 else None
-                ),
+                "purchase_marginal_value": economic_diagnostics.get("purchase_marginal_value"),
             }
 
             # Same order as the old UI: star upgrades first, then action/round,
@@ -1009,6 +1010,9 @@ class PlayerJsonLogWriter:
                     audit=after_audit, public=after_public, action=action, reward=reward,
                     before_state=before_state, after_state=after_state,
                     diagnostics=diagnostic, engine_events=player_events + shared_round_events,
+                    economic_diagnostics=economic_diagnostics,
+                    combat_reward=float(combat_rewards[player_id] or 0.0)
+                        if isinstance(combat_rewards, list) and player_id < len(combat_rewards) else 0.0,
                 )
             elif action_type != 6 or not self._pass_logged[player_id]:
                 tag = "pos_rew" if reward > 0 else "neg_rew" if reward < 0 else None
