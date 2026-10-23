@@ -722,6 +722,12 @@ class PlayerJsonLogWriter:
                 "action_reward": action_rewards[player_id] if isinstance(action_rewards, list) and player_id < len(action_rewards) else None,
                 "combat_reward": combat_rewards[player_id] if isinstance(combat_rewards, list) and player_id < len(combat_rewards) else None,
                 "placement_reward": placement_rewards[player_id] if isinstance(placement_rewards, list) and player_id < len(placement_rewards) else None,
+                "reward_components": {
+                    "action": action_rewards[player_id] if isinstance(action_rewards, list) and player_id < len(action_rewards) else None,
+                    "combat": combat_rewards[player_id] if isinstance(combat_rewards, list) and player_id < len(combat_rewards) else None,
+                    "placement": placement_rewards[player_id] if isinstance(placement_rewards, list) and player_id < len(placement_rewards) else None,
+                    "returned_reward": reward,
+                },
                 "state_changed": before_state != after_state,
                 "economic_diagnostics": self._economic_diagnostics(action, before_state, after_state, before_audit, after_audit),
                 "state_before": before_state, "state_after": after_state,
