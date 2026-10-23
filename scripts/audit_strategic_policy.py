@@ -27,6 +27,8 @@ if str(_REPO_ROOT) not in sys.path:
 
 from cpp_lobby_env import CppTFTLobbyWrapper
 from policy import TFTPolicy
+from scripts.audit_native_ppo_loops import _strategic_summary, _effect_for_action, MOVEMENT_TYPES
+from scripts.strategic_audit_state import state_signature, diff_units, composition_delta, detect_cycle
 
 ACTION_DIMS = [7, 5, 9, 28, 28, 28]
 PASS_ACTION = {"type": 6}
@@ -119,11 +121,23 @@ def audit_seed(policy, device, seed, output_handles, max_steps):
         if observations.ndim != 2 or observations.shape[0] != 8:
             raise ValueError(f"Observações inesperadas: {observations.shape}")
         total_logged = 0
+        initial_snapshot = lobby.get_audit_snapshot()
+        initial_strategies = lobby.get_strategy_snapshots()
+        visited = [dict() for _ in range(8)]
+        for player_id, player in enumerate(initial_snapshot["players"]):
+            visited[player_id][state_signature(player)] = {"step": -1, "action": None}
 
         for step_index in range(max_steps):
             if getattr(lobby, "finished", False):
                 break
 
+            before_snapshot = lobby.get_audit_snapshot()
+            before_players = before_snapshot["players"]
+            strategies_before = lobby.get_strategy_snapshots()
+            strategic_before = [
+                _strategic_summary(lobby, player_id, before_players[player_id], strategies_before[player_id])
+                for player_id in range(8)
+            ]
             masks = lobby.get_action_masks()
             gold_before = _player_gold(lobby)
             alive = [
@@ -153,6 +167,9 @@ def audit_seed(policy, device, seed, output_handles, max_steps):
             ]
             observations, rewards, done, info = lobby.step(action_dicts)
             observations = np.asarray(observations, dtype=np.float32)
+            after_snapshot = lobby.get_audit_snapshot()
+            after_players = after_snapshot["players"]
+            strategies_after = lobby.get_strategy_snapshots()
             gold_after = _player_gold(lobby)
             action_rewards = np.asarray(
                 info.get("action_rewards", np.zeros(8)), dtype=np.float32
@@ -160,19 +177,59 @@ def audit_seed(policy, device, seed, output_handles, max_steps):
             total_rewards = np.asarray(rewards, dtype=np.float32).reshape(-1)
 
             for player_id in range(8):
+                before = before_players[player_id]
+                after = after_players[player_id]
+                action = chosen[player_id]
+                action_reward = float(action_rewards[player_id]) if player_id < len(action_rewards) else None
+                before_sig = state_signature(before)
+                after_sig = state_signature(after)
+                unit_diff = diff_units(before, after)
+                state_changed = before_sig != after_sig
+                effect_observed = _effect_for_action(action, before, after)
+                cycle = None
+                if int(action[0]) in MOVEMENT_TYPES and effect_observed:
+                    cycle = detect_cycle(after_sig, visited[player_id], step_index)
+                    visited[player_id][after_sig] = {"step": step_index, "action": action}
+                strategy_after = _strategic_summary(
+                    lobby, player_id, after, strategies_after[player_id]
+                )
+                comp_delta = composition_delta(
+                    strategic_before[player_id], strategy_after, before, after
+                )
                 record = {
+                    "schema_version": 2,
                     "seed": int(seed),
                     "step": int(step_index),
-                    "round": int(info.get("round", 0)),
+                    "round_before": int(before_snapshot.get("round", 0)),
+                    "round_after": int(after_snapshot.get("round", 0)),
                     "player_id": player_id,
                     "alive_at_decision": player_id in alive,
-                    "action": chosen[player_id],
+                    "action": action,
                     "diagnostics": diagnostics_by_player.get(player_id, []),
                     "masks": _json_masks(masks[player_id]) if player_id in alive else {},
                     "gold_before": gold_before.get(player_id),
                     "gold_after": gold_after.get(player_id),
-                    "action_reward": float(action_rewards[player_id]) if player_id < len(action_rewards) else None,
+                    "action_reward": action_reward,
                     "total_reward": float(total_rewards[player_id]) if player_id < len(total_rewards) else None,
+                    "board_before": before.get("board", []),
+                    "bench_before": before.get("bench", []),
+                    "shop_before": before.get("shop", []),
+                    "board_after": after.get("board", []),
+                    "bench_after": after.get("bench", []),
+                    "shop_after": after.get("shop", []),
+                    "xp_before": before.get("xp"),
+                    "xp_after": after.get("xp"),
+                    "board_bench_signature_before": before_sig,
+                    "board_bench_signature_after": after_sig,
+                    "action_effect_observed": bool(effect_observed),
+                    "board_bench_state_changed": bool(state_changed),
+                    "unit_changes": unit_diff,
+                    "moved_units": unit_diff["moved_units"],
+                    "strategy_before": strategic_before[player_id],
+                    "strategy_after": strategy_after,
+                    "composition_delta": comp_delta,
+                    "loop_detected": cycle,
+                    "engine_events": info.get("events", []),
                 }
                 _write_player_record(output_handles, player_id, record)
                 total_logged += 1
