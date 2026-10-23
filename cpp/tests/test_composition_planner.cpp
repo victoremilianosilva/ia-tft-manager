@@ -76,6 +76,28 @@ int main() {
     std::sort(ids.begin(), ids.end());
     assert(std::adjacent_find(ids.begin(), ids.end()) == ids.end());
 
+    // At level 6, an unowned cost-1 carry with only a few copies left
+    // should lose to an obtainable cost-3 carry, even when its trait fit is high.
+    std::vector<ChampionDefinition> acquisition_pool{
+        champion(11, "MissingCheapCarry", 1, {"Replicator"}, 1),
+        champion(12, "ObtainableCarry", 1, {"Replicator"}, 3),
+        champion(13, "Frontline", 0, {"Replicator"}, 2),
+        champion(14, "Support", 2, {"Mystic"}, 2),
+        champion(15, "OtherCheapUnit", 3, {"Scholar"}, 1)
+    };
+    CompositionPlanner::OwnedCopies none_owned;
+    CompositionPlanner::AvailableCopies availability{
+        {11, 1}, {12, 9}, {13, 9}, {14, 9}, {15, 99}
+    };
+    const auto viable_plan = CompositionPlanner::build(
+        acquisition_pool, {{"Replicator", {2, 4, 6}}}, "Replicator",
+        {{"Replicator", 5.0}}, none_owned, 4, 6, availability);
+    assert(viable_plan.main_carry_id == 12);
+    assert(std::find(viable_plan.unit_ids.begin(), viable_plan.unit_ids.end(), 11)
+           == viable_plan.unit_ids.end());
+    assert(std::any_of(viable_plan.acquisition_notes.begin(), viable_plan.acquisition_notes.end(),
+        [](const std::string& note) { return note.find("MissingCheapCarry") == std::string::npos; }));
+
     // With no direction, no empty-string trait should be fabricated.
     const auto open_plan = CompositionPlanner::build(pool, milestones, "", {}, {}, 4);
     assert(open_plan.unit_ids.size() == 4);
