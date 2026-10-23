@@ -38,14 +38,17 @@ struct CombatProfile {
 
 class CombatProfileEngine {
 public:
-    static constexpr std::array<std::string_view, 8> tank_keywords = {
-        "shield", "armor", "defense", "defensive", "taunt", "damage reduction", "barrier", "protect"
+    // Avoid generic combat words ("damage", "attack", "shield") dominating
+    // role inference: many fighter/carry abilities mention damage, and support
+    // abilities may shield allies without making the champion a tank.
+    static constexpr std::array<std::string_view, 6> tank_keywords = {
+        "taunt", "damage reduction", "increased armor", "bonus armor", "fortify", "unbreakable"
     };
     static constexpr std::array<std::string_view, 7> carry_keywords = {
-        "attack damage", "critical", "crit", "damage", "projectile", "rapid fire", "attack speed"
+        "attack damage", "critical", "crit", "projectile", "rapid fire", "attack speed", "physical damage"
     };
-    static constexpr std::array<std::string_view, 9> support_keywords = {
-        "heal", "healing", "shield", "buff", "ally", "all allies", "mana", "restore", "protect"
+    static constexpr std::array<std::string_view, 7> support_keywords = {
+        "heal", "healing", "shield allies", "buff allies", "all allies", "restore health", "grant mana"
     };
     static constexpr std::array<std::string_view, 6> assassin_keywords = {
         "dash", "jump", "backline", "lowest health", "furthest", "farther"
@@ -57,24 +60,30 @@ public:
         add_keyword_scores(scores, text, tank_keywords, 0);
         add_keyword_scores(scores, text, carry_keywords, 1);
         add_keyword_scores(scores, text, support_keywords, 2);
-        add_keyword_scores(scores, text, std::array<std::string_view, 6>{
-            "melee", "strike", "physical damage", "attack", "damage", "lifesteal"
+        add_keyword_scores(scores, text, std::array<std::string_view, 4>{
+            "melee", "strike", "lifesteal", "physical attack"
         }, 3);
 
-        if (u.max_hp >= 800) scores[0] += 2.0;
-        if (u.max_hp >= 1100) scores[0] += 1.0;
-        if (u.armor >= 40) scores[0] += 1.5;
-        if (u.magic_resist >= 40) scores[0] += 1.0;
-        if (u.attack_damage >= 70) scores[1] += 1.5;
-        if (u.attack_speed >= 0.8) scores[1] += 1.0;
+        // Tankiness is a combination of durability stats, not HP alone.
+        // HP/armor are common on bruisers, so require multiple defensive signals.
+        const int defensive_signals =
+            (u.max_hp >= 850 ? 1 : 0) +
+            (u.armor >= 45 ? 1 : 0) +
+            (u.magic_resist >= 45 ? 1 : 0);
+        if (u.max_hp >= 850) scores[0] += 0.75;
+        if (defensive_signals >= 2) scores[0] += 1.75;
+        if (u.max_hp >= 1150 && defensive_signals >= 2) scores[0] += 0.75;
+        if (u.armor >= 55 && u.magic_resist >= 55) scores[0] += 0.75;
+
+        if (u.attack_damage >= 70) scores[1] += 1.75;
+        if (u.attack_speed >= 0.8) scores[1] += 1.25;
+        if (u.attack_range >= 3) scores[1] += 0.75;
         if (u.attack_range > 0 && u.attack_range <= 1) {
-            scores[3] += 1.0;
-            if (u.armor >= 30 || u.max_hp >= 700) scores[3] += 1.0;
+            scores[3] += 1.25;
+            if (u.attack_damage >= 55 || u.attack_speed >= 0.75) scores[3] += 0.75;
+            if (u.armor >= 30 || u.max_hp >= 700) scores[3] += 0.5;
         }
-        if (u.attack_range >= 3) {
-            scores[1] += 0.5;
-            scores[2] += 0.25;
-        }
+        if (u.attack_range >= 3) scores[2] += 0.15;
         if (contains_any(text, assassin_keywords)) scores[4] += 2.0;
 
         // Python max(dict, key=dict.get) resolves ties by enum insertion order.
