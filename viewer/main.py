@@ -809,7 +809,7 @@ class ViewerWindow(QMainWindow):
             if self.session._session_dir is not None:
                 self._log(f"Logs individuais por jogador: {self.session._session_dir}")
                 for player_number in range(1, 9):
-                    self._log(f"  • player_{player_number}_log.json")
+                    self._log(f"  • player_{player_number}_log.tft")
             self._render_snapshot(snapshot)
             self._set_running(True)
             self.status_label.setText("Modelo em eval() · gradientes desativados · sem PPOTrainer/optimizer")
