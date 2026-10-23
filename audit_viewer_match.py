@@ -266,6 +266,7 @@ def audit_economic_actions(entries: list[dict], player: str, report: dict) -> No
     })
     by_stage = defaultdict(lambda: {"gold_spent": 0, "actions": 0})
     xp_without_level_up = 0
+    xp_level_up_unused = 0
     rerolls_without_immediate_gain = 0
     rerolls_followed_by_pass = 0
     interest_threshold_crossings = 0
@@ -297,6 +298,25 @@ def audit_economic_actions(entries: list[dict], player: str, report: dict) -> No
             interest_threshold_crossings += 1
         if action_name == "BUY_XP" and diag.get("reason_code") == "XP_NO_LEVEL_UP":
             xp_without_level_up += 1
+        if action_name == "BUY_XP" and diag.get("reason_code") == "XP_LEVEL_UP":
+            after_level = int(diag.get("level_after", 0) or 0)
+            state_after_xp = payload.get("state_after") or {}
+            board_after_xp = sum(bool(unit.get("occupied")) for unit in state_after_xp.get("board", []) if isinstance(unit, dict))
+            used_new_slot = False
+            for later in actions[index + 1:]:
+                if later.get("round") != entry.get("round") or later.get("stage") != entry.get("stage"):
+                    break
+                later_payload = later.get("payload") or {}
+                if later_payload.get("action_name") == "PASS":
+                    break
+                if later_payload.get("action_name") == "MOVE_BENCH":
+                    later_state = later_payload.get("state_after") or {}
+                    later_board = sum(bool(unit.get("occupied")) for unit in later_state.get("board", []) if isinstance(unit, dict))
+                    if later_board > board_after_xp and later_board <= after_level:
+                        used_new_slot = True
+                        break
+            if not used_new_slot and board_after_xp < after_level:
+                xp_level_up_unused += 1
         if action_name == "REROLL" and diag.get("reason_code") == "REROLL_NO_IMMEDIATE_BOARD_GAIN":
             rerolls_without_immediate_gain += 1
             if index + 1 < len(actions) and actions[index + 1].get("payload", {}).get("action_name") == "PASS":
@@ -314,6 +334,7 @@ def audit_economic_actions(entries: list[dict], player: str, report: dict) -> No
         "by_action": {name: dict(values) for name, values in sorted(by_action.items())},
         "by_stage": {stage: dict(values) for stage, values in sorted(by_stage.items())},
         "xp_without_level_up": xp_without_level_up,
+        "xp_level_up_unused": xp_level_up_unused,
         "rerolls_without_immediate_gain": rerolls_without_immediate_gain,
         "rerolls_followed_by_pass": rerolls_followed_by_pass,
         "interest_threshold_crossings": interest_threshold_crossings,
@@ -523,12 +544,12 @@ def markdown_report(report: dict) -> str:
     ]
     if report.get("economic_action_metrics"):
         lines += ["## Auditoria econômica por ação", "",
-                  "| Jogador | Ações | Ouro gasto | Ouro recuperado | Juros potenciais perdidos | XP sem level-up | Rerolls sem ganho imediato | Reroll → PASS | Ouro final | Força final |",
-                  "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+                  "| Jogador | Ações | Ouro gasto | Ouro recuperado | Juros potenciais perdidos | XP sem level-up | Level-up sem unidade implantada | Rerolls sem ganho imediato | Reroll → PASS | Ouro final | Força final |",
+                   "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
         for player, metrics in sorted(report["economic_action_metrics"].items()):
             lines.append(
                 f"| {player} | {metrics['actions']} | {metrics['gold_spent']} | {metrics['gold_recovered']} | "
-                f"{metrics['potential_interest_lost']} | {metrics['xp_without_level_up']} | "
+                f"{metrics['potential_interest_lost']} | {metrics['xp_without_level_up']} | {metrics['xp_level_up_unused']} | "
                 f"{metrics['rerolls_without_immediate_gain']} | {metrics['rerolls_followed_by_pass']} | "
                 f"{metrics.get('final_gold', '—')} | {metrics.get('final_board_power', '—')} |"
             )
