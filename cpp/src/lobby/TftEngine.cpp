@@ -1018,7 +1018,9 @@ struct TFTEngine::Impl {
                 }
                 const double fit = unit_composition_score(strategy, *def, unit->star, trait_milestones);
                 const bool core = std::find(strategy.core_unit_ids.begin(),
-                    strategy.core_unit_ids.end(), def->internal_id) != strategy.core_unit_ids.end();
+                    strategy.core_unit_ids.end(), def->internal_id) != strategy.core_unit_ids.end() ||
+                    std::find(strategy.planned_unit_ids.begin(),
+                    strategy.planned_unit_ids.end(), def->internal_id) != strategy.planned_unit_ids.end();
                 const int copies = count_same_champion(*unit);
                 int trait_overlap = 0;
                 for (const auto& trait : def->traits) {
@@ -1335,7 +1337,8 @@ struct TFTEngine::Impl {
             if (!def) continue;
             const bool core_by_id = std::find(
                 active_strategy.core_unit_ids.begin(), active_strategy.core_unit_ids.end(),
-                unit->champion_internal_id) != active_strategy.core_unit_ids.end();
+                unit->champion_internal_id) != active_strategy.core_unit_ids.end() ||
+                unit->champion_internal_id == active_strategy.planned_main_carry_id;
             const auto name_is_core = [&active_strategy](const std::string& name) {
                 return !name.empty() && std::find(
                     active_strategy.core_units.begin(), active_strategy.core_units.end(),
