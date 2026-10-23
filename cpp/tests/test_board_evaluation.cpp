@@ -92,7 +92,6 @@ int main() {
     two_carries[3 * PE::cols + 1] = PE::carry;
     two_carries[3 * PE::cols + 5] = PE::carry;
     two_carries[2 * PE::cols + 1] = PE::tank;
-    two_carries[2 * PE::cols + 5] = PE::tank;
     const auto main_left = BoardEvaluation::evaluate(two_carries, {}, 0.0, {22});
     const auto main_right = BoardEvaluation::evaluate(two_carries, {}, 0.0, {26});
     require(main_left.total_score != main_right.total_score,
