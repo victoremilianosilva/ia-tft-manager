@@ -2439,7 +2439,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             block_reason.empty() ? "cycle" : block_reason
                         );
                     } else {
-                        const std::string moved_uuid = state.bench[source_index]->identity.uuid;
+                        const std::string moved_uuid = this->bench[source_index]
+                            ? this->bench[source_index]->uuid : std::string{};
                         for (auto& purchase : this->recent_purchases) {
                             if (!moved_uuid.empty() && purchase.uuid == moved_uuid)
                                 purchase.was_deployed = true;
