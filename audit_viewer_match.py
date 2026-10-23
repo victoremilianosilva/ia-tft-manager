@@ -128,7 +128,7 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
     """Correlate buys and sells by champion across the next 1/2/4 player actions."""
     actions = []
     for entry in sorted(entries, key=lambda e: (e.get("sequence_id", 0), e.get("step", 0))):
-        if not isinstance(entry, dict) or entry.get("event_type") != "action":
+        if not isinstance(entry, dict) or entry.get("event_type") not in ("action", "round_finished"):
             continue
         payload = entry.get("payload") or {}
         action = payload.get("action") or []
