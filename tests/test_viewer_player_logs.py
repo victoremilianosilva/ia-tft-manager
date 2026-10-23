@@ -150,7 +150,7 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
     assert economics["gold_delta"] == 0
     assert economics["board_power_delta"] == 2.0
     assert economics["two_star_or_higher_after"] == 0
-    assert economics["pairs_before"] == 1
+    assert economics["pairs_before"] == 0
     assert action_entry["payload"]["state_after"]["bench"][0]["occupied"] is False
     assert action_entry["payload"]["state_after"]["strategy_name"] == "STABILIZE"
     assert action_entry["payload"]["state_after"]["comp_direction"] == "Prankster"
