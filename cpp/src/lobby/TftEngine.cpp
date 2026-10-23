@@ -155,8 +155,7 @@ double unit_composition_score(
     }
     if (star >= 2) score += 2.0;
     if (star >= 3) score += 4.0;
-    score += static_cast<double>(def.cost) * 0.5;
-    return score;
+    // Cost is an economy attribute, not composition fit. Adding it here made\n    // every positive-cost unit look strategically compatible even with no trait/core match.\n    return score;
 }
 
 } // namespace
@@ -2238,8 +2237,11 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     buy_completes_upgrade = same_star_copies >= 2;
                     // A second matching copy is valuable future upgrade potential,
                     // but only reward it when it also fits the current comp.
+                    const bool composition_fit =
+                        candidate_comp_score > 0.0 ||
+                        strategy_before.composition_direction.empty();
                     buy_builds_pair = same_star_copies == 1 &&
-                        offer->star == 1 && candidate_comp_score > 0.0;
+                        offer->star == 1 && composition_fit;
                 }
             }
         } else if (type == 3) {
