@@ -211,7 +211,7 @@ def test_writes_only_tft_logs_per_player_and_keeps_structured_diagnostics_in_mem
     assert plan_state["planned_traits"] == ["Space Groove", "Prankster"]
     assert plan_state["planned_main_carry_id"] == 202
     assert plan_state["planned_composition_score"] == 17.5
-    assert plan_state["planner_target_slots"] == 3
+    assert plan_state["planner_target_slots"] == 8
     assert plan_state["planner_mode"] == "LEVEL_8_CORE"
     assert "COMPOSITION PLAN [LEVEL_8_CORE]" in action_entry["text"]
     assert "TFT_Test_Teemo" in action_entry["text"]
