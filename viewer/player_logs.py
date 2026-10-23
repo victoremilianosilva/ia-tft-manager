@@ -321,7 +321,7 @@ class PlayerJsonLogWriter:
             "composition_direction_before": before_state.get("comp_direction"),
             "composition_direction_after": after_state.get("comp_direction"),
             "composition_fit": (
-                self._unit_composition_fit(action, before_audit, after_state)
+                self._unit_composition_fit(action, before_audit, before_state)
                 if action_type in (0, 3, 4, 5) else None
             ),
         }
@@ -705,7 +705,7 @@ class PlayerJsonLogWriter:
                     "focus_weights": after_state.get("composition_focus_weights"),
                     "strategy_scores": after_state.get("strategy_scores"),
                     "policy_status": diagnostic.get("status"),
-                    "unit_fit": self._unit_composition_fit(action, before_audit, after_state),
+                    "unit_fit": self._unit_composition_fit(action, before_audit, before_state),
                 },
                 "policy_diagnostics": diagnostic, "engine_events": player_events,
             }
