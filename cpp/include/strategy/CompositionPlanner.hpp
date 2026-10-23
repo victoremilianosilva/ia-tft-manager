@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "lobby/TftEngine.hpp"
+#include "lobby/ShopEngine.hpp"
 
 namespace tft::strategy {
 
@@ -55,13 +56,7 @@ public:
 
         const std::size_t slots = std::min<std::size_t>(requested_slots, 10);
         const int safe_level = std::clamp(current_level, 1, 10);
-        const std::array<std::array<double, 5>, 10> shop_odds{{
-            {{1.00,0.00,0.00,0.00,0.00}}, {{1.00,0.00,0.00,0.00,0.00}},
-            {{0.75,0.25,0.00,0.00,0.00}}, {{0.55,0.30,0.15,0.00,0.00}},
-            {{0.45,0.33,0.20,0.02,0.00}}, {{0.30,0.40,0.25,0.05,0.00}},
-            {{0.16,0.30,0.43,0.10,0.01}}, {{0.15,0.20,0.32,0.30,0.03}},
-            {{0.10,0.17,0.25,0.33,0.15}}, {{0.05,0.10,0.20,0.40,0.25}}
-        }};
+        const auto& shop_odds = tft::ShopEngine::odds_by_level();
         std::array<double, 5> available_by_cost{};
         for (const auto& champion : pool) {
             const auto found = available_copies.find(champion.internal_id);
@@ -130,6 +125,7 @@ public:
         double best_carry_score = -std::numeric_limits<double>::infinity();
         for (const auto& champion : pool) {
             if (role_of(champion) != 1) continue;
+            if (acquisition(champion).first <= 0.0) continue;
             double score = 2.5 + champion.cost * 0.10;
             if (has_trait(champion, direction)) score += 2.2;
             for (const auto& trait : champion.traits) {
@@ -167,6 +163,7 @@ public:
             for (const auto& champion : pool) {
                 if (std::find(plan.unit_ids.begin(), plan.unit_ids.end(),
                               champion.internal_id) != plan.unit_ids.end()) continue;
+                if (acquisition(champion).first <= 0.0) continue;
                 const int role = role_of(champion);
                 double score = 0.0;
 
