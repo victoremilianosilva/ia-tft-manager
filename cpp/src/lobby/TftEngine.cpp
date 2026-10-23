@@ -2803,12 +2803,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             }
         }
         if (type == 5 && success && purchase_was_recently_reversed) {
-            constexpr double kReversedSequenceTarget = -0.02;
-            const double required_adjustment =
-                kReversedSequenceTarget - reversed_purchase_prior_reward -
-                action_reward;
-            if (required_adjustment < 0.0)
-                action_reward += required_adjustment;
+            action_reward += reward_model::reversed_sequence_adjustment(
+                reversed_purchase_prior_reward, action_reward);
         }
 
         // MiniTFTEnv.step() returns the action-specific reward directly.
