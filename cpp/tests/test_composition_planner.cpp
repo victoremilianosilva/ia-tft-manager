@@ -96,7 +96,7 @@ int main() {
     assert(std::find(viable_plan.unit_ids.begin(), viable_plan.unit_ids.end(), 11)
            == viable_plan.unit_ids.end());
     assert(std::any_of(viable_plan.acquisition_notes.begin(), viable_plan.acquisition_notes.end(),
-        [](const std::string& note) { return note.find("MissingCheapCarry") == std::string::npos; }));
+        [](const std::string& note) { return note.find("ObtainableCarry") != std::string::npos; }));
 
     // With no direction, no empty-string trait should be fabricated.
     const auto open_plan = CompositionPlanner::build(pool, milestones, "", {}, {}, 4);
