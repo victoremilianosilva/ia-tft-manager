@@ -204,6 +204,7 @@ struct TFTEngine::Impl {
             int cost{0};
             bool built_pair{false};
             bool completed_upgrade{false};
+            bool was_deployed{false};
             double fit_score{0.0};
             std::string comp_direction;
         };
@@ -2355,7 +2356,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                                 definition->cost,
                                 buy_builds_pair,
                                 false,
-                                candidate_comp_score,
+                                false,
+                                std::max(0.0, candidate_comp_score -
+                                    static_cast<double>(definition->cost) * 0.5),
                                 strategy_before.composition_direction
                             });
                         }
@@ -2436,6 +2439,11 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             block_reason.empty() ? "cycle" : block_reason
                         );
                     } else {
+                        const std::string moved_uuid = state.bench[source_index]->identity.uuid;
+                        for (auto& purchase : this->recent_purchases) {
+                            if (!moved_uuid.empty() && purchase.uuid == moved_uuid)
+                                purchase.was_deployed = true;
+                        }
                         (void)anti_loop.register_move(
                             move_type,
                             source,
@@ -2578,7 +2586,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     if (recent != this->recent_purchases.rend()) {
                         const bool direction_changed = !this->strategy.empty() &&
                             this->strategy.back().composition_direction != recent->comp_direction;
-                        if (!recent->completed_upgrade &&
+                        if (!recent->completed_upgrade && !recent->was_deployed &&
+                            recent->fit_score <= 1e-6 &&
                             old_bench_count < static_cast<int>(kBenchSlots) &&
                             !direction_changed) {
                             purchase_was_recently_reversed = true;
