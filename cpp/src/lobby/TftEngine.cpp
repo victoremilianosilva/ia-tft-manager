@@ -3156,7 +3156,7 @@ StepResult TFTEngine::step(
     );
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
         result.events.emplace_back(
-            "ECONOMIC_ACTION player=" + std::to_string(i) +
+            "ECONOMIC_ACTION player " + std::to_string(i) +
             " action_cost=" + std::to_string(action_costs[i]) +
             " sale_proceeds=" + std::to_string(sale_proceeds[i])
         );
