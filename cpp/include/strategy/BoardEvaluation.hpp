@@ -49,6 +49,7 @@ public:
         const int slots = std::min(static_cast<int>(board.size()), PositioningEngine::size);
         Roles normalized(PositioningEngine::size, -1);
         std::vector<bool> main_carry(PositioningEngine::size, false);
+        std::vector<bool> frontline_columns(PositioningEngine::cols, false);
         for (const int p : main_carry_positions)
             if (PositioningEngine::is_valid_position(p))
                 main_carry[static_cast<std::size_t>(p)] = true;
@@ -61,10 +62,13 @@ public:
             if (role == PositioningEngine::tank || role == PositioningEngine::fighter) {
                 ++result.frontline_count;
                 const int row = p / PositioningEngine::cols;
-                if (row <= 1) ++result.frontline_lane_count;
+                const int col = p % PositioningEngine::cols;
+                if (row <= 1) frontline_columns[static_cast<std::size_t>(col)] = true;
             }
             if (role == PositioningEngine::carry) ++result.carry_count;
         }
+        for (const bool occupied_lane : frontline_columns)
+            if (occupied_lane) ++result.frontline_lane_count;
         if (result.unit_count == 0) return result;
 
         int assassins = 0;
