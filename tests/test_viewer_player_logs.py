@@ -247,7 +247,8 @@ def test_writes_only_tft_logs_per_player_and_keeps_structured_diagnostics_in_mem
     board_text = "".join(entry["text"] for entry in player1["entries"] if entry["event_type"] == "board_view")
     assert "[Bri|T|1*|i:2.0]" in board_text
 
-    player2 = json.loads((tmp_path / "match-test" / "player_2_log.json").read_text(encoding="utf-8"))
+    # Player 2's structured timeline remains available in memory, but is not persisted.
+    player2 = writer.documents[1]
     assert player2["player_id"] == 1
     player2_action = next(item for item in player2["entries"] if item["event_type"] == "action")
     assert "Vazio" in player2_action["text"]
