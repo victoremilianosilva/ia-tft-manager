@@ -81,6 +81,7 @@ def analyze_player(pid, rows):
     counts, gold_delta, action_rewards, total_rewards, selected_probs = Counter(), [], [], [], []
     mask_checks, mask_violations, not_top1, missing_actions = 0, [], 0, 0
     rounds, movements, signatures = set(), defaultdict(list), defaultdict(list)
+    confirmed_cycles, actual_unit_moves, composition_changes = [], 0, 0
     for row in rows:
         seed, step, rnd = (integer(row.get(k), 0) or 0 for k in ("seed", "step", "round"))
         rounds.add((seed, rnd))
@@ -96,6 +97,20 @@ def analyze_player(pid, rows):
         for key, target in (("action_reward", action_rewards), ("total_reward", total_rewards)):
             val = number(row.get(key))
             if active and val is not None: target.append(val)
+        cycle = row.get("loop_detected")
+        if isinstance(cycle, dict):
+            confirmed_cycles.append({
+                "seed": seed, "step": step,
+                "previous_step": integer(cycle.get("previous_step")),
+                "cycle_length": integer(cycle.get("cycle_length")),
+                "action": a,
+            })
+        changes = row.get("unit_changes")
+        if isinstance(changes, dict):
+            actual_unit_moves += len(changes.get("moved_units", []) or [])
+        comp = row.get("composition_delta")
+        if isinstance(comp, dict) and (comp.get("board_units_changed") or comp.get("strategy_fields_changed")):
+            composition_changes += 1
         checked, bad, probs, nt1 = inspect_diagnostics(row)
         mask_checks += checked
         mask_violations.extend(f"seed={seed} step={step}: {v}" for v in bad)
@@ -130,6 +145,8 @@ def analyze_player(pid, rows):
         "mask_violations": len(mask_violations), "mask_violation_examples": mask_violations[:20],
         "selected_probability_mean": mean(selected_probs), "selected_probability_below_005": sum(x<.05 for x in selected_probs),
         "selected_not_top1_count": not_top1, "missing_action_records": missing_actions, "loop_suspicions": loops,
+        "confirmed_state_cycles": confirmed_cycles, "confirmed_state_cycle_count": len(confirmed_cycles),
+        "actual_unit_moves": actual_unit_moves, "composition_change_steps": composition_changes,
     }
 
 def fmt(v):
@@ -140,23 +157,28 @@ def markdown_report(summaries, errors, total):
       f"- Jogadores listados: **{len(summaries)}**", f"- Erros de leitura: **{len(errors)}**", "",
       "> Alertas são indícios para revisão, não prova de que outra ação seria melhor.", "",
       "## Resumo por jogador", "",
-      "| Jogador | Ativos | Seeds | Movimentos | Passes | Δ ouro médio | Recompensa ação média | Recompensas negativas | Suspeitas de loop | Violações de máscara |",
-      "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+      "| Jogador | Ativos | Seeds | Ações de movimento | Unidades movidas | Passes | Δ ouro médio | Recompensa média | Suspeitas | Ciclos confirmados | Máscara inválida |",
+      "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
     for s in summaries:
-        out.append(f"| {s['player_id']} | {s['active_records']} | {len(s['seeds'])} | {s['movement_actions']} | {s['pass_actions']} | {fmt(s['gold_delta_mean'])} | {fmt(s['action_reward_mean'])} | {s['action_reward_negative_steps']} | {len(s['loop_suspicions'])} | {s['mask_violations']} |")
+        out.append(f"| {s['player_id']} | {s['active_records']} | {len(s['seeds'])} | {s['movement_actions']} | {s['actual_unit_moves']} | {s['pass_actions']} | {fmt(s['gold_delta_mean'])} | {fmt(s['action_reward_mean'])} | {len(s['loop_suspicions'])} | {s['confirmed_state_cycle_count']} | {s['mask_violations']} |")
     out += ["", "## Detalhes e alertas", ""]
     for s in summaries:
         out += [f"### Jogador {s['player_id']}", f"- Contagem de ações: {s['action_counts'] or 'nenhuma'}",
           f"- Variações de ouro positivas/negativas: {s['gold_delta_positive_steps']}/{s['gold_delta_negative_steps']}",
           f"- Probabilidade média selecionada: {fmt(s['selected_probability_mean'])}; abaixo de 0,05: {s['selected_probability_below_005']}",
           f"- Cabeças com máscara verificável: {s['diagnostic_heads_checked']}; violações: {s['mask_violations']}",
-          f"- Seleções diferentes da opção top-1: {s['selected_not_top1_count']}"]
-        out += [f"- **Possível loop:** {x}" for x in s["loop_suspicions"]]
+          f"- Seleções diferentes da opção top-1: {s['selected_not_top1_count']}",
+          f"- Movimentos reais de unidade reconstruídos: {s['actual_unit_moves']}",
+          f"- Steps com mudança de composição/estratégia: {s['composition_change_steps']}",
+          f"- Ciclos confirmados por retorno ao mesmo estado: {s['confirmed_state_cycle_count']}"]
+        out += [f"- **Ciclo confirmado:** seed={x['seed']} step={x['step']} retorno ao estado do step={x['previous_step']} (comprimento {x['cycle_length']})" for x in s["confirmed_state_cycles"]]
+        out += [f"- **Possível loop por padrão de ação (não confirmado):** {x}" for x in s["loop_suspicions"]]
         out.append("")
     out += ["## Limitações dos dados", "",
       "- O JSONL registra ação, round, ouro antes/depois, recompensas, máscaras e diagnósticos.",
-      "- Não contém snapshot completo de tabuleiro/banco/loja por decisão; não confirma oportunidades reais de 2 estrelas, compras ignoradas ou ganho de posicionamento.",
-      "- Não contém comp_direction, comp_focus, traits ativos nem unidades core por registro; não prova que a composição guiou a ação.",
+      "- O schema v2 inclui snapshots antes/depois de tabuleiro, banco e loja; identidade da unidade, origem/destino, estratégia e diferenças de composição.",
+      "- Ciclo confirmado significa retorno ao mesmo estado de tabuleiro+banco (incluindo UUIDs expostos pela engine), não prova por si só que a ação foi estrategicamente ruim.",
+      "- Quando a engine não expõe UUID, o fallback champion/ordinal tem confiança menor e pode não distinguir cópias idênticas.",
       "- A máscara só pode ser validada quando diagnostics contém mask e selected. Ausência de diagnóstico não conta como violação.",
       "- A variação líquida de ouro não é necessariamente o custo da ação.",
       "- Os rótulos de ações 0–6 são hipóteses; confirme os enums atuais da engine antes de usar as contagens oficialmente.", "", "## Erros de leitura", ""]
