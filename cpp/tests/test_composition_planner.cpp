@@ -24,6 +24,14 @@ static ChampionDefinition champion(int id, const char* name, int role,
 }
 
 int main() {
+    // The planner should know the full level-8 core before the player reaches
+    // level 8, then add flexible slots at levels 9 and 10.
+    for (int level = 1; level <= 8; ++level)
+        assert(CompositionPlanner::target_slots_for_level(level) == 8);
+    assert(CompositionPlanner::target_slots_for_level(9) == 9);
+    assert(CompositionPlanner::target_slots_for_level(10) == 10);
+    assert(CompositionPlanner::target_slots_for_level(11) == 10);
+
     // A Vanguard direction must not force an all-Vanguard lineup. The only
     // carry is connected to Vanguard through Arcanist, so the planner should
     // retain the direction while planning a real carry and complementary traits.
