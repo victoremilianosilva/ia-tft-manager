@@ -118,7 +118,7 @@ inline double purchase_quality(double fit_delta, bool completes_upgrade) noexcep
 // The caller only invokes it when exactly one matching copy already exists and
 // the candidate has positive fit with the current composition.
 inline double purchase_pair_quality(double fit_score) noexcept {
-    return 0.06 + 0.04 * std::tanh(std::max(0.0, fit_score) / 5.0);
+    return 0.10 + 0.05 * std::tanh(std::max(0.0, fit_score) / 5.0);
 }
 
 // Applied only when a specific recently purchased unit is sold within four
