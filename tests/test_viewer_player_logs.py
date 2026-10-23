@@ -117,7 +117,7 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
         actions=actions,
         diagnostics=[{"action_name": "MOVE_BENCH", "value_estimate": 0.3} for _ in range(8)],
         rewards=[0.05] * 8,
-        info=_empty_info(events=["ECONOMIC_ACTION player=0 action_cost=0 sale_proceeds=0"]),
+        info=_empty_info(events=["ECONOMIC_ACTION player 0 action_cost=0 sale_proceeds=0"]),
         step=1,
         finished=False,
     )
