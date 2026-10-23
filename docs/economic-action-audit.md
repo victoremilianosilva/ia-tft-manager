@@ -18,7 +18,7 @@ not be inferred from the final round balance.
 
 ## Per-action fields
 
-Each action entry includes economic_diagnostics:
+Each action entry includes economic_diagnostics. Actual action cost and sale proceeds come from a native engine event captured before round income is resolved; older logs without that event are explicitly marked as using a gold-delta fallback.
 
 - gold_before, gold_after, gold_delta, action_cost, listed_cost, and
   sale_proceeds;
@@ -39,7 +39,7 @@ internal term used by the action reward formula.
 - PURCHASE_UPGRADE, PURCHASE_SYNERGY_GAIN, PURCHASE_BOARD_GAIN,
   PURCHASE_NO_IMMEDIATE_GAIN
 - REROLL_IMMEDIATE_GAIN, REROLL_NO_IMMEDIATE_BOARD_GAIN
-- XP_LEVEL_UP, XP_NO_LEVEL_UP, XP_LEVEL_UP_UNUSED (aggregate audit metric)
+- XP_LEVEL_UP, XP_NO_LEVEL_UP; xp_level_up_unused is an aggregate audit metric
 - DEPLOY_BOARD_GAIN, DEPLOY_NO_POWER_GAIN
 - REPOSITION_IMPROVED, REPOSITION_NO_SCORE_GAIN
 - SALE_GOLD_RECOVERY, PASS_NO_SPEND
