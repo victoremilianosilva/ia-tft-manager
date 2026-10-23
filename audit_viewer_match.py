@@ -243,6 +243,11 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
     metrics["classified_sales"] = dict(classifications)
     values = [float(record.get("strategic_value", 0.0)) for record in metrics["purchase_records"]]
     metrics["average_strategic_value_per_purchase"] = round(sum(values) / len(values), 4) if values else 0.0
+    buys = max(1, metrics["buys"])
+    metrics["upgrade_completion_rate"] = round(metrics["upgrade_completing_buys"] / buys, 4)
+    metrics["positive_comp_fit_rate"] = round(metrics["buys_with_positive_comp_fit"] / buys, 4)
+    metrics["board_gain_rate"] = round(metrics["buys_with_board_gain"] / buys, 4)
+    metrics["synergy_milestone_rate"] = round(metrics["buys_with_synergy_milestone"] / buys, 4)
     report.setdefault("purchase_sequence_metrics", {})[player] = metrics
 
 
