@@ -170,7 +170,7 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
             if board_gain:
                 strategic_value += 1.0
             record = {
-                "champion": champion, "buy_action_index": idx, "step": step, "round": rnd,
+                "champion": champion, "uuid": unit.get("uuid"), "buy_action_index": idx, "step": step, "round": rnd,
                 "cost": max(0, int(unit.get("cost", 0) or 0)), "fit_score": fit_score,
                 "strategic_value": round(strategic_value, 4),
                 "upgrade_completed": upgrade_completed, "pair_count_before": _pair_count(before),
@@ -196,8 +196,12 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
                 metrics["core_unit_sales"] += 1
             if core_sale or _pair_count(before) > _pair_count(after):
                 metrics["core_or_pair_sales"] += 1
+            sold_uuid = unit.get("uuid")
             match = next((p for p in reversed(purchases)
-                          if not p["sold"] and p["champion"].casefold() == champion.casefold()
+                          if not p["sold"]
+                          and ((sold_uuid and p.get("uuid") and p["uuid"] == sold_uuid)
+                               or (not sold_uuid or not p.get("uuid"))
+                               and p["champion"].casefold() == champion.casefold())
                           and 1 <= idx - p["buy_action_index"] <= 4), None)
             if match is None:
                 classifications["UNKNOWN"] += 1
