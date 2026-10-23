@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "match_id": "e62ba309-17ed-410d-9382-3a489c47291f",
+  "checkpoint_path": "C:\\Users\\Victor\\Desktop\\dev\\Projects\\TFT\\tft_checkpoint.pt",
+  "checkpoint_sha256": "6af288f2e401919e1c00a116bb137211e53bb4fbba3e2f1cb42b1f2cd4d74abf",
+  "seed": 20261016,
+  "deterministic": true,
+  "engine": "cpp",
+  "created_at": "2026-10-23T19:49:42.030833+00:00",
+  "policy_class": "TFTPolicy",
+  "observation_dim": 577,
+  "action_dims": [
+    7,
+    5,
+    9,
+    28,
+    28,
+    28
+  ],
+  "log_format": "legacy-style UTF-8 TFT text log, one file per player",
+  "player_log_files": [
+    "player_1_log.tft",
+    "player_2_log.tft",
+    "player_3_log.tft",
+    "player_4_log.tft",
+    "player_5_log.tft",
+    "player_6_log.tft",
+    "player_7_log.tft",
+    "player_8_log.tft"
+  ]
+}
