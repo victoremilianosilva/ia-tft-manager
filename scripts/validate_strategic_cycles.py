@@ -123,6 +123,9 @@ def validate(records, expected_seeds):
                     uuid_history[identity_key] = {"champion_id": unit["champion_id"],
                                                   "last_star": unit["star"]}
 
+            # Register the pre-action state as well: otherwise a cycle returning
+            # to the initial snapshot of a seed is invisible to this validator.
+            visited.setdefault(before_sig, {"step": step - 1, "action": None})
             action = row.get("action", [])
             action_type = action[0] if isinstance(action, list) and action else (
                 action.get("type") if isinstance(action, dict) else None)
