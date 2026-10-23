@@ -207,6 +207,7 @@ struct TFTEngine::Impl {
             bool completed_upgrade{false};
             bool was_deployed{false};
             double fit_score{0.0};
+            double reward{0.0};
             std::string comp_direction;
         };
         std::uint64_t action_serial{0};
@@ -2187,6 +2188,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         bool bought_unit_successfully = false;
         bool bought_upgrade = false;
         bool purchase_was_recently_reversed = false;
+        double reversed_purchase_prior_reward = 0.0;
         bool board_capacity_violation = false;
         bool anti_loop_blocked = false;
         std::array<std::string, kBoardSlots> old_board_layout{};
@@ -2362,6 +2364,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                                 false,
                                 false,
                                 std::max(0.0, candidate_comp_score),
+                                0.0,
                                 strategy_before.composition_direction
                             });
                         }
@@ -2595,6 +2598,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             old_bench_count < static_cast<int>(kBenchSlots) &&
                             !direction_changed) {
                             purchase_was_recently_reversed = true;
+                            reversed_purchase_prior_reward = recent->reward;
                         }
                     }
                     if (!this->strategy.empty()) {
@@ -2783,7 +2787,29 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         // Give spending decisions immediate feedback for the opportunity cost
         // of liquid gold and the interest breakpoints. This is a potential delta,
         // not a per-step bonus, so repeatedly PASSing cannot farm reward.
-        action_reward += reward_model::gold_change_reward(old_gold, economy.gold);
+        const double action_gold_reward =
+            reward_model::gold_change_reward(old_gold, economy.gold);
+        action_reward += action_gold_reward;
+
+        // Persist the complete buy reward so a later proven reversal can be
+        // prevented from making the aggregate purchase->sale sequence positive.
+        if (type == 0 && success && !bought_upgrade) {
+            for (auto it = this->recent_purchases.rbegin();
+                 it != this->recent_purchases.rend(); ++it) {
+                if (it->action_serial == this->action_serial) {
+                    it->reward = action_reward;
+                    break;
+                }
+            }
+        }
+        if (type == 5 && success && purchase_was_recently_reversed) {
+            constexpr double kReversedSequenceTarget = -0.02;
+            const double required_adjustment =
+                kReversedSequenceTarget - reversed_purchase_prior_reward -
+                action_reward - action_gold_reward;
+            if (required_adjustment < 0.0)
+                action_reward += required_adjustment;
+        }
 
         // MiniTFTEnv.step() returns the action-specific reward directly.
         // RewardManager's broader state components are not called by the
