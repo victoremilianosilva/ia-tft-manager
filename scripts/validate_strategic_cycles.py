@@ -11,6 +11,15 @@ import json
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
+import sys
+
+# When run as `python scripts/validate_strategic_cycles.py`, Python puts the
+# scripts directory (not the repository root) on sys.path. Add the root so
+# imports work both as a direct script and as a module/test.
+_REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+_repository_root_string = str(_REPOSITORY_ROOT)
+if _repository_root_string not in sys.path:
+    sys.path.insert(0, _repository_root_string)
 
 from scripts.strategic_audit_state import state_signature
 
