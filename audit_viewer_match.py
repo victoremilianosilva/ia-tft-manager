@@ -139,7 +139,7 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
         "buys": 0, "sells": 0, "reversed_1": 0, "reversed_2": 0, "reversed_4": 0,
         "net_gold_lost_reversed": 0, "upgrade_completing_buys": 0,
         "buys_with_positive_comp_fit": 0, "buys_with_board_gain": 0,
-        "core_or_pair_sales": 0, "classified_sales": {}, "purchase_records": [],
+        "core_or_pair_sales": 0, "core_unit_sales": 0, "classified_sales": {}, "purchase_records": [],
     }
     purchases = []
     classifications = Counter()
@@ -162,9 +162,14 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
             metrics["upgrade_completing_buys"] += int(upgrade_completed)
             metrics["buys_with_positive_comp_fit"] += int(fit_score > 0)
             metrics["buys_with_board_gain"] += int(board_gain)
+            strategic_value = fit_score + (2.0 if upgrade_completed else 0.0) + max(
+                0, _pair_count(after) - _pair_count(before))
+            if board_gain:
+                strategic_value += 1.0
             record = {
                 "champion": champion, "buy_action_index": idx, "step": step, "round": rnd,
                 "cost": max(0, int(unit.get("cost", 0) or 0)), "fit_score": fit_score,
+                "strategic_value": round(strategic_value, 4),
                 "upgrade_completed": upgrade_completed, "pair_count_before": _pair_count(before),
                 "pair_count_after": _pair_count(after), "board_power_before": _board_power(before),
                 "board_power_after": _board_power(after), "gold_before": before.get("gold"),
@@ -181,7 +186,12 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
                 continue
             champion = unit_name(unit)
             metrics["sells"] += 1
-            if _pair_count(before) > _pair_count(after):
+            core_units = [str(value).casefold() for value in (before.get("core_units") or [])]
+            core_sale = any(champion.casefold() == core or champion.casefold() in core
+                            or core in champion.casefold() for core in core_units if core)
+            if core_sale:
+                metrics["core_unit_sales"] += 1
+            if core_sale or _pair_count(before) > _pair_count(after):
                 metrics["core_or_pair_sales"] += 1
             match = next((p for p in reversed(purchases)
                           if not p["sold"] and p["champion"].casefold() == champion.casefold()
@@ -224,6 +234,8 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
                            "sale_gold_delta": match["sale_gold_delta"],
                            "net_gold_lost": match["net_gold_lost"], "fit_score": match["fit_score"]})
     metrics["classified_sales"] = dict(classifications)
+    values = [float(record.get("strategic_value", 0.0)) for record in metrics["purchase_records"]]
+    metrics["average_strategic_value_per_purchase"] = round(sum(values) / len(values), 4) if values else 0.0
     report.setdefault("purchase_sequence_metrics", {})[player] = metrics
 
 
