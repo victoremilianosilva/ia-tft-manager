@@ -2662,7 +2662,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             // The unit may be bought successfully while immediately consuming
             // two copies in an automatic upgrade, so slot counts are not a
             // reliable signal of success. Match MiniTFTEnv._execute_buy():
-            // +0.05 for a normal purchase, +0.30 for any completed upgrade.
+            // No unconditional bonus for a normal purchase; +0.30 for a completed upgrade.
             success = bought_unit_successfully;
             action_reward = !success ? -0.10 : (bought_upgrade ? 0.30 : 0.0);
             if (success && has_candidate_comp_score) {
