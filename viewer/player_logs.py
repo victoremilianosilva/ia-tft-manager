@@ -246,7 +246,8 @@ class PlayerJsonLogWriter:
                 else min(10, int(public.get("level", audit.get("level", 1)) or 1))
             ),
             "planner_mode": (
-                "LEVEL_8_CORE" if int(public.get("level", audit.get("level", 1)) or 1) <= 8
+                "WAITING_FOR_DIRECTION" if not ((audit.get("strategy_info") or {}).get("planned_units", []) or [])
+                else "LEVEL_8_CORE" if int(public.get("level", audit.get("level", 1)) or 1) <= 8
                 else f"DYNAMIC_LEVEL_{min(10, int(public.get('level', audit.get('level', 1)) or 1))}"
             ),
             "active_traits": dict((audit.get("strategy_info") or {}).get("active_traits", {}) or {}),
@@ -1053,7 +1054,7 @@ class PlayerJsonLogWriter:
                     f"    STRATEGY REASON: {after_state.get('strategy_reason') or '—'} | CONF: {float(after_state.get('strategy_confidence', 0.0) or 0.0):.2f}\n"
                     f"    CORE UNITS: {', '.join(map(str, after_state.get('core_units') or [])) or '—'} | CORE TRAITS: {', '.join(map(str, after_state.get('core_traits') or [])) or '—'}\n"
                     f"    COMPOSITION PLAN [{after_state.get('planner_mode', 'UNKNOWN')}]: target={after_state.get('planner_target_slots', 0)} | units={', '.join(map(str, after_state.get('planned_units') or [])) or '—'} | traits={', '.join(map(str, after_state.get('planned_traits') or [])) or '—'} | carry_id={after_state.get('planned_main_carry_id', -1)} | score={float(after_state.get('planned_composition_score', 0.0) or 0.0):.2f}\n"
-                    f"    PLAN NOTE: {('core fixed at 8; levels 9/10 are re-planned from current direction/focus/owned copies' if after_state.get('planner_mode') == 'LEVEL_8_CORE' else 'extra slots are re-planned from current direction/focus/owned copies' if str(after_state.get('planner_mode', '')).startswith('DYNAMIC_LEVEL_') else 'waiting for a valid composition direction')}\n"
+                    f"    PLAN NOTE: {('level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change' if after_state.get('planner_mode') == 'LEVEL_8_CORE' else 'the 9th/10th slots are included in the latest recalculated plan using current direction/focus/owned copies' if str(after_state.get('planner_mode', '')).startswith('DYNAMIC_LEVEL_') else 'waiting for a valid composition direction')}\n"
                     f"    COMP BEFORE -> AFTER: dir={before_state.get('comp_direction') or '—'} -> {after_state.get('comp_direction') or '—'} | foco={before_state.get('comp_focus') or '—'} -> {after_state.get('comp_focus') or '—'} | lock={before_state.get('composition_locked', False)} -> {after_state.get('composition_locked', False)} | strength={float(before_state.get('composition_strength', 0.0) or 0.0):.2f} -> {float(after_state.get('composition_strength', 0.0) or 0.0):.2f}\n"
                     f"    GOLD: {after_state.get('gold', '?')} | renda base "
                     f"+{after_state.get('round_base_gold', 0)} | juros "
