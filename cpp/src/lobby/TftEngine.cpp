@@ -879,16 +879,8 @@ struct TFTEngine::Impl {
                 out[offset++] = std::min(1.0f, value);
             }
 
-            // 7) POSITIONING: share the native implementation with the public parity API.
-            std::vector<int> positioning_roles(kBoardSlots, -1);
-            for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
-                if (!player_envs[i].board[slot]) continue;
-                const auto* def = catalog->find_by_id(
-                    player_envs[i].board[slot]->champion_internal_id);
-                if (def) positioning_roles[slot] = std::clamp(def->combat_profile.role, 0, 4);
-            }
-            const double positioning_score =
-                PositioningEngine::evaluate_board_positioning(positioning_roles);
+            // 7) POSITIONING: use the same tactical evaluator as rewards and viewer diagnostics.
+            const double positioning_score = board_evaluation(i).total_score;
             out[offset++] = static_cast<float>(positioning_score);
             out[offset++] = board_count ? static_cast<float>(frontline) / board_count : 0.0f;
             out[offset++] = board_count ? static_cast<float>(backline) / board_count : 0.0f;
@@ -1321,6 +1313,47 @@ struct TFTEngine::Impl {
             }
         }
 
+        const StrategyInfo active_strategy = player_envs[player_index].strategy.empty()
+            ? StrategyInfo{} : player_envs[player_index].strategy.back();
+        std::vector<int> main_carry_positions;
+        int fallback_carry_slot = -1;
+        double fallback_carry_fit = -std::numeric_limits<double>::infinity();
+        int core_carry_slot = -1;
+        double core_carry_fit = -std::numeric_limits<double>::infinity();
+        for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+            const auto& unit = player_envs[player_index].board[slot];
+            if (!unit || board_roles[slot] != PositioningEngine::carry) continue;
+            const auto* def = catalog->find_by_id(unit->champion_internal_id);
+            if (!def) continue;
+            const bool core_by_id = std::find(
+                active_strategy.core_unit_ids.begin(), active_strategy.core_unit_ids.end(),
+                unit->champion_internal_id) != active_strategy.core_unit_ids.end();
+            const auto name_is_core = [&active_strategy](const std::string& name) {
+                return !name.empty() && std::find(
+                    active_strategy.core_units.begin(), active_strategy.core_units.end(),
+                    name) != active_strategy.core_units.end();
+            };
+            const bool core_by_name = name_is_core(def->api_name) ||
+                name_is_core(def->character_name) || name_is_core(def->name) ||
+                name_is_core(unit->champion_id);
+            const double fit = unit_composition_score(
+                active_strategy, *def, unit->star, trait_milestones);
+            if (fit > fallback_carry_fit) {
+                fallback_carry_fit = fit;
+                fallback_carry_slot = static_cast<int>(slot);
+            }
+            if ((core_by_id || core_by_name) && fit > core_carry_fit) {
+                core_carry_fit = fit;
+                core_carry_slot = static_cast<int>(slot);
+            }
+        }
+        // Track one main carry: prefer the best-fitting deployed core carry.
+        // If the composition core is not deployed, use the best-fitting carry.
+        const int selected_main_carry =
+            core_carry_slot >= 0 ? core_carry_slot : fallback_carry_slot;
+        if (selected_main_carry >= 0)
+            main_carry_positions.push_back(selected_main_carry);
+
         std::vector<strategy::BenchUnitProfile> bench_profiles;
         bench_profiles.reserve(kBenchSlots);
         for (const auto& unit : player_envs[player_index].bench) {
@@ -1333,7 +1366,10 @@ struct TFTEngine::Impl {
             });
         }
 
-        return strategy::BoardEvaluation::evaluate(board_roles, bench_profiles);
+        // Synergy has its own reward component. Keep it out of this score so
+        // a formation change cannot receive the same synergy signal twice.
+        return strategy::BoardEvaluation::evaluate(
+            board_roles, bench_profiles, 0.0, main_carry_positions);
     }
 
     double positioning_score(std::size_t player_index) const {
@@ -2957,7 +2993,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 // from an actual improvement. A successful layout mutation is
                 // not progress by itself: this was the source of repeated
                 // Nasus/Briar shuffling (+0.02 for every board move).
-                action_reward += 0.05 * std::tanh(positioning_delta);
+                // The unified board evaluator feeds observations, diagnostics and
+                // action rewards. Scale tactical deltas so meaningful improvements
+                // are learnable, while the tanh bound prevents reward domination.
+                action_reward += 0.18 * std::tanh(positioning_delta / 0.20);
                 action_reward += 0.10 * std::tanh(synergy_delta);
 
                 if (type == 3) {

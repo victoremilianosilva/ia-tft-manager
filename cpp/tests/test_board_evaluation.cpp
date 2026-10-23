@@ -21,42 +21,63 @@ int main() {
     using Roles = BoardEvaluation::Roles;
     using PE = tft::PositioningEngine;
 
-    // 1. Same carry: adjacent tank gives a measurable protection gain.
+    // Same carry: a tank in front and adjacent improves safety.
     Roles exposed(PE::size, -1);
     exposed[3 * PE::cols + 3] = PE::carry;
     Roles protected_board = exposed;
     protected_board[2 * PE::cols + 3] = PE::tank;
-    const auto exposed_eval = BoardEvaluation::evaluate(exposed);
-    const auto protected_eval = BoardEvaluation::evaluate(protected_board);
+    const auto exposed_eval = BoardEvaluation::evaluate(exposed, {}, 0.0, {24});
+    const auto protected_eval = BoardEvaluation::evaluate(protected_board, {}, 0.0, {24});
     require(protected_eval.exposed_carry_count == 0,
-            "adjacent tank should remove the exposed-carry signal");
+            "adjacent tank in front should remove generic exposed-carry signal");
+    require(protected_eval.exposed_main_carry_count == 0,
+            "main carry should be marked protected by an adjacent tank in front");
     require(protected_eval.total_score > exposed_eval.total_score,
-            "protected carry should score above exposed carry");
+            "protected main carry should score above exposed main carry");
 
-    // 2. A functional frontline improves the structure signal.
-    Roles no_frontline(PE::size, -1);
-    no_frontline[21] = PE::carry;
-    no_frontline[22] = PE::support;
-    Roles with_frontline = no_frontline;
-    with_frontline[14] = PE::tank;
-    require(BoardEvaluation::evaluate(with_frontline).total_score >
-            BoardEvaluation::evaluate(no_frontline).total_score,
-            "functional frontline should improve board quality");
+    // Role separation: tanks prefer the front, carries prefer the back.
+    Roles roles(PE::size, -1);
+    roles[3 * PE::cols + 3] = PE::tank;
+    roles[0 * PE::cols + 3] = PE::carry;
+    Roles improved_roles(PE::size, -1);
+    improved_roles[0 * PE::cols + 3] = PE::tank;
+    improved_roles[3 * PE::cols + 3] = PE::carry;
+    require(BoardEvaluation::evaluate(improved_roles).total_score >
+            BoardEvaluation::evaluate(roles).total_score,
+            "moving tank forward and carry backward should improve board quality");
 
-    // 3. Better protection must not require removing the existing synergy score.
-    const auto before = BoardEvaluation::evaluate(exposed, {}, 2.0);
-    const auto after = BoardEvaluation::evaluate(protected_board, {}, 2.0);
+    // Frontline distribution: two lanes beat a single isolated lane for a larger board.
+    Roles narrow_frontline(PE::size, -1);
+    narrow_frontline[3] = PE::tank;       // row 0, column 3
+    narrow_frontline[10] = PE::fighter;   // row 1, same column
+    narrow_frontline[24] = PE::carry;
+    narrow_frontline[25] = PE::support;
+    Roles spread_frontline(PE::size, -1);
+    spread_frontline[0] = PE::tank;       // row 0, column 0
+    spread_frontline[8] = PE::fighter;    // row 1, column 1; still adjacent to tank
+    spread_frontline[24] = PE::carry;
+    spread_frontline[25] = PE::support;
+    const auto narrow_eval = BoardEvaluation::evaluate(narrow_frontline);
+    const auto spread_eval = BoardEvaluation::evaluate(spread_frontline);
+    require(spread_eval.frontline_lane_count > narrow_eval.frontline_lane_count,
+            "frontline spread must count distinct columns, not just units");
+    require(spread_eval.total_score > narrow_eval.total_score,
+            "spreading a frontline across lanes should improve board quality");
+
+    // Stable context: a positioning improvement with unchanged synergy is positive.
+    const auto before = BoardEvaluation::evaluate(exposed, {}, 2.0, {24});
+    const auto after = BoardEvaluation::evaluate(protected_board, {}, 2.0, {24});
     require(BoardEvaluation::improvement(before, after) > 0.0,
             "protection improvement with unchanged synergy should be positive");
 
-    // 4. A position-only gain can be outweighed by loss of important synergy.
-    const auto synergy_before = BoardEvaluation::evaluate(exposed, {}, 4.0);
-    const auto synergy_after = BoardEvaluation::evaluate(protected_board, {}, 0.0);
+    // Losing important synergy must be visible in the same combined score.
+    const auto synergy_before = BoardEvaluation::evaluate(exposed, {}, 4.0, {24});
+    const auto synergy_after = BoardEvaluation::evaluate(protected_board, {}, 0.0, {24});
     require(BoardEvaluation::improvement(synergy_before, synergy_after) <
             BoardEvaluation::improvement(before, after),
             "synergy loss must be visible in the combined board evaluation");
 
-    // 5. Assassin-focused specialist is not forced to have a conventional tank.
+    // Assassin-focused boards are not forced to have a conventional tank.
     Roles specialist(PE::size, -1);
     specialist[8] = PE::assassin;
     specialist[10] = PE::assassin;
@@ -64,18 +85,28 @@ int main() {
     const auto specialist_eval = BoardEvaluation::evaluate(specialist);
     require(specialist_eval.specialized_assassin_board,
             "assassin-heavy formation should be recognized as specialized");
-    require(specialist_eval.structural_score > -0.55,
-            "specialized formation should not receive the generic no-frontline penalty");
+    require(specialist_eval.structural_score > -0.45,
+            "specialized formation should avoid the generic no-frontline penalty");
 
-    // 6. No meaningful layout change should yield zero delta.
-    const auto same_a = BoardEvaluation::evaluate(protected_board, {}, 1.0);
-    const auto same_b = BoardEvaluation::evaluate(protected_board, {}, 1.0);
+    // A neutral move has zero delta, so the reward path can apply no-progress cost.
+    const auto same_a = BoardEvaluation::evaluate(protected_board, {}, 1.0, {24});
+    const auto same_b = BoardEvaluation::evaluate(protected_board, {}, 1.0, {24});
     require(std::abs(BoardEvaluation::improvement(same_a, same_b)) < 1e-12,
-            "unchanged board should have zero evaluation delta");
+            "unchanged board should have exactly zero evaluation delta");
 
-    // Important units on bench are only penalized when board capacity is free.
+    // Main-carry preference only applies to the designated slot.
+    Roles two_carries(PE::size, -1);
+    two_carries[3 * PE::cols + 1] = PE::carry;
+    two_carries[3 * PE::cols + 5] = PE::carry;
+    two_carries[2 * PE::cols + 1] = PE::tank;
+    const auto main_left = BoardEvaluation::evaluate(two_carries, {}, 0.0, {22});
+    const auto main_right = BoardEvaluation::evaluate(two_carries, {}, 0.0, {26});
+    require(main_left.total_score != main_right.total_score,
+            "moving main-carry designation should change which carry is protected as priority");
+
+    // High-value bench units are only penalized when board capacity is free.
     const auto bench_signal = BoardEvaluation::evaluate(
-        with_frontline, {BenchUnitProfile{PE::carry, 2}}, 0.0);
+        improved_roles, {BenchUnitProfile{PE::carry, 2}}, 0.0);
     require(bench_signal.important_bench_units_unplayed == 1,
             "high-value bench unit should be signaled when board has free capacity");
     Roles full_board(PE::size, PE::fighter);
@@ -84,6 +115,13 @@ int main() {
     require(full_eval.important_bench_units_unplayed == 0,
             "bench penalty must not apply when board is full");
 
-    std::cout << "[PASS] Structural and continuous board evaluation scenarios.\n";
+    // Candidate position/swap APIs must compare whole-board deltas.
+    Roles position_candidates(PE::size, -1);
+    position_candidates[21] = PE::tank;
+    const auto best_carry = PE::find_best_position(position_candidates, PE::carry);
+    require(best_carry.first >= 0 && best_carry.second > 0.0,
+            "best-position search should find a positive whole-board placement gain");
+
+    std::cout << "[PASS] Tactical board evaluation and directional delta scenarios.\n";
     return EXIT_SUCCESS;
 }
