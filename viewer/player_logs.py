@@ -346,6 +346,16 @@ class PlayerJsonLogWriter:
             "synergy_milestones_changed": synergy_milestones,
             "purchased_champion": purchased.get("champion_id") if action_type == 0 else None,
             "sold_champion": sold.get("champion_id") if action_type == 5 else None,
+            "sold_core_unit": bool(
+                action_type == 5 and str(sold.get("champion_id") or "").casefold()
+                in {str(value).casefold() for value in (before_state.get("core_units") or [])}
+            ),
+            "pair_progress": self._pair_count_state(after_state) - self._pair_count_state(before_state),
+            "space_freed": bool(
+                action_type == 5 and sold.get("occupied", False)
+                and sell_slot < len(bench)
+                and not (after_state.get("bench") or [])[sell_slot].get("occupied", False)
+            ),
             "composition_direction_before": before_state.get("comp_direction"),
             "composition_direction_after": after_state.get("comp_direction"),
             "composition_fit": (
@@ -358,10 +368,17 @@ class PlayerJsonLogWriter:
         level_up = diagnostics["level_after"] > diagnostics["level_before"]
         upgrade_gain = diagnostics["two_star_or_higher_after"] > diagnostics["two_star_or_higher_before"]
         synergy_gain = bool(synergy_milestones)
+        pair_progress = diagnostics["pair_progress"] > 0
+        fit = diagnostics.get("composition_fit") or {}
+        comp_fit_gain = bool(fit.get("core_unit_match")) or float(fit.get("focus_fit_score", 0.0) or 0.0) > 0.0
         if action_type == 0:
             reason = "PURCHASE_UPGRADE" if upgrade_gain else (
-                "PURCHASE_SYNERGY_GAIN" if synergy_gain else (
-                    "PURCHASE_BOARD_GAIN" if board_gain else "PURCHASE_NO_IMMEDIATE_GAIN"
+                "PURCHASE_PAIR_PROGRESS" if pair_progress else (
+                    "PURCHASE_SYNERGY_GAIN" if synergy_gain else (
+                        "PURCHASE_COMPATIBLE" if comp_fit_gain else (
+                            "PURCHASE_BOARD_GAIN" if board_gain else "PURCHASE_NO_IMMEDIATE_GAIN"
+                        )
+                    )
                 )
             )
         elif action_type == 1:
@@ -373,15 +390,16 @@ class PlayerJsonLogWriter:
         elif action_type == 4:
             reason = "REPOSITION_IMPROVED" if float(diagnostics["positioning_delta"]) > 1e-6 else "REPOSITION_NO_SCORE_GAIN"
         elif action_type == 5:
-            reason = "SALE_GOLD_RECOVERY"
+            reason = "SALE_CORE_OR_PAIR_RISK" if (
+                diagnostics["sold_core_unit"] or diagnostics["pairs_after"] < diagnostics["pairs_before"]
+            ) else ("SALE_SPACE_FREED" if diagnostics["space_freed"] else "SALE_GOLD_RECOVERY")
         else:
             reason = "PASS_NO_SPEND"
         diagnostics["reason_code"] = reason
         diagnostics["measurable_improvement"] = bool(
-            board_gain or upgrade_gain or synergy_gain or level_up or
+            board_gain or upgrade_gain or synergy_gain or pair_progress or comp_fit_gain or level_up or
             float(diagnostics["positioning_delta"]) > 1e-6
         )
-        diagnostics["action_cost_matches_gold_delta"] = True
         return diagnostics
 
     def _unit_composition_fit(self, action, before_audit, after_state):
