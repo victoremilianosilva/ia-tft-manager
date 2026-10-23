@@ -604,6 +604,7 @@ PYBIND11_MODULE(tft_engine, module) {
                     p["xp"] = player.xp;
                     p["win_streak"] = player.win_streak;
                     p["loss_streak"] = player.loss_streak;
+                    p["gold_before_interest"] = player.gold_before_interest;
                     p["round_gold"] = player.round_gold;
                     p["round_base_gold"] = player.round_base_gold;
                     p["round_interest"] = player.round_interest;
