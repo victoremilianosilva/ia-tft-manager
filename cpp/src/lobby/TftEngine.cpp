@@ -155,7 +155,8 @@ double unit_composition_score(
     }
     if (star >= 2) score += 2.0;
     if (star >= 3) score += 4.0;
-    score += static_cast<double>(def.cost) * 0.5;
+    // Cost is an economy attribute, not composition fit. Adding it here made
+    // every positive-cost unit look strategically compatible even with no trait/core match.
     return score;
 }
 
@@ -196,6 +197,21 @@ struct TFTEngine::Impl {
         double round_reward_total{0.0};
         double total_reward{0.0};
         bool placement_reward_given{false};
+        struct RecentPurchase {
+            std::string uuid;
+            std::int32_t champion_id{-1};
+            std::int32_t star{1};
+            std::uint64_t action_serial{0};
+            int cost{0};
+            bool built_pair{false};
+            bool completed_upgrade{false};
+            bool was_deployed{false};
+            double fit_score{0.0};
+            double reward{0.0};
+            std::string comp_direction;
+        };
+        std::uint64_t action_serial{0};
+        std::vector<RecentPurchase> recent_purchases;
 
         PlayerTransition step(
             TFTEngine::Impl& lobby,
@@ -532,6 +548,8 @@ struct TFTEngine::Impl {
             player_envs[i].board.fill(std::nullopt);
             player_envs[i].board_move_age.fill(kActionMemoryHorizon);
             player_envs[i].actions_taken_this_round = 0;
+            player_envs[i].action_serial = 0;
+            player_envs[i].recent_purchases.clear();
 
             // Impede que o histórico de uma partida anterior
             // interfira no novo episódio.
@@ -2151,6 +2169,13 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
 
         auto& economy = this->economy;
         auto& shop = *this->shop;
+        ++this->action_serial;
+        this->recent_purchases.erase(
+            std::remove_if(this->recent_purchases.begin(), this->recent_purchases.end(),
+                [this](const RecentPurchase& purchase) {
+                    return this->action_serial - purchase.action_serial > 4;
+                }),
+            this->recent_purchases.end());
         const auto old_gold = economy.gold;
         const auto old_level = economy.level;
         const auto old_xp = economy.xp;
@@ -2161,8 +2186,11 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         bool sold_unit_protects_upgrade = false;
         double sold_unit_fit_score = 0.0;
         bool buy_completes_upgrade = false;
+        bool buy_builds_pair = false;
         bool bought_unit_successfully = false;
         bool bought_upgrade = false;
+        bool purchase_was_recently_reversed = false;
+        double reversed_purchase_prior_reward = 0.0;
         bool board_capacity_violation = false;
         bool anti_loop_blocked = false;
         std::array<std::string, kBoardSlots> old_board_layout{};
@@ -2213,6 +2241,13 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             unit->star == offer->star) ++same_star_copies;
                     }
                     buy_completes_upgrade = same_star_copies >= 2;
+                    // A second matching copy is valuable future upgrade potential,
+                    // but only reward it when it also fits the current comp.
+                    const bool composition_fit =
+                        candidate_comp_score > 0.0 ||
+                        strategy_before.composition_direction.empty();
+                    buy_builds_pair = same_star_copies == 1 &&
+                        offer->star == 1 && composition_fit;
                 }
             }
         } else if (type == 3) {
@@ -2320,6 +2355,21 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             }
                             bought_unit->star = star + 1;
                         }
+                        if (bought_unit && !bought_upgrade) {
+                            this->recent_purchases.push_back(RecentPurchase{
+                                bought_unit->uuid,
+                                bought_unit->champion_internal_id,
+                                bought_unit->star,
+                                this->action_serial,
+                                definition->cost,
+                                buy_builds_pair,
+                                false,
+                                false,
+                                std::max(0.0, candidate_comp_score),
+                                0.0,
+                                strategy_before.composition_direction
+                            });
+                        }
                         lobby.register_position_state(player_id);
                     } else {
                         lobby.economy_engine.add_gold(
@@ -2397,6 +2447,12 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             block_reason.empty() ? "cycle" : block_reason
                         );
                     } else {
+                        const std::string moved_uuid = this->bench[source_index]
+                            ? this->bench[source_index]->uuid : std::string{};
+                        for (auto& purchase : this->recent_purchases) {
+                            if (!moved_uuid.empty() && purchase.uuid == moved_uuid)
+                                purchase.was_deployed = true;
+                        }
                         (void)anti_loop.register_move(
                             move_type,
                             source,
@@ -2530,6 +2586,23 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     );
 
                 if (definition) {
+                    const std::string sold_uuid = unit.uuid;
+                    const auto recent = std::find_if(
+                        this->recent_purchases.rbegin(), this->recent_purchases.rend(),
+                        [&sold_uuid](const RecentPurchase& purchase) {
+                            return !sold_uuid.empty() && purchase.uuid == sold_uuid;
+                        });
+                    if (recent != this->recent_purchases.rend()) {
+                        const bool direction_changed = !this->strategy.empty() &&
+                            this->strategy.back().composition_direction != recent->comp_direction;
+                        if (!recent->completed_upgrade && !recent->was_deployed &&
+                            recent->fit_score <= 1e-6 &&
+                            old_bench_count < static_cast<int>(kBenchSlots) &&
+                            !direction_changed) {
+                            purchase_was_recently_reversed = true;
+                            reversed_purchase_prior_reward = recent->reward;
+                        }
+                    }
                     if (!this->strategy.empty()) {
                         const auto& current_strategy = this->strategy.back();
                         const auto& core_unit_ids = current_strategy.core_unit_ids;
@@ -2598,9 +2671,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             // The unit may be bought successfully while immediately consuming
             // two copies in an automatic upgrade, so slot counts are not a
             // reliable signal of success. Match MiniTFTEnv._execute_buy():
-            // +0.05 for a normal purchase, +0.30 for any completed upgrade.
+            // No unconditional bonus for a normal purchase; +0.30 for a completed upgrade.
             success = bought_unit_successfully;
-            action_reward = !success ? -0.10 : (bought_upgrade ? 0.30 : 0.05);
+            action_reward = !success ? -0.10 : (bought_upgrade ? 0.30 : 0.0);
             if (success && has_candidate_comp_score) {
                 // Also guide early purchases before the board has a stable comp.
                 // composition_quality_delta is candidate-vs-board when a board
@@ -2610,6 +2683,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             }
             if (success && buy_completes_upgrade) {
                 action_reward += 0.12;
+            } else if (success && buy_builds_pair) {
+                action_reward += reward_model::purchase_pair_quality(
+                    candidate_comp_score);
             }
         } else if (type == 1) {
             success = economy.gold == old_gold - EconomyEngine::REROLL_COST;
@@ -2701,6 +2777,11 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     sold_unit_fit_score, sold_core_unit,
                     sold_unit_protects_upgrade, old_bench_count >= static_cast<int>(kBenchSlots))
                 : -0.10;
+            if (success && purchase_was_recently_reversed &&
+                !sold_core_unit &&
+                old_bench_count < static_cast<int>(kBenchSlots)) {
+                action_reward += reward_model::reversed_purchase_penalty();
+            }
         } else {
             success = true;
         }
@@ -2708,7 +2789,25 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         // Give spending decisions immediate feedback for the opportunity cost
         // of liquid gold and the interest breakpoints. This is a potential delta,
         // not a per-step bonus, so repeatedly PASSing cannot farm reward.
-        action_reward += reward_model::gold_change_reward(old_gold, economy.gold);
+        const double action_gold_reward =
+            reward_model::gold_change_reward(old_gold, economy.gold);
+        action_reward += action_gold_reward;
+
+        // Persist the complete buy reward so a later proven reversal can be
+        // prevented from making the aggregate purchase->sale sequence positive.
+        if (type == 0 && success && !bought_upgrade) {
+            for (auto it = this->recent_purchases.rbegin();
+                 it != this->recent_purchases.rend(); ++it) {
+                if (it->action_serial == this->action_serial) {
+                    it->reward = action_reward;
+                    break;
+                }
+            }
+        }
+        if (type == 5 && success && purchase_was_recently_reversed) {
+            action_reward += reward_model::reversed_sequence_adjustment(
+                reversed_purchase_prior_reward, action_reward);
+        }
 
         // MiniTFTEnv.step() returns the action-specific reward directly.
         // RewardManager's broader state components are not called by the

@@ -102,6 +102,155 @@ def read_json(path: Path):
     return data
 
 
+def _occupied_units(state: dict, location: str) -> list[dict]:
+    return [u for u in (state.get(location) or [])
+            if isinstance(u, dict) and u.get("occupied", True) and unit_name(u)]
+
+
+def _board_power(state: dict) -> float:
+    return sum(float(u.get("impact", 0.0) or 0.0)
+               for u in _occupied_units(state, "board"))
+
+
+def _star_counts(state: dict) -> Counter:
+    return Counter(int(u.get("star", 1) or 1)
+                   for u in _occupied_units(state, "board") + _occupied_units(state, "bench"))
+
+
+def _pair_count(state: dict) -> int:
+    counts = Counter(unit_name(u).casefold()
+                     for u in _occupied_units(state, "board") + _occupied_units(state, "bench")
+                     if int(u.get("star", 1) or 1) == 1)
+    return sum(1 for count in counts.values() if count >= 2)
+
+
+def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> None:
+    """Correlate buys and sells by champion across the next 1/2/4 player actions."""
+    actions = []
+    for entry in sorted(entries, key=lambda e: (e.get("sequence_id", 0), e.get("step", 0))):
+        if not isinstance(entry, dict) or entry.get("event_type") not in ("action", "round_finished"):
+            continue
+        payload = entry.get("payload") or {}
+        action = payload.get("action") or []
+        if action:
+            actions.append((entry, payload, action))
+
+    metrics = {
+        "buys": 0, "sells": 0, "reversed_1": 0, "reversed_2": 0, "reversed_4": 0,
+        "net_gold_lost_reversed": 0, "upgrade_completing_buys": 0,
+        "buys_with_positive_comp_fit": 0, "buys_with_board_gain": 0, "buys_with_synergy_milestone": 0,
+        "core_or_pair_sales": 0, "core_unit_sales": 0, "classified_sales": {}, "purchase_records": [],
+    }
+    purchases = []
+    classifications = Counter()
+    for idx, (entry, payload, action) in enumerate(actions):
+        before, after = payload.get("state_before") or {}, payload.get("state_after") or {}
+        name = str(payload.get("action_name") or ACTION_NAMES.get(action[0], "UNKNOWN"))
+        rnd, step = get_round(entry), entry.get("step")
+        if name == "BUY" and len(action) > 1:
+            shop = before.get("shop") or []
+            slot = int(action[1])
+            unit = shop[slot] if 0 <= slot < len(shop) else None
+            if not isinstance(unit, dict) or not unit.get("occupied", True):
+                continue
+            champion = unit_name(unit)
+            fit = ((payload.get("composition_diagnostics") or {}).get("unit_fit") or {})
+            fit_score = float(fit.get("focus_fit_score", 0.0) or 0.0) + (5.0 if fit.get("core_unit_match") else 0.0)
+            economic = payload.get("economic_diagnostics") or {}
+            synergy_gain = len(economic.get("synergy_milestones_changed") or {})
+            upgrade_completed = _star_counts(after)[2] > _star_counts(before)[2]
+            board_gain = _board_power(after) > _board_power(before) + 1e-6
+            metrics["buys"] += 1
+            metrics["upgrade_completing_buys"] += int(upgrade_completed)
+            metrics["buys_with_positive_comp_fit"] += int(fit_score > 0)
+            metrics["buys_with_board_gain"] += int(board_gain)
+            metrics["buys_with_synergy_milestone"] += int(synergy_gain > 0)
+            strategic_value = fit_score + (2.0 if upgrade_completed else 0.0) + 1.5 * synergy_gain + max(
+                0, _pair_count(after) - _pair_count(before))
+            if board_gain:
+                strategic_value += 1.0
+            record = {
+                "champion": champion, "uuid": unit.get("uuid"), "buy_action_index": idx, "step": step, "round": rnd,
+                "cost": max(0, int(unit.get("cost", 0) or 0)), "fit_score": fit_score,
+                "strategic_value": round(strategic_value, 4),
+                "upgrade_completed": upgrade_completed, "pair_count_before": _pair_count(before),
+                "pair_count_after": _pair_count(after), "board_power_before": _board_power(before),
+                "board_power_after": _board_power(after), "gold_before": before.get("gold"),
+                "gold_after": after.get("gold"), "comp_direction": after.get("comp_direction"),
+                "sold": False, "classification": "NOT_REVERSED",
+            }
+            purchases.append(record)
+            metrics["purchase_records"].append(record)
+        elif name == "SELL" and len(action) > 2:
+            bench = before.get("bench") or []
+            slot = int(action[2])
+            unit = bench[slot] if 0 <= slot < len(bench) else None
+            if not isinstance(unit, dict) or not unit.get("occupied", True):
+                continue
+            champion = unit_name(unit)
+            metrics["sells"] += 1
+            core_units = [str(value).casefold() for value in (before.get("core_units") or [])]
+            core_sale = any(champion.casefold() == core or champion.casefold() in core
+                            or core in champion.casefold() for core in core_units if core)
+            if core_sale:
+                metrics["core_unit_sales"] += 1
+            if core_sale or _pair_count(before) > _pair_count(after):
+                metrics["core_or_pair_sales"] += 1
+            sold_uuid = unit.get("uuid")
+            match = next((p for p in reversed(purchases)
+                          if not p["sold"]
+                          and ((sold_uuid and p.get("uuid") and p["uuid"] == sold_uuid)
+                               or (not sold_uuid or not p.get("uuid"))
+                               and p["champion"].casefold() == champion.casefold())
+                          and 1 <= idx - p["buy_action_index"] <= 4), None)
+            if match is None:
+                classifications["UNKNOWN"] += 1
+                continue
+            distance = idx - match["buy_action_index"]
+            bench_units = _occupied_units(before, "bench")
+            bench_was_full = bool(before.get("bench")) and len(bench_units) >= len(before.get("bench") or [])
+            comp_changed = (match.get("comp_direction") != before.get("comp_direction")
+                            and bool(match.get("comp_direction") or before.get("comp_direction")))
+            intervening = actions[match["buy_action_index"] + 1:idx + 1]
+            deployed = any(any(unit_name(u).casefold() == champion.casefold()
+                               for u in _occupied_units((item[1].get("state_after") or {}), "board"))
+                           for item in intervening)
+            if match["upgrade_completed"]:
+                classification = "PURCHASE_UPGRADE"
+            elif bench_was_full:
+                classification = "BENCH_CAPACITY"
+            elif comp_changed:
+                classification = "COMP_TRANSITION"
+            elif deployed:
+                classification = "UNKNOWN"
+            else:
+                classification = "PURCHASE_REVERSED"
+            match.update({"sold": True, "classification": classification, "sell_step": step,
+                          "sell_round": rnd, "actions_to_sale": distance,
+                          "sale_gold_delta": int(after.get("gold") or 0) - int(before.get("gold") or 0)})
+            match["net_gold_lost"] = max(0, match["cost"] - match["sale_gold_delta"])
+            classifications[classification] += 1
+            if classification == "PURCHASE_REVERSED":
+                metrics["net_gold_lost_reversed"] += match["net_gold_lost"]
+                metrics["reversed_1"] += int(distance <= 1)
+                metrics["reversed_2"] += int(distance <= 2)
+                metrics["reversed_4"] += int(distance <= 4)
+                add_issue(report, "MEDIUM", "PURCHASE_REVERSED", player, rnd, step,
+                          f"Compra de {champion} desfeita em {distance} ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado.",
+                          {"buy_step": match["step"], "cost": match["cost"],
+                           "sale_gold_delta": match["sale_gold_delta"],
+                           "net_gold_lost": match["net_gold_lost"], "fit_score": match["fit_score"]})
+    metrics["classified_sales"] = dict(classifications)
+    values = [float(record.get("strategic_value", 0.0)) for record in metrics["purchase_records"]]
+    metrics["average_strategic_value_per_purchase"] = round(sum(values) / len(values), 4) if values else 0.0
+    buys = max(1, metrics["buys"])
+    metrics["upgrade_completion_rate"] = round(metrics["upgrade_completing_buys"] / buys, 4)
+    metrics["positive_comp_fit_rate"] = round(metrics["buys_with_positive_comp_fit"] / buys, 4)
+    metrics["board_gain_rate"] = round(metrics["buys_with_board_gain"] / buys, 4)
+    metrics["synergy_milestone_rate"] = round(metrics["buys_with_synergy_milestone"] / buys, 4)
+    report.setdefault("purchase_sequence_metrics", {})[player] = metrics
+
+
 def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_window: int) -> None:
     player_id = doc.get("player_number")
     if player_id is None:
@@ -110,6 +259,7 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
     player = f"Jogador {player_id}"
     report["players_seen"].add(str(player_id))
     report["entries_read"] += len(doc["entries"])
+    audit_purchase_sequences(doc["entries"], player, report)
     report["log_files"].append(str(path))
 
     entries = sorted(doc["entries"], key=lambda e: (e.get("sequence_id", 0), e.get("step", 0)))
@@ -297,6 +447,19 @@ def markdown_report(report: dict) -> str:
         f"- Achados: **{len(report['issues'])}**",
         f"- CRITICAL: {counts['CRITICAL']} | HIGH: {counts['HIGH']} | MEDIUM: {counts['MEDIUM']} | LOW: {counts['LOW']}", "",
     ]
+    if report.get("purchase_sequence_metrics"):
+        lines += ["## Auditoria de compras e vendas", "",
+                  "| Jogador | Compras | Vendas | Revertidas ≤1 ação | ≤2 ações | ≤4 ações | Ouro perdido | Upgrades | Vendas core/par | Valor médio |",
+                  "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+        for player, metrics in sorted(report["purchase_sequence_metrics"].items()):
+            lines.append(
+                f"| {player} | {metrics['buys']} | {metrics['sells']} | "
+                f"{metrics['reversed_1']} | {metrics['reversed_2']} | {metrics['reversed_4']} | "
+                f"{metrics['net_gold_lost_reversed']} | {metrics['upgrade_completing_buys']} | "
+                f"{metrics['core_or_pair_sales']} | {metrics.get('average_strategic_value_per_purchase', 0.0)} |"
+            )
+        lines += ["", "As classificações detalhadas e cada sequência correlacionada ficam em audit_report.json.",
+                  "Uma venda sem compra correspondente na janela é UNKNOWN; sequências ambíguas não são penalizadas automaticamente.", ""]
     if report["issues"]:
         lines += ["## Achados", "", "| Severidade | Jogador | Round | Step | Código | Descrição |",
                   "|---|---|---:|---:|---|---|"]
@@ -345,6 +508,7 @@ def main() -> int:
     else:
         parser.error(f"caminho não existe: {source}")
     report = {"source": str(source), "log_files": [], "players_seen": set(),
+              "purchase_sequence_metrics": {},
               "entries_read": 0, "diagnostics_missing": 0, "issues": [], "notes": [],
               "mask_note_added": False}
     for path in files:

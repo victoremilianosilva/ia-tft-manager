@@ -221,6 +221,111 @@ class PlayerJsonLogWriter:
         }
 
 
+    @staticmethod
+    def _board_power_state(state: dict) -> float:
+        return round(sum(float(unit.get("impact", 0.0) or 0.0)
+                         for unit in state.get("board", [])
+                         if isinstance(unit, dict) and unit.get("occupied", True)), 4)
+
+    @staticmethod
+    def _board_trait_counts(state: dict) -> dict:
+        counts = {}
+        for unit in state.get("board", []) or []:
+            if not isinstance(unit, dict) or not unit.get("occupied", True):
+                continue
+            for trait in unit.get("traits", []) or []:
+                if isinstance(trait, str) and trait and trait.casefold() != "none":
+                    counts[trait] = counts.get(trait, 0) + 1
+        return counts
+
+    @staticmethod
+    def _upgrade_counts(state: dict) -> dict:
+        units = [
+            unit for location in ("board", "bench")
+            for unit in (state.get(location) or [])
+            if isinstance(unit, dict) and unit.get("occupied", True)
+        ]
+        return {
+            "two_star_or_higher": sum(int(unit.get("star", 1) or 1) >= 2 for unit in units),
+            "three_star": sum(int(unit.get("star", 1) or 1) >= 3 for unit in units),
+        }
+
+    @staticmethod
+    def _pair_count_state(state: dict) -> int:
+        counts = {}
+        for location in ("board", "bench"):
+            for unit in state.get(location, []) or []:
+                if not isinstance(unit, dict) or not unit.get("occupied", True):
+                    continue
+                if int(unit.get("star", 1) or 1) != 1:
+                    continue
+                key = str(unit.get("champion_id") or unit.get("name") or "").casefold()
+                if key:
+                    counts[key] = counts.get(key, 0) + 1
+        return sum(count >= 2 for count in counts.values())
+
+    def _economic_diagnostics(self, action, before_state, after_state,
+                              before_audit, after_audit) -> dict:
+        action_type = int(action[0])
+        gold_before = int(before_state.get("gold", 0) or 0)
+        gold_after = int(after_state.get("gold", 0) or 0)
+        shop_slot = int(action[1]) if action_type == 0 and len(action) > 1 else -1
+        shop = before_state.get("shop") or []
+        purchased = shop[shop_slot] if 0 <= shop_slot < len(shop) else {}
+        sell_slot = int(action[2]) if action_type == 5 and len(action) > 2 else -1
+        bench = before_state.get("bench") or []
+        sold = bench[sell_slot] if 0 <= sell_slot < len(bench) else {}
+        explicit_cost = int(purchased.get("cost", 0) or 0) if action_type == 0 else (
+            2 if action_type == 1 else 4 if action_type == 2 else 0)
+        gold_delta = gold_after - gold_before
+        before_power = self._board_power_state(before_state)
+        after_power = self._board_power_state(after_state)
+        before_upgrades = self._upgrade_counts(before_state)
+        after_upgrades = self._upgrade_counts(after_state)
+        board_traits_before = self._board_trait_counts(before_state)
+        board_traits_after = self._board_trait_counts(after_state)
+        synergy_milestones = {}
+        for trait in sorted(set(board_traits_before) | set(board_traits_after)):
+            old_count, new_count = board_traits_before.get(trait, 0), board_traits_after.get(trait, 0)
+            old_level, new_level = _synergy_level(old_count), _synergy_level(new_count)
+            if old_level != new_level:
+                synergy_milestones[trait] = {
+                    "count_before": old_count, "count_after": new_count,
+                    "level_before": old_level, "level_after": new_level,
+                }
+        return {
+            "gold_before": gold_before,
+            "gold_after": gold_after,
+            "gold_delta": gold_delta,
+            "action_cost": max(0, -gold_delta),
+            "listed_cost": explicit_cost,
+            "sale_proceeds": max(0, gold_delta) if action_type == 5 else 0,
+            "base_income": int(after_state.get("round_base_gold", 0) or 0),
+            "interest_income": int(after_state.get("round_interest", 0) or 0),
+            "streak_income": int(after_state.get("round_streak_gold", 0) or 0),
+            "win_income": int(after_state.get("round_win_gold", 0) or 0),
+            "board_power_before": before_power,
+            "board_power_after": after_power,
+            "board_power_delta": round(after_power - before_power, 4),
+            "pairs_before": self._pair_count_state(before_state),
+            "pairs_after": self._pair_count_state(after_state),
+            "two_star_or_higher_before": before_upgrades["two_star_or_higher"],
+            "two_star_or_higher_after": after_upgrades["two_star_or_higher"],
+            "three_star_before": before_upgrades["three_star"],
+            "three_star_after": after_upgrades["three_star"],
+            "board_traits_before": board_traits_before,
+            "board_traits_after": board_traits_after,
+            "synergy_milestones_changed": synergy_milestones,
+            "purchased_champion": purchased.get("champion_id") if action_type == 0 else None,
+            "sold_champion": sold.get("champion_id") if action_type == 5 else None,
+            "composition_direction_before": before_state.get("comp_direction"),
+            "composition_direction_after": after_state.get("comp_direction"),
+            "composition_fit": (
+                self._unit_composition_fit(action, before_audit, before_state)
+                if action_type in (0, 3, 4, 5) else None
+            ),
+        }
+
     def _unit_composition_fit(self, action, before_audit, after_state):
         """Estimate how the acted-on unit aligns with the current comp focus/core."""
         action_type = int(action[0])
@@ -568,6 +673,7 @@ class PlayerJsonLogWriter:
                 "combat_reward": combat_rewards[player_id] if isinstance(combat_rewards, list) and player_id < len(combat_rewards) else None,
                 "placement_reward": placement_rewards[player_id] if isinstance(placement_rewards, list) and player_id < len(placement_rewards) else None,
                 "state_changed": before_state != after_state,
+                "economic_diagnostics": self._economic_diagnostics(action, before_state, after_state, before_audit, after_audit),
                 "state_before": before_state, "state_after": after_state,
                 "composition_diagnostics": {
                     "before": {
@@ -599,7 +705,7 @@ class PlayerJsonLogWriter:
                     "focus_weights": after_state.get("composition_focus_weights"),
                     "strategy_scores": after_state.get("strategy_scores"),
                     "policy_status": diagnostic.get("status"),
-                    "unit_fit": self._unit_composition_fit(action, before_audit, after_state),
+                    "unit_fit": self._unit_composition_fit(action, before_audit, before_state),
                 },
                 "policy_diagnostics": diagnostic, "engine_events": player_events,
             }

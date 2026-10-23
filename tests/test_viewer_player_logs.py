@@ -144,6 +144,13 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
     assert "MOVE Bench -> Board" in action_entry["text"]
     assert "Briar (i:2.0)" in action_entry["text"]
     assert action_entry["payload"]["state_after"]["board"][0]["name"] == "Briar"
+    economics = action_entry["payload"]["economic_diagnostics"]
+    assert economics["gold_before"] == 10
+    assert economics["gold_after"] == 10
+    assert economics["gold_delta"] == 0
+    assert economics["board_power_delta"] == 2.0
+    assert economics["two_star_or_higher_after"] == 0
+    assert economics["pairs_before"] == 0
     assert action_entry["payload"]["state_after"]["bench"][0]["occupied"] is False
     assert action_entry["payload"]["state_after"]["strategy_name"] == "STABILIZE"
     assert action_entry["payload"]["state_after"]["comp_direction"] == "Prankster"

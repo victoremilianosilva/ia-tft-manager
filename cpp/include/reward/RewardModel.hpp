@@ -113,6 +113,28 @@ inline double purchase_quality(double fit_delta, bool completes_upgrade) noexcep
         (completes_upgrade ? 0.12 : 0.0);
 }
 
+// Small, composition-aware bonus for acquiring the second matching 1-star copy.
+// This values upgrade potential without treating every duplicate as worthwhile.
+// The caller only invokes it when exactly one matching copy already exists and
+// the candidate has positive fit with the current composition.
+inline double purchase_pair_quality(double fit_score) noexcept {
+    return 0.10 + 0.05 * std::tanh(std::max(0.0, fit_score) / 5.0);
+}
+
+// Applied only when a specific recently purchased unit is sold within four
+// actions, without an upgrade, core-unit protection, or bench-capacity reason.
+inline double reversed_purchase_penalty() noexcept {
+    return -0.12;
+}
+
+inline double reversed_sequence_adjustment(
+    double prior_buy_reward,
+    double sale_reward_including_gold,
+    double target = -0.02
+) noexcept {
+    return std::min(0.0, target - prior_buy_reward - sale_reward_including_gold);
+}
+
 // Selling frees a bench slot and returns gold, but should protect core units
 // and copies that are close to an upgrade. fit_score is normalized to [0, 1].
 inline double sale_quality(double fit_score, bool core_unit,
