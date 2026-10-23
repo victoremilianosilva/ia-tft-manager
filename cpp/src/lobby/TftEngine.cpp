@@ -2185,7 +2185,6 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         bool bought_unit_successfully = false;
         bool bought_upgrade = false;
         bool purchase_was_recently_reversed = false;
-        std::string purchase_sequence_reason;
         bool board_capacity_violation = false;
         bool anti_loop_blocked = false;
         std::array<std::string, kBoardSlots> old_board_layout{};
@@ -2579,17 +2578,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     if (recent != this->recent_purchases.rend()) {
                         const bool direction_changed = !this->strategy.empty() &&
                             this->strategy.back().composition_direction != recent->comp_direction;
-                        if (recent->completed_upgrade) {
-                            purchase_sequence_reason = "PURCHASE_UPGRADE";
-                        } else if (old_bench_count >= static_cast<int>(kBenchSlots)) {
-                            purchase_sequence_reason = "BENCH_CAPACITY";
-                        } else if (direction_changed) {
-                            purchase_sequence_reason = "COMP_TRANSITION";
-                        } else if (recent->built_pair) {
-                            purchase_sequence_reason = "PURCHASE_REVERSED";
-                            purchase_was_recently_reversed = true;
-                        } else {
-                            purchase_sequence_reason = "PURCHASE_REVERSED";
+                        if (!recent->completed_upgrade &&
+                            old_bench_count < static_cast<int>(kBenchSlots) &&
+                            !direction_changed) {
                             purchase_was_recently_reversed = true;
                         }
                     }
@@ -2771,11 +2762,6 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 !sold_core_unit && !sold_unit_protects_upgrade &&
                 old_bench_count < static_cast<int>(kBenchSlots)) {
                 action_reward += reward_model::reversed_purchase_penalty();
-            }
-            if (success && !purchase_sequence_reason.empty()) {
-                const auto sold_uuid = old_bench_count > 0
-                    ? std::string{} : std::string{};
-                (void)sold_uuid;
             }
         } else {
             success = true;
