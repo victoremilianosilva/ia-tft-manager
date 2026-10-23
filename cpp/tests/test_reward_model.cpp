@@ -94,7 +94,7 @@ int main() {
     if (should_penalize_reversed_purchase(0.0, false, false, false, true))
         throw std::runtime_error("composition transition must be exempt from reversal penalty");
     const double reversal_adjustment = reversed_sequence_adjustment(0.02, 0.20);
-    if (!(0.02 + 0.20 + reversal_adjustment <= -0.02 + 1e-9)) {
+    if (!(0.02 + 0.20 + reversal_adjustment <= -0.05 + 1e-9)) {
         throw std::runtime_error("reversed purchase sequence must not retain positive aggregate reward");
     }
     require_close(reversed_sequence_adjustment(-0.10, -0.20), 0.0,
