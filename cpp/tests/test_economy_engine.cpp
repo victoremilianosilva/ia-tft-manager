@@ -177,6 +177,27 @@ int main() {
     assert(max_interest_round.base_gold == 5);
     assert(max_interest_round.new_gold == 63);
 
+    // 15. Limites de juros e transições devem usar o saldo pré-renda real.
+    const int threshold_gold[] = {9, 10, 19, 20, 29, 30, 39, 40, 49, 50, 59, 60};
+    const int expected_interest[] = {0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5};
+    for (std::size_t i = 0; i < sizeof(threshold_gold) / sizeof(threshold_gold[0]); ++i) {
+        assert(engine.get_interest(threshold_gold[i]) == expected_interest[i]);
+    }
+
+    engine.reset(economy);
+    economy.gold = 9;
+    const auto crossed_to_ten = engine.resolve_round(economy, 1);
+    assert(crossed_to_ten.gold_before_interest == 9);
+    assert(crossed_to_ten.gold_before_income == 9);
+    assert(crossed_to_ten.interest_gold == 0); // renda do round não retroage nos juros
+
+    engine.reset(economy);
+    economy.gold = 10;
+    const auto started_at_ten = engine.resolve_round(economy, 1);
+    assert(started_at_ten.gold_before_interest == 10);
+    assert(started_at_ten.interest_gold == 1);
+    assert(economy.gold_before_interest == 10);
+
     std::cout << "EconomyEngine: todos os testes passaram.\n";
     return 0;
 }
