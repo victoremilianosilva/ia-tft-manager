@@ -1318,6 +1318,8 @@ struct TFTEngine::Impl {
         std::vector<int> main_carry_positions;
         int fallback_carry_slot = -1;
         double fallback_carry_fit = -std::numeric_limits<double>::infinity();
+        int core_carry_slot = -1;
+        double core_carry_fit = -std::numeric_limits<double>::infinity();
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
             const auto& unit = player_envs[player_index].board[slot];
             if (!unit || board_roles[slot] != PositioningEngine::carry) continue;
@@ -1334,20 +1336,23 @@ struct TFTEngine::Impl {
             const bool core_by_name = name_is_core(def->api_name) ||
                 name_is_core(def->character_name) || name_is_core(def->name) ||
                 name_is_core(unit->champion_id);
-            if (core_by_id || core_by_name)
-                main_carry_positions.push_back(static_cast<int>(slot));
-
             const double fit = unit_composition_score(
                 active_strategy, *def, unit->star, trait_milestones);
             if (fit > fallback_carry_fit) {
                 fallback_carry_fit = fit;
                 fallback_carry_slot = static_cast<int>(slot);
             }
+            if ((core_by_id || core_by_name) && fit > core_carry_fit) {
+                core_carry_fit = fit;
+                core_carry_slot = static_cast<int>(slot);
+            }
         }
-        // Prefer composition core carries. If none is deployed, choose the
-        // deployed carry with the strongest fit as a soft fallback.
-        if (main_carry_positions.empty() && fallback_carry_slot >= 0)
-            main_carry_positions.push_back(fallback_carry_slot);
+        // Track one main carry: prefer the best-fitting deployed core carry.
+        // If the composition core is not deployed, use the best-fitting carry.
+        const int selected_main_carry =
+            core_carry_slot >= 0 ? core_carry_slot : fallback_carry_slot;
+        if (selected_main_carry >= 0)
+            main_carry_positions.push_back(selected_main_carry);
 
         std::vector<strategy::BenchUnitProfile> bench_profiles;
         bench_profiles.reserve(kBenchSlots);
