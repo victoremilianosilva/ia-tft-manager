@@ -1948,10 +1948,11 @@ struct TFTEngine::Impl {
             strategy::CompositionPlanner::AvailableCopies available_copies;
             std::unordered_set<std::int32_t> currently_offered;
             for (const auto& champion : catalog->all())
-                available_copies[champion.internal_id] = lobby.pool
-                    ? lobby.pool->available(champion.internal_id) : 0;
-            if (shop) {
-                for (const auto& offer : shop->offers()) {
+                available_copies[champion.internal_id] = pool
+                    ? pool->available(champion.internal_id) : 0;
+            const auto& current_shop = player_envs[i].shop;
+            if (current_shop) {
+                for (const auto& offer : current_shop->offers()) {
                     if (!offer) continue;
                     currently_offered.insert(offer->champion_internal_id);
                     available_copies[offer->champion_internal_id] =
