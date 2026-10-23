@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (
 )
 
 from viewer.session import ViewerSession, unit_label, ACTION_NAMES, ROOT
-from viewer.composition_plan import summarize_planned_traits, suggest_initial_positions
+from viewer.composition_plan import summarize_planned_traits, suggest_initial_positions, is_position_misplaced
 
 APP_STYLE = """
 QMainWindow, QWidget { background: #0b1020; color: #e5e7eb; font-family: 'Segoe UI'; font-size: 10pt; }
@@ -94,6 +94,7 @@ class ChampionIconLoader(QObject):
         self._pending: dict[str, tuple[list[str], int]] = {}
         self._failed: set[str] = set()
         self._assets: dict[str, tuple[str, list[str]]] = {}
+        self._profiles: dict[str, dict] = {}
         self._cache_dir = Path.home() / ".tft-viewer" / "champion-icons"
         self._cache_dir.mkdir(parents=True, exist_ok=True)
         try:
@@ -107,6 +108,11 @@ class ChampionIconLoader(QObject):
             api_name = str(unit.get("apiName") or unit.get("characterName") or unit.get("name") or "")
             if not api_name:
                 continue
+            profile = dict(unit.get("combat_profile") or {})
+            profile.setdefault("role_name", unit.get("role_name") or "")
+            for alias in (api_name, unit.get("characterName"), unit.get("name")):
+                if isinstance(alias, str) and alias:
+                    self._profiles[alias.casefold()] = profile
             paths = []
             for field in ("tileIcon", "squareIcon", "icon"):
                 value = unit.get(field)
@@ -128,6 +134,9 @@ class ChampionIconLoader(QObject):
             for alias in (api_name, unit.get("characterName"), unit.get("name")):
                 if isinstance(alias, str) and alias:
                     self._assets[alias.casefold()] = record
+
+    def profile_for(self, champion_id: str) -> dict:
+        return self._profiles.get(str(champion_id or "").casefold(), {})
 
     def pixmap_for(self, champion_id: str) -> QPixmap | None:
         record = self._assets.get(str(champion_id or "").casefold())
@@ -198,11 +207,15 @@ class ChampionCell(QFrame):
         4: "#a78bfa", 5: "#f59e0b", 6: "#f472b6",
     }
 
+    ROW_BACKGROUNDS = ("#183b3a", "#173044", "#292747", "#30213d")
+
     def __init__(self, min_width: int, min_height: int, parent=None):
         super().__init__(parent)
         initial_size = max(20, int(min_width), int(min_height))
         self.setFixedSize(initial_size, initial_size)
         self.setObjectName("championCell")
+        self._board_row = 0
+        self._position_warning = False
         self.setFrameShape(QFrame.Shape.StyledPanel)
         self._champion_id = ""
         self._last_unit = None
@@ -233,15 +246,41 @@ class ChampionCell(QFrame):
             # Re-scale an already loaded portrait as soon as the cell changes size.
             self.set_unit(self._last_unit, self._icon_loader)
 
+    def set_board_row(self, row: int):
+        self._board_row = max(0, min(3, int(row)))
+        self._apply_cell_style()
+        
+    def _apply_cell_style(self, cost_color: str | None = None):
+        background = self.ROW_BACKGROUNDS[self._board_row]
+        if self._position_warning:
+            # The red ring is intentionally independent of cost color.
+            border, border_width, radius = "#ef4444", 3, max(8, self.width() // 2)
+        elif cost_color:
+            border, border_width, radius = cost_color, 2, 4
+        else:
+            border, border_width, radius = "#3b506b", 1, 4
+        self.setStyleSheet(
+            f"QFrame#championCell {{ background:{background};"
+            f"border:{border_width}px solid {border};border-radius:{radius}px; }}"
+        )
+        # Keep the champion portrait inside the warning ring so the red circle
+        # remains visible even at the smallest responsive cell size.
+        margin = 4 if self._position_warning else 1
+        self.layout().setContentsMargins(margin, margin, margin, margin)
+
     def _set_empty_style(self):
-        self.setStyleSheet("QFrame#championCell { background:#18263b;border:1px solid #293751;border-radius:3px; }")
+        self._position_warning = False
+        self._apply_cell_style()
         self.image.setPixmap(QPixmap())
         self.image.setText("·")
+        self.image.setStyleSheet("background:transparent;border:0;color:#94a3b8;font-size:8pt;")
         self.stars.setText("")
 
-    def set_unit(self, unit: dict | None, icon_loader: ChampionIconLoader):
+    def set_unit(self, unit: dict | None, icon_loader: ChampionIconLoader,
+                 position_warning: bool = False):
         self._last_unit = dict(unit) if unit and unit.get("occupied", False) else None
         self._icon_loader = icon_loader
+        self._position_warning = bool(position_warning and self._last_unit)
         if not unit or not unit.get("occupied", False):
             self._champion_id = ""
             self._set_empty_style()
@@ -253,10 +292,10 @@ class ChampionCell(QFrame):
         star = max(1, min(3, int(unit.get("star", 1) or 1)))
         cost = int(unit.get("cost", 0) or 0)
         border = self.COST_COLORS.get(cost, "#38bdf8")
-        self.setStyleSheet(
-            f"QFrame#championCell {{ background:#0f172a;border:2px solid {border};border-radius:4px; }}"
-        )
-        self.setToolTip(f"{champion_id} · {'★' * star} · custo {cost or '?'}")
+        self._apply_cell_style(border)
+        role = icon_loader.profile_for(champion_id).get("role_name") or "papel desconhecido"
+        warning_text = " · POSICIONAMENTO SUSPEITO (linha frontal/traseira)" if self._position_warning else ""
+        self.setToolTip(f"{champion_id} · {role} · {'★' * star} · custo {cost or '?'}{warning_text}")
         pixmap = icon_loader.pixmap_for(champion_id)
         if pixmap is not None and not pixmap.isNull():
             size = max(16, min(self.width(), self.height()) - 4)
@@ -339,6 +378,7 @@ class PlayerCard(QFrame):
         for row in range(4):
             for col in range(7):
                 cell = ChampionCell(27, 27)
+                cell.set_board_row(row)
                 cell.setToolTip(f"Linha {row + 1}, coluna {col + 1}")
                 self.board.addWidget(cell, row, col)
                 self.cells.append(cell)
@@ -377,11 +417,26 @@ class PlayerCard(QFrame):
         for i, cell in enumerate(self.cells):
             unit = board[i] if i < len(board) else None
             occupied = unit and unit.get("occupied", False)
-            cell.set_unit(unit if occupied else None, icon_loader)
+            row = i // 7
+            profile = icon_loader.profile_for(
+                (unit or {}).get("champion_id") or (unit or {}).get("apiName") or (unit or {}).get("api_name") or ""
+            ) if occupied else {}
+            role_unit = {
+                "role_name": profile.get("role_name", ""),
+                "combat_profile": profile,
+            }
+            misplaced = bool(occupied and is_position_misplaced(role_unit, row))
+            cell.set_unit(unit if occupied else None, icon_loader, position_warning=misplaced)
             if occupied:
-                cell.setToolTip(f"Posição {i}: {unit.get('champion_id')} | ⭐ {unit.get('star')} | UUID {unit.get('uuid')}")
+                location = "FRONT" if row <= 1 else "BACK"
+                warning = " · ⚠ POSIÇÃO INADEQUADA" if misplaced else ""
+                cell.setToolTip(
+                    f"Posição {i} · {location}: {unit.get('champion_id')} | "
+                    f"papel {profile.get('role_name') or 'desconhecido'} | "
+                    f"⭐ {unit.get('star')} | UUID {unit.get('uuid')}{warning}"
+                )
             else:
-                cell.setToolTip(f"Posição {i} vazia")
+                cell.setToolTip(f"Posição {i} vazia · {'FRONT' if row <= 1 else 'BACK'}")
         if action:
             name = ACTION_NAMES.get(action[0], "UNKNOWN")
             self.last_action.setText(f"Última ação: {name} {action[1:]}")
