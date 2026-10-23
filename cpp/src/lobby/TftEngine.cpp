@@ -2817,7 +2817,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         lobby.update_strategy(player_id);
         // Capture actual action economics before round income is resolved.
         // Net gold after TFTEngine::step may include income and cannot be used
-        // to infer the action's true cost.
+        // to infer the action's true cost. This trace is audit-only and never
+        // enters the policy observation or PPO reward calculation.
         const auto actual_action_cost = type == 5
             ? 0 : std::max<std::int32_t>(0, old_gold - economy.gold);
         const auto actual_sale_proceeds = type == 5
