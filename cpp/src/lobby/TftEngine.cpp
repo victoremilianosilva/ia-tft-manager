@@ -1576,6 +1576,22 @@ struct TFTEngine::Impl {
                     candidate_strength = total / new_comp_traits.size();
                 }
 
+                // If the current direction has lost viability but still wins the
+                // stale focus-weighted ranking, select the best different trait
+                // instead of repeatedly proposing the direction we are abandoning.
+                if (!current_direction_viable &&
+                    candidate_direction == info.composition_direction) {
+                    const auto alternative = std::find_if(
+                        sorted_traits.begin(), sorted_traits.end(),
+                        [&](const auto& item) {
+                            return item.first != info.composition_direction;
+                        });
+                    if (alternative != sorted_traits.end()) {
+                        candidate_direction = alternative->first;
+                        candidate_strength = alternative->second * 1.4;
+                    }
+                }
+
                 static const strategy::CompositionDirectionPolicy direction_policy{
                     strategy::CompositionDirectionConfig{0.20, 0.75, 3}
                 };
