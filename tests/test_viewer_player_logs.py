@@ -32,6 +32,9 @@ def _snapshot(with_unit=False):
         audit_players.append({
             "player_id": player_id, "gold": 10, "level": 2, "xp": 0,
             "win_streak": 0, "loss_streak": 0,
+            "gold_before_interest": 10 if player_id == 0 else 0,
+            "interest_if_resolved_now": 1 if player_id == 0 else 0,
+            "board_power": 0.0, "synergy_score": 0.0, "positioning_score": 0.0,
             "round_gold": 8 if player_id == 0 else 0,
             "round_base_gold": 5 if player_id == 0 else 0,
             "round_interest": 2 if player_id == 0 else 0,
@@ -149,6 +152,11 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
     assert economics["gold_after"] == 10
     assert economics["gold_delta"] == 0
     assert economics["board_power_delta"] == 2.0
+    assert economics["gold_before_interest"] == 10
+    assert economics["interest_if_resolved_before"] == 1
+    assert economics["potential_interest_delta"] == 0
+    assert economics["reason_code"] == "DEPLOY_BOARD_GAIN"
+    assert economics["measurable_improvement"] is True
     assert economics["two_star_or_higher_after"] == 0
     assert economics["pairs_before"] == 0
     assert action_entry["payload"]["state_after"]["bench"][0]["occupied"] is False
