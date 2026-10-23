@@ -1945,14 +1945,19 @@ struct TFTEngine::Impl {
             // adapt to the live state instead of being fixed in the early game.
             const auto planning_slots =
                 strategy::CompositionPlanner::target_slots_for_level(economy.level);
+            strategy::CompositionPlanner::AvailableCopies available_copies;
+            for (const auto& champion : catalog->all())
+                available_copies[champion.internal_id] = lobby.pool
+                    ? lobby.pool->available(champion.internal_id) : 0;
             const auto plan = strategy::CompositionPlanner::build(
                 catalog->all(), trait_milestones, info.composition_direction,
-                plan_focus, owned_copies, planning_slots);
+                plan_focus, owned_copies, planning_slots, economy.level, available_copies);
             info.planned_units = plan.unit_names;
             info.planned_unit_ids = plan.unit_ids;
             info.planned_traits = plan.core_traits;
             info.planned_main_carry_id = plan.main_carry_id;
             info.planned_composition_score = plan.score;
+            info.planned_acquisition_notes = plan.acquisition_notes;
         }
 
         // Paridade com StrategyManager.compute_strategy_confidence().
