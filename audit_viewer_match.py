@@ -423,6 +423,18 @@ def markdown_report(report: dict) -> str:
         f"- Achados: **{len(report['issues'])}**",
         f"- CRITICAL: {counts['CRITICAL']} | HIGH: {counts['HIGH']} | MEDIUM: {counts['MEDIUM']} | LOW: {counts['LOW']}", "",
     ]
+    if report.get("purchase_sequence_metrics"):
+        lines += ["## Auditoria de compras e vendas", "",
+                  "| Jogador | Compras | Vendas | Revertidas ≤1 ação | ≤2 ações | ≤4 ações | Ouro perdido | Compras com upgrade |",
+                  "|---|---:|---:|---:|---:|---:|---:|---:|"]
+        for player, metrics in sorted(report["purchase_sequence_metrics"].items()):
+            lines.append(
+                f"| {player} | {metrics['buys']} | {metrics['sells']} | "
+                f"{metrics['reversed_1']} | {metrics['reversed_2']} | {metrics['reversed_4']} | "
+                f"{metrics['net_gold_lost_reversed']} | {metrics['upgrade_completing_buys']} |"
+            )
+        lines += ["", "As classificações detalhadas e cada sequência correlacionada ficam em audit_report.json.",
+                  "Uma venda sem compra correspondente na janela é UNKNOWN; sequências ambíguas não são penalizadas automaticamente.", ""]
     if report["issues"]:
         lines += ["## Achados", "", "| Severidade | Jogador | Round | Step | Código | Descrição |",
                   "|---|---|---:|---:|---|---|"]
