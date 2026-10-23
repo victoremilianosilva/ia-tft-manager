@@ -157,6 +157,16 @@ py::dict player_info_to_dict(const tft::PlayerInfo& player) {
         : py::none();
 
     result["damage_taken"] = player.damage_taken;
+    result["board_quality_score"] = player.board_quality_score;
+    result["board_positional_score"] = player.board_positional_score;
+    result["board_structural_score"] = player.board_structural_score;
+    result["board_quality_delta"] = player.board_quality_delta;
+    result["board_exposed_carries"] = player.board_exposed_carries;
+    result["board_frontline_count"] = player.board_frontline_count;
+    result["board_isolated_frontline_count"] =
+        player.board_isolated_frontline_count;
+    result["board_important_bench_units_unplayed"] =
+        player.board_important_bench_units_unplayed;
 
     return result;
 }

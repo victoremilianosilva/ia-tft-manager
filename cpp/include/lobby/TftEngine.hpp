@@ -218,6 +218,17 @@ struct PlayerInfo {
     std::optional<std::int32_t> opponent_id;
 
     float damage_taken{0.0f};
+
+    // Per-action board quality diagnostics; exposed for Viewer/audit correlation
+    // with combat outcomes rather than treating heuristics as ground truth.
+    double board_quality_score{0.0};
+    double board_positional_score{0.0};
+    double board_structural_score{0.0};
+    double board_quality_delta{0.0};
+    std::int32_t board_exposed_carries{0};
+    std::int32_t board_frontline_count{0};
+    std::int32_t board_isolated_frontline_count{0};
+    std::int32_t board_important_bench_units_unplayed{0};
 };
 
 struct StrategyInfo {

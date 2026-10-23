@@ -308,3 +308,30 @@ def test_economic_action_audit_flags_unused_level_up_and_ignores_non_actions():
     metrics = report["economic_action_metrics"]["Jogador 2"]
     assert metrics["xp_level_up_unused"] == 1
     assert metrics["actions"] == 2
+
+
+
+def test_player_snapshot_preserves_board_quality_diagnostics():
+    writer = PlayerJsonLogWriter.__new__(PlayerJsonLogWriter)
+    state = writer._player_snapshot(
+        {"positioning_score": 0.2},
+        {
+            "player_id": 0,
+            "board_quality_score": 0.4,
+            "board_positional_score": 0.7,
+            "board_structural_score": -0.3,
+            "board_quality_delta": 0.1,
+            "board_exposed_carries": 1,
+            "board_frontline_count": 2,
+            "board_isolated_frontline_count": 1,
+            "board_important_bench_units_unplayed": 2,
+        },
+    )
+    assert state["board_quality_score"] == 0.4
+    assert state["board_positional_score"] == 0.7
+    assert state["board_structural_score"] == -0.3
+    assert state["board_quality_delta"] == 0.1
+    assert state["board_exposed_carries"] == 1
+    assert state["board_frontline_count"] == 2
+    assert state["board_isolated_frontline_count"] == 1
+    assert state["board_important_bench_units_unplayed"] == 2

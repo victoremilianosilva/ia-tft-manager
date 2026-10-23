@@ -26,6 +26,7 @@
 #include "lobby/ShopEngine.hpp"
 #include "strategy/SynergyCounter.hpp"
 #include "strategy/PositioningEngine.hpp"
+#include "strategy/BoardEvaluation.hpp"
 #include "reward/RewardModel.hpp"
 #include "strategy/CompositionDirectionPolicy.hpp"
 
@@ -1185,74 +1186,38 @@ struct TFTEngine::Impl {
         return score;
     }
 
-    double positioning_score(std::size_t player_index) const {
-        const auto role_at = [&](std::size_t slot) {
-            if (!player_envs[player_index].board[slot]) return UnitRole::FIGHTER;
-            const auto* def = catalog->find_by_id(
-                player_envs[player_index].board[slot]->champion_internal_id);
-            if (!def) return UnitRole::FIGHTER;
-            return static_cast<UnitRole>(std::clamp(def->combat_profile.role, 0, 4));
-        };
-        const auto center_score = [](int col) {
-            constexpr double center = 3.0;
-            return std::max(0.0, 1.0 - std::abs(col - center) / 3.0);
-        };
-        const auto edge_score = [](int col) {
-            const int distance = std::min(col, 6 - col);
-            return std::max(0.0, 1.0 - distance / 3.0);
-        };
-        const auto frontline_score = [](int row) { return (3.0 - row) / 3.0; };
-        const auto backline_score = [](int row) { return row / 3.0; };
-        const auto assassin_score = [](int row) {
-            return std::max(0.0, 1.0 - std::abs(row - 1.65) / 3.0);
-        };
-
-        double score = 0.0;
+    strategy::BoardEvaluationResult board_evaluation(
+        std::size_t player_index) const {
+        std::vector<int> board_roles(kBoardSlots, -1);
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
-            if (!player_envs[player_index].board[slot]) continue;
-            const auto* def = catalog->find_by_id(
-                player_envs[player_index].board[slot]->champion_internal_id);
-            if (!def) continue;
-            const int row = static_cast<int>(slot / 7);
-            const int col = static_cast<int>(slot % 7);
-            const auto role = role_at(slot);
-
-            // Réplica da pontuação de evaluate_unit_placement do Python.
-            if (role == UnitRole::TANK) {
-                score += frontline_score(row) * 4.0 + center_score(col) * 1.5;
-            } else if (role == UnitRole::FIGHTER) {
-                score += frontline_score(row) * 2.5 + center_score(col);
-            } else if (role == UnitRole::ASSASSIN) {
-                score += assassin_score(row) * 3.0 + edge_score(col);
-            } else if (role == UnitRole::SUPPORT) {
-                score += backline_score(row) * 3.0 + center_score(col) * 1.5;
-            } else if (role == UnitRole::CARRY) {
-                score += backline_score(row) * 4.0 + center_score(col) * 2.0;
-                if (col == 0 || col == 6) score -= 0.5;
+            const auto& unit = player_envs[player_index].board[slot];
+            if (!unit) continue;
+            const auto* def = catalog->find_by_id(unit->champion_internal_id);
+            if (def) {
+                board_roles[slot] =
+                    std::clamp(def->combat_profile.role, 0, 4);
             }
-
-            int occupied_neighbors = 0;
-            int tank_neighbors = 0;
-            for (int dr = -1; dr <= 1; ++dr) {
-                for (int dc = -1; dc <= 1; ++dc) {
-                    if (dr == 0 && dc == 0) continue;
-                    const int nr = row + dr, nc = col + dc;
-                    if (nr < 0 || nr >= 4 || nc < 0 || nc >= 7) continue;
-                    const auto neighbor = static_cast<std::size_t>(nr * 7 + nc);
-                    if (!player_envs[player_index].board[neighbor]) continue;
-                    ++occupied_neighbors;
-                    if (role_at(neighbor) == UnitRole::TANK) ++tank_neighbors;
-                }
-            }
-            // Réplica de evaluate_protection do Python.
-            if (role == UnitRole::CARRY)
-                score += occupied_neighbors * 0.8 + tank_neighbors * 1.5;
-            else if (role == UnitRole::SUPPORT)
-                score += occupied_neighbors * 0.6 + tank_neighbors;
-            else if (role == UnitRole::TANK)
-                score += occupied_neighbors * 0.2;
         }
-        return score;
+
+        std::vector<strategy::BenchUnitProfile> bench_profiles;
+        bench_profiles.reserve(kBenchSlots);
+        for (const auto& unit : player_envs[player_index].bench) {
+            if (!unit) continue;
+            const auto* def = catalog->find_by_id(unit->champion_internal_id);
+            if (!def) continue;
+            bench_profiles.push_back({
+                std::clamp(def->combat_profile.role, 0, 4),
+                unit->star
+            });
+        }
+
+        return strategy::BoardEvaluation::evaluate(board_roles, bench_profiles);
+    }
+
+    double positioning_score(std::size_t player_index) const {
+        // Composition synergy has a separate reward component, so it is not
+        // duplicated in this positioning/structure score.
+        return board_evaluation(player_index).total_score;
     }
 
     double combat_reward(bool won, int damage_dealt, int damage_taken,
@@ -1849,7 +1814,20 @@ struct TFTEngine::Impl {
     double state_reward(std::size_t i, double action_reward) {
         const double power = board_power(i);
         const double synergy = synergy_score(i);
-        const double positioning = positioning_score(i);
+        const auto board_eval = board_evaluation(i);
+        const double positioning = board_eval.total_score;
+        auto& player_info = player_envs[i].info;
+        player_info.board_quality_delta =
+            positioning - player_envs[i].previous_positioning_score;
+        player_info.board_quality_score = positioning;
+        player_info.board_positional_score = board_eval.positional_score;
+        player_info.board_structural_score = board_eval.structural_score;
+        player_info.board_exposed_carries = board_eval.exposed_carry_count;
+        player_info.board_frontline_count = board_eval.frontline_count;
+        player_info.board_isolated_frontline_count =
+            board_eval.isolated_frontline_count;
+        player_info.board_important_bench_units_unplayed =
+            board_eval.important_bench_units_unplayed;
         double reward = action_reward;
 
         reward += reward_model::power(power, player_envs[i].previous_board_power);
