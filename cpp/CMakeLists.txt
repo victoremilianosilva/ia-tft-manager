@@ -13,6 +13,19 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Composition-direction hysteresis is tunable without editing engine logic.
+set(TFT_COMP_DIRECTION_MIN_RELATIVE_ADVANTAGE "0.20" CACHE STRING
+    "Minimum relative advantage required to change a locked composition")
+set(TFT_COMP_DIRECTION_MIN_ABSOLUTE_ADVANTAGE "0.75" CACHE STRING
+    "Minimum absolute strength advantage required to change a locked composition")
+set(TFT_COMP_DIRECTION_REQUIRED_UPDATES "3" CACHE STRING
+    "Consecutive strategy refreshes required before a non-emergency direction change")
+add_compile_definitions(
+    TFT_COMP_DIRECTION_MIN_RELATIVE_ADVANTAGE=${TFT_COMP_DIRECTION_MIN_RELATIVE_ADVANTAGE}
+    TFT_COMP_DIRECTION_MIN_ABSOLUTE_ADVANTAGE=${TFT_COMP_DIRECTION_MIN_ABSOLUTE_ADVANTAGE}
+    TFT_COMP_DIRECTION_REQUIRED_UPDATES=${TFT_COMP_DIRECTION_REQUIRED_UPDATES}
+)
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
     "${CMAKE_BINARY_DIR}/bin"
 )
