@@ -501,6 +501,160 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
     report.setdefault("board_quality_metrics", {})[player] = totals
 
 
+def audit_team_progression(entries: list[dict], player: str, report: dict) -> None:
+    """Track separate board strength, bench potential, upgrades, synergies and economy by stage."""
+    actions = sorted(
+        (entry for entry in entries if isinstance(entry, dict)
+         and entry.get("event_type") in ("action", "round_finished")
+         and isinstance((entry.get("payload") or {}).get("state_after"), dict)),
+        key=lambda e: (e.get("sequence_id", 0), e.get("step", 0)),
+    )
+    stages = {}
+    purchase_classes = Counter()
+    purchase_records = []
+    direction_changes = 0
+    positioning_improved = positioning_worsened = 0
+    gold_spent_total = 0
+    previous_direction = None
+    final_state = {}
+    for entry in actions:
+        payload = entry.get("payload") or {}
+        before, after = payload.get("state_before") or {}, payload.get("state_after") or {}
+        snap_before = payload.get("strategic_snapshot_before") or (payload.get("economic_diagnostics") or {}).get("strategic_snapshot_before") or {}
+        snap_after = payload.get("strategic_snapshot_after") or (payload.get("economic_diagnostics") or {}).get("strategic_snapshot_after") or {}
+        if not snap_after:
+            # Backward-compatible fallback for older logs: keep reserve power separate.
+            board = _occupied_units(after, "board")
+            bench = _occupied_units(after, "bench")
+            snap_after = {
+                "board_strength": _board_power(after),
+                "bench_potential_strength": sum(float(u.get("impact", 0.0) or 0.0) for u in bench),
+                "board_unit_count": len(board), "bench_unit_count": len(bench),
+                "board_two_star_or_higher": sum(int(u.get("star", 1) or 1) >= 2 for u in board),
+                "board_three_star": sum(int(u.get("star", 1) or 1) >= 3 for u in board),
+                "combined_pair_count": _pair_count(after),
+                "active_synergies": {
+                    str(k): int(v or 0) for k, v in (after.get("active_traits") or {}).items()
+                },
+                "gold": after.get("gold"), "level": after.get("level"),
+                "positioning_quality": after.get("positioning_score"),
+                "composition_direction": after.get("comp_direction"),
+                "composition_focus": after.get("comp_focus"),
+                "board_occupancy": len(board) / max(1, len(after.get("board") or [])),
+            }
+        stage_key = f"{entry.get('stage', '?')}-{entry.get('round_in_stage', '?')}"
+        stage = stages.setdefault(stage_key, {
+            "stage": stage_key, "actions": 0, "gold_spent": 0, "purchases": 0,
+            "purchase_marginal_classes": {}, "board_strength_start": None, "board_strength_end": None,
+            "bench_potential_start": None, "bench_potential_end": None,
+            "board_two_star_start": None, "board_two_star_end": None,
+            "board_three_star_start": None, "board_three_star_end": None,
+            "pairs_start": None, "pairs_end": None, "board_occupancy_start": None,
+            "board_occupancy_end": None, "gold_start": None, "gold_end": None,
+            "level_start": None, "level_end": None, "positioning_delta_sum": 0.0,
+            "positioning_samples": 0, "combat_reward_sum": 0.0, "combat_samples": 0,
+            "synergy_milestones_reached": [], "synergy_milestones_lost": [],
+            "composition_changes": [], "board_strength_delta": 0.0,
+            "bench_potential_delta": 0.0,
+        })
+        current = snap_after
+        initial = snap_before or current
+        stage["actions"] += 1
+        if stage["board_strength_start"] is None:
+            stage["board_strength_start"] = float(initial.get("board_strength", _board_power(before)) or 0.0)
+            stage["bench_potential_start"] = float(initial.get("bench_potential_strength", 0.0) or 0.0)
+            stage["board_two_star_start"] = int(initial.get("board_two_star_or_higher", 0) or 0)
+            stage["board_three_star_start"] = int(initial.get("board_three_star", 0) or 0)
+            stage["pairs_start"] = int(initial.get("combined_pair_count", _pair_count(before)) or 0)
+            stage["board_occupancy_start"] = float(initial.get("board_occupancy", 0.0) or 0.0)
+            stage["gold_start"] = initial.get("gold", before.get("gold"))
+            stage["level_start"] = initial.get("level", before.get("level"))
+        old_board = float(initial.get("board_strength", _board_power(before)) or 0.0)
+        new_board = float(current.get("board_strength", _board_power(after)) or 0.0)
+        old_bench = float(initial.get("bench_potential_strength", 0.0) or 0.0)
+        new_bench = float(current.get("bench_potential_strength", 0.0) or 0.0)
+        stage["board_strength_delta"] += new_board - old_board
+        stage["bench_potential_delta"] += new_bench - old_bench
+        stage["board_strength_end"] = new_board
+        stage["bench_potential_end"] = new_bench
+        stage["board_two_star_end"] = int(current.get("board_two_star_or_higher", 0) or 0)
+        stage["board_three_star_end"] = int(current.get("board_three_star", 0) or 0)
+        stage["pairs_end"] = int(current.get("combined_pair_count", _pair_count(after)) or 0)
+        stage["board_occupancy_end"] = float(current.get("board_occupancy", 0.0) or 0.0)
+        stage["gold_end"] = current.get("gold", after.get("gold"))
+        stage["level_end"] = current.get("level", after.get("level"))
+        econ = payload.get("economic_diagnostics") or {}
+        cost = max(0, int(econ.get("action_cost", 0) or 0))
+        stage["gold_spent"] += cost
+        gold_spent_total += cost
+        action_name = str(payload.get("action_name") or "")
+        if action_name == "BUY":
+            stage["purchases"] += 1
+            marginal = payload.get("purchase_marginal_value") or econ.get("purchase_marginal_value") or {}
+            classification = str(marginal.get("classification") or "UNCLASSIFIED")
+            classes = stage["purchase_marginal_classes"]
+            classes[classification] = classes.get(classification, 0) + 1
+            purchase_classes[classification] += 1
+            purchase_records.append({
+                "step": entry.get("step"), "round": get_round(entry),
+                "classification": classification, "champion": econ.get("purchased_champion"),
+                "board_strength_delta": marginal.get("board_strength_delta", new_board - old_board),
+                "bench_potential_delta": marginal.get("bench_potential_delta", new_bench - old_bench),
+                "composition_direction": current.get("composition_direction", after.get("comp_direction")),
+            })
+        position_delta = float(current.get("positioning_quality", after.get("positioning_score", 0.0)) or 0.0) - float(
+            initial.get("positioning_quality", before.get("positioning_score", 0.0)) or 0.0
+        )
+        stage["positioning_delta_sum"] += position_delta
+        stage["positioning_samples"] += 1
+        positioning_improved += int(position_delta > 1e-6)
+        positioning_worsened += int(position_delta < -1e-6)
+        combat = payload.get("combat_reward")
+        if isinstance(combat, (int, float)):
+            stage["combat_reward_sum"] += float(combat)
+            stage["combat_samples"] += 1
+        old_synergies = initial.get("active_synergies") or {}
+        new_synergies = current.get("active_synergies") or {}
+        for trait in sorted(set(old_synergies) | set(new_synergies)):
+            old_level, new_level = int(old_synergies.get(trait, 0) or 0), int(new_synergies.get(trait, 0) or 0)
+            if new_level > old_level:
+                stage["synergy_milestones_reached"].append({"trait": trait, "from": old_level, "to": new_level, "step": entry.get("step")})
+            elif new_level < old_level:
+                stage["synergy_milestones_lost"].append({"trait": trait, "from": old_level, "to": new_level, "step": entry.get("step")})
+        direction = current.get("composition_direction", after.get("comp_direction"))
+        if direction != previous_direction and direction and previous_direction is not None:
+            direction_changes += 1
+            stage["composition_changes"].append({"step": entry.get("step"), "from": previous_direction, "to": direction,
+                                                 "focus": current.get("composition_focus", after.get("comp_focus"))})
+        if direction:
+            previous_direction = direction
+        final_state = after
+    for values in stages.values():
+        values["board_strength_delta"] = round(values["board_strength_delta"], 4)
+        values["bench_potential_delta"] = round(values["bench_potential_delta"], 4)
+        values["mean_positioning_delta"] = (
+            values["positioning_delta_sum"] / values["positioning_samples"] if values["positioning_samples"] else 0.0
+        )
+        values["mean_combat_reward"] = (
+            values["combat_reward_sum"] / values["combat_samples"] if values["combat_samples"] else 0.0
+        )
+    report.setdefault("team_progression_metrics", {})[player] = {
+        "stages": stages,
+        "purchase_marginal_classes": dict(purchase_classes),
+        "purchase_records": purchase_records,
+        "purchases": len(purchase_records),
+        "gold_spent_total": gold_spent_total,
+        "positioning_improved_actions": positioning_improved,
+        "positioning_worsened_actions": positioning_worsened,
+        "composition_direction_changes": direction_changes,
+        "final_gold": final_state.get("gold"),
+        "final_level": final_state.get("level"),
+        "final_hp": final_state.get("hp"),
+        "final_placement": final_state.get("placement"),
+        "interpretation": "Bench strength and pairs are future potential, not current combat strength. Heuristic changes require validation against combat results.",
+    }
+
+
 def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_window: int) -> None:
     player_id = doc.get("player_number")
     if player_id is None:
@@ -513,6 +667,7 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
     audit_economic_actions(doc["entries"], player, report)
     audit_composition_direction_changes(doc["entries"], player, report)
     audit_board_quality(doc["entries"], player, report)
+    audit_team_progression(doc["entries"], player, report)
     report["log_files"].append(str(path))
 
     entries = sorted(doc["entries"], key=lambda e: (e.get("sequence_id", 0), e.get("step", 0)))
@@ -758,6 +913,26 @@ def markdown_report(report: dict) -> str:
         lines += ["", "A pontuação é uma heurística para auditoria, não uma verdade absoluta. "
                   "Compare-a com recompensas e resultados de combate; correlação não prova causalidade.", ""]
 
+    if report.get("team_progression_metrics"):
+        lines += ["## Evolução estratégica por jogador e estágio", "",
+                  "| Jogador | Estágio | Ações | Força tabuleiro Δ | Potencial banco Δ | 2★+ no tabuleiro | Pares totais | Ocupação | Ouro início → fim | Gasto | Nível início → fim | Δ posicionamento médio | Recompensa combate média |",
+                  "|---|---|---:|---:|---:|---:|---:|---:|---|---:|---|---:|---:|"]
+        for player, metrics in sorted(report["team_progression_metrics"].items()):
+            for stage_name, stage in sorted(metrics.get("stages", {}).items()):
+                lines.append(
+                    f"| {player} | {stage_name} | {stage['actions']} | {stage['board_strength_delta']:.3f} | "
+                    f"{stage['bench_potential_delta']:.3f} | {stage.get('board_two_star_start', 0)} → {stage.get('board_two_star_end', 0)} | "
+                    f"{stage.get('pairs_start', 0)} → {stage.get('pairs_end', 0)} | "
+                    f"{float(stage.get('board_occupancy_start') or 0):.0%} → {float(stage.get('board_occupancy_end') or 0):.0%} | "
+                    f"{stage.get('gold_start', '—')} → {stage.get('gold_end', '—')} | {stage['gold_spent']} | "
+                    f"{stage.get('level_start', '—')} → {stage.get('level_end', '—')} | "
+                    f"{stage.get('mean_positioning_delta', 0.0):.3f} | {stage.get('mean_combat_reward', 0.0):.3f} |"
+                )
+            classes = ", ".join(f"{name}: {count}" for name, count in sorted(metrics.get("purchase_marginal_classes", {}).items())) or "nenhuma compra classificada"
+            lines.append(f"- {player} — valor marginal das compras: {classes}; mudanças de composição: {metrics.get('composition_direction_changes', 0)}; posicionamento melhorou em {metrics.get('positioning_improved_actions', 0)} ações e piorou em {metrics.get('positioning_worsened_actions', 0)}.")
+            lines.append(f"- {player} — estado final: ouro {metrics.get('final_gold', '—')}, nível {metrics.get('final_level', '—')}, vida {metrics.get('final_hp', '—')}, colocação {metrics.get('final_placement', '—')}.")
+        lines += ["", "Força do banco e pares representam potencial futuro, não força atual de combate. Classificações marginais são diagnósticas e não alteram a recompensa PPO; valide-as contra resultados de combate.", ""]
+
     if report.get("purchase_sequence_metrics"):
         lines += ["## Auditoria de compras e vendas", "",
                   "| Jogador | Compras | Vendas | Revertidas ≤1 ação | ≤2 ações | ≤4 ações | Ouro perdido | Upgrades | Vendas core/par | Valor médio |",
@@ -822,6 +997,7 @@ def main() -> int:
               "purchase_sequence_metrics": {}, "economic_action_metrics": {},
               "composition_direction_metrics": {},
               "board_quality_metrics": {},
+              "team_progression_metrics": {},
               "entries_read": 0, "diagnostics_missing": 0, "issues": [], "notes": [],
               "mask_note_added": False}
     for path in files:
