@@ -193,6 +193,11 @@ class PlayerJsonLogWriter:
             "wins": public.get("wins"), "losses": public.get("losses"),
             "placement": public.get("placement"), "opponent_id": public.get("opponent_id"),
             "win_streak": audit.get("win_streak"), "loss_streak": audit.get("loss_streak"),
+            "gold_before_interest": audit.get("gold_before_interest"),
+            "interest_if_resolved_now": audit.get("interest_if_resolved_now"),
+            "board_power": audit.get("board_power"),
+            "synergy_score": audit.get("synergy_score"),
+            "positioning_score": audit.get("positioning_score"),
             "round_gold": audit.get("round_gold", 0),
             "round_base_gold": audit.get("round_base_gold", 0),
             "round_interest": audit.get("round_interest", 0),
@@ -293,19 +298,34 @@ class PlayerJsonLogWriter:
                     "count_before": old_count, "count_after": new_count,
                     "level_before": old_level, "level_after": new_level,
                 }
-        return {
+        diagnostics = {
             "gold_before": gold_before,
             "gold_after": gold_after,
             "gold_delta": gold_delta,
             "action_cost": max(0, -gold_delta),
             "listed_cost": explicit_cost,
             "sale_proceeds": max(0, gold_delta) if action_type == 5 else 0,
+            "gold_before_interest": after_state.get("gold_before_interest"),
+            "interest_if_resolved_before": before_state.get("interest_if_resolved_now"),
+            "interest_if_resolved_after": after_state.get("interest_if_resolved_now"),
+            "potential_interest_delta": int(after_state.get("interest_if_resolved_now") or 0) - int(before_state.get("interest_if_resolved_now") or 0),
+            "level_before": int(before_state.get("level", 0) or 0),
+            "level_after": int(after_state.get("level", 0) or 0),
+            "xp_before": int(before_state.get("xp", 0) or 0),
+            "xp_after": int(after_state.get("xp", 0) or 0),
             "base_income": int(after_state.get("round_base_gold", 0) or 0),
             "interest_income": int(after_state.get("round_interest", 0) or 0),
             "streak_income": int(after_state.get("round_streak_gold", 0) or 0),
             "win_income": int(after_state.get("round_win_gold", 0) or 0),
             "board_power_before": before_power,
             "board_power_after": after_power,
+            "engine_board_power_before": before_state.get("board_power"),
+            "engine_board_power_after": after_state.get("board_power"),
+            "engine_synergy_before": before_state.get("synergy_score"),
+            "engine_synergy_after": after_state.get("synergy_score"),
+            "positioning_before": before_state.get("positioning_score"),
+            "positioning_after": after_state.get("positioning_score"),
+            "positioning_delta": float(after_state.get("positioning_score") or 0.0) - float(before_state.get("positioning_score") or 0.0),
             "board_power_delta": round(after_power - before_power, 4),
             "pairs_before": self._pair_count_state(before_state),
             "pairs_after": self._pair_count_state(after_state),
@@ -325,6 +345,36 @@ class PlayerJsonLogWriter:
                 if action_type in (0, 3, 4, 5) else None
             ),
         }
+        # Motivos explicativos; não são recompensas nem alteram a policy.
+        board_gain = float(diagnostics["board_power_delta"]) > 1e-6
+        level_up = diagnostics["level_after"] > diagnostics["level_before"]
+        upgrade_gain = diagnostics["two_star_or_higher_after"] > diagnostics["two_star_or_higher_before"]
+        synergy_gain = bool(synergy_milestones)
+        if action_type == 0:
+            reason = "PURCHASE_UPGRADE" if upgrade_gain else (
+                "PURCHASE_SYNERGY_GAIN" if synergy_gain else (
+                    "PURCHASE_BOARD_GAIN" if board_gain else "PURCHASE_NO_IMMEDIATE_GAIN"
+                )
+            )
+        elif action_type == 1:
+            reason = "REROLL_IMMEDIATE_GAIN" if (board_gain or upgrade_gain or synergy_gain) else "REROLL_NO_IMMEDIATE_BOARD_GAIN"
+        elif action_type == 2:
+            reason = "XP_LEVEL_UP" if level_up else "XP_NO_LEVEL_UP"
+        elif action_type == 3:
+            reason = "DEPLOY_BOARD_GAIN" if board_gain else "DEPLOY_NO_POWER_GAIN"
+        elif action_type == 4:
+            reason = "REPOSITION_IMPROVED" if float(diagnostics["positioning_delta"]) > 1e-6 else "REPOSITION_NO_SCORE_GAIN"
+        elif action_type == 5:
+            reason = "SALE_GOLD_RECOVERY"
+        else:
+            reason = "PASS_NO_SPEND"
+        diagnostics["reason_code"] = reason
+        diagnostics["measurable_improvement"] = bool(
+            board_gain or upgrade_gain or synergy_gain or level_up or
+            float(diagnostics["positioning_delta"]) > 1e-6
+        )
+        diagnostics["action_cost_matches_gold_delta"] = True
+        return diagnostics
 
     def _unit_composition_fit(self, action, before_audit, after_state):
         """Estimate how the acted-on unit aligns with the current comp focus/core."""
