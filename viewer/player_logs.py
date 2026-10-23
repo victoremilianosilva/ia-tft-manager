@@ -322,7 +322,10 @@ class PlayerJsonLogWriter:
         compatible_board = compatible_count(board)
         compatible_bench = compatible_count(bench)
         return {
-            "board_strength": float(state.get("board_power", cls._board_power_state(state)) or 0.0),
+            "board_strength": (
+                float(state["board_power"]) if state.get("board_power") is not None
+                else cls._board_power_state(state)
+            ),
             "bench_potential_strength": round(sum(float(u.get("impact", 0.0) or 0.0) for u in bench), 4),
             "board_unit_count": len(board),
             "bench_unit_count": len(bench),
