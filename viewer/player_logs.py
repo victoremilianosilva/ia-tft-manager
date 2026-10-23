@@ -228,6 +228,17 @@ class PlayerJsonLogWriter:
                          if isinstance(unit, dict) and unit.get("occupied", True)), 4)
 
     @staticmethod
+    def _board_trait_counts(state: dict) -> dict:
+        counts = {}
+        for unit in state.get("board", []) or []:
+            if not isinstance(unit, dict) or not unit.get("occupied", True):
+                continue
+            for trait in unit.get("traits", []) or []:
+                if isinstance(trait, str) and trait and trait.casefold() != "none":
+                    counts[trait] = counts.get(trait, 0) + 1
+        return counts
+
+    @staticmethod
     def _upgrade_counts(state: dict) -> dict:
         units = [
             unit for location in ("board", "bench")
@@ -271,6 +282,17 @@ class PlayerJsonLogWriter:
         after_power = self._board_power_state(after_state)
         before_upgrades = self._upgrade_counts(before_state)
         after_upgrades = self._upgrade_counts(after_state)
+        board_traits_before = self._board_trait_counts(before_state)
+        board_traits_after = self._board_trait_counts(after_state)
+        synergy_milestones = {}
+        for trait in sorted(set(board_traits_before) | set(board_traits_after)):
+            old_count, new_count = board_traits_before.get(trait, 0), board_traits_after.get(trait, 0)
+            old_level, new_level = _synergy_level(old_count), _synergy_level(new_count)
+            if old_level != new_level:
+                synergy_milestones[trait] = {
+                    "count_before": old_count, "count_after": new_count,
+                    "level_before": old_level, "level_after": new_level,
+                }
         return {
             "gold_before": gold_before,
             "gold_after": gold_after,
@@ -291,7 +313,7 @@ class PlayerJsonLogWriter:
             "two_star_or_higher_after": after_upgrades["two_star_or_higher"],
             "three_star_before": before_upgrades["three_star"],
             "three_star_after": after_upgrades["three_star"],
-            "purchased_champion": purchased.get("champion_id") if action_type == 0 else None,
+            "board_traits_before": board_traits_before,\n            "board_traits_after": board_traits_after,\n            "synergy_milestones_changed": synergy_milestones,\n            "purchased_champion": purchased.get("champion_id") if action_type == 0 else None,
             "sold_champion": sold.get("champion_id") if action_type == 5 else None,
             "composition_direction_before": before_state.get("comp_direction"),
             "composition_direction_after": after_state.get("comp_direction"),
