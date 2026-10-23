@@ -709,6 +709,17 @@ class PlayerJsonLogWriter:
         round_number = int(before.get("round", 1) or 1)
         stage, round_in_stage = _round_coordinates(round_number)
         engine_events = [str(event) for event in info.get("events", [])]
+        native_economic_events = {}
+        for event in engine_events:
+            match = re.search(
+                r"ECONOMIC_ACTION player=(\d+) action_cost=(\d+) sale_proceeds=(\d+)",
+                event,
+            )
+            if match:
+                native_economic_events[int(match.group(1))] = {
+                    "action_cost": int(match.group(2)),
+                    "sale_proceeds": int(match.group(3)),
+                }
         round_resolved = any(
             event.strip() == "ROUND_RESOLVED" or event.strip().startswith("ROUND_RESOLVED:")
             for event in engine_events
@@ -742,6 +753,14 @@ class PlayerJsonLogWriter:
             is_round_end = round_resolved or finished
             before_state = self._player_snapshot(before_audit, before_public)
             after_state = self._player_snapshot(after_audit, after_public)
+            economic_diagnostics = self._economic_diagnostics(
+                action, before_state, after_state, before_audit, after_audit
+            )
+            if player_id in native_economic_events:
+                economic_diagnostics.update(native_economic_events[player_id])
+                economic_diagnostics["cost_source"] = "native_action_transition"
+            else:
+                economic_diagnostics["cost_source"] = "gold_delta_fallback"
             primary_data = {
                 "action": action, "action_name": ACTION_NAMES.get(action_type, "UNKNOWN"),
                 "reward": reward,
@@ -755,7 +774,7 @@ class PlayerJsonLogWriter:
                     "returned_reward": reward,
                 },
                 "state_changed": before_state != after_state,
-                "economic_diagnostics": self._economic_diagnostics(action, before_state, after_state, before_audit, after_audit),
+                "economic_diagnostics": economic_diagnostics,
                 "state_before": before_state, "state_after": after_state,
                 "composition_diagnostics": {
                     "before": {
