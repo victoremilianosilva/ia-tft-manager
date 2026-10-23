@@ -173,6 +173,10 @@ struct TFTEngine::Impl {
         bool board_capacity_violation{false};
         std::int32_t action_cost{0};
         std::int32_t sale_proceeds{0};
+        std::int32_t gold_before_action{0};
+        std::int32_t gold_after_action{0};
+        std::int32_t interest_before_action{0};
+        std::int32_t interest_after_action{0};
     };
 
     struct PlayerEnv {
@@ -2828,7 +2832,11 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             true,
             board_capacity_violation,
             actual_action_cost,
-            actual_sale_proceeds
+            actual_sale_proceeds,
+            old_gold,
+            economy.gold,
+            lobby.economy_engine.get_interest(old_gold),
+            lobby.economy_engine.get_interest(economy.gold)
         };
 }
 
@@ -2972,6 +2980,10 @@ StepResult TFTEngine::step(
     std::array<bool, kPlayersPerLobby> capacity_violations{};
     std::array<std::int32_t, kPlayersPerLobby> action_costs{};
     std::array<std::int32_t, kPlayersPerLobby> sale_proceeds{};
+    std::array<std::int32_t, kPlayersPerLobby> gold_before_actions{};
+    std::array<std::int32_t, kPlayersPerLobby> gold_after_actions{};
+    std::array<std::int32_t, kPlayersPerLobby> interest_before_actions{};
+    std::array<std::int32_t, kPlayersPerLobby> interest_after_actions{};
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
         const auto transition = impl_->player_envs[i].step(*impl_, i, effective_actions[i]);
         if (!transition.acted) {
@@ -2981,6 +2993,10 @@ StepResult TFTEngine::step(
         capacity_violations[i] = transition.board_capacity_violation;
         action_costs[i] = transition.action_cost;
         sale_proceeds[i] = transition.sale_proceeds;
+        gold_before_actions[i] = transition.gold_before_action;
+        gold_after_actions[i] = transition.gold_after_action;
+        interest_before_actions[i] = transition.interest_before_action;
+        interest_after_actions[i] = transition.interest_after_action;
         round_rewards[i] += transition.action_reward;
         impl_->player_envs[i].round_reward_total = round_rewards[i];
         impl_->player_envs[i].total_reward += round_rewards[i];
@@ -3159,7 +3175,11 @@ StepResult TFTEngine::step(
         result.events.emplace_back(
             "ECONOMIC_ACTION player " + std::to_string(i) +
             " action_cost=" + std::to_string(action_costs[i]) +
-            " sale_proceeds=" + std::to_string(sale_proceeds[i])
+            " sale_proceeds=" + std::to_string(sale_proceeds[i]) +
+            " gold_before=" + std::to_string(gold_before_actions[i]) +
+            " gold_after=" + std::to_string(gold_after_actions[i]) +
+            " interest_before=" + std::to_string(interest_before_actions[i]) +
+            " interest_after=" + std::to_string(interest_after_actions[i])
         );
         if (capacity_violations[i]) {
             result.events.emplace_back(
