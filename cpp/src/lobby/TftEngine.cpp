@@ -2361,8 +2361,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                                 buy_builds_pair,
                                 false,
                                 false,
-                                std::max(0.0, candidate_comp_score -
-                                    static_cast<double>(definition->cost) * 0.5),
+                                std::max(0.0, candidate_comp_score),
                                 strategy_before.composition_direction
                             });
                         }
