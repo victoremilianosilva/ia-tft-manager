@@ -714,7 +714,7 @@ class PlayerJsonLogWriter:
         native_economic_events = {}
         for event in engine_events:
             match = re.search(
-                r"ECONOMIC_ACTION player(?:=|\s+)(\d+) action_cost=(\d+) sale_proceeds=(\d+) gold_before=(-?\d+) gold_after=(-?\d+) interest_before=(\d+) interest_after=(\d+)",
+                r"ECONOMIC_ACTION player(?:=|\s+)(\d+) action_cost=(\d+) sale_proceeds=(\d+) gold_before=(-?\d+) gold_after=(-?\d+) interest_before=(\d+) interest_after=(\d+) level_before=(\d+) level_after=(\d+) xp_before=(\d+) xp_after=(\d+)",
                 event,
             )
             if match:
@@ -725,6 +725,10 @@ class PlayerJsonLogWriter:
                     "gold_after": int(match.group(5)),
                     "interest_if_resolved_before": int(match.group(6)),
                     "interest_if_resolved_after": int(match.group(7)),
+                    "level_before": int(match.group(8)),
+                    "level_after": int(match.group(9)),
+                    "xp_before": int(match.group(10)),
+                    "xp_after": int(match.group(11)),
                 }
         round_resolved = any(
             event.strip() == "ROUND_RESOLVED" or event.strip().startswith("ROUND_RESOLVED:")
@@ -774,6 +778,10 @@ class PlayerJsonLogWriter:
                     - economic_diagnostics["interest_if_resolved_before"]
                 )
                 economic_diagnostics["cost_source"] = "native_action_transition"
+                if action_type == 2:
+                    level_up = economic_diagnostics["level_after"] > economic_diagnostics["level_before"]
+                    economic_diagnostics["reason_code"] = "XP_LEVEL_UP" if level_up else "XP_NO_LEVEL_UP"
+                    economic_diagnostics["measurable_improvement"] = level_up
             else:
                 economic_diagnostics["cost_source"] = "gold_delta_fallback"
             primary_data = {
