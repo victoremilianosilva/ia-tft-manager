@@ -274,6 +274,17 @@ if(BUILD_TESTING)
     )
     add_test(NAME test_combat_engine COMMAND test_combat_engine)
 
+    add_executable(
+        test_composition_direction_policy
+        tests/test_composition_direction_policy.cpp
+    )
+    configure_tft_module(test_composition_direction_policy)
+    enable_tft_test_assertions(test_composition_direction_policy)
+    add_test(
+        NAME composition_direction_policy
+        COMMAND test_composition_direction_policy
+    )
+
     add_executable(test_reward_model tests/test_reward_model.cpp)
     target_include_directories(test_reward_model PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
     add_test(NAME test_reward_model COMMAND test_reward_model)
