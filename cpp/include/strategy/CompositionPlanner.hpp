@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <limits>
@@ -23,6 +24,7 @@ struct CompositionPlan {
     std::vector<std::string> core_traits;
     std::int32_t main_carry_id{-1};
     double score{0.0};
+    std::vector<std::string> acquisition_notes;
 };
 
 class CompositionPlanner {
@@ -37,6 +39,7 @@ public:
     using TraitMilestones = std::unordered_map<std::string, std::vector<int>>;
     using OwnedCopies = std::unordered_map<std::int32_t, int>;
     using FocusWeights = std::vector<std::pair<std::string, double>>;
+    using AvailableCopies = std::unordered_map<std::int32_t, int>;
 
     static CompositionPlan build(
         const std::vector<ChampionDefinition>& pool,
@@ -44,11 +47,44 @@ public:
         const std::string& direction,
         const FocusWeights& focus_weights,
         const OwnedCopies& owned_copies,
-        std::size_t requested_slots) {
+        std::size_t requested_slots,
+        int current_level = 1,
+        const AvailableCopies& available_copies = {}) {
         CompositionPlan plan;
         if (pool.empty() || requested_slots == 0) return plan;
 
         const std::size_t slots = std::min<std::size_t>(requested_slots, 10);
+        const int safe_level = std::clamp(current_level, 1, 10);
+        const std::array<std::array<double, 5>, 10> shop_odds{{
+            {{1.00,0.00,0.00,0.00,0.00}}, {{1.00,0.00,0.00,0.00,0.00}},
+            {{0.75,0.25,0.00,0.00,0.00}}, {{0.55,0.30,0.15,0.00,0.00}},
+            {{0.45,0.33,0.20,0.02,0.00}}, {{0.30,0.40,0.25,0.05,0.00}},
+            {{0.16,0.30,0.43,0.10,0.01}}, {{0.15,0.20,0.32,0.30,0.03}},
+            {{0.10,0.17,0.25,0.33,0.15}}, {{0.05,0.10,0.20,0.40,0.25}}
+        }};
+        std::array<double, 5> available_by_cost{};
+        for (const auto& champion : pool) {
+            const auto found = available_copies.find(champion.internal_id);
+            if (found != available_copies.end() && champion.cost >= 1 && champion.cost <= 5)
+                available_by_cost[static_cast<std::size_t>(champion.cost - 1)] += std::max(0, found->second);
+        }
+        const auto acquisition = [&](const ChampionDefinition& champion) {
+            const auto owned = owned_copies.find(champion.internal_id);
+            if (owned != owned_copies.end() && owned->second > 0)
+                return std::pair<double, double>{1.0, 0.0};
+            if (available_copies.empty() || champion.cost < 1 || champion.cost > 5)
+                return std::pair<double, double>{1.0, 0.0};
+            const auto available = available_copies.find(champion.internal_id);
+            const double copies = available == available_copies.end() ? 0.0 : static_cast<double>(std::max(0, available->second));
+            const double tier_total = available_by_cost[static_cast<std::size_t>(champion.cost - 1)];
+            const double tier_odds = shop_odds[static_cast<std::size_t>(safe_level - 1)][static_cast<std::size_t>(champion.cost - 1)];
+            if (copies <= 0.0 || tier_total <= 0.0 || tier_odds <= 0.0)
+                return std::pair<double, double>{0.0, 4.5};
+            const double per_slot = tier_odds * copies / tier_total;
+            const double per_shop = 1.0 - std::pow(1.0 - std::clamp(per_slot, 0.0, 1.0), 5.0);
+            const double penalty = 3.5 * (1.0 - std::clamp(per_shop / 0.20, 0.0, 1.0));
+            return std::pair<double, double>{per_shop, penalty};
+        };
         std::unordered_map<std::string, double> focus;
         for (const auto& [trait, weight] : focus_weights)
             if (!trait.empty() && std::isfinite(weight))
@@ -103,6 +139,9 @@ public:
             }
             const auto owned = owned_copies.find(champion.internal_id);
             if (owned != owned_copies.end()) score += std::min(2.0, owned->second * 0.35);
+            const auto [shop_probability, acquisition_penalty] = acquisition(champion);
+            (void)shop_probability;
+            score -= acquisition_penalty * 1.35;
             if (score > best_carry_score) {
                 best_carry_score = score;
                 selected_carry = &champion;
@@ -165,6 +204,9 @@ public:
                 score += std::min(1.8, owned_copies.count(champion.internal_id)
                     ? owned_copies.at(champion.internal_id) * 0.35 : 0.0);
                 score -= champion.cost * 0.12; // avoid an all-expensive theoretical board
+                const auto [shop_probability, acquisition_penalty] = acquisition(champion);
+                (void)shop_probability;
+                score -= acquisition_penalty;
                 if (score > best_score) {
                     best_score = score;
                     best = &champion;
@@ -192,6 +234,25 @@ public:
             if (trait == direction || count < 2) continue;
             if (plan.core_traits.size() >= 3) break;
             plan.core_traits.push_back(trait);
+        }
+        if (!available_copies.empty()) {
+            for (const auto id : plan.unit_ids) {
+                const auto champion_it = std::find_if(pool.begin(), pool.end(),
+                    [id](const ChampionDefinition& item) { return item.internal_id == id; });
+                if (champion_it == pool.end()) continue;
+                const auto owned = owned_copies.find(id);
+                if (owned != owned_copies.end() && owned->second > 0) continue;
+                const auto [per_shop, penalty] = acquisition(*champion_it);
+                const int percent = static_cast<int>(std::round(per_shop * 100.0));
+                std::string note = champion_it->api_name.empty() ? champion_it->name : champion_it->api_name;
+                note += " (cost=" + std::to_string(champion_it->cost) + ", chance_any_shop~" + std::to_string(percent) + "%";
+                if (per_shop <= 0.0) note += ", unavailable";
+                else if (penalty >= 2.0) note += ", hard_to_find";
+                else if (penalty >= 0.8) note += ", low_odds";
+                else note += ", viable";
+                note += ")";
+                plan.acquisition_notes.push_back(std::move(note));
+            }
         }
         return plan;
     }
