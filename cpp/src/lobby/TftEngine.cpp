@@ -26,6 +26,7 @@
 #include "lobby/ShopEngine.hpp"
 #include "strategy/SynergyCounter.hpp"
 #include "strategy/PositioningEngine.hpp"
+#include "strategy/BoardEvaluation.hpp"
 #include "reward/RewardModel.hpp"
 #include "strategy/CompositionDirectionPolicy.hpp"
 
@@ -1186,73 +1187,34 @@ struct TFTEngine::Impl {
     }
 
     double positioning_score(std::size_t player_index) const {
-        const auto role_at = [&](std::size_t slot) {
-            if (!player_envs[player_index].board[slot]) return UnitRole::FIGHTER;
-            const auto* def = catalog->find_by_id(
-                player_envs[player_index].board[slot]->champion_internal_id);
-            if (!def) return UnitRole::FIGHTER;
-            return static_cast<UnitRole>(std::clamp(def->combat_profile.role, 0, 4));
-        };
-        const auto center_score = [](int col) {
-            constexpr double center = 3.0;
-            return std::max(0.0, 1.0 - std::abs(col - center) / 3.0);
-        };
-        const auto edge_score = [](int col) {
-            const int distance = std::min(col, 6 - col);
-            return std::max(0.0, 1.0 - distance / 3.0);
-        };
-        const auto frontline_score = [](int row) { return (3.0 - row) / 3.0; };
-        const auto backline_score = [](int row) { return row / 3.0; };
-        const auto assassin_score = [](int row) {
-            return std::max(0.0, 1.0 - std::abs(row - 1.65) / 3.0);
-        };
-
-        double score = 0.0;
+        // Evaluate the formation as a team: role-appropriate placement plus
+        // gradual structural signals. Composition synergies remain in their
+        // own reward component to avoid counting the same gain twice.
+        std::vector<int> board_roles(kBoardSlots, -1);
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
-            if (!player_envs[player_index].board[slot]) continue;
-            const auto* def = catalog->find_by_id(
-                player_envs[player_index].board[slot]->champion_internal_id);
-            if (!def) continue;
-            const int row = static_cast<int>(slot / 7);
-            const int col = static_cast<int>(slot % 7);
-            const auto role = role_at(slot);
-
-            // Réplica da pontuação de evaluate_unit_placement do Python.
-            if (role == UnitRole::TANK) {
-                score += frontline_score(row) * 4.0 + center_score(col) * 1.5;
-            } else if (role == UnitRole::FIGHTER) {
-                score += frontline_score(row) * 2.5 + center_score(col);
-            } else if (role == UnitRole::ASSASSIN) {
-                score += assassin_score(row) * 3.0 + edge_score(col);
-            } else if (role == UnitRole::SUPPORT) {
-                score += backline_score(row) * 3.0 + center_score(col) * 1.5;
-            } else if (role == UnitRole::CARRY) {
-                score += backline_score(row) * 4.0 + center_score(col) * 2.0;
-                if (col == 0 || col == 6) score -= 0.5;
+            const auto& unit = player_envs[player_index].board[slot];
+            if (!unit) continue;
+            const auto* def = catalog->find_by_id(unit->champion_internal_id);
+            if (def) {
+                board_roles[slot] =
+                    std::clamp(def->combat_profile.role, 0, 4);
             }
-
-            int occupied_neighbors = 0;
-            int tank_neighbors = 0;
-            for (int dr = -1; dr <= 1; ++dr) {
-                for (int dc = -1; dc <= 1; ++dc) {
-                    if (dr == 0 && dc == 0) continue;
-                    const int nr = row + dr, nc = col + dc;
-                    if (nr < 0 || nr >= 4 || nc < 0 || nc >= 7) continue;
-                    const auto neighbor = static_cast<std::size_t>(nr * 7 + nc);
-                    if (!player_envs[player_index].board[neighbor]) continue;
-                    ++occupied_neighbors;
-                    if (role_at(neighbor) == UnitRole::TANK) ++tank_neighbors;
-                }
-            }
-            // Réplica de evaluate_protection do Python.
-            if (role == UnitRole::CARRY)
-                score += occupied_neighbors * 0.8 + tank_neighbors * 1.5;
-            else if (role == UnitRole::SUPPORT)
-                score += occupied_neighbors * 0.6 + tank_neighbors;
-            else if (role == UnitRole::TANK)
-                score += occupied_neighbors * 0.2;
         }
-        return score;
+
+        std::vector<strategy::BenchUnitProfile> bench_profiles;
+        bench_profiles.reserve(kBenchSlots);
+        for (const auto& unit : player_envs[player_index].bench) {
+            if (!unit) continue;
+            const auto* def = catalog->find_by_id(unit->champion_internal_id);
+            if (!def) continue;
+            bench_profiles.push_back({
+                std::clamp(def->combat_profile.role, 0, 4),
+                unit->star
+            });
+        }
+
+        return strategy::BoardEvaluation::evaluate(
+            board_roles, bench_profiles).total_score;
     }
 
     double combat_reward(bool won, int damage_dealt, int damage_taken,
