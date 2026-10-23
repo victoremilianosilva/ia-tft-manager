@@ -95,6 +95,11 @@ class ChampionIconLoader(QObject):
         self._failed: set[str] = set()
         self._assets: dict[str, tuple[str, list[str]]] = {}
         self._profiles: dict[str, dict] = {}
+        try:
+            import tft_engine as native_engine
+            self._native_profile = native_engine.combat_profile_get_profile
+        except (ImportError, AttributeError):
+            self._native_profile = None
         self._cache_dir = Path.home() / ".tft-viewer" / "champion-icons"
         self._cache_dir.mkdir(parents=True, exist_ok=True)
         try:
@@ -110,6 +115,16 @@ class ChampionIconLoader(QObject):
                 continue
             profile = dict(unit.get("combat_profile") or {})
             profile.setdefault("role_name", unit.get("role_name") or "")
+            if self._native_profile is not None:
+                # Use the same native classifier as the engine, not potentially
+                # stale role fields embedded in units_gerado.json.
+                stats = unit.get("stats") if isinstance(unit.get("stats"), dict) else {}
+                native_input = dict(stats)
+                native_input["ability"] = unit.get("ability") or {}
+                try:
+                    profile = dict(self._native_profile(native_input))
+                except (TypeError, ValueError, RuntimeError):
+                    pass
             for alias in (api_name, unit.get("characterName"), unit.get("name")):
                 if isinstance(alias, str) and alias:
                     self._profiles[alias.casefold()] = profile
@@ -216,6 +231,7 @@ class ChampionCell(QFrame):
         self.setObjectName("championCell")
         self._board_row = 0
         self._position_warning = False
+        self._last_position_warning = False
         self.setFrameShape(QFrame.Shape.StyledPanel)
         self._champion_id = ""
         self._last_unit = None
@@ -244,7 +260,10 @@ class ChampionCell(QFrame):
         self.setFixedSize(size, size)
         if self._icon_loader is not None:
             # Re-scale an already loaded portrait as soon as the cell changes size.
-            self.set_unit(self._last_unit, self._icon_loader)
+            self.set_unit(
+                self._last_unit, self._icon_loader,
+                position_warning=self._last_position_warning,
+            )
 
     def set_board_row(self, row: int):
         self._board_row = max(0, min(3, int(row)))
@@ -280,7 +299,8 @@ class ChampionCell(QFrame):
                  position_warning: bool = False):
         self._last_unit = dict(unit) if unit and unit.get("occupied", False) else None
         self._icon_loader = icon_loader
-        self._position_warning = bool(position_warning and self._last_unit)
+        self._last_position_warning = bool(position_warning and self._last_unit)
+        self._position_warning = self._last_position_warning
         if not unit or not unit.get("occupied", False):
             self._champion_id = ""
             self._set_empty_style()
