@@ -270,10 +270,10 @@ class PlayerJsonLogWriter:
         gold_before = int(before_state.get("gold", 0) or 0)
         gold_after = int(after_state.get("gold", 0) or 0)
         shop_slot = int(action[1]) if action_type == 0 and len(action) > 1 else -1
-        shop = before_audit.get("shop") or []
+        shop = before_state.get("shop") or []
         purchased = shop[shop_slot] if 0 <= shop_slot < len(shop) else {}
         sell_slot = int(action[2]) if action_type == 5 and len(action) > 2 else -1
-        bench = before_audit.get("bench") or []
+        bench = before_state.get("bench") or []
         sold = bench[sell_slot] if 0 <= sell_slot < len(bench) else {}
         explicit_cost = int(purchased.get("cost", 0) or 0) if action_type == 0 else (
             2 if action_type == 1 else 4 if action_type == 2 else 0)
