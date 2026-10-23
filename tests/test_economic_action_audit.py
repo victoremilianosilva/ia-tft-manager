@@ -53,3 +53,30 @@ def test_economic_audit_ignores_non_action_entries_and_missing_diagnostics():
     report = {}
     audit_economic_actions(entries, "Jogador 2", report)
     assert "economic_action_metrics" not in report
+
+
+def test_economic_audit_flags_level_up_without_using_extra_board_slot():
+    entries = [
+        {
+            "event_type": "action", "round": 4, "stage": 1,
+            "payload": {
+                "action_name": "BUY_XP",
+                "economic_diagnostics": {
+                    "action_cost": 4, "sale_proceeds": 0, "potential_interest_delta": 0,
+                    "reason_code": "XP_LEVEL_UP", "level_after": 3, "measurable_improvement": True,
+                },
+                "state_after": {"gold": 0, "board": [{"occupied": True}]},
+            },
+        },
+        {
+            "event_type": "action", "round": 4, "stage": 1,
+            "payload": {
+                "action_name": "PASS",
+                "economic_diagnostics": {"action_cost": 0, "reason_code": "PASS_NO_SPEND"},
+                "state_after": {"gold": 0, "board": [{"occupied": True}]},
+            },
+        },
+    ]
+    report = {}
+    audit_economic_actions(entries, "Jogador 3", report)
+    assert report["economic_action_metrics"]["Jogador 3"]["xp_level_up_unused"] == 1
