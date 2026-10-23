@@ -353,7 +353,7 @@ class PlayerJsonLogWriter:
             "pair_progress": self._pair_count_state(after_state) - self._pair_count_state(before_state),
             "space_freed": bool(
                 action_type == 5 and sold.get("occupied", False)
-                and sell_slot < len(bench)
+                and 0 <= sell_slot < len(bench)
                 and not (after_state.get("bench") or [])[sell_slot].get("occupied", False)
             ),
             "composition_direction_before": before_state.get("comp_direction"),
