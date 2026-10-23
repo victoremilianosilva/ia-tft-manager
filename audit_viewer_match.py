@@ -553,6 +553,16 @@ def markdown_report(report: dict) -> str:
                 f"{metrics['rerolls_without_immediate_gain']} | {metrics['rerolls_followed_by_pass']} | "
                 f"{metrics.get('final_gold', '—')} | {metrics.get('final_board_power', '—')} |"
             )
+            action_breakdown = ", ".join(
+                f"{name}: {values['gold_spent']}g"
+                for name, values in sorted(metrics.get("by_action", {}).items())
+            ) or "nenhum"
+            stage_breakdown = ", ".join(
+                f"stage {stage}: {values['gold_spent']}g"
+                for stage, values in sorted(metrics.get("by_stage", {}).items())
+            ) or "nenhum"
+            lines.append(f"- {player} — gasto por ação: {action_breakdown}")
+            lines.append(f"- {player} — gasto por estágio: {stage_breakdown}")
         lines += ["", "Os motivos ficam em economic_diagnostics.reason_code. 'Sem ganho imediato' não significa automaticamente uma decisão ruim; o relatório não modifica a recompensa PPO.", ""]
 
     if report.get("purchase_sequence_metrics"):
