@@ -287,6 +287,77 @@ class PlayerJsonLogWriter:
                     counts[key] = counts.get(key, 0) + 1
         return sum(count >= 2 for count in counts.values())
 
+    @classmethod
+    def _strategic_snapshot(cls, state: dict) -> dict:
+        """Keep current combat strength separate from reserve/upgrade potential."""
+        board = [u for u in (state.get("board") or [])
+                 if isinstance(u, dict) and u.get("occupied", True)]
+        bench = [u for u in (state.get("bench") or [])
+                 if isinstance(u, dict) and u.get("occupied", True)]
+        def pairs(units):
+            counts = {}
+            for unit in units:
+                if int(unit.get("star", 1) or 1) != 1:
+                    continue
+                name = str(unit.get("champion_id") or unit.get("name") or "").casefold()
+                if name:
+                    counts[name] = counts.get(name, 0) + 1
+            return {name: count // 2 for name, count in counts.items() if count >= 2}
+        board_pairs, bench_pairs = pairs(board), pairs(bench)
+        combined_pairs = pairs(board + bench)
+        trait_counts = cls._board_trait_counts(state)
+        synergy_levels = {trait: _synergy_level(count) for trait, count in trait_counts.items()}
+        core = {str(x).casefold() for x in (state.get("core_units") or [])}
+        focus_weights = {str(k).casefold(): float(v or 0.0)
+                         for k, v in (state.get("composition_focus_weights") or {}).items()}
+        def compatible_count(units):
+            total = 0
+            for unit in units:
+                ids = {str(unit.get("champion_id") or "").casefold(),
+                       str(unit.get("name") or "").casefold()}
+                traits = [str(t).casefold() for t in (unit.get("traits") or [])]
+                if ids & core or any(focus_weights.get(t, 0.0) > 0 for t in traits):
+                    total += 1
+            return total
+        compatible_board = compatible_count(board)
+        compatible_bench = compatible_count(bench)
+        return {
+            "board_strength": (
+                float(state["board_power"]) if state.get("board_power") is not None
+                else cls._board_power_state(state)
+            ),
+            "bench_potential_strength": round(sum(float(u.get("impact", 0.0) or 0.0) for u in bench), 4),
+            "board_unit_count": len(board),
+            "bench_unit_count": len(bench),
+            "board_occupancy": len(board) / max(1, len(state.get("board") or [])),
+            "board_two_star_or_higher": sum(int(u.get("star", 1) or 1) >= 2 for u in board),
+            "board_three_star": sum(int(u.get("star", 1) or 1) >= 3 for u in board),
+            "bench_two_star_or_higher": sum(int(u.get("star", 1) or 1) >= 2 for u in bench),
+            "bench_three_star": sum(int(u.get("star", 1) or 1) >= 3 for u in bench),
+            "board_pairs": board_pairs,
+            "bench_pairs": bench_pairs,
+            "combined_pairs": combined_pairs,
+            "board_pair_count": sum(board_pairs.values()),
+            "bench_pair_count": sum(bench_pairs.values()),
+            "combined_pair_count": sum(combined_pairs.values()),
+            "active_synergies": synergy_levels,
+            "active_trait_counts": trait_counts,
+            "composition_compatible_board_units": compatible_board,
+            "composition_compatible_bench_units": compatible_bench,
+            "composition_compatible_total_units": compatible_board + compatible_bench,
+            "composition_direction": state.get("comp_direction"),
+            "composition_focus": state.get("comp_focus"),
+            "composition_strength": float(state.get("composition_strength", 0.0) or 0.0),
+            "gold": int(state.get("gold", 0) or 0),
+            "level": int(state.get("level", 0) or 0),
+            "xp": int(state.get("xp", 0) or 0),
+            "positioning_quality": float(state.get("positioning_score", 0.0) or 0.0),
+            "board_quality": state.get("board_quality_score"),
+            "board_structural_score": state.get("board_structural_score"),
+            "hp": state.get("hp"),
+            "placement": state.get("placement"),
+        }
+
     def _economic_diagnostics(self, action, before_state, after_state,
                               before_audit, after_audit) -> dict:
         action_type = int(action[0])
@@ -414,6 +485,56 @@ class PlayerJsonLogWriter:
         else:
             reason = "PASS_NO_SPEND"
         diagnostics["reason_code"] = reason
+        strategic_before = self._strategic_snapshot(before_state)
+        strategic_after = self._strategic_snapshot(after_state)
+        diagnostics["strategic_snapshot_before"] = strategic_before
+        diagnostics["strategic_snapshot_after"] = strategic_after
+        if action_type == 0:
+            board_gain = strategic_after["board_strength"] - strategic_before["board_strength"] > 1e-6
+            bench_gain = strategic_after["bench_potential_strength"] - strategic_before["bench_potential_strength"] > 1e-6
+            pair_gain = strategic_after["combined_pair_count"] > strategic_before["combined_pair_count"]
+            star_gain = (
+                strategic_after["board_two_star_or_higher"] + strategic_after["bench_two_star_or_higher"]
+                > strategic_before["board_two_star_or_higher"] + strategic_before["bench_two_star_or_higher"]
+            )
+            synergy_changes = {
+                trait: {"before": strategic_before["active_synergies"].get(trait, 0),
+                        "after": strategic_after["active_synergies"].get(trait, 0)}
+                for trait in set(strategic_before["active_synergies"]) | set(strategic_after["active_synergies"])
+                if strategic_before["active_synergies"].get(trait, 0) != strategic_after["active_synergies"].get(trait, 0)
+            }
+            synergy_gain = any(item["after"] > item["before"] for item in synergy_changes.values())
+            comp_gain = strategic_after["composition_compatible_total_units"] > strategic_before["composition_compatible_total_units"]
+            if star_gain:
+                marginal_class = "IMMEDIATE_UPGRADE"
+            elif pair_gain:
+                marginal_class = "PAIR_POTENTIAL"
+            elif synergy_gain:
+                marginal_class = "SYNERGY_MILESTONE"
+            elif board_gain:
+                marginal_class = "BOARD_STRENGTH_GAIN"
+            elif comp_gain:
+                marginal_class = "COMPOSITION_COMPATIBILITY"
+            elif bench_gain:
+                marginal_class = "BENCH_POTENTIAL_ONLY"
+            else:
+                marginal_class = "NO_IDENTIFIED_STRATEGIC_GAIN"
+            diagnostics["purchase_marginal_value"] = {
+                "classification": marginal_class,
+                "board_strength_delta": round(strategic_after["board_strength"] - strategic_before["board_strength"], 4),
+                "bench_potential_delta": round(strategic_after["bench_potential_strength"] - strategic_before["bench_potential_strength"], 4),
+                "combined_pair_delta": strategic_after["combined_pair_count"] - strategic_before["combined_pair_count"],
+                "board_upgrade_delta": (
+                    strategic_after["board_two_star_or_higher"] - strategic_before["board_two_star_or_higher"]
+                ),
+                "synergy_changes": synergy_changes,
+                "composition_compatible_board_delta": (
+                    strategic_after["composition_compatible_board_units"] - strategic_before["composition_compatible_board_units"]
+                ),
+                "composition_compatible_bench_delta": (
+                    strategic_after["composition_compatible_bench_units"] - strategic_before["composition_compatible_bench_units"]
+                ),
+            }
         diagnostics["measurable_improvement"] = bool(
             board_gain or upgrade_gain or synergy_gain or pair_progress or comp_fit_gain or level_up or
             float(diagnostics["positioning_delta"]) > 1e-6
@@ -585,6 +706,7 @@ class PlayerJsonLogWriter:
         round_number: int, stage: int, round_in_stage: int, audit: dict,
         public: dict, action: list[int], reward: float, before_state: dict,
         after_state: dict, diagnostics: dict, engine_events: list[str],
+        economic_diagnostics: dict, combat_reward: float,
     ):
         self._append_entry(
             player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
@@ -608,6 +730,11 @@ class PlayerJsonLogWriter:
             data={
                 "action": action, "action_name": ACTION_NAMES.get(int(action[0]), "UNKNOWN"),
                 "reward": reward, "state_before": before_state, "state_after": after_state,
+                "economic_diagnostics": economic_diagnostics,
+                "combat_reward": combat_reward,
+                "strategic_snapshot_before": self._strategic_snapshot(before_state),
+                "strategic_snapshot_after": self._strategic_snapshot(after_state),
+                "purchase_marginal_value": economic_diagnostics.get("purchase_marginal_value"),
                 "policy_diagnostics": diagnostics, "engine_events": engine_events,
             },
         )
@@ -869,6 +996,9 @@ class PlayerJsonLogWriter:
                     "unit_fit": self._unit_composition_fit(action, before_audit, before_state),
                 },
                 "policy_diagnostics": diagnostic, "engine_events": player_events,
+                "strategic_snapshot_before": self._strategic_snapshot(before_state),
+                "strategic_snapshot_after": self._strategic_snapshot(after_state),
+                "purchase_marginal_value": economic_diagnostics.get("purchase_marginal_value"),
             }
 
             # Same order as the old UI: star upgrades first, then action/round,
@@ -893,6 +1023,9 @@ class PlayerJsonLogWriter:
                     audit=after_audit, public=after_public, action=action, reward=reward,
                     before_state=before_state, after_state=after_state,
                     diagnostics=diagnostic, engine_events=player_events + shared_round_events,
+                    economic_diagnostics=economic_diagnostics,
+                    combat_reward=float(combat_rewards[player_id] or 0.0)
+                        if isinstance(combat_rewards, list) and player_id < len(combat_rewards) else 0.0,
                 )
             elif action_type != 6 or not self._pass_logged[player_id]:
                 tag = "pos_rew" if reward > 0 else "neg_rew" if reward < 0 else None
