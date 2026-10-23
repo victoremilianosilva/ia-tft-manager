@@ -83,7 +83,9 @@ def analyze_player(pid, rows):
     rounds, movements, signatures = set(), defaultdict(list), defaultdict(list)
     confirmed_cycles, actual_unit_moves, composition_changes = [], 0, 0
     for row in rows:
-        seed, step, rnd = (integer(row.get(k), 0) or 0 for k in ("seed", "step", "round"))
+        seed = integer(row.get("seed"), 0) or 0
+        step = integer(row.get("step"), 0) or 0
+        rnd = integer(row.get("round_after", row.get("round_before", row.get("round"))), 0) or 0
         rounds.add((seed, rnd))
         a, active = get_action(row), row.get("alive_at_decision") is not False
         sig = tuple(a) if a is not None else None
