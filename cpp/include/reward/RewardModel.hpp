@@ -127,6 +127,14 @@ inline double reversed_purchase_penalty() noexcept {
     return -0.12;
 }
 
+inline double reversed_sequence_adjustment(
+    double prior_buy_reward,
+    double sale_reward_including_gold,
+    double target = -0.02
+) noexcept {
+    return std::min(0.0, target - prior_buy_reward - sale_reward_including_gold);
+}
+
 // Selling frees a bench slot and returns gold, but should protect core units
 // and copies that are close to an upgrade. fit_score is normalized to [0, 1].
 inline double sale_quality(double fit_score, bool core_unit,
