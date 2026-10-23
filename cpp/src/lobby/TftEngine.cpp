@@ -35,6 +35,16 @@
 #include "decision/MoveValidator.hpp"
 #include "decision/DecisionTypes.hpp"
 
+#ifndef TFT_COMP_DIRECTION_MIN_RELATIVE_ADVANTAGE
+#define TFT_COMP_DIRECTION_MIN_RELATIVE_ADVANTAGE 0.20
+#endif
+#ifndef TFT_COMP_DIRECTION_MIN_ABSOLUTE_ADVANTAGE
+#define TFT_COMP_DIRECTION_MIN_ABSOLUTE_ADVANTAGE 0.75
+#endif
+#ifndef TFT_COMP_DIRECTION_REQUIRED_UPDATES
+#define TFT_COMP_DIRECTION_REQUIRED_UPDATES 3
+#endif
+
 #ifndef TFT_DEFAULT_CATALOG_PATH
 #define TFT_DEFAULT_CATALOG_PATH "units_gerado.json"
 #endif
@@ -1593,7 +1603,11 @@ struct TFTEngine::Impl {
                 }
 
                 static const strategy::CompositionDirectionPolicy direction_policy{
-                    strategy::CompositionDirectionConfig{0.20, 0.75, 3}
+                    strategy::CompositionDirectionConfig{
+                        TFT_COMP_DIRECTION_MIN_RELATIVE_ADVANTAGE,
+                        TFT_COMP_DIRECTION_MIN_ABSOLUTE_ADVANTAGE,
+                        TFT_COMP_DIRECTION_REQUIRED_UPDATES
+                    }
                 };
                 const std::string direction_before = info.composition_direction;
                 const double strength_before = info.composition_strength;
