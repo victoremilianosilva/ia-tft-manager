@@ -121,29 +121,45 @@ inline double purchase_pair_quality(double fit_score) noexcept {
     return 0.10 + 0.05 * std::tanh(std::max(0.0, fit_score) / 5.0);
 }
 
-// Applied only when a specific recently purchased unit is sold within four
-// actions, without an upgrade, core-unit protection, or bench-capacity reason.
+// A low-fit purchase sold almost immediately is usually a wasted buy.
+// Fit is normalized to [0, 1]; legitimate exceptions are explicit so a real
+// upgrade, deployment, comp transition, or full bench is not punished.
+inline constexpr double kRecentPurchaseLowFitThreshold = 0.15;
+
+inline bool should_penalize_reversed_purchase(
+    double normalized_fit,
+    bool completed_upgrade,
+    bool was_deployed,
+    bool bench_was_full,
+    bool composition_changed
+) noexcept {
+    return !completed_upgrade && !was_deployed && !bench_was_full &&
+        !composition_changed &&
+        std::clamp(normalized_fit, 0.0, 1.0) <= kRecentPurchaseLowFitThreshold;
+}
+
 inline double reversed_purchase_penalty() noexcept {
-    return -0.12;
+    return -0.18;
 }
 
 inline double reversed_sequence_adjustment(
     double prior_buy_reward,
     double sale_reward_including_gold,
-    double target = -0.02
+    double target = -0.05
 ) noexcept {
     return std::min(0.0, target - prior_buy_reward - sale_reward_including_gold);
 }
 
-// Selling frees a bench slot and returns gold, but should protect core units
-// and copies that are close to an upgrade. fit_score is normalized to [0, 1].
+// Selling should be attractive for low-value clutter, but not intrinsically
+// rewarding for disposing of useful bench units. Fit is normalized to [0, 1].
+// Gold recovery is shaped separately by gold_change_reward().
 inline double sale_quality(double fit_score, bool core_unit,
                            bool protects_upgrade, bool frees_bench_space) noexcept {
     const double fit = std::clamp(fit_score, 0.0, 1.0);
-    return 0.10 * (1.0 - fit) -
+    return 0.06 - 0.12 * fit -
         (core_unit ? 0.12 : 0.0) -
-        (protects_upgrade ? 0.10 : 0.0) +
-        (frees_bench_space ? 0.03 : 0.0);
+        (protects_upgrade ? 0.08 : 0.0) +
+        (frees_bench_space ? 0.04 : 0.0);
 }
 
 // Shared no-progress penalty for both board repositioning and bench-to-board
