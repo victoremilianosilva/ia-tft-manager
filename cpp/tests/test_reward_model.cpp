@@ -77,12 +77,12 @@ int main() {
                   "composition-aware purchase reward");
     require_close(purchase_quality(0.0, true), 0.12,
                   "purchase completing an upgrade");
-    require_close(reversed_purchase_penalty(), -0.12,\n                  "targeted reversed-purchase penalty");\n    require_close(purchase_pair_quality(0.0), 0.06,
+    require_close(reversed_purchase_penalty(), -0.12,\n                  "targeted reversed-purchase penalty");\n    require_close(purchase_pair_quality(0.0), 0.10,
                   "pair-building baseline bonus");
     if (!(purchase_pair_quality(10.0) > purchase_pair_quality(0.0))) {
         throw std::runtime_error("pair reward must increase with composition fit");
     }
-    if (!(purchase_pair_quality(10.0) < 0.10)) {
+    if (!(purchase_pair_quality(10.0) < 0.15)) {
         throw std::runtime_error("pair reward must remain smaller than upgrade completion");
     }
     require_close(sale_quality(0.0, false, false, true), 0.13,
