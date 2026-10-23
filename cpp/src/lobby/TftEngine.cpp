@@ -200,6 +200,100 @@ double unit_composition_score(
     }
     return score;
 }
+
+// Approximation of Python _compute_unit_board_impact(). This is deliberately a
+// heuristic for reward shaping, not a replacement for simulated combat.
+double unit_board_impact_score(
+    const StrategyInfo& strategy, const ChampionDefinition& def, std::int32_t star,
+    const std::unordered_map<std::string, std::vector<int>>& milestones,
+    int board_count, int level, int stage
+) {
+    const auto trait_count = [&](const std::string& trait) {
+        const auto it = std::find_if(strategy.active_traits.begin(), strategy.active_traits.end(),
+            [&](const auto& x) { return x.first == trait; });
+        return it == strategy.active_traits.end() ? 0 : it->second;
+    };
+    const auto focus_weight = [&](const std::string& trait) {
+        const auto it = std::find_if(strategy.composition_focus_weights.begin(),
+            strategy.composition_focus_weights.end(), [&](const auto& x) { return x.first == trait; });
+        return it == strategy.composition_focus_weights.end() ? 0.0 : it->second;
+    };
+    const auto next_milestone = [&](const std::string& trait, int count) {
+        const auto it = milestones.find(trait);
+        if (it != milestones.end()) {
+            for (const int milestone : it->second) if (milestone > count) return milestone;
+        }
+        return count < 2 ? 2 : 0;
+    };
+
+    const auto& profile = def.combat_profile;
+    const double hp = profile.max_hp > 0.0 ? profile.max_hp : def.stats.max_hp;
+    const double attack_speed = std::max(0.5, profile.attack_speed > 0.0
+        ? profile.attack_speed : def.stats.attack_speed);
+    const double attack_damage = profile.attack_damage > 0.0
+        ? profile.attack_damage : def.stats.attack_damage;
+    const double armor = std::max(0.0, profile.armor > 0.0 ? profile.armor : def.stats.armor);
+    const double effective_dps = attack_damage * attack_speed * (100.0 / (100.0 + armor));
+    const double star_multiplier = star >= 3 ? 9.0 : (star == 2 ? 3.0 : 1.0);
+    const double combat_power = (hp / 1000.0) * (effective_dps / 50.0) *
+        attack_speed * star_multiplier * std::pow(std::max(1, def.cost), 0.7);
+
+    const double comp_score = unit_composition_score(strategy, def, star, milestones);
+    double synergy_score = 0.0;
+    double score = combat_power * 0.5 + comp_score * 0.25;
+    for (const auto& trait : def.traits) {
+        const int count = trait_count(trait);
+        const int next = next_milestone(trait, count);
+        const int before_level = [&]() {
+            const auto it = milestones.find(trait);
+            if (it == milestones.end()) return count >= 2 ? 1 : 0;
+            int reached = 0;
+            for (const int milestone : it->second) if (count >= milestone) ++reached;
+            return reached;
+        }();
+        const int after_level = next > 0 && count + 1 >= next ? before_level + 1 : before_level;
+        if (after_level > before_level) score += 1.5 + before_level * 0.3;
+        synergy_score += std::max(0, count) * 0.15 + std::min(2.0, focus_weight(trait) * 0.1);
+    }
+    score += synergy_score * 0.6;
+
+    const auto copies = std::find_if(strategy.unit_counts_by_id.begin(), strategy.unit_counts_by_id.end(),
+        [&](const auto& x) { return x.first == def.internal_id; });
+    const int owned_copies = copies == strategy.unit_counts_by_id.end() ? 0 : copies->second;
+    if (owned_copies < 3) score += 1.2 + (owned_copies / 3.0) * 2.0;
+    else if (owned_copies < 9) score += 3.5 + ((owned_copies - 3) / 6.0) * 5.5;
+    else score += 0.5;
+    if (board_count < level) score += 1.5;
+    if (comp_score < 0.0 && synergy_score <= 0.0 && combat_power < 1.5) score -= 3.0;
+
+    const bool main = !strategy.composition_direction.empty() &&
+        std::find(def.traits.begin(), def.traits.end(), strategy.composition_direction) != def.traits.end();
+    const bool secondary = std::any_of(def.traits.begin(), def.traits.end(), [&](const auto& trait) {
+        return std::find(strategy.core_traits.begin(), strategy.core_traits.end(), trait) != strategy.core_traits.end();
+    });
+    if (main) score *= 1.5;
+    else if (secondary) score *= 1.1;
+    else score *= stage <= 3 ? 0.9 : 0.6;
+    if (synergy_score <= 0.0 && combat_power < 1.5) score -= 2.5;
+    return std::tanh(score / 5.0) * 4.0;
+}
+
+bool should_buy_unit(
+    double impact, double upgrade_value, bool in_top_trait,
+    int bench_count, int stage, int cost
+) {
+    if (impact < -0.8 && upgrade_value == 0.0) return false;
+    if (bench_count <= 4) {
+        if (stage <= 2) return impact >= 0.0 || upgrade_value > 0.0 || in_top_trait;
+        return upgrade_value > 0.0 || impact > 0.3 || in_top_trait;
+    }
+    if (bench_count <= 6) {
+        if (upgrade_value > 0.0 || impact > 0.6) return true;
+        return cost >= 3 && in_top_trait && impact > 0.2;
+    }
+    return upgrade_value >= 0.6 || impact > 1.2;
+}
+
 } // namespace
 
 // ============================================================
@@ -2301,6 +2395,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         double sold_unit_fit_score = 0.0;
         bool buy_completes_upgrade = false;
         bool buy_builds_pair = false;
+        bool buy_strategy_approved = true;
+        double candidate_board_impact = 0.0;
         bool bought_unit_successfully = false;
         bool bought_upgrade = false;
         bool purchase_was_recently_reversed = false;
@@ -2353,13 +2449,27 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             unit->star == offer->star) ++same_star_copies;
                     }
                     buy_completes_upgrade = same_star_copies >= 2;
+                    candidate_board_impact = unit_board_impact_score(
+                        strategy_before, *def, offer->star, lobby.trait_milestones,
+                        old_board_count, economy.level, static_cast<int>(stage_for_round(lobby.round + 1)));
+                    const double upgrade_value = same_star_copies >= 3 ? 1.0
+                        : (same_star_copies == 2 ? 0.6 : (same_star_copies == 1 ? 0.2 : 0.0));
+                    const bool in_top_trait = (!strategy_before.composition_direction.empty() &&
+                        std::find(def->traits.begin(), def->traits.end(),
+                            strategy_before.composition_direction) != def->traits.end()) ||
+                        std::any_of(def->traits.begin(), def->traits.end(), [&](const auto& trait) {
+                            return std::find(strategy_before.core_traits.begin(),
+                                strategy_before.core_traits.end(), trait) != strategy_before.core_traits.end();
+                        });
+                    buy_strategy_approved = should_buy_unit(candidate_board_impact, upgrade_value,
+                        in_top_trait, old_bench_count, static_cast<int>(stage_for_round(lobby.round + 1)), def->cost);
                     // A second matching copy is valuable future upgrade potential,
                     // but only reward it when it also fits the current comp.
                     const bool composition_fit =
                         candidate_comp_score > 0.0 ||
                         strategy_before.composition_direction.empty();
                     buy_builds_pair = same_star_copies == 1 &&
-                        offer->star == 1 && composition_fit;
+                        offer->star == 1 && composition_fit && buy_strategy_approved;
                 }
             }
         } else if (type == 3) {
@@ -2784,6 +2894,11 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             // No unconditional bonus for a normal purchase; +0.30 for a completed upgrade.
             success = bought_unit_successfully;
             action_reward = !success ? -0.10 : (bought_upgrade ? 0.30 : 0.0);
+            if (success && !buy_strategy_approved) {
+                // Soft rejection signal: prefer PASS over filling the bench with
+                // low-impact units when the composition/upgrade value is weak.
+                action_reward -= 0.15;
+            }
             if (success && has_candidate_comp_score) {
                 // Also guide early purchases before the board has a stable comp.
                 // composition_quality_delta is candidate-vs-board when a board
