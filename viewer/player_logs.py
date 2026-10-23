@@ -193,6 +193,11 @@ class PlayerJsonLogWriter:
             "wins": public.get("wins"), "losses": public.get("losses"),
             "placement": public.get("placement"), "opponent_id": public.get("opponent_id"),
             "win_streak": audit.get("win_streak"), "loss_streak": audit.get("loss_streak"),
+            "gold_before_interest": audit.get("gold_before_interest"),
+            "interest_if_resolved_now": audit.get("interest_if_resolved_now"),
+            "board_power": audit.get("board_power"),
+            "synergy_score": audit.get("synergy_score"),
+            "positioning_score": audit.get("positioning_score"),
             "round_gold": audit.get("round_gold", 0),
             "round_base_gold": audit.get("round_base_gold", 0),
             "round_interest": audit.get("round_interest", 0),
@@ -278,8 +283,16 @@ class PlayerJsonLogWriter:
         explicit_cost = int(purchased.get("cost", 0) or 0) if action_type == 0 else (
             2 if action_type == 1 else 4 if action_type == 2 else 0)
         gold_delta = gold_after - gold_before
-        before_power = self._board_power_state(before_state)
-        after_power = self._board_power_state(after_state)
+        before_power = (
+            float(before_state["board_power"])
+            if before_state.get("board_power") is not None
+            else self._board_power_state(before_state)
+        )
+        after_power = (
+            float(after_state["board_power"])
+            if after_state.get("board_power") is not None
+            else self._board_power_state(after_state)
+        )
         before_upgrades = self._upgrade_counts(before_state)
         after_upgrades = self._upgrade_counts(after_state)
         board_traits_before = self._board_trait_counts(before_state)
@@ -293,19 +306,34 @@ class PlayerJsonLogWriter:
                     "count_before": old_count, "count_after": new_count,
                     "level_before": old_level, "level_after": new_level,
                 }
-        return {
+        diagnostics = {
             "gold_before": gold_before,
             "gold_after": gold_after,
             "gold_delta": gold_delta,
             "action_cost": max(0, -gold_delta),
             "listed_cost": explicit_cost,
             "sale_proceeds": max(0, gold_delta) if action_type == 5 else 0,
+            "gold_before_interest": after_state.get("gold_before_interest"),
+            "interest_if_resolved_before": before_state.get("interest_if_resolved_now"),
+            "interest_if_resolved_after": after_state.get("interest_if_resolved_now"),
+            "potential_interest_delta": int(after_state.get("interest_if_resolved_now") or 0) - int(before_state.get("interest_if_resolved_now") or 0),
+            "level_before": int(before_state.get("level", 0) or 0),
+            "level_after": int(after_state.get("level", 0) or 0),
+            "xp_before": int(before_state.get("xp", 0) or 0),
+            "xp_after": int(after_state.get("xp", 0) or 0),
             "base_income": int(after_state.get("round_base_gold", 0) or 0),
             "interest_income": int(after_state.get("round_interest", 0) or 0),
             "streak_income": int(after_state.get("round_streak_gold", 0) or 0),
             "win_income": int(after_state.get("round_win_gold", 0) or 0),
             "board_power_before": before_power,
             "board_power_after": after_power,
+            "estimated_board_power_before": self._board_power_state(before_state),
+            "estimated_board_power_after": self._board_power_state(after_state),
+            "engine_synergy_before": before_state.get("synergy_score"),
+            "engine_synergy_after": after_state.get("synergy_score"),
+            "positioning_before": before_state.get("positioning_score"),
+            "positioning_after": after_state.get("positioning_score"),
+            "positioning_delta": float(after_state.get("positioning_score") or 0.0) - float(before_state.get("positioning_score") or 0.0),
             "board_power_delta": round(after_power - before_power, 4),
             "pairs_before": self._pair_count_state(before_state),
             "pairs_after": self._pair_count_state(after_state),
@@ -318,6 +346,16 @@ class PlayerJsonLogWriter:
             "synergy_milestones_changed": synergy_milestones,
             "purchased_champion": purchased.get("champion_id") if action_type == 0 else None,
             "sold_champion": sold.get("champion_id") if action_type == 5 else None,
+            "sold_core_unit": bool(
+                action_type == 5 and str(sold.get("champion_id") or "").casefold()
+                in {str(value).casefold() for value in (before_state.get("core_units") or [])}
+            ),
+            "pair_progress": self._pair_count_state(after_state) - self._pair_count_state(before_state),
+            "space_freed": bool(
+                action_type == 5 and sold.get("occupied", False)
+                and 0 <= sell_slot < len(bench)
+                and not (after_state.get("bench") or [])[sell_slot].get("occupied", False)
+            ),
             "composition_direction_before": before_state.get("comp_direction"),
             "composition_direction_after": after_state.get("comp_direction"),
             "composition_fit": (
@@ -325,6 +363,44 @@ class PlayerJsonLogWriter:
                 if action_type in (0, 3, 4, 5) else None
             ),
         }
+        # Motivos explicativos; não são recompensas nem alteram a policy.
+        board_gain = float(diagnostics["board_power_delta"]) > 1e-6
+        level_up = diagnostics["level_after"] > diagnostics["level_before"]
+        upgrade_gain = diagnostics["two_star_or_higher_after"] > diagnostics["two_star_or_higher_before"]
+        synergy_gain = bool(synergy_milestones)
+        pair_progress = diagnostics["pair_progress"] > 0
+        fit = diagnostics.get("composition_fit") or {}
+        comp_fit_gain = bool(fit.get("core_unit_match")) or float(fit.get("focus_fit_score", 0.0) or 0.0) > 0.0
+        if action_type == 0:
+            reason = "PURCHASE_UPGRADE" if upgrade_gain else (
+                "PURCHASE_PAIR_PROGRESS" if pair_progress else (
+                    "PURCHASE_SYNERGY_GAIN" if synergy_gain else (
+                        "PURCHASE_COMPATIBLE" if comp_fit_gain else (
+                            "PURCHASE_BOARD_GAIN" if board_gain else "PURCHASE_NO_IMMEDIATE_GAIN"
+                        )
+                    )
+                )
+            )
+        elif action_type == 1:
+            reason = "REROLL_IMMEDIATE_GAIN" if (board_gain or upgrade_gain or synergy_gain) else "REROLL_NO_IMMEDIATE_BOARD_GAIN"
+        elif action_type == 2:
+            reason = "XP_LEVEL_UP" if level_up else "XP_NO_LEVEL_UP"
+        elif action_type == 3:
+            reason = "DEPLOY_BOARD_GAIN" if board_gain else "DEPLOY_NO_POWER_GAIN"
+        elif action_type == 4:
+            reason = "REPOSITION_IMPROVED" if float(diagnostics["positioning_delta"]) > 1e-6 else "REPOSITION_NO_SCORE_GAIN"
+        elif action_type == 5:
+            reason = "SALE_CORE_OR_PAIR_RISK" if (
+                diagnostics["sold_core_unit"] or diagnostics["pairs_after"] < diagnostics["pairs_before"]
+            ) else ("SALE_SPACE_FREED" if diagnostics["space_freed"] else "SALE_GOLD_RECOVERY")
+        else:
+            reason = "PASS_NO_SPEND"
+        diagnostics["reason_code"] = reason
+        diagnostics["measurable_improvement"] = bool(
+            board_gain or upgrade_gain or synergy_gain or pair_progress or comp_fit_gain or level_up or
+            float(diagnostics["positioning_delta"]) > 1e-6
+        )
+        return diagnostics
 
     def _unit_composition_fit(self, action, before_audit, after_state):
         """Estimate how the acted-on unit aligns with the current comp focus/core."""
@@ -633,6 +709,27 @@ class PlayerJsonLogWriter:
         round_number = int(before.get("round", 1) or 1)
         stage, round_in_stage = _round_coordinates(round_number)
         engine_events = [str(event) for event in info.get("events", [])]
+        # Native costs are captured inside PlayerEnv::step, before round income.
+        # Prefer this trace over net gold delta, which can be masked by round income.
+        native_economic_events = {}
+        for event in engine_events:
+            match = re.search(
+                r"ECONOMIC_ACTION player(?:=|\s+)(\d+) action_cost=(\d+) sale_proceeds=(\d+) gold_before=(-?\d+) gold_after=(-?\d+) interest_before=(\d+) interest_after=(\d+) level_before=(\d+) level_after=(\d+) xp_before=(\d+) xp_after=(\d+)",
+                event,
+            )
+            if match:
+                native_economic_events[int(match.group(1))] = {
+                    "action_cost": int(match.group(2)),
+                    "sale_proceeds": int(match.group(3)),
+                    "gold_before": int(match.group(4)),
+                    "gold_after": int(match.group(5)),
+                    "interest_if_resolved_before": int(match.group(6)),
+                    "interest_if_resolved_after": int(match.group(7)),
+                    "level_before": int(match.group(8)),
+                    "level_after": int(match.group(9)),
+                    "xp_before": int(match.group(10)),
+                    "xp_after": int(match.group(11)),
+                }
         round_resolved = any(
             event.strip() == "ROUND_RESOLVED" or event.strip().startswith("ROUND_RESOLVED:")
             for event in engine_events
@@ -666,14 +763,41 @@ class PlayerJsonLogWriter:
             is_round_end = round_resolved or finished
             before_state = self._player_snapshot(before_audit, before_public)
             after_state = self._player_snapshot(after_audit, after_public)
+            economic_diagnostics = self._economic_diagnostics(
+                action, before_state, after_state, before_audit, after_audit
+            )
+            if player_id in native_economic_events:
+                step_gold_after = economic_diagnostics["gold_after"]
+                economic_diagnostics.update(native_economic_events[player_id])
+                economic_diagnostics["gold_after_step"] = step_gold_after
+                economic_diagnostics["gold_delta"] = (
+                    economic_diagnostics["gold_after"] - economic_diagnostics["gold_before"]
+                )
+                economic_diagnostics["potential_interest_delta"] = (
+                    economic_diagnostics["interest_if_resolved_after"]
+                    - economic_diagnostics["interest_if_resolved_before"]
+                )
+                economic_diagnostics["cost_source"] = "native_action_transition"
+                if action_type == 2:
+                    level_up = economic_diagnostics["level_after"] > economic_diagnostics["level_before"]
+                    economic_diagnostics["reason_code"] = "XP_LEVEL_UP" if level_up else "XP_NO_LEVEL_UP"
+                    economic_diagnostics["measurable_improvement"] = level_up
+            else:
+                economic_diagnostics["cost_source"] = "gold_delta_fallback"
             primary_data = {
                 "action": action, "action_name": ACTION_NAMES.get(action_type, "UNKNOWN"),
                 "reward": reward,
                 "action_reward": action_rewards[player_id] if isinstance(action_rewards, list) and player_id < len(action_rewards) else None,
                 "combat_reward": combat_rewards[player_id] if isinstance(combat_rewards, list) and player_id < len(combat_rewards) else None,
                 "placement_reward": placement_rewards[player_id] if isinstance(placement_rewards, list) and player_id < len(placement_rewards) else None,
+                "reward_components": {
+                    "action": action_rewards[player_id] if isinstance(action_rewards, list) and player_id < len(action_rewards) else None,
+                    "combat": combat_rewards[player_id] if isinstance(combat_rewards, list) and player_id < len(combat_rewards) else None,
+                    "placement": placement_rewards[player_id] if isinstance(placement_rewards, list) and player_id < len(placement_rewards) else None,
+                    "returned_reward": reward,
+                },
                 "state_changed": before_state != after_state,
-                "economic_diagnostics": self._economic_diagnostics(action, before_state, after_state, before_audit, after_audit),
+                "economic_diagnostics": economic_diagnostics,
                 "state_before": before_state, "state_after": after_state,
                 "composition_diagnostics": {
                     "before": {

@@ -15,6 +15,8 @@ struct PlayerEconomy {
     std::int32_t win_streak = 0;
     std::int32_t loss_streak = 0;
 
+    // Saldo exato usado para calcular juros na última resolução de round.
+    std::int32_t gold_before_interest = 0;
     std::int32_t round_gold = 0;
     std::int32_t round_interest = 0;
     std::int32_t round_streak_gold = 0;
@@ -35,6 +37,8 @@ struct BuyXpResult {
 struct RoundEconomyResult {
     std::int32_t round = 0;
     std::int32_t old_gold = 0;
+    std::int32_t gold_before_interest = 0;
+    std::int32_t gold_before_income = 0;
     std::int32_t new_gold = 0;
 
     std::int32_t base_gold = 0;

@@ -2,6 +2,7 @@
 import json
 
 from viewer.player_logs import PlayerJsonLogWriter
+from audit_viewer_match import audit_economic_actions
 
 
 def _unit(occupied=False, **overrides):
@@ -32,6 +33,9 @@ def _snapshot(with_unit=False):
         audit_players.append({
             "player_id": player_id, "gold": 10, "level": 2, "xp": 0,
             "win_streak": 0, "loss_streak": 0,
+            "gold_before_interest": 10 if player_id == 0 else 0,
+            "interest_if_resolved_now": 1 if player_id == 0 else 0,
+            "board_power": 0.0, "synergy_score": 0.0, "positioning_score": 0.0,
             "round_gold": 8 if player_id == 0 else 0,
             "round_base_gold": 5 if player_id == 0 else 0,
             "round_interest": 2 if player_id == 0 else 0,
@@ -87,6 +91,12 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
     after = json.loads(json.dumps(before))
     after["audit_players"][0]["board"][0] = after["audit_players"][0]["bench"][0]
     after["audit_players"][0]["bench"][0] = _unit()
+    after["audit_players"][0]["board_power"] = 2.0
+    after["audit_players"][0]["synergy_score"] = 1.0
+    after["audit_players"][0]["positioning_score"] = 0.25
+    # The engine step also resolves +5 income after this zero-cost move.
+    after["players"][0]["gold"] = 15
+    after["audit_players"][0]["gold"] = 15
     # Simulate a real strategy recomputation after the board changes.
     after["audit_players"][0]["strategy_info"]["composition_direction"] = "Prankster"
     after["audit_players"][0]["strategy_info"]["composition_focus"] = "Briar"
@@ -111,7 +121,7 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
         actions=actions,
         diagnostics=[{"action_name": "MOVE_BENCH", "value_estimate": 0.3} for _ in range(8)],
         rewards=[0.05] * 8,
-        info=_empty_info(),
+        info=_empty_info(events=["ECONOMIC_ACTION player 0 action_cost=0 sale_proceeds=0 gold_before=10 gold_after=10 interest_before=1 interest_after=1 level_before=2 level_after=2 xp_before=0 xp_after=0"]),
         step=1,
         finished=False,
     )
@@ -146,9 +156,19 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
     assert action_entry["payload"]["state_after"]["board"][0]["name"] == "Briar"
     economics = action_entry["payload"]["economic_diagnostics"]
     assert economics["gold_before"] == 10
-    assert economics["gold_after"] == 10
+    assert economics["gold_after"] == 10  # action-time balance, before round income
+    assert economics["gold_after_step"] == 15  # later snapshot includes round income
     assert economics["gold_delta"] == 0
     assert economics["board_power_delta"] == 2.0
+    assert economics["gold_before_interest"] == 10
+    assert economics["interest_if_resolved_before"] == 1
+    assert economics["potential_interest_delta"] == 0
+    assert economics["engine_synergy_after"] == 1.0
+    assert economics["positioning_delta"] == 0.25
+    assert economics["reason_code"] == "DEPLOY_BOARD_GAIN"
+    assert economics["cost_source"] == "native_action_transition"
+    assert economics["action_cost"] == 0
+    assert economics["measurable_improvement"] is True
     assert economics["two_star_or_higher_after"] == 0
     assert economics["pairs_before"] == 0
     assert action_entry["payload"]["state_after"]["bench"][0]["occupied"] is False
@@ -195,3 +215,67 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
     player2_action = next(item for item in player2["entries"] if item["event_type"] == "action")
     assert "Vazio" in player2_action["text"]
     assert player2_action["payload"]["state_after"]["board"][0]["occupied"] is False
+
+
+def _economic_entry(sequence, action, diagnostics, gold, stage=2, round_number=3):
+    return {
+        "event_type": "action", "sequence_id": sequence, "stage": stage, "round": round_number,
+        "payload": {
+            "action_name": action,
+            "action_reward": 0.0,
+            "economic_diagnostics": diagnostics,
+            "state_after": {"gold": gold, "board_power": 10.0, "board": [{"occupied": True}]},
+        },
+    }
+
+
+def test_economic_action_audit_reports_cost_interest_xp_and_reroll_pass():
+    entries = [
+        _economic_entry(1, "BUY_XP", {
+            "action_cost": 4, "sale_proceeds": 0, "potential_interest_delta": -1,
+            "reason_code": "XP_NO_LEVEL_UP", "measurable_improvement": False,
+        }, 15),
+        _economic_entry(2, "REROLL", {
+            "action_cost": 2, "sale_proceeds": 0, "potential_interest_delta": 0,
+            "reason_code": "REROLL_NO_IMMEDIATE_BOARD_GAIN", "measurable_improvement": False,
+        }, 13),
+        _economic_entry(3, "PASS", {
+            "action_cost": 0, "sale_proceeds": 0, "potential_interest_delta": 0,
+            "reason_code": "PASS_NO_SPEND", "measurable_improvement": False,
+        }, 13),
+    ]
+    report = {}
+    audit_economic_actions(entries, "Jogador 1", report)
+    metrics = report["economic_action_metrics"]["Jogador 1"]
+    assert metrics["actions"] == 3
+    assert metrics["gold_spent"] == 6
+    assert metrics["potential_interest_lost"] == 1
+    assert metrics["xp_without_level_up"] == 1
+    assert metrics["rerolls_without_immediate_gain"] == 1
+    assert metrics["rerolls_followed_by_pass"] == 1
+    assert metrics["final_gold"] == 13
+    assert metrics["by_action"]["BUY_XP"]["gold_spent"] == 4
+    assert "reward" not in metrics
+
+
+def test_economic_action_audit_flags_unused_level_up_and_ignores_non_actions():
+    entries = [
+        {
+            "event_type": "round_finished", "payload": {"economic_diagnostics": {"action_cost": 99}},
+        },
+        _economic_entry(1, "BUY_XP", {
+            "action_cost": 4, "sale_proceeds": 0, "potential_interest_delta": 0,
+            "reason_code": "XP_LEVEL_UP", "level_after": 3, "measurable_improvement": True,
+        }, 0),
+        _economic_entry(2, "PASS", {
+            "action_cost": 0, "sale_proceeds": 0, "potential_interest_delta": 0,
+            "reason_code": "PASS_NO_SPEND", "measurable_improvement": False,
+        }, 0),
+    ]
+    entries[1]["payload"]["state_after"]["board"] = [{"occupied": True}]
+    entries[2]["payload"]["state_after"]["board"] = [{"occupied": True}]
+    report = {}
+    audit_economic_actions(entries, "Jogador 2", report)
+    metrics = report["economic_action_metrics"]["Jogador 2"]
+    assert metrics["xp_level_up_unused"] == 1
+    assert metrics["actions"] == 2

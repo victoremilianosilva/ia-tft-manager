@@ -251,6 +251,106 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
     report.setdefault("purchase_sequence_metrics", {})[player] = metrics
 
 
+
+def audit_economic_actions(entries: list[dict], player: str, report: dict) -> None:
+    """Summarize action-level economic telemetry emitted by the native engine/viewer."""
+    actions = [
+        entry for entry in entries
+        if isinstance(entry, dict) and entry.get("event_type") == "action"
+        and isinstance((entry.get("payload") or {}).get("economic_diagnostics"), dict)
+    ]
+    totals = Counter()
+    by_action = defaultdict(lambda: {
+        "actions": 0, "gold_spent": 0, "gold_recovered": 0,
+        "measurable_improvements": 0, "potential_interest_lost": 0,
+    })
+    by_stage = defaultdict(lambda: {"gold_spent": 0, "actions": 0})
+    xp_without_level_up = 0
+    xp_level_up_unused = 0
+    rerolls_without_immediate_gain = 0
+    rerolls_followed_by_pass = 0
+    interest_threshold_crossings = 0
+    reward_component_samples = 0
+    final_gold = None
+    final_board_power = None
+    for index, entry in enumerate(actions):
+        payload = entry.get("payload") or {}
+        diag = payload.get("economic_diagnostics") or {}
+        action_name = str(payload.get("action_name", "UNKNOWN"))
+        stage = str(entry.get("stage", "?"))
+        bucket = by_action[action_name]
+        bucket["actions"] += 1
+        cost = max(0, int(diag.get("action_cost", 0) or 0))
+        recovered = max(0, int(diag.get("sale_proceeds", 0) or 0))
+        bucket["gold_spent"] += cost
+        bucket["gold_recovered"] += recovered
+        bucket["measurable_improvements"] += int(bool(diag.get("measurable_improvement")))
+        potential_delta = int(diag.get("potential_interest_delta", 0) or 0)
+        if potential_delta < 0:
+            bucket["potential_interest_lost"] += -potential_delta
+        by_stage[stage]["gold_spent"] += cost
+        by_stage[stage]["actions"] += 1
+        totals["actions"] += 1
+        totals["gold_spent"] += cost
+        totals["gold_recovered"] += recovered
+        totals["potential_interest_lost"] += max(0, -potential_delta)
+        if potential_delta < 0:
+            interest_threshold_crossings += 1
+        if action_name == "BUY_XP" and diag.get("reason_code") == "XP_NO_LEVEL_UP":
+            xp_without_level_up += 1
+        if action_name == "BUY_XP" and diag.get("reason_code") == "XP_LEVEL_UP":
+            after_level = int(diag.get("level_after", 0) or 0)
+            state_after_xp = payload.get("state_after") or {}
+            board_after_xp = sum(bool(unit.get("occupied")) for unit in state_after_xp.get("board", []) if isinstance(unit, dict))
+            used_new_slot = False
+            for later in actions[index + 1:]:
+                if later.get("round") != entry.get("round") or later.get("stage") != entry.get("stage"):
+                    break
+                later_payload = later.get("payload") or {}
+                if later_payload.get("action_name") == "PASS":
+                    break
+                if later_payload.get("action_name") == "MOVE_BENCH":
+                    later_state = later_payload.get("state_after") or {}
+                    later_board = sum(bool(unit.get("occupied")) for unit in later_state.get("board", []) if isinstance(unit, dict))
+                    if later_board > board_after_xp and later_board <= after_level:
+                        used_new_slot = True
+                        break
+            if not used_new_slot and board_after_xp < after_level:
+                xp_level_up_unused += 1
+        if action_name == "REROLL" and diag.get("reason_code") == "REROLL_NO_IMMEDIATE_BOARD_GAIN":
+            rerolls_without_immediate_gain += 1
+            if index + 1 < len(actions):
+                next_entry = actions[index + 1]
+                same_round = (
+                    next_entry.get("round") == entry.get("round")
+                    and next_entry.get("stage") == entry.get("stage")
+                )
+                if same_round and next_entry.get("payload", {}).get("action_name") == "PASS":
+                    rerolls_followed_by_pass += 1
+        if payload.get("action_reward") is not None:
+            reward_component_samples += 1
+        after = payload.get("state_after") or {}
+        if after:
+            final_gold = after.get("gold", final_gold)
+            final_board_power = after.get("board_power", final_board_power)
+    if not actions:
+        return
+    report.setdefault("economic_action_metrics", {})[player] = {
+        **dict(totals),
+        "by_action": {name: dict(values) for name, values in sorted(by_action.items())},
+        "by_stage": {stage: dict(values) for stage, values in sorted(by_stage.items())},
+        "xp_without_level_up": xp_without_level_up,
+        "xp_level_up_unused": xp_level_up_unused,
+        "rerolls_without_immediate_gain": rerolls_without_immediate_gain,
+        "rerolls_followed_by_pass": rerolls_followed_by_pass,
+        "interest_threshold_crossings": interest_threshold_crossings,
+        "final_gold": final_gold,
+        "final_board_power": final_board_power,
+        "action_reward_samples": reward_component_samples,
+        "interpretation": "No-immediate-gain is a diagnostic, not proof that an action was strategically wrong.",
+    }
+
+
 def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_window: int) -> None:
     player_id = doc.get("player_number")
     if player_id is None:
@@ -260,6 +360,7 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
     report["players_seen"].add(str(player_id))
     report["entries_read"] += len(doc["entries"])
     audit_purchase_sequences(doc["entries"], player, report)
+    audit_economic_actions(doc["entries"], player, report)
     report["log_files"].append(str(path))
 
     entries = sorted(doc["entries"], key=lambda e: (e.get("sequence_id", 0), e.get("step", 0)))
@@ -447,6 +548,29 @@ def markdown_report(report: dict) -> str:
         f"- Achados: **{len(report['issues'])}**",
         f"- CRITICAL: {counts['CRITICAL']} | HIGH: {counts['HIGH']} | MEDIUM: {counts['MEDIUM']} | LOW: {counts['LOW']}", "",
     ]
+    if report.get("economic_action_metrics"):
+        lines += ["## Auditoria econômica por ação", "",
+                  "| Jogador | Ações | Ouro gasto | Ouro recuperado | Juros potenciais perdidos | XP sem level-up | Level-up sem unidade implantada | Rerolls sem ganho imediato | Reroll → PASS | Ouro final | Força final |",
+                   "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+        for player, metrics in sorted(report["economic_action_metrics"].items()):
+            lines.append(
+                f"| {player} | {metrics['actions']} | {metrics['gold_spent']} | {metrics['gold_recovered']} | "
+                f"{metrics['potential_interest_lost']} | {metrics['xp_without_level_up']} | {metrics['xp_level_up_unused']} | "
+                f"{metrics['rerolls_without_immediate_gain']} | {metrics['rerolls_followed_by_pass']} | "
+                f"{metrics.get('final_gold', '—')} | {metrics.get('final_board_power', '—')} |"
+            )
+            action_breakdown = ", ".join(
+                f"{name}: {values['gold_spent']}g"
+                for name, values in sorted(metrics.get("by_action", {}).items())
+            ) or "nenhum"
+            stage_breakdown = ", ".join(
+                f"stage {stage}: {values['gold_spent']}g"
+                for stage, values in sorted(metrics.get("by_stage", {}).items())
+            ) or "nenhum"
+            lines.append(f"- {player} — gasto por ação: {action_breakdown}")
+            lines.append(f"- {player} — gasto por estágio: {stage_breakdown}")
+        lines += ["", "Os motivos ficam em economic_diagnostics.reason_code. 'Sem ganho imediato' não significa automaticamente uma decisão ruim; o relatório não modifica a recompensa PPO.", ""]
+
     if report.get("purchase_sequence_metrics"):
         lines += ["## Auditoria de compras e vendas", "",
                   "| Jogador | Compras | Vendas | Revertidas ≤1 ação | ≤2 ações | ≤4 ações | Ouro perdido | Upgrades | Vendas core/par | Valor médio |",
@@ -508,7 +632,7 @@ def main() -> int:
     else:
         parser.error(f"caminho não existe: {source}")
     report = {"source": str(source), "log_files": [], "players_seen": set(),
-              "purchase_sequence_metrics": {},
+              "purchase_sequence_metrics": {}, "economic_action_metrics": {},
               "entries_read": 0, "diagnostics_missing": 0, "issues": [], "notes": [],
               "mask_note_added": False}
     for path in files:

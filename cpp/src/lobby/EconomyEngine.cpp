@@ -216,8 +216,11 @@ RoundEconomyResult EconomyEngine::resolve_round(
     const auto old_gold = economy.gold;
     const auto old_level = economy.level;
 
-    // A ordem importa: os juros usam o ouro antes da renda.
-    const auto interest = get_interest(economy.gold);
+    // A ordem importa: os juros usam o ouro antes da renda. Persistimos o
+    // saldo para auditoria; o viewer não reimplementa a fórmula econômica.
+    const auto gold_before_interest = economy.gold;
+    const auto interest = get_interest(gold_before_interest);
+    economy.gold_before_interest = gold_before_interest;
     const auto base_gold = get_round_gold(round_number);
     const auto streak_gold = get_streak_gold(economy);
 
@@ -235,6 +238,8 @@ RoundEconomyResult EconomyEngine::resolve_round(
     RoundEconomyResult result{
         round_number,
         old_gold,
+        gold_before_interest,
+        gold_before_interest,
         economy.gold,
         base_gold,
         base_gold,

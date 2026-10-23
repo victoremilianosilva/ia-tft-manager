@@ -343,6 +343,11 @@ struct AuditPlayerSnapshot {
     std::int32_t xp{0};
     std::int32_t win_streak{0};
     std::int32_t loss_streak{0};
+    std::int32_t gold_before_interest{0};
+    std::int32_t interest_if_resolved_now{0};
+    double board_power{0.0};
+    double synergy_score{0.0};
+    double positioning_score{0.0};
     std::int32_t round_gold{0};
     std::int32_t round_base_gold{0};
     std::int32_t round_interest{0};
