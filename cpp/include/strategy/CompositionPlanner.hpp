@@ -95,15 +95,20 @@ public:
             // unit at the current level. Blend current and near-future shop odds
             // so a unit that becomes easier after leveling is not over-penalized.
             const int horizon_end = std::min(10, safe_level + 2);
-            double horizon_probability = 0.0;
-            double weight_sum = 0.0;
-            constexpr double horizon_weights[] = {0.60, 0.25, 0.15};
-            for (int level = safe_level; level <= horizon_end; ++level) {
-                const double weight = horizon_weights[level - safe_level];
-                horizon_probability += weight * chance_per_shop_at_level(champion, level);
-                weight_sum += weight;
+            const int future_levels = horizon_end - safe_level;
+            double horizon_probability = 0.5 * chance_per_shop_at_level(champion, safe_level);
+
+            // Give the current level and the future outlook equal influence.
+            // Split the future half across the next two levels when both exist;
+            // near level 10, renormalize over the future levels that remain.
+            if (future_levels > 0) {
+                const double future_weight = 0.5 / static_cast<double>(future_levels);
+                for (int level = safe_level + 1; level <= horizon_end; ++level)
+                    horizon_probability += future_weight * chance_per_shop_at_level(champion, level);
+            } else {
+                // At max level there is no future-level estimate to blend in.
+                horizon_probability = chance_per_shop_at_level(champion, safe_level);
             }
-            if (weight_sum > 0.0) horizon_probability /= weight_sum;
             const double penalty = 3.5 * (1.0 - std::clamp(horizon_probability / 0.20, 0.0, 1.0));
             return std::pair<double, double>{horizon_probability, penalty};
         };
