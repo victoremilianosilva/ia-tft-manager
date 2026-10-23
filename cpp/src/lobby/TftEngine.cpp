@@ -2806,7 +2806,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             constexpr double kReversedSequenceTarget = -0.02;
             const double required_adjustment =
                 kReversedSequenceTarget - reversed_purchase_prior_reward -
-                action_reward - action_gold_reward;
+                action_reward;
             if (required_adjustment < 0.0)
                 action_reward += required_adjustment;
         }
