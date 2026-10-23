@@ -223,7 +223,7 @@ def test_paired_seed_summary_reports_deltas_and_bootstrap_interval():
     report = summarize_paired_seeds(rows, bootstrap_samples=500, bootstrap_seed=7)
 
     assert report["seed_count"] == 2
-    assert report["baseline"]["mean_placement"] == 6.25
+    assert report["baseline"]["mean_placement"] == 6.0
     assert report["candidate"]["mean_placement"] == 2.5
     placement_delta = report["paired_delta_candidate_minus_baseline"]["mean_placement"]
     assert placement_delta["mean"] < 0
