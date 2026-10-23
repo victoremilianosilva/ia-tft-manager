@@ -283,8 +283,16 @@ class PlayerJsonLogWriter:
         explicit_cost = int(purchased.get("cost", 0) or 0) if action_type == 0 else (
             2 if action_type == 1 else 4 if action_type == 2 else 0)
         gold_delta = gold_after - gold_before
-        before_power = self._board_power_state(before_state)
-        after_power = self._board_power_state(after_state)
+        before_power = (
+            float(before_state["board_power"])
+            if before_state.get("board_power") is not None
+            else self._board_power_state(before_state)
+        )
+        after_power = (
+            float(after_state["board_power"])
+            if after_state.get("board_power") is not None
+            else self._board_power_state(after_state)
+        )
         before_upgrades = self._upgrade_counts(before_state)
         after_upgrades = self._upgrade_counts(after_state)
         board_traits_before = self._board_trait_counts(before_state)
@@ -319,8 +327,8 @@ class PlayerJsonLogWriter:
             "win_income": int(after_state.get("round_win_gold", 0) or 0),
             "board_power_before": before_power,
             "board_power_after": after_power,
-            "engine_board_power_before": before_state.get("board_power"),
-            "engine_board_power_after": after_state.get("board_power"),
+            "estimated_board_power_before": self._board_power_state(before_state),
+            "estimated_board_power_after": self._board_power_state(after_state),
             "engine_synergy_before": before_state.get("synergy_score"),
             "engine_synergy_after": after_state.get("synergy_score"),
             "positioning_before": before_state.get("positioning_score"),
