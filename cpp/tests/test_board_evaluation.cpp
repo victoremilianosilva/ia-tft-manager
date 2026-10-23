@@ -48,14 +48,21 @@ int main() {
 
     // Frontline distribution: two lanes beat a single isolated lane for a larger board.
     Roles narrow_frontline(PE::size, -1);
-    narrow_frontline[0] = PE::tank;
-    narrow_frontline[21] = PE::carry;
-    narrow_frontline[22] = PE::support;
-    Roles spread_frontline = narrow_frontline;
-    spread_frontline[6] = PE::fighter;
-    require(BoardEvaluation::evaluate(spread_frontline).total_score >
-            BoardEvaluation::evaluate(narrow_frontline).total_score,
-            "spreading frontline across lanes should improve board quality");
+    narrow_frontline[3] = PE::tank;       // row 0, column 3
+    narrow_frontline[10] = PE::fighter;   // row 1, same column
+    narrow_frontline[24] = PE::carry;
+    narrow_frontline[25] = PE::support;
+    Roles spread_frontline(PE::size, -1);
+    spread_frontline[0] = PE::tank;       // row 0, column 0
+    spread_frontline[8] = PE::fighter;    // row 1, column 1; still adjacent to tank
+    spread_frontline[24] = PE::carry;
+    spread_frontline[25] = PE::support;
+    const auto narrow_eval = BoardEvaluation::evaluate(narrow_frontline);
+    const auto spread_eval = BoardEvaluation::evaluate(spread_frontline);
+    require(spread_eval.frontline_lane_count > narrow_eval.frontline_lane_count,
+            "frontline spread must count distinct columns, not just units");
+    require(spread_eval.total_score > narrow_eval.total_score,
+            "spreading a frontline across lanes should improve board quality");
 
     // Stable context: a positioning improvement with unchanged synergy is positive.
     const auto before = BoardEvaluation::evaluate(exposed, {}, 2.0, {24});
