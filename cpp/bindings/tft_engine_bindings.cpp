@@ -275,6 +275,16 @@ py::list strategies_to_list(
             item["comp_direction_update_steps"] = 0;
             item["comp_stabilize_start_round"] = -1;
             item["composition_strength"] = 0.0;
+            item["composition_candidate_direction"] = "";
+            item["composition_candidate_strength"] = 0.0;
+            item["composition_candidate_streak"] = 0;
+            item["previous_composition_direction"] = "";
+            item["previous_composition_strength"] = 0.0;
+            item["composition_direction_change_was_locked"] = false;
+            item["composition_direction_change_round"] = 0;
+            item["composition_direction_change_focus_weight"] = 0.0;
+            item["composition_direction_change_reason"] = "initial";
+            item["composition_direction_change_count"] = 0;
             item["composition_focus_weights"] = py::dict();
             item["core_units"] = py::list();
             item["core_unit_ids"] = py::list();
@@ -313,6 +323,16 @@ py::list strategies_to_list(
             item["comp_direction_update_steps"] = strategy.comp_direction_update_steps;
             item["comp_stabilize_start_round"] = strategy.comp_stabilize_start_round;
             item["composition_strength"] = strategy.composition_strength;
+            item["composition_candidate_direction"] = strategy.composition_candidate_direction;
+            item["composition_candidate_strength"] = strategy.composition_candidate_strength;
+            item["composition_candidate_streak"] = strategy.composition_candidate_streak;
+            item["previous_composition_direction"] = strategy.previous_composition_direction;
+            item["previous_composition_strength"] = strategy.previous_composition_strength;
+            item["composition_direction_change_was_locked"] = strategy.composition_direction_change_was_locked;
+            item["composition_direction_change_round"] = strategy.composition_direction_change_round;
+            item["composition_direction_change_focus_weight"] = strategy.composition_direction_change_focus_weight;
+            item["composition_direction_change_reason"] = strategy.composition_direction_change_reason;
+            item["composition_direction_change_count"] = strategy.composition_direction_change_count;
             py::dict composition_focus_weights;
             for (const auto& [trait, weight] : strategy.composition_focus_weights)
                 composition_focus_weights[py::str(trait)] = weight;

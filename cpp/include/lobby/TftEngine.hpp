@@ -247,6 +247,17 @@ struct StrategyInfo {
     std::uint32_t comp_direction_update_steps{0};
     std::int32_t comp_stabilize_start_round{-1};
     double composition_strength{0.0};
+    // Hysteresis state and auditable direction-transition diagnostics.
+    std::string composition_candidate_direction;
+    double composition_candidate_strength{0.0};
+    std::uint32_t composition_candidate_streak{0};
+    std::string previous_composition_direction;
+    double previous_composition_strength{0.0};
+    bool composition_direction_change_was_locked{false};
+    std::int32_t composition_direction_change_round{0};
+    double composition_direction_change_focus_weight{0.0};
+    std::string composition_direction_change_reason{"initial"};
+    std::uint64_t composition_direction_change_count{0};
     std::vector<std::pair<std::string, double>> composition_focus_weights;
     std::vector<std::string> core_units;
     std::vector<std::int32_t> core_unit_ids;

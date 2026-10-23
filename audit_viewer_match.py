@@ -351,6 +351,73 @@ def audit_economic_actions(entries: list[dict], player: str, report: dict) -> No
     }
 
 
+def audit_composition_direction_changes(entries: list[dict], player: str, report: dict) -> None:
+    """Measure direction transitions with observable strength/synergy/board/fit gains."""
+    metrics = {
+        "direction_changes": 0,
+        "changes_with_measurable_gain": 0,
+        "changes_without_measurable_gain": 0,
+        "details": [],
+        "interpretation": (
+            "Without measurable gain means the available log fields did not show a gain; "
+            "it is a review signal, not proof that the strategic transition was wrong."
+        ),
+    }
+    for entry in sorted(entries, key=lambda e: (e.get("sequence_id", 0), e.get("step", 0))):
+        if not isinstance(entry, dict) or entry.get("event_type") != "action":
+            continue
+        payload = entry.get("payload") or {}
+        diagnostics = payload.get("composition_diagnostics") or {}
+        event = diagnostics.get("direction_event")
+        if not isinstance(event, dict):
+            continue
+        before = payload.get("state_before") or {}
+        after = payload.get("state_after") or {}
+        strength_delta = (
+            float(after.get("composition_strength", 0.0) or 0.0)
+            - float(event.get("from_strength", before.get("composition_strength", 0.0)) or 0.0)
+        )
+        board_delta = float(after.get("board_power", 0.0) or 0.0) - float(
+            before.get("board_power", 0.0) or 0.0
+        )
+        synergy_delta = float(after.get("synergy_score", 0.0) or 0.0) - float(
+            before.get("synergy_score", 0.0) or 0.0
+        )
+        economic = payload.get("economic_diagnostics") or {}
+        synergy_milestones = economic.get("synergy_milestones_changed") or {}
+        fit = diagnostics.get("unit_fit") or {}
+        compatibility_gain = (
+            str(payload.get("action_name", "")).upper() == "BUY"
+            and (bool(fit.get("core_unit_match")) or float(fit.get("focus_fit_score", 0.0) or 0.0) > 0.0)
+        )
+        measurable_gain = (
+            strength_delta > 1e-6 or board_delta > 1e-6
+            or synergy_delta > 1e-6 or bool(synergy_milestones) or compatibility_gain
+        )
+        metrics["direction_changes"] += 1
+        metrics["changes_with_measurable_gain"] += int(measurable_gain)
+        metrics["changes_without_measurable_gain"] += int(not measurable_gain)
+        metrics["details"].append({
+            "step": entry.get("step"),
+            "round": get_round(entry),
+            "from": event.get("from"),
+            "to": event.get("to"),
+            "reason": event.get("reason"),
+            "was_locked": event.get("was_locked"),
+            "strength_delta": round(strength_delta, 4),
+            "board_power_delta": round(board_delta, 4),
+            "synergy_delta": round(synergy_delta, 4),
+            "synergy_milestones_changed": synergy_milestones,
+            "compatibility_gain": compatibility_gain,
+            "measurable_gain": measurable_gain,
+        })
+    if metrics["direction_changes"]:
+        metrics["rate_without_measurable_gain"] = round(
+            metrics["changes_without_measurable_gain"] / metrics["direction_changes"], 4
+        )
+        report.setdefault("composition_direction_metrics", {})[player] = metrics
+
+
 def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_window: int) -> None:
     player_id = doc.get("player_number")
     if player_id is None:
@@ -361,6 +428,7 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
     report["entries_read"] += len(doc["entries"])
     audit_purchase_sequences(doc["entries"], player, report)
     audit_economic_actions(doc["entries"], player, report)
+    audit_composition_direction_changes(doc["entries"], player, report)
     report["log_files"].append(str(path))
 
     entries = sorted(doc["entries"], key=lambda e: (e.get("sequence_id", 0), e.get("step", 0)))
@@ -571,6 +639,20 @@ def markdown_report(report: dict) -> str:
             lines.append(f"- {player} — gasto por estágio: {stage_breakdown}")
         lines += ["", "Os motivos ficam em economic_diagnostics.reason_code. 'Sem ganho imediato' não significa automaticamente uma decisão ruim; o relatório não modifica a recompensa PPO.", ""]
 
+    if report.get("composition_direction_metrics"):
+        lines += ["## Auditoria de mudanças de composição", "",
+                  "| Jogador | Mudanças | Com ganho mensurável | Sem ganho mensurável | Taxa sem ganho |",
+                  "|---|---:|---:|---:|---:|"]
+        for player, metrics in sorted(report["composition_direction_metrics"].items()):
+            lines.append(
+                f"| {player} | {metrics['direction_changes']} | "
+                f"{metrics['changes_with_measurable_gain']} | "
+                f"{metrics['changes_without_measurable_gain']} | "
+                f"{metrics.get('rate_without_measurable_gain', 0.0):.1%} |"
+            )
+        lines += ["", "Os detalhes por transição ficam em audit_report.json. "
+                  "‘Sem ganho mensurável’ indica falta de evidência nos campos disponíveis, não prova de decisão ruim.", ""]
+
     if report.get("purchase_sequence_metrics"):
         lines += ["## Auditoria de compras e vendas", "",
                   "| Jogador | Compras | Vendas | Revertidas ≤1 ação | ≤2 ações | ≤4 ações | Ouro perdido | Upgrades | Vendas core/par | Valor médio |",
@@ -633,6 +715,7 @@ def main() -> int:
         parser.error(f"caminho não existe: {source}")
     report = {"source": str(source), "log_files": [], "players_seen": set(),
               "purchase_sequence_metrics": {}, "economic_action_metrics": {},
+              "composition_direction_metrics": {},
               "entries_read": 0, "diagnostics_missing": 0, "issues": [], "notes": [],
               "mask_note_added": False}
     for path in files:

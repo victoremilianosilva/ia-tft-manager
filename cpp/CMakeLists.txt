@@ -13,6 +13,19 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Composition-direction hysteresis is tunable without editing engine logic.
+set(TFT_COMP_DIRECTION_MIN_RELATIVE_ADVANTAGE "0.20" CACHE STRING
+    "Minimum relative advantage required to change a locked composition")
+set(TFT_COMP_DIRECTION_MIN_ABSOLUTE_ADVANTAGE "0.75" CACHE STRING
+    "Minimum absolute strength advantage required to change a locked composition")
+set(TFT_COMP_DIRECTION_REQUIRED_UPDATES "3" CACHE STRING
+    "Consecutive strategy refreshes required before a non-emergency direction change")
+add_compile_definitions(
+    TFT_COMP_DIRECTION_MIN_RELATIVE_ADVANTAGE=${TFT_COMP_DIRECTION_MIN_RELATIVE_ADVANTAGE}
+    TFT_COMP_DIRECTION_MIN_ABSOLUTE_ADVANTAGE=${TFT_COMP_DIRECTION_MIN_ABSOLUTE_ADVANTAGE}
+    TFT_COMP_DIRECTION_REQUIRED_UPDATES=${TFT_COMP_DIRECTION_REQUIRED_UPDATES}
+)
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
     "${CMAKE_BINARY_DIR}/bin"
 )
@@ -273,6 +286,17 @@ if(BUILD_TESTING)
         PRIVATE "${TFT_COMBAT_INCLUDE_DIR}"
     )
     add_test(NAME test_combat_engine COMMAND test_combat_engine)
+
+    add_executable(
+        test_composition_direction_policy
+        tests/test_composition_direction_policy.cpp
+    )
+    configure_tft_module(test_composition_direction_policy)
+    enable_tft_test_assertions(test_composition_direction_policy)
+    add_test(
+        NAME composition_direction_policy
+        COMMAND test_composition_direction_policy
+    )
 
     add_executable(test_reward_model tests/test_reward_model.cpp)
     target_include_directories(test_reward_model PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)

@@ -27,12 +27,23 @@
 #include "strategy/SynergyCounter.hpp"
 #include "strategy/PositioningEngine.hpp"
 #include "reward/RewardModel.hpp"
+#include "strategy/CompositionDirectionPolicy.hpp"
 
 #include "decision/ActionMaskEngine.hpp"
 #include "decision/DecisionState.hpp"
 #include "decision/AntiLoopEngine.hpp"
 #include "decision/MoveValidator.hpp"
 #include "decision/DecisionTypes.hpp"
+
+#ifndef TFT_COMP_DIRECTION_MIN_RELATIVE_ADVANTAGE
+#define TFT_COMP_DIRECTION_MIN_RELATIVE_ADVANTAGE 0.20
+#endif
+#ifndef TFT_COMP_DIRECTION_MIN_ABSOLUTE_ADVANTAGE
+#define TFT_COMP_DIRECTION_MIN_ABSOLUTE_ADVANTAGE 0.75
+#endif
+#ifndef TFT_COMP_DIRECTION_REQUIRED_UPDATES
+#define TFT_COMP_DIRECTION_REQUIRED_UPDATES 3
+#endif
 
 #ifndef TFT_DEFAULT_CATALOG_PATH
 #define TFT_DEFAULT_CATALOG_PATH "units_gerado.json"
@@ -1461,15 +1472,27 @@ struct TFTEngine::Impl {
                 return left_pos < right_pos;
             });
 
+        const auto current_trait_score = trait_score.find(info.composition_direction);
+        const bool current_direction_viable =
+            !info.composition_direction.empty() &&
+            current_trait_score != trait_score.end() && current_trait_score->second > 2.0;
+        bool composition_transition_unlocked_this_update = false;
+
         std::map<std::string, double> new_comp_traits;
         if (current_stage <= 2) {
             info.composition_locked = false;
             info.composition_direction.clear();
             info.composition_strength = 0.0;
+            info.composition_candidate_direction.clear();
+            info.composition_candidate_strength = 0.0;
+            info.composition_candidate_streak = 0;
         } else if (unit_count == 0) {
             info.composition_locked = false;
             info.composition_direction.clear();
             info.composition_strength = 0.0;
+            info.composition_candidate_direction.clear();
+            info.composition_candidate_strength = 0.0;
+            info.composition_candidate_streak = 0;
             focus.clear();
         } else {
             ++info.comp_direction_update_steps;
@@ -1485,17 +1508,7 @@ struct TFTEngine::Impl {
                         unit_count >= 6 && (ratio > 1.6 || gap > 2.5)) {
                         info.composition_locked = true;
                     }
-                    if (info.composition_locked) {
-                        int active_core = 0;
-                        for (const auto& [trait, weight] : focus) {
-                            const auto found = trait_score.find(trait);
-                            if (found != trait_score.end() && found->second > 2.0)
-                                ++active_core;
-                        }
-                        if (active_core == 0) info.composition_locked = false;
-                    }
-
-                    if (info.composition_locked && !focus.empty()) {
+                    if (info.composition_locked && current_direction_viable && !focus.empty()) {
                         std::map<std::string, double> combined;
                         for (const auto& [trait, weight] : focus)
                             combined[trait] = weight * 0.6;
@@ -1546,19 +1559,91 @@ struct TFTEngine::Impl {
                             0.1, focus[info.composition_direction]) * 1.1;
                 }
                 for (auto& [trait, weight] : focus) weight = std::min(weight, 5.0);
+
+                // The candidate is recalculated each refresh, but a locked direction
+                // only changes through explicit hysteresis or loss-of-viability.
+                strategy::CompositionDirectionState direction_state;
+                direction_state.direction = info.composition_direction;
+                direction_state.strength = info.composition_strength;
+                direction_state.locked = info.composition_locked;
+                direction_state.candidate_direction = info.composition_candidate_direction;
+                direction_state.candidate_strength = info.composition_candidate_strength;
+                direction_state.candidate_streak = info.composition_candidate_streak;
+                direction_state.previous_direction = info.previous_composition_direction;
+                direction_state.change_reason = info.composition_direction_change_reason;
+                direction_state.change_count = info.composition_direction_change_count;
+
+                std::string candidate_direction;
+                double candidate_strength = 0.0;
                 if (!new_comp_traits.empty()) {
                     const auto main = std::max_element(
                         new_comp_traits.begin(), new_comp_traits.end(),
                         [](const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
-                    info.composition_direction = main->first;
+                    candidate_direction = main->first;
                     double total = 0.0;
                     for (const auto& [trait, value] : new_comp_traits)
                         total += std::min(value, 10.0);
-                    info.composition_strength = total / new_comp_traits.size();
-                } else {
-                    info.composition_direction.clear();
-                    info.composition_strength = 0.0;
+                    candidate_strength = total / new_comp_traits.size();
                 }
+
+                // If the current direction has lost viability but still wins the
+                // stale focus-weighted ranking, select the best different trait
+                // instead of repeatedly proposing the direction we are abandoning.
+                if (!current_direction_viable &&
+                    candidate_direction == info.composition_direction) {
+                    const auto alternative = std::find_if(
+                        sorted_traits.begin(), sorted_traits.end(),
+                        [&](const auto& item) {
+                            return item.first != info.composition_direction;
+                        });
+                    if (alternative != sorted_traits.end()) {
+                        candidate_direction = alternative->first;
+                        candidate_strength = alternative->second * 1.4;
+                    }
+                }
+
+                static const strategy::CompositionDirectionPolicy direction_policy{
+                    strategy::CompositionDirectionConfig{
+                        TFT_COMP_DIRECTION_MIN_RELATIVE_ADVANTAGE,
+                        TFT_COMP_DIRECTION_MIN_ABSOLUTE_ADVANTAGE,
+                        TFT_COMP_DIRECTION_REQUIRED_UPDATES
+                    }
+                };
+                const std::string direction_before = info.composition_direction;
+                const double strength_before = info.composition_strength;
+                const bool locked_before = info.composition_locked;
+                const auto direction_result = direction_policy.update(
+                    direction_state,
+                    strategy::CompositionDirectionInput{
+                        candidate_direction,
+                        candidate_strength,
+                        current_direction_viable,
+                        false
+                    });
+
+                if (direction_result.changed) {
+                    info.previous_composition_direction = direction_before;
+                    info.previous_composition_strength = strength_before;
+                    info.composition_direction_change_was_locked = locked_before;
+                    info.composition_direction_change_round = current_round;
+                    const auto focus_weight = focus.find(direction_state.direction);
+                    info.composition_direction_change_focus_weight =
+                        focus_weight == focus.end() ? 0.0 : focus_weight->second;
+                    info.composition_direction_change_reason = direction_state.change_reason;
+                }
+                composition_transition_unlocked_this_update = direction_result.unlocked;
+                info.composition_direction = direction_state.direction;
+                info.composition_strength = direction_state.strength;
+                info.composition_candidate_direction = direction_state.candidate_direction;
+                info.composition_candidate_strength = direction_state.candidate_strength;
+                info.composition_candidate_streak = direction_state.candidate_streak;
+                info.previous_composition_direction = direction_state.previous_direction;
+                info.composition_direction_change_count = direction_state.change_count;
+
+                // A successful strategic transition must not be re-locked by the
+                // generic stage/board-stability heuristic in the same update.
+                if (direction_result.unlocked)
+                    info.composition_locked = false;
             }
         }
 
@@ -1604,7 +1689,7 @@ struct TFTEngine::Impl {
             info.strategy == 1 && info.comp_stabilize_start_round >= 0 &&
             current_round - info.comp_stabilize_start_round >= 3 &&
             economy.win_streak == 0;
-        if (!stabilize_lock_suppressed) {
+        if (!stabilize_lock_suppressed && !composition_transition_unlocked_this_update) {
             bool has_offensive_synergy = false;
             if (current_stage >= 4) {
                 for (const auto& [trait, count] : board_trait_counts) {
