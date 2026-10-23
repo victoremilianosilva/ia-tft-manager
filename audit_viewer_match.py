@@ -319,8 +319,14 @@ def audit_economic_actions(entries: list[dict], player: str, report: dict) -> No
                 xp_level_up_unused += 1
         if action_name == "REROLL" and diag.get("reason_code") == "REROLL_NO_IMMEDIATE_BOARD_GAIN":
             rerolls_without_immediate_gain += 1
-            if index + 1 < len(actions) and actions[index + 1].get("payload", {}).get("action_name") == "PASS":
-                rerolls_followed_by_pass += 1
+            if index + 1 < len(actions):
+                next_entry = actions[index + 1]
+                same_round = (
+                    next_entry.get("round") == entry.get("round")
+                    and next_entry.get("stage") == entry.get("stage")
+                )
+                if same_round and next_entry.get("payload", {}).get("action_name") == "PASS":
+                    rerolls_followed_by_pass += 1
         if payload.get("action_reward") is not None:
             reward_component_samples += 1
         after = payload.get("state_after") or {}
