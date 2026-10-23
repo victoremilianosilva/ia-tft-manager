@@ -122,7 +122,6 @@ def audit_seed(policy, device, seed, output_handles, max_steps):
             raise ValueError(f"Observações inesperadas: {observations.shape}")
         total_logged = 0
         initial_snapshot = lobby.get_audit_snapshot()
-        initial_strategies = lobby.get_strategy_snapshots()
         visited = [dict() for _ in range(8)]
         for player_id, player in enumerate(initial_snapshot["players"]):
             visited[player_id][state_signature(player)] = {"step": -1, "action": None}
@@ -139,7 +138,11 @@ def audit_seed(policy, device, seed, output_handles, max_steps):
                 for player_id in range(8)
             ]
             masks = lobby.get_action_masks()
-            gold_before = _player_gold(lobby)
+            gold_before = {
+                int(player.get("player_id", index)): int(player["gold"])
+                for index, player in enumerate(before_players)
+                if isinstance(player, dict) and "gold" in player
+            }
             alive = [
                 player_id for player_id, player in enumerate(lobby.players)
                 if player.alive and not player.eliminated
@@ -170,7 +173,11 @@ def audit_seed(policy, device, seed, output_handles, max_steps):
             after_snapshot = lobby.get_audit_snapshot()
             after_players = after_snapshot["players"]
             strategies_after = lobby.get_strategy_snapshots()
-            gold_after = _player_gold(lobby)
+            gold_after = {
+                int(player.get("player_id", index)): int(player["gold"])
+                for index, player in enumerate(after_players)
+                if isinstance(player, dict) and "gold" in player
+            }
             action_rewards = np.asarray(
                 info.get("action_rewards", np.zeros(8)), dtype=np.float32
             ).reshape(-1)
