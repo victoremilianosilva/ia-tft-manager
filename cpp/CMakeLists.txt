@@ -298,6 +298,11 @@ if(BUILD_TESTING)
         COMMAND test_composition_direction_policy
     )
 
+    add_executable(test_composition_planner tests/test_composition_planner.cpp)
+    configure_tft_module(test_composition_planner)
+    enable_tft_test_assertions(test_composition_planner)
+    add_test(NAME composition_planner COMMAND test_composition_planner)
+
     add_executable(test_board_evaluation tests/test_board_evaluation.cpp)
     configure_tft_module(test_board_evaluation)
     enable_tft_test_assertions(test_board_evaluation)
