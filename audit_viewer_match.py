@@ -138,7 +138,7 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
     metrics = {
         "buys": 0, "sells": 0, "reversed_1": 0, "reversed_2": 0, "reversed_4": 0,
         "net_gold_lost_reversed": 0, "upgrade_completing_buys": 0,
-        "buys_with_positive_comp_fit": 0, "buys_with_board_gain": 0,
+        "buys_with_positive_comp_fit": 0, "buys_with_board_gain": 0, "buys_with_synergy_milestone": 0,
         "core_or_pair_sales": 0, "core_unit_sales": 0, "classified_sales": {}, "purchase_records": [],
     }
     purchases = []
@@ -155,14 +155,17 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
                 continue
             champion = unit_name(unit)
             fit = ((payload.get("composition_diagnostics") or {}).get("unit_fit") or {})
-            fit_score = float(fit.get("focus_fit_score", 0.0) or 0.0)
+            fit_score = float(fit.get("focus_fit_score", 0.0) or 0.0) + (5.0 if fit.get("core_unit_match") else 0.0)
+            economic = payload.get("economic_diagnostics") or {}
+            synergy_gain = len(economic.get("synergy_milestones_changed") or {})
             upgrade_completed = _star_counts(after)[2] > _star_counts(before)[2]
             board_gain = _board_power(after) > _board_power(before) + 1e-6
             metrics["buys"] += 1
             metrics["upgrade_completing_buys"] += int(upgrade_completed)
             metrics["buys_with_positive_comp_fit"] += int(fit_score > 0)
             metrics["buys_with_board_gain"] += int(board_gain)
-            strategic_value = fit_score + (2.0 if upgrade_completed else 0.0) + max(
+            metrics["buys_with_synergy_milestone"] += int(synergy_gain > 0)
+            strategic_value = fit_score + (2.0 if upgrade_completed else 0.0) + 1.5 * synergy_gain + max(
                 0, _pair_count(after) - _pair_count(before))
             if board_gain:
                 strategic_value += 1.0
