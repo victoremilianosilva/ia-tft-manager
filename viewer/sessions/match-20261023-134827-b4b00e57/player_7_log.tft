@@ -1,0 +1,2447 @@
+==========================================================
+TFT AI LOG · JOGADOR 7
+Partida: b4b00e57-6387-484d-bd98-cf73bb284561
+Seed: 20261016 | Política: determinística
+Checkpoint SHA-256: 554f23eb232c13ac69499b5d23b3bc53e0bc9a5cc152e67de1a13b09d823b10f
+Impacto (i): custo × estrelas × 2 (contribuição nativa da engine)
+==========================================================
+--- INÍCIO DA PARTIDA · JOGADOR 7 ---
+[13:48:30] VENDEU: Briar (i:2.0)        | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: — | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: —
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: — | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=— -> — | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Briar | core=não | fit=0.00 | nenhum trait de foco
+[13:48:31] COMPROU: Poppy (Custo 1 | i:2.0) | Rew: -0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 4.32, Bastion 0.68
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=— -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=0.00 | nenhum trait de foco
+[13:48:31] MOVE Bench -> Board: Poppy (i:2.0) <-> Vazio | Rew: +0.33
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 4.32, Bastion 0.68
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=5.00 | Meeple=4.32, Bastion=0.68
+[13:48:32] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 4.32, Bastion 0.68
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[13:48:36] --- FIM DO ROUND 1-1 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 4.32, Bastion 0.68
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:48:36] 🛒 LOJA: Talon(i:2.0), Caitlyn(i:2.0), Talon(i:2.0), Leona(i:2.0), Twisted Fate(i:2.0)
+[13:48:37] COMPROU: Leona (Custo 1 | i:2.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 4.11, Bastion 0.65, Arbiter 0.12, Vanguard 0.12
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_Leona | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=0.00 | nenhum trait de foco
+[13:48:37] MOVE Bench -> Board: Leona (i:2.0) <-> Poppy (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Leona | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.94, Bastion 0.62, Arbiter 0.22, Vanguard 0.22
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Leona, TFT17_Poppy | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Leona | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Leona | core=SIM | fit=0.24 | Arbiter=0.12, Vanguard=0.12
+[13:48:38] MOVE Bench -> Board: Poppy (i:2.0) <-> Vazio | Rew: +0.25
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.82, Bastion 0.60, Arbiter 0.29, Vanguard 0.29
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_Leona | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leona -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=4.57 | Meeple=3.94, Bastion=0.62
+[13:48:39] COMPROU: Twisted Fate (Custo 1 | i:2.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.63, Bastion 0.57, Arbiter 0.34, Vanguard 0.34, Fateweaver 0.12
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_Leona, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=0.00 | nenhum trait de foco
+[13:48:39] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Leona (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.49, Bastion 0.55, Arbiter 0.37, Vanguard 0.37, Fateweaver 0.21
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_TwistedFate, TFT17_Leona | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=0.12 | Fateweaver=0.12
+[13:48:40] MOVE Bench -> Board: Leona (i:2.0) <-> Vazio | Rew: +0.52
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.39, Bastion 0.53, Arbiter 0.40, Vanguard 0.40, Fateweaver 0.28
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_Leona, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Leona | core=SIM | fit=0.75 | Arbiter=0.37, Vanguard=0.37
+[13:48:41] MOVE Board -> Board: Leona (i:2.0) <-> Vazio | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.31, Bastion 0.52, Arbiter 0.42, Vanguard 0.42, Fateweaver 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_Leona, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Leona | core=SIM | fit=0.80 | Arbiter=0.40, Vanguard=0.40
+[13:48:42] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.25, Bastion 0.51, Arbiter 0.44, Vanguard 0.44, Fateweaver 0.37
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_Leona, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+
+[13:48:43] --- FIM DO ROUND 1-2 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.14, Bastion 0.50, Arbiter 0.46, Vanguard 0.46, Fateweaver 0.43
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Twi|C|1*|i:2.0]       [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:48:43] 🛒 LOJA: Gnar(i:4.0), Briar(i:2.0), Rek'Sai(i:2.0), Jinx(i:4.0), Akali(i:4.0)
+[13:48:44] COMPROU: Jinx (Custo 2 | i:4.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Jinx | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.12, Bastion 0.49, Arbiter 0.47, Vanguard 0.47, Fateweaver 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Jinx, TFT17_Poppy, TFT17_Leona | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Jinx | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jinx | core=não | fit=0.00 | nenhum trait de foco
+[13:48:44] VENDEU: Jinx (i:4.0)         | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.11, Bastion 0.49, Arbiter 0.47, Vanguard 0.47, Fateweaver 0.46
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_Leona, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Jinx -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Jinx | core=SIM | fit=0.00 | nenhum trait de foco
+[13:48:45] COMPROU: Akali (Custo 2 | i:4.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Akali | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.10, Bastion 0.49, Arbiter 0.48, Vanguard 0.48, Fateweaver 0.46
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Akali, TFT17_Poppy, TFT17_Leona | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Akali | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=não | fit=0.00 | nenhum trait de foco
+[13:48:46] MOVE Bench -> Board: Akali (i:4.0) <-> Twisted Fate (i:2.0) | Rew: +0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Akali | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.09, Bastion 0.49, Arbiter 0.48, Vanguard 0.48, Fateweaver 0.47
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Akali, TFT17_Poppy, TFT17_Leona | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Akali -> TFT17_Akali | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=0.00 | nenhum trait de foco
+[13:48:46] VENDEU: Twisted Fate (i:2.0) | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Akali | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.16, Bastion 0.50, Arbiter 0.49, Vanguard 0.49, Fateweaver 0.36
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Akali, TFT17_Poppy, TFT17_Leona | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Akali -> TFT17_Akali | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=0.47 | Fateweaver=0.47
+[13:48:47] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Akali | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.21, Bastion 0.51, Arbiter 0.50, Vanguard 0.50, Fateweaver 0.28
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Akali, TFT17_Poppy, TFT17_Leona | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Akali -> TFT17_Akali | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+
+[13:48:50] --- FIM DO ROUND 1-3 | GOLD: 4 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Akali | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.25, Bastion 0.51, Arbiter 0.51, Vanguard 0.51, Marauder 0.21
+    RENDA PRÓXIMO ROUND: +3 base, +0 juros, +0 sequência, +0 vitória (total: +3)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:4.0]       [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:48:50] 🛒 LOJA: Gnar(i:4.0), Cho'Gath(i:2.0), Poppy(i:2.0), Cho'Gath(i:2.0), Veigar(i:2.0)
+[13:48:51] BUY XP                       | Rew: +1.51
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Akali | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.21, Bastion 0.51, Arbiter 0.50, Vanguard 0.50, Marauder 0.28
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Akali, TFT17_Poppy, TFT17_Leona | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Akali -> TFT17_Akali | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+[13:48:51] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Akali | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.17, Bastion 0.50, Arbiter 0.50, Vanguard 0.50, Marauder 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Akali, TFT17_Poppy, TFT17_Leona | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Akali -> TFT17_Akali | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+
+[13:48:57] --- FIM DO ROUND 1-4 | GOLD: 4 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Akali | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 3.07, Bastion 0.49, Arbiter 0.49, Vanguard 0.49, Marauder 0.47
+    RENDA PRÓXIMO ROUND: +4 base, +0 juros, +0 sequência, +0 vitória (total: +4)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:4.0]       [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:48:57] 🛒 LOJA: Akali(i:4.0), Teemo(i:2.0), Zoe(i:4.0), Gwen(i:4.0), Rek'Sai(i:2.0)
+[13:48:58] COMPROU: Zoe (Custo 2 | i:4.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Akali | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 2.42, Arbiter 1.15, Bastion 0.48, Vanguard 0.48, Marauder 0.47
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Akali, TFT17_Zoe, TFT17_Poppy | CORE TRAITS: Arbiter
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Akali -> TFT17_Akali | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Zoe | core=não | fit=0.49 | Arbiter=0.49
+[13:48:59] MOVE Bench -> Board: Zoe (i:4.0) <-> Vazio | Rew: +0.55
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Zoe | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Meeple 1.84, Arbiter 1.80, Bastion 0.46, Vanguard 0.46, Marauder 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Zoe, TFT17_Akali, TFT17_Poppy | CORE TRAITS: Arbiter
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Akali -> TFT17_Zoe | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Zoe | core=SIM | fit=1.15 | Arbiter=1.15
+[13:49:00] COMPROU: Akali (Custo 2 | i:4.0) | Rew: +0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Akali | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 2.25, Meeple 1.42, Marauder 0.47, Bastion 0.44, Vanguard 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Akali, TFT17_Zoe, TFT17_Poppy | CORE TRAITS: Arbiter, N.O.V.A., Marauder
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Zoe -> TFT17_Akali | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=0.45 | Marauder=0.45
+[13:49:00] VENDEU: Akali (i:4.0)        | Rew: -0.16
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Zoe | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 2.58, Meeple 1.12, Marauder 0.45, Bastion 0.42, Vanguard 0.42
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Zoe, TFT17_Akali, TFT17_Poppy | CORE TRAITS: Arbiter
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Akali -> TFT17_Zoe | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=0.47 | Marauder=0.47
+[13:49:01] COMPROU: Teemo (Custo 1 | i:2.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Zoe | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 2.82, Meeple 0.92, Marauder 0.43, Bastion 0.42, Vanguard 0.42
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Zoe, TFT17_Akali, TFT17_Poppy | CORE TRAITS: Arbiter
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Zoe -> TFT17_Zoe | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=não | fit=0.00 | nenhum trait de foco
+[13:49:02] VENDEU: Teemo (i:2.0)        | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Zoe | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 2.99, Meeple 0.77, Marauder 0.42, Bastion 0.41, Vanguard 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Zoe, TFT17_Akali, TFT17_Poppy | CORE TRAITS: Arbiter
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Zoe -> TFT17_Zoe | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=não | fit=0.00 | nenhum trait de foco
+[13:49:03] COMPROU: Gwen (Custo 2 | i:4.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Zoe | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 3.12, Meeple 0.66, Marauder 0.41, Bastion 0.41, Vanguard 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Zoe, TFT17_Akali, TFT17_Gwen | CORE TRAITS: Arbiter
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Zoe -> TFT17_Zoe | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Gwen | core=não | fit=0.00 | nenhum trait de foco
+[13:49:03] VENDEU: Gwen (i:4.0)         | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Zoe | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 3.20, Meeple 0.58, Marauder 0.41, Bastion 0.40, Vanguard 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Zoe, TFT17_Akali, TFT17_Poppy | CORE TRAITS: Arbiter
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Zoe -> TFT17_Zoe | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Gwen | core=SIM | fit=0.00 | nenhum trait de foco
+[13:49:04] COMPROU: Rek'Sai (Custo 1 | i:2.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Zoe | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 3.26, Meeple 0.53, Marauder 0.40, Bastion 0.40, Vanguard 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Zoe, TFT17_Akali, TFT17_Poppy | CORE TRAITS: Arbiter
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Zoe -> TFT17_Zoe | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Rek'Sai | core=não | fit=0.00 | nenhum trait de foco
+
+[13:49:05] --- FIM DO ROUND 2-1 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Zoe | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 3.34, Meeple 0.46, Marauder 0.40, Bastion 0.40, Vanguard 0.40
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Zoe|C|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:4.0]       [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Rek|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:49:05] 🛒 LOJA: Briar(i:2.0), Talon(i:2.0), Caitlyn(i:2.0), Maokai(i:6.0), Ezreal(i:2.0)
+[13:49:06] BUY XP                       | Rew: +0.51
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Zoe | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 3.36, Meeple 0.44, Marauder 0.40, Bastion 0.40, Vanguard 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Zoe, TFT17_Akali, TFT17_Poppy | CORE TRAITS: Arbiter
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Zoe -> TFT17_Zoe | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[13:49:07] VENDEU: Rek'Sai (i:2.0)      | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Zoe | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 3.38, Meeple 0.43, Marauder 0.40, Bastion 0.40, Vanguard 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Zoe, TFT17_Akali, TFT17_Poppy | CORE TRAITS: Arbiter
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Zoe -> TFT17_Zoe | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Rek'Sai | core=não | fit=0.00 | nenhum trait de foco
+[13:49:08] COMPROU: Maokai (Custo 3 | i:6.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Maokai | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 3.39, Meeple 0.42, Marauder 0.40, Bastion 0.40, Vanguard 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Maokai, TFT17_Zoe, TFT17_Akali | CORE TRAITS: Arbiter, N.O.V.A.
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Zoe -> TFT17_Maokai | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Maokai | core=não | fit=0.00 | nenhum trait de foco
+[13:49:08] MOVE Bench -> Board: Maokai (i:6.0) <-> Vazio | Rew: +0.60
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Maokai | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 3.40, Meeple 0.41, Marauder 0.40, Bastion 0.40, Vanguard 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Maokai, TFT17_Zoe, TFT17_Akali | CORE TRAITS: Arbiter, N.O.V.A.
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Maokai -> TFT17_Maokai | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Maokai | core=SIM | fit=0.00 | nenhum trait de foco
+[13:49:09] COMPROU: Caitlyn (Custo 1 | i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Maokai | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 2.82, N.O.V.A. 0.98, Meeple 0.41, Marauder 0.40, Bastion 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Maokai, TFT17_Zoe, TFT17_Akali | CORE TRAITS: N.O.V.A., Arbiter
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Maokai -> TFT17_Maokai | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Caitlyn | core=não | fit=0.00 | nenhum trait de foco
+[13:49:09]  ⬆️ SINERGIA: N.O.V.A. nível 1
+[13:49:10] VENDEU: Caitlyn (i:2.0)      | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Maokai | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 2.84, N.O.V.A. 1.02, Meeple 0.38, Marauder 0.38, Bastion 0.38
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Maokai, TFT17_Zoe, TFT17_Akali | CORE TRAITS: Arbiter, N.O.V.A.
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Maokai -> TFT17_Maokai | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Caitlyn | core=não | fit=0.98 | N.O.V.A.=0.98
+[13:49:10]  ⬇️ SINERGIA: N.O.V.A. nível 0
+[13:49:10] COMPROU: Briar (Custo 1 | i:2.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Maokai | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 2.86, N.O.V.A. 1.05, Meeple 0.37, Marauder 0.36, Bastion 0.36
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Maokai, TFT17_Zoe, TFT17_Akali | CORE TRAITS: Arbiter, N.O.V.A.
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Maokai -> TFT17_Maokai | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Briar | core=não | fit=0.00 | nenhum trait de foco
+[13:49:11] VENDEU: Briar (i:2.0)        | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Maokai | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 2.87, N.O.V.A. 1.07, Meeple 0.36, Marauder 0.35, Bastion 0.35
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Maokai, TFT17_Zoe, TFT17_Akali | CORE TRAITS: Arbiter, N.O.V.A.
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Maokai -> TFT17_Maokai | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Briar | core=não | fit=0.00 | nenhum trait de foco
+[13:49:12] MOVE Board -> Board: Maokai (i:6.0) <-> Poppy (i:2.0) | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Maokai | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 2.87, N.O.V.A. 1.08, Meeple 0.35, Marauder 0.35, Bastion 0.35
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Maokai, TFT17_Zoe, TFT17_Akali | CORE TRAITS: N.O.V.A., Arbiter
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Maokai -> TFT17_Maokai | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Maokai | core=SIM | fit=1.07 | N.O.V.A.=1.07
+
+[13:49:12] --- FIM DO ROUND 2-2 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Maokai | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 2.88, N.O.V.A. 1.10, Meeple 0.34, Marauder 0.34, Bastion 0.34
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Mao|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Zoe|C|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:4.0]  [Pop|T|1*|i:2.0]       [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:49:12] 🛒 LOJA: Illaoi(i:6.0), Poppy(i:2.0), Zoe(i:4.0), Talon(i:2.0), Bel'Veth(i:4.0)
+[13:49:14] COMPROU: Illaoi (Custo 3 | i:6.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 2.88, N.O.V.A. 1.10, Meeple 0.34, Marauder 0.34, Bastion 0.34
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Maokai, TFT17_Zoe | CORE TRAITS: N.O.V.A., Arbiter, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Maokai -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Illaoi | core=não | fit=0.00 | nenhum trait de foco
+[13:49:15] MOVE Bench -> Board: Illaoi (i:6.0) <-> Zoe (i:4.0) | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 2.18, N.O.V.A. 1.74, Vanguard 0.37, Meeple 0.35, Marauder 0.35
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Maokai, TFT17_Akali | CORE TRAITS: N.O.V.A., Arbiter, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Illaoi | core=SIM | fit=0.00 | nenhum trait de foco
+[13:49:15] VENDEU: Zoe (i:4.0)          | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: N.O.V.A. 2.11, Arbiter 1.59, Vanguard 0.61, Meeple 0.34, Marauder 0.34
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Maokai, TFT17_Akali | CORE TRAITS: N.O.V.A., Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Zoe | core=não | fit=2.18 | Arbiter=2.18
+[13:49:16] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: N.O.V.A. 2.36, Arbiter 1.19, Vanguard 0.77, Meeple 0.34, Marauder 0.34
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Maokai, TFT17_Akali | CORE TRAITS: N.O.V.A., Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[13:49:17] COMPROU: Poppy (Custo 1 | i:2.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: N.O.V.A. 2.51, Arbiter 0.91, Vanguard 0.87, Meeple 0.37, Marauder 0.34
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Maokai, TFT17_Akali | CORE TRAITS: N.O.V.A., Vanguard, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=0.34 | Meeple=0.34
+[13:49:17] VENDEU: Poppy (i:2.0)        | Rew: -0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: N.O.V.A. 2.63, Vanguard 0.95, Arbiter 0.72, Meeple 0.36, Marauder 0.34
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Maokai, TFT17_Akali | CORE TRAITS: N.O.V.A., Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=0.37 | Meeple=0.37
+[13:49:18] MOVE Board -> Board: Poppy (i:2.0) <-> Maokai (i:6.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: N.O.V.A. 2.72, Vanguard 1.00, Arbiter 0.60, Meeple 0.35, Marauder 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Maokai, TFT17_Akali | CORE TRAITS: Vanguard, N.O.V.A.
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=0.36 | Meeple=0.36
+[13:49:19] MOVE Board -> Board: Maokai (i:6.0) <-> Vazio | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: N.O.V.A. 2.77, Vanguard 1.04, Arbiter 0.51, Meeple 0.35, Marauder 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Maokai, TFT17_Akali | CORE TRAITS: Vanguard, N.O.V.A.
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Maokai | core=SIM | fit=2.72 | N.O.V.A.=2.72
+[13:49:19] COMPROU: Talon (Custo 1 | i:2.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: N.O.V.A. 2.81, Vanguard 1.06, Arbiter 0.45, Meeple 0.34, Marauder 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Maokai, TFT17_Akali | CORE TRAITS: Vanguard, N.O.V.A.
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Talon | core=não | fit=0.00 | nenhum trait de foco
+
+[13:49:20] --- FIM DO ROUND 2-3 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: N.O.V.A. 2.85, Vanguard 1.09, Arbiter 0.39, Meeple 0.34, Marauder 0.33
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Mao|F|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:4.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Tal|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:49:20] 🛒 LOJA: Urgot(i:6.0), Teemo(i:2.0), Nasus(i:2.0), Akali(i:4.0), Karma(i:8.0)
+[13:49:22] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: N.O.V.A. 2.86, Vanguard 1.10, Arbiter 0.37, Meeple 0.34, Marauder 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Maokai, TFT17_Akali | CORE TRAITS: Vanguard, N.O.V.A.
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[13:49:23] VENDEU: Talon (i:2.0)        | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: N.O.V.A. 2.87, Vanguard 1.10, Arbiter 0.36, Meeple 0.34, Marauder 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Maokai, TFT17_Akali | CORE TRAITS: Vanguard, N.O.V.A.
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Talon | core=não | fit=0.00 | nenhum trait de foco
+[13:49:24] COMPROU: Urgot (Custo 3 | i:6.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: N.O.V.A. 2.86, Vanguard 1.10, Marauder 0.37, Arbiter 0.35, Meeple 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Maokai | CORE TRAITS: Vanguard, N.O.V.A., Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Urgot | core=não | fit=0.33 | Marauder=0.33
+[13:49:24] MOVE Bench -> Board: Urgot (i:6.0) <-> Akali (i:4.0) | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: N.O.V.A. 2.15, Vanguard 1.14, Brawler 0.96, Marauder 0.40, Arbiter 0.35
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Maokai | CORE TRAITS: Vanguard, N.O.V.A., Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Urgot | core=SIM | fit=0.37 | Marauder=0.37
+[13:49:25] VENDEU: Akali (i:4.0)        | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 1.58, N.O.V.A. 1.56, Vanguard 1.13, Marauder 0.38, Arbiter 0.35
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Maokai | CORE TRAITS: Vanguard, Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Akali | core=não | fit=2.55 | N.O.V.A.=2.15, Marauder=0.40
+[13:49:26] COMPROU: Akali (Custo 2 | i:4.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 1.97, N.O.V.A. 1.19, Vanguard 1.11, Marauder 0.40, Arbiter 0.34
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Maokai | CORE TRAITS: Vanguard, N.O.V.A., Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Akali | core=não | fit=1.95 | N.O.V.A.=1.56, Marauder=0.38
+[13:49:27] VENDEU: Akali (i:4.0)        | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.27, Vanguard 1.11, N.O.V.A. 0.91, Marauder 0.38, Arbiter 0.34
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Maokai | CORE TRAITS: Vanguard, Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Akali | core=não | fit=1.58 | N.O.V.A.=1.19, Marauder=0.40
+[13:49:27] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.47, Vanguard 1.11, N.O.V.A. 0.73, Marauder 0.36, Arbiter 0.34
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Maokai | CORE TRAITS: Vanguard, Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +1
+
+[13:49:29] --- FIM DO ROUND 2-4 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.76, Vanguard 1.11, N.O.V.A. 0.46, Marauder 0.34, Arbiter 0.33
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Mao|F|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Urg|T|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:49:29] 🛒 LOJA: Samira(i:6.0), Diana(i:6.0), Cho'Gath(i:2.0), Aatrox(i:2.0), Lissandra(i:2.0)
+[13:49:31] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.80, Vanguard 1.11, N.O.V.A. 0.42, Marauder 0.34, Arbiter 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Maokai | CORE TRAITS: Vanguard, Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[13:49:32] COMPROU: Diana (Custo 3 | i:6.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.81, Vanguard 1.10, N.O.V.A. 0.39, Arbiter 0.37, Marauder 0.34
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Maokai | CORE TRAITS: Arbiter, Vanguard, Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Diana | core=não | fit=0.33 | Arbiter=0.33
+[13:49:33] VENDEU: Diana (i:6.0)        | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.83, Vanguard 1.11, N.O.V.A. 0.37, Arbiter 0.36, Marauder 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Maokai | CORE TRAITS: Vanguard, Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Diana | core=não | fit=0.37 | Arbiter=0.37
+[13:49:34] COMPROU: Samira (Custo 3 | i:6.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.85, Vanguard 1.11, N.O.V.A. 0.36, Arbiter 0.35, Marauder 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Maokai | CORE TRAITS: Vanguard, Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Samira | core=não | fit=0.00 | nenhum trait de foco
+[13:49:34] VENDEU: Samira (i:6.0)       | Rew: -0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.86, Vanguard 1.11, N.O.V.A. 0.35, Arbiter 0.34, Marauder 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Maokai | CORE TRAITS: Vanguard, Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Samira | core=não | fit=0.00 | nenhum trait de foco
+[13:49:35] COMPROU: Lissandra (Custo 1 | i:2.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.87, Vanguard 1.11, N.O.V.A. 0.34, Arbiter 0.34, Marauder 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Maokai | CORE TRAITS: Vanguard, Brawler, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Lissandra | core=não | fit=0.00 | nenhum trait de foco
+[13:49:36] VENDEU: Lissandra (i:2.0)    | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.88, Vanguard 1.11, N.O.V.A. 0.34, Arbiter 0.34, Marauder 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Maokai | CORE TRAITS: Vanguard, Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Lissandra | core=não | fit=0.00 | nenhum trait de foco
+[13:49:36] COMPROU: Cho'Gath (Custo 1 | i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.88, Vanguard 1.11, N.O.V.A. 0.34, Arbiter 0.34, Marauder 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Cho'Gath | core=não | fit=2.88 | Brawler=2.88
+[13:49:36]  ⬆️ SINERGIA: BRAWLER nível 1
+[13:49:37] VENDEU: Cho'Gath (i:2.0)     | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.88, Vanguard 1.11, N.O.V.A. 0.34, Arbiter 0.34, Marauder 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Urgot, TFT17_Maokai | CORE TRAITS: Vanguard, Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Cho'Gath | core=não | fit=2.88 | Brawler=2.88
+[13:49:37]  ⬇️ SINERGIA: BRAWLER nível 0
+
+[13:49:38] --- FIM DO ROUND 2-5 | GOLD: 10 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.89, Vanguard 1.11, N.O.V.A. 0.33, Arbiter 0.33, Marauder 0.33
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Mao|F|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Urg|T|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:49:38] 🛒 LOJA: Jax(i:4.0), Urgot(i:6.0), Meepsie(i:4.0), Zoe(i:4.0), Gnar(i:4.0)
+[13:49:41] COMPROU: Urgot (Custo 3 | i:6.0) | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.87, Vanguard 1.10, Marauder 0.37, N.O.V.A. 0.33, Arbiter 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Urgot | core=SIM | fit=3.22 | Brawler=2.89, Marauder=0.33
+[13:49:41]  ⬆️ SINERGIA: BRAWLER nível 1
+[13:49:41] MOVE Bench -> Board: Urgot (i:6.0) <-> Illaoi (i:6.0) | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.84, Vanguard 0.88, Marauder 0.60, Mecha 0.35, N.O.V.A. 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Urgot | core=SIM | fit=3.23 | Brawler=2.87, Marauder=0.37
+[13:49:42] MOVE Bench -> Board: Illaoi (i:6.0) <-> Urgot (i:6.0) | Rew: -0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.82, Vanguard 0.94, Marauder 0.54, Mecha 0.38, N.O.V.A. 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Illaoi | core=SIM | fit=0.88 | Vanguard=0.88
+[13:49:43] MOVE Bench -> Board: Urgot (i:6.0) <-> Urgot (i:6.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.80, Vanguard 0.98, Marauder 0.50, Mecha 0.39, N.O.V.A. 0.32
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Urgot | core=SIM | fit=3.73 | Mecha=0.38, Brawler=2.82, Marauder=0.54
+[13:49:43] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.79, Vanguard 1.01, Marauder 0.48, Mecha 0.40, N.O.V.A. 0.32
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[13:49:46] MOVE Bench -> Board: Urgot (i:6.0) <-> Vazio | Rew: +0.56
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.55, Vanguard 0.97, Marauder 0.60, Mecha 0.58, N.O.V.A. 0.29
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Urgot | core=SIM | fit=3.63 | Mecha=0.42, Brawler=2.77, Marauder=0.44
+
+[13:49:47] --- FIM DO ROUND 2-6 | GOLD: 14 ---
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.34, Vanguard 0.89, Marauder 0.75, Mecha 0.75, N.O.V.A. 0.27
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Mao|F|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Urg|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Urg|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:49:47] 🛒 LOJA: Jax(i:4.0), Caitlyn(i:2.0), Lulu(i:6.0), Nasus(i:2.0), Mordekaiser(i:4.0)
+[13:49:50] COMPROU: Lulu (Custo 3 | i:6.0) | Rew: -0.09
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.29, Vanguard 0.88, Marauder 0.79, Mecha 0.79, N.O.V.A. 0.26
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 11 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Lulu | core=não | fit=0.00 | nenhum trait de foco
+[13:49:50] BUY XP                       | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.25, Vanguard 0.87, Marauder 0.81, Mecha 0.81, N.O.V.A. 0.26
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[13:49:51] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.23, Vanguard 0.86, Marauder 0.83, Mecha 0.82, N.O.V.A. 0.26
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[13:49:52] VENDEU: Lulu (i:6.0)         | Rew: -0.01
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.22, Vanguard 0.85, Marauder 0.83, Mecha 0.83, N.O.V.A. 0.26
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 6 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Lulu | core=não | fit=0.00 | nenhum trait de foco
+[13:49:53] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.22, Vanguard 0.85, Marauder 0.84, Mecha 0.84, N.O.V.A. 0.26
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[13:49:53] COMPROU: Mordekaiser (Custo 2 | i:4.0) | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.21, Vanguard 0.85, Marauder 0.84, Mecha 0.84, N.O.V.A. 0.26
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Vanguard, Brawler, Mecha
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Mordekaiser | core=não | fit=0.85 | Vanguard=0.85
+[13:49:53]  ⬆️ SINERGIA: VANGUARD nível 1
+[13:49:54] VENDEU: Mordekaiser (i:4.0)  | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.21, Vanguard 0.85, Marauder 0.84, Mecha 0.84, N.O.V.A. 0.25
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Mordekaiser | core=não | fit=0.85 | Vanguard=0.85
+[13:49:54]  ⬇️ SINERGIA: VANGUARD nível 0
+[13:49:55] COMPROU: Jax (Custo 2 | i:4.0) | Rew: -0.09
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.21, Vanguard 0.85, Marauder 0.85, Mecha 0.85, N.O.V.A. 0.25
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Bastion, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Jax | core=não | fit=0.00 | nenhum trait de foco
+[13:49:55] VENDEU: Jax (i:4.0)          | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.21, Vanguard 0.85, Marauder 0.85, Mecha 0.85, N.O.V.A. 0.25
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Jax | core=não | fit=0.00 | nenhum trait de foco
+
+[13:49:56] --- FIM DO ROUND 2-7 | GOLD: 8 ---
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.20, Vanguard 0.85, Marauder 0.85, Mecha 0.85, N.O.V.A. 0.25
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Mao|F|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Urg|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Urg|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:49:56] 🛒 LOJA: Nasus(i:2.0), Akali(i:4.0), Fizz(i:6.0), Aatrox(i:2.0), Pantheon(i:4.0)
+[13:49:59] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 2.07, Vanguard 0.87, Marauder 0.86, Mecha 0.86, N.O.V.A. 0.34
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[13:50:00] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 4.45
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.79, Mecha 0.79, Vanguard 0.79, N.O.V.A. 0.33
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=— -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=0.00 -> 4.45
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[13:50:00] MOVE Board -> Board: Urgot (i:6.0) <-> Maokai (i:6.0) | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 4.45
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.84, Mecha 0.84, Vanguard 0.83, N.O.V.A. 0.38
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=4.45 -> 4.45
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=3.88 | Mecha=0.79, Brawler=2.29, Marauder=0.79
+[13:50:01] MOVE Board -> Board: Maokai (i:6.0) <-> Poppy (i:2.0) | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.54
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.36
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=4.45 -> 2.54
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Maokai | core=SIM | fit=2.49 | N.O.V.A.=0.38, Brawler=2.11
+[13:50:02] MOVE Board -> Board: Poppy (i:2.0) <-> Vazio | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.54
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.54 -> 2.54
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=0.00 | nenhum trait de foco
+[13:50:02] MOVE Board -> Board: Urgot (i:6.0) <-> Urgot (i:6.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.54
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.54 -> 2.54
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=3.77 | Mecha=0.83, Brawler=2.11, Marauder=0.83
+[13:50:03] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.54
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.54 -> 2.54
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[13:50:05] --- FIM DO ROUND 3-1 | GOLD: 7 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Mao|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Urg|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Urg|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:50:05] 🛒 LOJA: Ornn(i:6.0), Rhaast(i:6.0), Jax(i:4.0), Jax(i:4.0), Nasus(i:2.0)
+[13:50:09] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[13:50:09] COMPROU: Rhaast (Custo 3 | i:6.0) | Rew: -0.10
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Rhaast | core=não | fit=0.00 | nenhum trait de foco
+[13:50:10] VENDEU: Rhaast (i:6.0)       | Rew: -0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Rhaast | core=não | fit=0.00 | nenhum trait de foco
+[13:50:11] COMPROU: Ornn (Custo 3 | i:6.0) | Rew: -0.10
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Ornn | core=não | fit=0.00 | nenhum trait de foco
+[13:50:12] VENDEU: Ornn (i:6.0)         | Rew: -0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Ornn | core=não | fit=0.00 | nenhum trait de foco
+[13:50:12] COMPROU: Jax (Custo 2 | i:4.0) | Rew: -0.09
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Jax | core=não | fit=0.00 | nenhum trait de foco
+[13:50:13] VENDEU: Jax (i:4.0)          | Rew: -0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Jax | core=não | fit=0.00 | nenhum trait de foco
+[13:50:14] COMPROU: Jax (Custo 2 | i:4.0) | Rew: -0.09
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Jax | core=não | fit=0.00 | nenhum trait de foco
+[13:50:14] VENDEU: Jax (i:4.0)          | Rew: -0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Jax | core=não | fit=0.00 | nenhum trait de foco
+
+[13:50:15] --- FIM DO ROUND 3-2 | GOLD: 11 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +2 sequência, +1 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Mao|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Urg|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Urg|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:50:15] 🛒 LOJA: Fizz(i:6.0), Poppy(i:2.0), Rek'Sai(i:2.0), Pyke(i:4.0), Talon(i:2.0)
+[13:50:19] BUY XP                       | Rew: +0.93
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 7 | renda base +5 | juros +0 | sequência +2 | vitória +1
+[13:50:19] COMPROU: Fizz (Custo 3 | i:6.0) | Rew: -0.10
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 4 | renda base +5 | juros +0 | sequência +2 | vitória +1
+    FIT UNIDADE: Fizz | core=não | fit=0.00 | nenhum trait de foco
+[13:50:20] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 0 | renda base +5 | juros +0 | sequência +2 | vitória +1
+[13:50:21] MOVE Bench -> Board: Fizz (i:6.0) <-> Vazio | Rew: -0.09
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 0 | renda base +5 | juros +0 | sequência +2 | vitória +1
+    FIT UNIDADE: Fizz | core=não | fit=0.00 | nenhum trait de foco
+[13:50:21] MOVE Board -> Board: Fizz (i:6.0) <-> Maokai (i:6.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 0 | renda base +5 | juros +0 | sequência +2 | vitória +1
+    FIT UNIDADE: Fizz | core=não | fit=0.00 | nenhum trait de foco
+[13:50:22] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 0 | renda base +5 | juros +0 | sequência +2 | vitória +1
+
+[13:50:25] --- FIM DO ROUND 3-3 | GOLD: 9 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +1 vitória (total: +9)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Fiz|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Urg|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Urg|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]  [Mao|F|1*|i:6.0]       [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:50:25] 🛒 LOJA: Kindred(i:8.0), Urgot(i:6.0), Akali(i:4.0), Zoe(i:4.0), Twisted Fate(i:2.0)
+[13:50:29] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 5 | renda base +5 | juros +0 | sequência +3 | vitória +1
+[13:50:30] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 1 | renda base +5 | juros +0 | sequência +3 | vitória +1
+[13:50:31] COMPROU: Twisted Fate (Custo 1 | i:2.0) | Rew: -0.09
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +1
+    FIT UNIDADE: Twisted Fate | core=não | fit=0.00 | nenhum trait de foco
+[13:50:31] VENDEU: Twisted Fate (i:2.0) | Rew: -0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 1 | renda base +5 | juros +0 | sequência +3 | vitória +1
+    FIT UNIDADE: Twisted Fate | core=não | fit=0.00 | nenhum trait de foco
+[13:50:32] MOVE Board -> Board: Maokai (i:6.0) <-> Poppy (i:2.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 1 | renda base +5 | juros +0 | sequência +3 | vitória +1
+    FIT UNIDADE: Maokai | core=não | fit=2.52 | N.O.V.A.=0.40, Brawler=2.11
+[13:50:33] MOVE Board -> Board: Poppy (i:2.0) <-> Fizz (i:6.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 1 | renda base +5 | juros +0 | sequência +3 | vitória +1
+    FIT UNIDADE: Poppy | core=não | fit=0.00 | nenhum trait de foco
+[13:50:33] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 1 | renda base +5 | juros +0 | sequência +3 | vitória +1
+
+[13:50:35] --- FIM DO ROUND 3-4 | GOLD: 9 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Urg|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Mao|F|1*|i:6.0]       [ . ]             [ . ]       
+ [Urg|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]  [Fiz|T|1*|i:6.0]       [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:50:35] 🛒 LOJA: Lissandra(i:2.0), Fizz(i:6.0), Gragas(i:4.0), Viktor(i:6.0), Bel'Veth(i:4.0)
+[13:50:40] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 5 | renda base +5 | juros +0 | sequência +3 | vitória +0
+[13:50:40] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 1 | renda base +5 | juros +0 | sequência +3 | vitória +0
+[13:50:41] COMPROU: Lissandra (Custo 1 | i:2.0) | Rew: -0.09
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Lissandra | core=não | fit=0.00 | nenhum trait de foco
+[13:50:42] VENDEU: Lissandra (i:2.0)    | Rew: -0.02
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 1 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Lissandra | core=não | fit=0.00 | nenhum trait de foco
+[13:50:43] MOVE Board -> Board: Fizz (i:6.0) <-> Maokai (i:6.0) | Rew: +0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 1 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Fizz | core=não | fit=0.00 | nenhum trait de foco
+[13:50:43] MOVE Board -> Board: Maokai (i:6.0) <-> Poppy (i:2.0) | Rew: +0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Mecha
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 1 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Maokai | core=não | fit=2.52 | N.O.V.A.=0.40, Brawler=2.11
+[13:50:44] MOVE Board -> Board: Poppy (i:2.0) <-> Urgot (i:6.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 1 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=0.00 | nenhum trait de foco
+[13:50:45] MOVE Board -> Board: Urgot (i:6.0) <-> Vazio | Rew: +0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Vanguard, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 1 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=3.77 | Mecha=0.83, Brawler=2.11, Marauder=0.83
+[13:50:45] MOVE Board -> Board: Urgot (i:6.0) <-> Maokai (i:6.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Mecha, Marauder
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 1 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=3.85 | Mecha=0.78, Brawler=2.29, Marauder=0.78
+
+[13:50:46] --- FIM DO ROUND 3-5 | GOLD: 10 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +1 vitória (total: +9)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Urg|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Mao|F|1*|i:6.0]  [Fiz|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Urg|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:50:46] 🛒 LOJA: Nami(i:8.0), Kindred(i:8.0), Diana(i:6.0), Aurelion Sol(i:8.0), Kindred(i:8.0)
+[13:50:50] BUY XP                       | Rew: -0.07
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Mecha, Marauder
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 6 | renda base +5 | juros +0 | sequência +3 | vitória +1
+[13:50:51] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Mecha, Marauder
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 2 | renda base +5 | juros +0 | sequência +3 | vitória +1
+[13:50:52] MOVE Board -> Board: Maokai (i:6.0) <-> Fizz (i:6.0) | Rew: +0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Mecha, Marauder
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 2 | renda base +5 | juros +0 | sequência +3 | vitória +1
+    FIT UNIDADE: Maokai | core=SIM | fit=2.52 | N.O.V.A.=0.40, Brawler=2.11
+[13:50:52] MOVE Board -> Board: Fizz (i:6.0) <-> Urgot (i:6.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 2 | renda base +5 | juros +0 | sequência +3 | vitória +1
+    FIT UNIDADE: Fizz | core=SIM | fit=0.00 | nenhum trait de foco
+[13:50:53] MOVE Board -> Board: Urgot (i:6.0) <-> Vazio | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 2 | renda base +5 | juros +0 | sequência +3 | vitória +1
+    FIT UNIDADE: Urgot | core=SIM | fit=3.77 | Mecha=0.83, Brawler=2.11, Marauder=0.83
+[13:50:54] MOVE Board -> Board: Urgot (i:6.0) <-> Fizz (i:6.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Maokai | CORE TRAITS: Brawler, Mecha, Marauder
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 2 | renda base +5 | juros +0 | sequência +3 | vitória +1
+    FIT UNIDADE: Urgot | core=SIM | fit=3.85 | Mecha=0.78, Brawler=2.29, Marauder=0.78
+[13:50:54] MOVE Board -> Board: Fizz (i:6.0) <-> Maokai (i:6.0) | Rew: +0.00
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Mecha, Marauder
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 2 | renda base +5 | juros +0 | sequência +3 | vitória +1
+    FIT UNIDADE: Fizz | core=não | fit=0.00 | nenhum trait de foco
+[13:50:55] MOVE Board -> Board: Urgot (i:6.0) <-> Fizz (i:6.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Mecha, Marauder
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 2 | renda base +5 | juros +0 | sequência +3 | vitória +1
+    FIT UNIDADE: Urgot | core=SIM | fit=3.85 | Mecha=0.78, Brawler=2.29, Marauder=0.78
+[13:50:56] MOVE Board -> Board: Fizz (i:6.0) <-> Urgot (i:6.0) | Rew: -0.05
+    STRATEGY: WINSTREAK | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 2 | renda base +5 | juros +0 | sequência +3 | vitória +1
+    FIT UNIDADE: Fizz | core=SIM | fit=0.00 | nenhum trait de foco
+
+[13:50:57] --- FIM DO ROUND 3-6 | GOLD: 7 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Fiz|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Urg|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Urg|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Mao|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:50:57] 🛒 LOJA: Pyke(i:4.0), Akali(i:4.0), Karma(i:8.0), Diana(i:6.0), Veigar(i:2.0)
+[13:51:02] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[13:51:02] COMPROU: Diana (Custo 3 | i:6.0) | Rew: -0.09
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Arbiter
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Diana | core=não | fit=0.00 | nenhum trait de foco
+[13:51:03] VENDEU: Diana (i:6.0)        | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Diana | core=não | fit=0.00 | nenhum trait de foco
+[13:51:04] COMPROU: Pyke (Custo 2 | i:4.0) | Rew: -0.09
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pyke | core=não | fit=0.00 | nenhum trait de foco
+[13:51:04] VENDEU: Pyke (i:4.0)         | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pyke | core=não | fit=0.00 | nenhum trait de foco
+[13:51:05] COMPROU: Veigar (Custo 1 | i:2.0) | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Meeple, Brawler, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=não | fit=0.00 | nenhum trait de foco
+[13:51:05]  ⬆️ SINERGIA: MEEPLE nível 1
+[13:51:06] VENDEU: Veigar (i:2.0)       | Rew: +0.09
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=não | fit=0.00 | nenhum trait de foco
+[13:51:06]  ⬇️ SINERGIA: MEEPLE nível 0
+[13:51:06] COMPROU: Akali (Custo 2 | i:4.0) | Rew: -0.09
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.61
+FOCUS WEIGHTS: Brawler 2.28, Marauder 0.78, Mecha 0.77, Vanguard 0.77, N.O.V.A. 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Marauder, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.61
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=não | fit=1.23 | N.O.V.A.=0.40, Marauder=0.83
+[13:51:06]  ⬆️ SINERGIA: MARAUDER nível 1
+[13:51:07] VENDEU: Akali (i:4.0)        | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.61
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.82, Vanguard 0.82, N.O.V.A. 0.42
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.61 -> 2.61
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=não | fit=1.18 | N.O.V.A.=0.40, Marauder=0.78
+[13:51:07]  ⬇️ SINERGIA: MARAUDER nível 0
+
+[13:51:08] --- FIM DO ROUND 3-7 | GOLD: 8 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.41
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Fiz|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Urg|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Urg|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Mao|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:51:08] 🛒 LOJA: Miss Fortune(i:6.0), Gwen(i:4.0), Ornn(i:6.0), Diana(i:6.0), Nasus(i:2.0)
+[13:51:13] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 4 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[13:51:13] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[13:51:14] MOVE Board -> Board: Urgot (i:6.0) <-> Vazio | Rew: -0.06
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=3.77 | Mecha=0.83, Brawler=2.11, Marauder=0.83
+[13:51:15] MOVE Board -> Board: Urgot (i:6.0) <-> Urgot (i:6.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=3.85 | Mecha=0.78, Brawler=2.29, Marauder=0.78
+[13:51:16] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[13:51:19] --- FIM DO ROUND 4-1 | GOLD: 6 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.29, Marauder 0.78, Mecha 0.78, Vanguard 0.78, N.O.V.A. 0.37
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Fiz|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Urg|T|1*|i:6.0]  [Urg|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Mao|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:51:19] 🛒 LOJA: Mordekaiser(i:4.0), Pyke(i:4.0), Samira(i:6.0), Milio(i:4.0), Pantheon(i:4.0)
+[13:51:24] BUY XP                       | Rew: +0.51
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.11, Marauder 0.83, Mecha 0.83, Vanguard 0.83, N.O.V.A. 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[13:51:25] COMPROU: Pantheon (Custo 2 | i:4.0) | Rew: -0.03
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.73
+FOCUS WEIGHTS: Brawler 2.30, Marauder 0.78, Mecha 0.78, Vanguard 0.77, N.O.V.A. 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.73
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Pantheon | core=não | fit=2.11 | Brawler=2.11
+[13:51:25] MOVE Bench -> Board: Pantheon (i:4.0) <-> Urgot (i:6.0) | Rew: -0.20
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.73
+FOCUS WEIGHTS: Brawler 2.28, Vanguard 0.89, Marauder 0.70, Mecha 0.70, N.O.V.A. 0.43
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.73 -> 2.73
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Pantheon | core=não | fit=2.30 | Brawler=2.30
+[13:51:26] MOVE Bench -> Board: Urgot (i:6.0) <-> Maokai (i:6.0) | Rew: +0.03
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.73
+FOCUS WEIGHTS: Brawler 2.38, Vanguard 0.80, Marauder 0.72, Mecha 0.72, N.O.V.A. 0.38
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.73 -> 2.73
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=3.68 | Mecha=0.70, Brawler=2.28, Marauder=0.70
+[13:51:27] VENDEU: Maokai (i:6.0)       | Rew: +0.08
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.73
+FOCUS WEIGHTS: Brawler 2.16, Vanguard 0.84, Marauder 0.79, Mecha 0.79, Meeple 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.73 -> 2.73
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Maokai | core=não | fit=2.76 | N.O.V.A.=0.38, Brawler=2.38
+[13:51:28] COMPROU: Mordekaiser (Custo 2 | i:4.0) | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.23, Vanguard 0.76, Marauder 0.74, Mecha 0.74, Meeple 0.53
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Vanguard, Brawler, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.73 -> 2.53
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Mordekaiser | core=não | fit=0.84 | Vanguard=0.84
+[13:51:28]  ⬆️ SINERGIA: VANGUARD nível 1
+[13:51:28] MOVE Bench -> Board: Mordekaiser (i:4.0) <-> Vazio | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.53
+FOCUS WEIGHTS: Brawler 2.00, Vanguard 0.79, Marauder 0.77, Mecha 0.77, Meeple 0.67
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Vanguard, Brawler, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.53
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Mordekaiser | core=não | fit=0.76 | Vanguard=0.76
+[13:51:29] MOVE Board -> Board: Mordekaiser (i:4.0) <-> Fizz (i:6.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.48
+FOCUS WEIGHTS: Brawler 2.15, Vanguard 0.74, Marauder 0.73, Mecha 0.73, Meeple 0.65
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Vanguard, Brawler, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.53 -> 2.48
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Mordekaiser | core=não | fit=0.79 | Vanguard=0.79
+[13:51:30] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.48
+FOCUS WEIGHTS: Brawler 1.96, Vanguard 0.77, Marauder 0.77, Mecha 0.77, Meeple 0.73
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Vanguard, Brawler, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.48 -> 2.48
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[13:51:30] --- FIM DO ROUND 4-2 | GOLD: 7 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.47
+FOCUS WEIGHTS: Brawler 1.95, Vanguard 0.77, Marauder 0.77, Mecha 0.77, Meeple 0.75
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Mor|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pan|T|1*|i:4.0]  [Urg|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Urg|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]  [Fiz|T|1*|i:6.0]       [ . ]       
+----------------------------------
+⚠️ 5 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:51:30] 🛒 LOJA: Tahm Kench(i:8.0), LeBlanc(i:8.0), Bel'Veth(i:4.0), Kai'Sa(i:6.0), Gwen(i:4.0)
+[13:51:35] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.47
+FOCUS WEIGHTS: Brawler 2.13, Vanguard 0.73, Marauder 0.72, Mecha 0.72, Meeple 0.69
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Vanguard, Brawler, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.47 -> 2.47
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[13:51:36] COMPROU: Kai'Sa (Custo 3 | i:6.0) | Rew: -0.09
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.47
+FOCUS WEIGHTS: Brawler 1.95, Vanguard 0.77, Marauder 0.77, Mecha 0.77, Meeple 0.75
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Vanguard, Brawler, Dark Star
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.47 -> 2.47
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Kai'Sa | core=não | fit=0.00 | nenhum trait de foco
+[13:51:37] VENDEU: Kai'Sa (i:6.0)       | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.47
+FOCUS WEIGHTS: Brawler 2.13, Vanguard 0.73, Marauder 0.72, Mecha 0.72, Meeple 0.69
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Vanguard, Brawler, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.47 -> 2.47
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Kai'Sa | core=não | fit=0.00 | nenhum trait de foco
+[13:51:37] COMPROU: Bel'Veth (Custo 2 | i:4.0) | Rew: -0.08
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.47
+FOCUS WEIGHTS: Brawler 1.95, Vanguard 0.77, Marauder 0.77, Mecha 0.77, Meeple 0.75
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Vanguard, Brawler, Marauder
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.47 -> 2.47
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Bel'Veth | core=não | fit=0.72 | Marauder=0.72
+[13:51:37]  ⬆️ SINERGIA: MARAUDER nível 1
+[13:51:38] VENDEU: Bel'Veth (i:4.0)     | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.47
+FOCUS WEIGHTS: Brawler 2.13, Vanguard 0.73, Marauder 0.72, Mecha 0.72, Meeple 0.69
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Vanguard, Brawler, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.47 -> 2.47
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Bel'Veth | core=não | fit=0.77 | Marauder=0.77
+[13:51:38]  ⬇️ SINERGIA: MARAUDER nível 0
+[13:51:39] COMPROU: Gwen (Custo 2 | i:4.0) | Rew: -0.08
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.47
+FOCUS WEIGHTS: Brawler 1.95, Vanguard 0.77, Marauder 0.77, Mecha 0.77, Meeple 0.75
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Vanguard, Brawler, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.47 -> 2.47
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Gwen | core=não | fit=0.00 | nenhum trait de foco
+[13:51:39] VENDEU: Gwen (i:4.0)         | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.47
+FOCUS WEIGHTS: Brawler 2.13, Vanguard 0.73, Marauder 0.72, Mecha 0.72, Meeple 0.69
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Vanguard, Brawler, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.47 -> 2.47
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Gwen | core=não | fit=0.00 | nenhum trait de foco
+[13:51:40] MOVE Board -> Board: Fizz (i:6.0) <-> Vazio | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.47
+FOCUS WEIGHTS: Brawler 1.95, Vanguard 0.77, Marauder 0.77, Mecha 0.77, Meeple 0.75
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Vanguard, Brawler, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.47 -> 2.47
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Fizz | core=SIM | fit=0.69 | Meeple=0.69
+[13:51:41] MOVE Board -> Board: Pantheon (i:4.0) <-> Mordekaiser (i:4.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.47
+FOCUS WEIGHTS: Brawler 2.13, Vanguard 0.73, Marauder 0.72, Mecha 0.72, Meeple 0.69
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Illaoi, TFT17_Fizz | CORE TRAITS: Brawler, Vanguard, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.47 -> 2.47
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Pantheon | core=não | fit=1.95 | Brawler=1.95
+
+[13:51:42] --- FIM DO ROUND 4-3 | GOLD: 8 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.47
+FOCUS WEIGHTS: Brawler 2.13, Vanguard 0.73, Marauder 0.72, Mecha 0.72, Meeple 0.69
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Pan|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Fiz|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Mor|T|1*|i:4.0]  [Urg|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Urg|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:51:42] 🛒 LOJA: Pantheon(i:4.0), Samira(i:6.0), Gnar(i:4.0), Riven(i:8.0), Karma(i:8.0)
+[13:51:47] COMPROU: Riven (Custo 4 | i:8.0) | Rew: -0.09
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.47
+FOCUS WEIGHTS: Brawler 1.95, Vanguard 0.77, Marauder 0.77, Mecha 0.77, Meeple 0.75
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Riven, TFT17_Illaoi | CORE TRAITS: Brawler, Vanguard, Timebreaker
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.47 -> 2.47
+    GOLD: 4 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Riven | core=não | fit=0.00 | nenhum trait de foco
+[13:51:48] MOVE Bench -> Board: Riven (i:8.0) <-> Mordekaiser (i:4.0) | Rew: +0.08
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Riven | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Brawler 2.13, Vanguard 0.73, Marauder 0.72, Mecha 0.72, Meeple 0.69
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Riven, TFT17_Urgot, TFT17_Illaoi | CORE TRAITS: Brawler, Vanguard, Timebreaker
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Riven | lock=True -> True | strength=2.47 -> 2.45
+    GOLD: 4 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Riven | core=SIM | fit=0.00 | nenhum trait de foco
+[13:51:49] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Riven | LOCK: LOCKED | STRENGTH: 2.45
+FOCUS WEIGHTS: Brawler 1.95, Vanguard 0.77, Marauder 0.77, Mecha 0.77, Meeple 0.75
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Riven, TFT17_Urgot, TFT17_Illaoi | CORE TRAITS: Brawler, Vanguard, Timebreaker
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Riven -> TFT17_Riven | lock=True -> True | strength=2.45 -> 2.45
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[13:51:49] VENDEU: Mordekaiser (i:4.0)  | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Riven | LOCK: LOCKED | STRENGTH: 2.39
+FOCUS WEIGHTS: Brawler 2.13, Vanguard 0.73, Marauder 0.73, Mecha 0.73, Meeple 0.69
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Riven, TFT17_Urgot, TFT17_Illaoi | CORE TRAITS: Brawler, Timebreaker, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Riven -> TFT17_Riven | lock=True -> True | strength=2.45 -> 2.39
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Mordekaiser | core=não | fit=0.77 | Vanguard=0.77
+[13:51:49]  ⬇️ SINERGIA: VANGUARD nível 0
+[13:51:50] COMPROU: Pantheon (Custo 2 | i:4.0) | Rew: +0.17
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Riven | LOCK: LOCKED | STRENGTH: 2.39
+FOCUS WEIGHTS: Brawler 1.95, Vanguard 0.77, Marauder 0.77, Mecha 0.77, Meeple 0.75
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Riven, TFT17_Urgot, TFT17_Illaoi | CORE TRAITS: Brawler, Timebreaker, Replicator
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Riven -> TFT17_Riven | lock=True -> True | strength=2.39 -> 2.39
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pantheon | core=não | fit=2.13 | Brawler=2.13
+[13:51:50]  ⬆️ SINERGIA: TIMEBREAKER nível 1
+[13:51:51] VENDEU: Pantheon (i:4.0)     | Rew: -0.04
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Riven | LOCK: LOCKED | STRENGTH: 2.39
+FOCUS WEIGHTS: Brawler 2.13, Marauder 0.73, Mecha 0.73, Vanguard 0.72, Meeple 0.69
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Riven, TFT17_Urgot, TFT17_Illaoi | CORE TRAITS: Brawler, Timebreaker, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Riven -> TFT17_Riven | lock=True -> True | strength=2.39 -> 2.39
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pantheon | core=não | fit=1.95 | Brawler=1.95
+[13:51:51]  ⬇️ SINERGIA: TIMEBREAKER nível 0
+[13:51:51] COMPROU: Gnar (Custo 2 | i:4.0) | Rew: -0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Riven | LOCK: LOCKED | STRENGTH: 2.39
+FOCUS WEIGHTS: Brawler 1.95, Marauder 0.77, Mecha 0.77, Vanguard 0.77, Meeple 0.75
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Riven, TFT17_Urgot, TFT17_Illaoi | CORE TRAITS: Brawler, Meeple, Timebreaker
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Riven -> TFT17_Riven | lock=True -> True | strength=2.39 -> 2.39
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Gnar | core=não | fit=2.83 | Meeple=0.69, Brawler=2.13
+[13:51:51]  ⬆️ SINERGIA: MEEPLE nível 1
+[13:51:52] VENDEU: Gnar (i:4.0)         | Rew: +0.07
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Riven | LOCK: LOCKED | STRENGTH: 2.39
+FOCUS WEIGHTS: Brawler 2.13, Marauder 0.73, Mecha 0.73, Vanguard 0.72, Meeple 0.69
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Riven, TFT17_Urgot, TFT17_Illaoi | CORE TRAITS: Brawler, Timebreaker, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Riven -> TFT17_Riven | lock=True -> True | strength=2.39 -> 2.39
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Gnar | core=não | fit=2.70 | Meeple=0.75, Brawler=1.95
+[13:51:52]  ⬇️ SINERGIA: MEEPLE nível 0
+[13:51:53] MOVE Board -> Board: Riven (i:8.0) <-> Pantheon (i:4.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Riven | LOCK: LOCKED | STRENGTH: 2.39
+FOCUS WEIGHTS: Brawler 1.95, Marauder 0.77, Mecha 0.77, Vanguard 0.77, Meeple 0.75
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Riven, TFT17_Urgot, TFT17_Illaoi | CORE TRAITS: Brawler, Timebreaker, Rogue
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Riven -> TFT17_Riven | lock=True -> True | strength=2.39 -> 2.39
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Riven | core=SIM | fit=0.00 | nenhum trait de foco
+
+[13:51:54] --- FIM DO ROUND 4-4 | GOLD: 7 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Riven | LOCK: LOCKED | STRENGTH: 2.39
+FOCUS WEIGHTS: Brawler 1.95, Marauder 0.77, Mecha 0.77, Vanguard 0.77, Meeple 0.75
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Riv|T|1*|i:8.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Fiz|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Pan|T|1*|i:4.0]  [Urg|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Urg|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:51:54] 🛒 LOJA: Aurora(i:6.0), Aurelion Sol(i:8.0), Zoe(i:4.0), Gwen(i:4.0), Urgot(i:6.0)
+[13:51:59] COMPROU: Aurelion Sol (Custo 4 | i:8.0) | Rew: -0.09
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Riven | LOCK: LOCKED | STRENGTH: 2.47
+FOCUS WEIGHTS: Brawler 2.13, Mecha 0.73, Marauder 0.72, Vanguard 0.72, Meeple 0.69
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Riven, TFT17_Urgot, TFT17_AurelionSol | CORE TRAITS: Brawler, Mecha, Timebreaker
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Riven -> TFT17_Riven | lock=True -> True | strength=2.39 -> 2.47
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Aurelion Sol | core=não | fit=0.77 | Mecha=0.77
+[13:51:59]  ⬆️ SINERGIA: MECHA nível 1
+[13:52:00] MOVE Bench -> Board: Aurelion Sol (i:8.0) <-> Pantheon (i:4.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Riven | LOCK: LOCKED | STRENGTH: 2.47
+FOCUS WEIGHTS: Brawler 1.95, Mecha 0.77, Marauder 0.77, Vanguard 0.77, Meeple 0.75
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Riven, TFT17_AurelionSol, TFT17_Urgot | CORE TRAITS: Mecha, Brawler, Timebreaker
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Riven -> TFT17_Riven | lock=True -> True | strength=2.47 -> 2.47
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Aurelion Sol | core=SIM | fit=0.73 | Mecha=0.73
+[13:52:01] VENDEU: Pantheon (i:4.0)     | Rew: +0.07
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Riven | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Brawler 1.72, Mecha 1.14, Marauder 0.73, Vanguard 0.73, Meeple 0.69
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Riven, TFT17_AurelionSol, TFT17_Urgot | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Riven -> TFT17_Riven | lock=True -> True | strength=2.47 -> 2.25
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pantheon | core=não | fit=1.95 | Brawler=1.95
+[13:52:01]  ⬇️ SINERGIA: BRAWLER nível 0
+[13:52:01] COMPROU: Urgot (Custo 3 | i:6.0) | Rew: +0.49
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Brawler 1.28, Rogue 0.97, Mecha 0.96, Vanguard 0.90, Meeple 0.88
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Riven, TFT17_AurelionSol | CORE TRAITS: Rogue, Vanguard, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Riven -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=3.58 | Mecha=1.14, Brawler=1.72, Marauder=0.73
+[13:52:01]  ⬇️ SINERGIA: MECHA nível 0
+[13:52:02] MOVE Bench -> Board: Urgot (i:12.0) <-> Aurelion Sol (i:8.0) | Rew: +0.08
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Rogue 1.76, Brawler 0.87, Vanguard 0.84, Meeple 0.83, Mecha 0.71
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Riven, TFT17_AurelionSol | CORE TRAITS: Rogue, Vanguard, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=2.24 | Mecha=0.96, Brawler=1.28
+[13:52:03] MOVE Bench -> Board: Aurelion Sol (i:8.0) <-> Vazio | Rew: +0.26
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Rogue 1.36, Mecha 1.25, Vanguard 0.86, Meeple 0.85, Brawler 0.68
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Riven, TFT17_AurelionSol | CORE TRAITS: Rogue, Vanguard, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Aurelion Sol | core=SIM | fit=0.70 | Mecha=0.71
+[13:52:03] COMPROU: Zoe (Custo 2 | i:4.0) | Rew: -0.08
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 1.85, Rogue 1.04, Vanguard 0.79, Meeple 0.79, Brawler 0.53
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Riven, TFT17_AurelionSol | CORE TRAITS: Rogue, Arbiter, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Zoe | core=não | fit=0.00 | nenhum trait de foco
+[13:52:04] VENDEU: Zoe (i:4.0)          | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 1.87, Rogue 0.97, Vanguard 0.84, Meeple 0.83, Brawler 0.49
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Riven, TFT17_AurelionSol | CORE TRAITS: Rogue, Vanguard, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Zoe | core=não | fit=0.00 | nenhum trait de foco
+[13:52:05] COMPROU: Gwen (Custo 2 | i:4.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 1.74, Rogue 1.27, Vanguard 0.78, Meeple 0.78, Brawler 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Riven, TFT17_AurelionSol | CORE TRAITS: Rogue, Vanguard, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Gwen | core=não | fit=0.97 | Rogue=0.97
+[13:52:05]  ⬆️ SINERGIA: ROGUE nível 1
+
+[13:52:06] --- FIM DO ROUND 4-5 | GOLD: 6 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Rogue 2.01, Mecha 1.03, Vanguard 0.78, Meeple 0.78, Brawler 0.41
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Riv|T|1*|i:8.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Fiz|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]       [Urg|T|2*|i:12.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]  [Aur|T|1*|i:8.0]       [ . ]       
+----------------------------------
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Gwe|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:52:06] 🛒 LOJA: Twisted Fate(i:2.0), Master Yi(i:8.0), Pantheon(i:4.0), Kai'Sa(i:6.0), Miss Fortune(i:6.0)
+[13:52:12] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Rogue 1.96, Mecha 0.96, Vanguard 0.83, Meeple 0.83, Brawler 0.42
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Riven, TFT17_AurelionSol | CORE TRAITS: Rogue, Vanguard, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[13:52:13] VENDEU: Gwen (i:4.0)         | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Rogue 1.78, Mecha 1.26, Vanguard 0.78, Meeple 0.78, Brawler 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Riven, TFT17_AurelionSol | CORE TRAITS: Rogue, Vanguard, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Gwen | core=não | fit=1.96 | Rogue=1.96
+[13:52:13]  ⬇️ SINERGIA: ROGUE nível 0
+[13:52:13] COMPROU: Master Yi (Custo 4 | i:8.0) | Rew: -0.08
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 1.55, Rogue 1.37, Vanguard 0.83, Meeple 0.83, Brawler 0.42
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Riven, TFT17_AurelionSol | CORE TRAITS: Rogue, Vanguard, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Master Yi | core=não | fit=0.00 | nenhum trait de foco
+[13:52:14] MOVE Bench -> Board: Master Yi (i:8.0) <-> Aurelion Sol (i:8.0) | Rew: -0.20
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Rogue 1.97, Mecha 1.00, Vanguard 0.81, Meeple 0.81, Brawler 0.41
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Riven, TFT17_MasterYi | CORE TRAITS: Rogue, Vanguard, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Master Yi | core=não | fit=0.00 | nenhum trait de foco
+[13:52:15] MOVE Bench -> Board: Aurelion Sol (i:8.0) <-> Urgot (i:12.0) | Rew: -0.25
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Rogue 2.01, Vanguard 0.87, Meeple 0.87, Mecha 0.80, Brawler 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Riven, TFT17_AurelionSol | CORE TRAITS: Rogue, Vanguard, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Aurelion Sol | core=não | fit=1.00 | Mecha=1.00
+[13:52:15] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Rogue 2.29, Vanguard 0.83, Meeple 0.83, Mecha 0.63, Brawler 0.42
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Riven, TFT17_AurelionSol | CORE TRAITS: Rogue, Vanguard, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[13:52:17] MOVE Bench -> Board: Urgot (i:12.0) <-> Vazio | Rew: +0.59
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Rogue 2.16, Vanguard 0.86, Meeple 0.86, Mecha 0.69, Brawler 0.43
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_Riven, TFT17_AurelionSol | CORE TRAITS: Rogue, Vanguard, Meeple
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=0.95 | Mecha=0.53, Brawler=0.43
+
+[13:52:18] --- FIM DO ROUND 4-6 | GOLD: 6 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Rogue 2.11, Vanguard 0.83, Meeple 0.83, Mecha 0.79, Brawler 0.42
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Riv|T|1*|i:8.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Fiz|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aur|T|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+[Urg|T|2*|i:12.0]       [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]  [Mas|T|1*|i:8.0]       [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:52:18] 🛒 LOJA: Kai'Sa(i:6.0), Xayah(i:8.0), Aurelion Sol(i:8.0), Illaoi(i:6.0), Teemo(i:2.0)
+[13:52:25] COMPROU: Aurelion Sol (Custo 4 | i:8.0) | Rew: +0.15
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Rogue 1.85, Mecha 1.19, Vanguard 0.78, Meeple 0.78, Brawler 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Aurelion Sol | core=SIM | fit=0.79 | Mecha=0.79
+[13:52:25]  ⬆️ SINERGIA: MECHA nível 1
+[13:52:25] MOVE Bench -> Board: Aurelion Sol (i:8.0) <-> Master Yi (i:8.0) | Rew: +0.09
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 1.51, Rogue 1.41, Vanguard 0.83, Meeple 0.83, Brawler 0.42
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Aurelion Sol | core=SIM | fit=1.19 | Mecha=1.19
+[13:52:26] MOVE Bench -> Board: Master Yi (i:8.0) <-> Aurelion Sol (i:8.0) | Rew: -0.23
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 1.99, Rogue 1.06, Vanguard 0.78, Meeple 0.78, Brawler 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Master Yi | core=não | fit=0.00 | nenhum trait de foco
+[13:52:27] MOVE Bench -> Board: Aurelion Sol (i:8.0) <-> Aurelion Sol (i:8.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 1.95, Rogue 0.98, Vanguard 0.83, Meeple 0.83, Brawler 0.42
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Aurelion Sol | core=SIM | fit=1.99 | Mecha=1.99
+[13:52:27] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.21, Rogue 0.85, Vanguard 0.77, Meeple 0.77, Brawler 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[13:52:31] --- FIM DO ROUND 4-7 | GOLD: 8 ---
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.28, Rogue 0.78, Vanguard 0.77, Meeple 0.77, Brawler 0.40
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Riv|T|1*|i:8.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Fiz|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Mas|T|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+[Urg|T|2*|i:12.0]       [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]  [Aur|T|1*|i:8.0]       [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Aur|1*|i:8.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:52:31] 🛒 LOJA: Pyke(i:4.0), Miss Fortune(i:6.0), Bard(i:10.0), Jinx(i:4.0), Diana(i:6.0)
+[13:52:37] MOVE Bench -> Board: Aurelion Sol (i:8.0) <-> Master Yi (i:8.0) | Rew: +0.09
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Vanguard 0.82, Meeple 0.82, Brawler 0.42
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 8 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Aurelion Sol | core=SIM | fit=2.28 | Mecha=2.28
+[13:52:38] MOVE Bench -> Board: Master Yi (i:8.0) <-> Aurelion Sol (i:8.0) | Rew: -0.23
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.28, Rogue 0.78, Vanguard 0.77, Meeple 0.77, Brawler 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 8 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Master Yi | core=não | fit=0.00 | nenhum trait de foco
+[13:52:39] MOVE Bench -> Board: Aurelion Sol (i:8.0) <-> Urgot (i:12.0) | Rew: -0.21
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Vanguard 0.82, Meeple 0.82, Brawler 0.42
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 8 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Aurelion Sol | core=SIM | fit=2.28 | Mecha=2.28
+[13:52:39] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.28, Rogue 0.78, Vanguard 0.77, Meeple 0.77, Brawler 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 8 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[13:52:44] --- FIM DO ROUND 5-1 | GOLD: 14 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Vanguard 0.82, Meeple 0.82, Brawler 0.42
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Riv|T|1*|i:8.0]       [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Fiz|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aur|T|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+ [Aur|T|1*|i:8.0]       [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]  [Mas|T|1*|i:8.0]       [ . ]       
+----------------------------------
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Urg|2*|i:12.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:52:44] 🛒 LOJA: Kai'Sa(i:6.0), Miss Fortune(i:6.0), Samira(i:6.0), Riven(i:8.0), Xayah(i:8.0)
+[13:52:51] MOVE Bench -> Board: Urgot (i:12.0) <-> Aurelion Sol (i:8.0) | Rew: +0.08
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.28, Rogue 0.78, Vanguard 0.77, Meeple 0.77, Brawler 0.40
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 14 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=2.53 | Mecha=2.11, Brawler=0.42
+[13:52:51] MOVE Bench -> Board: Aurelion Sol (i:8.0) <-> Master Yi (i:8.0) | Rew: +0.09
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Vanguard 0.82, Meeple 0.82, Brawler 0.42
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 14 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Aurelion Sol | core=SIM | fit=2.28 | Mecha=2.28
+[13:52:52] MOVE Bench -> Board: Master Yi (i:8.0) <-> Urgot (i:12.0) | Rew: -0.25
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.28, Rogue 0.78, Vanguard 0.77, Meeple 0.77, Brawler 0.40
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 14 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Master Yi | core=não | fit=0.00 | nenhum trait de foco
+[13:52:53] MOVE Bench -> Board: Urgot (i:12.0) <-> Aurelion Sol (i:8.0) | Rew: +0.08
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Vanguard 0.82, Meeple 0.82, Brawler 0.42
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 14 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=2.68 | Mecha=2.28, Brawler=0.40
+[13:52:53] MOVE Bench -> Board: Aurelion Sol (i:8.0) <-> Master Yi (i:8.0) | Rew: +0.09
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.28, Rogue 0.77, Vanguard 0.77, Meeple 0.77, Brawler 0.40
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 14 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Aurelion Sol | core=SIM | fit=2.11 | Mecha=2.11
+[13:52:54] MOVE Bench -> Board: Master Yi (i:8.0) <-> Aurelion Sol (i:8.0) | Rew: -0.23
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Vanguard 0.82, Meeple 0.82, Brawler 0.42
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 14 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Master Yi | core=não | fit=0.00 | nenhum trait de foco
+[13:52:55] MOVE Bench -> Board: Aurelion Sol (i:8.0) <-> Aurelion Sol (i:8.0) | Rew: -0.05
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.28, Rogue 0.78, Vanguard 0.77, Meeple 0.77, Brawler 0.40
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 14 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Aurelion Sol | core=SIM | fit=2.11 | Mecha=2.11
+[13:52:55] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Vanguard 0.82, Meeple 0.82, Brawler 0.42
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 14 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[13:52:57] --- FIM DO ROUND 5-2 | GOLD: 14 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Meeple 0.82, Vanguard 0.82, Brawler 0.42
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:52:57] 🛒 LOJA: None, None, None, None, None
+[13:52:57]  ⬇️ SINERGIA: MECHA nível 0
+[13:53:03] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Meeple 0.82, Vanguard 0.82, Brawler 0.42
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 14 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[13:53:10] --- FIM DO ROUND 5-3 | GOLD: 14 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Meeple 0.82, Vanguard 0.82, Brawler 0.42
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:53:10] 🛒 LOJA: None, None, None, None, None
+[13:53:17] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Meeple 0.82, Vanguard 0.82, Brawler 0.42
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 14 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[13:53:23] --- FIM DO ROUND 5-4 | GOLD: 14 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Meeple 0.82, Vanguard 0.82, Brawler 0.42
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:53:23] 🛒 LOJA: None, None, None, None, None
+[13:53:31] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Meeple 0.82, Vanguard 0.82, Brawler 0.42
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 14 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[13:53:37] --- FIM DO ROUND 5-5 | GOLD: 14 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Meeple 0.82, Vanguard 0.82, Brawler 0.42
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:53:37] 🛒 LOJA: None, None, None, None, None
+[13:53:45] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Meeple 0.82, Vanguard 0.82, Brawler 0.42
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 14 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[13:53:51] --- FIM DO ROUND 5-6 | GOLD: 14 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Meeple 0.82, Vanguard 0.82, Brawler 0.42
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:53:51] 🛒 LOJA: None, None, None, None, None
+[13:53:58] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Meeple 0.82, Vanguard 0.82, Brawler 0.42
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 14 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[13:54:04] --- FIM DO ROUND 5-7 | GOLD: 14 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Meeple 0.82, Vanguard 0.82, Brawler 0.42
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:54:04] 🛒 LOJA: None, None, None, None, None
+[13:54:12] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Meeple 0.82, Vanguard 0.82, Brawler 0.42
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 14 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[13:54:19] --- FIM DO ROUND 6-1 | GOLD: 14 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Meeple 0.82, Vanguard 0.82, Brawler 0.42
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:54:19] 🛒 LOJA: None, None, None, None, None
+[13:54:26] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Meeple 0.82, Vanguard 0.82, Brawler 0.42
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 14 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[13:54:33] --- FIM DO ROUND 6-2 | GOLD: 14 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Meeple 0.82, Vanguard 0.82, Brawler 0.42
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:54:33] 🛒 LOJA: None, None, None, None, None
+[13:54:40] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Meeple 0.82, Vanguard 0.82, Brawler 0.42
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 14 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[13:54:47] --- FIM DO ROUND 6-3 | GOLD: 14 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Meeple 0.82, Vanguard 0.82, Brawler 0.42
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:54:47] 🛒 LOJA: None, None, None, None, None
+[13:54:54] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Meeple 0.82, Vanguard 0.82, Brawler 0.42
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 14 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[13:55:01] --- FIM DO ROUND 6-4 | GOLD: 14 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Meeple 0.82, Vanguard 0.82, Brawler 0.42
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:55:01] 🛒 LOJA: None, None, None, None, None
+[13:55:09] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Meeple 0.82, Vanguard 0.82, Brawler 0.42
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 14 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[13:55:15] --- FIM DO ROUND 6-5 | GOLD: 14 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Meeple 0.82, Vanguard 0.82, Brawler 0.42
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:55:15] 🛒 LOJA: None, None, None, None, None
+[13:55:26] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Meeple 0.82, Vanguard 0.82, Brawler 0.42
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Urgot, TFT17_AurelionSol, TFT17_Riven | CORE TRAITS: Mecha, Rogue, Vanguard
+    COMP BEFORE -> AFTER: dir=Brawler -> Brawler | foco=TFT17_Urgot -> TFT17_Urgot | lock=True -> True | strength=2.25 -> 2.25
+    GOLD: 14 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[13:55:32] --- FIM DO ROUND 6-6 | GOLD: 14 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Brawler | FOCUS: TFT17_Urgot | LOCK: LOCKED | STRENGTH: 2.25
+FOCUS WEIGHTS: Mecha 2.11, Rogue 0.83, Meeple 0.82, Vanguard 0.82, Brawler 0.42
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:55:32] 🛒 LOJA: None, None, None, None, None
+
+========================================
+ GAME OVER - RELATÓRIO FINAL
+========================================

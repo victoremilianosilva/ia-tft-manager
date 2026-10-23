@@ -1,0 +1,2197 @@
+==========================================================
+TFT AI LOG · JOGADOR 1
+Partida: b4b00e57-6387-484d-bd98-cf73bb284561
+Seed: 20261016 | Política: determinística
+Checkpoint SHA-256: 554f23eb232c13ac69499b5d23b3bc53e0bc9a5cc152e67de1a13b09d823b10f
+Impacto (i): custo × estrelas × 2 (contribuição nativa da engine)
+==========================================================
+--- INÍCIO DA PARTIDA · JOGADOR 1 ---
+[13:48:30] VENDEU: Nasus (i:2.0)        | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: — | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: —
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: — | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=— -> — | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=não | fit=0.00 | nenhum trait de foco
+[13:48:31] COMPROU: Twisted Fate (Custo 1 | i:2.0) | Rew: -0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 4.32, Fateweaver 0.68
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=— -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=0.00 | nenhum trait de foco
+[13:48:31] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.29
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 4.32, Fateweaver 0.68
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=5.00 | Stargazer=4.32, Fateweaver=0.68
+[13:48:32] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 4.32, Fateweaver 0.68
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[13:48:36] --- FIM DO ROUND 1-1 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 4.32, Fateweaver 0.68
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:48:36] 🛒 LOJA: Ezreal(i:2.0), Briar(i:2.0), Briar(i:2.0), Twisted Fate(i:2.0), Veigar(i:2.0)
+[13:48:37] COMPROU: Twisted Fate (Custo 1 | i:2.0) | Rew: +0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 4.29, Fateweaver 0.71
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=5.00 | Stargazer=4.32, Fateweaver=0.68
+[13:48:37] COMPROU: Veigar (Custo 1 | i:2.0) | Rew: -0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 4.06, Fateweaver 0.70, Meeple 0.12, Replicator 0.12
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Veigar | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=não | fit=0.00 | nenhum trait de foco
+[13:48:38] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: -0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.76, Fateweaver 0.85, Meeple 0.19, Replicator 0.19
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Veigar | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=4.76 | Stargazer=4.06, Fateweaver=0.70
+[13:48:39] MOVE Bench -> Board: Veigar (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.18
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.66, Fateweaver 0.81, Meeple 0.27, Replicator 0.27
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Veigar | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=SIM | fit=0.39 | Meeple=0.19, Replicator=0.19
+[13:48:39] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.58, Fateweaver 0.77, Meeple 0.32, Replicator 0.32
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Veigar | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+[13:48:42] MOVE Bench -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.53
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.34, Fateweaver 0.86, Meeple 0.40, Replicator 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Veigar | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=4.16 | Stargazer=3.44, Fateweaver=0.71
+
+[13:48:43] --- FIM DO ROUND 1-2 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.21, Fateweaver 1.03, Meeple 0.38, Replicator 0.38
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Vei|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:48:43] 🛒 LOJA: Lissandra(i:2.0), Pyke(i:4.0), Aatrox(i:2.0), Teemo(i:2.0), Teemo(i:2.0)
+[13:48:44] COMPROU: Pyke (Custo 2 | i:4.0) | Rew: -0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pyke | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.11, Fateweaver 1.06, Meeple 0.36, Replicator 0.36, Psionic 0.11
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pyke, TFT17_TwistedFate, TFT17_Veigar | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_Pyke | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pyke | core=não | fit=0.00 | nenhum trait de foco
+[13:48:44] VENDEU: Pyke (i:4.0)         | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.10, Fateweaver 1.10, Meeple 0.36, Replicator 0.36, Psionic 0.07
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Veigar | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pyke -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pyke | core=SIM | fit=0.11 | Psionic=0.11
+[13:48:45] COMPROU: Teemo (Custo 1 | i:2.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.07, Fateweaver 1.11, Meeple 0.36, Replicator 0.36, Shepherd 0.11
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Veigar, TFT17_Teemo | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=não | fit=0.00 | nenhum trait de foco
+[13:48:46] MOVE Bench -> Board: Teemo (i:2.0) <-> Veigar (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.01, Fateweaver 1.11, Meeple 0.35, Replicator 0.35, Shepherd 0.18
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Teemo, TFT17_Veigar | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=0.11 | Shepherd=0.11
+[13:48:46] VENDEU: Veigar (i:2.0)       | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.10, Fateweaver 1.16, Meeple 0.25, Replicator 0.25, Shepherd 0.24
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Teemo | CORE TRAITS: Stargazer, Fateweaver
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=SIM | fit=0.70 | Meeple=0.35, Replicator=0.35
+[13:48:47] COMPROU: Teemo (Custo 1 | i:2.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.15, Fateweaver 1.19, Shepherd 0.32, Meeple 0.17, Replicator 0.17
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Teemo | CORE TRAITS: Stargazer, Fateweaver, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=0.24 | Shepherd=0.24
+[13:48:48] MOVE Bench -> Board: Teemo (i:2.0) <-> Teemo (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 3.16, Fateweaver 1.20, Shepherd 0.37, Space Groove 0.15, Meeple 0.12
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Teemo | CORE TRAITS: Stargazer, Fateweaver, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=0.32 | Shepherd=0.32
+[13:48:48] MOVE Bench -> Board: Teemo (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Stargazer 2.30, Shepherd 1.19, Fateweaver 0.96, Space Groove 0.46, Meeple 0.08
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Teemo | CORE TRAITS: Stargazer, Fateweaver, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=0.52 | Space Groove=0.15, Shepherd=0.37
+[13:48:49] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 1.75, Stargazer 1.72, Fateweaver 0.80, Space Groove 0.67, Meeple 0.06
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Teemo | CORE TRAITS: Stargazer, Fateweaver, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+
+[13:48:50] --- FIM DO ROUND 1-3 | GOLD: 4 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.39, Stargazer 1.05, Space Groove 0.92, Fateweaver 0.62, Meeple 0.03
+    RENDA PRÓXIMO ROUND: +3 base, +0 juros, +0 sequência, +0 vitória (total: +3)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Tee|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Tee|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Twi|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:48:50] 🛒 LOJA: Nasus(i:2.0), Aatrox(i:2.0), Caitlyn(i:2.0), Briar(i:2.0), Cho'Gath(i:2.0)
+[13:48:51] BUY XP                       | Rew: +1.51
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.57, Space Groove 0.99, Stargazer 0.86, Fateweaver 0.57, Meeple 0.02
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Teemo | CORE TRAITS: Stargazer, Fateweaver, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+[13:48:51] VENDEU: Twisted Fate (i:2.0) | Rew: -0.16
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Teemo | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.73, Space Groove 1.05, Stargazer 0.70, Fateweaver 0.50, Meeple 0.01
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Teemo, TFT17_TwistedFate | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_Teemo | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=1.42 | Stargazer=0.86, Fateweaver=0.57
+[13:48:52] COMPROU: Nasus (Custo 1 | i:2.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Teemo | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.21, Space Groove 1.64, Stargazer 0.59, Fateweaver 0.45, Vanguard 0.11
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Teemo, TFT17_TwistedFate, TFT17_Nasus | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Teemo -> TFT17_Teemo | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=não | fit=1.05 | Space Groove=1.05
+[13:48:52]  ⬆️ SINERGIA: SPACE GROOVE nível 1
+[13:48:53] VENDEU: Nasus (i:2.0)        | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Teemo | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.48, Space Groove 1.51, Stargazer 0.52, Fateweaver 0.42, Vanguard 0.07
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Teemo, TFT17_TwistedFate | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Teemo -> TFT17_Teemo | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Nasus | core=SIM | fit=1.75 | Space Groove=1.64, Vanguard=0.11
+[13:48:53]  ⬇️ SINERGIA: SPACE GROOVE nível 0
+[13:48:53] COMPROU: Aatrox (Custo 1 | i:2.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Teemo | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.64, Space Groove 1.39, Stargazer 0.46, Fateweaver 0.40, Bastion 0.11
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Teemo, TFT17_TwistedFate, TFT17_Aatrox | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Teemo -> TFT17_Teemo | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Aatrox | core=não | fit=0.00 | nenhum trait de foco
+[13:48:54] VENDEU: Aatrox (i:2.0)       | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Teemo | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.78, Space Groove 1.33, Stargazer 0.43, Fateweaver 0.38, Bastion 0.08
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Teemo, TFT17_TwistedFate | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Teemo -> TFT17_Teemo | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Aatrox | core=SIM | fit=0.11 | Bastion=0.11
+[13:48:55] COMPROU: Briar (Custo 1 | i:2.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Briar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.84, Space Groove 1.27, Stargazer 0.40, Fateweaver 0.37, Anima 0.11
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Briar, TFT17_Teemo, TFT17_TwistedFate | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Teemo -> TFT17_Briar | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Briar | core=não | fit=0.00 | nenhum trait de foco
+[13:48:56] VENDEU: Briar (i:2.0)        | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Teemo | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.92, Space Groove 1.25, Stargazer 0.39, Fateweaver 0.37, Anima 0.08
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Teemo, TFT17_TwistedFate | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Briar -> TFT17_Teemo | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Briar | core=SIM | fit=0.11 | Anima=0.11
+[13:48:56] COMPROU: Cho'Gath (Custo 1 | i:2.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Teemo | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.94, Space Groove 1.22, Stargazer 0.37, Fateweaver 0.36, Brawler 0.11
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Teemo, TFT17_TwistedFate, TFT17_Chogath | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Teemo -> TFT17_Teemo | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Cho'Gath | core=não | fit=0.00 | nenhum trait de foco
+
+[13:48:57] --- FIM DO ROUND 1-4 | GOLD: 4 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Teemo | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.91, Space Groove 1.16, Stargazer 0.35, Fateweaver 0.35, Brawler 0.23
+    RENDA PRÓXIMO ROUND: +4 base, +0 juros, +0 sequência, +0 vitória (total: +4)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Tee|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Tee|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+[Cho|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:48:57] 🛒 LOJA: Leona(i:2.0), Caitlyn(i:2.0), Milio(i:4.0), Twisted Fate(i:2.0), Veigar(i:2.0)
+[13:48:58] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Teemo | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.91, Space Groove 1.14, Stargazer 0.35, Fateweaver 0.34, Brawler 0.26
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Teemo, TFT17_TwistedFate, TFT17_Chogath | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Teemo -> TFT17_Teemo | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+[13:48:59] VENDEU: Cho'Gath (i:2.0)     | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Teemo | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.96, Space Groove 1.16, Stargazer 0.35, Fateweaver 0.35, Brawler 0.18
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Teemo, TFT17_TwistedFate | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Teemo -> TFT17_Teemo | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Cho'Gath | core=SIM | fit=0.26 | Brawler=0.26
+[13:49:00] COMPROU: Twisted Fate (Custo 1 | i:2.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_TwistedFate | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.96, Space Groove 1.15, Stargazer 0.38, Fateweaver 0.38, Brawler 0.12
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_TwistedFate, TFT17_Teemo | CORE TRAITS: Stargazer, Fateweaver, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Teemo -> TFT17_TwistedFate | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=0.70 | Stargazer=0.35, Fateweaver=0.35
+[13:49:00] VENDEU: Twisted Fate (i:2.0) | Rew: -0.16
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Teemo | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.00, Space Groove 1.16, Stargazer 0.37, Fateweaver 0.37, Brawler 0.09
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Teemo, TFT17_TwistedFate | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_TwistedFate -> TFT17_Teemo | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=0.76 | Stargazer=0.38, Fateweaver=0.38
+[13:49:01] COMPROU: Leona (Custo 1 | i:2.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Teemo | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.00, Space Groove 1.16, Stargazer 0.37, Fateweaver 0.36, Arbiter 0.11
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Teemo, TFT17_TwistedFate, TFT17_Leona | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Teemo -> TFT17_Teemo | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=0.00 | nenhum trait de foco
+[13:49:02] MOVE Bench -> Board: Leona (i:2.0) <-> Vazio | Rew: +0.47
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Teemo | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.96, Space Groove 1.14, Stargazer 0.36, Fateweaver 0.35, Arbiter 0.18
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Teemo, TFT17_TwistedFate, TFT17_Leona | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Teemo -> TFT17_Teemo | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Leona | core=SIM | fit=0.11 | Arbiter=0.11
+[13:49:03] MOVE Board -> Board: Teemo (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Teemo | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.94, Space Groove 1.13, Stargazer 0.35, Fateweaver 0.35, Arbiter 0.23
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Teemo, TFT17_TwistedFate, TFT17_Leona | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Teemo -> TFT17_Teemo | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=4.11 | Space Groove=1.14, Shepherd=2.96
+[13:49:03] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Teemo | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.92, Space Groove 1.13, Stargazer 0.34, Fateweaver 0.34, Arbiter 0.26
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Teemo, TFT17_TwistedFate, TFT17_Leona | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Teemo -> TFT17_Teemo | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=SIM | fit=0.70 | Stargazer=0.35, Fateweaver=0.35
+[13:49:04] MOVE Board -> Board: Leona (i:2.0) <-> Teemo (i:2.0) | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Teemo | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.91, Space Groove 1.12, Stargazer 0.34, Fateweaver 0.34, Arbiter 0.29
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Teemo, TFT17_Leona, TFT17_TwistedFate | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Teemo -> TFT17_Teemo | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Leona | core=SIM | fit=0.26 | Arbiter=0.26
+
+[13:49:05] --- FIM DO ROUND 2-1 | GOLD: 5 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Teemo | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.90, Space Groove 1.12, Stargazer 0.34, Fateweaver 0.34, Arbiter 0.31
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Leo|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Tee|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]        [Tee|C|1*|i:2.0]       [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:49:05] 🛒 LOJA: Aurora(i:6.0), Mordekaiser(i:4.0), Milio(i:4.0), Gnar(i:4.0), Bel'Veth(i:4.0)
+[13:49:06] COMPROU: Aurora (Custo 3 | i:6.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.90, Space Groove 1.11, Stargazer 0.34, Fateweaver 0.34, Arbiter 0.32
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Teemo, TFT17_Leona | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Teemo -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Aurora | core=não | fit=0.00 | nenhum trait de foco
+[13:49:07] MOVE Bench -> Board: Aurora (i:6.0) <-> Teemo (i:2.0) | Rew: -0.18
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.93, Space Groove 0.98, Stargazer 0.37, Fateweaver 0.37, Arbiter 0.35
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Teemo, TFT17_Leona | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Aurora | core=SIM | fit=0.00 | nenhum trait de foco
+[13:49:08] MOVE Bench -> Board: Teemo (i:2.0) <-> Vazio | Rew: +0.56
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.92, Space Groove 1.02, Stargazer 0.36, Fateweaver 0.36, Arbiter 0.35
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Teemo, TFT17_Leona | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=3.91 | Space Groove=0.98, Shepherd=2.93
+[13:49:08] COMPROU: Bel'Veth (Custo 2 | i:4.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.91, Space Groove 1.05, Stargazer 0.35, Fateweaver 0.35, Arbiter 0.34
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=não | fit=0.00 | nenhum trait de foco
+[13:49:09] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Aurora (i:6.0) | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.90, Space Groove 1.07, Stargazer 0.34, Fateweaver 0.34, Arbiter 0.34
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=0.00 | nenhum trait de foco
+[13:49:10] MOVE Bench -> Board: Aurora (i:6.0) <-> Teemo (i:2.0) | Rew: -0.18
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.94, Space Groove 0.95, Stargazer 0.37, Fateweaver 0.37, Arbiter 0.37
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Aurora | core=SIM | fit=0.00 | nenhum trait de foco
+[13:49:10] MOVE Bench -> Board: Teemo (i:2.0) <-> Bel'Veth (i:4.0) | Rew: +0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.92, Space Groove 1.00, Stargazer 0.36, Fateweaver 0.36, Arbiter 0.36
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=3.89 | Space Groove=0.95, Shepherd=2.94
+[13:49:11] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Aurora (i:6.0) | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.91, Space Groove 1.04, Stargazer 0.35, Fateweaver 0.35, Arbiter 0.35
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=0.00 | nenhum trait de foco
+[13:49:12] MOVE Bench -> Board: Aurora (i:6.0) <-> Teemo (i:2.0) | Rew: -0.18
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.94, Space Groove 0.93, Stargazer 0.38, Fateweaver 0.38, Arbiter 0.38
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Aurora | core=SIM | fit=0.00 | nenhum trait de foco
+
+[13:49:12] --- FIM DO ROUND 2-2 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.98, Space Groove 0.78, Stargazer 0.41, Fateweaver 0.41, Arbiter 0.41
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Leo|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Bel|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Tee|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]        [Aur|C|1*|i:6.0]       [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Tee|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:49:12] 🛒 LOJA: Leona(i:2.0), Ornn(i:6.0), Pyke(i:4.0), Zoe(i:4.0), Pantheon(i:4.0)
+[13:49:14] MOVE Bench -> Board: Teemo (i:2.0) <-> Teemo (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.99, Space Groove 0.74, Stargazer 0.42, Fateweaver 0.42, Arbiter 0.42
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 6 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=3.76 | Space Groove=0.78, Shepherd=2.98
+[13:49:15] MOVE Bench -> Board: Teemo (i:2.0) <-> Aurora (i:6.0) | Rew: +0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.96, Space Groove 0.86, Stargazer 0.39, Fateweaver 0.39, Arbiter 0.39
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 6 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=3.73 | Space Groove=0.74, Shepherd=2.99
+[13:49:15] MOVE Bench -> Board: Aurora (i:6.0) <-> Bel'Veth (i:4.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.94, Space Groove 0.94, Stargazer 0.37, Fateweaver 0.37, Arbiter 0.37
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 6 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Aurora | core=SIM | fit=0.00 | nenhum trait de foco
+[13:49:16] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Teemo (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.96, Space Groove 0.85, Stargazer 0.40, Fateweaver 0.40, Arbiter 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 6 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=0.00 | nenhum trait de foco
+[13:49:17] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.98, Space Groove 0.79, Stargazer 0.41, Fateweaver 0.41, Arbiter 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 6 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[13:49:20] --- FIM DO ROUND 2-3 | GOLD: 12 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.02, Space Groove 0.64, Stargazer 0.45, Fateweaver 0.45, Arbiter 0.45
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Leo|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aur|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Tee|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]        [Bel|T|1*|i:4.0]       [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Tee|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:49:20] 🛒 LOJA: Akali(i:4.0), Gragas(i:4.0), Meepsie(i:4.0), Urgot(i:6.0), Nasus(i:2.0)
+[13:49:22] BUY XP                       | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.02, Space Groove 0.63, Stargazer 0.45, Fateweaver 0.45, Arbiter 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 8 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[13:49:23] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.03, Space Groove 0.62, Stargazer 0.45, Fateweaver 0.45, Arbiter 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[13:49:24] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.03, Space Groove 0.62, Stargazer 0.45, Fateweaver 0.45, Arbiter 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Teemo | CORE TRAITS: Space Groove, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[13:49:24] VENDEU: Teemo (i:2.0)        | Rew: -0.16
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.04, Space Groove 0.59, Stargazer 0.46, Fateweaver 0.46, Arbiter 0.46
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Leona | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=3.65 | Space Groove=0.62, Shepherd=3.03
+[13:49:25] COMPROU: Nasus (Custo 1 | i:2.0) | Rew: -0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.39, Space Groove 1.23, Stargazer 0.46, Fateweaver 0.46, Arbiter 0.46
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Leona | CORE TRAITS: Vanguard, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Nasus | core=não | fit=0.59 | Space Groove=0.59
+[13:49:26] VENDEU: Nasus (i:2.0)        | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.56, Space Groove 1.04, Stargazer 0.47, Fateweaver 0.47, Arbiter 0.47
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Leona | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Nasus | core=não | fit=1.23 | Space Groove=1.23
+[13:49:27] MOVE Board -> Board: Bel'Veth (i:4.0) <-> Leona (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.68, Space Groove 0.91, Stargazer 0.47, Fateweaver 0.47, Arbiter 0.47
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=0.00 | nenhum trait de foco
+[13:49:27] MOVE Board -> Board: Leona (i:2.0) <-> Vazio | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.78, Space Groove 0.80, Stargazer 0.47, Fateweaver 0.47, Arbiter 0.47
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=0.47 | Arbiter=0.47
+[13:49:28] MOVE Board -> Board: Aurora (i:6.0) <-> Bel'Veth (i:4.0) | Rew: -0.11
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.85, Space Groove 0.72, Stargazer 0.48, Fateweaver 0.48, Arbiter 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_TwistedFate | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Aurora | core=SIM | fit=0.00 | nenhum trait de foco
+
+[13:49:29] --- FIM DO ROUND 2-4 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.94, Space Groove 0.62, Stargazer 0.48, Fateweaver 0.48, Arbiter 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Aur|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Bel|T|1*|i:4.0]  [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+ [Tee|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 2 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:49:29] 🛒 LOJA: Zoe(i:4.0), Pyke(i:4.0), Bel'Veth(i:4.0), Gnar(i:4.0), Rhaast(i:6.0)
+[13:49:31] COMPROU: Rhaast (Custo 3 | i:6.0) | Rew: -0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.97, Space Groove 0.59, Stargazer 0.48, Fateweaver 0.48, Arbiter 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Rhaast | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Rhaast | core=não | fit=0.00 | nenhum trait de foco
+[13:49:32] MOVE Bench -> Board: Rhaast (i:6.0) <-> Bel'Veth (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 2.99, Space Groove 0.56, Stargazer 0.48, Fateweaver 0.48, Arbiter 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Rhaast | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Rhaast | core=SIM | fit=0.00 | nenhum trait de foco
+[13:49:33] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Teemo (i:2.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.01, Space Groove 0.54, Stargazer 0.48, Fateweaver 0.48, Arbiter 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Rhaast | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=0.00 | nenhum trait de foco
+[13:49:34] BUY XP                       | Rew: +1.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.02, Space Groove 0.53, Stargazer 0.48, Fateweaver 0.48, Arbiter 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Rhaast | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[13:49:34] MOVE Bench -> Board: Teemo (i:2.0) <-> Vazio | Rew: +0.45
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.03, Space Groove 0.52, Stargazer 0.48, Fateweaver 0.48, Arbiter 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Rhaast | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Teemo | core=não | fit=3.55 | Space Groove=0.53, Shepherd=3.02
+[13:49:35] MOVE Board -> Board: Teemo (i:2.0) <-> Aurora (i:6.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.04, Space Groove 0.51, Stargazer 0.48, Fateweaver 0.48, Arbiter 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Rhaast | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Teemo | core=não | fit=3.55 | Space Groove=0.52, Shepherd=3.03
+[13:49:36] MOVE Board -> Board: Aurora (i:6.0) <-> Leona (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.05, Space Groove 0.50, Stargazer 0.48, Fateweaver 0.48, Arbiter 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Rhaast | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Aurora | core=SIM | fit=0.00 | nenhum trait de foco
+[13:49:36] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.05, Space Groove 0.50, Stargazer 0.48, Fateweaver 0.48, Arbiter 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aurora, TFT17_Belveth, TFT17_Rhaast | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Aurora | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[13:49:38] --- FIM DO ROUND 2-5 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aurora | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.06, Space Groove 0.49, Stargazer 0.48, Fateweaver 0.48, Arbiter 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Tee|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Rha|T|1*|i:6.0]  [Aur|C|1*|i:6.0]       [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]       
+----------------------------------
+⚠️ 2 carry(s) expostos na frontline
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:49:38] 🛒 LOJA: Viktor(i:6.0), Pantheon(i:4.0), Briar(i:2.0), Illaoi(i:6.0), Gnar(i:4.0)
+[13:49:41] COMPROU: Illaoi (Custo 3 | i:6.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.08, Space Groove 0.48, Stargazer 0.48, Fateweaver 0.48, Arbiter 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Belveth | CORE TRAITS: Shepherd, Anima, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aurora -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Illaoi | core=não | fit=3.06 | Shepherd=3.06
+[13:49:41] MOVE Bench -> Board: Illaoi (i:6.0) <-> Rhaast (i:6.0) | Rew: +0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.17, Space Groove 0.46, Stargazer 0.46, Fateweaver 0.46, Arbiter 0.46
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Belveth | CORE TRAITS: Shepherd, Anima, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Illaoi | core=SIM | fit=3.08 | Shepherd=3.08
+[13:49:42] MOVE Bench -> Board: Rhaast (i:6.0) <-> Leona (i:2.0) | Rew: -0.13
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.24, Space Groove 0.44, Stargazer 0.44, Fateweaver 0.44, Arbiter 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Belveth | CORE TRAITS: Shepherd, Anima, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Rhaast | core=não | fit=0.00 | nenhum trait de foco
+[13:49:43] VENDEU: Leona (i:2.0)        | Rew: +0.09
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.37, Space Groove 0.44, Stargazer 0.44, Fateweaver 0.44, Arbiter 0.32
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Belveth | CORE TRAITS: Shepherd, Anima
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Leona | core=não | fit=0.44 | Arbiter=0.44
+[13:49:43] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.46, Space Groove 0.43, Stargazer 0.43, Fateweaver 0.43, Arbiter 0.23
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Belveth | CORE TRAITS: Shepherd, Anima
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+[13:49:44] MOVE Board -> Board: Illaoi (i:6.0) <-> Teemo (i:2.0) | Rew: +0.02
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.53, Space Groove 0.43, Stargazer 0.43, Fateweaver 0.43, Arbiter 0.17
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Belveth | CORE TRAITS: Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Illaoi | core=SIM | fit=3.46 | Shepherd=3.46
+[13:49:45] MOVE Board -> Board: Teemo (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.56, Space Groove 0.43, Stargazer 0.43, Fateweaver 0.43, Anima 0.15
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Belveth | CORE TRAITS: Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Teemo | core=não | fit=3.96 | Space Groove=0.43, Shepherd=3.53
+[13:49:45] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Aurora (i:6.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.49, Space Groove 0.42, Stargazer 0.42, Fateweaver 0.42, Anima 0.26
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Belveth | CORE TRAITS: Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Twisted Fate | core=não | fit=0.86 | Stargazer=0.43, Fateweaver=0.43
+[13:49:46] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.45, Space Groove 0.41, Stargazer 0.41, Fateweaver 0.41, Anima 0.33
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Belveth | CORE TRAITS: Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+
+[13:49:47] --- FIM DO ROUND 2-6 | GOLD: 5 ---
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.39, Anima 0.42, Space Groove 0.40, Stargazer 0.40, Fateweaver 0.40
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Tee|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aur|C|1*|i:6.0]  [Twi|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]        [Rha|T|1*|i:6.0]       [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:49:47] 🛒 LOJA: Twisted Fate(i:2.0), Veigar(i:2.0), Jinx(i:4.0), Gragas(i:4.0), Jax(i:4.0)
+[13:49:50] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.37, Anima 0.45, Space Groove 0.39, Stargazer 0.39, Fateweaver 0.39
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Belveth | CORE TRAITS: Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[13:49:50] COMPROU: Veigar (Custo 1 | i:2.0) | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.36, Anima 0.47, Space Groove 0.39, Stargazer 0.39, Fateweaver 0.39
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Belveth | CORE TRAITS: Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=não | fit=0.00 | nenhum trait de foco
+[13:49:51] VENDEU: Veigar (i:2.0)       | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.35, Anima 0.48, Space Groove 0.39, Stargazer 0.39, Fateweaver 0.39
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Belveth | CORE TRAITS: Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=não | fit=0.00 | nenhum trait de foco
+[13:49:52] COMPROU: Twisted Fate (Custo 1 | i:2.0) | Rew: +0.03
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.30, Anima 0.48, Stargazer 0.42, Fateweaver 0.42, Space Groove 0.38
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Belveth | CORE TRAITS: Anima, Shepherd, Stargazer
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=0.78 | Stargazer=0.39, Fateweaver=0.39
+[13:49:53] VENDEU: Twisted Fate (i:2.0) | Rew: -0.13
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.31, Anima 0.49, Stargazer 0.41, Fateweaver 0.41, Space Groove 0.38
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Belveth | CORE TRAITS: Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=0.84 | Stargazer=0.42, Fateweaver=0.42
+[13:49:53] MOVE Board -> Board: Aurora (i:6.0) <-> Illaoi (i:6.0) | Rew: -0.09
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.32, Anima 0.50, Stargazer 0.40, Fateweaver 0.40, Space Groove 0.38
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Belveth | CORE TRAITS: Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Aurora | core=SIM | fit=0.49 | Anima=0.49
+[13:49:54] MOVE Board -> Board: Illaoi (i:6.0) <-> Teemo (i:2.0) | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.32, Anima 0.50, Stargazer 0.40, Fateweaver 0.40, Space Groove 0.38
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Belveth | CORE TRAITS: Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Illaoi | core=SIM | fit=3.81 | Anima=0.50, Shepherd=3.32
+[13:49:55] MOVE Board -> Board: Teemo (i:2.0) <-> Twisted Fate (i:2.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.32, Anima 0.51, Stargazer 0.39, Fateweaver 0.39, Space Groove 0.38
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Belveth | CORE TRAITS: Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=não | fit=3.70 | Space Groove=0.38, Shepherd=3.32
+[13:49:55] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Vazio | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.33, Anima 0.51, Stargazer 0.39, Fateweaver 0.39, Space Groove 0.38
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Belveth | CORE TRAITS: Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=0.79 | Stargazer=0.39, Fateweaver=0.39
+
+[13:49:56] --- FIM DO ROUND 2-7 | GOLD: 6 ---
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.33, Anima 0.51, Stargazer 0.39, Fateweaver 0.39, Space Groove 0.38
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Aur|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Bel|T|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]        [Rha|T|1*|i:6.0]       [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:49:56] 🛒 LOJA: Gragas(i:4.0), Caitlyn(i:2.0), Akali(i:4.0), Ornn(i:6.0), Bel'Veth(i:4.0)
+[13:49:59] COMPROU: Ornn (Custo 3 | i:6.0) | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Shepherd 3.31, Anima 0.51, Space Groove 0.42, Stargazer 0.38, Fateweaver 0.38
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Shepherd, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Ornn | core=não | fit=0.38 | Space Groove=0.38
+[13:50:00] MOVE Bench -> Board: Ornn (i:6.0) <-> Rhaast (i:6.0) | Rew: +0.09
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.04
+FOCUS WEIGHTS: Shepherd 3.33, Space Groove 0.61, Anima 0.46, Stargazer 0.31, Fateweaver 0.31
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Shepherd, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 4.04
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Ornn | core=SIM | fit=0.42 | Space Groove=0.42
+[13:50:00] MOVE Bench -> Board: Rhaast (i:6.0) <-> Bel'Veth (i:4.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.04
+FOCUS WEIGHTS: Shepherd 3.16, Space Groove 0.76, Anima 0.45, Stargazer 0.31, Fateweaver 0.31
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Shepherd, Space Groove
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.04 -> 4.04
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Rhaast | core=não | fit=0.00 | nenhum trait de foco
+[13:50:01] VENDEU: Bel'Veth (i:4.0)     | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.04
+FOCUS WEIGHTS: Shepherd 3.24, Space Groove 0.80, Anima 0.43, Stargazer 0.27, Fateweaver 0.27
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Shepherd, Space Groove
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.04 -> 4.04
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=não | fit=0.00 | nenhum trait de foco
+[13:50:02] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.04
+FOCUS WEIGHTS: Shepherd 3.11, Space Groove 0.89, Anima 0.43, Stargazer 0.29, Fateweaver 0.29
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Shepherd, Space Groove
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.04 -> 4.04
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[13:50:02] COMPROU: Caitlyn (Custo 1 | i:2.0) | Rew: -0.08
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.18
+FOCUS WEIGHTS: Shepherd 3.16, Space Groove 0.86, Anima 0.41, Fateweaver 0.32, Stargazer 0.25
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Shepherd, Fateweaver
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.04 -> 4.18
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Caitlyn | core=não | fit=0.29 | Fateweaver=0.29
+[13:50:03] VENDEU: Caitlyn (i:2.0)      | Rew: -0.03
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.18
+FOCUS WEIGHTS: Shepherd 3.05, Space Groove 0.93, Anima 0.42, Fateweaver 0.32, Stargazer 0.27
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Shepherd, Space Groove
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.18 -> 4.18
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Caitlyn | core=não | fit=0.32 | Fateweaver=0.32
+[13:50:04] MOVE Board -> Board: Ornn (i:6.0) <-> Aurora (i:6.0) | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.03
+FOCUS WEIGHTS: Shepherd 3.18, Space Groove 0.89, Anima 0.41, Fateweaver 0.27, Stargazer 0.24
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Ornn, TFT17_Aurora | CORE TRAITS: Space Groove, Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.18 -> 4.03
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Ornn | core=SIM | fit=0.93 | Space Groove=0.93
+[13:50:05] MOVE Board -> Board: Aurora (i:6.0) <-> Illaoi (i:6.0) | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.03
+FOCUS WEIGHTS: Shepherd 3.07, Space Groove 0.96, Anima 0.42, Fateweaver 0.29, Stargazer 0.27
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Ornn, TFT17_Aurora | CORE TRAITS: Space Groove, Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.03 -> 4.03
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Aurora | core=SIM | fit=0.41 | Anima=0.41
+
+[13:50:05] --- FIM DO ROUND 3-1 | GOLD: 7 ---
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.03
+FOCUS WEIGHTS: Shepherd 3.07, Space Groove 0.97, Anima 0.42, Fateweaver 0.28, Stargazer 0.27
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Orn|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aur|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Rha|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:50:05] 🛒 LOJA: Aurelion Sol(i:8.0), Samira(i:6.0), Gnar(i:4.0), Gragas(i:4.0), Veigar(i:2.0)
+[13:50:09] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.03
+FOCUS WEIGHTS: Shepherd 3.19, Space Groove 0.91, Anima 0.41, Fateweaver 0.25, Stargazer 0.24
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Ornn, TFT17_Aurora | CORE TRAITS: Space Groove, Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.03 -> 4.03
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[13:50:09] COMPROU: Gragas (Custo 2 | i:4.0) | Rew: -0.08
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.03
+FOCUS WEIGHTS: Shepherd 3.07, Space Groove 0.97, Anima 0.42, Fateweaver 0.27, Stargazer 0.27
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Ornn, TFT17_Aurora | CORE TRAITS: Space Groove, Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.03 -> 4.03
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Gragas | core=não | fit=0.00 | nenhum trait de foco
+[13:50:10] VENDEU: Gragas (i:4.0)       | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.03
+FOCUS WEIGHTS: Shepherd 3.19, Space Groove 0.91, Anima 0.41, Fateweaver 0.24, Stargazer 0.24
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Ornn, TFT17_Aurora | CORE TRAITS: Space Groove, Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.03 -> 4.03
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Gragas | core=não | fit=0.00 | nenhum trait de foco
+[13:50:11] COMPROU: Samira (Custo 3 | i:6.0) | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.03
+FOCUS WEIGHTS: Shepherd 2.51, Space Groove 1.54, Anima 0.42, Fateweaver 0.27, Stargazer 0.27
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Ornn, TFT17_Aurora | CORE TRAITS: Space Groove, Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.03 -> 4.03
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Samira | core=não | fit=0.91 | Space Groove=0.91
+[13:50:11]  ⬆️ SINERGIA: SPACE GROOVE nível 1
+[13:50:12] VENDEU: Samira (i:6.0)       | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 3.98
+FOCUS WEIGHTS: Shepherd 2.87, Space Groove 1.23, Anima 0.41, Fateweaver 0.24, Stargazer 0.24
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Ornn, TFT17_Aurora | CORE TRAITS: Space Groove, Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.03 -> 3.98
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Samira | core=não | fit=1.54 | Space Groove=1.54
+[13:50:12]  ⬇️ SINERGIA: SPACE GROOVE nível 0
+[13:50:12] COMPROU: Gnar (Custo 2 | i:4.0) | Rew: -0.08
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 3.98
+FOCUS WEIGHTS: Shepherd 2.86, Space Groove 1.19, Anima 0.42, Fateweaver 0.27, Stargazer 0.27
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Ornn, TFT17_Aurora | CORE TRAITS: Space Groove, Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=3.98 -> 3.98
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Gnar | core=não | fit=0.00 | nenhum trait de foco
+[13:50:13] VENDEU: Gnar (i:4.0)         | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.01
+FOCUS WEIGHTS: Shepherd 3.07, Space Groove 1.04, Anima 0.41, Fateweaver 0.24, Stargazer 0.24
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Ornn, TFT17_Aurora | CORE TRAITS: Space Groove, Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=3.98 -> 4.01
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Gnar | core=não | fit=0.00 | nenhum trait de foco
+[13:50:14] COMPROU: Veigar (Custo 1 | i:2.0) | Rew: -0.08
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.01
+FOCUS WEIGHTS: Shepherd 2.99, Space Groove 1.05, Anima 0.42, Fateweaver 0.27, Stargazer 0.27
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Ornn, TFT17_Aurora | CORE TRAITS: Space Groove, Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.01 -> 4.01
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Veigar | core=não | fit=0.00 | nenhum trait de foco
+[13:50:14] VENDEU: Veigar (i:2.0)       | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.02
+FOCUS WEIGHTS: Shepherd 3.15, Space Groove 0.96, Anima 0.41, Fateweaver 0.24, Stargazer 0.24
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Ornn, TFT17_Aurora | CORE TRAITS: Space Groove, Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.01 -> 4.02
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Veigar | core=não | fit=0.00 | nenhum trait de foco
+
+[13:50:15] --- FIM DO ROUND 3-2 | GOLD: 9 ---
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.03
+FOCUS WEIGHTS: Shepherd 3.18, Space Groove 0.93, Anima 0.41, Fateweaver 0.24, Stargazer 0.24
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Orn|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aur|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]        [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Rha|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:50:15] 🛒 LOJA: Diana(i:6.0), Maokai(i:6.0), Rhaast(i:6.0), Miss Fortune(i:6.0), Bel'Veth(i:4.0)
+[13:50:19] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.03
+FOCUS WEIGHTS: Shepherd 3.06, Space Groove 0.98, Anima 0.42, Fateweaver 0.27, Stargazer 0.27
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Ornn, TFT17_Aurora | CORE TRAITS: Space Groove, Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.03 -> 4.03
+    GOLD: 5 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[13:50:19] BUY XP                       | Rew: +0.51
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.03
+FOCUS WEIGHTS: Shepherd 3.19, Space Groove 0.92, Anima 0.41, Fateweaver 0.24, Stargazer 0.24
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Ornn, TFT17_Aurora | CORE TRAITS: Space Groove, Anima, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.03 -> 4.03
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[13:50:20] MOVE Board -> Board: Illaoi (i:6.0) <-> Ornn (i:6.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.03
+FOCUS WEIGHTS: Shepherd 3.07, Space Groove 0.98, Anima 0.42, Fateweaver 0.27, Stargazer 0.27
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Shepherd, Space Groove
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.03 -> 4.03
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Illaoi | core=SIM | fit=3.60 | Anima=0.41, Shepherd=3.19
+[13:50:21] MOVE Board -> Board: Ornn (i:6.0) <-> Teemo (i:2.0) | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.03
+FOCUS WEIGHTS: Shepherd 3.19, Space Groove 0.92, Anima 0.41, Fateweaver 0.24, Stargazer 0.24
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Shepherd, Space Groove
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.03 -> 4.03
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Ornn | core=SIM | fit=0.98 | Space Groove=0.98
+[13:50:21] MOVE Board -> Board: Teemo (i:2.0) <-> Aurora (i:6.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.03
+FOCUS WEIGHTS: Shepherd 3.07, Space Groove 0.97, Anima 0.42, Fateweaver 0.27, Stargazer 0.27
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Ornn, TFT17_Aurora | CORE TRAITS: Anima, Shepherd, Space Groove
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.03 -> 4.03
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Teemo | core=não | fit=4.11 | Space Groove=0.92, Shepherd=3.19
+[13:50:22] MOVE Board -> Board: Aurora (i:6.0) <-> Vazio | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.03
+FOCUS WEIGHTS: Shepherd 3.19, Space Groove 0.92, Anima 0.41, Fateweaver 0.24, Stargazer 0.24
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Shepherd, Space Groove
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.03 -> 4.03
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Aurora | core=SIM | fit=0.42 | Anima=0.42
+[13:50:23] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.03
+FOCUS WEIGHTS: Shepherd 3.07, Space Groove 0.97, Anima 0.42, Fateweaver 0.27, Stargazer 0.27
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Shepherd, Space Groove
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.03 -> 4.03
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[13:50:25] --- FIM DO ROUND 3-3 | GOLD: 7 ---
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.03
+FOCUS WEIGHTS: Shepherd 3.07, Space Groove 0.97, Anima 0.42, Fateweaver 0.27, Stargazer 0.27
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Tee|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]        [Aur|C|1*|i:6.0]  [Orn|T|1*|i:6.0]       [ . ]             [ . ]       
+ [Rha|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:50:25] 🛒 LOJA: Aurora(i:6.0), Poppy(i:2.0), Pantheon(i:4.0), Zoe(i:4.0), Jinx(i:4.0)
+[13:50:29] COMPROU: Aurora (Custo 3 | i:6.0) | Rew: +0.17
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.53
+FOCUS WEIGHTS: Shepherd 3.16, Space Groove 0.90, Anima 0.46, Fateweaver 0.24, Stargazer 0.24
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Shepherd, Space Groove
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.03 -> 4.53
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Aurora | core=SIM | fit=0.42 | Anima=0.42
+[13:50:29]  ⬆️ SINERGIA: ANIMA nível 1
+[13:50:30] MOVE Bench -> Board: Aurora (i:6.0) <-> Vazio | Rew: +0.53
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.53
+FOCUS WEIGHTS: Shepherd 2.34, Anima 1.16, Space Groove 0.91, Voyager 0.33, Fateweaver 0.25
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Shepherd, Space Groove
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.53 -> 4.53
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Aurora | core=SIM | fit=0.46 | Anima=0.46
+[13:50:31] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.88
+FOCUS WEIGHTS: Anima 1.97, Shepherd 1.51, Space Groove 0.79, Voyager 0.51, Fateweaver 0.21
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Shepherd, Space Groove
+    COMP BEFORE -> AFTER: dir=Shepherd -> Anima | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.53 -> 4.88
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[13:50:31] MOVE Board -> Board: Aurora (i:6.0) <-> Illaoi (i:6.0) | Rew: -0.09
+    STRATEGY: ECON | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.88
+FOCUS WEIGHTS: Anima 2.06, Shepherd 1.26, Space Groove 0.81, Voyager 0.64, Fateweaver 0.23
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Voyager, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.88 -> 4.88
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Aurora | core=SIM | fit=2.49 | Anima=1.97, Voyager=0.51
+[13:50:32] MOVE Board -> Board: Illaoi (i:6.0) <-> Teemo (i:2.0) | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.83
+FOCUS WEIGHTS: Anima 2.43, Shepherd 0.96, Space Groove 0.74, Voyager 0.67, Fateweaver 0.20
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Voyager, Shepherd
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.88 -> 4.83
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Illaoi | core=SIM | fit=3.32 | Anima=2.06, Shepherd=1.26
+[13:50:33] MOVE Board -> Board: Teemo (i:2.0) <-> Ornn (i:6.0) | Rew: -0.06
+    STRATEGY: ECON | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.83
+FOCUS WEIGHTS: Anima 2.35, Shepherd 0.92, Space Groove 0.78, Voyager 0.74, Fateweaver 0.22
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Voyager, Shepherd
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.83 -> 4.83
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Teemo | core=não | fit=1.70 | Space Groove=0.74, Shepherd=0.96
+[13:50:33] MOVE Board -> Board: Ornn (i:6.0) <-> Twisted Fate (i:2.0) | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.82
+FOCUS WEIGHTS: Anima 2.58, Shepherd 0.79, Space Groove 0.72, Voyager 0.71, Fateweaver 0.19
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Voyager, Shepherd
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.83 -> 4.82
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Ornn | core=SIM | fit=0.78 | Space Groove=0.78
+[13:50:34] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 4.82
+FOCUS WEIGHTS: Anima 2.43, Shepherd 0.81, Space Groove 0.77, Voyager 0.77, Fateweaver 0.22
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Voyager, Shepherd
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=4.82 -> 4.82
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[13:50:35] --- FIM DO ROUND 3-4 | GOLD: 6 ---
+    STRATEGY: ECON | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.89
+FOCUS WEIGHTS: Anima 2.34, Voyager 0.77, Shepherd 0.77, Space Groove 0.77, Fateweaver 0.35
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Aur|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Orn|T|1*|i:6.0]       [ . ]             [ . ]        [Twi|C|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Rha|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]        [Aur|C|1*|i:6.0]       [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:50:35] 🛒 LOJA: Rhaast(i:6.0), Zoe(i:4.0), Pantheon(i:4.0), Poppy(i:2.0), Poppy(i:2.0)
+[13:50:40] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.89
+FOCUS WEIGHTS: Anima 2.14, Voyager 0.82, Shepherd 0.82, Space Groove 0.82, Fateweaver 0.39
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Voyager, Shepherd
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.89 -> 2.89
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[13:50:40] COMPROU: Pantheon (Custo 2 | i:4.0) | Rew: -0.09
+    STRATEGY: ECON | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.87
+FOCUS WEIGHTS: Anima 2.31, Voyager 0.78, Shepherd 0.78, Space Groove 0.77, Fateweaver 0.36
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Voyager, Shepherd
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.89 -> 2.87
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Pantheon | core=não | fit=0.00 | nenhum trait de foco
+[13:50:41] VENDEU: Pantheon (i:4.0)     | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.87
+FOCUS WEIGHTS: Anima 2.12, Voyager 0.83, Shepherd 0.83, Space Groove 0.82, Fateweaver 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Voyager, Shepherd
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.87 -> 2.87
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Pantheon | core=não | fit=0.00 | nenhum trait de foco
+[13:50:42] COMPROU: Zoe (Custo 2 | i:4.0) | Rew: -0.09
+    STRATEGY: ECON | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.87
+FOCUS WEIGHTS: Anima 2.30, Voyager 0.78, Shepherd 0.78, Space Groove 0.78, Fateweaver 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Voyager, Shepherd
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.87 -> 2.87
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Zoe | core=não | fit=0.00 | nenhum trait de foco
+[13:50:43] VENDEU: Zoe (i:4.0)          | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.87
+FOCUS WEIGHTS: Anima 2.12, Voyager 0.83, Shepherd 0.83, Space Groove 0.83, Fateweaver 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Voyager, Shepherd
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.87 -> 2.87
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Zoe | core=não | fit=0.00 | nenhum trait de foco
+[13:50:43] COMPROU: Poppy (Custo 1 | i:2.0) | Rew: -0.09
+    STRATEGY: ECON | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.87
+FOCUS WEIGHTS: Anima 2.30, Voyager 0.78, Shepherd 0.78, Space Groove 0.78, Fateweaver 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Voyager, Shepherd
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.87 -> 2.87
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=0.00 | nenhum trait de foco
+[13:50:44] VENDEU: Poppy (i:2.0)        | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.87
+FOCUS WEIGHTS: Anima 2.12, Voyager 0.83, Shepherd 0.83, Space Groove 0.83, Fateweaver 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Voyager, Shepherd
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.87 -> 2.87
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=0.00 | nenhum trait de foco
+[13:50:45] COMPROU: Poppy (Custo 1 | i:2.0) | Rew: -0.09
+    STRATEGY: ECON | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.87
+FOCUS WEIGHTS: Anima 2.30, Voyager 0.78, Shepherd 0.78, Space Groove 0.78, Fateweaver 0.37
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Voyager, Shepherd
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.87 -> 2.87
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=0.00 | nenhum trait de foco
+[13:50:45] VENDEU: Poppy (i:2.0)        | Rew: -0.02
+    STRATEGY: ECON | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.87
+FOCUS WEIGHTS: Anima 2.12, Voyager 0.83, Shepherd 0.83, Space Groove 0.83, Fateweaver 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Voyager, Shepherd
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.87 -> 2.87
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=0.00 | nenhum trait de foco
+
+[13:50:46] --- FIM DO ROUND 3-5 | GOLD: 9 ---
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.87
+FOCUS WEIGHTS: Anima 2.12, Voyager 0.83, Shepherd 0.83, Space Groove 0.83, Fateweaver 0.40
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +2 sequência, +0 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Aur|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Orn|T|1*|i:6.0]       [ . ]             [ . ]        [Twi|C|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Rha|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]        [Aur|C|1*|i:6.0]       [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:50:46] 🛒 LOJA: Nunu & Willump(i:8.0), Lissandra(i:2.0), Ornn(i:6.0), Milio(i:4.0), Zoe(i:4.0)
+[13:50:50] BUY XP                       | Rew: +0.01
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.87
+FOCUS WEIGHTS: Anima 2.30, Voyager 0.78, Shepherd 0.78, Space Groove 0.78, Fateweaver 0.37
+    STRATEGY REASON: Loss streak prolongada | CONF: 0.80
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Voyager, Shepherd
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.87 -> 2.87
+    GOLD: 5 | renda base +5 | juros +0 | sequência +2 | vitória +0
+[13:50:51] BUY XP                       | Rew: +0.01
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.87
+FOCUS WEIGHTS: Anima 2.12, Voyager 0.83, Shepherd 0.83, Space Groove 0.83, Fateweaver 0.40
+    STRATEGY REASON: Loss streak prolongada | CONF: 0.80
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Voyager, Shepherd
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.87 -> 2.87
+    GOLD: 1 | renda base +5 | juros +0 | sequência +2 | vitória +0
+[13:50:52] COMPROU: Lissandra (Custo 1 | i:2.0) | Rew: -0.07
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.94
+FOCUS WEIGHTS: Anima 2.29, Voyager 0.78, Shepherd 0.78, Space Groove 0.77, Fateweaver 0.37
+    STRATEGY REASON: Loss streak prolongada | CONF: 0.80
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Shepherd, Voyager
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.87 -> 2.94
+    GOLD: 0 | renda base +5 | juros +0 | sequência +2 | vitória +0
+    FIT UNIDADE: Lissandra | core=não | fit=0.83 | Shepherd=0.83
+[13:50:52]  ⬆️ SINERGIA: SHEPHERD nível 1
+[13:50:52] VENDEU: Lissandra (i:2.0)    | Rew: +0.09
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.94
+FOCUS WEIGHTS: Anima 2.11, Voyager 0.83, Shepherd 0.83, Space Groove 0.83, Fateweaver 0.40
+    STRATEGY REASON: Loss streak prolongada | CONF: 0.80
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Voyager, Shepherd
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.94 -> 2.94
+    GOLD: 1 | renda base +5 | juros +0 | sequência +2 | vitória +0
+    FIT UNIDADE: Lissandra | core=não | fit=0.78 | Shepherd=0.78
+[13:50:52]  ⬇️ SINERGIA: SHEPHERD nível 0
+[13:50:53] MOVE Board -> Board: Twisted Fate (i:2.0) <-> Aurora (i:6.0) | Rew: -0.05
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.86
+FOCUS WEIGHTS: Anima 2.30, Voyager 0.78, Shepherd 0.78, Space Groove 0.78, Fateweaver 0.37
+    STRATEGY REASON: Loss streak prolongada | CONF: 0.80
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Shepherd, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.94 -> 2.86
+    GOLD: 1 | renda base +5 | juros +0 | sequência +2 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=0.40 | Fateweaver=0.40
+[13:50:54] MOVE Board -> Board: Aurora (i:6.0) <-> Illaoi (i:6.0) | Rew: -0.05
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.86
+FOCUS WEIGHTS: Anima 2.12, Voyager 0.83, Shepherd 0.83, Space Groove 0.83, Fateweaver 0.40
+    STRATEGY REASON: Loss streak prolongada | CONF: 0.80
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Voyager, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.86 -> 2.86
+    GOLD: 1 | renda base +5 | juros +0 | sequência +2 | vitória +0
+    FIT UNIDADE: Aurora | core=SIM | fit=3.08 | Anima=2.30, Voyager=0.78
+[13:50:54] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.87
+FOCUS WEIGHTS: Anima 2.30, Voyager 0.78, Shepherd 0.78, Space Groove 0.78, Fateweaver 0.37
+    STRATEGY REASON: Loss streak prolongada | CONF: 0.80
+    CORE UNITS: TFT17_Illaoi, TFT17_Aurora, TFT17_Ornn | CORE TRAITS: Anima, Voyager, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=2.86 -> 2.87
+    GOLD: 1 | renda base +5 | juros +0 | sequência +2 | vitória +0
+
+[13:50:57] --- FIM DO ROUND 3-6 | GOLD: 9 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Anima | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 2.87
+FOCUS WEIGHTS: Anima 2.30, Voyager 0.78, Shepherd 0.78, Space Groove 0.78, Fateweaver 0.37
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aur|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Orn|T|1*|i:6.0]       [ . ]             [ . ]        [Ill|T|1*|i:6.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Rha|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]        [Aur|C|1*|i:6.0]       [ . ]       
+----------------------------------
+⚠️ 2 carry(s) expostos na frontline
+⚠️ 3 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:50:57] 🛒 LOJA: Urgot(i:6.0), Diana(i:6.0), Vex(i:10.0), Fizz(i:6.0), Fizz(i:6.0)
+[13:51:02] COMPROU: Vex (Custo 5 | i:10.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.87
+FOCUS WEIGHTS: Anima 2.12, Voyager 0.83, Shepherd 0.83, Space Groove 0.83, Fateweaver 0.40
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_Aurora | CORE TRAITS: Anima, Stargazer, Voyager
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Illaoi -> TFT17_Vex | lock=True -> True | strength=2.87 -> 2.87
+    GOLD: 4 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Vex | core=não | fit=0.00 | nenhum trait de foco
+[13:51:02] MOVE Bench -> Board: Vex (i:10.0) <-> Aurora (i:6.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.51
+FOCUS WEIGHTS: Anima 2.29, Shepherd 0.83, Space Groove 0.83, Voyager 0.66, Fateweaver 0.39
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_Aurora | CORE TRAITS: Anima, Stargazer, Voyager
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.87 -> 2.51
+    GOLD: 4 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Vex | core=SIM | fit=0.00 | nenhum trait de foco
+[13:51:03] COMPROU: Urgot (Custo 3 | i:6.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.51
+FOCUS WEIGHTS: Anima 2.10, Shepherd 0.91, Space Groove 0.91, Voyager 0.63, Fateweaver 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_Urgot | CORE TRAITS: Anima, Stargazer, Voyager
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.51 -> 2.51
+    GOLD: 1 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Urgot | core=não | fit=0.00 | nenhum trait de foco
+[13:51:04] VENDEU: Aurora (i:6.0)       | Rew: -0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Anima 1.83, Shepherd 1.34, Space Groove 0.89, Voyager 0.52, Fateweaver 0.42
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_Urgot | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.51 -> 2.17
+    GOLD: 4 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Aurora | core=não | fit=2.73 | Anima=2.10, Voyager=0.63
+[13:51:04]  ⬇️ SINERGIA: ANIMA nível 0
+[13:51:04] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Shepherd 1.72, Anima 1.33, Space Groove 0.96, Voyager 0.52, Fateweaver 0.47
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_Urgot | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+[13:51:05] MOVE Bench -> Board: Urgot (i:6.0) <-> Vex (i:10.0) | Rew: -0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Shepherd 2.26, Anima 0.93, Space Groove 0.91, Voyager 0.46, Fateweaver 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_Urgot | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=0.00 | nenhum trait de foco
+[13:51:06] MOVE Bench -> Board: Vex (i:10.0) <-> Illaoi (i:6.0) | Rew: -0.25
+    STRATEGY: STABILIZE | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Shepherd 1.64, Space Groove 1.53, Anima 0.83, Voyager 0.51, Fateweaver 0.49
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Vex, TFT17_Urgot, TFT17_Illaoi | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Vex | core=SIM | fit=0.00 | nenhum trait de foco
+[13:51:06] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.23, Shepherd 1.13, Anima 0.70, Voyager 0.47, Fateweaver 0.46
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Vex, TFT17_Urgot, TFT17_Illaoi | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[13:51:08] --- FIM DO ROUND 3-7 | GOLD: 8 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.61, Shepherd 0.72, Anima 0.64, Voyager 0.52, Fateweaver 0.52
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aur|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Orn|T|1*|i:6.0]       [ . ]             [ . ]       [Vex|T|1*|i:10.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Rha|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]        [Urg|T|1*|i:6.0]       [ . ]       
+----------------------------------
+⚠️ 2 carry(s) expostos na frontline
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [Ill|1*|i:6.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:51:08] 🛒 LOJA: Miss Fortune(i:6.0), Rhaast(i:6.0), Miss Fortune(i:6.0), Lulu(i:6.0), Miss Fortune(i:6.0)
+[13:51:13] MOVE Bench -> Board: Illaoi (i:6.0) <-> Urgot (i:6.0) | Rew: +0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.72, Shepherd 0.79, Anima 0.57, Voyager 0.46, Fateweaver 0.46
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_Urgot | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 8 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Illaoi | core=SIM | fit=1.36 | Anima=0.64, Shepherd=0.72
+[13:51:13] COMPROU: Miss Fortune (Custo 3 | i:6.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.54, Shepherd 0.90, Anima 0.59, Voyager 0.49, Fateweaver 0.49
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 5 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Miss Fortune | core=não | fit=0.00 | nenhum trait de foco
+[13:51:14] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.68, Shepherd 0.88, Anima 0.55, Voyager 0.44, Fateweaver 0.44
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 1 | renda base +5 | juros +0 | sequência +3 | vitória +0
+[13:51:15] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Illaoi (i:6.0) | Rew: -0.29
+    STRATEGY: STABILIZE | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.61, Shepherd 0.80, Anima 0.59, Voyager 0.50, Fateweaver 0.50
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Vex, TFT17_MissFortune_TraitClone, TFT17_Illaoi | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 1 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=0.00 | nenhum trait de foco
+[13:51:16] MOVE Bench -> Board: Illaoi (i:6.0) <-> Vex (i:10.0) | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.72, Shepherd 0.83, Anima 0.55, Voyager 0.45, Fateweaver 0.45
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 1 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Illaoi | core=SIM | fit=1.39 | Anima=0.59, Shepherd=0.80
+[13:51:16] MOVE Bench -> Board: Vex (i:10.0) <-> Miss Fortune (i:6.0) | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.54, Shepherd 0.92, Anima 0.57, Voyager 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 1 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Vex | core=SIM | fit=0.00 | nenhum trait de foco
+[13:51:17] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Illaoi (i:6.0) | Rew: -0.29
+    STRATEGY: STABILIZE | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.78, Shepherd 0.74, Anima 0.56, Voyager 0.46, Fateweaver 0.46
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Vex, TFT17_MissFortune_TraitClone, TFT17_Illaoi | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 1 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=0.00 | nenhum trait de foco
+[13:51:18] VENDEU: Urgot (i:6.0)        | Rew: +0.11
+    STRATEGY: STABILIZE | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.71, Anima 0.60, Voyager 0.51, Fateweaver 0.51
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Vex, TFT17_MissFortune_TraitClone, TFT17_Illaoi | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 4 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Urgot | core=não | fit=0.00 | nenhum trait de foco
+[13:51:18] MOVE Bench -> Board: Illaoi (i:6.0) <-> Vex (i:10.0) | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.75, Shepherd 0.79, Anima 0.55, Voyager 0.45, Fateweaver 0.45
+    STRATEGY REASON: HP baixo | CONF: 0.85
+    CORE UNITS: TFT17_Vex, TFT17_MissFortune_TraitClone, TFT17_Illaoi | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 4 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Illaoi | core=SIM | fit=1.32 | Anima=0.60, Shepherd=0.71
+
+[13:51:19] --- FIM DO ROUND 4-1 | GOLD: 12 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.69, Shepherd 0.88, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+ [Twi|C|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aur|C|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Orn|T|1*|i:6.0]       [ . ]             [ . ]        [Mis|T|1*|i:6.0]  [Tee|C|1*|i:2.0]       [ . ]             [ . ]       
+ [Rha|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]       
+----------------------------------
+⚠️ 2 carry(s) expostos na frontline
+⚠️ 4 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Vex|1*|i:10.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:51:19] 🛒 LOJA: Diana(i:6.0), Samira(i:6.0), Ornn(i:6.0), Briar(i:2.0), Pyke(i:4.0)
+[13:51:24] MOVE Bench -> Board: Vex (i:10.0) <-> Miss Fortune (i:6.0) | Rew: +0.04
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.52, Shepherd 0.95, Anima 0.57, Voyager 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 12 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Vex | core=SIM | fit=0.00 | nenhum trait de foco
+[13:51:25] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Illaoi (i:6.0) | Rew: -0.29
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.77, Shepherd 0.76, Anima 0.56, Voyager 0.46, Fateweaver 0.46
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_MissFortune_TraitClone, TFT17_Illaoi | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 12 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=0.00 | nenhum trait de foco
+[13:51:25] MOVE Bench -> Board: Illaoi (i:6.0) <-> Vex (i:10.0) | Rew: +0.10
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.57, Shepherd 0.88, Anima 0.58, Voyager 0.49, Fateweaver 0.49
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 12 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Illaoi | core=SIM | fit=1.32 | Anima=0.56, Shepherd=0.76
+[13:51:26] MOVE Bench -> Board: Vex (i:10.0) <-> Miss Fortune (i:6.0) | Rew: +0.04
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.70, Shepherd 0.87, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 12 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Vex | core=SIM | fit=0.00 | nenhum trait de foco
+[13:51:27] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> Rhaast (i:6.0) | Rew: +0.08
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.52, Shepherd 0.95, Anima 0.57, Voyager 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 12 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Miss Fortune | core=SIM | fit=0.00 | nenhum trait de foco
+[13:51:28] BUY XP                       | Rew: -0.07
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.68, Shepherd 0.91, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 8 | renda base +5 | juros +0 | sequência +3 | vitória +0
+[13:51:28] BUY XP                       | Rew: +0.01
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.51, Shepherd 0.97, Anima 0.57, Voyager 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 4 | renda base +5 | juros +0 | sequência +3 | vitória +0
+[13:51:29] BUY XP                       | Rew: +0.01
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+[13:51:30] MOVE Bench -> Board: Rhaast (i:6.0) <-> Vex (i:10.0) | Rew: -0.23
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.51, Shepherd 0.98, Anima 0.56, Voyager 0.48, Fateweaver 0.48
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+    FIT UNIDADE: Rhaast | core=não | fit=0.00 | nenhum trait de foco
+
+[13:51:30] --- FIM DO ROUND 4-2 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:51:30] 🛒 LOJA: None, None, None, None, None
+[13:51:35] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[13:51:42] --- FIM DO ROUND 4-3 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:51:42] 🛒 LOJA: None, None, None, None, None
+[13:51:47] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[13:51:54] --- FIM DO ROUND 4-4 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:51:54] 🛒 LOJA: None, None, None, None, None
+[13:51:59] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[13:52:06] --- FIM DO ROUND 4-5 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:52:06] 🛒 LOJA: None, None, None, None, None
+[13:52:12] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[13:52:18] --- FIM DO ROUND 4-6 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:52:18] 🛒 LOJA: None, None, None, None, None
+[13:52:25] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[13:52:31] --- FIM DO ROUND 4-7 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:52:31] 🛒 LOJA: None, None, None, None, None
+[13:52:37] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[13:52:44] --- FIM DO ROUND 5-1 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:52:44] 🛒 LOJA: None, None, None, None, None
+[13:52:51] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[13:52:57] --- FIM DO ROUND 5-2 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:52:57] 🛒 LOJA: None, None, None, None, None
+[13:53:03] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[13:53:10] --- FIM DO ROUND 5-3 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:53:10] 🛒 LOJA: None, None, None, None, None
+[13:53:17] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[13:53:23] --- FIM DO ROUND 5-4 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:53:23] 🛒 LOJA: None, None, None, None, None
+[13:53:31] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[13:53:37] --- FIM DO ROUND 5-5 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:53:37] 🛒 LOJA: None, None, None, None, None
+[13:53:45] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[13:53:51] --- FIM DO ROUND 5-6 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:53:51] 🛒 LOJA: None, None, None, None, None
+[13:53:58] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[13:54:04] --- FIM DO ROUND 5-7 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:54:04] 🛒 LOJA: None, None, None, None, None
+[13:54:12] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[13:54:19] --- FIM DO ROUND 6-1 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:54:19] 🛒 LOJA: None, None, None, None, None
+[13:54:26] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[13:54:33] --- FIM DO ROUND 6-2 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:54:33] 🛒 LOJA: None, None, None, None, None
+[13:54:40] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[13:54:47] --- FIM DO ROUND 6-3 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:54:47] 🛒 LOJA: None, None, None, None, None
+[13:54:54] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[13:55:01] --- FIM DO ROUND 6-4 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:55:01] 🛒 LOJA: None, None, None, None, None
+[13:55:09] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[13:55:15] --- FIM DO ROUND 6-5 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:55:15] 🛒 LOJA: None, None, None, None, None
+[13:55:26] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    STRATEGY REASON: HP crítico | CONF: 0.95
+    CORE UNITS: TFT17_Vex, TFT17_Illaoi, TFT17_MissFortune_TraitClone | CORE TRAITS: Stargazer, Anima, Space Groove
+    COMP BEFORE -> AFTER: dir=Anima -> Anima | foco=TFT17_Vex -> TFT17_Vex | lock=True -> True | strength=2.17 -> 2.17
+    GOLD: 0 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[13:55:32] --- FIM DO ROUND 6-6 | GOLD: 0 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Anima | FOCUS: TFT17_Vex | LOCK: LOCKED | STRENGTH: 2.17
+FOCUS WEIGHTS: Space Groove 2.67, Shepherd 0.92, Anima 0.54, Voyager 0.44, Fateweaver 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[13:55:32] 🛒 LOJA: None, None, None, None, None
+
+========================================
+ GAME OVER - RELATÓRIO FINAL
+========================================
