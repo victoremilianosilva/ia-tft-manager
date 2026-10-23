@@ -1577,6 +1577,9 @@ struct TFTEngine::Impl {
                 static const strategy::CompositionDirectionPolicy direction_policy{
                     strategy::CompositionDirectionConfig{0.20, 0.75, 3}
                 };
+                const std::string direction_before = info.composition_direction;
+                const double strength_before = info.composition_strength;
+                const bool locked_before = info.composition_locked;
                 const auto direction_result = direction_policy.update(
                     direction_state,
                     strategy::CompositionDirectionInput{
@@ -1586,6 +1589,15 @@ struct TFTEngine::Impl {
                         false
                     });
 
+                if (direction_result.changed) {
+                    info.previous_composition_direction = direction_before;
+                    info.previous_composition_strength = strength_before;
+                    info.composition_direction_change_was_locked = locked_before;
+                    info.composition_direction_change_round = current_round;
+                    const auto focus_weight = focus.find(direction_state.direction);
+                    info.composition_direction_change_focus_weight =
+                        focus_weight == focus.end() ? 0.0 : focus_weight->second;
+                }
                 info.composition_direction = direction_state.direction;
                 info.composition_strength = direction_state.strength;
                 info.composition_candidate_direction = direction_state.candidate_direction;
