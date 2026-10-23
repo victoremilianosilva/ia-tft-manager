@@ -548,6 +548,8 @@ struct TFTEngine::Impl {
             player_envs[i].board.fill(std::nullopt);
             player_envs[i].board_move_age.fill(kActionMemoryHorizon);
             player_envs[i].actions_taken_this_round = 0;
+            player_envs[i].action_serial = 0;
+            player_envs[i].recent_purchases.clear();
 
             // Impede que o histórico de uma partida anterior
             // interfira no novo episódio.
