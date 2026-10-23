@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
 )
 
 from viewer.session import ViewerSession, unit_label, ACTION_NAMES, ROOT
+from viewer.composition_plan import summarize_planned_traits, suggest_initial_positions
 
 APP_STYLE = """
 QMainWindow, QWidget { background: #0b1020; color: #e5e7eb; font-family: 'Segoe UI'; font-size: 10pt; }
@@ -293,6 +294,7 @@ class StepWorker(QObject):
 
 class PlayerCard(QFrame):
     selected = Signal(int)
+    composition_requested = Signal(int)
 
     def __init__(self, player_id: int, parent=None):
         super().__init__(parent)
@@ -314,10 +316,20 @@ class PlayerCard(QFrame):
         self.metrics = QLabel("HP —   OURO —   NV —   XP —")
         self.metrics.setObjectName("muted")
         root.addWidget(self.metrics)
+        strategy_row = QHBoxLayout()
         self.strategy_line = QLabel("Strategy: — | Comp direction: —")
         self.strategy_line.setWordWrap(True)
         self.strategy_line.setObjectName("muted")
-        root.addWidget(self.strategy_line)
+        strategy_row.addWidget(self.strategy_line, 1)
+        self.composition_button = QPushButton("Ver composição")
+        self.composition_button.setToolTip("Ver unidades planejadas, sinergias e prévia de posicionamento")
+        self.composition_button.setVisible(False)
+        self.composition_button.setMaximumWidth(150)
+        self.composition_button.clicked.connect(
+            lambda _checked=False: self.composition_requested.emit(self.player_id)
+        )
+        strategy_row.addWidget(self.composition_button, 0, Qt.AlignmentFlag.AlignVCenter)
+        root.addLayout(strategy_row)
         self.board = QGridLayout()
         self.board.setContentsMargins(0, 0, 0, 0)
         self.board.setSpacing(2)
@@ -358,6 +370,9 @@ class PlayerCard(QFrame):
         self.strategy_line.setText(
             f"Strategy: {strategy_name}\n{_composition_status_text(strategy)}"
         )
+        has_plan = bool(strategy.get("planned_units"))
+        self.composition_button.setVisible(has_plan)
+        self.composition_button.setEnabled(has_plan)
         board = audit.get("board", [])
         for i, cell in enumerate(self.cells):
             unit = board[i] if i < len(board) else None
@@ -519,6 +534,7 @@ class ViewerWindow(QMainWindow):
         for player_id in range(8):
             card = PlayerCard(player_id)
             card.selected.connect(self._select_player)
+            card.composition_requested.connect(self._show_composition_dialog)
             self.cards.append(card)
         top_layout.addLayout(self.player_grid)
         top_panel.setMinimumWidth(0)
@@ -1003,6 +1019,184 @@ class ViewerWindow(QMainWindow):
         outer.addWidget(close_button, 0, Qt.AlignmentFlag.AlignRight)
         dialog.finished.connect(lambda _result, current=dialog: self._on_player_dialog_finished(current))
         dialog.show()
+
+    def _show_composition_dialog(self, player_id: int):
+        """Show the planner's target lineup without changing policy or engine state."""
+        audit_players = self.session.audit_snapshot.get("players", [])
+        audit = next((p for p in audit_players if int(p.get("player_id", -1)) == player_id), {})
+        strategy = audit.get("strategy_info") or {}
+        planned_names = strategy.get("planned_units") or []
+        if not planned_names:
+            QMessageBox.information(
+                self, "Composição indisponível",
+                "A engine ainda não forneceu uma composição planejada para este jogador."
+            )
+            return
+
+        catalog = {}
+        try:
+            raw_catalog = json.loads((ROOT / "units_gerado.json").read_text(encoding="utf-8"))
+            for unit in raw_catalog if isinstance(raw_catalog, list) else []:
+                if not isinstance(unit, dict):
+                    continue
+                for alias in (unit.get("apiName"), unit.get("characterName"), unit.get("name")):
+                    if alias:
+                        catalog[str(alias).casefold()] = unit
+        except (OSError, json.JSONDecodeError):
+            catalog = {}
+
+        planned_ids = strategy.get("planned_unit_ids") or []
+        carry_id = strategy.get("planned_main_carry_id", -1)
+        planned = []
+        for index, raw_name in enumerate(planned_names):
+            name = str(raw_name)
+            record = catalog.get(name.casefold(), {})
+            profile = record.get("combat_profile") or {}
+            planned_id = planned_ids[index] if index < len(planned_ids) else None
+            planned.append({
+                "occupied": True,
+                "champion_id": name,
+                "apiName": name,
+                "internal_id": planned_id,
+                "star": 1,
+                "cost": int(record.get("cost", 0) or 0),
+                "name": record.get("name") or name,
+                "traits": record.get("traits") or [],
+                "role_name": profile.get("role_name") or record.get("role_name") or "função não informada",
+                "combat_profile": profile,
+            })
+
+        carry = next((unit for unit in planned if unit.get("internal_id") == carry_id), None)
+        previous_dialog = getattr(self, "_composition_dialog", None)
+        if previous_dialog is not None:
+            previous_dialog.close()
+        dialog = QDialog(self)
+        self._composition_dialog = dialog
+        dialog.setWindowTitle(f"Composição planejada · Jogador {player_id + 1}")
+        dialog.setModal(True)
+        screen = self.screen().availableGeometry() if self.screen() else self.geometry()
+        dialog.resize(min(1000, max(650, int(screen.width() * 0.78))),
+                      min(820, max(560, int(screen.height() * 0.84))))
+        outer = QVBoxLayout(dialog)
+
+        direction = strategy.get("composition_direction") or "Direção ainda não definida"
+        heading = QLabel(f"Direção: {direction}   ·   Unidades planejadas: {len(planned)}")
+        heading.setStyleSheet("font-size:15pt;font-weight:800;color:#93c5fd;")
+        outer.addWidget(heading)
+        score = float(strategy.get("planned_composition_score", 0.0) or 0.0)
+        score_label = QLabel(
+            f"Carry principal: {carry['name'] if carry else 'não identificado'}"
+            f"   ·   Pontuação interna do plano: {score:.2f}"
+        )
+        score_label.setObjectName("muted")
+        outer.addWidget(score_label)
+
+        tabs = QTabWidget()
+        lineup_tab = QWidget()
+        lineup_layout = QVBoxLayout(lineup_tab)
+        lineup_scroll = QScrollArea()
+        lineup_scroll.setWidgetResizable(True)
+        lineup_content = QWidget()
+        lineup_grid = QGridLayout(lineup_content)
+        lineup_grid.setSpacing(10)
+        for index, unit in enumerate(planned):
+            tile = QFrame()
+            tile.setObjectName("playerCard")
+            tile_layout = QVBoxLayout(tile)
+            portrait = ChampionCell(72, 72)
+            portrait.set_unit(unit, self.icon_loader)
+            tile_layout.addWidget(portrait, 0, Qt.AlignmentFlag.AlignHCenter)
+            name_label = QLabel(unit["name"])
+            name_label.setWordWrap(True)
+            name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            name_label.setStyleSheet("font-weight:700;")
+            tile_layout.addWidget(name_label)
+            role_label = QLabel(unit["role_name"])
+            role_label.setObjectName("muted")
+            role_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            tile_layout.addWidget(role_label)
+            traits_label = QLabel(" · ".join(unit["traits"]) or "Sem traits no catálogo")
+            traits_label.setWordWrap(True)
+            traits_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            tile_layout.addWidget(traits_label)
+            if unit is carry:
+                carry_label = QLabel("CARRY PRINCIPAL")
+                carry_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                carry_label.setStyleSheet("font-weight:800;color:#fbbf24;")
+                tile_layout.addWidget(carry_label)
+            lineup_grid.addWidget(tile, index // 4, index % 4)
+        lineup_scroll.setWidget(lineup_content)
+        lineup_layout.addWidget(lineup_scroll)
+        tabs.addTab(lineup_tab, "Unidades")
+
+        traits_tab = QWidget()
+        traits_layout = QVBoxLayout(traits_tab)
+        trait_rows = summarize_planned_traits(planned, strategy.get("planned_traits") or [])
+        if trait_rows:
+            for trait_name, count, is_core in trait_rows:
+                marker = "  ·  PRIORIDADE DO PLANNER" if is_core else ""
+                trait_label = QLabel(f"{trait_name}  ×{count}{marker}")
+                trait_label.setWordWrap(True)
+                if is_core:
+                    trait_label.setStyleSheet("font-weight:700;color:#93c5fd;")
+                traits_layout.addWidget(trait_label)
+        else:
+            traits_layout.addWidget(QLabel("O catálogo não forneceu traits para as unidades planejadas."))
+        traits_note = QLabel(
+            "As contagens vêm das unidades do plano. Os marcos exatos de ativação não são expostos "
+            "no diagnóstico atual; traits destacadas são as priorizadas pelo planner."
+        )
+        traits_note.setWordWrap(True)
+        traits_note.setObjectName("muted")
+        traits_layout.addWidget(traits_note)
+        traits_layout.addStretch()
+        tabs.addTab(traits_tab, "Sinergias")
+
+        position_tab = QWidget()
+        position_layout = QVBoxLayout(position_tab)
+        position_note = QLabel(
+            "Prévia inicial sugerida a partir dos perfis de combate das unidades. "
+            "A engine ainda não exporta coordenadas de formação planejada; esta visualização "
+            "é uma sugestão explicativa, não uma ordem fixa nem uma alteração nas ações da IA."
+        )
+        position_note.setWordWrap(True)
+        position_note.setObjectName("muted")
+        position_layout.addWidget(position_note)
+        board_frame = QGroupBox("Formação sugerida · tabuleiro 7×4")
+        board_layout = QGridLayout(board_frame)
+        board_layout.setSpacing(4)
+        for column in range(7):
+            board_layout.setColumnStretch(column, 1)
+        suggested = suggest_initial_positions(planned)
+        for index in range(28):
+            cell = ChampionCell(62, 62)
+            unit = suggested.get(index)
+            cell.set_unit(unit, self.icon_loader)
+            cell.setToolTip(
+                f"Linha {index // 7 + 1}, coluna {index % 7 + 1}: "
+                f"{unit['name'] if unit else 'vazio'}"
+            )
+            board_layout.addWidget(cell, index // 7, index % 7)
+        position_layout.addWidget(board_frame)
+        position_layout.addStretch()
+        tabs.addTab(position_tab, "Posicionamento inicial")
+
+        outer.addWidget(tabs, 1)
+        footer = QHBoxLayout()
+        footer.addStretch()
+        close_button = QPushButton("Fechar")
+        close_button.clicked.connect(dialog.accept)
+        footer.addWidget(close_button)
+        outer.addLayout(footer)
+        dialog.finished.connect(
+            lambda _result, current=dialog: self._on_composition_dialog_finished(current)
+        )
+        dialog.show()
+
+    def _on_composition_dialog_finished(self, dialog):
+        if getattr(self, "_composition_dialog", None) is dialog:
+            self._composition_dialog = None
+        dialog.deleteLater()
 
     def _on_player_dialog_finished(self, dialog):
         if getattr(self, "_player_dialog", None) is dialog:
