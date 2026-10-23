@@ -279,6 +279,10 @@ py::list strategies_to_list(
             item["composition_candidate_strength"] = 0.0;
             item["composition_candidate_streak"] = 0;
             item["previous_composition_direction"] = "";
+            item["previous_composition_strength"] = 0.0;
+            item["composition_direction_change_was_locked"] = false;
+            item["composition_direction_change_round"] = 0;
+            item["composition_direction_change_focus_weight"] = 0.0;
             item["composition_direction_change_reason"] = "initial";
             item["composition_direction_change_count"] = 0;
             item["composition_focus_weights"] = py::dict();
@@ -323,6 +327,10 @@ py::list strategies_to_list(
             item["composition_candidate_strength"] = strategy.composition_candidate_strength;
             item["composition_candidate_streak"] = strategy.composition_candidate_streak;
             item["previous_composition_direction"] = strategy.previous_composition_direction;
+            item["previous_composition_strength"] = strategy.previous_composition_strength;
+            item["composition_direction_change_was_locked"] = strategy.composition_direction_change_was_locked;
+            item["composition_direction_change_round"] = strategy.composition_direction_change_round;
+            item["composition_direction_change_focus_weight"] = strategy.composition_direction_change_focus_weight;
             item["composition_direction_change_reason"] = strategy.composition_direction_change_reason;
             item["composition_direction_change_count"] = strategy.composition_direction_change_count;
             py::dict composition_focus_weights;
