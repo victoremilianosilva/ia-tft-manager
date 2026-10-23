@@ -1946,12 +1946,22 @@ struct TFTEngine::Impl {
             const auto planning_slots =
                 strategy::CompositionPlanner::target_slots_for_level(economy.level);
             strategy::CompositionPlanner::AvailableCopies available_copies;
+            std::unordered_set<std::int32_t> currently_offered;
             for (const auto& champion : catalog->all())
                 available_copies[champion.internal_id] = lobby.pool
                     ? lobby.pool->available(champion.internal_id) : 0;
+            if (shop) {
+                for (const auto& offer : shop->offers()) {
+                    if (!offer) continue;
+                    currently_offered.insert(offer->champion_internal_id);
+                    available_copies[offer->champion_internal_id] =
+                        std::max(1, available_copies[offer->champion_internal_id]);
+                }
+            }
             const auto plan = strategy::CompositionPlanner::build(
                 catalog->all(), trait_milestones, info.composition_direction,
-                plan_focus, owned_copies, planning_slots, economy.level, available_copies);
+                plan_focus, owned_copies, planning_slots, economy.level,
+                available_copies, currently_offered);
             info.planned_units = plan.unit_names;
             info.planned_unit_ids = plan.unit_ids;
             info.planned_traits = plan.core_traits;
