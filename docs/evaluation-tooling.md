@@ -9,10 +9,14 @@ A saída CSV registra seed, jogador, versão (baseline/candidate), colocação, 
 Exemplo PowerShell:
 
 ~~~powershell
-python scripts/evaluate_checkpoints.py --baseline checkpoints/baseline.pt --candidate tft_checkpoint.pt --matches 40 --output reports/head_to_head.csv
+python scripts/evaluate_checkpoints.py --baseline checkpoints/baseline.pt --candidate tft_checkpoint.pt --matches 40 --seed 20261015 --output reports/head_to_head.csv --json-output reports/head_to_head_summary.json
 ~~~
 
 Ajuste os caminhos aos checkpoints disponíveis no ambiente local.
+
+O CSV mantém os resultados por jogador. O JSON adicional agrega baseline e candidata, calcula deltas pareados por seed para colocação média, taxa de vitória e top 4, e inclui intervalos de confiança de 95% por bootstrap das seeds. Uma diferença negativa em colocação média favorece a candidata; diferenças positivas em vitória/top 4 favorecem a candidata. Esses intervalos descrevem a variação observada entre seeds e não provam causalidade.
+
+Para comparações futuras, mantenha o mesmo --seed inicial, a mesma quantidade de partidas, a mesma versão da engine e a mesma configuração de avaliação. Use checkpoints compatíveis com a dimensão atual da observação e com a arquitetura de TFTPolicy; o script falha em vez de migrar silenciosamente pesos incompatíveis.
 
 ## Outras ferramentas
 

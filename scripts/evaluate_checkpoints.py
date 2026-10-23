@@ -10,8 +10,10 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import random
 import sys
+from collections import defaultdict
 from pathlib import Path
 
 # Running "python scripts/evaluate_checkpoints.py" makes scripts/ the
@@ -173,6 +175,89 @@ def run_match(factory, baseline, candidate, candidate_slots, seed, device, max_s
             close()
 
 
+def _metric_summary(rows):
+    if not rows:
+        raise ValueError("Cannot summarize an empty policy group.")
+    placements = [int(row["placement"]) for row in rows]
+    return {
+        "players": len(rows),
+        "mean_placement": float(np.mean(placements)),
+        "win_rate": float(np.mean([int(row["win"]) for row in rows])),
+        "top4_rate": float(np.mean([int(row["placement"]) <= 4 for row in rows])),
+    }
+
+
+def summarize_paired_seeds(rows, bootstrap_samples=4000, bootstrap_seed=20261023):
+    """Summarize policy results and paired per-seed deltas; seed is the sampling unit."""
+    if not rows:
+        raise ValueError("Cannot summarize an empty evaluation.")
+    by_seed = defaultdict(lambda: {"baseline": [], "candidate": []})
+    for row in rows:
+        seed = int(row["seed"])
+        version = row["version"]
+        if version not in ("baseline", "candidate"):
+            raise ValueError(f"Unknown policy version: {version}")
+        by_seed[seed][version].append(row)
+
+    per_seed = []
+    for seed in sorted(by_seed):
+        groups = by_seed[seed]
+        if len(groups["baseline"]) != 4 or len(groups["candidate"]) != 4:
+            raise ValueError(
+                f"Seed {seed} must contain exactly four players per policy; "
+                f"got baseline={len(groups['baseline'])}, candidate={len(groups['candidate'])}."
+            )
+        baseline = _metric_summary(groups["baseline"])
+        candidate = _metric_summary(groups["candidate"])
+        per_seed.append({
+            "seed": seed,
+            "baseline": baseline,
+            "candidate": candidate,
+            "delta_candidate_minus_baseline": {
+                "mean_placement": candidate["mean_placement"] - baseline["mean_placement"],
+                "win_rate": candidate["win_rate"] - baseline["win_rate"],
+                "top4_rate": candidate["top4_rate"] - baseline["top4_rate"],
+            },
+        })
+
+    def bootstrap_ci(values):
+        values = np.asarray(values, dtype=np.float64)
+        if values.size == 0:
+            return [0.0, 0.0]
+        if values.size == 1 or bootstrap_samples <= 0:
+            point = float(values.mean())
+            return [point, point]
+        rng = np.random.default_rng(bootstrap_seed)
+        sample_indices = rng.integers(0, values.size, size=(bootstrap_samples, values.size))
+        means = values[sample_indices].mean(axis=1)
+        return [float(np.quantile(means, 0.025)), float(np.quantile(means, 0.975))]
+
+    baseline_rows = [row for row in rows if row["version"] == "baseline"]
+    candidate_rows = [row for row in rows if row["version"] == "candidate"]
+    delta_metrics = {}
+    for metric in ("mean_placement", "win_rate", "top4_rate"):
+        values = [item["delta_candidate_minus_baseline"][metric] for item in per_seed]
+        delta_metrics[metric] = {
+            "mean": float(np.mean(values)),
+            "bootstrap_95_ci": bootstrap_ci(values),
+            "seed_count": len(values),
+        }
+
+    return {
+        "seed_count": len(per_seed),
+        "baseline": _metric_summary(baseline_rows),
+        "candidate": _metric_summary(candidate_rows),
+        "paired_delta_candidate_minus_baseline": delta_metrics,
+        "per_seed": per_seed,
+        "interpretation": (
+            "Negative mean_placement delta favors candidate (lower placement is better); "
+            "positive win_rate/top4_rate deltas favor candidate. Confidence intervals are "
+            "paired bootstrap intervals across seeds, not proof of causality. Use enough "
+            "seeds and keep the seed set fixed when comparing future checkpoints."
+        ),
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", required=True, type=Path)
@@ -181,9 +266,13 @@ def main():
     parser.add_argument("--seed", type=int, default=20261015)
     parser.add_argument("--max-steps", type=int, default=10000)
     parser.add_argument("--output", type=Path, default=Path("reports/head_to_head.csv"))
+    parser.add_argument("--json-output", type=Path, default=Path("reports/head_to_head_summary.json"))
+    parser.add_argument("--bootstrap-samples", type=int, default=4000)
     args = parser.parse_args()
     if args.matches < 1:
         parser.error("--matches precisa ser >= 1")
+    if args.bootstrap_samples < 0:
+        parser.error("--bootstrap-samples precisa ser >= 0")
     if not args.baseline.is_file() or not args.candidate.is_file():
         parser.error("Os caminhos dos dois checkpoints precisam existir.")
 
@@ -226,16 +315,30 @@ def main():
         writer.writerows(rows)
 
     print(f"CSV: {args.output}")
+    summary = summarize_paired_seeds(
+        rows, bootstrap_samples=args.bootstrap_samples, bootstrap_seed=args.seed
+    )
+    summary["checkpoints"] = {
+        "baseline": str(args.baseline),
+        "candidate": str(args.candidate),
+    }
+    summary["engine"] = "C++"
+    summary["device"] = "CPU"
+    summary["seed_start"] = args.seed
+    summary["matches"] = args.matches
+    args.json_output.parent.mkdir(parents=True, exist_ok=True)
+    args.json_output.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    print(f"JSON: {args.json_output}")
     for version in ("baseline", "candidate"):
-        group = [row for row in rows if row["version"] == version]
-        avg_place = sum(row["placement"] for row in group) / len(group)
-        wins = sum(row["win"] for row in group)
-        win_rate = wins / len(group)
-        top4 = sum(row["placement"] <= 4 for row in group) / len(group)
+        metric = summary[version]
         print(
-            f"{version}: n={len(group)} avg_placement={avg_place:.3f} "
-            f"wins={wins} win_rate={win_rate:.3%} top4_rate={top4:.3%}"
+            f"{version}: players={metric['players']} "
+            f"avg_placement={metric['mean_placement']:.3f} "
+            f"win_rate={metric['win_rate']:.3%} top4_rate={metric['top4_rate']:.3%}"
         )
+    for metric, result in summary["paired_delta_candidate_minus_baseline"].items():
+        low, high = result["bootstrap_95_ci"]
+        print(f"paired Δ {metric}: {result['mean']:.4f} (bootstrap 95% CI [{low:.4f}, {high:.4f}])")
 
 
 if __name__ == "__main__":

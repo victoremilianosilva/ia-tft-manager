@@ -17,6 +17,7 @@ from scripts.evaluate_checkpoints import (
     as_mask_batch,
     policy_actions,
     run_match,
+    summarize_paired_seeds,
 )
 
 
@@ -194,3 +195,54 @@ def test_strategic_audit_records_exact_masks_and_action_components():
         "type_mask": np.array([1, 0, 1], dtype=np.float32),
         "shop_mask": np.array([False, True]),
     }) == {"type_mask": [1, 0, 1], "shop_mask": [0, 1]}
+
+
+
+def _seed_rows(seed, candidate_placements, baseline_placements):
+    rows = []
+    for version, placements in (
+        ("baseline", baseline_placements),
+        ("candidate", candidate_placements),
+    ):
+        for player_id, placement in enumerate(placements):
+            rows.append({
+                "seed": seed,
+                "player_id": player_id,
+                "version": version,
+                "placement": placement,
+                "win": int(placement == 1),
+            })
+    return rows
+
+
+def test_paired_seed_summary_reports_deltas_and_bootstrap_interval():
+    rows = (
+        _seed_rows(100, [1, 2, 3, 4], [5, 6, 7, 8])
+        + _seed_rows(101, [1, 2, 3, 4], [4, 5, 6, 7])
+    )
+    report = summarize_paired_seeds(rows, bootstrap_samples=500, bootstrap_seed=7)
+
+    assert report["seed_count"] == 2
+    assert report["baseline"]["mean_placement"] == 6.0
+    assert report["candidate"]["mean_placement"] == 2.5
+    placement_delta = report["paired_delta_candidate_minus_baseline"]["mean_placement"]
+    assert placement_delta["mean"] < 0
+    assert placement_delta["bootstrap_95_ci"][1] < 0
+    assert len(report["per_seed"]) == 2
+    assert report["per_seed"][0]["seed"] == 100
+
+
+def test_paired_seed_summary_refuses_missing_players_instead_of_inventing_results():
+    rows = _seed_rows(100, [1, 2, 3, 4], [5, 6, 7, 8])
+    rows.pop()
+
+    with pytest.raises(ValueError, match="exactly four players per policy"):
+        summarize_paired_seeds(rows)
+
+
+def test_paired_seed_summary_rejects_unknown_policy_labels():
+    rows = _seed_rows(100, [1, 2, 3, 4], [5, 6, 7, 8])
+    rows[0]["version"] = "unknown"
+
+    with pytest.raises(ValueError, match="Unknown policy version"):
+        summarize_paired_seeds(rows)
