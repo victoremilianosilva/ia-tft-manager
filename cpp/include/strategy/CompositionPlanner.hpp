@@ -250,6 +250,28 @@ public:
                 note += ")";
                 plan.acquisition_notes.push_back(std::move(note));
             }
+
+            // Explain why a missing, low-probability carry was not chosen.
+            // Limit this to three candidates so logs remain useful rather than noisy.
+            std::size_t rejected_carries = 0;
+            for (const auto& champion : pool) {
+                if (rejected_carries >= 3) break;
+                if (role_of(champion) != 1 ||
+                    std::find(plan.unit_ids.begin(), plan.unit_ids.end(), champion.internal_id) != plan.unit_ids.end())
+                    continue;
+                const auto owned = owned_copies.find(champion.internal_id);
+                if (owned != owned_copies.end() && owned->second > 0) continue;
+                const auto [per_shop, penalty] = acquisition(champion);
+                if (penalty < 1.5) continue;
+                const int percent = static_cast<int>(std::round(per_shop * 100.0));
+                std::string note = "NOT_SELECTED_CARRY: ";
+                note += champion.api_name.empty() ? champion.name : champion.api_name;
+                note += " (cost=" + std::to_string(champion.cost) +
+                    ", chance_any_shop~" + std::to_string(percent) +
+                    "%, hard_to_find; alternative carry preferred)";
+                plan.acquisition_notes.push_back(std::move(note));
+                ++rejected_carries;
+            }
         }
         return plan;
     }
