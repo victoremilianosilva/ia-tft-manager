@@ -108,3 +108,27 @@ def test_cpp_combat_input_supports_identifier_fallbacks():
     assert combat_input["max_hp"] == 600
     assert combat_input["attack_damage"] == 61
     assert combat_input["magic_resist"] == 17
+
+
+
+@pytest.mark.parametrize(("unit", "expected_role"), [
+    (
+        {"apiName": "Bruiser", "max_hp": 900, "attack_damage": 60,
+         "attack_speed": 0.75, "armor": 35, "magic_resist": 35,
+         "attack_range": 1,
+         "ability": {"description": "Deal physical damage to the target"}},
+        3,
+    ),
+    (
+        {"apiName": "CarryDamageText", "max_hp": 650, "attack_damage": 85,
+         "attack_speed": 0.9, "armor": 25, "magic_resist": 25,
+         "attack_range": 4,
+         "ability": {"description": "Deal physical damage to the target"}},
+        1,
+    ),
+])
+def test_generic_damage_text_does_not_override_combat_stats(unit, expected_role):
+    profile = cpp.combat_profile_get_profile(unit)
+
+    assert profile["role"] == expected_role
+    assert profile["is_tank"] is False

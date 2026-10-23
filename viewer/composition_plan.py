@@ -57,3 +57,26 @@ def suggest_initial_positions(units: list[dict]) -> dict[int, dict]:
             break
         result[free] = unit
     return result
+
+
+
+def is_position_misplaced(unit: dict, row: int) -> bool:
+    """Flag only clear front/backline mismatches; rows are zero-based."""
+    profile = unit.get("combat_profile") or {}
+    role_name = str(unit.get("role_name") or profile.get("role_name") or "").casefold()
+    is_front = bool(profile.get("is_tank") or profile.get("is_fighter")) or role_name in {"tank", "fighter", "bruiser"}
+    is_back = bool(profile.get("is_carry") or profile.get("is_support") or profile.get("is_assassin")) or role_name in {"carry", "support", "assassin", "mage", "marksman", "ranged"}
+    if is_front and is_back:
+        # Explicit role name wins when catalog flags are stale or contradictory.
+        if role_name in {"tank", "fighter", "bruiser"}:
+            is_back = False
+        elif role_name in {"carry", "support", "assassin", "mage", "marksman", "ranged"}:
+            is_front = False
+        else:
+            return False
+    if is_front:
+        return row >= 2
+    if is_back:
+        return row <= 1
+    # Unknown roles should not be marked as wrong based on a guess.
+    return False

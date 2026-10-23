@@ -1,5 +1,6 @@
 
 #include "lobby/ChampionCatalog.hpp"
+#include "combat/CombatProfileEngine.hpp"
 
 #include <nlohmann/json.hpp>
 
@@ -224,74 +225,23 @@ std::pair<std::int32_t, std::string> infer_role(
     const ChampionCombatProfile& profile,
     const ChampionAbility& ability
 ) {
-    // Keep enum/order aligned with CombatProfileManager.UnitRole:
-    // TANK=0, CARRY=1, SUPPORT=2, FIGHTER=3, ASSASSIN=4.
-    std::array<double, 5> scores{0.0, 0.0, 0.0, 0.0, 0.0};
-
-    const std::string description =
-        !ability.description.empty() ? ability.description : ability.name;
-    std::string text = description;
-    std::transform(text.begin(), text.end(), text.begin(),
-        [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
-
-    const std::array<std::vector<std::string>, 5> keywords{{
-        {"shield", "armor", "defense", "defensive", "taunt",
-         "damage reduction", "barrier", "protect"},
-        {"attack damage", "critical", "crit", "damage", "projectile",
-         "rapid fire", "attack speed"},
-        {"heal", "healing", "shield", "buff", "ally", "all allies",
-         "mana", "restore", "protect"},
-        {"melee", "strike", "physical damage", "attack", "damage",
-         "lifesteal"},
-        {"dash", "jump", "backline", "lowest health", "furthest", "farther"}
-    }};
-
-    for (std::size_t role = 0; role < keywords.size(); ++role) {
-        for (const auto& keyword : keywords[role]) {
-            if (text.find(keyword) != std::string::npos) scores[role] += 1.0;
-        }
-    }
-
+    // Use the same classifier as the public native combat-profile API. Keeping
+    // a second keyword/score implementation here caused role drift between
+    // catalog planning and runtime positioning.
     const auto value_or = [](double profile_value, double stat_value) {
         return profile_value != 0.0 ? profile_value : stat_value;
     };
-    const double hp = value_or(profile.max_hp, stats.max_hp);
-    const double ad = value_or(profile.attack_damage, stats.attack_damage);
-    const double speed = value_or(profile.attack_speed, stats.attack_speed);
-    const double armor = value_or(profile.armor, stats.armor);
-    const double mr = value_or(profile.magic_resist, stats.magic_resist);
-    const double range = value_or(profile.attack_range, stats.attack_range);
-
-    if (hp >= 800.0) scores[0] += 2.0;
-    if (hp >= 1100.0) scores[0] += 1.0;
-    if (armor >= 40.0) scores[0] += 1.5;
-    if (mr >= 40.0) scores[0] += 1.0;
-
-    if (ad >= 70.0) scores[1] += 1.5;
-    if (speed >= 0.8) scores[1] += 1.0;
-
-    if (range > 0.0 && range <= 1.0) {
-        scores[3] += 1.0;
-        if (armor >= 30.0 || hp >= 700.0) scores[3] += 1.0;
-    }
-
-    if (range >= 3.0) {
-        scores[1] += 0.5;
-        scores[2] += 0.25;
-    }
-
-    for (const auto& keyword : keywords[4]) {
-        if (text.find(keyword) != std::string::npos) {
-            scores[4] += 2.0;
-            break;
-        }
-    }
-
-    // std::max_element preserves Python max(..., key=...) tie behavior:
-    // the first role in insertion order wins ties.
-    const auto best = std::max_element(scores.begin(), scores.end());
-    const auto role = static_cast<std::int32_t>(
-        std::distance(scores.begin(), best));
+    const CombatProfileInput input{
+        !ability.description.empty() ? ability.description : ability.name,
+        value_or(profile.attack_range, stats.attack_range),
+        value_or(profile.attack_speed, stats.attack_speed),
+        value_or(profile.attack_damage, stats.attack_damage),
+        value_or(profile.armor, stats.armor),
+        value_or(profile.magic_resist, stats.magic_resist),
+        value_or(profile.max_hp, stats.max_hp),
+        profile.max_mana
+    };
+    const auto role = static_cast<std::int32_t>(CombatProfileEngine::infer_role(input));
     static const std::array<std::string, 5> names{
         "tank", "carry", "support", "fighter", "assassin"
     };
