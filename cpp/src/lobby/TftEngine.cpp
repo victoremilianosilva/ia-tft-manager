@@ -29,6 +29,7 @@
 #include "strategy/BoardEvaluation.hpp"
 #include "reward/RewardModel.hpp"
 #include "strategy/CompositionDirectionPolicy.hpp"
+#include "strategy/CompositionPlanner.hpp"
 
 #include "decision/ActionMaskEngine.hpp"
 #include "decision/DecisionState.hpp"
@@ -155,7 +156,10 @@ double unit_composition_score(
     double score = 0.0;
     const bool core_unit = std::find(strategy.core_unit_ids.begin(), strategy.core_unit_ids.end(),
         def.internal_id) != strategy.core_unit_ids.end();
+    const bool planned_unit = std::find(strategy.planned_unit_ids.begin(),
+        strategy.planned_unit_ids.end(), def.internal_id) != strategy.planned_unit_ids.end();
     if (core_unit) score += 5.0;
+    if (planned_unit) score += 4.5;
     const bool main_trait = !strategy.composition_direction.empty() &&
         std::find(def.traits.begin(), def.traits.end(), strategy.composition_direction) != def.traits.end();
     if (main_trait) score += 3.5;
@@ -172,7 +176,9 @@ double unit_composition_score(
     for (const auto& trait : def.traits) {
         const bool core_trait = std::find(strategy.core_traits.begin(), strategy.core_traits.end(), trait)
             != strategy.core_traits.end();
-        score += core_trait ? 1.2 : -0.5;
+        const bool planned_trait = std::find(strategy.planned_traits.begin(),
+            strategy.planned_traits.end(), trait) != strategy.planned_traits.end();
+        score += core_trait ? 1.2 : (planned_trait ? 1.0 : -0.5);
         const int count = active_count(trait);
         int next = 0;
         const auto ms = trait_milestones.find(trait);
@@ -194,7 +200,9 @@ double unit_composition_score(
     else if (same >= 2) score += 2.0;
     score += (std::clamp(star, 1, 3) - 1) * 2.5;
     score += std::min(1.5, std::max(0, def.cost) * 0.25);
-    if (!main_trait && !strategy.composition_direction.empty()) {
+    // A planned bridge/support unit is allowed to sit outside the anchor
+    // trait; otherwise a locked direction would punish flexible compositions.
+    if (!main_trait && !planned_unit && !strategy.composition_direction.empty()) {
         score -= 1.2;
         if (strategy.composition_locked) score -= 2.0;
     }
@@ -1481,6 +1489,11 @@ struct TFTEngine::Impl {
         info.core_units.clear();
         info.core_unit_ids.clear();
         info.core_traits.clear();
+        info.planned_units.clear();
+        info.planned_unit_ids.clear();
+        info.planned_traits.clear();
+        info.planned_main_carry_id = -1;
+        info.planned_composition_score = 0.0;
         info.active_traits.clear();
         info.unit_counts.clear();
         info.unit_counts_by_id.clear();
@@ -1911,6 +1924,27 @@ struct TFTEngine::Impl {
         for (const auto& [trait, count] : ordered_traits) {
             if (count >= 2 && info.core_traits.size() < 3)
                 info.core_traits.push_back(trait);
+        }
+
+        // Build a concrete target lineup from the entire champion pool once a
+        // direction exists. The anchor trait guides selection, but the planner
+        // deliberately reserves room for a carry, frontline and bridge/support
+        // traits instead of forcing every slot into one trait.
+        if (current_stage >= 3 && !info.composition_direction.empty()) {
+            strategy::CompositionPlanner::OwnedCopies owned_copies;
+            for (const auto& [unit_id, copies] : copies_by_unit)
+                owned_copies[unit_id] = copies;
+            const strategy::CompositionPlanner::FocusWeights plan_focus(
+                focus.begin(), focus.end());
+            const auto plan = strategy::CompositionPlanner::build(
+                catalog->all(), trait_milestones, info.composition_direction,
+                plan_focus, owned_copies,
+                static_cast<std::size_t>(std::clamp(economy.level, 1, 10)));
+            info.planned_units = plan.unit_names;
+            info.planned_unit_ids = plan.unit_ids;
+            info.planned_traits = plan.core_traits;
+            info.planned_main_carry_id = plan.main_carry_id;
+            info.planned_composition_score = plan.score;
         }
 
         // Paridade com StrategyManager.compute_strategy_confidence().
