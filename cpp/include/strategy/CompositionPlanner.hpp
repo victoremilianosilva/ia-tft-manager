@@ -50,7 +50,8 @@ public:
         const OwnedCopies& owned_copies,
         std::size_t requested_slots,
         int current_level = 1,
-        const AvailableCopies& available_copies = {}) {
+        const AvailableCopies& available_copies = {},
+        const std::unordered_set<std::int32_t>& currently_offered = {}) {
         CompositionPlan plan;
         if (pool.empty() || requested_slots == 0) return plan;
 
@@ -64,6 +65,8 @@ public:
                 available_by_cost[static_cast<std::size_t>(champion.cost - 1)] += std::max(0, found->second);
         }
         const auto acquisition = [&](const ChampionDefinition& champion) {
+            if (currently_offered.count(champion.internal_id) != 0)
+                return std::pair<double, double>{1.0, 0.0};
             const auto owned = owned_copies.find(champion.internal_id);
             if (owned != owned_copies.end() && owned->second > 0)
                 return std::pair<double, double>{1.0, 0.0};
@@ -239,6 +242,12 @@ public:
                 if (champion_it == pool.end()) continue;
                 const auto owned = owned_copies.find(id);
                 if (owned != owned_copies.end() && owned->second > 0) continue;
+                if (currently_offered.count(id) != 0) {
+                    std::string note = champion_it->api_name.empty() ? champion_it->name : champion_it->api_name;
+                    note += " (currently_in_shop; immediate acquisition available)";
+                    plan.acquisition_notes.push_back(std::move(note));
+                    continue;
+                }
                 const auto [per_shop, penalty] = acquisition(*champion_it);
                 const int percent = static_cast<int>(std::round(per_shop * 100.0));
                 std::string note = champion_it->api_name.empty() ? champion_it->name : champion_it->api_name;
@@ -261,6 +270,7 @@ public:
                     continue;
                 const auto owned = owned_copies.find(champion.internal_id);
                 if (owned != owned_copies.end() && owned->second > 0) continue;
+                if (currently_offered.count(champion.internal_id) != 0) continue;
                 const auto [per_shop, penalty] = acquisition(champion);
                 if (penalty < 1.5) continue;
                 const int percent = static_cast<int>(std::round(per_shop * 100.0));
