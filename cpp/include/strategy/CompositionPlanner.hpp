@@ -27,6 +27,13 @@ struct CompositionPlan {
 
 class CompositionPlanner {
 public:
+    // Levels 1-8 share a stable eight-unit target. At levels 9/10 the planner
+    // expands to the actual level and is recomputed from the latest game state.
+    static std::size_t target_slots_for_level(int level) noexcept {
+        return level <= 8 ? 8U
+            : static_cast<std::size_t>(std::clamp(level, 9, 10));
+    }
+
     using TraitMilestones = std::unordered_map<std::string, std::vector<int>>;
     using OwnedCopies = std::unordered_map<std::int32_t, int>;
     using FocusWeights = std::vector<std::pair<std::string, double>>;
