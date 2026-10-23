@@ -117,7 +117,7 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
         actions=actions,
         diagnostics=[{"action_name": "MOVE_BENCH", "value_estimate": 0.3} for _ in range(8)],
         rewards=[0.05] * 8,
-        info=_empty_info(),
+        info=_empty_info(events=["ECONOMIC_ACTION player=0 action_cost=0 sale_proceeds=0"]),
         step=1,
         finished=False,
     )
@@ -161,6 +161,8 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
     assert economics["engine_synergy_after"] == 1.0
     assert economics["positioning_delta"] == 0.25
     assert economics["reason_code"] == "DEPLOY_BOARD_GAIN"
+    assert economics["cost_source"] == "native_action_transition"
+    assert economics["action_cost"] == 0
     assert economics["measurable_improvement"] is True
     assert economics["two_star_or_higher_after"] == 0
     assert economics["pairs_before"] == 0
