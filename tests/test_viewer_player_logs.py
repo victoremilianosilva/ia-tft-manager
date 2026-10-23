@@ -90,6 +90,9 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
     after = json.loads(json.dumps(before))
     after["audit_players"][0]["board"][0] = after["audit_players"][0]["bench"][0]
     after["audit_players"][0]["bench"][0] = _unit()
+    after["audit_players"][0]["board_power"] = 2.0
+    after["audit_players"][0]["synergy_score"] = 1.0
+    after["audit_players"][0]["positioning_score"] = 0.25
     # Simulate a real strategy recomputation after the board changes.
     after["audit_players"][0]["strategy_info"]["composition_direction"] = "Prankster"
     after["audit_players"][0]["strategy_info"]["composition_focus"] = "Briar"
@@ -155,6 +158,8 @@ def test_writes_one_json_log_per_player_with_legacy_movement_lines(tmp_path):
     assert economics["gold_before_interest"] == 10
     assert economics["interest_if_resolved_before"] == 1
     assert economics["potential_interest_delta"] == 0
+    assert economics["engine_synergy_after"] == 1.0
+    assert economics["positioning_delta"] == 0.25
     assert economics["reason_code"] == "DEPLOY_BOARD_GAIN"
     assert economics["measurable_improvement"] is True
     assert economics["two_star_or_higher_after"] == 0
