@@ -241,7 +241,10 @@ class PlayerJsonLogWriter:
                 if (audit.get("strategy_info") or {}).get("planned_main_carry_id") is not None else -1
             ),
             "planned_composition_score": float((audit.get("strategy_info") or {}).get("planned_composition_score", 0.0) or 0.0),
-            "planner_target_slots": len((audit.get("strategy_info") or {}).get("planned_units", []) or []),
+            "planner_target_slots": (
+                8 if int(public.get("level", audit.get("level", 1)) or 1) <= 8
+                else min(10, int(public.get("level", audit.get("level", 1)) or 1))
+            ),
             "planner_mode": (
                 "LEVEL_8_CORE" if int(public.get("level", audit.get("level", 1)) or 1) <= 8
                 else f"DYNAMIC_LEVEL_{min(10, int(public.get('level', audit.get('level', 1)) or 1))}"
