@@ -488,7 +488,13 @@ class PlayerJsonLogWriter:
                 strategic_after["board_two_star_or_higher"] + strategic_after["bench_two_star_or_higher"]
                 > strategic_before["board_two_star_or_higher"] + strategic_before["bench_two_star_or_higher"]
             )
-            synergy_gain = strategic_after["active_synergies"] != strategic_before["active_synergies"]
+            synergy_changes = {
+                trait: {"before": strategic_before["active_synergies"].get(trait, 0),
+                        "after": strategic_after["active_synergies"].get(trait, 0)}
+                for trait in set(strategic_before["active_synergies"]) | set(strategic_after["active_synergies"])
+                if strategic_before["active_synergies"].get(trait, 0) != strategic_after["active_synergies"].get(trait, 0)
+            }
+            synergy_gain = any(item["after"] > item["before"] for item in synergy_changes.values())
             comp_gain = strategic_after["composition_compatible_board_units"] > strategic_before["composition_compatible_board_units"]
             if star_gain:
                 marginal_class = "IMMEDIATE_UPGRADE"
@@ -512,12 +518,7 @@ class PlayerJsonLogWriter:
                 "board_upgrade_delta": (
                     strategic_after["board_two_star_or_higher"] - strategic_before["board_two_star_or_higher"]
                 ),
-                "synergy_changes": {
-                    trait: {"before": strategic_before["active_synergies"].get(trait, 0),
-                            "after": strategic_after["active_synergies"].get(trait, 0)}
-                    for trait in set(strategic_before["active_synergies"]) | set(strategic_after["active_synergies"])
-                    if strategic_before["active_synergies"].get(trait, 0) != strategic_after["active_synergies"].get(trait, 0)
-                },
+                "synergy_changes": synergy_changes,
                 "composition_compatible_board_delta": (
                     strategic_after["composition_compatible_board_units"] - strategic_before["composition_compatible_board_units"]
                 ),
