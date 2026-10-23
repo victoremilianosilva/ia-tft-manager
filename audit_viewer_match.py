@@ -437,13 +437,14 @@ def markdown_report(report: dict) -> str:
     ]
     if report.get("purchase_sequence_metrics"):
         lines += ["## Auditoria de compras e vendas", "",
-                  "| Jogador | Compras | Vendas | Revertidas ≤1 ação | ≤2 ações | ≤4 ações | Ouro perdido | Compras com upgrade |",
-                  "|---|---:|---:|---:|---:|---:|---:|---:|"]
+                  "| Jogador | Compras | Vendas | Revertidas ≤1 ação | ≤2 ações | ≤4 ações | Ouro perdido | Upgrades | Vendas core/par | Valor médio |",
+                  "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
         for player, metrics in sorted(report["purchase_sequence_metrics"].items()):
             lines.append(
                 f"| {player} | {metrics['buys']} | {metrics['sells']} | "
                 f"{metrics['reversed_1']} | {metrics['reversed_2']} | {metrics['reversed_4']} | "
-                f"{metrics['net_gold_lost_reversed']} | {metrics['upgrade_completing_buys']} |"
+                f"{metrics['net_gold_lost_reversed']} | {metrics['upgrade_completing_buys']} | "
+                f"{metrics['core_or_pair_sales']} | {metrics.get('average_strategic_value_per_purchase', 0.0)} |"
             )
         lines += ["", "As classificações detalhadas e cada sequência correlacionada ficam em audit_report.json.",
                   "Uma venda sem compra correspondente na janela é UNKNOWN; sequências ambíguas não são penalizadas automaticamente.", ""]
