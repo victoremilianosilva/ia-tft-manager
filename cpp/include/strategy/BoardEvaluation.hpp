@@ -21,8 +21,11 @@ struct BoardEvaluationResult {
     double total_score{0.0};
     int unit_count{0};
     int frontline_count{0};
+    int frontline_lane_count{0};
     int carry_count{0};
     int exposed_carry_count{0};
+    int main_carry_count{0};
+    int exposed_main_carry_count{0};
     int fragile_frontline_count{0};
     int isolated_frontline_count{0};
     int important_bench_units_unplayed{0};
@@ -34,29 +37,33 @@ public:
     using Roles = std::vector<int>;
     static constexpr double kSynergyWeight = 0.20;
 
-    // Roles use PositioningEngine's stable role ids: tank=0, carry=1,
-    // support=2, fighter=3, assassin=4. Empty slots are -1.
-    // This is a soft evaluator: no single formation is mandatory, and an
-    // assassin-heavy board reduces the generic frontline expectation.
+    // main_carry_positions are row-major board slots identified by the
+    // composition strategy. If empty, all carries still receive generic safety
+    // evaluation; no specific unit is arbitrarily assumed to be the carry.
     static BoardEvaluationResult evaluate(
         const Roles& board,
         const std::vector<BenchUnitProfile>& bench = {},
-        double active_synergy_score = 0.0
-    ) {
+        double active_synergy_score = 0.0,
+        const std::vector<int>& main_carry_positions = {}) {
         BoardEvaluationResult result{};
-        const int slots = std::min(static_cast<int>(board.size()),
-                                   PositioningEngine::size);
+        const int slots = std::min(static_cast<int>(board.size()), PositioningEngine::size);
         Roles normalized(PositioningEngine::size, -1);
+        std::vector<bool> main_carry(PositioningEngine::size, false);
+        for (const int p : main_carry_positions)
+            if (PositioningEngine::is_valid_position(p))
+                main_carry[static_cast<std::size_t>(p)] = true;
+
         for (int p = 0; p < slots; ++p) {
             const int role = board[static_cast<std::size_t>(p)];
-            if (role >= PositioningEngine::tank &&
-                role <= PositioningEngine::assassin) {
-                normalized[static_cast<std::size_t>(p)] = role;
-                ++result.unit_count;
-                if (role == PositioningEngine::tank ||
-                    role == PositioningEngine::fighter) ++result.frontline_count;
-                if (role == PositioningEngine::carry) ++result.carry_count;
+            if (role < PositioningEngine::tank || role > PositioningEngine::assassin) continue;
+            normalized[static_cast<std::size_t>(p)] = role;
+            ++result.unit_count;
+            if (role == PositioningEngine::tank || role == PositioningEngine::fighter) {
+                ++result.frontline_count;
+                const int row = p / PositioningEngine::cols;
+                if (row <= 1) ++result.frontline_lane_count;
             }
+            if (role == PositioningEngine::carry) ++result.carry_count;
         }
         if (result.unit_count == 0) return result;
 
@@ -70,12 +77,19 @@ public:
             PositioningEngine::get_normalized_positioning_score(normalized);
 
         double penalty = 0.0;
-        // Lack of conventional frontline is a signal, not a hard prohibition.
-        // Assassin-focused boards can intentionally trade frontline for access.
+        double bonus = 0.0;
         if (result.frontline_count == 0) {
-            penalty += result.specialized_assassin_board ? 0.10 : 0.55;
+            penalty += result.specialized_assassin_board ? 0.10 : 0.45;
         } else if (result.frontline_count == 1 && result.unit_count >= 4) {
-            penalty += 0.12;
+            penalty += 0.10;
+        }
+        if (result.frontline_count > 0 && result.frontline_lane_count == 0) {
+            penalty += 0.25;
+        } else if (result.frontline_lane_count == 1 && result.unit_count >= 4) {
+            penalty += 0.08;
+        } else if (result.frontline_lane_count >= 2) {
+            // A spread frontline can absorb pressure better than a single stack.
+            bonus += 0.04;
         }
 
         for (int p = 0; p < PositioningEngine::size; ++p) {
@@ -84,41 +98,52 @@ public:
             const int row = p / PositioningEngine::cols;
             int occupied_neighbors = 0;
             int tank_neighbors = 0;
+            int tanks_in_front = 0;
             for (const int neighbor : PositioningEngine::get_neighbors(p, true)) {
                 const int neighbor_role = normalized[static_cast<std::size_t>(neighbor)];
                 if (neighbor_role < 0) continue;
                 ++occupied_neighbors;
-                if (neighbor_role == PositioningEngine::tank) ++tank_neighbors;
+                if (neighbor_role == PositioningEngine::tank) {
+                    ++tank_neighbors;
+                    if (neighbor / PositioningEngine::cols < row) ++tanks_in_front;
+                }
             }
 
             if (role == PositioningEngine::carry) {
                 const double protection = std::min(
-                    1.0, occupied_neighbors * 0.20 + tank_neighbors * 0.35);
+                    1.0, occupied_neighbors * 0.12 + tanks_in_front * 0.50);
                 if (protection < 0.35) {
                     ++result.exposed_carry_count;
-                    penalty += 0.30 * (0.35 - protection) / 0.35;
+                    penalty += 0.18 * (0.35 - protection) / 0.35;
                 }
                 if (row == 0) {
-                    // Only penalize fragile carries at the front; the scale is
-                    // reduced for a specialist board rather than forbidding it.
-                    penalty += result.specialized_assassin_board ? 0.04 : 0.18;
+                    penalty += result.specialized_assassin_board ? 0.04 : 0.16;
                     ++result.fragile_frontline_count;
                 }
+                if (main_carry[static_cast<std::size_t>(p)]) {
+                    ++result.main_carry_count;
+                    if (row <= 1) penalty += 0.18;
+                    else bonus += 0.04;
+                    if (tanks_in_front > 0 && protection >= 0.35) {
+                        bonus += 0.16;
+                    } else {
+                        ++result.exposed_main_carry_count;
+                        penalty += 0.22;
+                    }
+                }
             } else if (role == PositioningEngine::support && row == 0) {
-                penalty += 0.12;
+                penalty += 0.10;
                 ++result.fragile_frontline_count;
             }
 
             if ((role == PositioningEngine::tank || role == PositioningEngine::fighter) &&
                 row == 0 && occupied_neighbors == 0) {
                 ++result.isolated_frontline_count;
-                penalty += role == PositioningEngine::tank ? 0.14 : 0.10;
+                penalty += role == PositioningEngine::tank ? 0.12 : 0.08;
             }
         }
 
         // Reward deploying useful bench units only when a slot is actually free.
-        // A role is "important" here only if it is a 2+ star unit or fills a
-        // missing tank/carry role; this avoids requiring every bench unit on board.
         const int free_slots = PositioningEngine::size - result.unit_count;
         if (free_slots > 0) {
             bool board_has_tank = false, board_has_carry = false;
@@ -140,10 +165,8 @@ public:
             }
         }
 
-        result.structural_score = -penalty;
+        result.structural_score = bonus - penalty;
         result.synergy_score = std::max(0.0, active_synergy_score);
-        // Normalize the synergy contribution so it is a modest context signal,
-        // not a replacement for the separate synergy reward or combat results.
         result.total_score = result.positional_score + result.structural_score +
             kSynergyWeight * std::tanh(result.synergy_score);
         return result;
