@@ -1067,7 +1067,11 @@ class ViewerWindow(QMainWindow):
             })
 
         carry = next((unit for unit in planned if unit.get("internal_id") == carry_id), None)
+        previous_dialog = getattr(self, "_composition_dialog", None)
+        if previous_dialog is not None:
+            previous_dialog.close()
         dialog = QDialog(self)
+        self._composition_dialog = dialog
         dialog.setWindowTitle(f"Composição planejada · Jogador {player_id + 1}")
         dialog.setModal(True)
         screen = self.screen().availableGeometry() if self.screen() else self.geometry()
@@ -1184,7 +1188,15 @@ class ViewerWindow(QMainWindow):
         close_button.clicked.connect(dialog.accept)
         footer.addWidget(close_button)
         outer.addLayout(footer)
+        dialog.finished.connect(
+            lambda _result, current=dialog: self._on_composition_dialog_finished(current)
+        )
         dialog.show()
+
+    def _on_composition_dialog_finished(self, dialog):
+        if getattr(self, "_composition_dialog", None) is dialog:
+            self._composition_dialog = None
+        dialog.deleteLater()
 
     def _on_player_dialog_finished(self, dialog):
         if getattr(self, "_player_dialog", None) is dialog:
