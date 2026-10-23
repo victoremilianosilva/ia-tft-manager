@@ -1939,10 +1939,17 @@ struct TFTEngine::Impl {
                 owned_copies[unit_id] = copies;
             const strategy::CompositionPlanner::FocusWeights plan_focus(
                 focus.begin(), focus.end());
+            // Plan the complete level-8 core even while the player is below
+            // level 8. At levels 9/10, recompute a larger plan from the latest
+            // direction, focus weights, and owned copies so the extra slots can
+            // adapt to the live state instead of being fixed in the early game.
+            const int planning_slots = economy.level <= 8
+                ? 8
+                : std::clamp(economy.level, 9, 10);
             const auto plan = strategy::CompositionPlanner::build(
                 catalog->all(), trait_milestones, info.composition_direction,
                 plan_focus, owned_copies,
-                static_cast<std::size_t>(std::clamp(economy.level, 1, 10)));
+                static_cast<std::size_t>(planning_slots));
             info.planned_units = plan.unit_names;
             info.planned_unit_ids = plan.unit_ids;
             info.planned_traits = plan.core_traits;
