@@ -236,7 +236,10 @@ class PlayerJsonLogWriter:
             "planned_units": list((audit.get("strategy_info") or {}).get("planned_units", []) or []),
             "planned_unit_ids": list((audit.get("strategy_info") or {}).get("planned_unit_ids", []) or []),
             "planned_traits": list((audit.get("strategy_info") or {}).get("planned_traits", []) or []),
-            "planned_main_carry_id": int((audit.get("strategy_info") or {}).get("planned_main_carry_id", -1) or -1),
+            "planned_main_carry_id": int(
+                (audit.get("strategy_info") or {}).get("planned_main_carry_id", -1)
+                if (audit.get("strategy_info") or {}).get("planned_main_carry_id") is not None else -1
+            ),
             "planned_composition_score": float((audit.get("strategy_info") or {}).get("planned_composition_score", 0.0) or 0.0),
             "planner_target_slots": len((audit.get("strategy_info") or {}).get("planned_units", []) or []),
             "planner_mode": (
