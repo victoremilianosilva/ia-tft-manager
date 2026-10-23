@@ -81,6 +81,26 @@ public:
             return result;
         }
 
+        // Losing viability is an explicit unlock condition, even when the best
+        // candidate still names the old direction for this one refresh.
+        if (state.locked && !input.current_direction_viable) {
+            state.locked = false;
+            result.unlocked = true;
+            if (input.candidate_direction != state.direction) {
+                apply(state, input.candidate_direction, input.candidate_strength,
+                      "current_direction_unviable");
+                result.changed = true;
+            } else {
+                state.strength = input.candidate_strength;
+                state.candidate_direction.clear();
+                state.candidate_strength = 0.0;
+                state.candidate_streak = 0;
+                state.change_reason = "current_direction_unviable";
+            }
+            result.reason = state.change_reason;
+            return result;
+        }
+
         if (input.candidate_direction == state.direction) {
             state.strength = input.candidate_strength;
             state.candidate_direction.clear();
