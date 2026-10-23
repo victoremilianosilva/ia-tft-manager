@@ -148,28 +148,150 @@ float unit_strength(const ChampionDefinition& def, const UnitInstance& unit) {
 }
 
 double unit_composition_score(
-    const StrategyInfo& strategy,
-    const ChampionDefinition& def,
-    std::int32_t star
+    const StrategyInfo& strategy, const ChampionDefinition& def, std::int32_t star,
+    const std::unordered_map<std::string, std::vector<int>>& trait_milestones
 ) {
+    // Strategic fit adapted from old/env.py::_compute_unit_comp_score().
     double score = 0.0;
-    if (std::find(strategy.core_unit_ids.begin(), strategy.core_unit_ids.end(),
-                  def.internal_id) != strategy.core_unit_ids.end())
-        score += 5.0;
-    if (!strategy.composition_direction.empty() &&
-        std::find(def.traits.begin(), def.traits.end(),
-                  strategy.composition_direction) != def.traits.end())
-        score += 3.0;
+    const bool core_unit = std::find(strategy.core_unit_ids.begin(), strategy.core_unit_ids.end(),
+        def.internal_id) != strategy.core_unit_ids.end();
+    if (core_unit) score += 5.0;
+    const bool main_trait = !strategy.composition_direction.empty() &&
+        std::find(def.traits.begin(), def.traits.end(), strategy.composition_direction) != def.traits.end();
+    if (main_trait) score += 3.5;
+    const auto active_count = [&](const std::string& trait) {
+        const auto it = std::find_if(strategy.active_traits.begin(), strategy.active_traits.end(),
+            [&](const auto& x) { return x.first == trait; });
+        return it == strategy.active_traits.end() ? 0 : it->second;
+    };
+    const auto focus = [&](const std::string& trait) {
+        const auto it = std::find_if(strategy.composition_focus_weights.begin(),
+            strategy.composition_focus_weights.end(), [&](const auto& x) { return x.first == trait; });
+        return it == strategy.composition_focus_weights.end() ? 0.0 : it->second;
+    };
     for (const auto& trait : def.traits) {
-        if (std::find(strategy.core_traits.begin(), strategy.core_traits.end(),
-                      trait) != strategy.core_traits.end())
-            score += 2.0;
+        const bool core_trait = std::find(strategy.core_traits.begin(), strategy.core_traits.end(), trait)
+            != strategy.core_traits.end();
+        score += core_trait ? 1.2 : -0.5;
+        const int count = active_count(trait);
+        int next = 0;
+        const auto ms = trait_milestones.find(trait);
+        if (ms != trait_milestones.end()) {
+            for (const int milestone : ms->second) if (milestone > count) { next = milestone; break; }
+        } else if (count < 2) next = 2;
+        if (next > 0) {
+            const int needed = next - count;
+            score += needed == 1 ? 5.0 : (needed == 2 ? 2.5 : 1.0);
+        } else score += 0.5;
+        const double f = focus(trait);
+        score += f > 0.0 ? std::min(3.0, f * 0.4) : -0.1;
     }
-    if (star >= 2) score += 2.0;
-    if (star >= 3) score += 4.0;
-    // Cost is an economy attribute, not composition fit. Adding it here made
-    // every positive-cost unit look strategically compatible even with no trait/core match.
+    const auto copies = std::find_if(strategy.unit_counts_by_id.begin(), strategy.unit_counts_by_id.end(),
+        [&](const auto& x) { return x.first == def.internal_id; });
+    const int same = copies == strategy.unit_counts_by_id.end() ? 0 : copies->second;
+    if (same >= 9) score += 6.0;
+    else if (same >= 3) score += 4.0;
+    else if (same >= 2) score += 2.0;
+    score += (std::clamp(star, 1, 3) - 1) * 2.5;
+    score += std::min(1.5, std::max(0, def.cost) * 0.25);
+    if (!main_trait && !strategy.composition_direction.empty()) {
+        score -= 1.2;
+        if (strategy.composition_locked) score -= 2.0;
+    }
     return score;
+}
+
+// Approximation of Python _compute_unit_board_impact(). This is deliberately a
+// heuristic for reward shaping, not a replacement for simulated combat.
+double unit_board_impact_score(
+    const StrategyInfo& strategy, const ChampionDefinition& def, std::int32_t star,
+    const std::unordered_map<std::string, std::vector<int>>& milestones,
+    int board_count, int level, int stage
+) {
+    const auto trait_count = [&](const std::string& trait) {
+        const auto it = std::find_if(strategy.active_traits.begin(), strategy.active_traits.end(),
+            [&](const auto& x) { return x.first == trait; });
+        return it == strategy.active_traits.end() ? 0 : it->second;
+    };
+    const auto focus_weight = [&](const std::string& trait) {
+        const auto it = std::find_if(strategy.composition_focus_weights.begin(),
+            strategy.composition_focus_weights.end(), [&](const auto& x) { return x.first == trait; });
+        return it == strategy.composition_focus_weights.end() ? 0.0 : it->second;
+    };
+    const auto next_milestone = [&](const std::string& trait, int count) {
+        const auto it = milestones.find(trait);
+        if (it != milestones.end()) {
+            for (const int milestone : it->second) if (milestone > count) return milestone;
+        }
+        return count < 2 ? 2 : 0;
+    };
+
+    const auto& profile = def.combat_profile;
+    const double hp = profile.max_hp > 0.0 ? profile.max_hp : def.stats.max_hp;
+    const double attack_speed = std::max(0.5, profile.attack_speed > 0.0
+        ? profile.attack_speed : def.stats.attack_speed);
+    const double attack_damage = profile.attack_damage > 0.0
+        ? profile.attack_damage : def.stats.attack_damage;
+    const double armor = std::max(0.0, profile.armor > 0.0 ? profile.armor : def.stats.armor);
+    const double effective_dps = attack_damage * attack_speed * (100.0 / (100.0 + armor));
+    const double star_multiplier = star >= 3 ? 9.0 : (star == 2 ? 3.0 : 1.0);
+    const double combat_power = (hp / 1000.0) * (effective_dps / 50.0) *
+        attack_speed * star_multiplier * std::pow(std::max(1, def.cost), 0.7);
+
+    const double comp_score = unit_composition_score(strategy, def, star, milestones);
+    double synergy_score = 0.0;
+    double score = combat_power * 0.5 + comp_score * 0.25;
+    for (const auto& trait : def.traits) {
+        const int count = trait_count(trait);
+        const int next = next_milestone(trait, count);
+        const int before_level = [&]() {
+            const auto it = milestones.find(trait);
+            if (it == milestones.end()) return count >= 2 ? 1 : 0;
+            int reached = 0;
+            for (const int milestone : it->second) if (count >= milestone) ++reached;
+            return reached;
+        }();
+        const int after_level = next > 0 && count + 1 >= next ? before_level + 1 : before_level;
+        if (after_level > before_level) score += 1.5 + before_level * 0.3;
+        synergy_score += std::max(0, count) * 0.15 + std::min(2.0, focus_weight(trait) * 0.1);
+    }
+    score += synergy_score * 0.6;
+
+    const auto copies = std::find_if(strategy.unit_counts_by_id.begin(), strategy.unit_counts_by_id.end(),
+        [&](const auto& x) { return x.first == def.internal_id; });
+    const int owned_copies = copies == strategy.unit_counts_by_id.end() ? 0 : copies->second;
+    if (owned_copies < 3) score += 1.2 + (owned_copies / 3.0) * 2.0;
+    else if (owned_copies < 9) score += 3.5 + ((owned_copies - 3) / 6.0) * 5.5;
+    else score += 0.5;
+    if (board_count < level) score += 1.5;
+    if (comp_score < 0.0 && synergy_score <= 0.0 && combat_power < 1.5) score -= 3.0;
+
+    const bool main = !strategy.composition_direction.empty() &&
+        std::find(def.traits.begin(), def.traits.end(), strategy.composition_direction) != def.traits.end();
+    const bool secondary = std::any_of(def.traits.begin(), def.traits.end(), [&](const auto& trait) {
+        return std::find(strategy.core_traits.begin(), strategy.core_traits.end(), trait) != strategy.core_traits.end();
+    });
+    if (main) score *= 1.5;
+    else if (secondary) score *= 1.1;
+    else score *= stage <= 3 ? 0.9 : 0.6;
+    if (synergy_score <= 0.0 && combat_power < 1.5) score -= 2.5;
+    return std::tanh(score / 5.0) * 4.0;
+}
+
+bool should_buy_unit(
+    double impact, double upgrade_value, bool in_top_trait,
+    int bench_count, int stage, int cost
+) {
+    if (impact < -0.8 && upgrade_value == 0.0) return false;
+    if (bench_count <= 4) {
+        if (stage <= 2) return impact >= 0.0 || upgrade_value > 0.0 || in_top_trait;
+        return upgrade_value > 0.0 || impact > 0.3 || in_top_trait;
+    }
+    if (bench_count <= 6) {
+        if (upgrade_value > 0.0 || impact > 0.6) return true;
+        return cost >= 3 && in_top_trait && impact > 0.2;
+    }
+    return upgrade_value >= 0.6 || impact > 1.2;
 }
 
 } // namespace
@@ -816,9 +938,9 @@ struct TFTEngine::Impl {
                     return;
                 }
                 const double score =
-                    unit_composition_score(strategy, *def, unit->star);
+                    unit_composition_score(strategy, *def, unit->star, trait_milestones);
                 out[offset++] = static_cast<float>(
-                    std::clamp(score / 22.5, 0.0, 1.0));
+                    std::clamp(score / 32.5, 0.0, 1.0));
             };
             for (const auto& unit : player_envs[i].board)
                 append_unit_fit(unit ? &*unit : nullptr);
@@ -849,7 +971,7 @@ struct TFTEngine::Impl {
             // candidate tail: policy.py extracts candidate records from the end,
             // and checkpoint migration inserts new global features at this boundary.
             // Focus weights use the stable catalog trait order shared by direction/core
-            // flags and are normalized from [0, 5] to [0, 1].
+            // flags and are normalized from Python's [0, 10] scale to [0, 1].
             for (const auto& trait : observation_trait_names) {
                 double weight = 0.0;
                 for (const auto& [focus_trait, focus_weight] :
@@ -860,7 +982,7 @@ struct TFTEngine::Impl {
                     }
                 }
                 out[offset++] = static_cast<float>(
-                    std::clamp(weight / 5.0, 0.0, 1.0));
+                    std::clamp(weight / 10.0, 0.0, 1.0));
             }
             out[offset++] = strategy.composition_locked ? 1.0f : 0.0f;
             // Strategy strength is bounded to [0, 10] by its scoring formula.
@@ -894,7 +1016,7 @@ struct TFTEngine::Impl {
                         out[offset++] = 0.0f;
                     return;
                 }
-                const double fit = unit_composition_score(strategy, *def, unit->star);
+                const double fit = unit_composition_score(strategy, *def, unit->star, trait_milestones);
                 const bool core = std::find(strategy.core_unit_ids.begin(),
                     strategy.core_unit_ids.end(), def->internal_id) != strategy.core_unit_ids.end();
                 const int copies = count_same_champion(*unit);
@@ -1327,11 +1449,6 @@ struct TFTEngine::Impl {
         info.unit_counts.clear();
         info.unit_counts_by_id.clear();
 
-        for (const auto& trait : trait_order) {
-            const auto count = trait_counts.at(trait);
-            info.active_traits.emplace_back(trait, count);
-        }
-
         // Port of Python _update_comp_direction(), _update_comp_focus(), and
         // _should_lock_comp(). Python's _get_offensive_factor() helper is not
         // part of this native engine, so champion role is used as a proxy.
@@ -1369,6 +1486,11 @@ struct TFTEngine::Impl {
             const auto* def = catalog->find_by_id(unit->champion_internal_id);
             if (!def) continue;
             for (const auto& trait : def->traits) ++board_trait_counts[trait];
+        }
+        // Active traits mirror Python's board-only SynergyManager.active_traits.
+        for (const auto& trait : trait_order) {
+            const auto found = board_trait_counts.find(trait);
+            if (found != board_trait_counts.end()) info.active_traits.emplace_back(trait, found->second);
         }
         const auto trait_level = [&](const std::string& trait, int count) {
             const auto found = trait_milestones.find(trait);
@@ -1612,26 +1734,39 @@ struct TFTEngine::Impl {
             }
         }
 
-        // _update_comp_focus() is evaluated on every decision step, separately
-        // from the direction refresh that runs every other step.
-        for (auto& [trait, weight] : focus) weight *= 0.95;
-        for (const auto& [trait, count] : trait_counts) {
-            const auto board_count = board_trait_counts.find(trait);
-            const int active_count = board_count == board_trait_counts.end()
-                ? 0 : board_count->second;
-            const int level = trait_level(trait, active_count);
-            if (level > 0) focus[trait] += 0.25 + 0.25 * level;
-            else focus[trait] += 0.10 + 0.05 * count;
+        // Python focus decay runs every decision step; direction refresh has its own
+        // 0.95 decay every two steps above.
+        const double focus_decay = current_stage <= 3 ? 0.88 : 0.92;
+        for (auto& [trait, weight] : focus) weight *= focus_decay;
+        std::string main_focus_trait;
+        if (!new_comp_traits.empty()) {
+            const auto main = std::max_element(new_comp_traits.begin(), new_comp_traits.end(),
+                [](const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
+            main_focus_trait = main->first;
+        } else if (!info.composition_direction.empty()) main_focus_trait = info.composition_direction;
+        for (const auto& [trait, count] : board_trait_counts) {
+            const int level = trait_level(trait, count);
+            const double base = count * 0.2 + level * 0.9;
+            double gain = trait == main_focus_trait ? base * 2.5
+                : (new_comp_traits.find(trait) != new_comp_traits.end() ? base * 0.9 : base * 0.25);
+            if (current_stage <= 2) gain *= 0.6;
+            focus[trait] += gain;
         }
-        if (!sorted_traits.empty()) focus[sorted_traits.front().first] += 0.8;
-        if (info.composition_locked) {
-            for (auto& [trait, weight] : focus) {
-                const auto score = trait_score.find(trait);
-                if (score != trait_score.end() && score->second > 2.0)
-                    weight += 0.2;
-                else
-                    weight *= 0.9;
-            }
+        for (const auto& [trait, count] : trait_counts) {
+            const auto it = board_trait_counts.find(trait);
+            const int deployed = it == board_trait_counts.end() ? 0 : it->second;
+            const int partial = std::max(0, count - deployed);
+            if (partial == 0) continue;
+            const double base = partial * 0.08 + 0.35;
+            focus[trait] += trait == main_focus_trait ? base * 1.6
+                : (new_comp_traits.find(trait) != new_comp_traits.end() ? base * 0.7 : base * 0.15);
+        }
+        if (info.composition_locked && !main_focus_trait.empty()) focus[main_focus_trait] *= 1.25;
+        if (!main_focus_trait.empty()) {
+            const double main_value = focus[main_focus_trait];
+            for (auto& [trait, weight] : focus)
+                if (trait != main_focus_trait && weight < main_value * 0.3) weight *= 0.75;
+            focus[main_focus_trait] += 1.2;
         }
         if (focus.size() > 5) {
             std::vector<std::pair<std::string, double>> ordered(focus.begin(), focus.end());
@@ -1645,7 +1780,7 @@ struct TFTEngine::Impl {
         for (const auto& [trait, weight] : focus) focus_total += std::max(0.0, weight);
         if (focus_total > 0.0) {
             for (auto& [trait, weight] : focus)
-                weight = std::min(5.0, weight * 5.0 / focus_total);
+                weight = std::min(10.0, weight * 10.0 / focus_total);
         }
 
         // _should_lock_comp(): stage 4+ requires an active offensive synergy;
@@ -2260,6 +2395,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         double sold_unit_fit_score = 0.0;
         bool buy_completes_upgrade = false;
         bool buy_builds_pair = false;
+        bool buy_strategy_approved = true;
+        double candidate_board_impact = 0.0;
         bool bought_unit_successfully = false;
         bool bought_upgrade = false;
         bool purchase_was_recently_reversed = false;
@@ -2285,8 +2422,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             if (!unit) continue;
             const auto* def = lobby.catalog->find_by_id(unit->champion_internal_id);
             if (!def) continue;
-            board_comp_score_sum += unit_composition_score(
-                strategy_before, *def, unit->star);
+            board_comp_score_sum += unit_composition_score(strategy_before, *def, unit->star, lobby.trait_milestones);
             ++board_comp_score_count;
         }
         double candidate_comp_score = 0.0;
@@ -2301,8 +2437,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 const auto* def = lobby.catalog->find_by_id(
                     offer->champion_internal_id);
                 if (def) {
-                    candidate_comp_score = unit_composition_score(
-                        strategy_before, *def, offer->star);
+                    candidate_comp_score = unit_composition_score(strategy_before, *def, offer->star, lobby.trait_milestones);
                     has_candidate_comp_score = true;
                     int same_star_copies = 0;
                     for (const auto& unit : this->board) {
@@ -2314,13 +2449,27 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             unit->star == offer->star) ++same_star_copies;
                     }
                     buy_completes_upgrade = same_star_copies >= 2;
+                    candidate_board_impact = unit_board_impact_score(
+                        strategy_before, *def, offer->star, lobby.trait_milestones,
+                        old_board_count, economy.level, static_cast<int>(stage_for_round(lobby.round + 1)));
+                    const double upgrade_value = same_star_copies >= 3 ? 1.0
+                        : (same_star_copies == 2 ? 0.6 : (same_star_copies == 1 ? 0.2 : 0.0));
+                    const bool in_top_trait = (!strategy_before.composition_direction.empty() &&
+                        std::find(def->traits.begin(), def->traits.end(),
+                            strategy_before.composition_direction) != def->traits.end()) ||
+                        std::any_of(def->traits.begin(), def->traits.end(), [&](const auto& trait) {
+                            return std::find(strategy_before.core_traits.begin(),
+                                strategy_before.core_traits.end(), trait) != strategy_before.core_traits.end();
+                        });
+                    buy_strategy_approved = should_buy_unit(candidate_board_impact, upgrade_value,
+                        in_top_trait, old_bench_count, static_cast<int>(stage_for_round(lobby.round + 1)), def->cost);
                     // A second matching copy is valuable future upgrade potential,
                     // but only reward it when it also fits the current comp.
                     const bool composition_fit =
                         candidate_comp_score > 0.0 ||
                         strategy_before.composition_direction.empty();
                     buy_builds_pair = same_star_copies == 1 &&
-                        offer->star == 1 && composition_fit;
+                        offer->star == 1 && composition_fit && buy_strategy_approved;
                 }
             }
         } else if (type == 3) {
@@ -2330,8 +2479,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 const auto* def = lobby.catalog->find_by_id(
                     this->bench[source]->champion_internal_id);
                 if (def) {
-                    candidate_comp_score = unit_composition_score(
-                        strategy_before, *def, this->bench[source]->star);
+                    candidate_comp_score = unit_composition_score(strategy_before, *def, this->bench[source]->star, lobby.trait_milestones);
                     has_candidate_comp_score = true;
                 }
             }
@@ -2339,8 +2487,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 const auto* def = lobby.catalog->find_by_id(
                     this->board[target]->champion_internal_id);
                 if (def) {
-                    displaced_comp_score = unit_composition_score(
-                        strategy_before, *def, this->board[target]->star);
+                    displaced_comp_score = unit_composition_score(strategy_before, *def, this->board[target]->star, lobby.trait_milestones);
                     has_displaced_comp_score = true;
                 }
             }
@@ -2684,7 +2831,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             unit.champion_internal_id
                         ) != core_unit_ids.end();
                         sold_unit_fit_score = std::clamp(
-                            unit_composition_score(current_strategy, *definition, unit.star) / 22.5,
+                            unit_composition_score(current_strategy, *definition, unit.star, lobby.trait_milestones) / 32.5,
                             0.0, 1.0);
                     }
                     int same_star_copies = 0;
@@ -2747,6 +2894,11 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             // No unconditional bonus for a normal purchase; +0.30 for a completed upgrade.
             success = bought_unit_successfully;
             action_reward = !success ? -0.10 : (bought_upgrade ? 0.30 : 0.0);
+            if (success && !buy_strategy_approved) {
+                // Soft rejection signal: prefer PASS over filling the bench with
+                // low-impact units when the composition/upgrade value is weak.
+                action_reward -= 0.15;
+            }
             if (success && has_candidate_comp_score) {
                 // Also guide early purchases before the board has a stable comp.
                 // composition_quality_delta is candidate-vs-board when a board
@@ -3652,7 +3804,7 @@ double TFTEngine::get_unit_comp_score(
     const auto& list =
         impl_->player_envs[static_cast<std::size_t>(player_id)].strategy;
     if (list.empty()) return 0.0;
-    return unit_composition_score(list.back(), *def, star);
+    return unit_composition_score(list.back(), *def, star, impl_->trait_milestones);
 }
 bool TFTEngine::is_core_unit(std::int32_t player_id, const std::string& champion_api_name) const {
     if (!impl_ || player_id < 0 || player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) return false; impl_->ensure_open(); const auto* def = impl_->catalog->find_by_api_name(champion_api_name); if (!def) return false;
