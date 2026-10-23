@@ -299,6 +299,11 @@ py::list strategies_to_list(
             item["core_units"] = py::list();
             item["core_unit_ids"] = py::list();
             item["core_traits"] = py::list();
+            item["planned_units"] = py::list();
+            item["planned_unit_ids"] = py::list();
+            item["planned_traits"] = py::list();
+            item["planned_main_carry_id"] = -1;
+            item["planned_composition_score"] = 0.0;
             item["active_traits"] = py::dict();
             item["unit_counts"] = py::dict();
             item["unit_counts_by_id"] = py::dict();
@@ -350,6 +355,11 @@ py::list strategies_to_list(
             item["core_units"] = strategy.core_units;
             item["core_unit_ids"] = strategy.core_unit_ids;
             item["core_traits"] = strategy.core_traits;
+            item["planned_units"] = strategy.planned_units;
+            item["planned_unit_ids"] = strategy.planned_unit_ids;
+            item["planned_traits"] = strategy.planned_traits;
+            item["planned_main_carry_id"] = strategy.planned_main_carry_id;
+            item["planned_composition_score"] = strategy.planned_composition_score;
             py::dict active_traits;
             for (const auto& [trait, count] : strategy.active_traits)
                 active_traits[py::str(trait)] = count;
