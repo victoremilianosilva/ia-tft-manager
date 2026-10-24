@@ -437,6 +437,23 @@ def audit_composition_direction_changes(entries: list[dict], player: str, report
         metrics["rate_without_measurable_gain"] = round(
             metrics["changes_without_measurable_gain"] / metrics["direction_changes"], 4
         )
+        no_gain_streak = []
+        for detail in metrics["details"]:
+            if not detail["measurable_gain"]:
+                no_gain_streak.append(detail)
+            else:
+                no_gain_streak = []
+            if len(no_gain_streak) == 3:
+                tail = no_gain_streak[-3:]
+                add_issue(report, "MEDIUM", "COMP_DIRECTION_CHANGES_WITHOUT_GAIN", player,
+                          tail[-1]["round"], tail[-1]["step"],
+                          "Três mudanças consecutivas de composição sem ganho mensurável nos campos registrados; revisar se a IA está perseguindo comps sem evidência.",
+                          {"transitions": [{"step": x["step"], "from": x["from"], "to": x["to"],
+                                            "reason": x["reason"], "strength_delta": x["strength_delta"],
+                                            "board_power_delta": x["board_power_delta"],
+                                            "synergy_delta": x["synergy_delta"]} for x in tail]})
+                if len(no_gain_streak) > 3:
+                    no_gain_streak = no_gain_streak[-3:]
         report.setdefault("composition_direction_metrics", {})[player] = metrics
 
 
@@ -756,11 +773,13 @@ def audit_positioning_and_composition(entries: list[dict], player: str, report: 
         if isinstance(core, list):
             present = {re.sub(r"[^a-z0-9]+", "", unit_name(u).casefold())
                        for _, _, u in iter_units(state)}
+            current_core = set()
             for value in core:
                 name = unit_name(value) if isinstance(value, dict) else str(value).strip()
                 if not name:
                     continue
                 normalized = re.sub(r"[^a-z0-9]+", "", name.casefold())
+                current_core.add(normalized)
                 if normalized and normalized not in present:
                     missing_counts[normalized] += 1
                     if missing_counts[normalized] in (3, 8) and normalized not in missing_reported:
@@ -774,6 +793,15 @@ def audit_positioning_and_composition(entries: list[dict], player: str, report: 
                 else:
                     missing_counts.pop(normalized, None)
                     missing_reported.discard(normalized)
+            # A core list that no longer includes a champion ends that missing-unit episode.
+            for normalized in list(missing_counts):
+                if normalized not in current_core:
+                    missing_counts.pop(normalized, None)
+                    missing_reported.discard(normalized)
+        else:
+            # No core metadata means the gap cannot be called consecutive.
+            missing_counts.clear()
+            missing_reported.clear()
 
 def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_window: int) -> None:
     player_id = doc.get("player_number")
