@@ -2217,6 +2217,9 @@ struct TFTEngine::Impl {
                     ? profile.magic_resist
                     : stats.magic_resist);
 
+            // Equipment follows the individual unit UUID into combat.
+            unit.items = instance.items;
+
             unit.alive = true;
             unit.can_move = true;
             unit.can_attack = true;
@@ -3671,6 +3674,8 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
             unit->champion_internal_id
         );
         result.cost = definition ? definition->cost : 0;
+        result.item_ids.reserve(unit->items.size());
+        for (const auto& item : unit->items) result.item_ids.push_back(item.api_name);
         return result;
     };
 
@@ -3754,6 +3759,48 @@ bool TFTEngine::set_unit_for_testing(
     // mutations. SELL reward reads the current core-unit set before transition.
     impl_->update_strategy(player_index);
     impl_->refresh_masks(player_index);
+    return true;
+}
+
+bool TFTEngine::set_unit_items_for_testing(
+    std::int32_t player_id,
+    bool on_board,
+    std::int32_t slot,
+    const std::vector<CombatItem>& items
+) {
+    if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
+    impl_->ensure_open();
+    if (player_id < 0 ||
+        static_cast<std::size_t>(player_id) >= kPlayersPerLobby ||
+        slot < 0 || items.size() > 3) {
+        return false;
+    }
+    const auto valid_bonus = [](float value) {
+        return std::isfinite(value) && value >= 0.0f;
+    };
+    for (const auto& item : items) {
+        if (item.api_name.empty() || item.name.empty() ||
+            !valid_bonus(item.attack_damage) || !valid_bonus(item.ability_power) ||
+            !valid_bonus(item.attack_speed) ||
+            !valid_bonus(item.critical_strike_chance) ||
+            !valid_bonus(item.critical_strike_damage) ||
+            !valid_bonus(item.health) || !valid_bonus(item.armor) ||
+            !valid_bonus(item.magic_resist) || !valid_bonus(item.mana) ||
+            !valid_bonus(item.omnivamp) ||
+            !valid_bonus(item.damage_amplification) ||
+            !valid_bonus(item.damage_reduction)) return false;
+    }
+    auto& player = impl_->player_envs[static_cast<std::size_t>(player_id)];
+    if (on_board) {
+        if (static_cast<std::size_t>(slot) >= kBoardSlots ||
+            !player.board[static_cast<std::size_t>(slot)]) return false;
+        player.board[static_cast<std::size_t>(slot)]->items = items;
+    } else {
+        if (static_cast<std::size_t>(slot) >= kBenchSlots ||
+            !player.bench[static_cast<std::size_t>(slot)]) return false;
+        player.bench[static_cast<std::size_t>(slot)]->items = items;
+    }
+    impl_->refresh_masks(static_cast<std::size_t>(player_id));
     return true;
 }
 
