@@ -3775,8 +3775,20 @@ bool TFTEngine::set_unit_items_for_testing(
         slot < 0 || items.size() > 3) {
         return false;
     }
+    const auto valid_bonus = [](float value) {
+        return std::isfinite(value) && value >= 0.0f;
+    };
     for (const auto& item : items) {
-        if (item.api_name.empty() || item.name.empty()) return false;
+        if (item.api_name.empty() || item.name.empty() ||
+            !valid_bonus(item.attack_damage) || !valid_bonus(item.ability_power) ||
+            !valid_bonus(item.attack_speed) ||
+            !valid_bonus(item.critical_strike_chance) ||
+            !valid_bonus(item.critical_strike_damage) ||
+            !valid_bonus(item.health) || !valid_bonus(item.armor) ||
+            !valid_bonus(item.magic_resist) || !valid_bonus(item.mana) ||
+            !valid_bonus(item.omnivamp) ||
+            !valid_bonus(item.damage_amplification) ||
+            !valid_bonus(item.damage_reduction)) return false;
     }
     auto& player = impl_->player_envs[static_cast<std::size_t>(player_id)];
     if (on_board) {
