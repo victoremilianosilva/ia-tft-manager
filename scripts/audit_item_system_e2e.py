@@ -216,6 +216,10 @@ def run_audit(
         "placements": {},
         "errors": [],
     }
+    action_counts = Counter()
+    item_counts = Counter()
+    total_events = 0
+    complete = False
     try:
         observations = np.asarray(lobby.reset(), dtype=np.float32)
         if observations.ndim != 2 or observations.shape[0] != 8:
@@ -244,10 +248,6 @@ def run_audit(
         masks = lobby.get_action_masks()
         report["checks"]["native_masks"] = validate_masks(masks)
 
-        action_counts = Counter()
-        item_counts = Counter()
-        total_events = 0
-        complete = False
         with trace_path.open("w", encoding="utf-8") as trace:
             for step in range(max_steps):
                 if bool(getattr(lobby, "finished", False)):
@@ -343,6 +343,19 @@ def run_audit(
         report["errors"].append({"type": type(exc).__name__, "message": str(exc)})
         raise
     finally:
+        report["action_counts"] = dict(action_counts)
+        report["item_action_counts"] = {
+            "EQUIP_FROM_INVENTORY": int(item_counts["EQUIP_FROM_INVENTORY"]),
+            "CRAFT_AND_EQUIP": int(item_counts["CRAFT_AND_EQUIP"]),
+            "total_item_actions": int(item_counts["EQUIP_FROM_INVENTORY"] + item_counts["CRAFT_AND_EQUIP"]),
+        }
+        report["native_event_count"] = total_events
+        report["complete_match"] = complete
+        for player_metric in report["player_metrics"].values():
+            steps_count = int(player_metric["reward_steps"])
+            player_metric["mean_reward_per_step"] = (
+                float(player_metric["reward_sum"]) / steps_count if steps_count else 0.0
+            )
         close = getattr(lobby, "close", None)
         if callable(close):
             close()
