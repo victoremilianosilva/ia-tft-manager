@@ -716,7 +716,7 @@ struct TFTEngine::Impl {
         if (player.item_engine) {
             const auto& components = player.item_engine->components();
             const auto& inventory = player.item_engine->inventory();
-            for (std::size_t i = 0; i < std::min<std::size_t>(5, inventory.size()); ++i)
+            for (std::size_t i = 0; i < std::min<std::size_t>(9, inventory.size()); ++i)
                 current.item_inventory_mask[i] = 1;
             for (std::size_t target = 0; target < kBoardSlots + kBenchSlots; ++target) {
                 const auto* unit = item_target_unit(player_index, target);
@@ -726,11 +726,15 @@ struct TFTEngine::Impl {
             }
             const bool target_available = std::any_of(current.item_target_mask.begin(), current.item_target_mask.end(),
                 [](std::uint8_t value) { return value == 1; });
-            for (std::size_t first = 0; first < std::min<std::size_t>(9, components.size()); ++first) {
-                for (std::size_t second = 0; second < std::min<std::size_t>(9, components.size()); ++second) {
-                    if (!player.item_engine->can_craft(components[first], components[second])) continue;
-                    current.item_component_pair_masks[first * 9 + second] = 1;
-                    current.item_component_first_mask[first] = 1;
+            if (item_catalog) {
+                for (std::size_t first = 0; first < std::min<std::size_t>(9, item_catalog->components.size()); ++first) {
+                    for (std::size_t second = 0; second < std::min<std::size_t>(9, item_catalog->components.size()); ++second) {
+                        if (!player.item_engine->can_craft(
+                                item_catalog->components[first].first,
+                                item_catalog->components[second].first)) continue;
+                        current.item_component_pair_masks[first * 9 + second] = 1;
+                        current.item_component_first_mask[first] = 1;
+                    }
                 }
             }
             const bool inventory_available = std::any_of(current.item_inventory_mask.begin(), current.item_inventory_mask.end(),
@@ -1216,7 +1220,7 @@ struct TFTEngine::Impl {
     void validate_action(const PlayerAction& action) const {
         const auto type = action.values[0];
         if (type == 7) {
-            if (action.values[1] < 0 || action.values[1] >= 5 ||
+            if (action.values[1] < 0 || action.values[1] >= 9 ||
                 action.values[2] < 0 || action.values[2] >= static_cast<std::int32_t>(kBoardSlots + kBenchSlots) ||
                 action.values[3] != 0 || action.values[4] != 0 || action.values[5] != 0)
                 throw std::invalid_argument("Argumentos fora dos limites para EQUIP_FROM_INVENTORY.");
@@ -3088,10 +3092,11 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             } else {
                 const auto first = static_cast<std::size_t>(action[1]);
                 const auto second = static_cast<std::size_t>(action[2]);
-                if (first >= this->item_engine->components().size() || second >= this->item_engine->components().size())
-                    throw std::invalid_argument("Indice de componente fora do inventario.");
-                command.first_component_id = this->item_engine->components()[first];
-                command.second_component_id = this->item_engine->components()[second];
+                if (!lobby.item_catalog || first >= lobby.item_catalog->components.size() ||
+                    second >= lobby.item_catalog->components.size())
+                    throw std::invalid_argument("Indice de tipo de componente fora do catalogo.");
+                command.first_component_id = lobby.item_catalog->components[first].first;
+                command.second_component_id = lobby.item_catalog->components[second].first;
             }
             const auto result = this->item_engine->apply_action(command, profiles);
             if (!result.success) throw std::invalid_argument("Acao de item rejeitada: " + result.reason);
