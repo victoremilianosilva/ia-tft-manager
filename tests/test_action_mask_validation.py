@@ -23,7 +23,7 @@ def create_valid_masks():
     for _ in range(Trainer.PLAYERS_PER_LOBBY):
         player_masks.append({
             "type_mask": np.array(
-                [1, 0, 0, 0, 0, 0, 1], dtype=np.float32
+                [1, 0, 0, 0, 0, 0, 1, 0, 0], dtype=np.float32
             ),
             "shop_mask": np.ones(5, dtype=np.float32),
             "bench_source_mask": np.ones(9, dtype=np.float32),
@@ -38,6 +38,10 @@ def create_valid_masks():
             "bench_to_board_target_masks": np.ones(
                 (9, 28), dtype=np.float32
             ),
+            "item_inventory_mask": np.zeros(5, dtype=np.float32),
+            "item_component_first_mask": np.zeros(9, dtype=np.float32),
+            "item_component_pair_masks": np.zeros((9, 9), dtype=np.float32),
+            "item_target_mask": np.zeros(37, dtype=np.float32),
         })
 
     return [player_masks]
