@@ -2,6 +2,7 @@
 #pragma once
 
 #include "combat/CombatInput.hpp"
+#include "items/ItemActionContract.hpp"
 
 #include <array>
 #include <cstddef>
@@ -21,7 +22,7 @@ inline constexpr std::size_t kShopSlots = 5;
 inline constexpr std::size_t kActionComponents = 6;
 
 inline constexpr std::array<std::size_t, kActionComponents>
-    kActionDims{7, 5, 9, 28, 28, 28};
+    kActionDims{9, 5, 9, 28, 28, 28};
 
 
  // ============================================================
@@ -165,7 +166,7 @@ struct PlayerAction {
 // Todas as máscaras são armazenadas como uint8_t:
 // 0 = inválido, 1 = válido.
 struct PlayerActionMasks {
-    std::array<std::uint8_t, 7> type_mask{};
+    std::array<std::uint8_t, 9> type_mask{};
     std::array<std::uint8_t, 5> shop_mask{};
     std::array<std::uint8_t, 9> bench_source_mask{};
     std::array<std::uint8_t, 28> board_target_mask{};
@@ -180,6 +181,13 @@ struct PlayerActionMasks {
     // Row-major: [bench_source, board_target].
     std::array<std::uint8_t, 9 * 28>
         bench_to_board_target_masks{};
+
+    // Item-action masks are conditional on action type and remain separate
+    // from shop/movement masks even though the legacy action vector is six-wide.
+    std::array<std::uint8_t, 5> item_inventory_mask{};
+    std::array<std::uint8_t, 9> item_component_first_mask{};
+    std::array<std::uint8_t, 9 * 9> item_component_pair_masks{};
+    std::array<std::uint8_t, 37> item_target_mask{};
 };
 
 struct RewardState {
@@ -408,7 +416,8 @@ class TFTEngine {
 public:
     explicit TFTEngine(
         std::uint64_t seed = 0,
-        std::string catalog_path = {}
+        std::string catalog_path = {},
+        std::string item_catalog_path = {}
     );
 
     ~TFTEngine();
@@ -451,6 +460,12 @@ public:
         bool on_board,
         std::int32_t slot,
         const std::vector<CombatItem>& items
+    );
+    bool add_item_component_for_testing(
+        std::int32_t player_id, const std::string& component_id
+    );
+    bool add_completed_item_for_testing(
+        std::int32_t player_id, const std::string& item_id
     );
     bool set_player_alive_for_testing(std::int32_t player_id, bool alive);
     bool set_player_economy_for_testing(
