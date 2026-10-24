@@ -124,7 +124,7 @@ inline double purchase_pair_quality(double fit_score) noexcept {
 // A low-fit purchase sold almost immediately is usually a wasted buy.
 // Fit is normalized to [0, 1]; legitimate exceptions are explicit so a real
 // upgrade, deployment, comp transition, or full bench is not punished.
-inline constexpr double kRecentPurchaseLowFitThreshold = 0.15;
+inline constexpr double kRecentPurchaseLowFitThreshold = 0.20;
 
 inline bool should_penalize_reversed_purchase(
     double normalized_fit,
