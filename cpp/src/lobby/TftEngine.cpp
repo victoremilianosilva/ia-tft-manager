@@ -2480,7 +2480,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         this->recent_purchases.erase(
             std::remove_if(this->recent_purchases.begin(), this->recent_purchases.end(),
                 [this](const RecentPurchase& purchase) {
-                    return this->action_serial - purchase.action_serial > 4;
+                    return this->action_serial - purchase.action_serial > 8;
                 }),
             this->recent_purchases.end());
         const auto old_gold = economy.gold;
@@ -2912,14 +2912,15 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             return !sold_uuid.empty() && purchase.uuid == sold_uuid;
                         });
                     if (recent != this->recent_purchases.rend()) {
-                        const bool direction_changed = !this->strategy.empty() &&
-                            this->strategy.back().composition_direction != recent->comp_direction;
+                        // A changed direction label alone is not proof that the
+                        // purchase was strategically useful. Only concrete exceptions
+                        // (upgrade, deployment, or a previously full bench) exempt it.
                         if (reward_model::should_penalize_reversed_purchase(
                                 recent->fit_score,
                                 recent->completed_upgrade,
                                 recent->was_deployed,
                                 old_bench_count >= static_cast<int>(kBenchSlots),
-                                direction_changed)) {
+                                false)) {
                             purchase_was_recently_reversed = true;
                             reversed_purchase_prior_reward = recent->reward;
                         }
