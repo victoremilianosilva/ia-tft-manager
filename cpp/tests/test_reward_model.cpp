@@ -79,12 +79,25 @@ int main() {
                   "purchase completing an upgrade");
     require_close(reversed_purchase_penalty(), -0.18,
                   "targeted reversed-purchase penalty");
-    if (!should_penalize_reversed_purchase(0.10, false, false, false, false))
-        throw std::runtime_error("low-fit immediate reversal should be penalized");
-    if (!should_penalize_reversed_purchase(0.15, false, false, false, false))
+    // Regressions from the Viewer match: Teemo/Caitlyn were bought and sold
+    // on the next action without being deployed or completing an upgrade.
+    // Their low strategic-fit values must trigger the same reversal rule.
+    if (!should_penalize_reversed_purchase(0.08, false, false, false, false))
+        throw std::runtime_error("Teemo-like low-fit immediate reversal should be penalized");
+    if (!should_penalize_reversed_purchase(0.14, false, false, false, false))
+        throw std::runtime_error("Caitlyn-like low-fit immediate reversal should be penalized");
+    if (!should_penalize_reversed_purchase(0.20, false, false, false, false))
         throw std::runtime_error("threshold-fit immediate reversal should be penalized");
-    if (should_penalize_reversed_purchase(0.16, false, false, false, false))
-        throw std::runtime_error("useful unit should not trigger low-fit reversal penalty");
+    if (should_penalize_reversed_purchase(0.21, false, false, false, false))
+        throw std::runtime_error("strategically useful unit should be exempt from low-fit reversal penalty");
+    const double teemo_sequence = 0.06 + (-0.02) +
+        reversed_sequence_adjustment(0.06, -0.02);
+    if (teemo_sequence > -0.05 + 1e-9)
+        throw std::runtime_error("positive buy followed by a weakly negative sale must not retain positive aggregate reward");
+    const double caitlyn_sequence = -0.09 + (-0.11) +
+        reversed_sequence_adjustment(-0.09, -0.11);
+    if (caitlyn_sequence > -0.05 + 1e-9)
+        throw std::runtime_error("already-negative buy/sell sequence must remain negative");
     if (should_penalize_reversed_purchase(0.0, true, false, false, false))
         throw std::runtime_error("completed upgrade must be exempt from reversal penalty");
     if (should_penalize_reversed_purchase(0.0, false, true, false, false))
