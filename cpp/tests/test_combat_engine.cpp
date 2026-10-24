@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 
 namespace {
@@ -111,6 +112,60 @@ void test_invalid_configuration_returns_error() {
             "Invalid configuration should return the specific error code.");
 }
 
+void test_equipped_items_change_combat_stats() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 0.1f;
+    input.config.record_damage = true;
+    input.player_a.units[0].attack_damage = 10.0f;
+    input.player_a.units[0].attack_speed = 1.0f;
+    input.player_a.units[0].max_hp = input.player_a.units[0].hp = 100.0f;
+    input.player_b.units[0].attack_damage = 0.1f;
+    input.player_b.units[0].attack_speed = 0.1f;
+    input.player_b.units[0].max_hp = input.player_b.units[0].hp = 1000.0f;
+
+    const auto baseline = engine.simulate(input);
+    require(baseline.success && !baseline.damage_events.empty(),
+            "Baseline combat should record basic attacks.");
+    const float baseline_damage = baseline.damage_events.front().raw_damage;
+
+    tft::CombatItem item;
+    item.id = 101;
+    item.api_name = "test_item";
+    item.name = "Test Item";
+    item.attack_damage = 15.0f;
+    item.health = 25.0f;
+    input.player_a.units[0].items.push_back(item);
+
+    const auto equipped = engine.simulate(input);
+    require(equipped.success && !equipped.damage_events.empty(),
+            "Combat with a valid item should succeed.");
+    require(std::abs(equipped.damage_events.front().raw_damage -
+                     (baseline_damage + 15.0f)) < 0.001f,
+            "Item attack damage must affect the actual attack calculation.");
+    require(std::abs(equipped.units.front().initial_hp - 125.0f) < 0.001f,
+            "Item health must increase effective max/current HP.");
+}
+
+void test_invalid_equipment_is_rejected() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.player_a.units[0].items.resize(4);
+    const auto too_many = engine.simulate(input);
+    require(!too_many.success && too_many.error_code == "INVALID_ITEM_ATTRIBUTES",
+            "More than three equipped items must be rejected.");
+
+    input = make_input();
+    tft::CombatItem invalid;
+    invalid.api_name = "invalid_item";
+    invalid.attack_damage = std::numeric_limits<float>::quiet_NaN();
+    input.player_a.units[0].items.push_back(invalid);
+    const auto non_finite = engine.simulate(input);
+    require(!non_finite.success &&
+            non_finite.error_code == "INVALID_ITEM_ATTRIBUTES",
+            "Non-finite item stats must be rejected.");
+}
+
 } // namespace
 
 int main() {
@@ -118,6 +173,8 @@ int main() {
         test_deterministic_winner_and_damage();
         test_event_limit_is_reported_as_timeout();
         test_invalid_configuration_returns_error();
+        test_equipped_items_change_combat_stats();
+        test_invalid_equipment_is_rejected();
     } catch (const std::exception& error) {
         std::cerr << "test_combat_engine: " << error.what() << '\n';
         return 1;
