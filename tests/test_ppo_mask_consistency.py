@@ -155,6 +155,46 @@ def test_sampled_actions_respect_masks():
     assert torch.isfinite(values).all()
 
 
+def test_item_actions_use_the_same_policy_and_ppo_logprob_path():
+    torch.manual_seed(77)
+    obs = torch.randn(2, 162)
+    masks = {
+        "type_mask": torch.zeros(2, 9, dtype=torch.bool),
+        "shop_mask": torch.ones(2, 5, dtype=torch.bool),
+        "bench_source_mask": torch.ones(2, 9, dtype=torch.bool),
+        "board_target_mask": torch.ones(2, 28, dtype=torch.bool),
+        "board_source_mask": torch.ones(2, 28, dtype=torch.bool),
+        "board_move_target_masks": torch.ones(2, 28, 28, dtype=torch.bool),
+        "bench_move_source_mask": torch.ones(2, 9, dtype=torch.bool),
+        "bench_to_board_target_masks": torch.ones(2, 9, 28, dtype=torch.bool),
+        "item_inventory_mask": torch.zeros(2, 9, dtype=torch.bool),
+        "item_component_first_mask": torch.zeros(2, 9, dtype=torch.bool),
+        "item_component_pair_masks": torch.zeros(2, 9, 9, dtype=torch.bool),
+        "item_target_mask": torch.zeros(2, 37, dtype=torch.bool),
+    }
+    masks["type_mask"][0, 7] = True
+    masks["type_mask"][1, 8] = True
+    masks["item_inventory_mask"][0, 2] = True
+    masks["item_target_mask"][0, 36] = True
+    masks["item_component_first_mask"][1, 1] = True
+    masks["item_component_pair_masks"][1, 1, 2] = True
+    masks["item_target_mask"][1, 4] = True
+
+    policy = TFTPolicy(obs_dim=162, action_dims=Trainer.ACTION_DIMS, hidden_size=32)
+    policy.eval()
+    with torch.no_grad():
+        actions, collected, _, values = policy.get_action_and_value(
+            obs, masks=masks, deterministic=True
+        )
+        evaluated, entropy, evaluated_values = policy.evaluate_actions(obs, actions, masks)
+
+    assert actions[0].tolist() == [7, 2, 36, 0, 0, 0]
+    assert actions[1].tolist() == [8, 1, 2, 4, 0, 0]
+    assert torch.allclose(collected, evaluated, atol=1e-5, rtol=1e-5)
+    assert torch.allclose(values, evaluated_values, atol=1e-5)
+    assert torch.isfinite(entropy).all()
+
+
 def test_reroll_and_buy_xp_logprobs_match():
     torch.manual_seed(42)
 
