@@ -114,6 +114,10 @@ def run_match(factory, baseline, candidate, candidate_slots, seed, device, max_s
         policies = {"baseline": baseline, "candidate": candidate}
         rows = []
         final_info = {}
+        per_player_action_counts = {
+            player_id: {"actions": 0, "item_actions": 0, "equip_actions": 0, "craft_and_equip_actions": 0}
+            for player_id in range(8)
+        }
         for step in range(max_steps):
             if getattr(lobby, "finished", False):
                 break
@@ -126,6 +130,17 @@ def run_match(factory, baseline, candidate, candidate_slots, seed, device, max_s
             chosen = {}
             chosen.update(policy_actions(policies["candidate"], observations, masks, candidate_indices, device))
             chosen.update(policy_actions(policies["baseline"], observations, masks, baseline_indices, device))
+
+            for player_id, action_values in chosen.items():
+                action_type = int(action_values[0])
+                counts = per_player_action_counts[player_id]
+                counts["actions"] += 1
+                if action_type in (7, 8):
+                    counts["item_actions"] += 1
+                if action_type == 7:
+                    counts["equip_actions"] += 1
+                elif action_type == 8:
+                    counts["craft_and_equip_actions"] += 1
 
             actions = [
                 action_dict(chosen[i]) if lobby.players[i].alive else dict(PASS_ACTION)
@@ -181,6 +196,7 @@ def run_match(factory, baseline, candidate, candidate_slots, seed, device, max_s
                 "win": int(placement == 1),
                 "round": state.get("round", getattr(lobby, "round", "")),
                 "candidate_seats": ",".join(map(str, sorted(candidate_slots))),
+                **per_player_action_counts[player_id],
             })
         return rows
     finally:
@@ -193,11 +209,20 @@ def _metric_summary(rows):
     if not rows:
         raise ValueError("Cannot summarize an empty policy group.")
     placements = [int(row["placement"]) for row in rows]
+    action_total = sum(int(row.get("actions", 0)) for row in rows)
+    item_total = sum(int(row.get("item_actions", 0)) for row in rows)
+    equip_total = sum(int(row.get("equip_actions", 0)) for row in rows)
+    craft_total = sum(int(row.get("craft_and_equip_actions", 0)) for row in rows)
     return {
         "players": len(rows),
         "mean_placement": float(np.mean(placements)),
         "win_rate": float(np.mean([int(row["win"]) for row in rows])),
         "top4_rate": float(np.mean([int(row["placement"]) <= 4 for row in rows])),
+        "actions": action_total,
+        "item_actions": item_total,
+        "item_action_rate": float(item_total / action_total) if action_total else 0.0,
+        "equip_actions": equip_total,
+        "craft_and_equip_actions": craft_total,
     }
 
 
