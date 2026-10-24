@@ -2497,6 +2497,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         bool buy_builds_pair = false;
         bool buy_strategy_approved = true;
         double candidate_board_impact = 0.0;
+        double reroll_old_best_fit = 0.0;
+        double reroll_new_best_fit = 0.0;
         bool bought_unit_successfully = false;
         bool bought_upgrade = false;
         bool purchase_was_recently_reversed = false;
@@ -2700,12 +2702,24 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 }
             }
         } else if (type == 1) {
-            // REROLL
-            if (lobby.economy_engine.spend_gold(
-                    economy,
-                    EconomyEngine::REROLL_COST
-                )) {
+            // REROLL: compare the best composition-fit offer before and after.
+            // The spend is justified by improved options, not by rerolling itself.
+            const auto best_shop_fit = [&]() {
+                double best = 0.0;
+                for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
+                    const auto* offer = shop.get_unit(static_cast<std::int32_t>(slot));
+                    if (!offer) continue;
+                    const auto* def = lobby.catalog->find_by_id(offer->champion_internal_id);
+                    if (!def || economy.gold < def->cost) continue;
+                    best = std::max(best, unit_composition_score(
+                        strategy_before, *def, offer->star, lobby.trait_milestones));
+                }
+                return best;
+            };
+            if (lobby.economy_engine.spend_gold(economy, EconomyEngine::REROLL_COST)) {
+                reroll_old_best_fit = best_shop_fit();
                 shop.reroll(economy.level);
+                reroll_new_best_fit = best_shop_fit();
             }
         } else if (type == 2) {
             // BUY XP
@@ -3028,6 +3042,16 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         } else if (type == 1) {
             success = economy.gold == old_gold - EconomyEngine::REROLL_COST;
             action_reward = success ? -0.01 : -0.10;
+            if (success) {
+                action_reward += reward_model::reroll_quality_reward(
+                    reroll_old_best_fit, reroll_new_best_fit);
+                if (reroll_new_best_fit > reroll_old_best_fit) {
+                    action_reward += reward_model::spending_timing_reward(
+                        old_gold, this->info.hp, lobby.stage,
+                        std::clamp(reroll_new_best_fit / 32.5, 0.0, 1.0),
+                        false, false);
+                }
+            }
         } else if (type == 2) {
             success = economy.gold == old_gold - EconomyEngine::BUY_XP_COST;
             action_reward = success ? 0.02 : -0.10;
