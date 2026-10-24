@@ -1,8 +1,11 @@
 #include "items/ItemEngine.hpp"
+#include "items/CombatItemAdapter.hpp"
+#include "items/ItemCatalog.hpp"
 
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 
 namespace {
@@ -23,6 +26,9 @@ int main() {
     damage.recipe_components = {"sword", "bow"};
     damage.attack_damage = 10.0;
     damage.attack_speed = 0.15;
+    damage.critical_strike_chance = 0.20;
+    damage.omnivamp = 0.10;
+    damage.damage_amplification = 0.15;
     damage.carry_weight = 1.0;
 
     ItemDefinition guard;
@@ -39,7 +45,37 @@ int main() {
     double_component.recipe_components = {"rod", "rod"};
     double_component.ability_power = 10.0;
 
+    std::istringstream catalog_json(R"json({
+        "schema_version": 1,
+        "set_id": "synthetic-test-only",
+        "components": [
+            {"id": "sword", "name": "Test Sword"},
+            {"id": "bow", "name": "Test Bow"}
+        ],
+        "items": [{
+            "id": "catalog_blade", "name": "Catalog Blade",
+            "recipe_components": ["sword", "bow"],
+            "stats": {"attack_damage": 12.0, "attack_speed": 0.15},
+            "weights": {"carry": 1.0}
+        }]
+    })json");
+    const auto loaded_catalog = load_item_catalog(catalog_json);
+    require(loaded_catalog.set_id == "synthetic-test-only" &&
+            loaded_catalog.components.size() == 2 &&
+            loaded_catalog.items.size() == 1 &&
+            loaded_catalog.items.front().recipe_components[0] == "sword",
+            "versioned external item catalog should load without hard-coded recipes");
+
+    const auto combat_damage = to_combat_item(damage);
+    require(combat_damage.api_name == "damage_blade" &&
+            std::abs(combat_damage.attack_damage - 10.0f) < 0.001f &&
+            std::abs(combat_damage.critical_strike_chance - 0.20f) < 0.001f &&
+            std::abs(combat_damage.omnivamp - 0.10f) < 0.001f,
+            "item catalog definition should map to combat item stats");
+
     ItemEngine engine({damage, guard, double_component});
+    require(!engine.add_component("unknown_component"),
+            "component IDs outside the loaded recipe catalog must be rejected");
     UnitProfile carry{"carry-1", 2, 1, false, true, 80.0, 1.2, 0.0, 900.0, 30.0, 30.0, 0.9};
     UnitProfile tank{"tank-1", 2, 0, true, false, 35.0, 0.7, 0.0, 1800.0, 70.0, 60.0, 0.8};
 
@@ -90,6 +126,23 @@ int main() {
     require(engine.metrics().unequips == 1, "unequip metric");
     require(engine.metrics().invalid_actions >= 2, "invalid operations are counted");
 
+    ItemEngine transfer_engine({damage});
+    require(transfer_engine.add_component("sword"), "transfer decision sword accepted");
+    require(transfer_engine.add_component("bow"), "transfer decision bow accepted");
+    require(transfer_engine.craft("sword", "bow").has_value(), "transfer decision item crafted");
+    require(transfer_engine.equip("damage_blade", tank), "transfer decision item equipped");
+    const auto transfer_decision = transfer_engine.decide_best_action({carry, tank}, 4, 45.0);
+    require(transfer_decision.kind == DecisionKind::TRANSFER,
+            "decision search should transfer an item to a meaningfully better holder");
+    require(transfer_decision.source_unit_uuid == "tank-1" &&
+            transfer_decision.target_unit_uuid == "carry-1",
+            "transfer decision should identify source and destination units");
+
+    const auto missing_components = engine.decide_craft("sword", "bow", {carry, tank}, 6, 20.0);
+    require(missing_components.kind == DecisionKind::WAIT,
+            "decision must not craft components that are not in inventory");
+    require(engine.add_component("sword"), "decision test sword accepted");
+    require(engine.add_component("bow"), "decision test bow accepted");
     const auto urgent = engine.decide_craft("sword", "bow", {carry, tank}, 6, 20.0);
     require(urgent.kind == DecisionKind::CRAFT_AND_EQUIP,
             "useful craft under pressure should be considered");
@@ -98,6 +151,10 @@ int main() {
     const auto no_recipe = engine.decide_craft("component_a", "component_b", {carry}, 2, 100.0);
     require(no_recipe.kind == DecisionKind::WAIT,
             "no known recipe must preserve components");
+    const auto best_action = engine.decide_best_action({carry, tank}, 2, 100.0);
+    require(best_action.kind == DecisionKind::EQUIP_FROM_INVENTORY ||
+            best_action.kind == DecisionKind::CRAFT_AND_EQUIP,
+            "best-action search should compare inventory and craft options");
 
     std::cout << "[PASS] Item inventory, recipes, equip, transfer, and decision tests.\n";
     return EXIT_SUCCESS;

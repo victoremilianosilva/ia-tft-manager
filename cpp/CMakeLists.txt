@@ -315,6 +315,7 @@ if(BUILD_TESTING)
     add_executable(test_item_engine tests/test_item_engine.cpp)
     configure_tft_module(test_item_engine)
     enable_tft_test_assertions(test_item_engine)
+    target_link_libraries(test_item_engine PRIVATE nlohmann_json::nlohmann_json)
     add_test(NAME item_engine COMMAND test_item_engine)
 
     add_executable(test_synergy_counter tests/test_synergy_counter.cpp)

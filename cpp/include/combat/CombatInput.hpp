@@ -80,7 +80,9 @@ struct CombatItem
     std::string api_name;
     std::string name;
 
-    // Valores genéricos de atributos.
+    // Bônus aditivos normalizados pelo adaptador de catálogo. Campos de
+    // porcentagem usam frações (0.15 = +15%); valores brutos do set devem
+    // ser convertidos antes de chegar à simulação.
     float attack_damage = 0.0f;
     float ability_power = 0.0f;
     float attack_speed = 0.0f;
