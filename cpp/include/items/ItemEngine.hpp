@@ -24,9 +24,15 @@ struct ItemDefinition {
     double attack_damage{0.0};
     double attack_speed{0.0};
     double ability_power{0.0};
+    double critical_strike_chance{0.0};
+    double critical_strike_damage{0.0};
     double max_health{0.0};
     double armor{0.0};
     double magic_resist{0.0};
+    double mana{0.0};
+    double omnivamp{0.0};
+    double damage_amplification{0.0};
+    double damage_reduction{0.0};
     double carry_weight{0.0};
     double tank_weight{0.0};
     double support_weight{0.0};
@@ -267,11 +273,21 @@ public:
         const double damage_fit =
             std::max(0.0, item->attack_damage) * std::max(0.0, unit.attack_damage) / 100.0 +
             std::max(0.0, item->attack_speed) * std::max(0.0, unit.attack_speed) +
-            std::max(0.0, item->ability_power) * std::max(0.0, unit.ability_power) / 100.0;
+            std::max(0.0, item->ability_power) * std::max(0.0, unit.ability_power) / 100.0 +
+            std::max(0.0, item->critical_strike_chance) *
+                std::max(0.0, unit.attack_damage) * 0.5 +
+            std::max(0.0, item->critical_strike_damage) *
+                std::max(0.0, unit.attack_damage) * 0.25 +
+            std::max(0.0, item->damage_amplification) *
+                std::max(0.0, unit.attack_damage) / 100.0 +
+            std::max(0.0, item->omnivamp) *
+                std::max(0.0, unit.attack_damage) / 100.0;
         const double durability_fit =
             std::max(0.0, item->max_health) * std::max(0.0, unit.max_health) / 10000.0 +
             std::max(0.0, item->armor) * std::max(0.0, unit.armor) / 100.0 +
-            std::max(0.0, item->magic_resist) * std::max(0.0, unit.magic_resist) / 100.0;
+            std::max(0.0, item->magic_resist) * std::max(0.0, unit.magic_resist) / 100.0 +
+            std::max(0.0, item->damage_reduction) *
+                std::max(0.0, unit.max_health) / 100.0;
         double role_fit = item->utility_weight;
         if (unit.role == 0 || unit.frontline) role_fit += item->tank_weight;
         if (unit.role == 1 || unit.role == 4 || unit.backline) role_fit += item->carry_weight;
