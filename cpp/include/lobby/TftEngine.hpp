@@ -461,6 +461,11 @@ public:
         std::int32_t slot,
         const std::vector<CombatItem>& items
     );
+    // Returns the same combat-team conversion used by normal match resolution.
+    // Test hook verifies that lobby equipment reaches CombatEngine unchanged.
+    CombatTeam get_combat_team_for_testing(
+        std::int32_t player_id, UnitTeam team = UnitTeam::PLAYER_A
+    ) const;
     // Event hooks for the authoritative loot/armory source; these are not policy actions.
     bool grant_item_component(std::int32_t player_id, const std::string& component_id);
     bool grant_completed_item(std::int32_t player_id, const std::string& item_id);

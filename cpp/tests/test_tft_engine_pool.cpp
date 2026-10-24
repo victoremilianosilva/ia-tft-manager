@@ -1,6 +1,7 @@
 
 #include "lobby/TftEngine.hpp"
 #include "lobby/ChampionCatalog.hpp"
+#include "CombatEngine.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -793,6 +794,61 @@ int main(int argc, char** argv) {
             item_audit = item_action_engine.get_audit_snapshot();
             require(item_audit.players[0].board[0].item_ids.size() == 2,
                     "EQUIP_FROM_INVENTORY nao anexou o item ao estado de combate.");
+
+            // End-to-end: read the exact CombatTeam assembled by the same
+            // conversion used by normal PvP resolution, then run CombatEngine.
+            const auto equipped_team = item_action_engine.get_combat_team_for_testing(
+                0, tft::UnitTeam::PLAYER_A);
+            require(equipped_team.units.size() == 1 &&
+                    equipped_team.units[0].items.size() == 2,
+                    "Itens do ItemEngine nao chegaram ao CombatTeam normal.");
+            require(equipped_team.units[0].items[0].attack_damage == 10.0f &&
+                    equipped_team.units[0].items[1].health == 150.0f,
+                    "Adaptador de catalogo perdeu atributos ao criar CombatItem.");
+
+            auto baseline_team = equipped_team;
+            baseline_team.units[0].items.clear();
+            tft::CombatTeam dummy_team{};
+            dummy_team.team = tft::UnitTeam::PLAYER_B;
+            dummy_team.player_id = 1;
+            dummy_team.player_hp = 100.0f;
+            tft::CombatUnit dummy{};
+            dummy.id = 100;
+            dummy.api_name = "combat_test_dummy";
+            dummy.name = "Combat Test Dummy";
+            dummy.team = tft::UnitTeam::PLAYER_B;
+            dummy.position = {0, 1};
+            dummy.hp = dummy.max_hp = 10000.0f;
+            dummy.attack_damage = 0.1f;
+            dummy.attack_speed = 0.1f;
+            dummy.attack_range = 1.0f;
+            dummy_team.units.push_back(dummy);
+
+            tft::CombatInput baseline_input{};
+            baseline_input.context = tft::CombatContext::PVP;
+            baseline_input.seed = 4242;
+            baseline_input.config.seed = 4242;
+            baseline_input.config.deterministic = true;
+            baseline_input.config.max_duration = 0.1f;
+            baseline_input.config.record_damage = true;
+            baseline_input.player_a = baseline_team;
+            baseline_input.player_b = dummy_team;
+            auto equipped_input = baseline_input;
+            equipped_input.player_a = equipped_team;
+
+            tft::CombatEngine combat_engine;
+            const auto baseline_combat = combat_engine.simulate(baseline_input);
+            const auto equipped_combat = combat_engine.simulate(equipped_input);
+            require(baseline_combat.success && equipped_combat.success &&
+                    !baseline_combat.damage_events.empty() &&
+                    !equipped_combat.damage_events.empty(),
+                    "Combate normal nao gerou ataques para comparar itens.");
+            require(std::abs(equipped_combat.damage_events.front().raw_damage -
+                             baseline_combat.damage_events.front().raw_damage - 10.0f) < 0.001f,
+                    "Dano de ataque nao refletiu o AD do item craftado/equipado.");
+            require(std::abs(equipped_combat.units.front().initial_hp -
+                             baseline_combat.units.front().initial_hp - 150.0f) < 0.001f,
+                    "Vida adicional do item equipado nao chegou aos atributos de combate.");
         }
 
         std::cout << "TFTEngine + loja/economia/ActionMask/AntiLoop/CompLock: OK\n";
