@@ -6,7 +6,7 @@ from trainer import Trainer
 
 
 def test_action_dimensions_match_the_environment_contract():
-    assert Trainer.ACTION_DIMS == [7, 5, 9, 28, 28, 28]
+    assert Trainer.ACTION_DIMS == [9, 5, 9, 28, 28, 28]
     assert Trainer.ACTION_DIM == len(Trainer.ACTION_DIMS)
 
 
@@ -17,9 +17,9 @@ def test_policy_heads_match_action_dimensions():
         hidden_size=32,
     )
 
-    assert policy.type_head.out_features == 7
+    assert policy.type_head.out_features == 9
     assert policy.shop_head[-1].out_features == 1
-    assert policy.shop_head[0].in_features == 32 + 7 + 8
+    assert policy.shop_head[0].in_features == 32 + 9 + 8
     assert policy.sell_head[-1].out_features == 1
     assert policy.sell_head[0].in_features == 32 + 7 + 8
     assert policy.bench_head.out_features == 9
