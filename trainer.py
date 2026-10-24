@@ -484,6 +484,29 @@ class Trainer:
                                      and bool(source_mask[source])
                                      and 0 <= target < target_masks.shape[1]
                                      and bool(target_masks[source, target]))
+            elif action_type == int(ActionType.EQUIP_FROM_INVENTORY):
+                item_slot, target = int(action[1]), int(action[2])
+                inventory_mask = mask_np["item_inventory_mask"][agent_idx]
+                target_mask = mask_np["item_target_mask"][agent_idx]
+                conditional_valid = (
+                    0 <= item_slot < inventory_mask.shape[0]
+                    and bool(inventory_mask[item_slot])
+                    and 0 <= target < target_mask.shape[0]
+                    and bool(target_mask[target])
+                )
+            elif action_type == int(ActionType.CRAFT_AND_EQUIP):
+                first, second, target = int(action[1]), int(action[2]), int(action[3])
+                first_mask = mask_np["item_component_first_mask"][agent_idx]
+                pair_masks = mask_np["item_component_pair_masks"][agent_idx]
+                target_mask = mask_np["item_target_mask"][agent_idx]
+                conditional_valid = (
+                    0 <= first < first_mask.shape[0]
+                    and bool(first_mask[first])
+                    and 0 <= second < pair_masks.shape[1]
+                    and bool(pair_masks[first, second])
+                    and 0 <= target < target_mask.shape[0]
+                    and bool(target_mask[target])
+                )
             if not conditional_valid:
                 counts["conditional_invalid"] += 1
                 counts["selected_invalid"] += 1
