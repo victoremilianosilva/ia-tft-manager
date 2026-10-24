@@ -36,6 +36,10 @@ def create_test_batch():
         "bench_to_board_target_masks": torch.zeros(
             batch_size, 9, 28, dtype=torch.bool
         ),
+        "item_inventory_mask": torch.zeros(batch_size, 5, dtype=torch.bool),
+        "item_component_first_mask": torch.zeros(batch_size, 9, dtype=torch.bool),
+        "item_component_pair_masks": torch.zeros(batch_size, 9, 9, dtype=torch.bool),
+        "item_target_mask": torch.zeros(batch_size, 37, dtype=torch.bool),
     }
 
     for i, action_type in enumerate(action_types):
@@ -161,7 +165,7 @@ def test_reroll_and_buy_xp_logprobs_match():
     obs = torch.randn(batch_size, 162)
 
     masks = {
-        "type_mask": torch.zeros(batch_size, 7, dtype=torch.bool),
+        "type_mask": torch.zeros(batch_size, 9, dtype=torch.bool),
         "shop_mask": torch.zeros(batch_size, 5, dtype=torch.bool),
         "bench_source_mask": torch.zeros(batch_size, 9, dtype=torch.bool),
         "board_target_mask": torch.zeros(batch_size, 28, dtype=torch.bool),
