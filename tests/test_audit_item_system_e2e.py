@@ -32,6 +32,8 @@ def make_masks(pass_only=True):
         "item_target_mask": np.ones(37, dtype=np.bool_),
     }
     masks["type_mask"][6 if pass_only else 7] = True
+    if not pass_only:
+        masks["type_mask"][8] = True
     return masks
 
 
