@@ -55,8 +55,8 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
         catalog.components.emplace_back(id, name);
     }
 
-    if (catalog.components.size() > 9) {
-        throw std::invalid_argument("Item catalog exceeds the nine component-type policy head");
+    if (catalog.components.size() > 10) {
+        throw std::invalid_argument("Item catalog exceeds the ten component-type policy head");
     }
 
     std::set<std::string> item_ids;
