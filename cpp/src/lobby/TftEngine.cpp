@@ -3984,6 +3984,21 @@ bool TFTEngine::set_unit_for_testing(
     return true;
 }
 
+CombatTeam TFTEngine::get_combat_team_for_testing(
+    std::int32_t player_id, UnitTeam team
+) const {
+    if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
+    impl_->ensure_open();
+    if (player_id < 0 || static_cast<std::size_t>(player_id) >= kPlayersPerLobby)
+        throw std::out_of_range("Player ID invalido para snapshot de combate.");
+    if (team != UnitTeam::PLAYER_A && team != UnitTeam::PLAYER_B)
+        throw std::invalid_argument("Time invalido para snapshot de combate.");
+    CombatTeam output{};
+    int next_unit_id = 0;
+    impl_->append_combat_team(static_cast<std::size_t>(player_id), team, output, next_unit_id);
+    return output;
+}
+
 bool TFTEngine::set_unit_items_for_testing(
     std::int32_t player_id,
     bool on_board,
