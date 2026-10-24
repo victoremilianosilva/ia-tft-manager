@@ -129,12 +129,14 @@ void test_equipped_items_change_combat_stats() {
             "Baseline combat should record basic attacks.");
     const float baseline_damage = baseline.damage_events.front().raw_damage;
 
+    input.player_a.units[0].hp = 50.0f;
     tft::CombatItem item;
     item.id = 101;
     item.api_name = "test_item";
     item.name = "Test Item";
     item.attack_damage = 15.0f;
     item.health = 25.0f;
+    item.omnivamp = 0.5f;
     input.player_a.units[0].items.push_back(item);
 
     const auto equipped = engine.simulate(input);
@@ -143,8 +145,10 @@ void test_equipped_items_change_combat_stats() {
     require(std::abs(equipped.damage_events.front().raw_damage -
                      (baseline_damage + 15.0f)) < 0.001f,
             "Item attack damage must affect the actual attack calculation.");
-    require(std::abs(equipped.units.front().initial_hp - 125.0f) < 0.001f,
-            "Item health must increase effective max/current HP.");
+    require(std::abs(equipped.units.front().initial_hp - 75.0f) < 0.001f,
+            "Item health must increase current HP by its bonus without healing missing health.");
+    require(equipped.units.front().final_hp > equipped.units.front().initial_hp,
+            "Omnivamp must heal the attacker after dealing damage.");
 }
 
 void test_invalid_equipment_is_rejected() {
