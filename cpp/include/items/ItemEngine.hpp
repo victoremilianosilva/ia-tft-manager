@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -116,7 +117,7 @@ public:
 
     // Returns the crafted item id; neither component is consumed on failure.
     std::optional<std::string> craft(const std::string& first, const std::string& second) {
-        if (first.empty() || second.empty() || first == second) {
+        if (first.empty() || second.empty()) {
             ++metrics_.invalid_actions;
             return std::nullopt;
         }
@@ -130,10 +131,8 @@ public:
             ++metrics_.invalid_actions;
             return std::nullopt;
         }
-        const auto b = std::find_if(components_.begin(), components_.end(),
-            [&](const std::string& value) { return value == second && &value != &*a; });
-        // Find the second component by index; this also handles equal component
-        // types when a recipe legitimately consumes two copies of one component.
+        // Find the second component by index; this also handles recipes
+        // that legitimately consume two copies of the same component.
         const auto first_index = static_cast<std::size_t>(std::distance(components_.begin(), a));
         std::optional<std::size_t> second_index;
         for (std::size_t i = 0; i < components_.size(); ++i) {
@@ -142,7 +141,6 @@ public:
                 break;
             }
         }
-        (void)b;
         if (!second_index) {
             ++metrics_.invalid_actions;
             return std::nullopt;
