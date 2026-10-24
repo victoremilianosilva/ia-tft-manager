@@ -1,4 +1,5 @@
 #include "items/ItemEngine.hpp"
+#include "items/CombatItemAdapter.hpp"
 
 #include <cmath>
 #include <cstdlib>
@@ -23,6 +24,9 @@ int main() {
     damage.recipe_components = {"sword", "bow"};
     damage.attack_damage = 10.0;
     damage.attack_speed = 0.15;
+    damage.critical_strike_chance = 0.20;
+    damage.omnivamp = 0.10;
+    damage.damage_amplification = 0.15;
     damage.carry_weight = 1.0;
 
     ItemDefinition guard;
@@ -38,6 +42,13 @@ int main() {
     double_component.name = "Double Rod";
     double_component.recipe_components = {"rod", "rod"};
     double_component.ability_power = 10.0;
+
+    const auto combat_damage = to_combat_item(damage);
+    require(combat_damage.api_name == "damage_blade" &&
+            std::abs(combat_damage.attack_damage - 10.0f) < 0.001f &&
+            std::abs(combat_damage.critical_strike_chance - 0.20f) < 0.001f &&
+            std::abs(combat_damage.omnivamp - 0.10f) < 0.001f,
+            "item catalog definition should map to combat item stats");
 
     ItemEngine engine({damage, guard, double_component});
     UnitProfile carry{"carry-1", 2, 1, false, true, 80.0, 1.2, 0.0, 900.0, 30.0, 30.0, 0.9};
