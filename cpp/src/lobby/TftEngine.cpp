@@ -2679,7 +2679,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                                 buy_builds_pair,
                                 false,
                                 false,
-                                std::clamp(std::max(0.0, candidate_comp_score) / 32.5, 0.0, 1.0),
+                                std::clamp(std::max(0.0, candidate_comp_score) / 40.0, 0.0, 1.0),
                                 0.0,
                                 strategy_before.composition_direction
                             });
@@ -3139,6 +3139,18 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         // RewardManager's broader state components are not called by the
         // Python environment, so applying them here would change PPO targets.
         lobby.update_strategy(player_id);
+        // Record the direction *after* this purchase has refreshed strategy.
+        // Otherwise a direction change caused by the purchase itself is mistaken
+        // for a later legitimate transition and exempts an immediate buy/sell loop.
+        if (type == 0 && success && !this->strategy.empty()) {
+            for (auto it = this->recent_purchases.rbegin();
+                 it != this->recent_purchases.rend(); ++it) {
+                if (it->action_serial == this->action_serial) {
+                    it->comp_direction = this->strategy.back().composition_direction;
+                    break;
+                }
+            }
+        }
         // Capture actual action economics before round income is resolved.
         // Net gold after TFTEngine::step may include income and cannot be used
         // to infer the action's true cost. This trace is audit-only and never
