@@ -58,15 +58,12 @@ struct UnitProfile {
 enum class DecisionKind : std::uint8_t {
     WAIT,
     EQUIP_FROM_INVENTORY,
-    CRAFT_AND_EQUIP,
-    TRANSFER,
-    UNEQUIP_TO_INVENTORY
+    CRAFT_AND_EQUIP
 };
 
 struct ItemDecision {
     DecisionKind kind{DecisionKind::WAIT};
     std::string item_id;
-    std::string source_unit_uuid;
     std::string target_unit_uuid;
     std::string first_component;
     std::string second_component;
@@ -78,15 +75,14 @@ struct ItemDecision {
 
 // Bounded reward shaping for RL integration. Reward marginal value, not the
 // mechanical act of crafting/equipping; preserve components when waiting has
-// more expected value and do not let repeated transfers farm reward.
+// more expected value and do not reward no-op item actions.
 inline double item_action_reward(double immediate_gain, double future_value,
-                                double urgency, double transfer_fit_delta = 0.0) noexcept {
+                                double urgency) noexcept {
     const double urgent = std::clamp(urgency, 0.0, 1.0);
     const double gain = std::clamp(immediate_gain, -5.0, 5.0);
     const double future = std::clamp(future_value, 0.0, 5.0);
-    const double transfer = 0.15 * std::tanh(transfer_fit_delta);
     return std::clamp(gain * (0.65 + 0.35 * urgent) -
-                      future * (1.0 - urgent) + transfer, -1.0, 1.0);
+                      future * (1.0 - urgent), -1.0, 1.0);
 }
 
 struct ItemActionResult {
@@ -99,8 +95,6 @@ struct ItemMetrics {
     std::uint64_t components_collected{0};
     std::uint64_t crafts{0};
     std::uint64_t equips{0};
-    std::uint64_t unequips{0};
-    std::uint64_t transfers{0};
     std::uint64_t invalid_actions{0};
     std::uint64_t items_left_unused{0};
 };
@@ -212,50 +206,6 @@ public:
         return true;
     }
 
-    bool unequip(const std::string& item_id, const std::string& unit_uuid) {
-        const auto unit = equipped_.find(unit_uuid);
-        if (unit == equipped_.end()) {
-            ++metrics_.invalid_actions;
-            return false;
-        }
-        const auto item = std::find(unit->second.begin(), unit->second.end(), item_id);
-        if (item == unit->second.end()) {
-            ++metrics_.invalid_actions;
-            return false;
-        }
-        unit->second.erase(item);
-        inventory_.push_back(item_id);
-        ++metrics_.unequips;
-        return true;
-    }
-
-    bool transfer(const std::string& item_id, const std::string& from_uuid,
-                  const UnitProfile& target) {
-        if (from_uuid.empty() || target.uuid.empty() || from_uuid == target.uuid) {
-            ++metrics_.invalid_actions;
-            return false;
-        }
-        const auto source = equipped_.find(from_uuid);
-        if (source == equipped_.end()) {
-            ++metrics_.invalid_actions;
-            return false;
-        }
-        const auto item = std::find(source->second.begin(), source->second.end(), item_id);
-        const auto target_items = equipped_.find(target.uuid);
-        const std::size_t target_count = target_items == equipped_.end()
-            ? 0U : target_items->second.size();
-        if (item == source->second.end() || target_count >= kMaxItemsPerUnit) {
-            ++metrics_.invalid_actions;
-            return false;
-        }
-        // Do not insert target into the unordered_map until after using source
-        // iterators: insertion could rehash and invalidate them.
-        source->second.erase(item);
-        equipped_[target.uuid].push_back(item_id);
-        ++metrics_.transfers;
-        return true;
-    }
-
     [[nodiscard]] const std::vector<std::string>& components() const noexcept {
         return components_;
     }
@@ -359,9 +309,8 @@ public:
         return best;
     }
 
-    // Compare all currently legal item decisions against WAIT. This method
-    // considers every craftable pair, inventory equip and beneficial transfer;
-    // it never treats the mechanical action itself as value.
+    // Compare all supported item decisions against WAIT. This method considers
+    // every craftable pair and inventory equip; equipped items stay on their unit.
     [[nodiscard]] ItemDecision decide_best_action(
         const std::vector<UnitProfile>& candidates, int stage, double hp) const {
         ItemDecision best;
@@ -407,37 +356,6 @@ public:
             }
         }
 
-        // Transfer only when the destination is a meaningfully better holder.
-        // A small deadband prevents shuffling items for negligible fit changes.
-        for (const auto& [source_uuid, item_ids] : equipped_) {
-            const auto source_profile = std::find_if(
-                candidates.begin(), candidates.end(),
-                [&source_uuid](const UnitProfile& unit) {
-                    return unit.uuid == source_uuid;
-                });
-            if (source_profile == candidates.end()) continue;
-            for (const auto& item_id : item_ids) {
-                const double source_fit = item_fit(item_id, *source_profile);
-                for (const auto& target : candidates) {
-                    if (target.uuid.empty() || target.uuid == source_uuid ||
-                        equipped(target.uuid).size() >= kMaxItemsPerUnit) continue;
-                    const double delta = item_fit(item_id, target) - source_fit;
-                    if (delta <= 0.10) continue;
-                    const double value = delta * (0.65 + 0.35 * urgency);
-                    if (value > best.total_value) {
-                        ItemDecision decision;
-                        decision.kind = DecisionKind::TRANSFER;
-                        decision.item_id = item_id;
-                        decision.source_unit_uuid = source_uuid;
-                        decision.target_unit_uuid = target.uuid;
-                        decision.immediate_value = delta;
-                        decision.urgency = urgency;
-                        decision.total_value = value;
-                        best = std::move(decision);
-                    }
-                }
-            }
-        }
         return best;
     }
 
@@ -463,7 +381,6 @@ public:
         };
 
         bool applied = false;
-        double transfer_delta = 0.0;
         switch (decision.kind) {
             case DecisionKind::EQUIP_FROM_INVENTORY: {
                 const auto* target = find_unit(decision.target_unit_uuid);
@@ -501,33 +418,6 @@ public:
                     equip(decision.item_id, *target);
                 break;
             }
-            case DecisionKind::TRANSFER: {
-                const auto* source = find_unit(decision.source_unit_uuid);
-                const auto* target = find_unit(decision.target_unit_uuid);
-                if (!source || !target || source->uuid == target->uuid ||
-                    equipped(target->uuid).size() >= kMaxItemsPerUnit ||
-                    !find(decision.item_id)) {
-                    ++metrics_.invalid_actions;
-                    return reject("stale_or_invalid_transfer_decision");
-                }
-                const auto& source_items = equipped(source->uuid);
-                if (std::find(source_items.begin(), source_items.end(),
-                              decision.item_id) == source_items.end()) {
-                    ++metrics_.invalid_actions;
-                    return reject("transfer_item_not_on_source");
-                }
-                transfer_delta = item_fit(decision.item_id, *target) -
-                    item_fit(decision.item_id, *source);
-                if (transfer_delta <= 0.10) {
-                    ++metrics_.invalid_actions;
-                    return reject("transfer_has_no_material_marginal_gain");
-                }
-                applied = transfer(decision.item_id, source->uuid, *target);
-                break;
-            }
-            case DecisionKind::UNEQUIP_TO_INVENTORY:
-                applied = unequip(decision.item_id, decision.source_unit_uuid);
-                break;
             case DecisionKind::WAIT:
                 return {true, 0.0, {}};
         }
@@ -537,7 +427,7 @@ public:
         }
         return {true, item_action_reward(
             decision.immediate_value, decision.future_value,
-            decision.urgency, transfer_delta), {}};
+            decision.urgency), {}};
     }
 
 private:
