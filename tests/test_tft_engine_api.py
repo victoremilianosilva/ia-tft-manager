@@ -145,8 +145,12 @@ def test_action_dimensions_accept_highest_valid_indices():
     try:
         engine.reset()
 
+        # PASS ignores legacy arguments, so their highest bounded indices
+        # exercise the original five argument domains without fabricating an
+        # item command whose arguments have type-specific semantics.
         actions = [
-            [dimension - 1 for dimension in ACTION_DIMS]
+            [6, ACTION_DIMS[1] - 1, ACTION_DIMS[2] - 1,
+             ACTION_DIMS[3] - 1, ACTION_DIMS[4] - 1, ACTION_DIMS[5] - 1]
             for _ in range(8)
         ]
 
