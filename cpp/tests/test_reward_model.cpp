@@ -90,6 +90,16 @@ int main() {
         throw std::runtime_error("threshold-fit immediate reversal should be penalized");
     if (should_penalize_reversed_purchase(0.21, false, false, false, false))
         throw std::runtime_error("strategically useful unit should be exempt from low-fit reversal penalty");
+    static_assert(kRecentPurchaseHistoryActions == 8,
+                  "recent purchase association window should cover intervening actions");
+    if (should_penalize_reversed_purchase(0.08, true, false, false, false))
+        throw std::runtime_error("completed upgrades must remain exempt from reversal penalty");
+    if (should_penalize_reversed_purchase(0.08, false, true, false, false))
+        throw std::runtime_error("deployed purchases must remain exempt from reversal penalty");
+    if (should_penalize_reversed_purchase(0.08, false, false, true, false))
+        throw std::runtime_error("a sale required to free a full bench must remain exempt");
+    if (should_penalize_reversed_purchase(0.08, false, false, false, true))
+        throw std::runtime_error("explicitly verified composition improvement must remain exempt");
     const double teemo_sequence = 0.06 + (-0.02) +
         reversed_sequence_adjustment(0.06, -0.02);
     if (teemo_sequence > -0.05 + 1e-9)

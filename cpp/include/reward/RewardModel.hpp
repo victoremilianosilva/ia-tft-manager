@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 
 namespace tft::reward_model {
 
@@ -125,6 +126,9 @@ inline double purchase_pair_quality(double fit_score) noexcept {
 // Fit is normalized to [0, 1]; legitimate exceptions are explicit so a real
 // upgrade, deployment, comp transition, or full bench is not punished.
 inline constexpr double kRecentPurchaseLowFitThreshold = 0.20;
+// Keep purchase provenance long enough to associate a sale after intervening
+// shop/position actions, without carrying stale intent across a whole round.
+inline constexpr std::uint64_t kRecentPurchaseHistoryActions = 8;
 
 inline bool should_penalize_reversed_purchase(
     double normalized_fit,

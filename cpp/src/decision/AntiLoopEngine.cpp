@@ -109,9 +109,25 @@ void AntiLoopEngine::reset() {
 void AntiLoopEngine::begin_round(std::uint32_t round_number) {
     history_.current_round = std::max<std::uint32_t>(1, round_number);
     history_.position_history.clear();
-    history_.move_history.clear();
+
+    // Keep a short movement tail across round boundaries. A round transition
+    // is not itself a board change: clearing every movement here allowed
+    // cross-round A -> B -> A reversals and short configuration cycles to escape
+    // detection. Six entries cover the anti-loop trajectory window without
+    // letting stale multi-step history accumulate indefinitely.
+    constexpr std::size_t kCrossRoundMoveHistory = 6;
+    if (history_.move_history.size() > kCrossRoundMoveHistory) {
+        history_.move_history.erase(
+            history_.move_history.begin(),
+            history_.move_history.end() - kCrossRoundMoveHistory
+        );
+    }
     history_.blocked_moves.clear();
-    history_.last_move.reset();
+    if (history_.move_history.empty()) {
+        history_.last_move.reset();
+    } else {
+        history_.last_move = history_.move_history.back();
+    }
     history_.last_board_signature.reset();
 
     auto& visits = history_.state_visits;

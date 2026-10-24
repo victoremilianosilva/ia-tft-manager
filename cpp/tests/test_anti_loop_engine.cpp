@@ -411,7 +411,7 @@ void test_incremental_signature_hash_matches_full_recomputation() {
     assert(replacement_hash != before_swap);
 }
 
-void test_round_window_expires_old_states_and_clears_local_history() {
+void test_round_window_expires_old_states_and_preserves_recent_movement() {
     AntiLoopEngine engine;
     const auto nasus = make_unit("nasus-1", 1);
     const auto signature = make_signature(nasus, 3);
@@ -420,9 +420,11 @@ void test_round_window_expires_old_states_and_clears_local_history() {
     engine.register_state(signature);
 
     engine.begin_round(2);
-    assert(engine.get_state().move_history_size == 0);
+    assert(engine.get_state().move_history_size == 1);
     assert(engine.get_state().blocked_moves == 0);
-    assert(!engine.get_state().last_move.has_value());
+    assert(engine.get_state().last_move.has_value());
+    // A direct reversal in the next preparation is still recognized.
+    assert(engine.should_block_move("board_move", 4, 3, nasus));
     assert(engine.was_state_seen(signature));
 
     // Keep exact layouts long enough to catch the observed round 21 -> 26 loop.
@@ -471,7 +473,7 @@ int main() {
     test_state_change_releases_explicit_move_block();
     test_move_queries_do_not_mutate_history();
     test_incremental_signature_hash_matches_full_recomputation();
-    test_round_window_expires_old_states_and_clears_local_history();
+    test_round_window_expires_old_states_and_preserves_recent_movement();
     test_reset_clears_move_and_state_history();
     test_reset_preserves_execution_metrics_like_python();
     test_mask_diagnostics_accumulate_and_survive_reset();
