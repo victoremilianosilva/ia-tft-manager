@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -17,6 +18,18 @@ enum class ItemOperation {
     UNEQUIP_TO_INVENTORY
 };
 
+// Counters are owned by the per-player item state and are exposed for
+// audit/metrics; they are not, by themselves, reward signals.
+struct ItemPlayerMetrics {
+    std::uint64_t components_collected{0};
+    std::uint64_t crafts{0};
+    std::uint64_t equips{0};
+    std::uint64_t unequips{0};
+    std::uint64_t transfers{0};
+    std::uint64_t invalid_actions{0};
+    std::uint64_t items_left_unused{0};
+};
+
 // Canonical per-player item state contract.
 // Components and completed items are ordered inventories; repeated IDs are
 // distinct copies. Equipment is keyed by unit UUID so duplicate champions do
@@ -26,6 +39,7 @@ struct ItemPlayerState {
     std::vector<std::string> components;
     std::vector<std::string> inventory;
     std::unordered_map<std::string, std::vector<std::string>> equipped_by_unit_uuid;
+    ItemPlayerMetrics metrics;
 };
 
 // Typed command used between policy-action decoding and item execution.
