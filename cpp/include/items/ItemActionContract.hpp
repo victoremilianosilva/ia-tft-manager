@@ -14,7 +14,6 @@ enum class ItemOperation {
     WAIT,
     EQUIP_FROM_INVENTORY,
     CRAFT_AND_EQUIP,
-    TRANSFER,
     UNEQUIP_TO_INVENTORY
 };
 
@@ -25,7 +24,6 @@ struct ItemPlayerMetrics {
     std::uint64_t crafts{0};
     std::uint64_t equips{0};
     std::uint64_t unequips{0};
-    std::uint64_t transfers{0};
     std::uint64_t invalid_actions{0};
     std::uint64_t items_left_unused{0};
 };
