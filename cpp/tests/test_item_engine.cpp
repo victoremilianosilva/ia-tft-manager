@@ -210,13 +210,12 @@ int main() {
             item_state.equipped_by_unit_uuid["unit-copy-b"].empty(),
             "equipment must be tracked independently for each unit UUID");
     tft::items::ItemActionCommand item_command;
-    item_command.operation = tft::items::ItemOperation::TRANSFER;
+    item_command.operation = tft::items::ItemOperation::EQUIP_FROM_INVENTORY;
     item_command.item_id = "damage_blade";
-    item_command.source_unit_uuid = "unit-copy-a";
     item_command.target_unit_uuid = "unit-copy-b";
-    require(item_command.operation == tft::items::ItemOperation::TRANSFER &&
-            item_command.source_unit_uuid != item_command.target_unit_uuid,
-            "semantic transfer command must carry distinct unit identities");
+    require(item_command.operation == tft::items::ItemOperation::EQUIP_FROM_INVENTORY &&
+            item_command.target_unit_uuid == "unit-copy-b",
+            "semantic equip command must identify the target unit instance");
 
     std::cout << "[PASS] Item inventory, recipes, equip, transfer, and decision tests.\n";
     return EXIT_SUCCESS;
