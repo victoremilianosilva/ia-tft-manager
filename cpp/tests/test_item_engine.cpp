@@ -90,6 +90,11 @@ int main() {
     require(engine.metrics().unequips == 1, "unequip metric");
     require(engine.metrics().invalid_actions >= 2, "invalid operations are counted");
 
+    const auto missing_components = engine.decide_craft("sword", "bow", {carry, tank}, 6, 20.0);
+    require(missing_components.kind == DecisionKind::WAIT,
+            "decision must not craft components that are not in inventory");
+    require(engine.add_component("sword"), "decision test sword accepted");
+    require(engine.add_component("bow"), "decision test bow accepted");
     const auto urgent = engine.decide_craft("sword", "bow", {carry, tank}, 6, 20.0);
     require(urgent.kind == DecisionKind::CRAFT_AND_EQUIP,
             "useful craft under pressure should be considered");
