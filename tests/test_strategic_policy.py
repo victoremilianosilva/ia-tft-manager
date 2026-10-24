@@ -4,7 +4,7 @@ import torch
 from policy import TFTPolicy
 
 
-ACTION_DIMS = [7, 5, 9, 28, 28, 28]
+ACTION_DIMS = [9, 5, 9, 28, 28, 28]
 
 
 def _make_candidate_scorer_prefer_feature(head, hidden_size, feature_index, sign=1.0):
