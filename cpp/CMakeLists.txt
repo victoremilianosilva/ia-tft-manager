@@ -532,6 +532,13 @@ if(BUILD_TESTING)
             "${CMAKE_CURRENT_SOURCE_DIR}/../units_gerado.json"
     )
 
+    add_test(
+        NAME tft_engine_item_actions
+        COMMAND test_tft_engine_pool
+            "${CMAKE_CURRENT_SOURCE_DIR}/../units_gerado.json"
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/items_test_catalog.json"
+    )
+
     # -----------------------------------------------------
     # Integração de combate + teste de estresse anti-loop
     # -----------------------------------------------------
