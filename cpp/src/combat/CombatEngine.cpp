@@ -243,6 +243,20 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 return false;
             }
 
+            if (!std::isfinite(unit.hp) ||
+                !std::isfinite(unit.max_hp) || unit.max_hp <= 0.0f ||
+                unit.hp <= 0.0f || unit.hp > unit.max_hp ||
+                !std::isfinite(unit.attack_speed) || unit.attack_speed <= 0.0f ||
+                !std::isfinite(unit.attack_damage) || unit.attack_damage < 0.0f ||
+                !std::isfinite(unit.attack_range) || unit.attack_range < 0.0f ||
+                !std::isfinite(unit.armor) ||
+                !std::isfinite(unit.critical_strike_chance) ||
+                !std::isfinite(unit.critical_strike_damage)) {
+                set_error(result, "INVALID_UNIT_ATTRIBUTES",
+                          "Atributos numericos invalidos.");
+                return false;
+            }
+
             CombatUnit effective_unit = unit;
             std::string item_error;
             if (!apply_item_stats(effective_unit, item_error)) {
