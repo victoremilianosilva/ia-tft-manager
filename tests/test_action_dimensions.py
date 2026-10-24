@@ -21,7 +21,7 @@ def test_policy_heads_match_action_dimensions():
     assert policy.shop_head[-1].out_features == 1
     assert policy.shop_head[0].in_features == 32 + 9 + 8
     assert policy.sell_head[-1].out_features == 1
-    assert policy.sell_head[0].in_features == 32 + 7 + 8
+    assert policy.sell_head[0].in_features == 32 + 9 + 8
     assert policy.bench_head.out_features == 9
     assert policy.bench_to_board_head.out_features == 28
     assert policy.board_source_head.out_features == 28
