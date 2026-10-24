@@ -536,7 +536,11 @@ class Trainer:
         Retorna um dicionário:
 
             {
-                "type_mask":        (agents, 7),
+                "type_mask":        (agents, 9),
+                "item_inventory_mask": (agents, 9),
+                "item_component_first_mask": (agents, 9),
+                "item_component_pair_masks": (agents, 9, 9),
+                "item_target_mask": (agents, 37),
                 "shop_mask":        (agents, 5),
                 ...
             }
