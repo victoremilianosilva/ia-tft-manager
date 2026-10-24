@@ -37,8 +37,8 @@ def create_test_batch():
             batch_size, 9, 28, dtype=torch.bool
         ),
         "item_inventory_mask": torch.zeros(batch_size, 9, dtype=torch.bool),
-        "item_component_first_mask": torch.zeros(batch_size, 9, dtype=torch.bool),
-        "item_component_pair_masks": torch.zeros(batch_size, 9, 9, dtype=torch.bool),
+        "item_component_first_mask": torch.zeros(batch_size, 10, dtype=torch.bool),
+        "item_component_pair_masks": torch.zeros(batch_size, 10, 10, dtype=torch.bool),
         "item_target_mask": torch.zeros(batch_size, 37, dtype=torch.bool),
     }
 
