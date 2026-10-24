@@ -632,3 +632,34 @@ def test_evaluate_actions_rejects_masked_action():
 
     with pytest.raises(ValueError, match="shop_slot"):
         policy.evaluate_actions(obs, actions, masks)
+
+def test_trainer_preserves_sampled_item_arguments_for_native_adapter():
+    # Exercise the production action encoder without constructing environments.
+    trainer = object.__new__(Trainer)
+    trainer.num_envs = 1
+    actions = torch.zeros((8, Trainer.ACTION_DIM), dtype=torch.long)
+    actions[0] = torch.tensor([7, 4, 36, 0, 0, 0])
+    actions[1] = torch.tensor([8, 9, 3, 35, 0, 0])
+    actions[2] = torch.tensor([0, 2, 6, 17, 9, 11])
+
+    encoded = trainer._actions_to_lobby_format(actions)
+
+    assert encoded[0][0] == {
+        "type": 7,
+        "item_slot": 4,
+        "item_target": 36,
+    }
+    assert encoded[0][1] == {
+        "type": 8,
+        "component_first": 9,
+        "component_second": 3,
+        "item_target": 35,
+    }
+    assert encoded[0][2] == {
+        "type": 0,
+        "shop_slot": 2,
+        "bench_slot": 6,
+        "board_target": 17,
+        "board_source": 9,
+        "board_move_target": 11,
+    }
