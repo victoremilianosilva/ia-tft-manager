@@ -147,6 +147,14 @@ int main() {
     }
     require_close(pass_opportunity_penalty(50, 20.0, 6, false),
                   0.0, "must not force spending when the shop has no useful offer");
+    require_close(reroll_quality_reward(8.0, 8.0), 0.0,
+                  "reroll with no quality improvement receives no reward");
+    if (!(reroll_quality_reward(2.0, 10.0) > 0.0)) {
+        throw std::runtime_error("reroll that reveals a much better offer should be rewarded");
+    }
+    if (!(reroll_quality_reward(10.0, 2.0) < 0.0)) {
+        throw std::runtime_error("reroll that destroys a strong shop option should be discouraged");
+    }
     if (!(sale_quality(0.0, false, true, true) < 0.0)) {
         throw std::runtime_error("selling a pair copy must remain unattractive even when it frees bench space");
     }
