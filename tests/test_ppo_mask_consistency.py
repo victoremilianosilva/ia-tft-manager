@@ -36,7 +36,7 @@ def create_test_batch():
         "bench_to_board_target_masks": torch.zeros(
             batch_size, 9, 28, dtype=torch.bool
         ),
-        "item_inventory_mask": torch.zeros(batch_size, 5, dtype=torch.bool),
+        "item_inventory_mask": torch.zeros(batch_size, 9, dtype=torch.bool),
         "item_component_first_mask": torch.zeros(batch_size, 9, dtype=torch.bool),
         "item_component_pair_masks": torch.zeros(batch_size, 9, 9, dtype=torch.bool),
         "item_target_mask": torch.zeros(batch_size, 37, dtype=torch.bool),
