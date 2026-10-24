@@ -138,6 +138,21 @@ int main() {
             transfer_decision.target_unit_uuid == "carry-1",
             "transfer decision should identify source and destination units");
 
+    const auto applied_transfer = transfer_engine.apply_decision(
+        transfer_decision, {carry, tank});
+    require(applied_transfer.success && applied_transfer.reward > 0.0,
+            "applying a beneficial item decision should succeed and reward marginal gain");
+    require(transfer_engine.equipped("carry-1").size() == 1 &&
+            transfer_engine.equipped("tank-1").empty(),
+            "applied transfer decision should mutate equipment exactly once");
+
+    ItemDecision stale_transfer = transfer_decision;
+    const auto rejected_transfer = transfer_engine.apply_decision(
+        stale_transfer, {carry, tank});
+    require(!rejected_transfer.success && rejected_transfer.reward == 0.0,
+            "stale transfer decisions must be rejected without reward");
+
+
     const auto missing_components = engine.decide_craft("sword", "bow", {carry, tank}, 6, 20.0);
     require(missing_components.kind == DecisionKind::WAIT,
             "decision must not craft components that are not in inventory");
