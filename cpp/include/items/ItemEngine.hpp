@@ -14,6 +14,8 @@
 #include <utility>
 #include <vector>
 
+#include "items/ItemActionContract.hpp"
+
 namespace tft::items {
 
 // Data-driven: recipes and stats come from the active set's catalog. The engine
@@ -54,36 +56,6 @@ struct UnitProfile {
     double magic_resist{0.0};
     double composition_fit{0.0}; // normalized [0,1]
 };
-
-enum class DecisionKind : std::uint8_t {
-    WAIT,
-    EQUIP_FROM_INVENTORY,
-    CRAFT_AND_EQUIP
-};
-
-struct ItemDecision {
-    DecisionKind kind{DecisionKind::WAIT};
-    std::string item_id;
-    std::string target_unit_uuid;
-    std::string first_component;
-    std::string second_component;
-    double immediate_value{0.0};
-    double future_value{0.0};
-    double urgency{0.0};
-    double total_value{0.0};
-};
-
-// Bounded reward shaping for RL integration. Reward marginal value, not the
-// mechanical act of crafting/equipping; preserve components when waiting has
-// more expected value and do not reward no-op item actions.
-inline double item_action_reward(double immediate_gain, double future_value,
-                                double urgency) noexcept {
-    const double urgent = std::clamp(urgency, 0.0, 1.0);
-    const double gain = std::clamp(immediate_gain, -5.0, 5.0);
-    const double future = std::clamp(future_value, 0.0, 5.0);
-    return std::clamp(gain * (0.65 + 0.35 * urgent) -
-                      future * (1.0 - urgent), -1.0, 1.0);
-}
 
 struct ItemActionResult {
     bool success{false};
@@ -262,113 +234,16 @@ public:
             0.25 * std::clamp(unit.composition_fit, 0.0, 1.0);
     }
 
-    // Keep/wait is a first-class option. Spend a component only when the
-    // immediate gain exceeds the estimated future value after urgency weighting.
-    [[nodiscard]] ItemDecision decide_craft(
-        const std::string& first, const std::string& second,
-        const std::vector<UnitProfile>& candidates, int stage, double hp) const {
-        ItemDecision best;
-        best.kind = DecisionKind::WAIT;
-        best.total_value = 0.0;
-        const auto count_component = [this](const std::string& id) {
-            return static_cast<std::size_t>(std::count(
-                components_.begin(), components_.end(), id));
-        };
-        if (first.empty() || second.empty() ||
-            (first == second && count_component(first) < 2U) ||
-            (first != second &&
-             (count_component(first) == 0U || count_component(second) == 0U))) {
-            return best;
-        }
-        const auto item_id = craftable_item(first, second);
-        if (!item_id) return best;
-        const auto* item = find(*item_id);
-        if (!item) return best;
-        const double urgency = std::max(
-            std::clamp((65.0 - hp) / 65.0, 0.0, 1.0),
-            std::clamp((static_cast<double>(stage) - 2.0) / 6.0, 0.0, 1.0));
-        for (const auto& candidate : candidates) {
-            if (candidate.uuid.empty() ||
-                equipped(candidate.uuid).size() >= kMaxItemsPerUnit) continue;
-            const double fit = item_fit(*item_id, candidate);
-            const double future = 0.15 + 0.35 * std::clamp(candidate.composition_fit, 0.0, 1.0);
-            const double immediate = fit * (0.65 + 0.35 * urgency);
-            const double value = immediate + urgency * 0.25 - future * (1.0 - urgency);
-            if (value > best.total_value) {
-                best.kind = DecisionKind::CRAFT_AND_EQUIP;
-                best.item_id = *item_id;
-                best.target_unit_uuid = candidate.uuid;
-                best.first_component = first;
-                best.second_component = second;
-                best.immediate_value = immediate;
-                best.future_value = future;
-                best.urgency = urgency;
-                best.total_value = value;
-            }
-        }
-        return best;
-    }
-
-    // Compare all supported item decisions against WAIT. This method considers
-    // every craftable pair and inventory equip; equipped items stay on their unit.
-    [[nodiscard]] ItemDecision decide_best_action(
-        const std::vector<UnitProfile>& candidates, int stage, double hp) const {
-        ItemDecision best;
-        best.kind = DecisionKind::WAIT;
-        best.total_value = 0.0;
-        const double urgency = std::max(
-            std::clamp((65.0 - hp) / 65.0, 0.0, 1.0),
-            std::clamp((static_cast<double>(stage) - 2.0) / 6.0, 0.0, 1.0));
-
-        const auto consider = [&best](const ItemDecision& candidate) {
-            if (candidate.kind != DecisionKind::WAIT &&
-                candidate.total_value > best.total_value) {
-                best = candidate;
-            }
-        };
-
-        // Do not greedily consume the first available pair: score all pairs.
-        for (std::size_t i = 0; i < components_.size(); ++i) {
-            for (std::size_t j = i + 1; j < components_.size(); ++j) {
-                consider(decide_craft(
-                    components_[i], components_[j], candidates, stage, hp));
-            }
-        }
-
-        // Crafted items already in inventory have no additional component
-        // opportunity cost, but still need a free slot and a useful holder.
-        for (const auto& item_id : inventory_) {
-            for (const auto& target : candidates) {
-                if (target.uuid.empty() ||
-                    equipped(target.uuid).size() >= kMaxItemsPerUnit) continue;
-                const double fit = item_fit(item_id, target);
-                const double value = fit * (0.65 + 0.35 * urgency);
-                if (value > best.total_value) {
-                    ItemDecision decision;
-                    decision.kind = DecisionKind::EQUIP_FROM_INVENTORY;
-                    decision.item_id = item_id;
-                    decision.target_unit_uuid = target.uuid;
-                    decision.immediate_value = fit;
-                    decision.urgency = urgency;
-                    decision.total_value = value;
-                    best = std::move(decision);
-                }
-            }
-        }
-
-        return best;
-    }
-
-
-    // Execute a previously scored decision through the same validated state
-    // transitions used by the inventory API. Invalid/stale decisions are
-    // rejected without granting reward; WAIT is a valid zero-reward action.
-    [[nodiscard]] ItemActionResult apply_decision(
-        const ItemDecision& decision,
+    // Execute an item action selected by the main policy. There is no
+    // item-specific WAIT or parallel heuristic action selector.
+    [[nodiscard]] ItemActionResult apply_action(
+        const ItemActionCommand& command,
         const std::vector<UnitProfile>& candidates) {
-        if (decision.kind == DecisionKind::WAIT) {
-            return {true, 0.0, {}};
-        }
+        const auto reject = [this](const char* reason) {
+            ++metrics_.invalid_actions;
+            return ItemActionResult{false, 0.0, reason};
+        };
+        if (!command.operation) return reject("missing_item_operation");
 
         const auto find_unit = [&candidates](const std::string& uuid)
             -> const UnitProfile* {
@@ -376,58 +251,57 @@ public:
                 [&uuid](const UnitProfile& unit) { return unit.uuid == uuid; });
             return it == candidates.end() ? nullptr : &*it;
         };
-        const auto reject = [](const char* reason) {
-            return ItemActionResult{false, 0.0, reason};
-        };
+        const auto* target = find_unit(command.target_unit_uuid);
+        if (!target || target->uuid.empty())
+            return reject("invalid_item_target");
+        if (equipped(target->uuid).size() >= kMaxItemsPerUnit)
+            return reject("target_item_capacity_reached");
 
-        bool applied = false;
-        switch (decision.kind) {
-            case DecisionKind::EQUIP_FROM_INVENTORY: {
-                const auto* target = find_unit(decision.target_unit_uuid);
-                if (!target || !has_item(decision.item_id) ||
-                    equipped(target->uuid).size() >= kMaxItemsPerUnit ||
-                    !find(decision.item_id)) {
-                    ++metrics_.invalid_actions;
-                    return reject("stale_or_invalid_equip_decision");
-                }
-                applied = equip(decision.item_id, *target);
-                break;
-            }
-            case DecisionKind::CRAFT_AND_EQUIP: {
-                const auto* target = find_unit(decision.target_unit_uuid);
-                const auto recipe = craftable_item(
-                    decision.first_component, decision.second_component);
-                const auto count_component = [this](const std::string& id) {
-                    return static_cast<std::size_t>(std::count(
-                        components_.begin(), components_.end(), id));
-                };
-                const bool components_available =
-                    decision.first_component == decision.second_component
-                    ? count_component(decision.first_component) >= 2U
-                    : count_component(decision.first_component) >= 1U &&
-                      count_component(decision.second_component) >= 1U;
-                if (!target || !recipe || *recipe != decision.item_id ||
-                    !components_available ||
-                    equipped(target->uuid).size() >= kMaxItemsPerUnit) {
-                    ++metrics_.invalid_actions;
-                    return reject("stale_or_invalid_craft_decision");
-                }
-                const auto crafted = craft(
-                    decision.first_component, decision.second_component);
-                applied = crafted && *crafted == decision.item_id &&
-                    equip(decision.item_id, *target);
-                break;
-            }
-            case DecisionKind::WAIT:
-                return {true, 0.0, {}};
+        if (*command.operation == ItemOperation::EQUIP_FROM_INVENTORY) {
+            if (!find(command.item_id) || !has_item(command.item_id))
+                return reject("item_not_available_in_inventory");
+            if (!equip(command.item_id, *target))
+                return reject("equip_transition_failed");
+            return {true, 0.0, {}};
         }
 
-        if (!applied) {
-            return reject("item_state_transition_failed");
+        if (*command.operation == ItemOperation::CRAFT_AND_EQUIP) {
+            if (command.first_component_id.empty() ||
+                command.second_component_id.empty())
+                return reject("missing_recipe_components");
+            const auto recipe = craftable_item(
+                command.first_component_id, command.second_component_id);
+            if (!recipe || !find(*recipe))
+                return reject("unknown_item_recipe");
+
+            const auto count_component = [this](const std::string& id) {
+                return static_cast<std::size_t>(std::count(
+                    components_.begin(), components_.end(), id));
+            };
+            const bool components_available =
+                command.first_component_id == command.second_component_id
+                ? count_component(command.first_component_id) >= 2U
+                : count_component(command.first_component_id) >= 1U &&
+                  count_component(command.second_component_id) >= 1U;
+            if (!components_available)
+                return reject("recipe_components_unavailable");
+
+            const auto crafted = craft(
+                command.first_component_id, command.second_component_id);
+            if (!crafted || *crafted != *recipe)
+                return reject("craft_transition_failed");
+            if (!equip(*crafted, *target)) {
+                // Defensive rollback: crafting and equipping is one action.
+                const auto item = std::find(inventory_.begin(), inventory_.end(), *crafted);
+                if (item != inventory_.end()) inventory_.erase(item);
+                components_.push_back(command.first_component_id);
+                components_.push_back(command.second_component_id);
+                ++metrics_.invalid_actions;
+                return {false, 0.0, "equip_transition_failed_rolled_back"};
+            }
+            return {true, 0.0, {}};
         }
-        return {true, item_action_reward(
-            decision.immediate_value, decision.future_value,
-            decision.urgency), {}};
+        return reject("unsupported_item_operation");
     }
 
 private:
