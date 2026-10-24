@@ -2217,7 +2217,6 @@ struct TFTEngine::Impl {
                     ? profile.magic_resist
                     : stats.magic_resist);
 
-            // Equipment follows the individual unit UUID into combat.
             unit.items = instance.items;
 
             unit.alive = true;

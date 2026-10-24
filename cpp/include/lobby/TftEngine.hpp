@@ -137,7 +137,7 @@ struct UnitInstance {
     // ⭐ Estado mutável da unidade.
     std::int32_t star{1};
 
-    // Equipment belongs to this specific unit copy, not the champion definition.
+    // Equipment follows the individual copy, not the champion definition.
     std::vector<CombatItem> items;
 
     // Retorna se a instância possui uma referência válida.
