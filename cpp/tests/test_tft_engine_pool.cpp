@@ -662,7 +662,13 @@ int main(int argc, char** argv) {
             const auto starter = std::find_if(
                 catalog.all().begin(), catalog.all().end(),
                 [&](const auto& champion) {
-                    return champion.internal_id != target->internal_id;
+                    if (champion.internal_id == target->internal_id) return false;
+                    return std::none_of(
+                        champion.traits.begin(), champion.traits.end(),
+                        [&](const auto& trait) {
+                            return std::find(target->traits.begin(), target->traits.end(), trait)
+                                != target->traits.end();
+                        });
                 });
             require(starter != catalog.all().end(),
                     "Catalogo nao possui unidade alternativa para fixture.");
