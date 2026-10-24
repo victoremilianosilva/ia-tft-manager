@@ -47,6 +47,19 @@ The typed command in `cpp/include/items/ItemActionContract.hpp` uses catalog IDs
 | TRANSFER | item ID, source unit UUID, target unit UUID |
 | UNEQUIP_TO_INVENTORY | item ID, source unit UUID |
 
+## Dependency audit findings (from `main`)
+
+The dependency map has now been checked against the actual source:
+
+- C++ `ActionType` is fixed at seven values in `cpp/include/decision/DecisionTypes.hpp`; its numeric values are guarded by static assertions. The native `PlayerActionMasks::type_mask` and Python `Trainer.MASK_SHAPES["type_mask"]` also have length seven.
+- `trainer.py` defines `ACTION_DIMS` as a fixed list and constructs `TFTPolicy` from it. It also allocates action-type metrics with length seven.
+- `policy.py` rejects dimensions other than `[7, 5, 9, 28, 28, 28]`. Its candidate-observation tail calculation currently derives candidate-feature length from `action_dims[1]` and `action_dims[2]`. Therefore, simply enlarging the item argument dimensions would also corrupt observation-tail interpretation unless that coupling is removed and separately tested.
+- `load_compatible_state_dict()` migrates supported observation-layout changes. It does not currently provide a general migration for changed action-head shapes or PPO optimizer state. Action-head migration must be implemented explicitly if the item action space expands.
+- `CppTFTLobbyWrapper`, the pybind `step()`, and `PlayerAction::values` all enforce exactly six action components.
+- The repository tree has no active-set item catalog JSON. `docs/item-catalog-schema.md` explicitly requires an externally sourced, normalized catalog. The constructor currently accepts the champion catalog path, not a separate item catalog path.
+
+This rules out a naive increase of the existing categorical dimensions: it would affect candidate-feature parsing, all mask shapes, checkpoint loading, and the optimizer. The item action adapter needs a clearly separated policy argument contract, while keeping one `TFTPolicy` and one PPO training path.
+
 ## Policy action-vector decision is intentionally gated
 
 Do **not** assume the rejected PR #85's proposed seven-dimension contract. Before selecting the categorical dimensions/capacities, Phase 1 must inspect and record:
