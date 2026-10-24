@@ -89,6 +89,12 @@ inline double item_action_reward(double immediate_gain, double future_value,
                       future * (1.0 - urgent) + transfer, -1.0, 1.0);
 }
 
+struct ItemActionResult {
+    bool success{false};
+    double reward{0.0};
+    std::string reason;
+};
+
 struct ItemMetrics {
     std::uint64_t components_collected{0};
     std::uint64_t crafts{0};
@@ -433,6 +439,105 @@ public:
             }
         }
         return best;
+    }
+
+
+    // Execute a previously scored decision through the same validated state
+    // transitions used by the inventory API. Invalid/stale decisions are
+    // rejected without granting reward; WAIT is a valid zero-reward action.
+    [[nodiscard]] ItemActionResult apply_decision(
+        const ItemDecision& decision,
+        const std::vector<UnitProfile>& candidates) {
+        if (decision.kind == DecisionKind::WAIT) {
+            return {true, 0.0, {}};
+        }
+
+        const auto find_unit = [&candidates](const std::string& uuid)
+            -> const UnitProfile* {
+            const auto it = std::find_if(candidates.begin(), candidates.end(),
+                [&uuid](const UnitProfile& unit) { return unit.uuid == uuid; });
+            return it == candidates.end() ? nullptr : &*it;
+        };
+        const auto reject = [](const char* reason) {
+            return ItemActionResult{false, 0.0, reason};
+        };
+
+        bool applied = false;
+        double transfer_delta = 0.0;
+        switch (decision.kind) {
+            case DecisionKind::EQUIP_FROM_INVENTORY: {
+                const auto* target = find_unit(decision.target_unit_uuid);
+                if (!target || !has_item(decision.item_id) ||
+                    equipped(target->uuid).size() >= kMaxItemsPerUnit ||
+                    !find(decision.item_id)) {
+                    ++metrics_.invalid_actions;
+                    return reject("stale_or_invalid_equip_decision");
+                }
+                applied = equip(decision.item_id, *target);
+                break;
+            }
+            case DecisionKind::CRAFT_AND_EQUIP: {
+                const auto* target = find_unit(decision.target_unit_uuid);
+                const auto recipe = craftable_item(
+                    decision.first_component, decision.second_component);
+                const auto count_component = [this](const std::string& id) {
+                    return static_cast<std::size_t>(std::count(
+                        components_.begin(), components_.end(), id));
+                };
+                const bool components_available =
+                    decision.first_component == decision.second_component
+                    ? count_component(decision.first_component) >= 2U
+                    : count_component(decision.first_component) >= 1U &&
+                      count_component(decision.second_component) >= 1U;
+                if (!target || !recipe || *recipe != decision.item_id ||
+                    !components_available ||
+                    equipped(target->uuid).size() >= kMaxItemsPerUnit) {
+                    ++metrics_.invalid_actions;
+                    return reject("stale_or_invalid_craft_decision");
+                }
+                const auto crafted = craft(
+                    decision.first_component, decision.second_component);
+                applied = crafted && *crafted == decision.item_id &&
+                    equip(decision.item_id, *target);
+                break;
+            }
+            case DecisionKind::TRANSFER: {
+                const auto* source = find_unit(decision.source_unit_uuid);
+                const auto* target = find_unit(decision.target_unit_uuid);
+                if (!source || !target || source->uuid == target->uuid ||
+                    equipped(target->uuid).size() >= kMaxItemsPerUnit ||
+                    !find(decision.item_id)) {
+                    ++metrics_.invalid_actions;
+                    return reject("stale_or_invalid_transfer_decision");
+                }
+                const auto& source_items = equipped(source->uuid);
+                if (std::find(source_items.begin(), source_items.end(),
+                              decision.item_id) == source_items.end()) {
+                    ++metrics_.invalid_actions;
+                    return reject("transfer_item_not_on_source");
+                }
+                transfer_delta = item_fit(decision.item_id, *target) -
+                    item_fit(decision.item_id, *source);
+                if (transfer_delta <= 0.10) {
+                    ++metrics_.invalid_actions;
+                    return reject("transfer_has_no_material_marginal_gain");
+                }
+                applied = transfer(decision.item_id, source->uuid, *target);
+                break;
+            }
+            case DecisionKind::UNEQUIP_TO_INVENTORY:
+                applied = unequip(decision.item_id, decision.source_unit_uuid);
+                break;
+            case DecisionKind::WAIT:
+                return {true, 0.0, {}};
+        }
+
+        if (!applied) {
+            return reject("item_state_transition_failed");
+        }
+        return {true, item_action_reward(
+            decision.immediate_value, decision.future_value,
+            decision.urgency, transfer_delta), {}};
     }
 
 private:
