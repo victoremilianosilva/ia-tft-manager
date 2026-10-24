@@ -2,7 +2,7 @@
 import json
 
 from viewer.player_logs import PlayerJsonLogWriter
-from audit_viewer_match import audit_economic_actions
+from scripts.audit_viewer_match import audit_economic_actions
 
 
 def _unit(occupied=False, **overrides):

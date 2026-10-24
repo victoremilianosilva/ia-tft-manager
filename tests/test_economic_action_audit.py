@@ -1,4 +1,4 @@
-from audit_viewer_match import audit_economic_actions
+from scripts.audit_viewer_match import audit_economic_actions
 
 
 def _entry(sequence, action, diagnostics, gold, power=10.0, stage=2):

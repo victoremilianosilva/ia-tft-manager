@@ -1,4 +1,4 @@
-from audit_viewer_match import audit_composition_direction_changes
+from scripts.audit_viewer_match import audit_composition_direction_changes
 
 
 def test_composition_direction_audit_measures_gain_and_no_gain():

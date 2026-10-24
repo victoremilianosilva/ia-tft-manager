@@ -1,0 +1,1027 @@
+==========================================================
+TFT AI LOG · JOGADOR 4
+Partida: 9f648e49-3846-494a-b020-90281bdeaac8
+Seed: 20261016 | Política: determinística
+Checkpoint SHA-256: fbf38bed73bdb758075dd9185deb89adac8ca142ec394ad077f8101c2fc67c9d
+Impacto (i): custo × estrelas × 2 (contribuição nativa da engine)
+==========================================================
+--- INÍCIO DA PARTIDA · JOGADOR 4 ---
+[19:30:19] VENDEU: Twisted Fate (i:2.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: — | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: —
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: — | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=— -> — | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=0.00 | nenhum trait de foco
+[19:30:20] COMPROU: Briar (Custo 1 | i:2.0) | Rew: +0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Briar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.33, Primordian 3.33, Rogue 3.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Briar | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=— -> TFT17_Briar | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Briar | core=não | fit=0.00 | nenhum trait de foco
+[19:30:20] VENDEU: Briar (i:2.0)        | Rew: -0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: — | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.33, Primordian 3.33, Rogue 3.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: — | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Briar -> — | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Briar | core=SIM | fit=10.00 | Anima=3.33, Primordian=3.33, Rogue=3.33
+[19:30:21] COMPROU: Caitlyn (Custo 1 | i:2.0) | Rew: +0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Caitlyn | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.29, Primordian 3.29, Rogue 3.29, Fateweaver 0.07, N.O.V.A. 0.07
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Caitlyn | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=— -> TFT17_Caitlyn | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Caitlyn | core=não | fit=0.00 | nenhum trait de foco
+[19:30:22] VENDEU: Caitlyn (i:2.0)      | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: — | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.29, Primordian 3.29, Rogue 3.29, Fateweaver 0.07, N.O.V.A. 0.07
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: — | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Caitlyn -> — | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Caitlyn | core=SIM | fit=0.14 | N.O.V.A.=0.07, Fateweaver=0.07
+[19:30:22] COMPROU: Caitlyn (Custo 1 | i:2.0) | Rew: +0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Caitlyn | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.24, Primordian 3.24, Rogue 3.24, Fateweaver 0.14, N.O.V.A. 0.14
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Caitlyn | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=— -> TFT17_Caitlyn | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Caitlyn | core=não | fit=0.14 | N.O.V.A.=0.07, Fateweaver=0.07
+[19:30:23] VENDEU: Caitlyn (i:2.0)      | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: — | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.24, Primordian 3.24, Rogue 3.24, Fateweaver 0.14, N.O.V.A. 0.14
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: — | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Caitlyn -> — | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Caitlyn | core=SIM | fit=0.29 | N.O.V.A.=0.14, Fateweaver=0.14
+[19:30:24] COMPROU: Aatrox (Custo 1 | i:2.0) | Rew: +0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aatrox | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.21, Primordian 3.21, Rogue 3.21, N.O.V.A. 0.22, Fateweaver 0.14
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aatrox | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=— -> TFT17_Aatrox | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Aatrox | core=não | fit=0.14 | N.O.V.A.=0.14
+[19:30:25] MOVE Bench -> Board: Aatrox (i:2.0) <-> Vazio | Rew: +0.24
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aatrox | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.20, Primordian 3.20, Rogue 3.20, N.O.V.A. 0.25, Fateweaver 0.14
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aatrox | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aatrox -> TFT17_Aatrox | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Aatrox | core=SIM | fit=0.22 | N.O.V.A.=0.22
+
+[19:30:25] --- FIM DO ROUND 1-1 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aatrox | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.18, Primordian 3.18, Rogue 3.18, N.O.V.A. 0.31, Fateweaver 0.14
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:30:25] 🛒 LOJA: Rek'Sai(i:2.0), Poppy(i:2.0), Nasus(i:2.0), Teemo(i:2.0), Caitlyn(i:2.0)
+[19:30:26] COMPROU: Poppy (Custo 1 | i:2.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Aatrox | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.17, Primordian 3.17, Rogue 3.17, N.O.V.A. 0.35, Fateweaver 0.14
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Aatrox, TFT17_Poppy | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aatrox -> TFT17_Aatrox | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=0.00 | nenhum trait de foco
+[19:30:27] MOVE Bench -> Board: Poppy (i:2.0) <-> Vazio | Rew: +0.38
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.13, Primordian 3.13, Rogue 3.13, N.O.V.A. 0.38, Bastion 0.22
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_Aatrox | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Aatrox -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=0.00 | nenhum trait de foco
+[19:30:27] COMPROU: Teemo (Custo 1 | i:2.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 3.06, Primordian 3.06, Rogue 3.06, Bastion 0.43, N.O.V.A. 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_Aatrox, TFT17_Teemo | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=não | fit=0.00 | nenhum trait de foco
+[19:30:28] MOVE Bench -> Board: Teemo (i:2.0) <-> Vazio | Rew: -0.23
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 2.98, Primordian 2.98, Rogue 2.98, Bastion 0.64, N.O.V.A. 0.42
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_Teemo, TFT17_Aatrox | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=SIM | fit=0.00 | nenhum trait de foco
+[19:30:29] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 2.91, Primordian 2.91, Rogue 2.91, Bastion 0.84, N.O.V.A. 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Poppy, TFT17_Teemo, TFT17_Aatrox | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Poppy | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+
+[19:30:32] --- FIM DO ROUND 1-2 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Poppy | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Anima 2.50, Primordian 2.50, Rogue 2.50, Bastion 1.94, N.O.V.A. 0.57
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]  [Tee|C|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:30:32] 🛒 LOJA: Aatrox(i:2.0), Nasus(i:2.0), Pyke(i:4.0), Caitlyn(i:2.0), Bel'Veth(i:4.0)
+[19:30:33] COMPROU: Bel'Veth (Custo 2 | i:4.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Primordian 2.49, Anima 2.42, Rogue 2.42, Bastion 2.09, N.O.V.A. 0.59
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Poppy, TFT17_Teemo | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Poppy -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=não | fit=2.50 | Primordian=2.50
+[19:30:34] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Poppy (i:2.0) | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Primordian 2.48, Anima 2.38, Rogue 2.38, Bastion 2.16, N.O.V.A. 0.61
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Teemo, TFT17_Aatrox | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=2.49 | Primordian=2.49
+[19:30:34] MOVE Bench -> Board: Poppy (i:2.0) <-> Teemo (i:2.0) | Rew: +0.11
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Primordian 2.44, Bastion 2.31, Anima 2.31, Rogue 2.31, N.O.V.A. 0.63
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Poppy, TFT17_Aatrox | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=2.16 | Bastion=2.16
+[19:30:35] VENDEU: Teemo (i:2.0)        | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.46, Primordian 2.41, Anima 2.24, Rogue 2.24, N.O.V.A. 0.64
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Poppy, TFT17_Aatrox | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=não | fit=0.00 | nenhum trait de foco
+[19:30:36] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 2.61, Primordian 2.37, Anima 2.18, Rogue 2.18, N.O.V.A. 0.66
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Poppy, TFT17_Aatrox | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+
+[19:30:39] --- FIM DO ROUND 1-3 | GOLD: 4 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.40, Primordian 2.18, Anima 1.84, Rogue 1.84, N.O.V.A. 0.74
+    RENDA PRÓXIMO ROUND: +3 base, +0 juros, +0 sequência, +0 vitória (total: +3)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Bel|T|1*|i:4.0]  [Pop|T|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Aat|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:30:39] 🛒 LOJA: Briar(i:2.0), Rek'Sai(i:2.0), Meepsie(i:4.0), Poppy(i:2.0), Briar(i:2.0)
+[19:30:40] MOVE Board -> Board: Aatrox (i:2.0) <-> Vazio | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.52, Primordian 2.16, Anima 1.79, Rogue 1.79, N.O.V.A. 0.75
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Poppy, TFT17_Aatrox | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Aatrox | core=SIM | fit=4.14 | N.O.V.A.=0.74, Bastion=3.40
+[19:30:41] MOVE Board -> Board: Poppy (i:2.0) <-> Aatrox (i:2.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.64, Primordian 2.13, Anima 1.74, Rogue 1.74, N.O.V.A. 0.76
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Aatrox, TFT17_Poppy | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=SIM | fit=3.52 | Bastion=3.52
+[19:30:41] MOVE Board -> Board: Aatrox (i:2.0) <-> Vazio | Rew: -0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.75, Primordian 2.10, Anima 1.69, Rogue 1.69, N.O.V.A. 0.77
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Aatrox, TFT17_Poppy | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Aatrox | core=SIM | fit=4.40 | N.O.V.A.=0.76, Bastion=3.64
+[19:30:42] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 3.86, Primordian 2.08, Anima 1.64, Rogue 1.64, N.O.V.A. 0.79
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Aatrox, TFT17_Poppy | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +3 | juros +0 | sequência +0 | vitória +0
+
+[19:30:46] --- FIM DO ROUND 1-4 | GOLD: 8 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.55, Primordian 1.91, Anima 1.34, Rogue 1.34, N.O.V.A. 0.86
+    RENDA PRÓXIMO ROUND: +4 base, +0 juros, +0 sequência, +0 vitória (total: +4)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]        [Bel|T|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:30:46] 🛒 LOJA: Teemo(i:2.0), Rek'Sai(i:2.0), Pyke(i:4.0), Cho'Gath(i:2.0), Pyke(i:4.0)
+[19:30:47] COMPROU: Teemo (Custo 1 | i:2.0) | Rew: -0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.63, Primordian 1.89, Anima 1.30, Rogue 1.30, N.O.V.A. 0.87
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Aatrox, TFT17_Poppy | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=não | fit=0.00 | nenhum trait de foco
+[19:30:48] VENDEU: Teemo (i:2.0)        | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.72, Primordian 1.87, Anima 1.27, Rogue 1.27, N.O.V.A. 0.87
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Aatrox, TFT17_Poppy | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 8 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Teemo | core=não | fit=0.00 | nenhum trait de foco
+[19:30:48] COMPROU: Pyke (Custo 2 | i:4.0) | Rew: -0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.80, Primordian 1.85, Anima 1.23, Rogue 1.23, N.O.V.A. 0.88
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Pyke, TFT17_Aatrox | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 6 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pyke | core=não | fit=0.00 | nenhum trait de foco
+[19:30:49] MOVE Bench -> Board: Pyke (i:4.0) <-> Vazio | Rew: +0.50
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.88, Primordian 1.83, Anima 1.20, Rogue 1.20, N.O.V.A. 0.89
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Pyke, TFT17_Aatrox | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 6 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pyke | core=SIM | fit=0.00 | nenhum trait de foco
+[19:30:50] COMPROU: Pyke (Custo 2 | i:4.0) | Rew: +0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.96, Primordian 1.81, Anima 1.16, Rogue 1.16, N.O.V.A. 0.90
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Pyke, TFT17_Aatrox | CORE TRAITS: Bastion, Psionic, Voyager
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pyke | core=SIM | fit=0.00 | nenhum trait de foco
+[19:30:51] MOVE Bench -> Board: Pyke (i:4.0) <-> Pyke (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.04, Primordian 1.80, Anima 1.13, Rogue 1.13, N.O.V.A. 0.91
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Pyke, TFT17_Aatrox | CORE TRAITS: Bastion, Psionic, Voyager
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pyke | core=SIM | fit=0.00 | nenhum trait de foco
+[19:30:51] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.11, Primordian 1.78, Anima 1.10, Rogue 1.10, N.O.V.A. 0.91
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Pyke, TFT17_Aatrox | CORE TRAITS: Bastion, Psionic, Voyager
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+[19:30:52] VENDEU: Pyke (i:4.0)         | Rew: -0.18
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.18, Primordian 1.76, Anima 1.07, Rogue 1.07, N.O.V.A. 0.92
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Pyke, TFT17_Aatrox | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pyke | core=SIM | fit=0.00 | nenhum trait de foco
+[19:30:53] COMPROU: Rek'Sai (Custo 1 | i:2.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.21, Primordian 1.80, Anima 1.03, Rogue 1.03, N.O.V.A. 0.92
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Pyke, TFT17_Aatrox | CORE TRAITS: Bastion, Primordian
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Rek'Sai | core=não | fit=1.76 | Primordian=1.76
+
+[19:30:53] --- FIM DO ROUND 2-1 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.27, Primordian 1.88, Anima 0.96, Rogue 0.96, N.O.V.A. 0.92
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]        [Bel|T|1*|i:4.0]  [Pyk|F|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+[Rek|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:30:53] 🛒 LOJA: Viktor(i:6.0), Caitlyn(i:2.0), Gnar(i:4.0), Aatrox(i:2.0), Teemo(i:2.0)
+[19:30:54] VENDEU: Rek'Sai (i:2.0)      | Rew: +0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Belveth | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.34, Primordian 1.86, Anima 0.93, Rogue 0.93, N.O.V.A. 0.93
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Belveth, TFT17_Pyke, TFT17_Aatrox | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Belveth | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 8 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Rek'Sai | core=não | fit=1.88 | Primordian=1.88
+[19:30:55] COMPROU: Viktor (Custo 3 | i:6.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.41, Primordian 1.84, N.O.V.A. 0.94, Anima 0.91, Rogue 0.91
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Belveth, TFT17_Pyke | CORE TRAITS: Bastion, Psionic
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Belveth -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Viktor | core=não | fit=0.00 | nenhum trait de foco
+[19:30:55] MOVE Bench -> Board: Viktor (i:6.0) <-> Bel'Veth (i:4.0) | Rew: -0.43
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.45, Primordian 1.86, N.O.V.A. 0.94, Anima 0.88, Rogue 0.88
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Belveth, TFT17_Pyke | CORE TRAITS: Bastion, Psionic
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Viktor | core=SIM | fit=0.00 | nenhum trait de foco
+[19:30:56] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Pyke (i:4.0) | Rew: +0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.51, Primordian 1.84, N.O.V.A. 0.95, Anima 0.85, Rogue 0.85
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Belveth, TFT17_Pyke | CORE TRAITS: Bastion, Psionic
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=1.86 | Primordian=1.86
+[19:30:57] VENDEU: Pyke (i:4.0)         | Rew: -0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.57, Primordian 1.82, N.O.V.A. 0.95, Anima 0.83, Rogue 0.83
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Belveth, TFT17_Aatrox | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Pyke | core=SIM | fit=0.00 | nenhum trait de foco
+[19:30:58] COMPROU: Teemo (Custo 1 | i:2.0) | Rew: -0.25
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.63, Primordian 1.80, N.O.V.A. 0.96, Anima 0.81, Rogue 0.81
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Belveth, TFT17_Aatrox | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 6 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Teemo | core=não | fit=0.00 | nenhum trait de foco
+[19:30:58] VENDEU: Teemo (i:2.0)        | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.69, Primordian 1.78, N.O.V.A. 0.97, Anima 0.78, Rogue 0.78
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Belveth, TFT17_Aatrox | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Teemo | core=não | fit=0.00 | nenhum trait de foco
+[19:30:59] COMPROU: Gnar (Custo 2 | i:4.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.74, Primordian 1.77, N.O.V.A. 0.97, Anima 0.76, Rogue 0.76
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Belveth, TFT17_Gnar | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Gnar | core=não | fit=0.00 | nenhum trait de foco
+[19:31:00] VENDEU: Gnar (i:4.0)         | Rew: -0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.79, Primordian 1.75, N.O.V.A. 0.98, Anima 0.74, Rogue 0.74
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Belveth, TFT17_Aatrox | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Gnar | core=SIM | fit=0.00 | nenhum trait de foco
+
+[19:31:00] --- FIM DO ROUND 2-2 | GOLD: 14 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.90, Primordian 1.72, N.O.V.A. 0.99, Anima 0.70, Rogue 0.70
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]        [Vik|C|1*|i:6.0]  [Bel|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:31:00] 🛒 LOJA: Briar(i:2.0), Cho'Gath(i:2.0), Poppy(i:2.0), Gwen(i:4.0), Caitlyn(i:2.0)
+[19:31:01] BUY XP                       | Rew: +1.51
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.95, Primordian 1.70, N.O.V.A. 0.99, Anima 0.68, Rogue 0.68
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Belveth, TFT17_Aatrox | CORE TRAITS: Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 10 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[19:31:02] COMPROU: Poppy (Custo 1 | i:2.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 6.02, Primordian 1.68, N.O.V.A. 0.99, Anima 0.65, Rogue 0.65
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Belveth, TFT17_Poppy | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 9 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Poppy | core=não | fit=5.95 | Bastion=5.95
+[19:31:02]  ⬆️ SINERGIA: BASTION nível 1
+[19:31:03] MOVE Bench -> Board: Poppy (i:2.0) <-> Viktor (i:6.0) | Rew: +0.23
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 6.08, Primordian 1.66, N.O.V.A. 0.99, Anima 0.63, Rogue 0.63
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Belveth, TFT17_Poppy | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 9 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Poppy | core=SIM | fit=6.02 | Bastion=6.02
+[19:31:03] MOVE Bench -> Board: Viktor (i:6.0) <-> Bel'Veth (i:4.0) | Rew: -0.45
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 6.12, Primordian 1.67, N.O.V.A. 0.99, Anima 0.61, Rogue 0.61
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Belveth, TFT17_Poppy | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 9 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Viktor | core=SIM | fit=0.00 | nenhum trait de foco
+[19:31:04] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Poppy (i:2.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 6.19, Primordian 1.64, N.O.V.A. 0.99, Anima 0.59, Rogue 0.59
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Belveth, TFT17_Poppy | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 9 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=1.67 | Primordian=1.67
+[19:31:05] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 6.25, Primordian 1.62, N.O.V.A. 0.99, Anima 0.57, Rogue 0.57
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Belveth, TFT17_Poppy | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 9 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[19:31:07] MOVE Bench -> Board: Poppy (i:2.0) <-> Vazio | Rew: +0.46
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 6.43, Primordian 1.56, N.O.V.A. 0.99, Anima 0.51, Rogue 0.51
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Belveth, TFT17_Poppy | CORE TRAITS: Bastion, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 9 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Poppy | core=SIM | fit=6.38 | Bastion=6.38
+
+[19:31:07] --- FIM DO ROUND 2-3 | GOLD: 14 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 6.52, Primordian 1.52, N.O.V.A. 0.99, Anima 0.48, Rogue 0.48
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]        [Bel|T|1*|i:4.0]  [Vik|C|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:31:07] 🛒 LOJA: Lissandra(i:2.0), Pyke(i:4.0), Ezreal(i:2.0), Kindred(i:8.0), Lissandra(i:2.0)
+[19:31:08] COMPROU: Kindred (Custo 4 | i:8.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Kindred | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 6.52, Primordian 1.50, N.O.V.A. 1.06, Anima 0.46, Rogue 0.46
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Kindred, TFT17_Viktor, TFT17_Belveth | CORE TRAITS: Bastion, N.O.V.A., Challenger
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Kindred | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 10 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Kindred | core=não | fit=0.99 | N.O.V.A.=0.99
+[19:31:09] MOVE Bench -> Board: Kindred (i:8.0) <-> Bel'Veth (i:4.0) | Rew: -0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Kindred | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 6.42, Primordian 1.49, N.O.V.A. 1.21, Anima 0.44, Rogue 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Kindred, TFT17_Viktor, TFT17_Belveth | CORE TRAITS: Bastion, N.O.V.A., Challenger
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Kindred -> TFT17_Kindred | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 10 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Kindred | core=SIM | fit=1.06 | N.O.V.A.=1.06
+[19:31:10] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Viktor (i:6.0) | Rew: +0.21
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Kindred | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 6.35, Primordian 1.45, N.O.V.A. 1.36, Anima 0.42, Rogue 0.42
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Kindred, TFT17_Viktor, TFT17_Belveth | CORE TRAITS: Bastion, N.O.V.A., Challenger
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Kindred -> TFT17_Kindred | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 10 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=1.49 | Primordian=1.49
+[19:31:10] MOVE Bench -> Board: Viktor (i:6.0) <-> Kindred (i:8.0) | Rew: -0.38
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Kindred | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 6.35, Primordian 1.43, N.O.V.A. 1.41, Anima 0.40, Rogue 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Kindred, TFT17_Viktor, TFT17_Belveth | CORE TRAITS: Bastion, N.O.V.A., Challenger
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Kindred -> TFT17_Kindred | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 10 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Viktor | core=SIM | fit=0.00 | nenhum trait de foco
+[19:31:11] MOVE Bench -> Board: Kindred (i:8.0) <-> Bel'Veth (i:4.0) | Rew: -0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Kindred | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 6.26, N.O.V.A. 1.55, Primordian 1.42, Anima 0.38, Rogue 0.38
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Kindred, TFT17_Viktor, TFT17_Belveth | CORE TRAITS: Bastion, N.O.V.A., Challenger
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Kindred -> TFT17_Kindred | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 10 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Kindred | core=SIM | fit=1.41 | N.O.V.A.=1.41
+[19:31:12] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Kindred | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 6.18, N.O.V.A. 1.68, Primordian 1.42, Anima 0.36, Rogue 0.36
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Kindred, TFT17_Viktor, TFT17_Belveth | CORE TRAITS: Bastion, N.O.V.A., Challenger
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Kindred -> TFT17_Kindred | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 10 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[19:31:14] --- FIM DO ROUND 2-4 | GOLD: 16 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Kindred | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.82, N.O.V.A. 2.23, Primordian 1.40, Anima 0.28, Rogue 0.28
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +0 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Aat|F|1*|i:2.0]       [ . ]        [Vik|C|1*|i:6.0]  [Kin|F|1*|i:8.0]       [ . ]       
+      [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Bel|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:31:14] 🛒 LOJA: Leona(i:2.0), Viktor(i:6.0), Pantheon(i:4.0), Fizz(i:6.0), Lissandra(i:2.0)
+[19:31:15] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Viktor (i:6.0) | Rew: +0.21
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Kindred | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.78, N.O.V.A. 2.33, Primordian 1.36, Anima 0.26, Rogue 0.26
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Kindred, TFT17_Viktor, TFT17_Belveth | CORE TRAITS: Bastion, N.O.V.A., Challenger
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Kindred -> TFT17_Kindred | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 16 | renda base +5 | juros +1 | sequência +0 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=1.40 | Primordian=1.40
+[19:31:16] MOVE Bench -> Board: Viktor (i:6.0) <-> Aatrox (i:2.0) | Rew: -0.18
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Kindred | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.82, N.O.V.A. 2.34, Primordian 1.34, Anima 0.25, Rogue 0.25
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Kindred, TFT17_Viktor, TFT17_Belveth | CORE TRAITS: Bastion, Challenger, N.O.V.A.
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Kindred -> TFT17_Kindred | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 16 | renda base +5 | juros +1 | sequência +0 | vitória +0
+    FIT UNIDADE: Viktor | core=SIM | fit=0.00 | nenhum trait de foco
+[19:31:17] VENDEU: Aatrox (i:2.0)       | Rew: +0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Kindred | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.87, N.O.V.A. 2.31, Primordian 1.33, Anima 0.24, Rogue 0.24
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Kindred, TFT17_Viktor, TFT17_Belveth | CORE TRAITS: Challenger, Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Kindred -> TFT17_Kindred | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 17 | renda base +5 | juros +1 | sequência +0 | vitória +0
+    FIT UNIDADE: Aatrox | core=não | fit=8.16 | N.O.V.A.=2.34, Bastion=5.82
+[19:31:17]  ⬇️ SINERGIA: BASTION nível 0
+[19:31:17] COMPROU: Fizz (Custo 3 | i:6.0) | Rew: -0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Kindred | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.85, N.O.V.A. 2.25, Primordian 1.31, Rogue 0.31, Meeple 0.28
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Kindred, TFT17_Viktor, TFT17_Fizz | CORE TRAITS: Meeple, Challenger, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Kindred -> TFT17_Kindred | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 14 | renda base +5 | juros +1 | sequência +0 | vitória +0
+    FIT UNIDADE: Fizz | core=não | fit=0.24 | Rogue=0.24
+[19:31:17]  ⬆️ SINERGIA: MEEPLE nível 1
+[19:31:18] MOVE Bench -> Board: Fizz (i:6.0) <-> Bel'Veth (i:4.0) | Rew: -0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Kindred | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.72, N.O.V.A. 2.15, Primordian 1.31, Meeple 0.51, Rogue 0.32
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Kindred, TFT17_Viktor, TFT17_Fizz | CORE TRAITS: Meeple, Challenger, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Kindred -> TFT17_Kindred | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 14 | renda base +5 | juros +1 | sequência +0 | vitória +0
+    FIT UNIDADE: Fizz | core=SIM | fit=0.59 | Meeple=0.28, Rogue=0.31
+[19:31:19] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Kindred (i:8.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Kindred | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.59, N.O.V.A. 2.09, Primordian 1.26, Meeple 0.72, Rogue 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Kindred, TFT17_Viktor, TFT17_Fizz | CORE TRAITS: Meeple, Challenger, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Kindred -> TFT17_Kindred | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 14 | renda base +5 | juros +1 | sequência +0 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=não | fit=1.31 | Primordian=1.31
+[19:31:19] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Kindred | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.48, N.O.V.A. 2.04, Primordian 1.22, Meeple 0.92, Rogue 0.35
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Kindred, TFT17_Viktor, TFT17_Fizz | CORE TRAITS: Meeple, Challenger, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Kindred -> TFT17_Kindred | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 14 | renda base +5 | juros +1 | sequência +0 | vitória +0
+
+[19:31:22] --- FIM DO ROUND 2-5 | GOLD: 21 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Kindred | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.07, N.O.V.A. 1.86, Meeple 1.60, Primordian 1.08, Rogue 0.39
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +1 sequência, +0 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Vik|C|1*|i:6.0]       [ . ]        [Fiz|T|1*|i:6.0]  [Bel|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Kin|1*|i:8.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:31:22] 🛒 LOJA: Cho'Gath(i:2.0), Nasus(i:2.0), Zoe(i:4.0), Twisted Fate(i:2.0), Samira(i:6.0)
+[19:31:22] VENDEU: Kindred (i:8.0)      | Rew: -0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 5.02, Meeple 1.76, N.O.V.A. 1.76, Primordian 1.05, Rogue 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Belveth | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Kindred -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 25 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Kindred | core=SIM | fit=1.86 | N.O.V.A.=1.86
+[19:31:23] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.97, Meeple 1.91, N.O.V.A. 1.67, Primordian 1.03, Rogue 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Belveth | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 21 | renda base +5 | juros +1 | sequência +1 | vitória +0
+[19:31:24] BUY XP                       | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.92, Meeple 2.06, N.O.V.A. 1.58, Primordian 1.01, Rogue 0.42
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Belveth | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 17 | renda base +5 | juros +1 | sequência +1 | vitória +0
+[19:31:24] BUY XP                       | Rew: +0.51
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.88, Meeple 2.19, N.O.V.A. 1.50, Primordian 0.99, Rogue 0.43
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Belveth | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 13 | renda base +5 | juros +1 | sequência +1 | vitória +0
+[19:31:25] COMPROU: Zoe (Custo 2 | i:4.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.84, Meeple 2.32, N.O.V.A. 1.42, Primordian 0.97, Rogue 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Belveth | CORE TRAITS: Meeple, Conduit, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 11 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Zoe | core=não | fit=0.00 | nenhum trait de foco
+[19:31:26] VENDEU: Zoe (i:4.0)          | Rew: +0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.80, Meeple 2.45, N.O.V.A. 1.35, Primordian 0.95, Rogue 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Belveth | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 13 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Zoe | core=não | fit=0.00 | nenhum trait de foco
+[19:31:26] COMPROU: Twisted Fate (Custo 1 | i:2.0) | Rew: -0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.76, Meeple 2.56, N.O.V.A. 1.28, Primordian 0.94, Rogue 0.46
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Belveth | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 12 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=0.00 | nenhum trait de foco
+[19:31:27] VENDEU: Twisted Fate (i:2.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.72, Meeple 2.67, N.O.V.A. 1.21, Primordian 0.92, Rogue 0.47
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Belveth | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 13 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=0.00 | nenhum trait de foco
+[19:31:28] COMPROU: Samira (Custo 3 | i:6.0) | Rew: -0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.69, Meeple 2.78, N.O.V.A. 1.15, Primordian 0.91, Rogue 0.48
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Samira | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 10 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Samira | core=não | fit=0.00 | nenhum trait de foco
+
+[19:31:29] --- FIM DO ROUND 2-6 | GOLD: 17 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.63, Meeple 2.97, N.O.V.A. 1.04, Primordian 0.88, Rogue 0.49
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +1 sequência, +0 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Vik|C|1*|i:6.0]       [ . ]        [Fiz|T|1*|i:6.0]  [Bel|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Sam|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:31:29] 🛒 LOJA: Ornn(i:6.0), Twisted Fate(i:2.0), Poppy(i:2.0), Bel'Veth(i:4.0), Mordekaiser(i:4.0)
+[19:31:29] MOVE Bench -> Board: Samira (i:6.0) <-> Vazio | Rew: -0.06
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.60, Meeple 3.06, N.O.V.A. 0.98, Primordian 0.86, Rogue 0.50
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Samira | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 17 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Samira | core=SIM | fit=0.00 | nenhum trait de foco
+[19:31:30] COMPROU: Ornn (Custo 3 | i:6.0) | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.61, Meeple 3.12, N.O.V.A. 0.92, Primordian 0.85, Rogue 0.50
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Samira | CORE TRAITS: Meeple, Bastion, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 14 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Ornn | core=não | fit=4.60 | Bastion=4.60
+[19:31:30]  ⬆️ SINERGIA: BASTION nível 1
+[19:31:31] MOVE Bench -> Board: Ornn (i:6.0) <-> Samira (i:6.0) | Rew: -0.05
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.60, Meeple 3.19, N.O.V.A. 0.87, Primordian 0.83, Rogue 0.51
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Ornn | CORE TRAITS: Meeple, Bastion, Space Groove
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 14 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Ornn | core=não | fit=4.61 | Bastion=4.61
+[19:31:31] VENDEU: Samira (i:6.0)       | Rew: +0.08
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.59, Meeple 3.26, N.O.V.A. 0.83, Primordian 0.82, Rogue 0.51
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Ornn | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 17 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Samira | core=não | fit=0.00 | nenhum trait de foco
+[19:31:32] COMPROU: Bel'Veth (Custo 2 | i:4.0) | Rew: +0.18
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.54, Meeple 3.30, Primordian 0.87, N.O.V.A. 0.78, Rogue 0.51
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Belveth | CORE TRAITS: Meeple, Bastion, Primordian
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 15 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=não | fit=0.82 | Primordian=0.82
+[19:31:33] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Ornn (i:6.0) | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.48, Meeple 3.29, Primordian 1.01, N.O.V.A. 0.72, Rogue 0.51
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Belveth | CORE TRAITS: Meeple, Bastion, Primordian
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 15 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=0.87 | Primordian=0.87
+[19:31:33] MOVE Bench -> Board: Ornn (i:6.0) <-> Fizz (i:6.0) | Rew: -0.23
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.36, Meeple 3.30, Primordian 1.13, N.O.V.A. 0.66, Rogue 0.53
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Ornn, TFT17_Belveth | CORE TRAITS: Bastion, Meeple, Primordian
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 15 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Ornn | core=não | fit=4.48 | Bastion=4.48
+[19:31:34] MOVE Bench -> Board: Fizz (i:6.0) <-> Bel'Veth (i:4.0) | Rew: -0.17
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.34, Meeple 3.34, Primordian 1.17, N.O.V.A. 0.62, Rogue 0.53
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Viktor, TFT17_Ornn, TFT17_Belveth | CORE TRAITS: Bastion, Meeple, Primordian
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 15 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Fizz | core=não | fit=3.84 | Meeple=3.30, Rogue=0.53
+[19:31:35] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.31, Meeple 3.38, Primordian 1.20, N.O.V.A. 0.58, Rogue 0.53
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Viktor, TFT17_Ornn, TFT17_Belveth | CORE TRAITS: Bastion, Meeple, Primordian
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 15 | renda base +5 | juros +1 | sequência +1 | vitória +0
+
+[19:31:36] --- FIM DO ROUND 2-7 | GOLD: 22 ---
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.26, Meeple 3.44, Primordian 1.25, Rogue 0.53, N.O.V.A. 0.51
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +1 sequência, +0 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Vik|C|1*|i:6.0]       [ . ]        [Orn|T|1*|i:6.0]  [Bel|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]        [Fiz|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Bel|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:31:36] 🛒 LOJA: Twisted Fate(i:2.0), Pyke(i:4.0), Kai'Sa(i:6.0), Bel'Veth(i:4.0), Pantheon(i:4.0)
+[19:31:36] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Ornn (i:6.0) | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Bastion 4.17, Meeple 3.42, Primordian 1.43, Rogue 0.52, N.O.V.A. 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Belveth, TFT17_Fizz | CORE TRAITS: Meeple, Bastion, Primordian
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 22 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=1.25 | Primordian=1.25
+[19:31:37] MOVE Bench -> Board: Ornn (i:6.0) <-> Fizz (i:6.0) | Rew: -0.23
+    STRATEGY: STABILIZE | COMP DIRECTION: Bastion | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 4.65
+FOCUS WEIGHTS: Bastion 5.32, Meeple 2.54, Primordian 1.40, Challenger 0.53, Rogue 0.21
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Viktor, TFT17_Belveth, TFT17_Ornn | CORE TRAITS: Meeple, Bastion, Primordian
+    COMP BEFORE -> AFTER: dir=— -> Bastion | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=0.00 -> 4.65
+    GOLD: 22 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Ornn | core=não | fit=4.17 | Bastion=4.17
+[19:31:38] MOVE Bench -> Board: Fizz (i:6.0) <-> Bel'Veth (i:4.0) | Rew: -0.19
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 4.65
+FOCUS WEIGHTS: Bastion 6.95, Meeple 1.88, Primordian 0.73, Challenger 0.32, Rogue 0.13
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Viktor, TFT17_Belveth, TFT17_Fizz | CORE TRAITS: Meeple, Bastion, Primordian
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=4.65 -> 4.65
+    GOLD: 22 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Fizz | core=não | fit=2.75 | Meeple=2.54, Rogue=0.21
+[19:31:38] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 4.33
+FOCUS WEIGHTS: Bastion 6.68, Meeple 2.18, Primordian 0.62, Challenger 0.44, Rogue 0.08
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Viktor, TFT17_Belveth, TFT17_Fizz | CORE TRAITS: Meeple, Bastion, Primordian
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=4.65 -> 4.33
+    GOLD: 22 | renda base +5 | juros +1 | sequência +1 | vitória +0
+
+[19:31:43] --- FIM DO ROUND 3-1 | GOLD: 30 ---
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 4.26
+FOCUS WEIGHTS: Bastion 8.44, Meeple 0.85, Primordian 0.29, Challenger 0.29, Marauder 0.12
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +1 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Vik|C|1*|i:6.0]       [ . ]        [Bel|T|1*|i:4.0]  [Fiz|T|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]        [Orn|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Bel|1*|i:4.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:31:43] 🛒 LOJA: Fizz(i:6.0), Ezreal(i:2.0), Akali(i:4.0), Rek'Sai(i:2.0), Rek'Sai(i:2.0)
+[19:31:43] VENDEU: Bel'Veth (i:4.0)     | Rew: -0.18
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 4.03
+FOCUS WEIGHTS: Bastion 8.06, Meeple 1.41, Primordian 0.19, Challenger 0.19, Conduit 0.15
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Ornn | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=4.26 -> 4.03
+    GOLD: 32 | renda base +5 | juros +2 | sequência +1 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=SIM | fit=0.71 | Primordian=0.29, Challenger=0.29, Marauder=0.12
+[19:31:44] BUY XP                       | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 4.03
+FOCUS WEIGHTS: Bastion 8.78, Meeple 0.88, Primordian 0.12, Challenger 0.12, Conduit 0.10
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Ornn | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=4.03 -> 4.03
+    GOLD: 28 | renda base +5 | juros +2 | sequência +1 | vitória +0
+[19:31:45] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 4.04
+FOCUS WEIGHTS: Bastion 8.11, Meeple 1.43, Conduit 0.21, Psionic 0.15, Primordian 0.10
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Ornn | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=4.03 -> 4.04
+    GOLD: 24 | renda base +5 | juros +2 | sequência +1 | vitória +0
+[19:31:45] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 4.04
+FOCUS WEIGHTS: Bastion 8.81, Meeple 0.89, Conduit 0.13, Psionic 0.10, Primordian 0.07
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Ornn | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=4.04 -> 4.04
+    GOLD: 20 | renda base +5 | juros +2 | sequência +1 | vitória +0
+[19:31:46] BUY XP                       | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 4.04
+FOCUS WEIGHTS: Bastion 8.07, Meeple 1.43, Conduit 0.22, Psionic 0.20, Primordian 0.07
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Ornn | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=4.04 -> 4.04
+    GOLD: 16 | renda base +5 | juros +2 | sequência +1 | vitória +0
+[19:31:47] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 4.04
+FOCUS WEIGHTS: Bastion 8.79, Meeple 0.89, Conduit 0.13, Psionic 0.13, Primordian 0.06
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Ornn | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=4.04 -> 4.04
+    GOLD: 12 | renda base +5 | juros +2 | sequência +1 | vitória +0
+[19:31:48] BUY XP                       | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 4.04
+FOCUS WEIGHTS: Bastion 8.06, Meeple 1.43, Conduit 0.22, Psionic 0.22, Primordian 0.07
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Ornn | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=4.04 -> 4.04
+    GOLD: 8 | renda base +5 | juros +2 | sequência +1 | vitória +0
+[19:31:48] BUY XP                       | Rew: +0.01
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 4.04
+FOCUS WEIGHTS: Bastion 8.78, Meeple 0.89, Conduit 0.13, Psionic 0.13, Primordian 0.06
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Ornn | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=4.04 -> 4.04
+    GOLD: 4 | renda base +5 | juros +2 | sequência +1 | vitória +0
+[19:31:49] BUY XP                       | Rew: +0.51
+    STRATEGY: ECON | COMP DIRECTION: Bastion | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 4.04
+FOCUS WEIGHTS: Bastion 8.06, Meeple 1.43, Conduit 0.22, Psionic 0.22, Primordian 0.06
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Viktor, TFT17_Fizz, TFT17_Ornn | CORE TRAITS: Meeple, Bastion
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Viktor -> TFT17_Viktor | lock=False -> False | strength=4.04 -> 4.04
+    GOLD: 0 | renda base +5 | juros +2 | sequência +1 | vitória +0
+
+[19:31:50] --- FIM DO ROUND 3-2 | GOLD: 7 ---
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: Bastion | FOCUS: TFT17_Viktor | LOCK: OPEN | STRENGTH: 4.04
+FOCUS WEIGHTS: Bastion 8.06, Meeple 1.43, Conduit 0.22, Psionic 0.22, Primordian 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +2 sequência, +0 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Vik|C|1*|i:6.0]       [ . ]        [Bel|T|1*|i:4.0]  [Fiz|T|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]        [Orn|T|1*|i:6.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Pop|T|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:31:50] 🛒 LOJA: Urgot(i:6.0), Briar(i:2.0), Rhaast(i:6.0), Rhaast(i:6.0), Jax(i:4.0)
+[19:31:50] COMPROU: Urgot (Custo 3 | i:6.0) | Rew: -0.10
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 4.04
+FOCUS WEIGHTS: Bastion 8.78, Meeple 0.89, Conduit 0.13, Psionic 0.13, Marauder 0.06
+    STRATEGY REASON: Loss streak prolongada | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Viktor, TFT17_Fizz | CORE TRAITS: Meeple, Bastion, Marauder
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Viktor -> TFT17_Urgot | lock=False -> False | strength=4.04 -> 4.04
+    GOLD: 4 | renda base +5 | juros +0 | sequência +2 | vitória +0
+    FIT UNIDADE: Urgot | core=não | fit=0.00 | nenhum trait de foco
+[19:31:51] MOVE Bench -> Board: Urgot (i:6.0) <-> Bel'Veth (i:4.0) | Rew: +0.00
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 4.16
+FOCUS WEIGHTS: Bastion 7.90, Meeple 1.40, Marauder 0.38, Conduit 0.22, Psionic 0.10
+    STRATEGY REASON: Loss streak prolongada | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Viktor, TFT17_Fizz | CORE TRAITS: Meeple, Bastion, Marauder
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=4.04 -> 4.16
+    GOLD: 4 | renda base +5 | juros +0 | sequência +2 | vitória +0
+    FIT UNIDADE: Urgot | core=SIM | fit=0.06 | Marauder=0.06
+[19:31:52] MOVE Bench -> Board: Bel'Veth (i:4.0) <-> Ornn (i:6.0) | Rew: -0.24
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 4.16
+FOCUS WEIGHTS: Bastion 8.59, Meeple 0.86, Marauder 0.35, Conduit 0.13, Psionic 0.07
+    STRATEGY REASON: Loss streak prolongada | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Viktor, TFT17_Fizz | CORE TRAITS: Meeple, Bastion, Marauder
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=4.16 -> 4.16
+    GOLD: 4 | renda base +5 | juros +0 | sequência +2 | vitória +0
+    FIT UNIDADE: Bel'Veth | core=não | fit=0.38 | Marauder=0.38
+[19:31:52] MOVE Bench -> Board: Ornn (i:6.0) <-> Urgot (i:6.0) | Rew: +0.00
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: Bastion | FOCUS: TFT17_Urgot | LOCK: OPEN | STRENGTH: 4.17
+FOCUS WEIGHTS: Bastion 7.82, Meeple 1.37, Marauder 0.53, Conduit 0.21, Psionic 0.07
+    STRATEGY REASON: Loss streak prolongada | CONF: 0.80
+    CORE UNITS: TFT17_Urgot, TFT17_Viktor, TFT17_Ornn | CORE TRAITS: Bastion, Meeple, Marauder
+    COMP BEFORE -> AFTER: dir=Bastion -> Bastion | foco=TFT17_Urgot -> TFT17_Urgot | lock=False -> False | strength=4.16 -> 4.17
+    GOLD: 4 | renda base +5 | juros +0 | sequência +2 | vitória +0
+    FIT UNIDADE: Ornn | core=não | fit=8.59 | Bastion=8.59

@@ -1,4 +1,4 @@
-from audit_viewer_match import audit_board_quality
+from scripts.audit_viewer_match import audit_board_quality
 
 
 def test_board_quality_audit_tracks_action_delta_and_combat_context():

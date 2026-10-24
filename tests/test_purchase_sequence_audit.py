@@ -1,4 +1,4 @@
-from audit_viewer_match import audit_purchase_sequences
+from scripts.audit_viewer_match import audit_purchase_sequences
 
 
 def _unit(champion="", *, cost=1, star=1, impact=2.0, occupied=True):

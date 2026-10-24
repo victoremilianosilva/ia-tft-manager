@@ -1,4 +1,4 @@
-from audit_viewer_match import audit_team_progression
+from scripts.audit_viewer_match import audit_team_progression
 
 
 def _unit(name, impact=1.0, star=1):

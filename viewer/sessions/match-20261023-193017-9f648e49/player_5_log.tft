@@ -1,0 +1,932 @@
+==========================================================
+TFT AI LOG · JOGADOR 5
+Partida: 9f648e49-3846-494a-b020-90281bdeaac8
+Seed: 20261016 | Política: determinística
+Checkpoint SHA-256: fbf38bed73bdb758075dd9185deb89adac8ca142ec394ad077f8101c2fc67c9d
+Impacto (i): custo × estrelas × 2 (contribuição nativa da engine)
+==========================================================
+--- INÍCIO DA PARTIDA · JOGADOR 5 ---
+[19:30:19] VENDEU: Rek'Sai (i:2.0)      | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: — | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: —
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: — | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=— -> — | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Rek'Sai | core=não | fit=0.00 | nenhum trait de foco
+[19:30:20] COMPROU: Leona (Custo 1 | i:2.0) | Rew: +0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Leona | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 5.00, Vanguard 5.00
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Leona | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=— -> TFT17_Leona | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=0.00 | nenhum trait de foco
+[19:30:20] MOVE Bench -> Board: Leona (i:2.0) <-> Vazio | Rew: +0.53
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Leona | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 5.00, Vanguard 5.00
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Leona | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leona -> TFT17_Leona | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Leona | core=SIM | fit=10.00 | Arbiter=5.00, Vanguard=5.00
+[19:30:21] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Leona | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 5.00, Vanguard 5.00
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Leona | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leona -> TFT17_Leona | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[19:30:25] --- FIM DO ROUND 1-1 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Leona | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 5.00, Vanguard 5.00
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:30:25] 🛒 LOJA: Talon(i:2.0), Caitlyn(i:2.0), Gnar(i:4.0), Nasus(i:2.0), Cho'Gath(i:2.0)
+[19:30:26] COMPROU: Gnar (Custo 2 | i:4.0) | Rew: -0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Gnar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 4.89, Vanguard 4.89, Brawler 0.07, Meeple 0.07, Sniper 0.07
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Gnar, TFT17_Leona | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leona -> TFT17_Gnar | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Gnar | core=não | fit=0.00 | nenhum trait de foco
+[19:30:27] MOVE Bench -> Board: Gnar (i:4.0) <-> Vazio | Rew: -0.16
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Gnar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 4.84, Vanguard 4.84, Brawler 0.10, Meeple 0.10, Sniper 0.10
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Gnar, TFT17_Leona | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Gnar -> TFT17_Gnar | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Gnar | core=SIM | fit=0.21 | Meeple=0.07, Brawler=0.07, Sniper=0.07
+[19:30:27] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Gnar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 4.80, Vanguard 4.80, Brawler 0.14, Meeple 0.14, Sniper 0.14
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Gnar, TFT17_Leona | CORE TRAITS: —
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Gnar -> TFT17_Gnar | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+
+[19:30:32] --- FIM DO ROUND 1-2 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Gnar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 4.44, Vanguard 4.44, Brawler 0.37, Meeple 0.37, Sniper 0.37
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Gna|F|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:30:32] 🛒 LOJA: Pantheon(i:4.0), Ezreal(i:2.0), Jax(i:4.0), Caitlyn(i:2.0), Teemo(i:2.0)
+[19:30:33] COMPROU: Pantheon (Custo 2 | i:4.0) | Rew: -0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Gnar | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 4.37, Vanguard 4.37, Brawler 0.47, Meeple 0.40, Sniper 0.40
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Gnar, TFT17_Pantheon, TFT17_Leona | CORE TRAITS: Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Gnar -> TFT17_Gnar | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pantheon | core=não | fit=0.37 | Brawler=0.37
+[19:30:34] MOVE Bench -> Board: Pantheon (i:4.0) <-> Leona (i:2.0) | Rew: -0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 4.26, Vanguard 4.26, Brawler 0.66, Meeple 0.41, Sniper 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pantheon, TFT17_Gnar, TFT17_Leona | CORE TRAITS: Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Gnar -> TFT17_Pantheon | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pantheon | core=SIM | fit=0.47 | Brawler=0.47
+[19:30:34] MOVE Bench -> Board: Leona (i:2.0) <-> Vazio | Rew: +0.51
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 4.14, Vanguard 4.14, Brawler 0.85, Meeple 0.43, Sniper 0.43
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pantheon, TFT17_Gnar, TFT17_Leona | CORE TRAITS: Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Leona | core=SIM | fit=8.52 | Arbiter=4.26, Vanguard=4.26
+[19:30:35] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 4.03, Vanguard 4.03, Brawler 1.04, Meeple 0.45, Sniper 0.45
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pantheon, TFT17_Gnar, TFT17_Leona | CORE TRAITS: Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+
+[19:30:39] --- FIM DO ROUND 1-3 | GOLD: 3 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 3.36, Vanguard 3.36, Brawler 2.16, Meeple 0.56, Sniper 0.56
+    RENDA PRÓXIMO ROUND: +3 base, +0 juros, +0 sequência, +0 vitória (total: +3)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Pan|T|1*|i:4.0]  [Leo|T|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Gna|F|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:30:39] 🛒 LOJA: Twisted Fate(i:2.0), Gragas(i:4.0), Milio(i:4.0), Poppy(i:2.0), Veigar(i:2.0)
+[19:30:40] MOVE Board -> Board: Leona (i:2.0) <-> Vazio | Rew: -0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 3.28, Vanguard 3.28, Brawler 2.30, Meeple 0.57, Sniper 0.57
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pantheon, TFT17_Gnar, TFT17_Leona | CORE TRAITS: Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Leona | core=SIM | fit=6.72 | Arbiter=3.36, Vanguard=3.36
+[19:30:41] MOVE Board -> Board: Gnar (i:4.0) <-> Leona (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 3.20, Vanguard 3.20, Brawler 2.43, Meeple 0.59, Sniper 0.59
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pantheon, TFT17_Gnar, TFT17_Leona | CORE TRAITS: Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Gnar | core=SIM | fit=3.44 | Meeple=0.57, Brawler=2.30, Sniper=0.57
+[19:30:41] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Arbiter 3.12, Vanguard 3.12, Brawler 2.56, Meeple 0.60, Sniper 0.60
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pantheon, TFT17_Gnar, TFT17_Leona | CORE TRAITS: Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +3 | juros +0 | sequência +0 | vitória +0
+
+[19:30:46] --- FIM DO ROUND 1-4 | GOLD: 7 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 3.45, Arbiter 2.59, Vanguard 2.59, Meeple 0.68, Sniper 0.68
+    RENDA PRÓXIMO ROUND: +4 base, +0 juros, +0 sequência, +0 vitória (total: +4)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]        [Gna|F|1*|i:4.0]       [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:30:46] 🛒 LOJA: Lissandra(i:2.0), Cho'Gath(i:2.0), Gwen(i:4.0), Talon(i:2.0), Illaoi(i:6.0)
+[19:30:47] COMPROU: Illaoi (Custo 3 | i:6.0) | Rew: -0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 3.52, Vanguard 2.58, Arbiter 2.51, Meeple 0.69, Sniper 0.69
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Pantheon, TFT17_Gnar | CORE TRAITS: Brawler, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pantheon -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Illaoi | core=não | fit=2.59 | Vanguard=2.59
+[19:30:48] MOVE Bench -> Board: Illaoi (i:6.0) <-> Pantheon (i:4.0) | Rew: -0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 3.48, Vanguard 2.69, Arbiter 2.44, Meeple 0.69, Sniper 0.69
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Gnar, TFT17_Pantheon | CORE TRAITS: Vanguard, Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Illaoi | core=SIM | fit=2.58 | Vanguard=2.58
+[19:30:48] MOVE Bench -> Board: Pantheon (i:4.0) <-> Vazio | Rew: +0.57
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 3.51, Vanguard 2.76, Arbiter 2.35, Meeple 0.69, Sniper 0.69
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Pantheon, TFT17_Gnar | CORE TRAITS: Vanguard, Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pantheon | core=SIM | fit=3.48 | Brawler=3.48
+[19:30:49] MOVE Board -> Board: Pantheon (i:4.0) <-> Gnar (i:4.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 3.54, Vanguard 2.83, Arbiter 2.26, Meeple 0.69, Sniper 0.69
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Gnar, TFT17_Pantheon | CORE TRAITS: Vanguard, Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pantheon | core=SIM | fit=3.51 | Brawler=3.51
+[19:30:50] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 3.57, Vanguard 2.89, Arbiter 2.18, Meeple 0.68, Sniper 0.68
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Gnar, TFT17_Pantheon | CORE TRAITS: Vanguard, Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+[19:30:51] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 3.59, Vanguard 2.95, Arbiter 2.09, Meeple 0.68, Sniper 0.68
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Gnar, TFT17_Pantheon | CORE TRAITS: Vanguard, Brawler
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+
+[19:30:53] --- FIM DO ROUND 2-1 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 3.70, Vanguard 3.21, Arbiter 1.75, Meeple 0.67, Sniper 0.67
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]  [Gna|F|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:30:53] 🛒 LOJA: Twisted Fate(i:2.0), Ezreal(i:2.0), Miss Fortune(i:6.0), Lulu(i:6.0), Ornn(i:6.0)
+[19:30:54] MOVE Board -> Board: Gnar (i:4.0) <-> Illaoi (i:6.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 3.72, Vanguard 3.26, Arbiter 1.69, Meeple 0.67, Sniper 0.67
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Gnar, TFT17_Pantheon | CORE TRAITS: Brawler, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 6 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Gnar | core=SIM | fit=5.04 | Meeple=0.67, Brawler=3.70, Sniper=0.67
+[19:30:55] MOVE Board -> Board: Illaoi (i:6.0) <-> Pantheon (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 3.74, Vanguard 3.30, Arbiter 1.64, Meeple 0.66, Sniper 0.66
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Gnar, TFT17_Pantheon | CORE TRAITS: Brawler, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 6 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Illaoi | core=SIM | fit=3.26 | Vanguard=3.26
+[19:30:55] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 3.75, Vanguard 3.34, Arbiter 1.59, Meeple 0.66, Sniper 0.66
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Gnar, TFT17_Pantheon | CORE TRAITS: Brawler, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 6 | renda base +5 | juros +0 | sequência +0 | vitória +1
+
+[19:31:00] --- FIM DO ROUND 2-2 | GOLD: 13 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 3.86, Vanguard 3.59, Arbiter 1.25, Meeple 0.65, Sniper 0.65
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Gna|F|1*|i:4.0]  [Pan|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:31:00] 🛒 LOJA: Poppy(i:2.0), Ezreal(i:2.0), Caitlyn(i:2.0), Ezreal(i:2.0), Twisted Fate(i:2.0)
+[19:31:01] BUY XP                       | Rew: +1.43
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 3.87, Vanguard 3.61, Arbiter 1.22, Meeple 0.65, Sniper 0.65
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Gnar, TFT17_Pantheon | CORE TRAITS: Brawler, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 9 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[19:31:02] COMPROU: Poppy (Custo 1 | i:2.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 3.85, Vanguard 3.61, Arbiter 1.18, Meeple 0.71, Sniper 0.64
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Gnar, TFT17_Pantheon | CORE TRAITS: Meeple, Brawler, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 8 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Poppy | core=não | fit=0.65 | Meeple=0.65
+[19:31:03] MOVE Bench -> Board: Poppy (i:2.0) <-> Pantheon (i:4.0) | Rew: -0.24
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 3.73, Vanguard 3.61, Arbiter 1.15, Meeple 0.88, Sniper 0.64
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Gnar, TFT17_Pantheon | CORE TRAITS: Meeple, Brawler, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 8 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Poppy | core=não | fit=0.71 | Meeple=0.71
+[19:31:03] MOVE Bench -> Board: Pantheon (i:4.0) <-> Gnar (i:4.0) | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Brawler 3.64, Vanguard 3.63, Arbiter 1.12, Meeple 0.93, Sniper 0.67
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Pantheon, TFT17_Gnar | CORE TRAITS: Brawler, Meeple, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 8 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Pantheon | core=SIM | fit=3.73 | Brawler=3.73
+[19:31:04] VENDEU: Gnar (i:4.0)         | Rew: -0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 3.73, Brawler 3.56, Arbiter 1.12, Meeple 0.94, Sniper 0.65
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Pantheon, TFT17_Poppy | CORE TRAITS: Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 10 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Gnar | core=SIM | fit=5.25 | Meeple=0.93, Brawler=3.64, Sniper=0.67
+[19:31:05] MOVE Board -> Board: Poppy (i:2.0) <-> Illaoi (i:6.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 3.83, Brawler 3.48, Arbiter 1.11, Meeple 0.94, Sniper 0.63
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Pantheon, TFT17_Poppy | CORE TRAITS: Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 10 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Poppy | core=SIM | fit=0.94 | Meeple=0.94
+[19:31:05] MOVE Board -> Board: Illaoi (i:6.0) <-> Pantheon (i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 3.93, Brawler 3.40, Arbiter 1.11, Meeple 0.95, Sniper 0.61
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Pantheon, TFT17_Poppy | CORE TRAITS: Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 10 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Illaoi | core=SIM | fit=3.83 | Vanguard=3.83
+[19:31:06] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.02, Brawler 3.33, Arbiter 1.11, Meeple 0.95, Sniper 0.59
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Pantheon, TFT17_Poppy | CORE TRAITS: Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 10 | renda base +5 | juros +0 | sequência +1 | vitória +1
+
+[19:31:07] --- FIM DO ROUND 2-3 | GOLD: 18 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.27, Brawler 3.12, Arbiter 1.11, Meeple 0.96, Sniper 0.54
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +1 sequência, +1 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]  [Pan|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]        [Pop|T|1*|i:2.0]       [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:31:07] 🛒 LOJA: Kai'Sa(i:6.0), Cho'Gath(i:2.0), Jinx(i:4.0), Gwen(i:4.0), Nasus(i:2.0)
+[19:31:08] MOVE Board -> Board: Pantheon (i:4.0) <-> Poppy (i:2.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.36, Brawler 3.06, Arbiter 1.10, Meeple 0.96, Sniper 0.52
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Pantheon, TFT17_Poppy | CORE TRAITS: Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 18 | renda base +5 | juros +1 | sequência +1 | vitória +1
+    FIT UNIDADE: Pantheon | core=SIM | fit=3.12 | Brawler=3.12
+[19:31:09] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.43, Brawler 3.00, Arbiter 1.10, Meeple 0.96, Sniper 0.51
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Pantheon, TFT17_Poppy | CORE TRAITS: Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 14 | renda base +5 | juros +1 | sequência +1 | vitória +1
+[19:31:10] BUY XP                       | Rew: +0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.51, Brawler 2.93, Arbiter 1.10, Meeple 0.97, Sniper 0.49
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Pantheon, TFT17_Poppy | CORE TRAITS: Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 10 | renda base +5 | juros +1 | sequência +1 | vitória +1
+[19:31:10] BUY XP                       | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.58, Brawler 2.88, Arbiter 1.10, Meeple 0.97, Sniper 0.47
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Pantheon, TFT17_Poppy | CORE TRAITS: Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 6 | renda base +5 | juros +1 | sequência +1 | vitória +1
+[19:31:11] BUY XP                       | Rew: +0.51
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.65, Brawler 2.82, Arbiter 1.10, Meeple 0.97, Sniper 0.46
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Pantheon, TFT17_Poppy | CORE TRAITS: Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +1 | sequência +1 | vitória +1
+[19:31:12] COMPROU: Jinx (Custo 2 | i:4.0) | Rew: -0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.72, Brawler 2.76, Arbiter 1.10, Meeple 0.97, Sniper 0.44
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Pantheon, TFT17_Jinx | CORE TRAITS: Anima, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +1 | sequência +1 | vitória +1
+    FIT UNIDADE: Jinx | core=não | fit=0.00 | nenhum trait de foco
+[19:31:12] MOVE Bench -> Board: Jinx (i:4.0) <-> Poppy (i:2.0) | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.77, Brawler 2.70, Arbiter 1.09, Meeple 1.01, Sniper 0.43
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Pantheon, TFT17_Jinx | CORE TRAITS: Anima, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +1 | sequência +1 | vitória +1
+    FIT UNIDADE: Jinx | core=SIM | fit=0.00 | nenhum trait de foco
+[19:31:13] MOVE Bench -> Board: Poppy (i:2.0) <-> Illaoi (i:6.0) | Rew: -0.34
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.78, Brawler 2.68, Arbiter 1.10, Meeple 1.02, Sniper 0.42
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Pantheon, TFT17_Jinx | CORE TRAITS: Anima, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +1 | sequência +1 | vitória +1
+    FIT UNIDADE: Poppy | core=não | fit=1.01 | Meeple=1.01
+[19:31:14] MOVE Bench -> Board: Illaoi (i:6.0) <-> Vazio | Rew: +0.28
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.84, Brawler 2.63, Arbiter 1.10, Meeple 1.02, Sniper 0.41
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Illaoi, TFT17_Pantheon, TFT17_Jinx | CORE TRAITS: Anima, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Illaoi | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +1 | sequência +1 | vitória +1
+    FIT UNIDADE: Illaoi | core=SIM | fit=4.78 | Vanguard=4.78
+
+[19:31:14] --- FIM DO ROUND 2-4 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Illaoi | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.97, Brawler 2.53, Arbiter 1.10, Meeple 1.03, Sniper 0.38
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Pop|T|1*|i:2.0]  [Jin|F|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:31:14] 🛒 LOJA: LeBlanc(i:8.0), Gnar(i:4.0), Poppy(i:2.0), Bel'Veth(i:4.0), Gragas(i:4.0)
+[19:31:15] COMPROU: LeBlanc (Custo 4 | i:8.0) | Rew: -0.08
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Leblanc | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.99, Brawler 2.46, Arbiter 1.16, Meeple 1.02, Sniper 0.37
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Leblanc, TFT17_Illaoi, TFT17_Pantheon | CORE TRAITS: Anima, Arbiter, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Illaoi -> TFT17_Leblanc | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: LeBlanc | core=não | fit=1.10 | Arbiter=1.10
+[19:31:16] MOVE Bench -> Board: LeBlanc (i:8.0) <-> Poppy (i:2.0) | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Leblanc | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.94, Brawler 2.37, Arbiter 1.31, Meeple 1.04, Sniper 0.35
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Leblanc, TFT17_Illaoi, TFT17_Pantheon | CORE TRAITS: Arbiter, Shepherd, Anima
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leblanc -> TFT17_Leblanc | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: LeBlanc | core=SIM | fit=1.16 | Arbiter=1.16
+[19:31:17] MOVE Bench -> Board: Poppy (i:2.0) <-> Jinx (i:4.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Leblanc | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.91, Brawler 2.29, Arbiter 1.46, Meeple 1.02, Sniper 0.33
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Leblanc, TFT17_Illaoi, TFT17_Pantheon | CORE TRAITS: Arbiter, Shepherd, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leblanc -> TFT17_Leblanc | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=1.04 | Meeple=1.04
+[19:31:17] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Leblanc | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.88, Brawler 2.21, Arbiter 1.60, Meeple 1.00, Sniper 0.32
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Leblanc, TFT17_Illaoi, TFT17_Pantheon | CORE TRAITS: Arbiter, Shepherd, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leblanc -> TFT17_Leblanc | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[19:31:21] MOVE Bench -> Board: Jinx (i:4.0) <-> Vazio | Rew: +0.40
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Leblanc | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.76, Arbiter 2.20, Brawler 1.87, Meeple 0.93, Sniper 0.25
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Leblanc, TFT17_Illaoi, TFT17_Pantheon | CORE TRAITS: Arbiter, Shepherd, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leblanc -> TFT17_Leblanc | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Jinx | core=não | fit=0.00 | nenhum trait de foco
+
+[19:31:22] --- FIM DO ROUND 2-5 | GOLD: 9 ---
+    STRATEGY: WINSTREAK | COMP DIRECTION: — | FOCUS: TFT17_Leblanc | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.72, Arbiter 2.40, Brawler 1.75, Meeple 0.90, Sniper 0.22
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +1 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [LeB|C|1*|i:8.0]  [Pop|T|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Ill|T|1*|i:6.0]  [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:31:22] 🛒 LOJA: Gnar(i:4.0), Gwen(i:4.0), Ezreal(i:2.0), Poppy(i:2.0), Twisted Fate(i:2.0)
+[19:31:22] COMPROU: Poppy (Custo 1 | i:2.0) | Rew: +0.10
+    STRATEGY: WINSTREAK | COMP DIRECTION: — | FOCUS: TFT17_Leblanc | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.67, Arbiter 2.48, Brawler 1.69, Meeple 0.95, Sniper 0.21
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Leblanc, TFT17_Illaoi, TFT17_Pantheon | CORE TRAITS: Arbiter, Shepherd, Meeple
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leblanc -> TFT17_Leblanc | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 8 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Poppy | core=não | fit=0.90 | Meeple=0.90
+[19:31:23] VENDEU: Poppy (i:2.0)        | Rew: -0.04
+    STRATEGY: WINSTREAK | COMP DIRECTION: — | FOCUS: TFT17_Leblanc | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.65, Arbiter 2.57, Brawler 1.64, Meeple 0.94, Shepherd 0.21
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Leblanc, TFT17_Illaoi, TFT17_Pantheon | CORE TRAITS: Arbiter, Shepherd, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leblanc -> TFT17_Leblanc | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 9 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Poppy | core=não | fit=0.95 | Meeple=0.95
+[19:31:24] COMPROU: Twisted Fate (Custo 1 | i:2.0) | Rew: -0.24
+    STRATEGY: WINSTREAK | COMP DIRECTION: — | FOCUS: TFT17_Leblanc | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.54, Arbiter 2.60, Brawler 1.56, Meeple 0.91, Shepherd 0.40
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Leblanc, TFT17_Illaoi, TFT17_Pantheon | CORE TRAITS: Arbiter, Shepherd, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leblanc -> TFT17_Leblanc | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 8 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Twisted Fate | core=não | fit=0.00 | nenhum trait de foco
+[19:31:24] VENDEU: Twisted Fate (i:2.0) | Rew: +0.09
+    STRATEGY: WINSTREAK | COMP DIRECTION: — | FOCUS: TFT17_Leblanc | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.43, Arbiter 2.63, Brawler 1.48, Meeple 0.88, Shepherd 0.58
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Leblanc, TFT17_Illaoi, TFT17_Pantheon | CORE TRAITS: Arbiter, Shepherd, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leblanc -> TFT17_Leblanc | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 9 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Twisted Fate | core=não | fit=0.00 | nenhum trait de foco
+[19:31:25] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: — | FOCUS: TFT17_Leblanc | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.34, Arbiter 2.65, Brawler 1.41, Meeple 0.85, Shepherd 0.75
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Leblanc, TFT17_Illaoi, TFT17_Pantheon | CORE TRAITS: Arbiter, Shepherd, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leblanc -> TFT17_Leblanc | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 5 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[19:31:26] BUY XP                       | Rew: +0.01
+    STRATEGY: WINSTREAK | COMP DIRECTION: — | FOCUS: TFT17_Leblanc | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.25, Arbiter 2.68, Brawler 1.35, Shepherd 0.90, Meeple 0.82
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Leblanc, TFT17_Illaoi, TFT17_Pantheon | CORE TRAITS: Arbiter, Shepherd, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leblanc -> TFT17_Leblanc | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+[19:31:26] MOVE Board -> Board: Illaoi (i:6.0) <-> Vazio | Rew: +0.06
+    STRATEGY: WINSTREAK | COMP DIRECTION: — | FOCUS: TFT17_Leblanc | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.16, Arbiter 2.70, Brawler 1.29, Shepherd 1.05, Meeple 0.80
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Leblanc, TFT17_Illaoi, TFT17_Pantheon | CORE TRAITS: Arbiter, Shepherd, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leblanc -> TFT17_Leblanc | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Illaoi | core=SIM | fit=5.15 | Vanguard=4.25, Shepherd=0.90
+[19:31:27] COMPROU: Ezreal (Custo 1 | i:2.0) | Rew: -0.08
+    STRATEGY: WINSTREAK | COMP DIRECTION: — | FOCUS: TFT17_Leblanc | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.09, Arbiter 2.72, Brawler 1.23, Shepherd 1.18, Meeple 0.78
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Leblanc, TFT17_Illaoi, TFT17_Pantheon | CORE TRAITS: Arbiter, Shepherd, Timebreaker
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leblanc -> TFT17_Leblanc | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Ezreal | core=não | fit=0.00 | nenhum trait de foco
+[19:31:28] VENDEU: Ezreal (i:2.0)       | Rew: +0.08
+    STRATEGY: WINSTREAK | COMP DIRECTION: — | FOCUS: TFT17_Leblanc | LOCK: LOCKED | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 4.01, Arbiter 2.74, Shepherd 1.31, Brawler 1.18, Meeple 0.75
+    STRATEGY REASON: Win streak + HP saudável | CONF: 0.80
+    CORE UNITS: TFT17_Leblanc, TFT17_Illaoi, TFT17_Pantheon | CORE TRAITS: Arbiter, Shepherd, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leblanc -> TFT17_Leblanc | lock=True -> True | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +1
+    FIT UNIDADE: Ezreal | core=não | fit=0.00 | nenhum trait de foco
+
+[19:31:29] --- FIM DO ROUND 2-6 | GOLD: 6 ---
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Leblanc | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 3.88, Arbiter 2.78, Shepherd 1.54, Brawler 1.09, Meeple 0.72
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [LeB|C|1*|i:8.0]  [Pop|T|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]        [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:31:29] 🛒 LOJA: Pantheon(i:4.0), Veigar(i:2.0), Akali(i:4.0), Pantheon(i:4.0), Twisted Fate(i:2.0)
+[19:31:29] COMPROU: Pantheon (Custo 2 | i:4.0) | Rew: +0.24
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Leblanc | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 3.80, Arbiter 2.78, Shepherd 1.63, Brawler 1.10, Meeple 0.69
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Leblanc, TFT17_Illaoi, TFT17_Pantheon | CORE TRAITS: Arbiter, Shepherd, Timebreaker
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leblanc -> TFT17_Leblanc | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pantheon | core=SIM | fit=1.09 | Brawler=1.09
+[19:31:30] MOVE Bench -> Board: Pantheon (i:4.0) <-> LeBlanc (i:8.0) | Rew: +0.28
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Leblanc | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 3.76, Arbiter 2.70, Shepherd 1.62, Brawler 1.24, Meeple 0.68
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Leblanc, TFT17_Illaoi, TFT17_Pantheon | CORE TRAITS: Timebreaker, Brawler, Replicator
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leblanc -> TFT17_Leblanc | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pantheon | core=SIM | fit=1.10 | Brawler=1.10
+[19:31:31] MOVE Bench -> Board: LeBlanc (i:8.0) <-> Poppy (i:2.0) | Rew: -0.09
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Leblanc | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 3.63, Arbiter 2.67, Shepherd 1.68, Brawler 1.33, Meeple 0.69
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Leblanc, TFT17_Illaoi, TFT17_Pantheon | CORE TRAITS: Timebreaker, Brawler, Replicator
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leblanc -> TFT17_Leblanc | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: LeBlanc | core=SIM | fit=4.32 | Arbiter=2.70, Shepherd=1.62
+[19:31:31] VENDEU: Poppy (i:2.0)        | Rew: +0.09
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Leblanc | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 3.54, Arbiter 2.65, Shepherd 1.75, Brawler 1.43, Meeple 0.63
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Leblanc, TFT17_Illaoi, TFT17_Pantheon | CORE TRAITS: Timebreaker, Brawler, Replicator
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leblanc -> TFT17_Leblanc | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Poppy | core=não | fit=0.69 | Meeple=0.69
+[19:31:32] COMPROU: Pantheon (Custo 2 | i:4.0) | Rew: +0.47
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 3.50, Arbiter 2.68, Shepherd 1.83, Brawler 1.40, Meeple 0.59
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_Illaoi | CORE TRAITS: Arbiter, Shepherd, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Leblanc -> TFT17_Pantheon | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pantheon | core=SIM | fit=1.43 | Brawler=1.43
+[19:31:33] MOVE Bench -> Board: Pantheon (i:8.0) <-> Vazio | Rew: +0.48
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 3.48, Arbiter 2.71, Shepherd 1.92, Brawler 1.34, Meeple 0.55
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_Illaoi | CORE TRAITS: Arbiter, Shepherd, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pantheon | core=SIM | fit=1.40 | Brawler=1.40
+[19:31:33] COMPROU: Veigar (Custo 1 | i:2.0) | Rew: -0.09
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 3.44, Arbiter 2.72, Shepherd 1.99, Brawler 1.27, Meeple 0.58
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_Illaoi | CORE TRAITS: Replicator, Arbiter, Shepherd
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=não | fit=0.55 | Meeple=0.55
+[19:31:34] VENDEU: Veigar (i:2.0)       | Rew: +0.08
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 3.42, Arbiter 2.75, Shepherd 2.07, Brawler 1.22, Meeple 0.54
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_Illaoi | CORE TRAITS: Arbiter, Shepherd, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=não | fit=0.58 | Meeple=0.58
+[19:31:35] COMPROU: Twisted Fate (Custo 1 | i:2.0) | Rew: -0.10
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 3.40, Arbiter 2.78, Shepherd 2.14, Brawler 1.17, Meeple 0.51
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_Illaoi | CORE TRAITS: Arbiter, Shepherd, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=0.00 | nenhum trait de foco
+
+[19:31:36] --- FIM DO ROUND 2-7 | GOLD: 7 ---
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 3.37, Arbiter 2.83, Shepherd 2.27, Brawler 1.09, Meeple 0.44
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Pan|T|2*|i:8.0]  [LeB|C|1*|i:8.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]        [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 1 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+[Twi|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:31:36] 🛒 LOJA: Pyke(i:4.0), Nasus(i:2.0), Miss Fortune(i:6.0), Meepsie(i:4.0), Pantheon(i:4.0)
+[19:31:36] VENDEU: Twisted Fate (i:2.0) | Rew: +0.09
+    STRATEGY: ECON | COMP DIRECTION: — | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Vanguard 3.35, Arbiter 2.86, Shepherd 2.36, Brawler 1.03, Meeple 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_Illaoi | CORE TRAITS: Arbiter, Shepherd, Vanguard
+    COMP BEFORE -> AFTER: dir=— -> — | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 8 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Twisted Fate | core=não | fit=0.00 | nenhum trait de foco
+[19:31:37] COMPROU: Pantheon (Custo 2 | i:4.0) | Rew: +0.09
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 4.66
+FOCUS WEIGHTS: Shepherd 4.52, Vanguard 2.46, Arbiter 2.23, Brawler 0.64, Meeple 0.15
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_Illaoi | CORE TRAITS: Timebreaker, Brawler, Replicator
+    COMP BEFORE -> AFTER: dir=— -> Shepherd | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=0.00 -> 4.66
+    GOLD: 6 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pantheon | core=SIM | fit=1.03 | Brawler=1.03
+[19:31:38] ⭐ EVOLUÇÃO: Pantheon subiu para 2 estrelas! (i:8.0)
+[19:31:38] MOVE Bench -> Board: Pantheon (i:4.0) <-> Pantheon (i:8.0) | Rew: -0.20
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 4.66
+FOCUS WEIGHTS: Shepherd 6.10, Vanguard 1.80, Arbiter 1.65, Brawler 0.37, Meeple 0.07
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_Illaoi | CORE TRAITS: Timebreaker, Brawler, Replicator
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=4.66 -> 4.66
+    GOLD: 6 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pantheon | core=SIM | fit=0.64 | Brawler=0.64
+[19:31:38] MOVE Bench -> Board: Pantheon (i:8.0) <-> LeBlanc (i:8.0) | Rew: +0.28
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 4.24
+FOCUS WEIGHTS: Shepherd 5.30, Vanguard 2.17, Brawler 0.92, Arbiter 0.88, Timebreaker 0.74
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_Illaoi | CORE TRAITS: Timebreaker, Brawler, Replicator
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=4.66 -> 4.24
+    GOLD: 6 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pantheon | core=SIM | fit=0.37 | Brawler=0.37
+[19:31:39] MOVE Bench -> Board: LeBlanc (i:8.0) <-> Pantheon (i:4.0) | Rew: -0.08
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 4.24
+FOCUS WEIGHTS: Shepherd 7.08, Vanguard 1.30, Arbiter 0.64, Brawler 0.54, Timebreaker 0.45
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_Illaoi | CORE TRAITS: Arbiter, Shepherd, Timebreaker
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=4.24 -> 4.24
+    GOLD: 6 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: LeBlanc | core=SIM | fit=6.18 | Arbiter=0.88, Shepherd=5.30
+[19:31:40] ⭐ EVOLUÇÃO: Pantheon subiu para 2 estrelas! (i:8.0)
+[19:31:40] MOVE Bench -> Board: Pantheon (i:4.0) <-> Pantheon (i:8.0) | Rew: -0.20
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 4.44
+FOCUS WEIGHTS: Shepherd 6.47, Vanguard 1.72, Arbiter 0.99, Brawler 0.55, Timebreaker 0.27
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_Illaoi | CORE TRAITS: Arbiter, Shepherd, Timebreaker
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=4.24 -> 4.44
+    GOLD: 6 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pantheon | core=SIM | fit=0.98 | Timebreaker=0.45, Brawler=0.54
+[19:31:41] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Shepherd | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 4.44
+FOCUS WEIGHTS: Shepherd 7.72, Vanguard 1.05, Arbiter 0.68, Brawler 0.34, Timebreaker 0.20
+    STRATEGY REASON: Board abaixo do esperado | CONF: 0.70
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_Illaoi | CORE TRAITS: Arbiter, Shepherd, Timebreaker
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=4.44 -> 4.44
+    GOLD: 6 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[19:31:42] MOVE Bench -> Board: Pantheon (i:8.0) <-> Vazio | Rew: +0.60
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 4.42
+FOCUS WEIGHTS: Shepherd 7.81, Vanguard 0.79, Arbiter 0.71, Brawler 0.42, Timebreaker 0.26
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_Illaoi | CORE TRAITS: Arbiter, Shepherd, Timebreaker
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=4.42 -> 4.42
+    GOLD: 6 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Pantheon | core=SIM | fit=0.67 | Timebreaker=0.17, Brawler=0.50
+
+[19:31:43] --- FIM DO ROUND 3-1 | GOLD: 12 ---
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 4.57
+FOCUS WEIGHTS: Shepherd 7.64, Arbiter 0.70, Brawler 0.63, Timebreaker 0.59, Vanguard 0.45
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [LeB|C|1*|i:8.0]  [Pan|T|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Leo|T|1*|i:2.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Pan|T|2*|i:8.0]  [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:31:43] 🛒 LOJA: Zoe(i:4.0), Veigar(i:2.0), Miss Fortune(i:6.0), Gnar(i:4.0), Pantheon(i:4.0)
+[19:31:43] COMPROU: Miss Fortune (Custo 3 | i:6.0) | Rew: -0.17
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 4.73
+FOCUS WEIGHTS: Shepherd 6.61, Arbiter 1.04, Brawler 1.00, Replicator 0.89, Timebreaker 0.46
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_Illaoi | CORE TRAITS: Replicator, Arbiter, Shepherd
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=4.57 -> 4.73
+    GOLD: 9 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Miss Fortune | core=não | fit=0.00 | nenhum trait de foco
+[19:31:43]  ⬆️ SINERGIA: REPLICATOR nível 1
+[19:31:44] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> LeBlanc (i:8.0) | Rew: +0.08
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 4.73
+FOCUS WEIGHTS: Shepherd 7.26, Brawler 0.80, Replicator 0.77, Arbiter 0.68, Timebreaker 0.48
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Challenger, Timebreaker
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=4.73 -> 4.73
+    GOLD: 9 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Miss Fortune | core=não | fit=0.89 | Replicator=0.89
+[19:31:45] MOVE Bench -> Board: LeBlanc (i:8.0) <-> Pantheon (i:4.0) | Rew: -0.08
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 4.75
+FOCUS WEIGHTS: Shepherd 6.58, Replicator 1.25, Arbiter 1.03, Challenger 0.70, Brawler 0.44
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Challenger, Arbiter
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=4.73 -> 4.75
+    GOLD: 9 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: LeBlanc | core=SIM | fit=7.95 | Arbiter=0.68, Shepherd=7.26
+[19:31:45] MOVE Bench -> Board: Pantheon (i:4.0) <-> Miss Fortune (i:6.0) | Rew: +0.09
+    STRATEGY: ECON | COMP DIRECTION: Shepherd | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 4.75
+FOCUS WEIGHTS: Shepherd 7.66, Replicator 0.83, Arbiter 0.69, Challenger 0.41, Brawler 0.40
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_Illaoi | CORE TRAITS: Replicator, Timebreaker, Brawler
+    COMP BEFORE -> AFTER: dir=Shepherd -> Shepherd | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=4.75 -> 4.75
+    GOLD: 9 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Pantheon | core=SIM | fit=1.68 | Brawler=0.44, Replicator=1.25
+[19:31:46] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> LeBlanc (i:8.0) | Rew: +0.08
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 4.64
+FOCUS WEIGHTS: Replicator 4.62, Shepherd 3.36, Challenger 0.83, Brawler 0.83, Arbiter 0.36
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Timebreaker, Brawler
+    COMP BEFORE -> AFTER: dir=Shepherd -> Replicator | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=4.75 -> 4.64
+    GOLD: 9 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Miss Fortune | core=não | fit=1.25 | Challenger=0.41, Replicator=0.83
+[19:31:47] MOVE Bench -> Board: LeBlanc (i:8.0) <-> Pantheon (i:4.0) | Rew: -0.45
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 4.64
+FOCUS WEIGHTS: Replicator 6.39, Shepherd 2.28, Challenger 0.55, Brawler 0.44, Arbiter 0.33
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Arbiter, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=4.64 -> 4.64
+    GOLD: 9 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: LeBlanc | core=SIM | fit=3.72 | Arbiter=0.36, Shepherd=3.36
+[19:31:48] MOVE Bench -> Board: Pantheon (i:4.0) <-> Leona (i:2.0) | Rew: +0.10
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 4.72
+FOCUS WEIGHTS: Replicator 6.09, Shepherd 2.08, Challenger 0.84, Brawler 0.80, Arbiter 0.19
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Arbiter, Shepherd
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=4.64 -> 4.72
+    GOLD: 9 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Pantheon | core=SIM | fit=6.83 | Brawler=0.44, Replicator=6.39
+[19:31:48] VENDEU: Leona (i:2.0)        | Rew: +0.15
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Pantheon | LOCK: OPEN | STRENGTH: 4.72
+FOCUS WEIGHTS: Replicator 7.50, Shepherd 1.18, Challenger 0.58, Brawler 0.56, Timebreaker 0.18
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Shepherd, Challenger
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> False | strength=4.72 -> 4.72
+    GOLD: 10 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Leona | core=não | fit=0.19 | Arbiter=0.19
+[19:31:49] BUY XP                       | Rew: -0.07
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Pantheon | LOCK: LOCKED | STRENGTH: 5.83
+FOCUS WEIGHTS: Replicator 7.80, Shepherd 1.14, Challenger 0.42, Brawler 0.41, Timebreaker 0.24
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Shepherd, Challenger
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=False -> True | strength=4.72 -> 5.83
+    GOLD: 6 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[19:31:50] --- FIM DO ROUND 3-2 | GOLD: 12 ---
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Pantheon | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Replicator 8.59, Shepherd 0.46, Challenger 0.33, Brawler 0.33, Timebreaker 0.30
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [LeB|C|1*|i:8.0]  [Mis|T|1*|i:6.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]        [Pan|T|1*|i:4.0]       [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Ill|T|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+ [Pan|T|2*|i:8.0]  [Jin|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ 1 carry(s) expostos na frontline
+⚠️ 2 tank(s) posicionados atrás
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+[19:31:50] 🛒 LOJA: Lulu(i:6.0), Pantheon(i:4.0), Miss Fortune(i:6.0), Mordekaiser(i:4.0), Rammus(i:8.0)
+[19:31:50] COMPROU: Pantheon (Custo 2 | i:4.0) | Rew: +0.23
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Pantheon | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Replicator 8.90, Shepherd 0.30, Brawler 0.28, Timebreaker 0.27, Challenger 0.25
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Timebreaker, Brawler
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 10 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Pantheon | core=SIM | fit=9.21 | Timebreaker=0.30, Brawler=0.33, Replicator=8.59
+[19:31:50]  ⬆️ SINERGIA: BRAWLER nível 1
+[19:31:50]  ⬆️ SINERGIA: TIMEBREAKER nível 1
+[19:31:51] MOVE Bench -> Board: Pantheon (i:4.0) <-> Miss Fortune (i:6.0) | Rew: +0.05
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Pantheon | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Replicator 8.86, Brawler 0.33, Timebreaker 0.32, Shepherd 0.31, Challenger 0.18
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_Illaoi | CORE TRAITS: Replicator, Timebreaker, Brawler
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 10 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Pantheon | core=SIM | fit=9.45 | Timebreaker=0.27, Brawler=0.28, Replicator=8.90
+[19:31:52] MOVE Bench -> Board: Miss Fortune (i:6.0) <-> LeBlanc (i:8.0) | Rew: +0.28
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Pantheon | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Replicator 9.08, Brawler 0.28, Timebreaker 0.28, Challenger 0.20, Shepherd 0.16
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Timebreaker, Brawler
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 10 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Miss Fortune | core=não | fit=9.03 | Challenger=0.18, Replicator=8.86
+[19:31:52] MOVE Bench -> Board: LeBlanc (i:8.0) <-> Pantheon (i:4.0) | Rew: -0.46
+    STRATEGY: ECON | COMP DIRECTION: Replicator | FOCUS: TFT17_Pantheon | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Replicator 8.81, Brawler 0.34, Timebreaker 0.34, Challenger 0.27, Shepherd 0.25
+    STRATEGY REASON: Estado econômico neutro | CONF: 0.50
+    CORE UNITS: TFT17_Pantheon, TFT17_Leblanc, TFT17_MissFortune_TraitClone | CORE TRAITS: Replicator, Timebreaker, Brawler
+    COMP BEFORE -> AFTER: dir=Replicator -> Replicator | foco=TFT17_Pantheon -> TFT17_Pantheon | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 10 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: LeBlanc | core=SIM | fit=0.16 | Shepherd=0.16
