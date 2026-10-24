@@ -46,6 +46,18 @@ int main() {
             BoardEvaluation::evaluate(roles).total_score,
             "moving tank forward and carry backward should improve board quality");
 
+    // A fighter is a weaker protector than a tank, but should still count as
+    // frontline when it stands directly in front of the carry.
+    Roles fighter_protection(PE::size, -1);
+    fighter_protection[2 * PE::cols + 3] = PE::fighter;
+    fighter_protection[3 * PE::cols + 3] = PE::carry;
+    const auto fighter_protected_eval =
+        BoardEvaluation::evaluate(fighter_protection, {}, 0.0, {24});
+    require(fighter_protected_eval.exposed_carry_count == 0,
+            "frontline fighter directly in front should protect a carry");
+    require(fighter_protected_eval.exposed_main_carry_count == 0,
+            "main carry should accept a fighter as partial frontline protection");
+
     // Frontline distribution: two lanes beat a single isolated lane for a larger board.
     Roles narrow_frontline(PE::size, -1);
     narrow_frontline[3] = PE::tank;       // row 0, column 3
