@@ -132,6 +132,8 @@ def run_match(factory, baseline, candidate, candidate_slots, seed, device, max_s
             chosen.update(policy_actions(policies["baseline"], observations, masks, baseline_indices, device))
 
             for player_id, action_values in chosen.items():
+                if not lobby.players[player_id].alive:
+                    continue
                 action_type = int(action_values[0])
                 counts = per_player_action_counts[player_id]
                 counts["actions"] += 1
