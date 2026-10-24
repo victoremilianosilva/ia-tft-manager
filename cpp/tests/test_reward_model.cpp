@@ -181,6 +181,37 @@ int main() {
         std::exit(EXIT_FAILURE);
     }
 
+    // Phase 5: item reward shaping balances immediate combat value with
+    // data-driven role/composition fit, shifting that balance by game stage.
+    const double weak_item_strength = item_immediate_strength(
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    const double damage_item_strength = item_immediate_strength(
+        10.0, 0.15, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    const double defense_item_strength = item_immediate_strength(
+        0.0, 0.0, 150.0, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    require_close(weak_item_strength, 0.0, "no numeric combat effects have zero immediate strength");
+    if (!(damage_item_strength > weak_item_strength &&
+          defense_item_strength > weak_item_strength &&
+          damage_item_strength <= 1.0 && defense_item_strength <= 1.0)) {
+        throw std::runtime_error("item immediate strength must respond to supported combat stats and stay normalized");
+    }
+    const double early_comp_fit = item_assignment_quality(0.2, 0.9, 0.9, 1);
+    const double early_raw_power = item_assignment_quality(0.9, 0.1, 0.1, 1);
+    if (!(early_comp_fit > early_raw_power)) {
+        throw std::runtime_error("early-game item reward should favor planned-comp fit over raw stats alone");
+    }
+    const double late_raw_power = item_assignment_quality(0.9, 0.1, 0.1, 7);
+    const double late_comp_fit = item_assignment_quality(0.1, 0.9, 0.9, 7);
+    if (!(late_raw_power > late_comp_fit)) {
+        throw std::runtime_error("late-game item reward should favor immediate combat strength when comp fit is weak");
+    }
+    require_close(item_assignment_quality(0.0, 0.0, 0.0, 1), -0.05,
+                  "strategically poor item assignment has bounded negative reward");
+    if (item_assignment_quality(2.0, 2.0, 2.0, 4) > 0.15 ||
+        item_assignment_quality(-1.0, -1.0, -1.0, 4) < -0.05) {
+        throw std::runtime_error("item assignment reward must clamp out-of-range inputs");
+    }
+
     std::cout << "[PASS] C++ reward formulas and deterministic action sequence.\n";
     return EXIT_SUCCESS;
 }
