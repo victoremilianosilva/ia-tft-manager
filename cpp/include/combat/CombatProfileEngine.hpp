@@ -86,9 +86,15 @@ public:
         if (u.attack_range >= 3) scores[2] += 0.15;
         if (contains_any(text, assassin_keywords)) scores[4] += 2.0;
 
-        // Python max(dict, key=dict.get) resolves ties by enum insertion order.
-        int best = 0;
-        for (int i = 1; i < 5; ++i) if (scores[static_cast<std::size_t>(i)] > scores[static_cast<std::size_t>(best)]) best = i;
+        // A profile with no role evidence is a generic fighter, not a tank.
+        // Starting at role 0 made every all-zero/tied profile default to TANK,
+        // which leaked into the planner, board evaluator, and viewer labels.
+        // Strict comparison keeps fighter as the deterministic tie-breaker for
+        // ambiguous profiles while strong defensive evidence still selects tank.
+        int best = 3;
+        for (int i = 0; i < 5; ++i)
+            if (scores[static_cast<std::size_t>(i)] >
+                scores[static_cast<std::size_t>(best)]) best = i;
         return static_cast<ProfileRole>(best);
     }
 
