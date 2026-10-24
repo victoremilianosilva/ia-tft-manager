@@ -299,6 +299,11 @@ bool should_buy_unit(
         if (upgrade_value > 0.0 || impact > 0.6) return true;
         return cost >= 3 && in_top_trait && impact > 0.2;
     }
+    // A nearly full bench should still allow a composition-relevant pair: the
+    // marginal value is a future 2-star, not just the candidate's board impact.
+    // At a completely full bench, require a stronger upgrade (third copy) or
+    // exceptional immediate impact so the policy cannot fill itself into a corner.
+    if (bench_count <= 8 && upgrade_value >= 0.2 && in_top_trait) return true;
     return upgrade_value >= 0.6 || impact > 1.2;
 }
 
