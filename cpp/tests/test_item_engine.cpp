@@ -1,4 +1,5 @@
 #include "items/ItemEngine.hpp"
+#include "items/ItemActionContract.hpp"
 #include "items/CombatItemAdapter.hpp"
 #include "items/ItemCatalog.hpp"
 
@@ -94,11 +95,6 @@ int main() {
     require(engine.equipped("carry-1").size() == 1, "equipped item is tracked by unit UUID");
     require(!engine.equip("damage_blade", tank), "cannot equip an item not in inventory");
 
-    require(engine.transfer("damage_blade", "carry-1", tank), "transfer item between units");
-    require(engine.equipped("carry-1").empty(), "transfer removes item from source");
-    require(engine.equipped("tank-1").size() == 1, "transfer adds item to destination");
-    require(engine.unequip("damage_blade", "tank-1"), "unequip returns item to inventory");
-    require(engine.inventory().size() == 1, "unequip returns item to inventory");
 
     require(engine.add_component("armor"), "armor component accepted");
     require(engine.add_component("cloak"), "cloak component accepted");
@@ -111,90 +107,66 @@ int main() {
     const auto double_craft = engine.craft("rod", "rod");
     require(double_craft && *double_craft == "double_rod",
             "recipes may consume two copies of the same component");
-    require(item_action_reward(2.0, 1.0, 1.0) > 0.0,
-            "valuable immediate item gain under pressure should be positive");
-    require(item_action_reward(0.2, 2.0, 0.0) < 0.0,
-            "preserving high future value early should discourage a weak craft");
-    require(item_action_reward(0.0, 0.0, 0.5, 0.0) == 0.0,
-            "no-op transfer must not create reward");
-    require(item_action_reward(1.0, 0.0, 0.5, 2.0) >
-            item_action_reward(1.0, 0.0, 0.5, -2.0),
-            "transfer reward should depend on marginal holder improvement");
     require(engine.metrics().crafts == 3, "craft metric");
     require(engine.metrics().equips == 1, "equip metric");
-    require(engine.metrics().transfers == 1, "transfer metric");
-    require(engine.metrics().unequips == 1, "unequip metric");
     require(engine.metrics().invalid_actions >= 2, "invalid operations are counted");
 
-    ItemEngine transfer_engine({damage});
-    require(transfer_engine.add_component("sword"), "transfer decision sword accepted");
-    require(transfer_engine.add_component("bow"), "transfer decision bow accepted");
-    require(transfer_engine.craft("sword", "bow").has_value(), "transfer decision item crafted");
-    require(transfer_engine.equip("damage_blade", tank), "transfer decision item equipped");
-    const auto transfer_decision = transfer_engine.decide_best_action({carry, tank}, 4, 45.0);
-    require(transfer_decision.kind == DecisionKind::TRANSFER,
-            "decision search should transfer an item to a meaningfully better holder");
-    require(transfer_decision.source_unit_uuid == "tank-1" &&
-            transfer_decision.target_unit_uuid == "carry-1",
-            "transfer decision should identify source and destination units");
+    // Item operations are commands selected by the main policy. There is
+    // no item-specific WAIT or parallel heuristic decision function.
+    ItemActionCommand equip_command;
+    equip_command.operation = ItemOperation::EQUIP_FROM_INVENTORY;
+    equip_command.item_id = "guard_plate";
+    equip_command.target_unit_uuid = "tank-1";
+    const auto equip_result = engine.apply_action(equip_command, {carry, tank});
+    require(equip_result.success, "policy equip action should execute");
+    require(engine.equipped("tank-1").size() == 1 &&
+            engine.inventory().size() == 1,
+            "equip action should consume exactly one inventory item");
 
-    const auto applied_transfer = transfer_engine.apply_decision(
-        transfer_decision, {carry, tank});
-    require(applied_transfer.success && applied_transfer.reward > 0.0,
-            "applying a beneficial item decision should succeed and reward marginal gain");
-    require(transfer_engine.equipped("carry-1").size() == 1 &&
-            transfer_engine.equipped("tank-1").empty(),
-            "applied transfer decision should mutate equipment exactly once");
+    require(engine.add_component("sword"), "policy craft sword accepted");
+    require(engine.add_component("bow"), "policy craft bow accepted");
+    ItemActionCommand craft_command;
+    craft_command.operation = ItemOperation::CRAFT_AND_EQUIP;
+    craft_command.first_component_id = "sword";
+    craft_command.second_component_id = "bow";
+    craft_command.target_unit_uuid = "carry-1";
+    const auto craft_result = engine.apply_action(craft_command, {carry, tank});
+    require(craft_result.success, "policy craft-and-equip action should execute");
+    require(engine.components().empty() &&
+            engine.equipped("carry-1").size() == 2,
+            "craft-and-equip should consume components and equip exactly once");
 
-    ItemDecision stale_transfer = transfer_decision;
-    const auto rejected_transfer = transfer_engine.apply_decision(
-        stale_transfer, {carry, tank});
-    require(!rejected_transfer.success && rejected_transfer.reward == 0.0,
-            "stale transfer decisions must be rejected without reward");
+    ItemActionCommand invalid_command;
+    invalid_command.target_unit_uuid = "carry-1";
+    const auto invalid_result = engine.apply_action(invalid_command, {carry, tank});
+    require(!invalid_result.success,
+            "missing operation must be rejected rather than interpreted as WAIT");
+    require(engine.metrics().crafts == 4, "craft metric");
+    require(engine.metrics().equips == 3, "equip metric");
+    require(engine.metrics().invalid_actions >= 2, "invalid operations are counted");
 
+    // Phase 1 contract: repeated component IDs represent separate copies,
+    // and equipment is keyed by unit-instance UUID rather than champion ID.
+    tft::items::ItemPlayerState item_state;
+    item_state.components = {"sword", "sword"};
+    item_state.inventory = {"damage_blade"};
+    item_state.equipped_by_unit_uuid["unit-copy-a"] = {"damage_blade"};
+    item_state.equipped_by_unit_uuid["unit-copy-b"] = {};
+    require(item_state.components.size() == 2 &&
+            item_state.components[0] == item_state.components[1],
+            "item state must preserve duplicate component copies");
+    require(item_state.equipped_by_unit_uuid["unit-copy-a"].size() == 1 &&
+            item_state.equipped_by_unit_uuid["unit-copy-b"].empty(),
+            "equipment must be tracked independently for each unit UUID");
+    tft::items::ItemActionCommand item_command;
+    item_command.operation = tft::items::ItemOperation::EQUIP_FROM_INVENTORY;
+    item_command.item_id = "damage_blade";
+    item_command.target_unit_uuid = "unit-copy-b";
+    require(item_command.operation.has_value() &&
+            *item_command.operation == tft::items::ItemOperation::EQUIP_FROM_INVENTORY &&
+            item_command.target_unit_uuid == "unit-copy-b",
+            "semantic equip command must identify the target unit instance");
 
-    const auto missing_components = engine.decide_craft("sword", "bow", {carry, tank}, 6, 20.0);
-    require(missing_components.kind == DecisionKind::WAIT,
-            "decision must not craft components that are not in inventory");
-    require(engine.add_component("sword"), "decision test sword accepted");
-    require(engine.add_component("bow"), "decision test bow accepted");
-    const auto urgent = engine.decide_craft("sword", "bow", {carry, tank}, 6, 20.0);
-    require(urgent.kind == DecisionKind::CRAFT_AND_EQUIP,
-            "useful craft under pressure should be considered");
-    require(urgent.target_unit_uuid == "carry-1",
-            "decision should choose the stronger item holder");
-    const auto no_recipe = engine.decide_craft("component_a", "component_b", {carry}, 2, 100.0);
-    require(no_recipe.kind == DecisionKind::WAIT,
-            "no known recipe must preserve components");
-    const auto best_action = engine.decide_best_action({carry, tank}, 2, 100.0);
-    require(best_action.kind == DecisionKind::EQUIP_FROM_INVENTORY ||
-            best_action.kind == DecisionKind::CRAFT_AND_EQUIP,
-            "best-action search should compare inventory and craft options");
-
-
-    // Regression: transfers must respect the destination's three-item cap and
-    // must be atomic when rejected (the source keeps the item).
-    ItemEngine capacity_engine({damage, guard, double_component});
-    const auto add_and_craft = [&capacity_engine](const std::string& a,
-                                                   const std::string& b) {
-        require(capacity_engine.add_component(a), "capacity fixture first component");
-        require(capacity_engine.add_component(b), "capacity fixture second component");
-        require(capacity_engine.craft(a, b).has_value(), "capacity fixture craft");
-    };
-    add_and_craft("sword", "bow");
-    add_and_craft("armor", "cloak");
-    add_and_craft("rod", "rod");
-    add_and_craft("sword", "bow");
-    require(capacity_engine.equip("damage_blade", carry), "capacity carry item 1");
-    require(capacity_engine.equip("guard_plate", carry), "capacity carry item 2");
-    require(capacity_engine.equip("double_rod", carry), "capacity carry item 3");
-    require(capacity_engine.equip("damage_blade", tank), "capacity source item");
-    require(!capacity_engine.transfer("damage_blade", "tank-1", carry),
-            "transfer to a unit with three items must be rejected");
-    require(capacity_engine.equipped("tank-1").size() == 1 &&
-            capacity_engine.equipped("carry-1").size() == 3,
-            "rejected transfer must not mutate source or destination equipment");
-
-    std::cout << "[PASS] Item inventory, recipes, equip, transfer, and decision tests.\n";
+    std::cout << "[PASS] Item inventory, recipes, equip, and decision tests.\n";
     return EXIT_SUCCESS;
 }
