@@ -886,6 +886,7 @@ class TFTPolicy(nn.Module):
 
             target_index = actions[equip_item_mask, 2].long()
             item_context = F.one_hot(item_index, num_classes=9).to(dtype=conditioned.dtype)
+            item_context = F.pad(item_context, (0, 1))
             target_context = torch.cat([item_context, torch.zeros_like(item_context)], dim=-1)
             target_mask = masks["item_target_mask"][equip_item_mask]
             target_logits = self._mask_logits(
@@ -912,7 +913,7 @@ class TFTPolicy(nn.Module):
             total_logprob[craft_item_mask] += first_dist.log_prob(first_index)
             total_entropy[craft_item_mask] += first_dist.entropy()
 
-            first_onehot = F.one_hot(first_index, num_classes=9).to(dtype=conditioned.dtype)
+            first_onehot = F.one_hot(first_index, num_classes=10).to(dtype=conditioned.dtype)
             second_logits = self.item_component_second_head(torch.cat([conditioned_item, first_onehot], dim=-1))
             pair_masks = masks["item_component_pair_masks"][craft_item_mask]
             second_mask = pair_masks[
@@ -924,7 +925,7 @@ class TFTPolicy(nn.Module):
             total_logprob[craft_item_mask] += second_dist.log_prob(second_index)
             total_entropy[craft_item_mask] += second_dist.entropy()
 
-            second_onehot = F.one_hot(second_index, num_classes=9).to(dtype=conditioned.dtype)
+            second_onehot = F.one_hot(second_index, num_classes=10).to(dtype=conditioned.dtype)
             target_context = torch.cat([first_onehot, second_onehot], dim=-1)
             target_mask = masks["item_target_mask"][craft_item_mask]
             target_logits = self._mask_logits(
