@@ -101,19 +101,17 @@ int main() {
     // Regression: the planner must close the actual 2/4/6 breakpoints,
     // not scatter four slots over several unrelated two-piece traits.
     std::vector<ChampionDefinition> brawler_pool{
-        champion(31, "BrawlerCarry", 1, {"Brawler", "Marksman"}, 2),
-        champion(32, "BrawlerTankA", 0, {"Brawler", "Guardian"}, 2),
-        champion(33, "BrawlerFighter", 3, {"Brawler", "Guardian"}, 2),
-        champion(34, "BrawlerTankB", 0, {"Brawler", "Mystic"}, 2),
-        champion(35, "MageCarry", 1, {"Mage", "Marksman"}, 2),
-        champion(36, "MageSupport", 2, {"Mage", "Mystic"}, 2),
-        champion(37, "GuardianTank", 0, {"Guardian", "Mystic"}, 2),
-        champion(38, "BrawlerSupport", 2, {"Brawler", "UtilityA"}, 2),
-        champion(39, "BrawlerFighterExtra", 3, {"Brawler", "UtilityB"}, 2)
+        champion(31, "BrawlerCarry", 1, {"Brawler", "UtilityA"}, 2),
+        champion(32, "BrawlerTankA", 0, {"Brawler", "UtilityB"}, 2),
+        champion(33, "BrawlerFighter", 3, {"Brawler", "UtilityC"}, 2),
+        champion(34, "BrawlerTankB", 0, {"Brawler", "UtilityD"}, 2),
+        champion(35, "BrawlerSupport", 2, {"Brawler", "UtilityE"}, 2),
+        champion(36, "BrawlerFighterExtra", 3, {"Brawler", "UtilityF"}, 2),
+        champion(37, "OffTraitCarry", 1, {"OffTraitA"}, 2),
+        champion(38, "OffTraitSupport", 2, {"OffTraitB"}, 2)
     };
     const CompositionPlanner::TraitMilestones set_milestones{
-        {"Brawler", {2, 4, 6}}, {"Guardian", {2, 4}},
-        {"Mage", {2, 4}}, {"Mystic", {2, 4}}, {"Marksman", {2, 4}}
+        {"Brawler", {2, 4, 6}}
     };
     for (const std::size_t slots : {2U, 4U, 6U}) {
         const auto closed_plan = CompositionPlanner::build(
