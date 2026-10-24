@@ -241,6 +241,57 @@ inline double movement_no_progress_penalty(
         - 0.05 * std::tanh(std::max(0.0, -positioning_delta));
 }
 
+
+// Normalized immediate combat value for the numeric effects currently consumed
+// by CombatEngine. Stats that the simulator does not yet model (for example,
+// ability-specific passives) are intentionally excluded rather than guessed.
+inline double item_immediate_strength(
+    double attack_damage,
+    double attack_speed,
+    double max_health,
+    double armor,
+    double critical_strike_chance,
+    double critical_strike_damage,
+    double omnivamp,
+    double damage_amplification,
+    double damage_reduction
+) noexcept {
+    const double raw =
+        std::max(0.0, attack_damage) / 100.0 +
+        std::max(0.0, attack_speed) / 0.5 +
+        std::max(0.0, max_health) / 1000.0 +
+        std::max(0.0, armor) / 100.0 +
+        std::max(0.0, critical_strike_chance) / 0.5 +
+        std::max(0.0, critical_strike_damage) +
+        std::max(0.0, omnivamp) / 0.5 +
+        std::max(0.0, damage_amplification) / 0.5 +
+        std::max(0.0, damage_reduction) / 0.5;
+    return std::clamp(1.0 - std::exp(-raw), 0.0, 1.0);
+}
+
+// Potential-like reward for item assignment. Composition fit and catalog role
+// weights preserve long-term build value early; the balance shifts toward
+// measured immediate combat stats as the match approaches its end. This is
+// shaping only: it does not force a target or prescribe a particular item.
+inline double item_assignment_quality(
+    double immediate_strength,
+    double composition_fit,
+    double role_alignment,
+    int stage
+) noexcept {
+    const double immediate = std::clamp(immediate_strength, 0.0, 1.0);
+    const double fit = std::clamp(composition_fit, 0.0, 1.0);
+    const double role = std::clamp(role_alignment, 0.0, 1.0);
+    const double progress = std::clamp((static_cast<double>(stage) - 1.0) / 6.0, 0.0, 1.0);
+    const double composition_weight = 0.70 - 0.55 * progress;
+    const double immediate_weight = 1.0 - composition_weight;
+    const double long_term_value = 0.70 * fit + 0.30 * role;
+    return std::clamp(
+        0.20 * (immediate_weight * immediate +
+                composition_weight * long_term_value - 0.25),
+        -0.05, 0.15);
+}
+
 inline double clamp_total(double total) noexcept {
     return std::clamp(total, -5.0, 5.0);
 }

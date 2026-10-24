@@ -2691,6 +2691,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         bool buy_builds_pair = false;
         bool buy_strategy_approved = true;
         double candidate_board_impact = 0.0;
+        double item_assignment_reward = 0.0;
         double reroll_old_best_fit = 0.0;
         double reroll_new_best_fit = 0.0;
         bool bought_unit_successfully = false;
@@ -3125,6 +3126,43 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             }
             const auto result = this->item_engine->apply_action(command, profiles);
             if (!result.success) throw std::invalid_argument("Acao de item rejeitada: " + result.reason);
+
+            // Score the actual catalog item and selected unit after the action
+            // succeeds. The reward uses numeric combat effects plus the unit's
+            // normalized composition fit and catalog role weights; it never
+            // encodes champion-specific item assignments.
+            const auto& equipped_items = this->item_engine->equipped(target_unit->uuid);
+            const auto target_profile = std::find_if(
+                profiles.begin(), profiles.end(),
+                [&](const items::UnitProfile& profile) { return profile.uuid == target_unit->uuid; });
+            if (!equipped_items.empty() && target_profile != profiles.end()) {
+                const auto* item_definition = this->item_engine->find(equipped_items.back());
+                if (item_definition) {
+                    double role_alignment = 0.0;
+                    switch (target_profile->role) {
+                        case 0: role_alignment = item_definition->tank_weight; break;
+                        case 1: role_alignment = item_definition->carry_weight; break;
+                        case 2: role_alignment = item_definition->support_weight; break;
+                        case 3: role_alignment = std::max(
+                            item_definition->carry_weight, item_definition->tank_weight); break;
+                        case 4: role_alignment = item_definition->carry_weight; break;
+                        default: role_alignment = item_definition->utility_weight; break;
+                    }
+                    const double immediate_strength = reward_model::item_immediate_strength(
+                        item_definition->attack_damage,
+                        item_definition->attack_speed,
+                        item_definition->max_health,
+                        item_definition->armor,
+                        item_definition->critical_strike_chance,
+                        item_definition->critical_strike_damage,
+                        item_definition->omnivamp,
+                        item_definition->damage_amplification,
+                        item_definition->damage_reduction);
+                    item_assignment_reward = reward_model::item_assignment_quality(
+                        immediate_strength, target_profile->composition_fit,
+                        role_alignment, static_cast<int>(lobby.stage));
+                }
+            }
             lobby.sync_unit_items_from_engine(player_id, target_unit->uuid);
         } else if (type == 5) {
             // SELL: vender unidade do banco
@@ -3374,9 +3412,11 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 action_reward += reward_model::reversed_purchase_penalty();
             }
         } else if (type == 7 || type == 8) {
-            // Item actions use the normal environment/PPO reward path.
+            // Item actions use the normal environment/PPO reward path, with a
+            // bounded strategic signal balancing immediate combat value and
+            // long-term composition fit.
             success = true;
-            action_reward = 0.0;
+            action_reward = item_assignment_reward;
         } else {
             success = true;
             if (type == 6 && !this->strategy.empty()) {
