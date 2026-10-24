@@ -3131,8 +3131,12 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             success = true;
             if (type == 6 && !this->strategy.empty()) {
                 bool useful_purchase_available = false;
+                const bool has_free_bench_slot = std::any_of(
+                    this->bench.begin(), this->bench.end(),
+                    [](const auto& unit) { return !unit.has_value(); });
                 const auto& current_strategy = this->strategy.back();
-                for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
+                for (std::size_t slot = 0;
+                     has_free_bench_slot && slot < kShopSlots; ++slot) {
                     const auto* offer = shop.get_unit(static_cast<std::int32_t>(slot));
                     if (!offer) continue;
                     const auto* definition = lobby.catalog->find_by_id(offer->champion_internal_id);
