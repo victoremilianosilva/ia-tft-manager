@@ -123,17 +123,22 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
         unit.damage_reduction += item.damage_reduction;
     }
 
+    if (!std::isfinite(unit.max_hp) || !std::isfinite(unit.hp) ||
+        !std::isfinite(unit.attack_damage) || !std::isfinite(unit.attack_speed) ||
+        !std::isfinite(unit.ability_power) || !std::isfinite(unit.mana) ||
+        !std::isfinite(unit.critical_strike_chance) ||
+        !std::isfinite(unit.critical_strike_damage) ||
+        !std::isfinite(unit.armor) || !std::isfinite(unit.magic_resist) ||
+        !std::isfinite(unit.omnivamp) ||
+        !std::isfinite(unit.damage_amplification) ||
+        !std::isfinite(unit.damage_reduction)) {
+        error = "A soma dos atributos de itens excede os limites numericos.";
+        return false;
+    }
     unit.critical_strike_chance =
         std::clamp(unit.critical_strike_chance, 0.0f, 1.0f);
     unit.damage_reduction = std::clamp(unit.damage_reduction, 0.0f, 1.0f);
     unit.omnivamp = std::clamp(unit.omnivamp, 0.0f, 1.0f);
-    if (!std::isfinite(unit.max_hp) || !std::isfinite(unit.hp) ||
-        !std::isfinite(unit.attack_damage) || !std::isfinite(unit.attack_speed) ||
-        !std::isfinite(unit.armor) || !std::isfinite(unit.magic_resist) ||
-        !std::isfinite(unit.damage_amplification)) {
-        error = "A soma dos atributos de itens excede os limites numericos.";
-        return false;
-    }
     return true;
 }
 
