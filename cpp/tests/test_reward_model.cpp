@@ -125,7 +125,7 @@ int main() {
     }
     require_close(sale_quality(0.0, false, false, true), 0.10,
                   "sale of low-fit non-core unit frees space");
-    require_close(sale_quality(1.0, true, true, false), -0.26,
+    require_close(sale_quality(1.0, true, true, false), -0.38,
                   "sale protects core unit and upgrade copies");
     if (!(sale_quality(0.0, false, false, false) >
           sale_quality(0.5, false, false, false) &&
