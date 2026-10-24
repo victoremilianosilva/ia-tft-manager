@@ -339,8 +339,19 @@ def main() -> int:
     try:
         report = run_audit(args.checkpoint, args.out_dir, args.seed, args.max_steps, device_name=args.device)
     except Exception as exc:
+        args.out_dir.mkdir(parents=True, exist_ok=True)
+        report_path = args.out_dir / "audit.json"
+        if not report_path.exists():
+            report_path.write_text(json.dumps({
+                "status": "failed",
+                "checkpoint": str(args.checkpoint),
+                "seed": args.seed,
+                "max_steps": args.max_steps,
+                "complete_match": False,
+                "errors": [{"type": type(exc).__name__, "message": str(exc)}],
+            }, indent=2, ensure_ascii=False) + "\\n", encoding="utf-8")
         print("AUDIT FAILED: %s: %s" % (type(exc).__name__, exc), file=sys.stderr)
-        print("Consulte %s/audit.json para detalhes." % args.out_dir, file=sys.stderr)
+        print("Consulte %s para detalhes." % report_path, file=sys.stderr)
         return 1
     print(json.dumps({
         "status": report["status"],
