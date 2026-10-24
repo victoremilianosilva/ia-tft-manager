@@ -52,6 +52,14 @@ class CppTFTLobbyWrapper:
         ]
         self._closed = False
 
+    def grant_item_component(self, player_id: int, component_id: str) -> bool:
+        """Forward a validated loot event into the authoritative native player state."""
+        return bool(self._engine.grant_item_component(int(player_id), str(component_id)))
+
+    def grant_completed_item(self, player_id: int, item_id: str) -> bool:
+        """Forward a completed-item armory/loot event into the native player state."""
+        return bool(self._engine.grant_completed_item(int(player_id), str(item_id)))
+
     @property
     def players(self):
         """Compatibility view used by LobbyVectorEnv; state remains in C++."""
