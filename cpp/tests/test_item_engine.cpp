@@ -90,6 +90,18 @@ int main() {
     require(engine.metrics().unequips == 1, "unequip metric");
     require(engine.metrics().invalid_actions >= 2, "invalid operations are counted");
 
+    ItemEngine transfer_engine({damage});
+    require(transfer_engine.add_component("sword"), "transfer decision sword accepted");
+    require(transfer_engine.add_component("bow"), "transfer decision bow accepted");
+    require(transfer_engine.craft("sword", "bow").has_value(), "transfer decision item crafted");
+    require(transfer_engine.equip("damage_blade", tank), "transfer decision item equipped");
+    const auto transfer_decision = transfer_engine.decide_best_action({carry, tank}, 4, 45.0);
+    require(transfer_decision.kind == DecisionKind::TRANSFER,
+            "decision search should transfer an item to a meaningfully better holder");
+    require(transfer_decision.source_unit_uuid == "tank-1" &&
+            transfer_decision.target_unit_uuid == "carry-1",
+            "transfer decision should identify source and destination units");
+
     const auto missing_components = engine.decide_craft("sword", "bow", {carry, tank}, 6, 20.0);
     require(missing_components.kind == DecisionKind::WAIT,
             "decision must not craft components that are not in inventory");
