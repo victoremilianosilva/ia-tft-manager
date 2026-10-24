@@ -16,7 +16,7 @@ def create_test_batch():
     action_types = [0, 3, 4, 5, 6]
 
     masks = {
-        "type_mask": torch.zeros(batch_size, 7, dtype=torch.bool),
+        "type_mask": torch.zeros(batch_size, 9, dtype=torch.bool),
         "shop_mask": torch.zeros(batch_size, 5, dtype=torch.bool),
         "bench_source_mask": torch.zeros(
             batch_size, 9, dtype=torch.bool
