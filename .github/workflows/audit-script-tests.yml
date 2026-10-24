@@ -1,0 +1,27 @@
+name: TFT audit script tests
+
+on:
+  push:
+    branches: [audit/transactions-position-composition]
+    paths:
+      - 'scripts/audit_viewer_match.py'
+      - 'scripts/test_audit_viewer_match.py'
+      - '.github/workflows/audit-script-tests.yml'
+  pull_request:
+    paths:
+      - 'scripts/audit_viewer_match.py'
+      - 'scripts/test_audit_viewer_match.py'
+      - '.github/workflows/audit-script-tests.yml'
+
+jobs:
+  audit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile audit scripts
+        run: python -m py_compile scripts/audit_viewer_match.py scripts/test_audit_viewer_match.py
+      - name: Run audit regression tests
+        run: python -m unittest -v scripts/test_audit_viewer_match.py
