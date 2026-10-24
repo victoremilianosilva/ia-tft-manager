@@ -349,7 +349,7 @@ def main() -> int:
                 "max_steps": args.max_steps,
                 "complete_match": False,
                 "errors": [{"type": type(exc).__name__, "message": str(exc)}],
-            }, indent=2, ensure_ascii=False) + "\\n", encoding="utf-8")
+            }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         print("AUDIT FAILED: %s: %s" % (type(exc).__name__, exc), file=sys.stderr)
         print("Consulte %s para detalhes." % report_path, file=sys.stderr)
         return 1
