@@ -1,7 +1,7 @@
 
 import numpy as np
 import pytest
-ACTION_DIMS = (7, 5, 9, 28, 28, 28)
+ACTION_DIMS = (9, 5, 9, 28, 28, 28)
 try:
     from tft_engine import TFTLobby
 except ImportError:
@@ -145,8 +145,12 @@ def test_action_dimensions_accept_highest_valid_indices():
     try:
         engine.reset()
 
+        # PASS ignores legacy arguments, so their highest bounded indices
+        # exercise the original five argument domains without fabricating an
+        # item command whose arguments have type-specific semantics.
         actions = [
-            [dimension - 1 for dimension in ACTION_DIMS]
+            [6, ACTION_DIMS[1] - 1, ACTION_DIMS[2] - 1,
+             ACTION_DIMS[3] - 1, ACTION_DIMS[4] - 1, ACTION_DIMS[5] - 1]
             for _ in range(8)
         ]
 
@@ -237,7 +241,7 @@ def test_observation_reward_done_and_mask_formats():
         assert len(masks) == 8
 
         expected_shapes = {
-            "type_mask": (7,),
+            "type_mask": (9,),
             "shop_mask": (5,),
             "bench_source_mask": (9,),
             "board_target_mask": (28,),
@@ -245,6 +249,10 @@ def test_observation_reward_done_and_mask_formats():
             "board_move_target_masks": (28, 28),
             "bench_move_source_mask": (9,),
             "bench_to_board_target_masks": (9, 28),
+            "item_inventory_mask": (9,),
+            "item_component_first_mask": (10,),
+            "item_component_pair_masks": (10, 10),
+            "item_target_mask": (37,),
         }
 
         for player_masks in masks:
@@ -395,7 +403,7 @@ def test_default_action_masks_have_valid_fallbacks():
 
             # A unidade inicial no banco habilita mover/vender, além de PASS.
             assert masks["type_mask"].tolist() == [
-                False, False, False, True, False, True, True
+                False, False, False, True, False, True, True, False, False
             ]
 
     finally:

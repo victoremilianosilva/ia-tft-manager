@@ -30,7 +30,7 @@ class Trainer:
     # ================================================================
 
     ACTION_DIMS = [
-        7,   # type
+        9,   # type
         5,   # shop_slot
         9,   # bench_slot
         28,  # board_target
@@ -45,7 +45,7 @@ class Trainer:
     # ================================================================
 
     MASK_SHAPES = {
-        "type_mask": (7,),
+        "type_mask": (9,),
         "shop_mask": (5,),
         "bench_source_mask": (9,),
         "board_target_mask": (28,),
@@ -53,12 +53,17 @@ class Trainer:
         "board_move_target_masks": (28, 28),
         "bench_move_source_mask": (9,),
         "bench_to_board_target_masks": (9, 28),
+        "item_inventory_mask": (9,),
+        "item_component_first_mask": (10,),
+        "item_component_pair_masks": (10, 10),
+        "item_target_mask": (37,),
     }
 
     def __init__(
         self,
         num_envs=4,
         use_subprocess=True,
+        item_catalog_path=None,
     ):
 
         # ============================================================
@@ -150,8 +155,9 @@ class Trainer:
 
         print("🧩 Engine selecionada: C++ (única engine)")
 
+        resolved_item_catalog = item_catalog_path or os.environ.get("TFT_ITEM_CATALOG_PATH")
         def make_env():
-            return CppTFTLobbyWrapper()
+            return CppTFTLobbyWrapper(item_catalog_path=resolved_item_catalog)
 
 # ============================================================
         # 🚀 VECTOR ENV
@@ -478,6 +484,29 @@ class Trainer:
                                      and bool(source_mask[source])
                                      and 0 <= target < target_masks.shape[1]
                                      and bool(target_masks[source, target]))
+            elif action_type == int(ActionType.EQUIP_FROM_INVENTORY):
+                item_slot, target = int(action[1]), int(action[2])
+                inventory_mask = mask_np["item_inventory_mask"][agent_idx]
+                target_mask = mask_np["item_target_mask"][agent_idx]
+                conditional_valid = (
+                    0 <= item_slot < inventory_mask.shape[0]
+                    and bool(inventory_mask[item_slot])
+                    and 0 <= target < target_mask.shape[0]
+                    and bool(target_mask[target])
+                )
+            elif action_type == int(ActionType.CRAFT_AND_EQUIP):
+                first, second, target = int(action[1]), int(action[2]), int(action[3])
+                first_mask = mask_np["item_component_first_mask"][agent_idx]
+                pair_masks = mask_np["item_component_pair_masks"][agent_idx]
+                target_mask = mask_np["item_target_mask"][agent_idx]
+                conditional_valid = (
+                    0 <= first < first_mask.shape[0]
+                    and bool(first_mask[first])
+                    and 0 <= second < pair_masks.shape[1]
+                    and bool(pair_masks[first, second])
+                    and 0 <= target < target_mask.shape[0]
+                    and bool(target_mask[target])
+                )
             if not conditional_valid:
                 counts["conditional_invalid"] += 1
                 counts["selected_invalid"] += 1
@@ -507,7 +536,11 @@ class Trainer:
         Retorna um dicionário:
 
             {
-                "type_mask":        (agents, 7),
+                "type_mask":        (agents, 9),
+                "item_inventory_mask": (agents, 9),
+                "item_component_first_mask": (agents, 10),
+                "item_component_pair_masks": (agents, 10, 10),
+                "item_target_mask": (agents, 37),
                 "shop_mask":        (agents, 5),
                 ...
             }

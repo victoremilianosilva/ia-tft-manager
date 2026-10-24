@@ -89,6 +89,10 @@ py::dict masks_to_dict(const PlayerActionMasks& masks) {
         mask_2d<9, 28>(
             masks.bench_to_board_target_masks
         );
+    result["item_inventory_mask"] = mask_1d(masks.item_inventory_mask);
+    result["item_component_first_mask"] = mask_1d(masks.item_component_first_mask);
+    result["item_component_pair_masks"] = mask_2d<10, 10>(masks.item_component_pair_masks);
+    result["item_target_mask"] = mask_1d(masks.item_target_mask);
 
     return result;
 }
@@ -564,9 +568,10 @@ PYBIND11_MODULE(tft_engine, module) {
     // atravessam a fronteira Python/C++.
     py::class_<TFTEngine>(module, "TFTLobby")
         .def(
-            py::init<std::uint64_t, std::string>(),
+            py::init<std::uint64_t, std::string, std::string>(),
             py::arg("seed") = 0,
-            py::arg("catalog_path") = ""
+            py::arg("catalog_path") = "",
+            py::arg("item_catalog_path") = ""
         )
         .def(
             "reset",
@@ -707,6 +712,14 @@ PYBIND11_MODULE(tft_engine, module) {
         .def("set_unit_for_testing", &TFTEngine::set_unit_for_testing,
              py::arg("player_id"), py::arg("on_board"), py::arg("slot"),
              py::arg("champion_api_name"), py::arg("star") = 1)
+        .def("grant_item_component", &TFTEngine::grant_item_component,
+             py::arg("player_id"), py::arg("component_id"))
+        .def("grant_completed_item", &TFTEngine::grant_completed_item,
+             py::arg("player_id"), py::arg("item_id"))
+        .def("add_item_component_for_testing", &TFTEngine::add_item_component_for_testing,
+             py::arg("player_id"), py::arg("component_id"))
+        .def("add_completed_item_for_testing", &TFTEngine::add_completed_item_for_testing,
+             py::arg("player_id"), py::arg("item_id"))
         .def("set_player_alive_for_testing", &TFTEngine::set_player_alive_for_testing,
              py::arg("player_id"), py::arg("alive"))
         .def("set_player_economy_for_testing", &TFTEngine::set_player_economy_for_testing,

@@ -20,7 +20,9 @@ enum class ActionType : std::uint8_t {
     MOVE_BENCH = 3,
     MOVE_BOARD = 4,
     SELL       = 5,
-    PASS       = 6
+    PASS       = 6,
+    EQUIP_FROM_INVENTORY = 7,
+    CRAFT_AND_EQUIP = 8
 };
 
 // ============================================================
@@ -85,7 +87,7 @@ inline constexpr BoardIndex BOARD_SIZE = 28;
 inline constexpr BenchIndex BENCH_SIZE = 9;
 inline constexpr ShopIndex SHOP_SIZE   = 5;
 
-inline constexpr std::uint8_t ACTION_TYPE_COUNT = 7;
+inline constexpr std::uint8_t ACTION_TYPE_COUNT = 9;
 
 // ============================================================
 // Validação de índices brutos
@@ -143,10 +145,12 @@ static_assert(static_cast<std::uint8_t>(ActionType::MOVE_BENCH) == 3);
 static_assert(static_cast<std::uint8_t>(ActionType::MOVE_BOARD) == 4);
 static_assert(static_cast<std::uint8_t>(ActionType::SELL) == 5);
 static_assert(static_cast<std::uint8_t>(ActionType::PASS) == 6);
+static_assert(static_cast<std::uint8_t>(ActionType::EQUIP_FROM_INVENTORY) == 7);
+static_assert(static_cast<std::uint8_t>(ActionType::CRAFT_AND_EQUIP) == 8);
 
 static_assert(BOARD_SIZE == 28);
 static_assert(BENCH_SIZE == 9);
 static_assert(SHOP_SIZE == 5);
-static_assert(ACTION_TYPE_COUNT == 7);
+static_assert(ACTION_TYPE_COUNT == 9);
 
 } // namespace tft::decision

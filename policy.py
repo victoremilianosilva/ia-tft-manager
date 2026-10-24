@@ -10,7 +10,7 @@ class TFTPolicy(nn.Module):
         super().__init__()
 
         # 🛡️ Valida o contrato das seis dimensões antes de criar as camadas.
-        expected_dims = [7, 5, 9, 28, 28, 28]
+        expected_dims = [9, 5, 9, 28, 28, 28]
 
         if list(action_dims) != expected_dims:
             raise ValueError(
@@ -82,6 +82,17 @@ class TFTPolicy(nn.Module):
         self.board_move_target_head = nn.Linear(
             hidden_size + self.num_action_types + action_dims[4], action_dims[5]
         )
+        # Item operations share the same action type distribution and six-value
+        # action record, but use conditional argument heads so legacy shop/move
+        # argument heads retain their original dimensions.
+        self.item_inventory_head = nn.Linear(hidden_size + self.num_action_types, 9)
+        self.item_component_first_head = nn.Linear(hidden_size + self.num_action_types, 10)
+        self.item_component_second_head = nn.Linear(
+            hidden_size + self.num_action_types + 10, 10
+        )
+        self.item_target_head = nn.Linear(
+            hidden_size + self.num_action_types + 20, 37
+        )
         self.value_head = nn.Linear(hidden_size, 1)
 
     def load_compatible_state_dict(self, state_dict):
@@ -93,7 +104,11 @@ class TFTPolicy(nn.Module):
         at zero so inference initially preserves the old logits.
         """
         target = self.state_dict()
-        missing = sorted(set(target) - set(state_dict))
+        item_head_keys = {key for key in target if key.startswith((
+            "item_inventory_head.", "item_component_first_head.",
+            "item_component_second_head.", "item_target_head."
+        ))}
+        missing = sorted((set(target) - set(state_dict)) - item_head_keys)
         unexpected = sorted(set(state_dict) - set(target))
         if missing or unexpected:
             raise RuntimeError(
@@ -104,9 +119,27 @@ class TFTPolicy(nn.Module):
         migrated = False
         loaded = {}
         for key, target_value in target.items():
+            if key not in state_dict:
+                # New item-specific heads start from their deterministic module initialization.
+                loaded[key] = target_value
+                migrated = True
+                continue
             source_value = state_dict[key]
             if source_value.shape == target_value.shape:
                 loaded[key] = source_value
+                continue
+
+            if (
+                key in {"type_head.weight", "type_head.bias"}
+                and source_value.ndim == target_value.ndim
+                and source_value.shape[0] == 7
+                and target_value.shape[0] == 9
+                and source_value.shape[1:] == target_value.shape[1:]
+            ):
+                expanded = torch.zeros_like(target_value)
+                expanded[:7] = source_value
+                loaded[key] = expanded
+                migrated = True
                 continue
 
             if (
@@ -404,6 +437,11 @@ class TFTPolicy(nn.Module):
         type_logits = self.type_head(features)
         if masks is not None:
             type_logits = self._mask_logits(type_logits, masks["type_mask"])
+        else:
+            # Without the native legality snapshot, do not sample item commands
+            # that cannot be resolved/validated by the runtime.
+            type_logits = type_logits.clone()
+            type_logits[:, 7:] = torch.finfo(type_logits.dtype).min
         action_type = self._sample_categorical(type_logits, deterministic)
         
         type_dist = Categorical(logits=type_logits)
@@ -564,6 +602,77 @@ class TFTPolicy(nn.Module):
                 torch.where(move_board_mask)[0],
                 target_mask if masks is not None else None,
             )
+
+        # --- EQUIP FROM INVENTORY ---
+        equip_item_mask = action_type == 7
+        if equip_item_mask.any():
+            conditioned_item = conditioned[equip_item_mask]
+            logits = self.item_inventory_head(conditioned_item)
+            inventory_mask = masks["item_inventory_mask"][equip_item_mask] if masks is not None else None
+            if inventory_mask is not None:
+                logits = self._mask_logits(logits, inventory_mask)
+            item_index = self._sample_categorical(logits, deterministic)
+            shop_slot[equip_item_mask] = item_index
+            dist = Categorical(logits=logits)
+            total_logprob[equip_item_mask] += dist.log_prob(item_index)
+            total_entropy[equip_item_mask] += dist.entropy()
+            record_distribution("item_inventory", logits, item_index, torch.where(equip_item_mask)[0], inventory_mask)
+
+            item_context = F.one_hot(item_index, num_classes=9).to(dtype=conditioned.dtype)
+            item_context = F.pad(item_context, (0, 1))
+            target_context = torch.cat([item_context, torch.zeros_like(item_context)], dim=-1)
+            target_logits = self.item_target_head(torch.cat([conditioned_item, target_context], dim=-1))
+            target_mask = masks["item_target_mask"][equip_item_mask] if masks is not None else None
+            if target_mask is not None:
+                target_logits = self._mask_logits(target_logits, target_mask)
+            target_index = self._sample_categorical(target_logits, deterministic)
+            bench_slot[equip_item_mask] = target_index
+            target_dist = Categorical(logits=target_logits)
+            total_logprob[equip_item_mask] += target_dist.log_prob(target_index)
+            total_entropy[equip_item_mask] += target_dist.entropy()
+            record_distribution("item_target", target_logits, target_index, torch.where(equip_item_mask)[0], target_mask)
+
+        # --- CRAFT AND EQUIP ---
+        craft_item_mask = action_type == 8
+        if craft_item_mask.any():
+            conditioned_item = conditioned[craft_item_mask]
+            first_logits = self.item_component_first_head(conditioned_item)
+            first_mask = masks["item_component_first_mask"][craft_item_mask] if masks is not None else None
+            if first_mask is not None:
+                first_logits = self._mask_logits(first_logits, first_mask)
+            first_index = self._sample_categorical(first_logits, deterministic)
+            shop_slot[craft_item_mask] = first_index
+            first_dist = Categorical(logits=first_logits)
+            total_logprob[craft_item_mask] += first_dist.log_prob(first_index)
+            total_entropy[craft_item_mask] += first_dist.entropy()
+            record_distribution("item_component_first", first_logits, first_index, torch.where(craft_item_mask)[0], first_mask)
+
+            first_onehot = F.one_hot(first_index, num_classes=10).to(dtype=conditioned.dtype)
+            second_input = torch.cat([conditioned_item, first_onehot], dim=-1)
+            second_logits = self.item_component_second_head(second_input)
+            pair_masks = masks["item_component_pair_masks"][craft_item_mask] if masks is not None else None
+            second_mask = pair_masks[torch.arange(first_index.shape[0], device=device), first_index] if pair_masks is not None else None
+            if second_mask is not None:
+                second_logits = self._mask_logits(second_logits, second_mask)
+            second_index = self._sample_categorical(second_logits, deterministic)
+            bench_slot[craft_item_mask] = second_index
+            second_dist = Categorical(logits=second_logits)
+            total_logprob[craft_item_mask] += second_dist.log_prob(second_index)
+            total_entropy[craft_item_mask] += second_dist.entropy()
+            record_distribution("item_component_second", second_logits, second_index, torch.where(craft_item_mask)[0], second_mask)
+
+            second_onehot = F.one_hot(second_index, num_classes=10).to(dtype=conditioned.dtype)
+            target_context = torch.cat([first_onehot, second_onehot], dim=-1)
+            target_logits = self.item_target_head(torch.cat([conditioned_item, target_context], dim=-1))
+            target_mask = masks["item_target_mask"][craft_item_mask] if masks is not None else None
+            if target_mask is not None:
+                target_logits = self._mask_logits(target_logits, target_mask)
+            target_index = self._sample_categorical(target_logits, deterministic)
+            board_target[craft_item_mask] = target_index
+            target_dist = Categorical(logits=target_logits)
+            total_logprob[craft_item_mask] += target_dist.log_prob(target_index)
+            total_entropy[craft_item_mask] += target_dist.entropy()
+            record_distribution("item_target", target_logits, target_index, torch.where(craft_item_mask)[0], target_mask)
 
         # --- SELL ---
         sell_mask = action_type == 5
@@ -762,6 +871,71 @@ class TFTPolicy(nn.Module):
                 actions[move_board_mask, 5]
             )
             total_entropy[move_board_mask] += target_dist.entropy()
+
+        # EQUIP FROM INVENTORY
+        equip_item_mask = action_type == 7
+        if equip_item_mask.any():
+            conditioned_item = conditioned[equip_item_mask]
+            item_index = actions[equip_item_mask, 1].long()
+            inventory_mask = masks["item_inventory_mask"][equip_item_mask]
+            logits = self._mask_logits(self.item_inventory_head(conditioned_item), inventory_mask)
+            self._validate_selected_actions(item_index, inventory_mask, "item_inventory")
+            dist = Categorical(logits=logits)
+            total_logprob[equip_item_mask] += dist.log_prob(item_index)
+            total_entropy[equip_item_mask] += dist.entropy()
+
+            target_index = actions[equip_item_mask, 2].long()
+            item_context = F.one_hot(item_index, num_classes=9).to(dtype=conditioned.dtype)
+            item_context = F.pad(item_context, (0, 1))
+            target_context = torch.cat([item_context, torch.zeros_like(item_context)], dim=-1)
+            target_mask = masks["item_target_mask"][equip_item_mask]
+            target_logits = self._mask_logits(
+                self.item_target_head(torch.cat([conditioned_item, target_context], dim=-1)),
+                target_mask,
+            )
+            self._validate_selected_actions(target_index, target_mask, "item_target")
+            target_dist = Categorical(logits=target_logits)
+            total_logprob[equip_item_mask] += target_dist.log_prob(target_index)
+            total_entropy[equip_item_mask] += target_dist.entropy()
+
+        # CRAFT AND EQUIP
+        craft_item_mask = action_type == 8
+        if craft_item_mask.any():
+            conditioned_item = conditioned[craft_item_mask]
+            first_index = actions[craft_item_mask, 1].long()
+            second_index = actions[craft_item_mask, 2].long()
+            target_index = actions[craft_item_mask, 3].long()
+
+            first_mask = masks["item_component_first_mask"][craft_item_mask]
+            first_logits = self._mask_logits(self.item_component_first_head(conditioned_item), first_mask)
+            self._validate_selected_actions(first_index, first_mask, "item_component_first")
+            first_dist = Categorical(logits=first_logits)
+            total_logprob[craft_item_mask] += first_dist.log_prob(first_index)
+            total_entropy[craft_item_mask] += first_dist.entropy()
+
+            first_onehot = F.one_hot(first_index, num_classes=10).to(dtype=conditioned.dtype)
+            second_logits = self.item_component_second_head(torch.cat([conditioned_item, first_onehot], dim=-1))
+            pair_masks = masks["item_component_pair_masks"][craft_item_mask]
+            second_mask = pair_masks[
+                torch.arange(first_index.shape[0], device=first_index.device), first_index
+            ]
+            second_logits = self._mask_logits(second_logits, second_mask)
+            self._validate_selected_actions(second_index, second_mask, "item_component_second")
+            second_dist = Categorical(logits=second_logits)
+            total_logprob[craft_item_mask] += second_dist.log_prob(second_index)
+            total_entropy[craft_item_mask] += second_dist.entropy()
+
+            second_onehot = F.one_hot(second_index, num_classes=10).to(dtype=conditioned.dtype)
+            target_context = torch.cat([first_onehot, second_onehot], dim=-1)
+            target_mask = masks["item_target_mask"][craft_item_mask]
+            target_logits = self._mask_logits(
+                self.item_target_head(torch.cat([conditioned_item, target_context], dim=-1)),
+                target_mask,
+            )
+            self._validate_selected_actions(target_index, target_mask, "item_target")
+            target_dist = Categorical(logits=target_logits)
+            total_logprob[craft_item_mask] += target_dist.log_prob(target_index)
+            total_entropy[craft_item_mask] += target_dist.entropy()
 
         # SELL
         sell_mask = action_type == 5

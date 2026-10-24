@@ -20,9 +20,10 @@ void require(bool condition, const char* message) {
 
 int main(int argc, char** argv) {
     try {
-        require(argc == 2, "Informe o caminho do JSON.");
+        require(argc == 2 || argc == 3, "Informe o caminho do catalogo de campeoes e, opcionalmente, o catalogo de itens.");
 
         const std::string json_path = argv[1];
+        const std::string item_catalog_path = argc == 3 ? argv[2] : std::string{};
 
         tft::ChampionCatalog catalog(json_path);
         tft::TFTEngine engine(12345, json_path);
@@ -760,6 +761,38 @@ int main(int argc, char** argv) {
             const auto paired_sale = paired_sale_engine.step(paired_actions);
             require(paired_sale.action_rewards[0] < isolated_sale.action_rewards[0] - 0.15f,
                     "Vender uma copia que protege um par nao recebeu penalidade adicional suficiente.");
+        }
+
+        if (!item_catalog_path.empty()) {
+            tft::TFTEngine item_action_engine(9876, json_path, item_catalog_path);
+            const auto& item_target = catalog.all().front();
+            require(item_action_engine.set_unit_for_testing(0, true, 0, item_target.api_name, 1),
+                    "Nao foi possivel preparar alvo para acao de item.");
+            require(item_action_engine.add_item_component_for_testing(0, "sword") &&
+                    item_action_engine.add_item_component_for_testing(0, "bow"),
+                    "Nao foi possivel carregar componentes de fixture.");
+            auto masks = item_action_engine.get_action_masks();
+            require(masks[0].type_mask[8] == 1,
+                    "CRAFT_AND_EQUIP deveria estar habilitada com receita e alvo validos.");
+            std::array<tft::PlayerAction, tft::kPlayersPerLobby> item_actions{};
+            for (auto& action : item_actions) action.values = {6, 0, 0, 0, 0, 0};
+            item_actions[0].values = {8, 0, 1, 0, 0, 0};
+            (void)item_action_engine.step(item_actions);
+            auto item_audit = item_action_engine.get_audit_snapshot();
+            require(item_audit.players[0].board[0].item_ids.size() == 1 &&
+                    item_audit.players[0].board[0].item_ids[0] == "damage_blade",
+                    "CRAFT_AND_EQUIP nao integrou o item ao CombatUnit da instancia.");
+
+            require(item_action_engine.add_completed_item_for_testing(0, "guard_plate"),
+                    "Nao foi possivel adicionar item pronto via evento de loot de fixture.");
+            masks = item_action_engine.get_action_masks();
+            require(masks[0].type_mask[7] == 1,
+                    "EQUIP_FROM_INVENTORY deveria estar habilitada com item e alvo validos.");
+            item_actions[0].values = {7, 0, 0, 0, 0, 0};
+            (void)item_action_engine.step(item_actions);
+            item_audit = item_action_engine.get_audit_snapshot();
+            require(item_audit.players[0].board[0].item_ids.size() == 2,
+                    "EQUIP_FROM_INVENTORY nao anexou o item ao estado de combate.");
         }
 
         std::cout << "TFTEngine + loja/economia/ActionMask/AntiLoop/CompLock: OK\n";

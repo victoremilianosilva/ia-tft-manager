@@ -14,6 +14,8 @@ class ActionType(IntEnum):
     MOVE_BOARD = 4
     SELL = 5
     PASS = 6
+    EQUIP_FROM_INVENTORY = 7
+    CRAFT_AND_EQUIP = 8
 
 
 class Strategy(IntEnum):

@@ -36,6 +36,9 @@
 #include "decision/AntiLoopEngine.hpp"
 #include "decision/MoveValidator.hpp"
 #include "decision/DecisionTypes.hpp"
+#include "items/ItemCatalog.hpp"
+#include "items/ItemEngine.hpp"
+#include "items/CombatItemAdapter.hpp"
 
 #ifndef TFT_COMP_DIRECTION_MIN_RELATIVE_ADVANTAGE
 #define TFT_COMP_DIRECTION_MIN_RELATIVE_ADVANTAGE 0.20
@@ -333,6 +336,7 @@ struct TFTEngine::Impl {
     struct PlayerEnv {
         // Estado e serviços pertencentes exclusivamente a um jogador.
         std::unique_ptr<ShopEngine> shop;
+        std::unique_ptr<items::ItemEngine> item_engine;
         std::array<std::optional<UnitInstance>, kBenchSlots> bench{};
         std::array<std::optional<UnitInstance>, kBoardSlots> board{};
         // Temporal context for the feed-forward policy: actions left this round
@@ -388,6 +392,7 @@ struct TFTEngine::Impl {
     std::vector<std::int32_t> ranking;
 
     std::unique_ptr<ChampionCatalog> catalog;
+    std::optional<items::ItemCatalog> item_catalog;
     std::unique_ptr<UnitPool> pool;
     std::unique_ptr<UnitInstanceFactory> unit_factory;
 
@@ -418,7 +423,8 @@ struct TFTEngine::Impl {
 
     explicit Impl(
         std::uint64_t initial_seed,
-        const std::string& catalog_path
+        const std::string& catalog_path,
+        const std::string& item_catalog_path
     ) : seed(initial_seed),
         matchmaking_rng(initial_seed) {
         const std::string resolved_path =
@@ -429,6 +435,15 @@ struct TFTEngine::Impl {
         catalog = std::make_unique<ChampionCatalog>(
             resolved_path
         );
+
+        // Item data is an explicit, versioned input; never silently invent a set.
+        if (!item_catalog_path.empty()) {
+            std::ifstream item_file(item_catalog_path);
+            if (!item_file) {
+                throw std::runtime_error("Nao foi possivel abrir catalogo de itens: " + item_catalog_path);
+            }
+            item_catalog = items::load_item_catalog(item_file);
+        }
 
         for (const auto& champion : catalog->all()) {
             for (const auto& trait : champion.traits) {
@@ -597,6 +612,74 @@ struct TFTEngine::Impl {
     // MÁSCARAS DE AÇÃO
     // ========================================================
 
+    std::vector<items::UnitProfile> item_unit_profiles(std::size_t player_index) const {
+        std::vector<items::UnitProfile> profiles;
+        profiles.reserve(kBoardSlots + kBenchSlots);
+        const auto& player = player_envs[player_index];
+        const auto append = [&](const UnitInstance& unit, bool frontline, bool backline) {
+            const auto* def = catalog->find_by_id(unit.champion_internal_id);
+            if (!def || unit.uuid.empty()) return;
+            const auto& stats = def->stats;
+            const auto& combat = def->combat_profile;
+            const auto strategy = player.strategy.empty() ? StrategyInfo{} : player.strategy.back();
+            const double fit = unit_composition_score(strategy, *def, unit.star, trait_milestones);
+            profiles.push_back(items::UnitProfile{
+                unit.uuid, unit.star, std::clamp(combat.role, 0, 4),
+                frontline, backline,
+                combat.attack_damage > 0.0 ? combat.attack_damage : stats.attack_damage,
+                combat.attack_speed > 0.0 ? combat.attack_speed : stats.attack_speed,
+                0.0,
+                combat.max_hp > 0.0 ? combat.max_hp : stats.max_hp,
+                combat.armor > 0.0 ? combat.armor : stats.armor,
+                combat.magic_resist > 0.0 ? combat.magic_resist : stats.magic_resist,
+                std::clamp(fit / 32.5, 0.0, 1.0)
+            });
+        };
+        for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
+            if (!player.board[slot]) continue;
+            const auto row = slot / 7;
+            append(*player.board[slot], row <= 1, row >= 2);
+        }
+        for (const auto& unit : player.bench) if (unit) append(*unit, false, false);
+        return profiles;
+    }
+
+    const UnitInstance* item_target_unit(std::size_t player_index, std::size_t target_index) const {
+        if (target_index < kBoardSlots) {
+            const auto& unit = player_envs[player_index].board[target_index];
+            return unit ? &*unit : nullptr;
+        }
+        const auto bench_index = target_index - kBoardSlots;
+        if (bench_index >= kBenchSlots) return nullptr;
+        const auto& unit = player_envs[player_index].bench[bench_index];
+        return unit ? &*unit : nullptr;
+    }
+
+    UnitInstance* item_target_unit(std::size_t player_index, std::size_t target_index) {
+        if (target_index < kBoardSlots) {
+            auto& unit = player_envs[player_index].board[target_index];
+            return unit ? &*unit : nullptr;
+        }
+        const auto bench_index = target_index - kBoardSlots;
+        if (bench_index >= kBenchSlots) return nullptr;
+        auto& unit = player_envs[player_index].bench[bench_index];
+        return unit ? &*unit : nullptr;
+    }
+
+    void sync_unit_items_from_engine(std::size_t player_index, const std::string& uuid) {
+        auto& player = player_envs[player_index];
+        if (!player.item_engine || uuid.empty()) return;
+        UnitInstance* instance = nullptr;
+        for (auto& unit : player.board) if (unit && unit->uuid == uuid) { instance = &*unit; break; }
+        if (!instance) for (auto& unit : player.bench) if (unit && unit->uuid == uuid) { instance = &*unit; break; }
+        if (!instance) return;
+        instance->items.clear();
+        for (const auto& item_id : player.item_engine->equipped(uuid)) {
+            const auto* definition = player.item_engine->find(item_id);
+            if (definition) instance->items.push_back(items::to_combat_item(*definition));
+        }
+    }
+
     void refresh_masks(std::size_t player_index) {
         const auto state =
             build_decision_state(player_index);
@@ -627,6 +710,72 @@ struct TFTEngine::Impl {
             batch.board_source_mask;
         current.bench_move_source_mask =
             batch.bench_move_source_mask;
+
+        // Item masks are generated from the exact per-player ItemEngine state.
+        auto& player = player_envs[player_index];
+        if (player.item_engine) {
+            const auto& inventory = player.item_engine->inventory();
+            for (std::size_t i = 0; i < std::min<std::size_t>(9, inventory.size()); ++i)
+                current.item_inventory_mask[i] = 1;
+            for (std::size_t target = 0; target < kBoardSlots + kBenchSlots; ++target) {
+                const auto* unit = item_target_unit(player_index, target);
+                if (!unit || std::max(unit->items.size(), player.item_engine->equipped(unit->uuid).size()) >= items::ItemEngine::kMaxItemsPerUnit)
+                    continue;
+                current.item_target_mask[target] = 1;
+            }
+            const bool target_available = std::any_of(current.item_target_mask.begin(), current.item_target_mask.end(),
+                [](std::uint8_t value) { return value == 1; });
+            if (item_catalog) {
+                for (std::size_t first = 0; first < std::min<std::size_t>(10, item_catalog->components.size()); ++first) {
+                    for (std::size_t second = 0; second < std::min<std::size_t>(9, item_catalog->components.size()); ++second) {
+                        if (!player.item_engine->can_craft(
+                                item_catalog->components[first].first,
+                                item_catalog->components[second].first)) continue;
+                        current.item_component_pair_masks[first * 10 + second] = 1;
+                        current.item_component_first_mask[first] = 1;
+                    }
+                }
+            }
+            const bool inventory_available = std::any_of(current.item_inventory_mask.begin(), current.item_inventory_mask.end(),
+                [](std::uint8_t value) { return value == 1; });
+            const bool recipe_available = std::any_of(current.item_component_pair_masks.begin(), current.item_component_pair_masks.end(),
+                [](std::uint8_t value) { return value == 1; });
+            current.type_mask[7] = inventory_available && target_available ? 1 : 0;
+            current.type_mask[8] = recipe_available && target_available ? 1 : 0;
+            for (std::size_t slot = 0; slot < kBenchSlots; ++slot) {
+                const auto& unit = player.bench[slot];
+                if (unit && (!unit->items.empty() || !player.item_engine->equipped(unit->uuid).empty()))
+                    current.bench_source_mask[slot] = 0;
+            }
+            if (std::none_of(current.bench_source_mask.begin(), current.bench_source_mask.end(),
+                [](std::uint8_t value) { return value == 1; })) current.type_mask[5] = 0;
+            for (std::size_t shop_slot = 0; shop_slot < kShopSlots; ++shop_slot) {
+                if (current.shop_mask[shop_slot] != 1 || !player.shop) continue;
+                const auto* offer = player.shop->get_unit(static_cast<std::int32_t>(shop_slot));
+                if (!offer) continue;
+                int matching_copies = 0;
+                bool matching_copy_has_items = false;
+                for (const auto& unit : player.board) {
+                    if (!unit || unit->champion_internal_id != offer->champion_internal_id ||
+                        unit->star != offer->star) continue;
+                    ++matching_copies;
+                    matching_copy_has_items = matching_copy_has_items ||
+                        !unit->items.empty() || !player.item_engine->equipped(unit->uuid).empty();
+                }
+                for (const auto& unit : player.bench) {
+                    if (!unit || unit->champion_internal_id != offer->champion_internal_id ||
+                        unit->star != offer->star) continue;
+                    ++matching_copies;
+                    matching_copy_has_items = matching_copy_has_items ||
+                        !unit->items.empty() || !player.item_engine->equipped(unit->uuid).empty();
+                }
+                if (matching_copies >= 2 && matching_copy_has_items)
+                    current.shop_mask[shop_slot] = 0;
+            }
+            if (std::none_of(current.shop_mask.begin(), current.shop_mask.end(),
+                [](std::uint8_t value) { return value == 1; })) current.type_mask[0] = 0;
+
+        }
 
         for (std::size_t source = 0;
              source < kBoardSlots;
@@ -703,6 +852,16 @@ struct TFTEngine::Impl {
 
             player_envs[i].bench.fill(std::nullopt);
             player_envs[i].board.fill(std::nullopt);
+            if (item_catalog) {
+                std::vector<std::string> component_ids;
+                component_ids.reserve(item_catalog->components.size());
+                for (const auto& component : item_catalog->components) component_ids.push_back(component.first);
+                if (!player_envs[i].item_engine)
+                    player_envs[i].item_engine = std::make_unique<items::ItemEngine>(item_catalog->items, component_ids);
+                else player_envs[i].item_engine->reset();
+            } else {
+                player_envs[i].item_engine.reset();
+            }
             player_envs[i].board_move_age.fill(kActionMemoryHorizon);
             player_envs[i].actions_taken_this_round = 0;
             player_envs[i].action_serial = 0;
@@ -1084,6 +1243,22 @@ struct TFTEngine::Impl {
     // ========================================================
 
     void validate_action(const PlayerAction& action) const {
+        const auto type = action.values[0];
+        if (type == 7) {
+            if (action.values[1] < 0 || action.values[1] >= 9 ||
+                action.values[2] < 0 || action.values[2] >= static_cast<std::int32_t>(kBoardSlots + kBenchSlots) ||
+                action.values[3] != 0 || action.values[4] != 0 || action.values[5] != 0)
+                throw std::invalid_argument("Argumentos fora dos limites para EQUIP_FROM_INVENTORY.");
+            return;
+        }
+        if (type == 8) {
+            if (action.values[1] < 0 || action.values[1] >= 10 ||
+                action.values[2] < 0 || action.values[2] >= 10 ||
+                action.values[3] < 0 || action.values[3] >= static_cast<std::int32_t>(kBoardSlots + kBenchSlots) ||
+                action.values[4] != 0 || action.values[5] != 0)
+                throw std::invalid_argument("Argumentos fora dos limites para CRAFT_AND_EQUIP.");
+            return;
+        }
         for (std::size_t i = 0;
              i < kActionComponents;
              ++i) {
@@ -1210,7 +1385,7 @@ struct TFTEngine::Impl {
             }
         }
 
-        if (player_masks.type_mask[type] != 1) {
+        if (type >= player_masks.type_mask.size() || player_masks.type_mask[type] != 1) {
             throw std::invalid_argument(
                 "Acao indisponivel para o estado atual do jogador "
                 + std::to_string(player_index)
@@ -1218,6 +1393,23 @@ struct TFTEngine::Impl {
             );
         }
 
+        if (type == 7) {
+            const auto item_slot = static_cast<std::size_t>(values[1]);
+            const auto target_slot = static_cast<std::size_t>(values[2]);
+            if (player_masks.item_inventory_mask[item_slot] != 1 || player_masks.item_target_mask[target_slot] != 1)
+                throw std::invalid_argument("Equipamento de item indisponivel para os indices selecionados.");
+            return;
+        }
+        if (type == 8) {
+            const auto first = static_cast<std::size_t>(values[1]);
+            const auto second = static_cast<std::size_t>(values[2]);
+            const auto target = static_cast<std::size_t>(values[3]);
+            if (player_masks.item_component_first_mask[first] != 1 ||
+                player_masks.item_component_pair_masks[first * 10 + second] != 1 ||
+                player_masks.item_target_mask[target] != 1)
+                throw std::invalid_argument("Receita/target invalido para CRAFT_AND_EQUIP.");
+            return;
+        }
         if (type == 0) {
             const auto slot = static_cast<std::size_t>(values[1]);
             if (player_masks.shop_mask[slot] != 1) {
@@ -2908,6 +3100,32 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     lobby.register_position_state(player_id);
                 }
             }
+        } else if (type == 7 || type == 8) {
+            if (!this->item_engine) throw std::invalid_argument("Catalogo de itens nao configurado.");
+            const auto target_index = static_cast<std::size_t>(type == 7 ? action[2] : action[3]);
+            auto* target_unit = lobby.item_target_unit(player_id, target_index);
+            if (!target_unit) throw std::invalid_argument("Alvo de item nao existe.");
+            const auto profiles = lobby.item_unit_profiles(player_id);
+            items::ItemActionCommand command;
+            command.operation = type == 7 ? items::ItemOperation::EQUIP_FROM_INVENTORY
+                                           : items::ItemOperation::CRAFT_AND_EQUIP;
+            command.target_unit_uuid = target_unit->uuid;
+            if (type == 7) {
+                const auto slot = static_cast<std::size_t>(action[1]);
+                if (slot >= this->item_engine->inventory().size()) throw std::invalid_argument("Indice de item fora do inventario.");
+                command.item_id = this->item_engine->inventory()[slot];
+            } else {
+                const auto first = static_cast<std::size_t>(action[1]);
+                const auto second = static_cast<std::size_t>(action[2]);
+                if (!lobby.item_catalog || first >= lobby.item_catalog->components.size() ||
+                    second >= lobby.item_catalog->components.size())
+                    throw std::invalid_argument("Indice de tipo de componente fora do catalogo.");
+                command.first_component_id = lobby.item_catalog->components[first].first;
+                command.second_component_id = lobby.item_catalog->components[second].first;
+            }
+            const auto result = this->item_engine->apply_action(command, profiles);
+            if (!result.success) throw std::invalid_argument("Acao de item rejeitada: " + result.reason);
+            lobby.sync_unit_items_from_engine(player_id, target_unit->uuid);
         } else if (type == 5) {
             // SELL: vender unidade do banco
             const auto bench_slot =
@@ -3155,6 +3373,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 // manufacture the exception and hide the immediate reversal.
                 action_reward += reward_model::reversed_purchase_penalty();
             }
+        } else if (type == 7 || type == 8) {
+            // Item actions use the normal environment/PPO reward path.
+            success = true;
+            action_reward = 0.0;
         } else {
             success = true;
             if (type == 6 && !this->strategy.empty()) {
@@ -3260,10 +3482,11 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
 
 TFTEngine::TFTEngine(
     std::uint64_t seed,
-    std::string catalog_path
+    std::string catalog_path,
+    std::string item_catalog_path
 )
     : impl_(
-        std::make_unique<Impl>(seed, catalog_path)
+        std::make_unique<Impl>(seed, catalog_path, item_catalog_path)
     ) {
 }
 
@@ -3801,6 +4024,46 @@ bool TFTEngine::set_unit_items_for_testing(
     }
     impl_->refresh_masks(static_cast<std::size_t>(player_id));
     return true;
+}
+
+bool TFTEngine::grant_item_component(
+    std::int32_t player_id, const std::string& component_id
+) {
+    if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
+    impl_->ensure_open();
+    if (player_id < 0 || static_cast<std::size_t>(player_id) >= kPlayersPerLobby)
+        return false;
+    auto& player = impl_->player_envs[static_cast<std::size_t>(player_id)];
+    if (!player.item_engine || !player.item_engine->add_component(component_id))
+        return false;
+    impl_->refresh_masks(static_cast<std::size_t>(player_id));
+    return true;
+}
+
+bool TFTEngine::grant_completed_item(
+    std::int32_t player_id, const std::string& item_id
+) {
+    if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
+    impl_->ensure_open();
+    if (player_id < 0 || static_cast<std::size_t>(player_id) >= kPlayersPerLobby)
+        return false;
+    auto& player = impl_->player_envs[static_cast<std::size_t>(player_id)];
+    if (!player.item_engine || !player.item_engine->add_completed_item(item_id))
+        return false;
+    impl_->refresh_masks(static_cast<std::size_t>(player_id));
+    return true;
+}
+
+bool TFTEngine::add_item_component_for_testing(
+    std::int32_t player_id, const std::string& component_id
+) {
+    return grant_item_component(player_id, component_id);
+}
+
+bool TFTEngine::add_completed_item_for_testing(
+    std::int32_t player_id, const std::string& item_id
+) {
+    return grant_completed_item(player_id, item_id);
 }
 
 bool TFTEngine::set_player_economy_for_testing(

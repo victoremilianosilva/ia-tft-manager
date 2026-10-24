@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "set_id": "test-fixture",
+  "components": [
+    {"id": "sword", "name": "Sword"},
+    {"id": "bow", "name": "Bow"}
+  ],
+  "items": [
+    {
+      "id": "damage_blade",
+      "name": "Damage Blade",
+      "recipe_components": ["sword", "bow"],
+      "stats": {"attack_damage": 10, "attack_speed": 0.15},
+      "weights": {"carry": 1, "tank": 0, "support": 0, "utility": 0}
+    },
+    {
+      "id": "guard_plate",
+      "name": "Guard Plate",
+      "recipe_components": ["sword", "sword"],
+      "stats": {"health": 150, "armor": 10},
+      "weights": {"carry": 0, "tank": 1, "support": 0, "utility": 0}
+    }
+  ]
+}

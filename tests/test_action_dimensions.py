@@ -6,7 +6,7 @@ from trainer import Trainer
 
 
 def test_action_dimensions_match_the_environment_contract():
-    assert Trainer.ACTION_DIMS == [7, 5, 9, 28, 28, 28]
+    assert Trainer.ACTION_DIMS == [9, 5, 9, 28, 28, 28]
     assert Trainer.ACTION_DIM == len(Trainer.ACTION_DIMS)
 
 
@@ -17,11 +17,11 @@ def test_policy_heads_match_action_dimensions():
         hidden_size=32,
     )
 
-    assert policy.type_head.out_features == 7
+    assert policy.type_head.out_features == 9
     assert policy.shop_head[-1].out_features == 1
-    assert policy.shop_head[0].in_features == 32 + 7 + 8
+    assert policy.shop_head[0].in_features == 32 + 9 + 8
     assert policy.sell_head[-1].out_features == 1
-    assert policy.sell_head[0].in_features == 32 + 7 + 8
+    assert policy.sell_head[0].in_features == 32 + 9 + 8
     assert policy.bench_head.out_features == 9
     assert policy.bench_to_board_head.out_features == 28
     assert policy.board_source_head.out_features == 28
@@ -42,6 +42,27 @@ def test_policy_rejects_invalid_action_dimensions():
                 action_dims=dimensions,
                 hidden_size=32,
             )
+
+
+def test_legacy_seven_type_checkpoint_migrates_to_nine_types():
+    policy = TFTPolicy(obs_dim=162, action_dims=Trainer.ACTION_DIMS, hidden_size=32)
+    legacy = {key: value.detach().clone() for key, value in policy.state_dict().items()}
+    legacy["type_head.weight"] = legacy["type_head.weight"][:7].clone()
+    legacy["type_head.bias"] = legacy["type_head.bias"][:7].clone()
+    for key in list(legacy):
+        if key.startswith((
+            "item_inventory_head.", "item_component_first_head.",
+            "item_component_second_head.", "item_target_head.",
+        )):
+            del legacy[key]
+
+    restored = TFTPolicy(obs_dim=162, action_dims=Trainer.ACTION_DIMS, hidden_size=32)
+    assert restored.load_compatible_state_dict(legacy) is True
+    migrated = restored.state_dict()
+    assert torch.equal(migrated["type_head.weight"][:7], legacy["type_head.weight"])
+    assert torch.equal(migrated["type_head.bias"][:7], legacy["type_head.bias"])
+    assert torch.count_nonzero(migrated["type_head.weight"][7:]) == 0
+    assert torch.count_nonzero(migrated["type_head.bias"][7:]) == 0
 
 
 def _configure_candidate_ranker(head, hidden_size, feature_indices, signs):

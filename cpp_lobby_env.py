@@ -38,11 +38,12 @@ class CppTFTLobbyWrapper:
     PLAYERS_PER_LOBBY = 8
     ACTION_COMPONENTS = 6
 
-    def __init__(self, seed: int | None = None, catalog_path: str | None = None):
+    def __init__(self, seed: int | None = None, catalog_path: str | None = None, item_catalog_path: str | None = None):
         native_seed = 0 if seed is None else int(seed)
         self._engine = _NativeTFTLobby(
             native_seed,
             "" if catalog_path is None else str(catalog_path),
+            "" if item_catalog_path is None else str(item_catalog_path),
         )
         self._last_dones = np.zeros(self.PLAYERS_PER_LOBBY, dtype=np.bool_)
         self._players = [
@@ -50,6 +51,14 @@ class CppTFTLobbyWrapper:
             for i in range(self.PLAYERS_PER_LOBBY)
         ]
         self._closed = False
+
+    def grant_item_component(self, player_id: int, component_id: str) -> bool:
+        """Forward a validated loot event into the authoritative native player state."""
+        return bool(self._engine.grant_item_component(int(player_id), str(component_id)))
+
+    def grant_completed_item(self, player_id: int, item_id: str) -> bool:
+        """Forward a completed-item armory/loot event into the native player state."""
+        return bool(self._engine.grant_completed_item(int(player_id), str(item_id)))
 
     @property
     def players(self):
@@ -59,20 +68,33 @@ class CppTFTLobbyWrapper:
     @staticmethod
     def _normalize_action(action):
         if isinstance(action, dict):
-            values = [
-                action.get("type", 6),
-                action.get("shop_slot", 0),
-                action.get("bench_slot", action.get("bench_source", 0)),
-                action.get("board_target", 0),
-                action.get("board_source", 0),
-                action.get(
-                    "board_move_target",
+            action_type = int(action.get("type", 6))
+            if action_type == 7:
+                values = [
+                    action_type, action.get("item_slot", 0),
+                    action.get("item_target", 0), 0, 0, 0,
+                ]
+            elif action_type == 8:
+                values = [
+                    action_type, action.get("component_first", 0),
+                    action.get("component_second", 0),
+                    action.get("item_target", 0), 0, 0,
+                ]
+            else:
+                values = [
+                    action_type,
+                    action.get("shop_slot", 0),
+                    action.get("bench_slot", action.get("bench_source", 0)),
+                    action.get("board_target", 0),
+                    action.get("board_source", 0),
                     action.get(
-                        "conditioned_board_target",
-                        action.get("board_target", 0),
+                        "board_move_target",
+                        action.get(
+                            "conditioned_board_target",
+                            action.get("board_target", 0),
+                        ),
                     ),
-                ),
-            ]
+                ]
         else:
             values = list(action)
         if len(values) != CppTFTLobbyWrapper.ACTION_COMPONENTS:

@@ -118,6 +118,34 @@ public:
         return true;
     }
 
+    // Called by game loot/armory events, never by the policy action decoder.
+    bool add_completed_item(const std::string& item_id) {
+        if (!find(item_id)) {
+            ++metrics_.invalid_actions;
+            return false;
+        }
+        inventory_.push_back(item_id);
+        return true;
+    }
+
+    [[nodiscard]] bool can_craft(const std::string& first,
+                                const std::string& second) const {
+        const auto recipe = craftable_item(first, second);
+        if (!recipe) return false;
+        const auto count = [this](const std::string& id) {
+            return static_cast<std::size_t>(std::count(
+                components_.begin(), components_.end(), id));
+        };
+        if (first == second) return count(first) >= 2U;
+        return count(first) >= 1U && count(second) >= 1U;
+    }
+
+    [[nodiscard]] bool can_equip(const std::string& item_id,
+                                const std::string& unit_uuid) const {
+        return !unit_uuid.empty() && has_item(item_id) &&
+            equipped(unit_uuid).size() < kMaxItemsPerUnit;
+    }
+
     // Returns the crafted item id; neither component is consumed on failure.
     std::optional<std::string> craft(const std::string& first, const std::string& second) {
         if (first.empty() || second.empty()) {
@@ -285,18 +313,26 @@ public:
             if (!components_available)
                 return reject("recipe_components_unavailable");
 
+            const auto components_before = components_;
+            const auto inventory_before = inventory_;
+            const auto equipped_before = equipped_;
+            const auto metrics_before = metrics_;
+            const auto rollback = [this, &components_before, &inventory_before,
+                                   &equipped_before, &metrics_before]() {
+                components_ = components_before;
+                inventory_ = inventory_before;
+                equipped_ = equipped_before;
+                metrics_ = metrics_before;
+            };
             const auto crafted = craft(
                 command.first_component_id, command.second_component_id);
-            if (!crafted || *crafted != *recipe)
+            if (!crafted || *crafted != *recipe) {
+                rollback();
                 return reject("craft_transition_failed");
+            }
             if (!equip(*crafted, *target)) {
-                // Defensive rollback: crafting and equipping is one action.
-                const auto item = std::find(inventory_.begin(), inventory_.end(), *crafted);
-                if (item != inventory_.end()) inventory_.erase(item);
-                components_.push_back(command.first_component_id);
-                components_.push_back(command.second_component_id);
-                ++metrics_.invalid_actions;
-                return {false, "equip_transition_failed_rolled_back"};
+                rollback();
+                return reject("equip_transition_failed_rolled_back");
             }
             return {true, {}};
         }
