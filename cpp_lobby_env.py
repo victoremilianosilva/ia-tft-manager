@@ -60,20 +60,33 @@ class CppTFTLobbyWrapper:
     @staticmethod
     def _normalize_action(action):
         if isinstance(action, dict):
-            values = [
-                action.get("type", 6),
-                action.get("shop_slot", 0),
-                action.get("bench_slot", action.get("bench_source", 0)),
-                action.get("board_target", 0),
-                action.get("board_source", 0),
-                action.get(
-                    "board_move_target",
+            action_type = int(action.get("type", 6))
+            if action_type == 7:
+                values = [
+                    action_type, action.get("item_slot", 0),
+                    action.get("item_target", 0), 0, 0, 0,
+                ]
+            elif action_type == 8:
+                values = [
+                    action_type, action.get("component_first", 0),
+                    action.get("component_second", 0),
+                    action.get("item_target", 0), 0, 0,
+                ]
+            else:
+                values = [
+                    action_type,
+                    action.get("shop_slot", 0),
+                    action.get("bench_slot", action.get("bench_source", 0)),
+                    action.get("board_target", 0),
+                    action.get("board_source", 0),
                     action.get(
-                        "conditioned_board_target",
-                        action.get("board_target", 0),
+                        "board_move_target",
+                        action.get(
+                            "conditioned_board_target",
+                            action.get("board_target", 0),
+                        ),
                     ),
-                ),
-            ]
+                ]
         else:
             values = list(action)
         if len(values) != CppTFTLobbyWrapper.ACTION_COMPONENTS:
