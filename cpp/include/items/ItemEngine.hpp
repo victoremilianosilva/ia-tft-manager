@@ -307,7 +307,8 @@ public:
             std::clamp((65.0 - hp) / 65.0, 0.0, 1.0),
             std::clamp((static_cast<double>(stage) - 2.0) / 6.0, 0.0, 1.0));
         for (const auto& candidate : candidates) {
-            if (candidate.uuid.empty()) continue;
+            if (candidate.uuid.empty() ||
+                equipped(candidate.uuid).size() >= kMaxItemsPerUnit) continue;
             const double fit = item_fit(*item_id, candidate);
             const double future = 0.15 + 0.35 * std::clamp(candidate.composition_fit, 0.0, 1.0);
             const double immediate = fit * (0.65 + 0.35 * urgency);
