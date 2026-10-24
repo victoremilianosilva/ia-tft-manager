@@ -1,97 +1,56 @@
-# Item system integration contract — Phase 1
+# Item system integration contract — Phase 2
 
-Status: **contract proposal for implementation; not yet connected to the match runtime**.
+Status: **runtime and unified policy path implemented behind an explicit item-catalog input; active-set loot integration and full CI verification remain pending.**
 
-This document starts from `main`, not the rejected PR #85. It intentionally does not modify `policy.py`, the legacy six-component action vector, checkpoint loading, or PPO behavior.
+This branch continues from the item contract already merged to `main`. It does not use the rejected PR #85 or introduce a separate item policy.
 
-## Existing architecture constraints
+## Unified action architecture
 
-- The native match accepts eight `PlayerAction` values. Each currently has six integer components and dimensions `[7, 5, 9, 28, 28, 28]`.
-- `trainer.py` maps those six components to the current action dictionary; `tft_engine_bindings.cpp` rejects any action that does not contain exactly six components.
-- `TFTPolicy` samples autoregressive, masked action arguments; PPO later recomputes log-probabilities through `evaluate_actions`. Any eventual item action must be represented consistently in both paths and its exact masks must be saved in the rollout.
-- `ItemEngine` already implements local component inventory, recipes, completed-item inventory, equip and metrics. It is not currently owned or called by the normal `TFTEngine` match loop.
-- `UnitInstance::items` and `CombatUnit::items` exist. Combat applies the numeric bonuses in `CombatEngine.cpp`, but the normal lobby-to-combat construction path still needs an explicit audit and integration test.
+- One `TFTPolicy` and one PPO rollout/training path choose all actions.
+- The action tensor remains six integers: `[type, arg1, arg2, arg3, arg4, arg5]`.
+- Existing action IDs 0–6 keep their meanings. Item actions are IDs 7 and 8:
+  - `EQUIP_FROM_INVENTORY = 7`
+  - `CRAFT_AND_EQUIP = 8`
+- There is no item-specific `WAIT`, no transfer action, no unequip action, no heuristic item action selector, and no separate item reward. Item actions use the same environment/PPO reward path as every other action.
+- Item-specific policy heads are conditional on the sampled action type. Existing shop, bench and movement heads keep their old dimensions. `evaluate_actions` recomputes the same conditional log-probabilities as action collection.
+- The native C++ type mask and Python mask contract both have nine entries. Item masks are included in the rollout mask dictionary and the trainer's selected-action audit.
 
-## Canonical per-player state
+## Item catalog and per-player state
 
-The item subsystem needs one authoritative state per player:
+`TFTEngine` accepts a separate `item_catalog_path` after the champion `catalog_path`. The catalog is parsed with `load_item_catalog()` from the versioned schema in `docs/item-catalog-schema.md`. The training adapter accepts the path through `TFT_ITEM_CATALOG_PATH` or the optional trainer argument.
 
-- `components`: ordered component IDs; repeated IDs represent separate copies.
-- `inventory`: ordered completed-item IDs; repeated IDs represent separate copies.
-- `equipped_by_unit_uuid`: item IDs keyed by the unique UUID of a unit instance, not by champion name or champion catalog ID.
-- metrics: component receipts, crafts, equips, invalid actions, and unused-item counts.
+The repository has **no authoritative active-set item catalog JSON**, so this branch does not fabricate live item stats or recipes. The normalized fixture at `cpp/tests/fixtures/items_test_catalog.json` is test data only. Without a configured catalog, item actions remain masked off.
 
-Equipment must follow an individual unit copy through board/bench movement and duplicate champions must never share equipment. Once equipped, an item remains attached to that unit; there is no unequip or transfer action. The normal combat input should receive a projection of the canonical equipment state. The implementation must not allow an independent `ItemEngine::equipped_` map and `UnitInstance::items` to drift; Phase 2 must either establish one authority with a deterministic projection or implement atomic synchronization with consistency checks.
+Each player owns one `ItemEngine`. Masks are built from its actual component stack, completed-item inventory, recipe table, and the current board/bench UUIDs. The policy selects catalog component types (not transient component-stack positions), then C++ resolves the target index to the unit UUID and validates the same legal transition before mutation.
 
-Selling a unit, elimination, and reset behavior must be explicitly specified from the active game's rules before implementation. Do not silently discard or duplicate items; do not return equipment to inventory through a policy action.
+Runtime mask contract:
+- `item_inventory_mask`: up to nine completed-item inventory candidates.
+- `item_component_first_mask`: component catalog choices that have a craftable pair.
+- `item_component_pair_masks[first, second]`: available recipe and copies, including two copies of the same component.
+- `item_target_mask`: board slots 0–27, then bench slots 28–36, excluding units already at item capacity.
 
-## Semantic action contract
+The native event API exposes `grant_item_component` and `grant_completed_item` so the authoritative loot/armory source can populate item state. The current lobby does not yet simulate PvE item drops, so these entry points are not called by an actual drop resolver. Do not infer that live item acquisition is complete from the test fixture.
 
-The item subsystem supports exactly two semantic operations (direct transfer and unequipping are explicitly out of scope):
+## Equipment ownership and lifecycle safety
 
-1. `EQUIP_FROM_INVENTORY`: equip one completed item onto an eligible unit.
-2. `CRAFT_AND_EQUIP`: consume two available components, craft the catalog recipe, and equip the result atomically.
+Equipment is keyed by unit UUID and projected to `UnitInstance::items`, which is copied into the normal combat input. Board/bench movement preserves UUID and therefore equipment ownership.
 
-There is no item-specific `WAIT`. These are ordinary actions in the same policy action space as buying, selling, rerolling, XP and movement. If the policy chooses another action, that is simply the chosen game action; no extra item decision is generated. The item engine executes the selected command and does not run a separate heuristic action selector or add a parallel item-only reward.
+- There is no policy transfer or unequip.
+- A bench unit carrying equipment cannot be sold, because sale would orphan its items.
+- A purchase that would auto-merge copies carrying equipment is masked until a merge rule can preserve ownership.
+- Episode reset clears each player's item state. Elimination ends that player's actions and clears its units; no equipment is moved to another unit.
+- Craft-and-equip is validated before mutation and includes rollback if a later transition unexpectedly fails.
 
-The typed command in `cpp/include/items/ItemActionContract.hpp` uses catalog IDs and unit UUIDs after action decoding. The policy-facing vector will use bounded categorical indices; the adapter must resolve those indices against the same state snapshot used to generate masks. It must never pass display names or stale slot indices as persistent identity.
+These restrictions are deliberate safety behavior, not a claim that all real TFT sale/merge item rules have been modeled. The active set's exact lifecycle rules must be confirmed before loosening them.
 
-### Operation-specific fields
+## Tests and phase exit criteria
 
-| Operation | Required semantic arguments |
-|---|---|
-| EQUIP_FROM_INVENTORY | item ID, target unit UUID |
-| CRAFT_AND_EQUIP | two component IDs, target unit UUID |
+The C++ lobby integration test uses a normalized fixture catalog to verify:
+1. valid recipe/component/target state enables `CRAFT_AND_EQUIP`;
+2. the action consumes components and attaches the resulting `CombatItem` to the exact unit instance;
+3. a completed item grant enables `EQUIP_FROM_INVENTORY`;
+4. the item becomes visible through the same combat/audit path.
 
-## Dependency audit findings (from `main`)
+Python tests verify the nine-way type mask, item masks, action sampling, and parity between collected and reevaluated PPO log-probabilities. Old seven-row type-head checkpoints are migrated by copying the original seven rows and initializing the two new rows; new item heads use their module initialization when loading an older checkpoint.
 
-The dependency map has now been checked against the actual source:
-
-- C++ `ActionType` is fixed at seven values in `cpp/include/decision/DecisionTypes.hpp`; its numeric values are guarded by static assertions. The native `PlayerActionMasks::type_mask` and Python `Trainer.MASK_SHAPES["type_mask"]` also have length seven.
-- `trainer.py` defines `ACTION_DIMS` as a fixed list and constructs `TFTPolicy` from it. It also allocates action-type metrics with length seven.
-- `policy.py` rejects dimensions other than `[7, 5, 9, 28, 28, 28]`. Its candidate-observation tail calculation currently derives candidate-feature length from `action_dims[1]` and `action_dims[2]`. Therefore, simply enlarging the item argument dimensions would also corrupt observation-tail interpretation unless that coupling is removed and separately tested.
-- `load_compatible_state_dict()` migrates supported observation-layout changes. It does not currently provide a general migration for changed action-head shapes or PPO optimizer state. Action-head migration must be implemented explicitly if the item action space expands.
-- `CppTFTLobbyWrapper`, the pybind `step()`, and `PlayerAction::values` all enforce exactly six action components.
-- The repository tree has no active-set item catalog JSON. `docs/item-catalog-schema.md` explicitly requires an externally sourced, normalized catalog. The constructor currently accepts the champion catalog path, not a separate item catalog path.
-
-This rules out a naive increase of the existing categorical dimensions: it would affect candidate-feature parsing, all mask shapes, checkpoint loading, and the optimizer. The item action adapter needs a clearly separated policy argument contract, while keeping one `TFTPolicy` and one PPO training path.
-
-## Policy-facing mapping decision
-
-The dependency audit supports a backward-conscious mapping without changing the action tensor's six-column shape:
-
-- Keep the first six columns `[type, arg1, arg2, arg3, arg4, arg5]`; legacy action types 0–6 and their argument interpretation remain unchanged.
-- Extend the type category with two item operations: `EQUIP_FROM_INVENTORY=7`, `CRAFT_AND_EQUIP=8`. `PASS=6` remains unchanged.
-- Item arguments are conditional on the selected type and decoded using item-specific policy heads, not by enlarging the legacy shop/bench/movement heads. This avoids coupling catalog IDs to `shop_head` / `bench_head` and avoids changing the candidate-observation tail calculation.
-- For item actions, use stable catalog indices and a combined unit-candidate index: board slots `0..27`, followed by bench slots `28..36`. The C++ decoder resolves the selected unit index to the current instance UUID before applying the semantic command.
-- Component selection is by component catalog ID, not by an arbitrary inventory position. The mask indicates whether at least one copy is available; the second-component mask is conditional and must ensure that two copies exist when both selected IDs are equal.
-- Completed items are selected by catalog ID when taken from inventory. Equipped items are permanent on their unit; there is no transfer or unequip argument.
-- New masks are conditional on the selected operation and its previous arguments: component-first, component-second, completed-item-inventory and target-unit masks. Their sizes come from the active catalog plus the fixed 37 board/bench candidate slots.
-
-This is the proposed contract, not yet implemented in the policy. The current branch removes the item-side WAIT and the separate heuristic item-action selector, but does not yet integrate the item action types into the main policy/PPO contract. Before implementation, the active catalog must be supplied or generated from a pinned Set 17 source, and its component/item counts must be validated. The six-column action tensor shape can remain stable, but the action type head grows from 7 to 9 outputs, so the old checkpoint's type head needs an explicit migration that copies its original seven rows and initializes the two new rows. New item heads and their optimizer state also need explicit handling. The existing observation-feature migration alone does not cover this.
-
-## Policy action-vector decision is intentionally gated
-
-Do **not** assume the rejected PR #85's proposed seven-dimension contract. Before selecting the categorical dimensions/capacities, Phase 1 must inspect and record:
-
-- the active set's real component/item catalog and maximum valid catalog indices;
-- the real environment limits for component and completed-item inventories;
-- the maximum unit candidate set (board + bench) and UUID-to-slot mapping;
-- the existing `ActionType` enum, all masks, all action conversion points, and checkpoint migration/loading behavior.
-
-The legacy six action components and existing checkpoints remain unchanged during this phase. The final policy-vector mapping is selected only after those dependencies and bounds are proven. If the action type cardinality grows, checkpoint compatibility must be handled explicitly rather than silently relying on `load_state_dict`.
-
-## Legal-action and execution parity
-
-Mask generation and execution must use the same legality predicates. A masked action must be executable for the snapshot from which its mask was built; stale/invalid actions must fail safely without consuming components or items. `CRAFT_AND_EQUIP` is atomic: a failed craft or equip must not leave components consumed or an item stranded.
-
-## Phase exit criteria
-
-Phase 1 is complete only when:
-- the canonical state and semantic operations are represented in code and documented;
-- action-vector bounds are grounded in the actual active-set/runtime constraints;
-- the action decoding/mask/rollout/checkpoint dependencies have been mapped;
-- the rejected PR's standalone `item_policy.py` architecture is not reused;
-- no policy or checkpoint behavior has changed yet.
-
-Subsequent phases integrate the contract into the native match runtime, combat, the existing policy/PPO, reward shaping, tests, compatibility audits, and final report.
+Phase 2 should not be marked complete until CI passes and the active-set catalog is supplied/validated. The missing production loot/drop resolver remains a dependency for end-to-end item acquisition; it must not be replaced with invented drop rates or recipes.
