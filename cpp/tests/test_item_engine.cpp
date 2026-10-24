@@ -103,6 +103,10 @@ int main() {
     const auto no_recipe = engine.decide_craft("component_a", "component_b", {carry}, 2, 100.0);
     require(no_recipe.kind == DecisionKind::WAIT,
             "no known recipe must preserve components");
+    const auto best_action = engine.decide_best_action({carry, tank}, 2, 100.0);
+    require(best_action.kind == DecisionKind::EQUIP_FROM_INVENTORY ||
+            best_action.kind == DecisionKind::CRAFT_AND_EQUIP,
+            "best-action search should compare inventory and craft options");
 
     std::cout << "[PASS] Item inventory, recipes, equip, transfer, and decision tests.\n";
     return EXIT_SUCCESS;
