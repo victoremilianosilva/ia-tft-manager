@@ -60,6 +60,20 @@ The dependency map has now been checked against the actual source:
 
 This rules out a naive increase of the existing categorical dimensions: it would affect candidate-feature parsing, all mask shapes, checkpoint loading, and the optimizer. The item action adapter needs a clearly separated policy argument contract, while keeping one `TFTPolicy` and one PPO training path.
 
+## Policy-facing mapping decision
+
+The dependency audit supports a backward-conscious mapping without changing the action tensor's six-column shape:
+
+- Keep the first six columns `[type, arg1, arg2, arg3, arg4, arg5]`; legacy action types 0–6 and their argument interpretation remain unchanged.
+- Extend the type category with four item operations: `EQUIP_FROM_INVENTORY=7`, `CRAFT_AND_EQUIP=8`, `TRANSFER=9`, `UNEQUIP_TO_INVENTORY=10`. `PASS=6` remains unchanged.
+- Item arguments are conditional on the selected type and decoded using item-specific policy heads, not by enlarging the legacy shop/bench/movement heads. This avoids coupling catalog IDs to `shop_head` / `bench_head` and avoids changing the candidate-observation tail calculation.
+- For item actions, use stable catalog indices and a combined unit-candidate index: board slots `0..27`, followed by bench slots `28..36`. The C++ decoder resolves the selected unit index to the current instance UUID before applying the semantic command.
+- Component selection is by component catalog ID, not by an arbitrary inventory position. The mask indicates whether at least one copy is available; the second-component mask is conditional and must ensure that two copies exist when both selected IDs are equal.
+- Completed items are selected by catalog ID when taken from inventory. Transfer/unequip selects an equipped-item slot `0..2` on the chosen source unit, then resolves it to the item's catalog ID.
+- New masks are conditional on the selected operation and its previous arguments: component-first, component-second, completed-item-inventory, equipped-item-slot, source-unit and target-unit masks. Their sizes come from the active catalog plus the fixed 37 board/bench candidate slots.
+
+This is the proposed contract, not yet implemented in the policy. Before implementation, the active catalog must be supplied or generated from a pinned Set 17 source, and its component/item counts must be validated. The six-column action tensor shape can remain stable, but the action type head grows from 7 to 11 outputs, so the old checkpoint's type head needs an explicit migration that copies its original seven rows and initializes the four new rows. New item heads and their optimizer state also need explicit handling. The existing observation-feature migration alone does not cover this.
+
 ## Policy action-vector decision is intentionally gated
 
 Do **not** assume the rejected PR #85's proposed seven-dimension contract. Before selecting the categorical dimensions/capacities, Phase 1 must inspect and record:
