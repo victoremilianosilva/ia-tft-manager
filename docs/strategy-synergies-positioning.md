@@ -2,11 +2,11 @@
 
 ## Posicionamento
 
-`PositioningEngine` avalia a formação no tabuleiro 4 × 7 usando perfis/roles e posições. O resultado é uma métrica de posicionamento usada pela engine de lobby e pelos sinais de recompensa. Essa avaliação não deve ser confundida com o motor que simula ataques e movimentação durante o combate.
+`PositioningEngine` avalia a formação no tabuleiro 4 × 7 usando perfis/roles e posições. A linha 0 é tratada como frontline e a linha 3 como backline. A avaliação considera proteção de carries: tanques oferecem a proteção mais forte; fighters à frente contam como proteção parcial. O classificador de papéis usa fighter como desempate quando faltam sinais, evitando que um perfil sem dados vire tank por ordem do enum. O resultado alimenta observações e recompensas; não é o motor que simula ataques e movimentação durante o combate.
 
 ## Sinergias
 
-`SynergyCounter` conta traits das unidades e `SynergyEngine` acompanha contagens ativas/parciais, marcos e nível de trait. A engine pode calcular multiplicadores/bonificações por nível e bônus de unidade conforme as traits presentes. A lista de traits e marcos deve corresponder ao set do catálogo carregado; não presumir que nomes ou limites são universais entre sets.
+`SynergyCounter` conta traits das unidades e `SynergyEngine` acompanha contagens ativas/parciais, marcos e nível de trait. `CompositionPlanner` usa os marcos do set carregado para pontuar o ganho marginal de completar cada breakpoint: composições com sinergias fechadas (por exemplo, 2/4/6 quando esses forem os marcos reais) devem vencer uma distribuição que só espalha traits sem ativá-las. Os marcos nunca devem ser presumidos universais: a lista vem dos dados do set atual.
 
 ## Contexto estratégico
 
