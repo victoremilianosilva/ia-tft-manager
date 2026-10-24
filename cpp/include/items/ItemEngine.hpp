@@ -210,10 +210,15 @@ public:
             return false;
         }
         const auto item = std::find(source->second.begin(), source->second.end(), item_id);
-        if (item == source->second.end() || equipped_[target.uuid].size() >= kMaxItemsPerUnit) {
+        const auto target_items = equipped_.find(target.uuid);
+        const std::size_t target_count = target_items == equipped_.end()
+            ? 0U : target_items->second.size();
+        if (item == source->second.end() || target_count >= kMaxItemsPerUnit) {
             ++metrics_.invalid_actions;
             return false;
         }
+        // Do not insert target into the unordered_map until after using source
+        // iterators: insertion could rehash and invalidate them.
         source->second.erase(item);
         equipped_[target.uuid].push_back(item_id);
         ++metrics_.transfers;
