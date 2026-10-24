@@ -2497,6 +2497,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         bool buy_builds_pair = false;
         bool buy_strategy_approved = true;
         double candidate_board_impact = 0.0;
+        double reroll_old_best_fit = 0.0;
+        double reroll_new_best_fit = 0.0;
         bool bought_unit_successfully = false;
         bool bought_upgrade = false;
         bool purchase_was_recently_reversed = false;
@@ -2700,12 +2702,26 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 }
             }
         } else if (type == 1) {
-            // REROLL
-            if (lobby.economy_engine.spend_gold(
-                    economy,
-                    EconomyEngine::REROLL_COST
-                )) {
-                shop.reroll(economy.level);
+            // REROLL: compare the best composition-fit offer before and after.
+            // The spend is justified by improved options, not by rerolling itself.
+            const auto best_shop_fit = [&]() {
+                double best = 0.0;
+                for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
+                    const auto* offer = shop.get_unit(static_cast<std::int32_t>(slot));
+                    if (!offer) continue;
+                    const auto* def = lobby.catalog->find_by_id(offer->champion_internal_id);
+                    if (!def || economy.gold < def->cost) continue;
+                    best = std::max(best, unit_composition_score(
+                        strategy_before, *def, offer->star, lobby.trait_milestones));
+                }
+                return best;
+            };
+            if (economy.gold >= EconomyEngine::REROLL_COST) {
+                reroll_old_best_fit = best_shop_fit();
+                if (lobby.economy_engine.spend_gold(economy, EconomyEngine::REROLL_COST)) {
+                    shop.reroll(economy.level);
+                    reroll_new_best_fit = best_shop_fit();
+                }
             }
         } else if (type == 2) {
             // BUY XP
@@ -3012,14 +3028,32 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     composition_quality_delta, false);
             }
             if (success && buy_completes_upgrade) {
-                action_reward += 0.12;
+                action_reward += 0.25;
             } else if (success && buy_builds_pair) {
                 action_reward += reward_model::purchase_pair_quality(
                     candidate_comp_score);
             }
+            if (success && economy.gold < old_gold) {
+                const double normalized_fit = has_candidate_comp_score
+                    ? std::clamp(candidate_comp_score / 32.5, 0.0, 1.0)
+                    : 0.0;
+                action_reward += reward_model::spending_timing_reward(
+                    old_gold, this->info.hp, lobby.stage, normalized_fit,
+                    buy_completes_upgrade, false);
+            }
         } else if (type == 1) {
             success = economy.gold == old_gold - EconomyEngine::REROLL_COST;
             action_reward = success ? -0.01 : -0.10;
+            if (success) {
+                action_reward += reward_model::reroll_quality_reward(
+                    reroll_old_best_fit, reroll_new_best_fit);
+                if (reroll_new_best_fit > reroll_old_best_fit) {
+                    action_reward += reward_model::spending_timing_reward(
+                        old_gold, this->info.hp, lobby.stage,
+                        std::clamp(reroll_new_best_fit / 32.5, 0.0, 1.0),
+                        false, false);
+                }
+            }
         } else if (type == 2) {
             success = economy.gold == old_gold - EconomyEngine::BUY_XP_COST;
             action_reward = success ? 0.02 : -0.10;
@@ -3030,6 +3064,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 action_reward += reward_model::level(
                     economy.level, this->previous_reward_level);
                 this->previous_reward_level = economy.level;
+                action_reward += reward_model::spending_timing_reward(
+                    old_gold, this->info.hp, lobby.stage, 0.0, false, true);
             }
             (void)old_level;
             (void)old_xp;
@@ -3119,6 +3155,37 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             }
         } else {
             success = true;
+            if (type == 6 && !this->strategy.empty()) {
+                bool useful_purchase_available = false;
+                const bool has_free_bench_slot = std::any_of(
+                    this->bench.begin(), this->bench.end(),
+                    [](const auto& unit) { return !unit.has_value(); });
+                const auto& current_strategy = this->strategy.back();
+                for (std::size_t slot = 0;
+                     has_free_bench_slot && slot < kShopSlots; ++slot) {
+                    const auto* offer = shop.get_unit(static_cast<std::int32_t>(slot));
+                    if (!offer) continue;
+                    const auto* definition = lobby.catalog->find_by_id(offer->champion_internal_id);
+                    if (!definition || economy.gold < definition->cost) continue;
+                    const double fit = unit_composition_score(
+                        current_strategy, *definition, offer->star, lobby.trait_milestones);
+                    const double normalized_fit = std::clamp(fit / 32.5, 0.0, 1.0);
+                    int copies = 0;
+                    for (const auto& unit : this->board)
+                        if (unit && unit->champion_internal_id == offer->champion_internal_id)
+                            copies += star_copies(unit->star);
+                    for (const auto& unit : this->bench)
+                        if (unit && unit->champion_internal_id == offer->champion_internal_id)
+                            copies += star_copies(unit->star);
+                    const bool completes_upgrade = copies == 2 && offer->star == 1;
+                    if (completes_upgrade || normalized_fit >= 0.45) {
+                        useful_purchase_available = true;
+                        break;
+                    }
+                }
+                action_reward += reward_model::pass_opportunity_penalty(
+                    economy.gold, this->info.hp, lobby.stage, useful_purchase_available);
+            }
         }
 
         // Give spending decisions immediate feedback for the opportunity cost

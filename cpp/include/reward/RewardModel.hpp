@@ -119,7 +119,66 @@ inline double purchase_quality(double fit_delta, bool completes_upgrade) noexcep
 // produce a 2-star unit. Keep fit as a multiplier, not a gate, so useful pairs
 // are not ignored just because the current board is temporarily weak.
 inline double purchase_pair_quality(double fit_score) noexcept {
-    return 0.18 + 0.06 * std::tanh(std::max(0.0, fit_score) / 5.0);
+    // A pair is meaningful progress, but not enough to justify buying every
+    // duplicate regardless of composition. The fit multiplier remains bounded.
+    return 0.22 + 0.08 * std::tanh(std::max(0.0, fit_score) / 5.0);
+}
+
+// Reward timely, high-value spending when liquidity is already healthy and
+// either the player is under pressure or the game is late. This is deliberately
+// conditional on purchase quality / an actual level-up: spending by itself is
+// never rewarded, so reroll spam and low-fit shopping cannot farm reward.
+inline double spending_timing_reward(
+    int gold_before,
+    double hp,
+    int stage,
+    double normalized_fit,
+    bool completes_upgrade,
+    bool leveled_up
+) noexcept {
+    if (gold_before < 30 || (!completes_upgrade && !leveled_up &&
+        normalized_fit < 0.45)) {
+        return 0.0;
+    }
+
+    const double liquidity = gold_before >= 50 ? 1.0
+        : (gold_before >= 40 ? 0.5 : 0.0);
+    const double health_urgency = std::clamp((45.0 - hp) / 45.0, 0.0, 1.0);
+    const double stage_urgency = std::clamp((static_cast<double>(stage) - 3.0) / 5.0,
+                                            0.0, 1.0);
+    const double urgency = std::max(health_urgency, stage_urgency);
+    if (liquidity <= 0.0 || urgency <= 0.0) return 0.0;
+
+    const double quality = (completes_upgrade || leveled_up)
+        ? 1.0 : std::clamp(normalized_fit, 0.0, 1.0);
+    return 0.18 * liquidity * urgency * quality;
+}
+
+// Small opportunity-cost signal for passing while rich and under pressure,
+// but only when a genuinely useful shop purchase or upgrade is available.
+// The caller must establish that opportunity; an empty/weak shop is not a
+// reason to force spending.
+inline double reroll_quality_reward(double old_best_fit, double new_best_fit) noexcept {
+    // Reward only a real increase in the best available offer; rerolling itself
+    // is not progress and repeatedly rerolling a weak shop cannot farm reward.
+    return 0.16 * std::tanh((new_best_fit - old_best_fit) / 5.0);
+}
+
+inline double pass_opportunity_penalty(
+    int gold,
+    double hp,
+    int stage,
+    bool useful_purchase_available
+) noexcept {
+    if (!useful_purchase_available || gold < 30 ||
+        (hp > 35.0 && stage < 5)) {
+        return 0.0;
+    }
+    const double liquidity = gold >= 50 ? 1.0 : 0.5;
+    const double urgency = std::max(
+        std::clamp((35.0 - hp) / 35.0, 0.0, 1.0),
+        std::clamp((static_cast<double>(stage) - 4.0) / 4.0, 0.0, 1.0));
+    return -0.12 * liquidity * urgency;
 }
 
 // A low-fit purchase sold almost immediately is usually a wasted buy.
