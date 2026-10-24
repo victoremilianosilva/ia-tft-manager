@@ -65,6 +65,19 @@ struct ItemDecision {
     double total_value{0.0};
 };
 
+// Bounded reward shaping for RL integration. Reward marginal value, not the
+// mechanical act of crafting/equipping; preserve components when waiting has
+// more expected value and do not let repeated transfers farm reward.
+inline double item_action_reward(double immediate_gain, double future_value,
+                                double urgency, double transfer_fit_delta = 0.0) noexcept {
+    const double urgent = std::clamp(urgency, 0.0, 1.0);
+    const double gain = std::clamp(immediate_gain, -5.0, 5.0);
+    const double future = std::clamp(future_value, 0.0, 5.0);
+    const double transfer = 0.15 * std::tanh(transfer_fit_delta);
+    return std::clamp(gain * (0.65 + 0.35 * urgent) -
+                      future * (1.0 - urgent) + transfer, -1.0, 1.0);
+}
+
 struct ItemMetrics {
     std::uint64_t components_collected{0};
     std::uint64_t crafts{0};
