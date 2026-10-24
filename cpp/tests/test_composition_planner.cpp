@@ -98,6 +98,37 @@ int main() {
     assert(std::any_of(viable_plan.acquisition_notes.begin(), viable_plan.acquisition_notes.end(),
         [](const std::string& note) { return note.find("ObtainableCarry") != std::string::npos; }));
 
+    // Regression: the planner must close the actual 2/4/6 breakpoints,
+    // not scatter four slots over several unrelated two-piece traits.
+    std::vector<ChampionDefinition> brawler_pool{
+        champion(31, "BrawlerCarry", 1, {"Brawler", "UtilityA"}, 2),
+        champion(32, "BrawlerTankA", 0, {"Brawler", "UtilityB"}, 2),
+        champion(33, "BrawlerFighter", 3, {"Brawler", "UtilityC"}, 2),
+        champion(34, "BrawlerTankB", 0, {"Brawler", "UtilityD"}, 2),
+        champion(35, "BrawlerSupport", 2, {"Brawler", "UtilityE"}, 2),
+        champion(36, "BrawlerFighterExtra", 3, {"Brawler", "UtilityF"}, 2),
+        champion(37, "OffTraitCarry", 1, {"OffTraitA"}, 2),
+        champion(38, "OffTraitSupport", 2, {"OffTraitB"}, 2)
+    };
+    const CompositionPlanner::TraitMilestones set_milestones{
+        {"Brawler", {2, 4, 6}}
+    };
+    for (const std::size_t slots : {2U, 4U, 6U}) {
+        const auto closed_plan = CompositionPlanner::build(
+            brawler_pool, set_milestones, "Brawler", {{"Brawler", 5.0}}, {}, slots);
+        int brawler_count = 0;
+        for (const auto id : closed_plan.unit_ids) {
+            const auto it = std::find_if(brawler_pool.begin(), brawler_pool.end(),
+                [id](const ChampionDefinition& c) { return c.internal_id == id; });
+            if (it != brawler_pool.end() &&
+                std::find(it->traits.begin(), it->traits.end(), "Brawler") != it->traits.end())
+                ++brawler_count;
+        }
+        assert(brawler_count == static_cast<int>(slots));
+        assert(std::find(closed_plan.core_traits.begin(), closed_plan.core_traits.end(), "Brawler")
+               != closed_plan.core_traits.end());
+    }
+
     // With no direction, no empty-string trait should be fabricated.
     const auto open_plan = CompositionPlanner::build(pool, milestones, "", {}, {}, 4);
     assert(open_plan.unit_ids.size() == 4);

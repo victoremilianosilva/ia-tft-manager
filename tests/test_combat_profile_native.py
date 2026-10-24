@@ -69,6 +69,16 @@ def test_cpp_profile_contains_combat_stats_and_positioning_flags():
     assert profile["frontline"] is False
 
 
+def test_ambiguous_profile_defaults_to_fighter_not_tank():
+    # Missing ability/stats used to tie every score at zero and select role 0
+    # (tank) solely because the inference loop started at the first enum value.
+    profile = cpp.combat_profile_get_profile({})
+    assert profile["role"] == 3
+    assert profile["role_name"] == "fighter"
+    assert profile["is_tank"] is False
+    assert profile["is_fighter"] is True
+
+
 def test_cpp_role_helpers_have_defined_none_behavior():
     assert cpp.combat_profile_get_role(None) == 3
     assert cpp.combat_profile_is_frontline(None) is True

@@ -79,12 +79,25 @@ int main() {
                   "purchase completing an upgrade");
     require_close(reversed_purchase_penalty(), -0.18,
                   "targeted reversed-purchase penalty");
-    if (!should_penalize_reversed_purchase(0.10, false, false, false, false))
-        throw std::runtime_error("low-fit immediate reversal should be penalized");
-    if (!should_penalize_reversed_purchase(0.15, false, false, false, false))
+    // Regressions from the Viewer match: Teemo/Caitlyn were bought and sold
+    // on the next action without being deployed or completing an upgrade.
+    // Their low strategic-fit values must trigger the same reversal rule.
+    if (!should_penalize_reversed_purchase(0.08, false, false, false, false))
+        throw std::runtime_error("Teemo-like low-fit immediate reversal should be penalized");
+    if (!should_penalize_reversed_purchase(0.14, false, false, false, false))
+        throw std::runtime_error("Caitlyn-like low-fit immediate reversal should be penalized");
+    if (!should_penalize_reversed_purchase(0.20, false, false, false, false))
         throw std::runtime_error("threshold-fit immediate reversal should be penalized");
-    if (should_penalize_reversed_purchase(0.16, false, false, false, false))
-        throw std::runtime_error("useful unit should not trigger low-fit reversal penalty");
+    if (should_penalize_reversed_purchase(0.21, false, false, false, false))
+        throw std::runtime_error("strategically useful unit should be exempt from low-fit reversal penalty");
+    const double teemo_sequence = 0.06 + (-0.02) +
+        reversed_sequence_adjustment(0.06, -0.02);
+    if (teemo_sequence > -0.05 + 1e-9)
+        throw std::runtime_error("positive buy followed by a weakly negative sale must not retain positive aggregate reward");
+    const double caitlyn_sequence = -0.09 + (-0.11) +
+        reversed_sequence_adjustment(-0.09, -0.11);
+    if (caitlyn_sequence > -0.05 + 1e-9)
+        throw std::runtime_error("already-negative buy/sell sequence must remain negative");
     if (should_penalize_reversed_purchase(0.0, true, false, false, false))
         throw std::runtime_error("completed upgrade must be exempt from reversal penalty");
     if (should_penalize_reversed_purchase(0.0, false, true, false, false))
@@ -99,17 +112,20 @@ int main() {
     }
     require_close(reversed_sequence_adjustment(-0.10, -0.20), 0.0,
                   "already-negative reversal sequence needs no extra adjustment");
-    require_close(purchase_pair_quality(0.0), 0.10,
+    require_close(purchase_pair_quality(0.0), 0.18,
                   "pair-building baseline bonus");
     if (!(purchase_pair_quality(10.0) > purchase_pair_quality(0.0))) {
         throw std::runtime_error("pair reward must increase with composition fit");
     }
-    if (!(purchase_pair_quality(10.0) < 0.15)) {
-        throw std::runtime_error("pair reward must remain smaller than upgrade completion");
+    if (!(purchase_pair_quality(10.0) > purchase_quality(0.0, true))) {
+        throw std::runtime_error("forming a pair must be valued above a generic upgrade signal");
+    }
+    if (!(sale_quality(0.0, false, true, true) < 0.0)) {
+        throw std::runtime_error("selling a pair copy must remain unattractive even when it frees bench space");
     }
     require_close(sale_quality(0.0, false, false, true), 0.10,
                   "sale of low-fit non-core unit frees space");
-    require_close(sale_quality(1.0, true, true, false), -0.26,
+    require_close(sale_quality(1.0, true, true, false), -0.38,
                   "sale protects core unit and upgrade copies");
     if (!(sale_quality(0.0, false, false, false) >
           sale_quality(0.5, false, false, false) &&

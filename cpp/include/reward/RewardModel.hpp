@@ -113,18 +113,18 @@ inline double purchase_quality(double fit_delta, bool completes_upgrade) noexcep
         (completes_upgrade ? 0.12 : 0.0);
 }
 
-// Small, composition-aware bonus for acquiring the second matching 1-star copy.
-// This values upgrade potential without treating every duplicate as worthwhile.
-// The caller only invokes it when exactly one matching copy already exists and
-// the candidate has positive fit with the current composition.
+// Composition-aware value for acquiring the second matching 1-star copy.
+// A pair has option value even before it changes the board: the next copy can
+// produce a 2-star unit. Keep fit as a multiplier, not a gate, so useful pairs
+// are not ignored just because the current board is temporarily weak.
 inline double purchase_pair_quality(double fit_score) noexcept {
-    return 0.10 + 0.05 * std::tanh(std::max(0.0, fit_score) / 5.0);
+    return 0.18 + 0.06 * std::tanh(std::max(0.0, fit_score) / 5.0);
 }
 
 // A low-fit purchase sold almost immediately is usually a wasted buy.
 // Fit is normalized to [0, 1]; legitimate exceptions are explicit so a real
 // upgrade, deployment, comp transition, or full bench is not punished.
-inline constexpr double kRecentPurchaseLowFitThreshold = 0.15;
+inline constexpr double kRecentPurchaseLowFitThreshold = 0.20;
 
 inline bool should_penalize_reversed_purchase(
     double normalized_fit,
@@ -156,9 +156,11 @@ inline double reversed_sequence_adjustment(
 inline double sale_quality(double fit_score, bool core_unit,
                            bool protects_upgrade, bool frees_bench_space) noexcept {
     const double fit = std::clamp(fit_score, 0.0, 1.0);
+    // Selling a copy that completes a pair destroys accumulated upgrade
+    // progress; this must outweigh the small convenience of freeing a slot.
     return 0.06 - 0.12 * fit -
         (core_unit ? 0.12 : 0.0) -
-        (protects_upgrade ? 0.08 : 0.0) +
+        (protects_upgrade ? 0.20 : 0.0) +
         (frees_bench_space ? 0.04 : 0.0);
 }
 

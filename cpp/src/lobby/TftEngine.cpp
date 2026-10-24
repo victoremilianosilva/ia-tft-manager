@@ -299,6 +299,11 @@ bool should_buy_unit(
         if (upgrade_value > 0.0 || impact > 0.6) return true;
         return cost >= 3 && in_top_trait && impact > 0.2;
     }
+    // A nearly full bench should still allow a composition-relevant pair: the
+    // marginal value is a future 2-star, not just the candidate's board impact.
+    // At a completely full bench, require a stronger upgrade (third copy) or
+    // exceptional immediate impact so the policy cannot fill itself into a corner.
+    if (bench_count <= 8 && upgrade_value >= 0.2 && in_top_trait) return true;
     return upgrade_value >= 0.6 || impact > 1.2;
 }
 
@@ -2679,7 +2684,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                                 buy_builds_pair,
                                 false,
                                 false,
-                                std::clamp(std::max(0.0, candidate_comp_score) / 32.5, 0.0, 1.0),
+                                std::clamp(std::max(0.0, candidate_comp_score) / 40.0, 0.0, 1.0),
                                 0.0,
                                 strategy_before.composition_direction
                             });
@@ -3104,8 +3109,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     sold_unit_protects_upgrade, old_bench_count >= static_cast<int>(kBenchSlots))
                 : -0.10;
             if (success && purchase_was_recently_reversed &&
-                !sold_core_unit &&
                 old_bench_count < static_cast<int>(kBenchSlots)) {
+                // Do not exempt a unit merely because update_strategy promoted
+                // it to core after the purchase. That would let the buy itself
+                // manufacture the exception and hide the immediate reversal.
                 action_reward += reward_model::reversed_purchase_penalty();
             }
         } else {
@@ -3139,6 +3146,18 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         // RewardManager's broader state components are not called by the
         // Python environment, so applying them here would change PPO targets.
         lobby.update_strategy(player_id);
+        // Record the direction *after* this purchase has refreshed strategy.
+        // Otherwise a direction change caused by the purchase itself is mistaken
+        // for a later legitimate transition and exempts an immediate buy/sell loop.
+        if (type == 0 && success && !this->strategy.empty()) {
+            for (auto it = this->recent_purchases.rbegin();
+                 it != this->recent_purchases.rend(); ++it) {
+                if (it->action_serial == this->action_serial) {
+                    it->comp_direction = this->strategy.back().composition_direction;
+                    break;
+                }
+            }
+        }
         // Capture actual action economics before round income is resolved.
         // Net gold after TFTEngine::step may include income and cannot be used
         // to infer the action's true cost. This trace is audit-only and never

@@ -641,6 +641,107 @@ int main(int argc, char** argv) {
                     "Direcao mudou imediatamente apesar do lock ativo.");
         }
 
+        // End-to-end regressions for the Viewer buy/sell loop. The same low-fit
+        // sequence is replayed with Teemo, Caitlyn, Ezreal and Twisted Fate.
+        // Sell the newly bought UUID specifically so a pre-existing copy cannot
+        // accidentally make the test pass without exercising RecentPurchase.
+        for (const std::string target_name :
+             {"Teemo", "Caitlyn", "Ezreal", "Twisted Fate"}) {
+            tft::TFTEngine reversal_engine(24680, json_path);
+            const auto target = std::find_if(
+                catalog.all().begin(), catalog.all().end(),
+                [&](const auto& champion) {
+                    return champion.api_name.find(target_name) != std::string::npos ||
+                        champion.name.find(target_name) != std::string::npos ||
+                        champion.character_name.find(target_name) != std::string::npos;
+                });
+            require(target != catalog.all().end(),
+                    ("Catalogo precisa conter " + target_name +
+                     " para reproduzir o ciclo do Viewer.").c_str());
+
+            const auto starter = std::find_if(
+                catalog.all().begin(), catalog.all().end(),
+                [&](const auto& champion) {
+                    if (champion.internal_id == target->internal_id) return false;
+                    return std::none_of(
+                        champion.traits.begin(), champion.traits.end(),
+                        [&](const auto& trait) {
+                            return std::find(target->traits.begin(), target->traits.end(), trait)
+                                != target->traits.end();
+                        });
+                });
+            require(starter != catalog.all().end(),
+                    "Catalogo nao possui unidade alternativa para fixture.");
+            require(reversal_engine.set_unit_for_testing(0, false, 0, starter->api_name, 1),
+                    "Nao foi possivel isolar a unidade inicial da compra de teste.");
+            require(reversal_engine.set_player_economy_for_testing(0, 10, 2, 0),
+                    "Nao foi possivel configurar ouro para o teste de compra/venda.");
+            require(reversal_engine.set_shop_offer_for_testing(0, 0, target->api_name),
+                    ("Nao foi possivel colocar " + target_name + " na loja de teste.").c_str());
+
+            const auto before_buy = reversal_engine.get_audit_snapshot();
+            std::array<tft::PlayerAction, tft::kPlayersPerLobby> reversal_actions{};
+            for (auto& action : reversal_actions)
+                action.values = {6, 0, 0, 0, 0, 0};
+            reversal_actions[0].values = {0, 0, 0, 0, 0, 0};
+            const auto buy_result = reversal_engine.step(reversal_actions);
+            const float buy_reward = buy_result.action_rewards[0];
+
+            const auto after_buy = reversal_engine.get_audit_snapshot();
+            std::int32_t purchased_slot = -1;
+            for (std::size_t slot = 0; slot < after_buy.players[0].bench.size(); ++slot) {
+                const auto& unit = after_buy.players[0].bench[slot];
+                const bool existed_before = std::any_of(
+                    before_buy.players[0].bench.begin(),
+                    before_buy.players[0].bench.end(),
+                    [&](const auto& old_unit) {
+                        return old_unit.occupied && old_unit.uuid == unit.uuid;
+                    });
+                if (unit.occupied && unit.champion_id == target->api_name && !existed_before) {
+                    purchased_slot = static_cast<std::int32_t>(slot);
+                    break;
+                }
+            }
+            require(purchased_slot >= 0,
+                    ("Compra de " + target_name + " nao deixou a nova copia no banco.").c_str());
+            reversal_actions[0].values = {5, 0, purchased_slot, 0, 0, 0};
+            const auto sell_result = reversal_engine.step(reversal_actions);
+            const float sell_reward = sell_result.action_rewards[0];
+            require(sell_reward < 0.0f,
+                    ("Venda imediata de " + target_name +
+                     " recebeu recompensa nao negativa; RecentPurchase foi ignorado.").c_str());
+            require(buy_reward + sell_reward <= -0.05f,
+                    ("Compra/venda imediata de " + target_name +
+                     " nao manteve a sequencia suficientemente negativa.").c_str());
+        }
+
+        // Regression: selling one copy from a pair must be worse than selling
+        // the same isolated unit, even when the sale frees a bench slot.
+        {
+            const auto& candidate = catalog.all().front();
+            tft::TFTEngine isolated_sale_engine(13579, json_path);
+            tft::TFTEngine paired_sale_engine(13579, json_path);
+            for (auto* fixture : {&isolated_sale_engine, &paired_sale_engine}) {
+                require(fixture->set_player_economy_for_testing(0, 10, 2, 0),
+                        "Nao foi possivel configurar ouro para teste de retencao de par.");
+                require(fixture->set_unit_for_testing(0, false, 0, candidate.api_name, 1),
+                        "Nao foi possivel criar unidade isolada para teste de venda.");
+            }
+            require(paired_sale_engine.set_unit_for_testing(
+                        0, false, 1, candidate.api_name, 1),
+                    "Nao foi possivel criar segunda copia para teste de venda.");
+            std::array<tft::PlayerAction, tft::kPlayersPerLobby> isolated_actions{};
+            std::array<tft::PlayerAction, tft::kPlayersPerLobby> paired_actions{};
+            for (auto& action : isolated_actions) action.values = {6, 0, 0, 0, 0, 0};
+            for (auto& action : paired_actions) action.values = {6, 0, 0, 0, 0, 0};
+            isolated_actions[0].values = {5, 0, 0, 0, 0, 0};
+            paired_actions[0].values = {5, 0, 0, 0, 0, 0};
+            const auto isolated_sale = isolated_sale_engine.step(isolated_actions);
+            const auto paired_sale = paired_sale_engine.step(paired_actions);
+            require(paired_sale.action_rewards[0] < isolated_sale.action_rewards[0] - 0.15f,
+                    "Vender uma copia que protege um par nao recebeu penalidade adicional suficiente.");
+        }
+
         std::cout << "TFTEngine + loja/economia/ActionMask/AntiLoop/CompLock: OK\n";
         return 0;
     } catch (const std::exception& e) {

@@ -55,8 +55,16 @@ public:
     };
 
     static ProfileRole infer_role(const CombatProfileInput& u) {
-        std::array<double, 5> scores{};
         const std::string text = lowercase(u.ability_text);
+        // Handle a truly empty/unknown profile explicitly. Do not let wrapper
+        // defaults or future scoring changes turn missing data into a carry or
+        // tank classification; fighter is the neutral, deterministic fallback.
+        if (text.empty() && u.attack_range <= 0.0 && u.attack_speed <= 0.0 &&
+            u.attack_damage <= 0.0 && u.armor <= 0.0 &&
+            u.magic_resist <= 0.0 && u.max_hp <= 0.0 && u.max_mana <= 0.0) {
+            return ProfileRole::FIGHTER;
+        }
+        std::array<double, 5> scores{};
         add_keyword_scores(scores, text, tank_keywords, 0);
         add_keyword_scores(scores, text, carry_keywords, 1);
         add_keyword_scores(scores, text, support_keywords, 2);
@@ -86,9 +94,15 @@ public:
         if (u.attack_range >= 3) scores[2] += 0.15;
         if (contains_any(text, assassin_keywords)) scores[4] += 2.0;
 
-        // Python max(dict, key=dict.get) resolves ties by enum insertion order.
-        int best = 0;
-        for (int i = 1; i < 5; ++i) if (scores[static_cast<std::size_t>(i)] > scores[static_cast<std::size_t>(best)]) best = i;
+        // A profile with no role evidence is a generic fighter, not a tank.
+        // Starting at role 0 made every all-zero/tied profile default to TANK,
+        // which leaked into the planner, board evaluator, and viewer labels.
+        // Strict comparison keeps fighter as the deterministic tie-breaker for
+        // ambiguous profiles while strong defensive evidence still selects tank.
+        int best = 3;
+        for (int i = 0; i < 5; ++i)
+            if (scores[static_cast<std::size_t>(i)] >
+                scores[static_cast<std::size_t>(best)]) best = i;
         return static_cast<ProfileRole>(best);
     }
 

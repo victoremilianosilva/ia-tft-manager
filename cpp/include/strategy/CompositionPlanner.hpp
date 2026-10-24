@@ -189,6 +189,28 @@ public:
         };
         if (selected_carry) add_champion_traits(*selected_carry);
 
+        // Score the marginal value of a trait count using the actual set-specific
+        // breakpoints. Crossing 2/4/6 is worth substantially more than spreading
+        // the lineup across many traits that never become active.
+        const auto trait_milestone_potential = [&](const std::string& trait, int count) {
+            const auto found = milestones.find(trait);
+            static const std::vector<int> fallback{2};
+            const auto& thresholds = found == milestones.end() ? fallback : found->second;
+            double value = 0.0;
+            int next_milestone = 0;
+            for (const int milestone : thresholds) {
+                if (milestone <= 0) continue;
+                if (count >= milestone) value += 2.0;
+                else if (next_milestone == 0 || milestone < next_milestone)
+                    next_milestone = milestone;
+            }
+            // A small progress value rewards staying near the next breakpoint,
+            // without making a 3/4 trait look as valuable as a completed 4/4.
+            if (next_milestone > 0)
+                value += 0.8 * std::clamp(static_cast<double>(count) / next_milestone, 0.0, 1.0);
+            return value;
+        };
+
         while (plan.unit_ids.size() < slots) {
             const ChampionDefinition* best = nullptr;
             double best_score = -std::numeric_limits<double>::infinity();
@@ -199,21 +221,15 @@ public:
                 const int role = role_of(champion);
                 double score = 0.0;
 
-                // Prefer completing useful trait breakpoints, but do not force
-                // every slot into the primary trait.
+                // Reward the marginal value of reaching the next real trait
+                // breakpoint, including progress toward it, rather than just
+                // counting trait names that happen to overlap.
                 for (const auto& trait : champion.traits) {
                     const int before = selected_trait_counts[trait];
-                    const auto milestone_it = milestones.find(trait);
-                    if (milestone_it != milestones.end()) {
-                        for (const int milestone : milestone_it->second) {
-                            if (milestone > before && milestone <= before + 1) {
-                                score += 1.0 + (trait == direction ? 1.1 : 0.0);
-                                break;
-                            }
-                        }
-                    } else if (before == 1) {
-                        score += trait == direction ? 1.4 : 0.35;
-                    }
+                    const double milestone_delta =
+                        trait_milestone_potential(trait, before + 1) -
+                        trait_milestone_potential(trait, before);
+                    score += milestone_delta * (trait == direction ? 1.25 : 1.0);
                     if (trait == direction) score += 1.0;
                     const auto focus_it = focus.find(trait);
                     if (focus_it != focus.end())
