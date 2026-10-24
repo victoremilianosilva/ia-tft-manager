@@ -30,7 +30,7 @@ from cpp_lobby_env import CppTFTLobbyWrapper
 from policy import TFTPolicy
 
 
-ACTION_DIMS = [7, 5, 9, 28, 28, 28]
+ACTION_DIMS = [9, 5, 9, 28, 28, 28]
 PASS_ACTION = {"type": 6}
 
 
@@ -74,14 +74,28 @@ def policy_actions(policy, observations, masks, indices, device):
 
 
 def action_dict(values):
-    return {
-        "type": int(values[0]),
+    """Translate the six policy outputs into the native adapter's action contract."""
+    action_type = int(values[0])
+    result = {
+        "type": action_type,
         "shop_slot": int(values[1]),
         "bench_slot": int(values[2]),
         "board_target": int(values[3]),
         "board_source": int(values[4]),
         "conditioned_board_target": int(values[5]),
     }
+    if action_type == 7:
+        result.update({
+            "item_slot": int(values[1]),
+            "item_target": int(values[2]),
+        })
+    elif action_type == 8:
+        result.update({
+            "component_first": int(values[1]),
+            "component_second": int(values[2]),
+            "item_target": int(values[3]),
+        })
+    return result
 
 
 def run_match(factory, baseline, candidate, candidate_slots, seed, device, max_steps):
