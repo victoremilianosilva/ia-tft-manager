@@ -2716,10 +2716,12 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 }
                 return best;
             };
-            if (lobby.economy_engine.spend_gold(economy, EconomyEngine::REROLL_COST)) {
+            if (economy.gold >= EconomyEngine::REROLL_COST) {
                 reroll_old_best_fit = best_shop_fit();
-                shop.reroll(economy.level);
-                reroll_new_best_fit = best_shop_fit();
+                if (lobby.economy_engine.spend_gold(economy, EconomyEngine::REROLL_COST)) {
+                    shop.reroll(economy.level);
+                    reroll_new_best_fit = best_shop_fit();
+                }
             }
         } else if (type == 2) {
             // BUY XP
