@@ -55,8 +55,16 @@ public:
     };
 
     static ProfileRole infer_role(const CombatProfileInput& u) {
-        std::array<double, 5> scores{};
         const std::string text = lowercase(u.ability_text);
+        // Handle a truly empty/unknown profile explicitly. Do not let wrapper
+        // defaults or future scoring changes turn missing data into a carry or
+        // tank classification; fighter is the neutral, deterministic fallback.
+        if (text.empty() && u.attack_range <= 0.0 && u.attack_speed <= 0.0 &&
+            u.attack_damage <= 0.0 && u.armor <= 0.0 &&
+            u.magic_resist <= 0.0 && u.max_hp <= 0.0 && u.max_mana <= 0.0) {
+            return ProfileRole::FIGHTER;
+        }
+        std::array<double, 5> scores{};
         add_keyword_scores(scores, text, tank_keywords, 0);
         add_keyword_scores(scores, text, carry_keywords, 1);
         add_keyword_scores(scores, text, support_keywords, 2);
