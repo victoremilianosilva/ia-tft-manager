@@ -638,6 +638,7 @@ def test_trainer_preserves_sampled_item_arguments_for_native_adapter():
     # Exercise the production action encoder without constructing environments.
     trainer = object.__new__(Trainer)
     trainer.num_envs = 1
+    trainer.num_agents = 8
     actions = torch.zeros((8, Trainer.ACTION_DIM), dtype=torch.long)
     actions[0] = torch.tensor([7, 4, 36, 0, 0, 0])
     actions[1] = torch.tensor([8, 9, 3, 35, 0, 0])
@@ -717,17 +718,19 @@ def test_item_masks_survive_rollout_and_ppo_minibatch_evaluation():
     )
 
     batch = next(rollout.get_batches(batch_size=2))
-    assert torch.equal(
-        batch["masks"]["item_inventory_mask"],
-        masks["item_inventory_mask"],
+    # RolloutBuffer shuffles valid transition indices; compare the rows as
+    # a set so the test validates preservation without assuming row order.
+    def sorted_rows(tensor):
+        return sorted(row.contiguous().numpy().tobytes() for row in tensor)
+
+    assert sorted_rows(batch["masks"]["item_inventory_mask"]) == sorted_rows(
+        masks["item_inventory_mask"]
     )
-    assert torch.equal(
-        batch["masks"]["item_component_pair_masks"],
-        masks["item_component_pair_masks"],
+    assert sorted_rows(batch["masks"]["item_component_pair_masks"]) == sorted_rows(
+        masks["item_component_pair_masks"]
     )
-    assert torch.equal(
-        batch["masks"]["item_target_mask"],
-        masks["item_target_mask"],
+    assert sorted_rows(batch["masks"]["item_target_mask"]) == sorted_rows(
+        masks["item_target_mask"]
     )
 
     evaluated, _, _ = policy.evaluate_actions(
