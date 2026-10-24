@@ -234,6 +234,22 @@ def _seed_rows(seed, candidate_placements, baseline_placements):
     return rows
 
 
+def test_metric_summary_reports_item_usage_and_action_rate():
+    from scripts.evaluate_checkpoints import _metric_summary
+
+    summary = _metric_summary([
+        {"placement": 1, "win": 1, "actions": 10, "item_actions": 3,
+         "equip_actions": 2, "craft_and_equip_actions": 1},
+        {"placement": 4, "win": 0, "actions": 10, "item_actions": 1,
+         "equip_actions": 1, "craft_and_equip_actions": 0},
+    ])
+    assert summary["actions"] == 20
+    assert summary["item_actions"] == 4
+    assert summary["item_action_rate"] == 0.2
+    assert summary["equip_actions"] == 3
+    assert summary["craft_and_equip_actions"] == 1
+
+
 def test_paired_seed_summary_reports_deltas_and_bootstrap_interval():
     rows = (
         _seed_rows(100, [1, 2, 3, 4], [5, 6, 7, 8])
