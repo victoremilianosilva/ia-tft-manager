@@ -6,6 +6,7 @@
 #include <cmath>
 #include <iostream>
 #include <map>
+#include <limits>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -61,6 +62,24 @@ int main(int argc, char** argv) {
         require(engine.set_unit_for_testing(
                     0, true, 0, comp_champion->api_name, 1),
                 "Nao foi possivel configurar unidade de teste para composicao.");
+
+        tft::CombatItem fixture_item{};
+        fixture_item.api_name = "fixture_blade";
+        fixture_item.name = "Fixture Blade";
+        fixture_item.attack_damage = 15.0f;
+        require(engine.set_unit_items_for_testing(0, true, 0, {fixture_item}),
+                "Nao foi possivel anexar item à unidade de fixture.");
+        const auto equipped_audit = engine.get_audit_snapshot();
+        require(equipped_audit.players[0].board[0].item_ids.size() == 1 &&
+                    equipped_audit.players[0].board[0].item_ids[0] == "fixture_blade",
+                "Snapshot de auditoria nao expõe o item equipado na unidade.");
+        require(!engine.set_unit_items_for_testing(
+                    0, true, 0, {fixture_item, fixture_item, fixture_item, fixture_item}),
+                "Uma unidade nao pode receber mais de tres itens.");
+        tft::CombatItem invalid_item = fixture_item;
+        invalid_item.attack_damage = std::numeric_limits<float>::quiet_NaN();
+        require(!engine.set_unit_items_for_testing(0, true, 0, {invalid_item}),
+                "Bonus numerico invalido nao deve entrar no estado da unidade.");
 
         const auto strategy_after_fixture = engine.get_strategies()[0].back();
         const auto composition_observations = engine.get_observations();
