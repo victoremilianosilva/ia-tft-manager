@@ -726,12 +726,12 @@ struct TFTEngine::Impl {
             const bool target_available = std::any_of(current.item_target_mask.begin(), current.item_target_mask.end(),
                 [](std::uint8_t value) { return value == 1; });
             if (item_catalog) {
-                for (std::size_t first = 0; first < std::min<std::size_t>(9, item_catalog->components.size()); ++first) {
+                for (std::size_t first = 0; first < std::min<std::size_t>(10, item_catalog->components.size()); ++first) {
                     for (std::size_t second = 0; second < std::min<std::size_t>(9, item_catalog->components.size()); ++second) {
                         if (!player.item_engine->can_craft(
                                 item_catalog->components[first].first,
                                 item_catalog->components[second].first)) continue;
-                        current.item_component_pair_masks[first * 9 + second] = 1;
+                        current.item_component_pair_masks[first * 10 + second] = 1;
                         current.item_component_first_mask[first] = 1;
                     }
                 }
@@ -1252,8 +1252,8 @@ struct TFTEngine::Impl {
             return;
         }
         if (type == 8) {
-            if (action.values[1] < 0 || action.values[1] >= 9 ||
-                action.values[2] < 0 || action.values[2] >= 9 ||
+            if (action.values[1] < 0 || action.values[1] >= 10 ||
+                action.values[2] < 0 || action.values[2] >= 10 ||
                 action.values[3] < 0 || action.values[3] >= static_cast<std::int32_t>(kBoardSlots + kBenchSlots) ||
                 action.values[4] != 0 || action.values[5] != 0)
                 throw std::invalid_argument("Argumentos fora dos limites para CRAFT_AND_EQUIP.");
@@ -1405,7 +1405,7 @@ struct TFTEngine::Impl {
             const auto second = static_cast<std::size_t>(values[2]);
             const auto target = static_cast<std::size_t>(values[3]);
             if (player_masks.item_component_first_mask[first] != 1 ||
-                player_masks.item_component_pair_masks[first * 9 + second] != 1 ||
+                player_masks.item_component_pair_masks[first * 10 + second] != 1 ||
                 player_masks.item_target_mask[target] != 1)
                 throw std::invalid_argument("Receita/target invalido para CRAFT_AND_EQUIP.");
             return;
