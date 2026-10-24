@@ -4027,7 +4027,7 @@ bool TFTEngine::set_unit_items_for_testing(
     return true;
 }
 
-bool TFTEngine::add_item_component_for_testing(
+bool TFTEngine::grant_item_component(
     std::int32_t player_id, const std::string& component_id
 ) {
     if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
@@ -4041,7 +4041,7 @@ bool TFTEngine::add_item_component_for_testing(
     return true;
 }
 
-bool TFTEngine::add_completed_item_for_testing(
+bool TFTEngine::grant_completed_item(
     std::int32_t player_id, const std::string& item_id
 ) {
     if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
@@ -4053,6 +4053,18 @@ bool TFTEngine::add_completed_item_for_testing(
         return false;
     impl_->refresh_masks(static_cast<std::size_t>(player_id));
     return true;
+}
+
+bool TFTEngine::add_item_component_for_testing(
+    std::int32_t player_id, const std::string& component_id
+) {
+    return grant_item_component(player_id, component_id);
+}
+
+bool TFTEngine::add_completed_item_for_testing(
+    std::int32_t player_id, const std::string& item_id
+) {
+    return grant_completed_item(player_id, item_id);
 }
 
 bool TFTEngine::set_player_economy_for_testing(
