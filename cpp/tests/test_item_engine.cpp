@@ -74,6 +74,8 @@ int main() {
             "item catalog definition should map to combat item stats");
 
     ItemEngine engine({damage, guard, double_component});
+    require(!engine.add_component("unknown_component"),
+            "component IDs outside the loaded recipe catalog must be rejected");
     UnitProfile carry{"carry-1", 2, 1, false, true, 80.0, 1.2, 0.0, 900.0, 30.0, 30.0, 0.9};
     UnitProfile tank{"tank-1", 2, 0, true, false, 35.0, 0.7, 0.0, 1800.0, 70.0, 60.0, 0.8};
 
