@@ -205,6 +205,12 @@ def run_audit(
         "steps": 0,
         "complete_match": False,
         "action_counts": {},
+        "player_metrics": {
+            str(player_id): {
+                "actions": 0, "item_actions": 0, "reward_sum": 0.0, "reward_steps": 0,
+            }
+            for player_id in range(8)
+        },
         "item_action_counts": {"EQUIP_FROM_INVENTORY": 0, "CRAFT_AND_EQUIP": 0},
         "native_event_count": 0,
         "placements": {},
@@ -268,9 +274,13 @@ def run_audit(
                 for player_id, values in enumerate(chosen):
                     if bool(getattr(lobby.players[player_id], "alive", True)):
                         validate_action(values, masks[player_id], player_id)
-                        action_counts[ACTION_NAMES.get(int(values[0]), "UNKNOWN")] += 1
+                        action_name = ACTION_NAMES.get(int(values[0]), "UNKNOWN")
+                        action_counts[action_name] += 1
+                        player_metric = report["player_metrics"][str(player_id)]
+                        player_metric["actions"] += 1
                         if int(values[0]) in (7, 8):
-                            item_counts[ACTION_NAMES[int(values[0])]] += 1
+                            item_counts[action_name] += 1
+                            player_metric["item_actions"] += 1
                         step_actions.append(action_dict(values))
                     else:
                         step_actions.append({"type": 6})
@@ -278,6 +288,13 @@ def run_audit(
                 observations = np.asarray(observations, dtype=np.float32)
                 if not np.isfinite(observations).all():
                     raise ValueError("Observações contêm NaN/Inf após step %d." % step)
+                reward_values = np.asarray(rewards, dtype=np.float64).reshape(-1)
+                if reward_values.shape[0] != 8:
+                    raise ValueError("A engine retornou %d recompensas, esperado 8." % reward_values.shape[0])
+                for player_id, reward_value in enumerate(reward_values):
+                    player_metric = report["player_metrics"][str(player_id)]
+                    player_metric["reward_sum"] += float(reward_value)
+                    player_metric["reward_steps"] += 1
                 events = info.get("events", []) if isinstance(info, dict) else []
                 total_events += len(events) if isinstance(events, list) else 0
                 trace.write(json.dumps({
@@ -293,6 +310,11 @@ def run_audit(
                     complete = True
                     break
         report["action_counts"] = dict(action_counts)
+        for player_metric in report["player_metrics"].values():
+            steps_count = int(player_metric["reward_steps"])
+            player_metric["mean_reward_per_step"] = (
+                float(player_metric["reward_sum"]) / steps_count if steps_count else 0.0
+            )
         report["item_action_counts"] = {
             "EQUIP_FROM_INVENTORY": int(item_counts["EQUIP_FROM_INVENTORY"]),
             "CRAFT_AND_EQUIP": int(item_counts["CRAFT_AND_EQUIP"]),
