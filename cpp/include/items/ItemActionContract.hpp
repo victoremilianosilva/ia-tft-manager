@@ -13,8 +13,7 @@ namespace tft::items {
 enum class ItemOperation {
     WAIT,
     EQUIP_FROM_INVENTORY,
-    CRAFT_AND_EQUIP,
-    UNEQUIP_TO_INVENTORY
+    CRAFT_AND_EQUIP
 };
 
 // Counters are owned by the per-player item state and are exposed for
@@ -23,7 +22,6 @@ struct ItemPlayerMetrics {
     std::uint64_t components_collected{0};
     std::uint64_t crafts{0};
     std::uint64_t equips{0};
-    std::uint64_t unequips{0};
     std::uint64_t invalid_actions{0};
     std::uint64_t items_left_unused{0};
 };
@@ -47,7 +45,6 @@ struct ItemPlayerState {
 struct ItemActionCommand {
     ItemOperation operation{ItemOperation::WAIT};
     std::string item_id;
-    std::string source_unit_uuid;
     std::string target_unit_uuid;
     std::string first_component_id;
     std::string second_component_id;
