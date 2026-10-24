@@ -715,6 +715,33 @@ int main(int argc, char** argv) {
                      " nao manteve a sequencia suficientemente negativa.").c_str());
         }
 
+        // Regression: selling one copy from a pair must be worse than selling
+        // the same isolated unit, even when the sale frees a bench slot.
+        {
+            const auto& candidate = catalog.all().front();
+            tft::TFTEngine isolated_sale_engine(13579, json_path);
+            tft::TFTEngine paired_sale_engine(13579, json_path);
+            for (auto* fixture : {&isolated_sale_engine, &paired_sale_engine}) {
+                require(fixture->set_player_economy_for_testing(0, 10, 2, 0),
+                        "Nao foi possivel configurar ouro para teste de retencao de par.");
+                require(fixture->set_unit_for_testing(0, false, 0, candidate.api_name, 1),
+                        "Nao foi possivel criar unidade isolada para teste de venda.");
+            }
+            require(paired_sale_engine.set_unit_for_testing(
+                        0, false, 1, candidate.api_name, 1),
+                    "Nao foi possivel criar segunda copia para teste de venda.");
+            std::array<tft::PlayerAction, tft::kPlayersPerLobby> isolated_actions{};
+            std::array<tft::PlayerAction, tft::kPlayersPerLobby> paired_actions{};
+            for (auto& action : isolated_actions) action.values = {6, 0, 0, 0, 0, 0};
+            for (auto& action : paired_actions) action.values = {6, 0, 0, 0, 0, 0};
+            isolated_actions[0].values = {5, 0, 0, 0, 0, 0};
+            paired_actions[0].values = {5, 0, 0, 0, 0, 0};
+            const auto isolated_sale = isolated_sale_engine.step(isolated_actions);
+            const auto paired_sale = paired_sale_engine.step(paired_actions);
+            require(paired_sale.action_rewards[0] < isolated_sale.action_rewards[0] - 0.15f,
+                    "Vender uma copia que protege um par nao recebeu penalidade adicional suficiente.");
+        }
+
         std::cout << "TFTEngine + loja/economia/ActionMask/AntiLoop/CompLock: OK\n";
         return 0;
     } catch (const std::exception& e) {
