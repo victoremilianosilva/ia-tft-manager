@@ -122,7 +122,7 @@ int main() {
     }
     require_close(reversed_sequence_adjustment(-0.10, -0.20), 0.0,
                   "already-negative reversal sequence needs no extra adjustment");
-    require_close(purchase_pair_quality(0.0), 0.18,
+    require_close(purchase_pair_quality(0.0), 0.22,
                   "pair-building baseline bonus");
     if (!(purchase_pair_quality(10.0) > purchase_pair_quality(0.0))) {
         throw std::runtime_error("pair reward must increase with composition fit");
@@ -130,6 +130,23 @@ int main() {
     if (!(purchase_pair_quality(10.0) > purchase_quality(0.0, true))) {
         throw std::runtime_error("forming a pair must be valued above a generic upgrade signal");
     }
+    require_close(spending_timing_reward(50, 100.0, 2, 1.0, false, false),
+                  0.0, "no spending bonus for a healthy early-game board");
+    if (!(spending_timing_reward(50, 20.0, 5, 0.0, true, false) > 0.0)) {
+        throw std::runtime_error("completing an upgrade with high gold must be rewarded under pressure");
+    }
+    if (!(spending_timing_reward(50, 20.0, 5, 0.9, false, false) > 0.0)) {
+        throw std::runtime_error("high-fit purchase with excess gold must be rewarded under pressure");
+    }
+    require_close(spending_timing_reward(20, 10.0, 7, 1.0, true, false),
+                  0.0, "low liquidity must not receive an artificial spending bonus");
+    require_close(pass_opportunity_penalty(50, 100.0, 2, true),
+                  0.0, "passing is valid when the board is healthy early");
+    if (!(pass_opportunity_penalty(50, 20.0, 6, true) < 0.0)) {
+        throw std::runtime_error("passing with a useful offer, high gold and low HP must be discouraged");
+    }
+    require_close(pass_opportunity_penalty(50, 20.0, 6, false),
+                  0.0, "must not force spending when the shop has no useful offer");
     if (!(sale_quality(0.0, false, true, true) < 0.0)) {
         throw std::runtime_error("selling a pair copy must remain unattractive even when it frees bench space");
     }
