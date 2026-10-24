@@ -109,7 +109,7 @@ def test_policy_forward_accepts_new_candidate_observation_contract():
     policy = TFTPolicy(obs_dim=obs_dim, action_dims=ACTION_DIMS, hidden_size=32)
     observations = torch.zeros(2, obs_dim)
     masks = {
-        "type_mask": torch.tensor([[True, False, False, False, False, False, False]] * 2),
+        "type_mask": torch.tensor([[True, False, False, False, False, False, False, False, False]] * 2),
         "shop_mask": torch.ones(2, 5, dtype=torch.bool),
         "bench_source_mask": torch.ones(2, 9, dtype=torch.bool),
         "board_target_mask": torch.ones(2, 28, dtype=torch.bool),
