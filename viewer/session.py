@@ -48,7 +48,13 @@ def unit_label(unit: dict | None) -> str:
         return ""
     name = unit.get("champion_id") or unit.get("apiName") or unit.get("api_name") or "?"
     star = int(unit.get("star", 1) or 1)
-    return f"{name} {'★' * max(1, min(star, 3))}"
+    label = f"{name} {'★' * max(1, min(star, 3))}"
+    items = unit.get("items") or []
+    if items:
+        item_names = [str(item) for item in items if str(item).strip()]
+        if item_names:
+            label += " | Itens: " + ", ".join(item_names)
+    return label
 
 
 @dataclass

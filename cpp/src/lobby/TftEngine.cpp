@@ -2217,7 +2217,6 @@ struct TFTEngine::Impl {
                     ? profile.magic_resist
                     : stats.magic_resist);
 
-            // Equipment is owned by the unit instance and follows its UUID.
             unit.items = instance.items;
 
             unit.alive = true;
