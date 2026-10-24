@@ -460,7 +460,8 @@ class PlayerCard(QFrame):
                 cell.setToolTip(
                     f"Posição {i} · {location}: {unit.get('champion_id')} | "
                     f"papel {profile.get('role_name') or 'desconhecido'} | "
-                    f"⭐ {unit.get('star')} | UUID {unit.get('uuid')}{warning}"
+                    f"⭐ {unit.get('star')} | UUID {unit.get('uuid')} | "
+                    f"Itens: {', '.join(str(item) for item in (unit.get('items') or [])) or 'nenhum'}{warning}"
                 )
             else:
                 cell.setToolTip(f"Posição {i} vazia · {'FRONT' if row <= 1 else 'BACK'}")
