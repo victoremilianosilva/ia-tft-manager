@@ -64,13 +64,28 @@ def is_occupied(unit: Any) -> bool:
 
 
 def iter_units(state: dict, locations=("board", "bench")):
+    """Yield occupied units from flat or nested arrays, preserving board coordinates."""
     for location in locations:
         units = state.get(location) or []
         if not isinstance(units, list):
             continue
-        for slot, unit in enumerate(units):
-            if is_occupied(unit):
-                yield location, slot, unit
+        flat_index = 0
+        for index, item in enumerate(units):
+            if isinstance(item, list):
+                for col, unit in enumerate(item):
+                    if is_occupied(unit):
+                        if isinstance(unit, dict):
+                            unit.setdefault("_audit_row", index)
+                            unit.setdefault("_audit_col", col)
+                        yield location, flat_index, unit
+                    flat_index += 1
+            else:
+                if is_occupied(item):
+                    if isinstance(item, dict) and location == "board" and len(units) >= 28:
+                        item.setdefault("_audit_row", index // 7)
+                        item.setdefault("_audit_col", index % 7)
+                    yield location, index, item
+                flat_index += 1
 
 
 def signature(state: dict) -> tuple:
@@ -103,8 +118,7 @@ def read_json(path: Path):
 
 
 def _occupied_units(state: dict, location: str) -> list[dict]:
-    return [u for u in (state.get(location) or [])
-            if isinstance(u, dict) and u.get("occupied", True) and unit_name(u)]
+    return [u for _, _, u in iter_units(state, (location,))]
 
 
 def _board_power(state: dict) -> float:
@@ -194,8 +208,16 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
                             or core in champion.casefold() for core in core_units if core)
             if core_sale:
                 metrics["core_unit_sales"] += 1
-            if core_sale or _pair_count(before) > _pair_count(after):
+            pair_lost = _pair_count(before) > _pair_count(after)
+            if core_sale or pair_lost:
                 metrics["core_or_pair_sales"] += 1
+                code = "SOLD_CORE_UNIT" if core_sale else "SOLD_UPGRADE_PAIR_COPY"
+                severity = "HIGH" if core_sale or pair_lost else "MEDIUM"
+                add_issue(report, severity, code, player, rnd, step,
+                          f"Venda de '{champion}' removeu uma unidade core ou reduziu pares disponíveis; verificar custo estratégico.",
+                          {"champion": champion, "core_sale": core_sale, "pair_lost": pair_lost,
+                           "pair_count_before": _pair_count(before), "pair_count_after": _pair_count(after),
+                           "gold_before": before.get("gold"), "gold_after": after.get("gold")})
             sold_uuid = unit.get("uuid")
             match = next((p for p in reversed(purchases)
                           if not p["sold"]
@@ -655,6 +677,104 @@ def audit_team_progression(entries: list[dict], player: str, report: dict) -> No
     }
 
 
+
+
+def _audit_role(unit: dict) -> str:
+    for key in ("role", "combat_role", "unit_role", "inferred_role", "profile_role", "class_role"):
+        value = unit.get(key)
+        if value is None:
+            continue
+        normalized = re.sub(r"[^a-z0-9]+", "", str(value).casefold())
+        if any(token in normalized for token in ("tank", "tanker", "frontline", "guardian")):
+            return "tank"
+        if any(token in normalized for token in ("carry", "marksman", "mage", "assassin", "backline", "damage")):
+            return "carry"
+        if any(token in normalized for token in ("fighter", "bruiser", "warrior", "melee")):
+            return "fighter"
+    traits = unit.get("traits") or unit.get("synergies") or []
+    if isinstance(traits, list):
+        text_traits = " ".join(str(t.get("name", t) if isinstance(t, dict) else t) for t in traits).casefold()
+        if any(token in text_traits for token in ("bruiser", "warden", "bastion", "sentinel")):
+            return "tank_trait"
+    return "unknown"
+
+
+def _audit_row(slot: int, unit: dict, state: dict) -> int | None:
+    for key in ("row", "board_row", "y", "_audit_row"):
+        value = unit.get(key)
+        if isinstance(value, int):
+            return value
+    board = state.get("board")
+    if isinstance(board, list) and len(board) >= 28 and all(not isinstance(x, list) for x in board):
+        return slot // 7
+    return None
+
+
+def audit_positioning_and_composition(entries: list[dict], player: str, report: dict) -> None:
+    """Flag role/row mismatches and core units absent across consecutive snapshots."""
+    emitted_positions = set()
+    missing_counts: Counter = Counter()
+    missing_reported = set()
+    for entry in sorted(entries, key=lambda e: (e.get("sequence_id", 0), e.get("step", 0))):
+        if not isinstance(entry, dict) or entry.get("event_type") not in ("action", "round_finished", "match_started"):
+            continue
+        payload = entry.get("payload") or {}
+        state = payload.get("state_after") or payload.get("state") or {}
+        if not isinstance(state, dict) or not state:
+            continue
+        board_rows = []
+        for slot, unit in [(slot, unit) for _, slot, unit in iter_units(state, ("board",))]:
+            row = _audit_row(slot, unit, state)
+            if row is not None:
+                board_rows.append((slot, unit, row, _audit_role(unit)))
+        for slot, unit, row, role in board_rows:
+            ident = str(unit.get("uuid") or unit_name(unit))
+            if row <= 1 and role == "carry":
+                key = (ident, "carry_front")
+                if key not in emitted_positions:
+                    add_issue(report, "MEDIUM", "CARRY_IN_FRONTLINE", player, get_round(entry), entry.get("step"),
+                              f"Carry '{unit_name(unit)}' está nas fileiras 0-1; verificar se está exposto sem necessidade.",
+                              {"unit": unit_name(unit), "row": row, "slot": slot, "role": role})
+                    emitted_positions.add(key)
+            elif row >= 2 and role in ("tank", "tank_trait"):
+                key = (ident, "tank_back")
+                if key not in emitted_positions:
+                    add_issue(report, "MEDIUM", "TANK_IN_BACKLINE", player, get_round(entry), entry.get("step"),
+                              f"Tanque '{unit_name(unit)}' está nas fileiras 2+; verificar posicionamento.",
+                              {"unit": unit_name(unit), "row": row, "slot": slot, "role": role})
+                    emitted_positions.add(key)
+        if board_rows and any(role == "carry" for _, _, _, role in board_rows):
+            if not any(row <= 1 and role in ("tank", "tank_trait", "fighter") for _, _, row, role in board_rows):
+                key = (get_round(entry), "no_frontline")
+                if key not in emitted_positions:
+                    add_issue(report, "LOW", "NO_FRONTLINE_PROTECTION", player, get_round(entry), entry.get("step"),
+                              "Há carry(s) no tabuleiro, mas não foi identificado tank/fighter nas fileiras da frontline.",
+                              {"board_roles": [{"unit": unit_name(u), "row": row, "role": role}
+                                               for _, u, row, role in board_rows]})
+                    emitted_positions.add(key)
+        core = state.get("core_units") or state.get("comp_units") or state.get("core_champions") or []
+        if isinstance(core, list):
+            present = {re.sub(r"[^a-z0-9]+", "", unit_name(u).casefold())
+                       for _, _, u in iter_units(state)}
+            for value in core:
+                name = unit_name(value) if isinstance(value, dict) else str(value).strip()
+                if not name:
+                    continue
+                normalized = re.sub(r"[^a-z0-9]+", "", name.casefold())
+                if normalized and normalized not in present:
+                    missing_counts[normalized] += 1
+                    if missing_counts[normalized] in (3, 8) and normalized not in missing_reported:
+                        count = missing_counts[normalized]
+                        add_issue(report, "HIGH" if count >= 8 else "MEDIUM", "CORE_UNIT_MISSING_REPEATEDLY",
+                                  player, get_round(entry), entry.get("step"),
+                                  f"Unidade core '{name}' ficou ausente do tabuleiro e banco em {count} snapshots consecutivos.",
+                                  {"core_unit": name, "missing_snapshots": count,
+                                   "comp_direction": state.get("comp_direction"), "comp_focus": state.get("comp_focus")})
+                        missing_reported.add(normalized)
+                else:
+                    missing_counts.pop(normalized, None)
+                    missing_reported.discard(normalized)
+
 def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_window: int) -> None:
     player_id = doc.get("player_number")
     if player_id is None:
@@ -667,6 +787,7 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
     audit_economic_actions(doc["entries"], player, report)
     audit_composition_direction_changes(doc["entries"], player, report)
     audit_board_quality(doc["entries"], player, report)
+    audit_positioning_and_composition(doc["entries"], player, report)
     audit_team_progression(doc["entries"], player, report)
     report["log_files"].append(str(path))
 
@@ -963,7 +1084,9 @@ def markdown_report(report: dict) -> str:
               "- A checagem de fusão conta apenas unidades compradas no tabuleiro+banco, nunca as da loja.",
               "- JSON e TFT são usados de forma complementar: JSON para estado/estratégia; TFT para corroborar loops de movimento. Alertas de composição do TFT foram desativados para não duplicar episódios.",
               "- A auditoria não pode decidir se uma compra era ótima sem comparar loja, ouro, limite do banco, máscaras e avaliação de composição no mesmo estado.",
-              "- Uma fusão só pode ser confirmada com segurança se o log registrar cópias elegíveis antes/depois e o evento de merge; contar cópias é apenas um indício.", ""]
+              "- Uma fusão só pode ser confirmada com segurança se o log registrar cópias elegíveis antes/depois e o evento de merge; contar cópias é apenas um indício.",
+              "- Alertas de posicionamento dependem de role/row nos dados; em tabuleiro achatado assume-se grade 4x7 com rows 0-1 na frontline, convenção a validar no Viewer.",
+              "- Alertas de unidade core ausente exigem três snapshots consecutivos; podem indicar estratégia em transição, então revise o contexto antes de concluir que é bug.", ""]
     return "\n".join(lines)
 
 
