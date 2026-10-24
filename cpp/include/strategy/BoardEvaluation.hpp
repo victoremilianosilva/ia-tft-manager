@@ -103,20 +103,30 @@ public:
             int occupied_neighbors = 0;
             int tank_neighbors = 0;
             int tanks_in_front = 0;
+            int fighter_neighbors = 0;
+            int fighters_in_front = 0;
             for (const int neighbor : PositioningEngine::get_neighbors(p, true)) {
                 const int neighbor_role = normalized[static_cast<std::size_t>(neighbor)];
                 if (neighbor_role < 0) continue;
                 ++occupied_neighbors;
+                const int neighbor_row = neighbor / PositioningEngine::cols;
                 if (neighbor_role == PositioningEngine::tank) {
                     ++tank_neighbors;
-                    if (neighbor / PositioningEngine::cols < row) ++tanks_in_front;
+                    if (neighbor_row < row) ++tanks_in_front;
+                } else if (neighbor_role == PositioningEngine::fighter) {
+                    ++fighter_neighbors;
+                    if (neighbor_row < row) ++fighters_in_front;
                 }
             }
 
             if (role == PositioningEngine::carry) {
+                // Fighters are legitimate frontline bodies, but provide less
+                // protection than tanks. Counting only tanks left carries marked
+                // exposed even when a fighter was directly in front of them.
                 const double protection = std::min(
                     1.0, occupied_neighbors * 0.03 + tank_neighbors * 0.25 +
-                        tanks_in_front * 0.25);
+                        tanks_in_front * 0.25 + fighter_neighbors * 0.16 +
+                        fighters_in_front * 0.16);
                 if (protection < 0.35) {
                     ++result.exposed_carry_count;
                     penalty += 0.18 * (0.35 - protection) / 0.35;
@@ -129,8 +139,9 @@ public:
                     ++result.main_carry_count;
                     if (row <= 1) penalty += 0.18;
                     else bonus += 0.04;
-                    if (tanks_in_front > 0 && protection >= 0.35) {
-                        bonus += 0.16;
+                    if (protection >= 0.35 &&
+                        (tanks_in_front > 0 || fighters_in_front > 0)) {
+                        bonus += tanks_in_front > 0 ? 0.16 : 0.08;
                     } else {
                         ++result.exposed_main_carry_count;
                         penalty += 0.22;
