@@ -2480,7 +2480,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         this->recent_purchases.erase(
             std::remove_if(this->recent_purchases.begin(), this->recent_purchases.end(),
                 [this](const RecentPurchase& purchase) {
-                    return this->action_serial - purchase.action_serial > 8;
+                    return this->action_serial - purchase.action_serial >
+                        reward_model::kRecentPurchaseHistoryActions;
                 }),
             this->recent_purchases.end());
         const auto old_gold = economy.gold;
