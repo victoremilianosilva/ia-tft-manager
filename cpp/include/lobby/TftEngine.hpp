@@ -185,8 +185,8 @@ struct PlayerActionMasks {
     // Item-action masks are conditional on action type and remain separate
     // from shop/movement masks even though the legacy action vector is six-wide.
     std::array<std::uint8_t, 9> item_inventory_mask{};
-    std::array<std::uint8_t, 9> item_component_first_mask{};
-    std::array<std::uint8_t, 9 * 9> item_component_pair_masks{};
+    std::array<std::uint8_t, 10> item_component_first_mask{};
+    std::array<std::uint8_t, 10 * 10> item_component_pair_masks{};
     std::array<std::uint8_t, 37> item_target_mask{};
 };
 
