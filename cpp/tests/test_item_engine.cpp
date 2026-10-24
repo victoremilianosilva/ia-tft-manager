@@ -156,6 +156,30 @@ int main() {
             best_action.kind == DecisionKind::CRAFT_AND_EQUIP,
             "best-action search should compare inventory and craft options");
 
+
+    // Regression: transfers must respect the destination's three-item cap and
+    // must be atomic when rejected (the source keeps the item).
+    ItemEngine capacity_engine({damage, guard, double_component});
+    const auto add_and_craft = [&capacity_engine](const std::string& a,
+                                                   const std::string& b) {
+        require(capacity_engine.add_component(a), "capacity fixture first component");
+        require(capacity_engine.add_component(b), "capacity fixture second component");
+        require(capacity_engine.craft(a, b).has_value(), "capacity fixture craft");
+    };
+    add_and_craft("sword", "bow");
+    add_and_craft("armor", "cloak");
+    add_and_craft("rod", "rod");
+    add_and_craft("sword", "bow");
+    require(capacity_engine.equip("damage_blade", carry), "capacity carry item 1");
+    require(capacity_engine.equip("guard_plate", carry), "capacity carry item 2");
+    require(capacity_engine.equip("double_rod", carry), "capacity carry item 3");
+    require(capacity_engine.equip("damage_blade", tank), "capacity source item");
+    require(!capacity_engine.transfer("damage_blade", "tank-1", carry),
+            "transfer to a unit with three items must be rejected");
+    require(capacity_engine.equipped("tank-1").size() == 1 &&
+            capacity_engine.equipped("carry-1").size() == 3,
+            "rejected transfer must not mutate source or destination equipment");
+
     std::cout << "[PASS] Item inventory, recipes, equip, transfer, and decision tests.\n";
     return EXIT_SUCCESS;
 }
