@@ -39,8 +39,8 @@ def create_valid_masks():
                 (9, 28), dtype=np.float32
             ),
             "item_inventory_mask": np.zeros(9, dtype=np.float32),
-            "item_component_first_mask": np.zeros(9, dtype=np.float32),
-            "item_component_pair_masks": np.zeros((9, 9), dtype=np.float32),
+            "item_component_first_mask": np.zeros(10, dtype=np.float32),
+            "item_component_pair_masks": np.zeros((10, 10), dtype=np.float32),
             "item_target_mask": np.zeros(37, dtype=np.float32),
         })
 
