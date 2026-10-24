@@ -52,7 +52,8 @@ enum class DecisionKind : std::uint8_t {
     WAIT,
     EQUIP_FROM_INVENTORY,
     CRAFT_AND_EQUIP,
-    TRANSFER
+    TRANSFER,
+    UNEQUIP_TO_INVENTORY
 };
 
 struct ItemDecision {
@@ -60,6 +61,8 @@ struct ItemDecision {
     std::string item_id;
     std::string source_unit_uuid;
     std::string target_unit_uuid;
+    std::string first_component;
+    std::string second_component;
     double immediate_value{0.0};
     double future_value{0.0};
     double urgency{0.0};
@@ -169,12 +172,20 @@ public:
     }
 
     bool equip(const std::string& item_id, const UnitProfile& target) {
+        const auto target_items = equipped_.find(target.uuid);
+        const std::size_t target_count = target_items == equipped_.end()
+            ? 0U : target_items->second.size();
         if (!has_item(item_id) || target.uuid.empty() ||
-            equipped_[target.uuid].size() >= kMaxItemsPerUnit) {
+            target_count >= kMaxItemsPerUnit) {
             ++metrics_.invalid_actions;
             return false;
         }
-        inventory_.erase(std::find(inventory_.begin(), inventory_.end(), item_id));
+        const auto inventory_item = std::find(inventory_.begin(), inventory_.end(), item_id);
+        if (inventory_item == inventory_.end()) {
+            ++metrics_.invalid_actions;
+            return false;
+        }
+        inventory_.erase(inventory_item);
         equipped_[target.uuid].push_back(item_id);
         ++metrics_.equips;
         return true;
@@ -278,6 +289,16 @@ public:
         ItemDecision best;
         best.kind = DecisionKind::WAIT;
         best.total_value = 0.0;
+        const auto count_component = [this](const std::string& id) {
+            return static_cast<std::size_t>(std::count(
+                components_.begin(), components_.end(), id));
+        };
+        if (first.empty() || second.empty() ||
+            (first == second && count_component(first) < 2U) ||
+            (first != second &&
+             (count_component(first) == 0U || count_component(second) == 0U))) {
+            return best;
+        }
         const auto item_id = craftable_item(first, second);
         if (!item_id) return best;
         const auto* item = find(*item_id);
@@ -295,10 +316,94 @@ public:
                 best.kind = DecisionKind::CRAFT_AND_EQUIP;
                 best.item_id = *item_id;
                 best.target_unit_uuid = candidate.uuid;
+                best.first_component = first;
+                best.second_component = second;
                 best.immediate_value = immediate;
                 best.future_value = future;
                 best.urgency = urgency;
                 best.total_value = value;
+            }
+        }
+        return best;
+    }
+
+    // Compare all currently legal item decisions against WAIT. This method
+    // considers every craftable pair, inventory equip and beneficial transfer;
+    // it never treats the mechanical action itself as value.
+    [[nodiscard]] ItemDecision decide_best_action(
+        const std::vector<UnitProfile>& candidates, int stage, double hp) const {
+        ItemDecision best;
+        best.kind = DecisionKind::WAIT;
+        best.total_value = 0.0;
+        const double urgency = std::max(
+            std::clamp((65.0 - hp) / 65.0, 0.0, 1.0),
+            std::clamp((static_cast<double>(stage) - 2.0) / 6.0, 0.0, 1.0));
+
+        const auto consider = [&best](const ItemDecision& candidate) {
+            if (candidate.kind != DecisionKind::WAIT &&
+                candidate.total_value > best.total_value) {
+                best = candidate;
+            }
+        };
+
+        // Do not greedily consume the first available pair: score all pairs.
+        for (std::size_t i = 0; i < components_.size(); ++i) {
+            for (std::size_t j = i + 1; j < components_.size(); ++j) {
+                consider(decide_craft(
+                    components_[i], components_[j], candidates, stage, hp));
+            }
+        }
+
+        // Crafted items already in inventory have no additional component
+        // opportunity cost, but still need a free slot and a useful holder.
+        for (const auto& item_id : inventory_) {
+            for (const auto& target : candidates) {
+                if (target.uuid.empty() ||
+                    equipped(target.uuid).size() >= kMaxItemsPerUnit) continue;
+                const double fit = item_fit(item_id, target);
+                const double value = fit * (0.65 + 0.35 * urgency);
+                if (value > best.total_value) {
+                    ItemDecision decision;
+                    decision.kind = DecisionKind::EQUIP_FROM_INVENTORY;
+                    decision.item_id = item_id;
+                    decision.target_unit_uuid = target.uuid;
+                    decision.immediate_value = fit;
+                    decision.urgency = urgency;
+                    decision.total_value = value;
+                    best = std::move(decision);
+                }
+            }
+        }
+
+        // Transfer only when the destination is a meaningfully better holder.
+        // A small deadband prevents shuffling items for negligible fit changes.
+        for (const auto& [source_uuid, item_ids] : equipped_) {
+            const auto source_profile = std::find_if(
+                candidates.begin(), candidates.end(),
+                [&source_uuid](const UnitProfile& unit) {
+                    return unit.uuid == source_uuid;
+                });
+            if (source_profile == candidates.end()) continue;
+            for (const auto& item_id : item_ids) {
+                const double source_fit = item_fit(item_id, *source_profile);
+                for (const auto& target : candidates) {
+                    if (target.uuid.empty() || target.uuid == source_uuid ||
+                        equipped(target.uuid).size() >= kMaxItemsPerUnit) continue;
+                    const double delta = item_fit(item_id, target) - source_fit;
+                    if (delta <= 0.10) continue;
+                    const double value = delta * (0.65 + 0.35 * urgency);
+                    if (value > best.total_value) {
+                        ItemDecision decision;
+                        decision.kind = DecisionKind::TRANSFER;
+                        decision.item_id = item_id;
+                        decision.source_unit_uuid = source_uuid;
+                        decision.target_unit_uuid = target.uuid;
+                        decision.immediate_value = delta;
+                        decision.urgency = urgency;
+                        decision.total_value = value;
+                        best = std::move(decision);
+                    }
+                }
             }
         }
         return best;
