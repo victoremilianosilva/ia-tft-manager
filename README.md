@@ -24,6 +24,21 @@ python -m viewer.main
 
 Consulte [build e testes](docs/build-and-tests.md) para os pré-requisitos e [viewer](docs/viewer.md) para checkpoints e limitações.
 
+## Avaliação unificada da policy
+
+Para gerar um relatório consolidado de auditoria estratégica, ações/recompensas,
+máscaras, ciclos de estado e loops nativos em um único Markdown:
+
+~~~powershell
+python scripts/evaluate_all.py --checkpoint checkpoints/latest.pt --seeds 11,12,13
+~~~
+
+O relatório final é gravado em `reports/evaluation_report.md`; os dados brutos
+JSONL/JSON ficam em `reports/evaluation_data/`. Para comparar dois checkpoints,
+adicione `--baseline checkpoints/base.pt --candidate checkpoints/candidato.pt --matches 20`.
+Para incluir a ablação dos controles de composição, acrescente `--ablation`.
+Essas avaliações opcionais podem executar partidas adicionais e demorar mais.
+
 ## Componentes principais
 
 - cpp/: engine C++, bindings e testes nativos.
