@@ -120,7 +120,7 @@ public:
 
     // Called by game loot/armory events, never by the policy action decoder.
     bool add_completed_item(const std::string& item_id) {
-        if (!find(item_id) || !find(item_id)->recipe_components[0].empty()) {
+        if (!find(item_id)) {
             ++metrics_.invalid_actions;
             return false;
         }
