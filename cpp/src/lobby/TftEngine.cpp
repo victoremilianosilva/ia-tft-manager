@@ -3101,8 +3101,6 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             const auto result = this->item_engine->apply_action(command, profiles);
             if (!result.success) throw std::invalid_argument("Acao de item rejeitada: " + result.reason);
             lobby.sync_unit_items_from_engine(player_id, target_unit->uuid);
-            success = true;
-            action_reward = 0.0;
         } else if (type == 5) {
             // SELL: vender unidade do banco
             const auto bench_slot =
@@ -3350,6 +3348,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 // manufacture the exception and hide the immediate reversal.
                 action_reward += reward_model::reversed_purchase_penalty();
             }
+        } else if (type == 7 || type == 8) {
+            // Item actions use the normal environment/PPO reward path.
+            success = true;
+            action_reward = 0.0;
         } else {
             success = true;
             if (type == 6 && !this->strategy.empty()) {
