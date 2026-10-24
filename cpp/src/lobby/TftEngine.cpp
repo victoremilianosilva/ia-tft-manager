@@ -720,7 +720,7 @@ struct TFTEngine::Impl {
                 current.item_inventory_mask[i] = 1;
             for (std::size_t target = 0; target < kBoardSlots + kBenchSlots; ++target) {
                 const auto* unit = item_target_unit(player_index, target);
-                if (!unit || player.item_engine->equipped(unit->uuid).size() >= items::ItemEngine::kMaxItemsPerUnit)
+                if (!unit || std::max(unit->items.size(), player.item_engine->equipped(unit->uuid).size()) >= items::ItemEngine::kMaxItemsPerUnit)
                     continue;
                 current.item_target_mask[target] = 1;
             }
@@ -3990,6 +3990,34 @@ bool TFTEngine::set_unit_items_for_testing(
             !player.bench[static_cast<std::size_t>(slot)]) return false;
         player.bench[static_cast<std::size_t>(slot)]->items = items;
     }
+    impl_->refresh_masks(static_cast<std::size_t>(player_id));
+    return true;
+}
+
+bool TFTEngine::add_item_component_for_testing(
+    std::int32_t player_id, const std::string& component_id
+) {
+    if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
+    impl_->ensure_open();
+    if (player_id < 0 || static_cast<std::size_t>(player_id) >= kPlayersPerLobby)
+        return false;
+    auto& player = impl_->player_envs[static_cast<std::size_t>(player_id)];
+    if (!player.item_engine || !player.item_engine->add_component(component_id))
+        return false;
+    impl_->refresh_masks(static_cast<std::size_t>(player_id));
+    return true;
+}
+
+bool TFTEngine::add_completed_item_for_testing(
+    std::int32_t player_id, const std::string& item_id
+) {
+    if (!impl_) throw std::runtime_error("TFTEngine nao possui estado interno.");
+    impl_->ensure_open();
+    if (player_id < 0 || static_cast<std::size_t>(player_id) >= kPlayersPerLobby)
+        return false;
+    auto& player = impl_->player_envs[static_cast<std::size_t>(player_id)];
+    if (!player.item_engine || !player.item_engine->add_completed_item(item_id))
+        return false;
     impl_->refresh_masks(static_cast<std::size_t>(player_id));
     return true;
 }
