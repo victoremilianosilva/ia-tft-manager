@@ -867,6 +867,71 @@ class TFTPolicy(nn.Module):
             )
             total_entropy[move_board_mask] += target_dist.entropy()
 
+        # EQUIP FROM INVENTORY
+        equip_item_mask = action_type == 7
+        if equip_item_mask.any():
+            conditioned_item = conditioned[equip_item_mask]
+            item_index = actions[equip_item_mask, 1].long()
+            inventory_mask = masks["item_inventory_mask"][equip_item_mask]
+            logits = self._mask_logits(self.item_inventory_head(conditioned_item), inventory_mask)
+            self._validate_selected_actions(item_index, inventory_mask, "item_inventory")
+            dist = Categorical(logits=logits)
+            total_logprob[equip_item_mask] += dist.log_prob(item_index)
+            total_entropy[equip_item_mask] += dist.entropy()
+
+            target_index = actions[equip_item_mask, 2].long()
+            item_context = F.one_hot(item_index, num_classes=5).to(dtype=conditioned.dtype)
+            item_context = F.pad(item_context, (0, 4))
+            target_context = torch.cat([item_context, torch.zeros_like(item_context)], dim=-1)
+            target_mask = masks["item_target_mask"][equip_item_mask]
+            target_logits = self._mask_logits(
+                self.item_target_head(torch.cat([conditioned_item, target_context], dim=-1)),
+                target_mask,
+            )
+            self._validate_selected_actions(target_index, target_mask, "item_target")
+            target_dist = Categorical(logits=target_logits)
+            total_logprob[equip_item_mask] += target_dist.log_prob(target_index)
+            total_entropy[equip_item_mask] += target_dist.entropy()
+
+        # CRAFT AND EQUIP
+        craft_item_mask = action_type == 8
+        if craft_item_mask.any():
+            conditioned_item = conditioned[craft_item_mask]
+            first_index = actions[craft_item_mask, 1].long()
+            second_index = actions[craft_item_mask, 2].long()
+            target_index = actions[craft_item_mask, 3].long()
+
+            first_mask = masks["item_component_first_mask"][craft_item_mask]
+            first_logits = self._mask_logits(self.item_component_first_head(conditioned_item), first_mask)
+            self._validate_selected_actions(first_index, first_mask, "item_component_first")
+            first_dist = Categorical(logits=first_logits)
+            total_logprob[craft_item_mask] += first_dist.log_prob(first_index)
+            total_entropy[craft_item_mask] += first_dist.entropy()
+
+            first_onehot = F.one_hot(first_index, num_classes=9).to(dtype=conditioned.dtype)
+            second_logits = self.item_component_second_head(torch.cat([conditioned_item, first_onehot], dim=-1))
+            pair_masks = masks["item_component_pair_masks"][craft_item_mask]
+            second_mask = pair_masks[
+                torch.arange(first_index.shape[0], device=first_index.device), first_index
+            ]
+            second_logits = self._mask_logits(second_logits, second_mask)
+            self._validate_selected_actions(second_index, second_mask, "item_component_second")
+            second_dist = Categorical(logits=second_logits)
+            total_logprob[craft_item_mask] += second_dist.log_prob(second_index)
+            total_entropy[craft_item_mask] += second_dist.entropy()
+
+            second_onehot = F.one_hot(second_index, num_classes=9).to(dtype=conditioned.dtype)
+            target_context = torch.cat([first_onehot, second_onehot], dim=-1)
+            target_mask = masks["item_target_mask"][craft_item_mask]
+            target_logits = self._mask_logits(
+                self.item_target_head(torch.cat([conditioned_item, target_context], dim=-1)),
+                target_mask,
+            )
+            self._validate_selected_actions(target_index, target_mask, "item_target")
+            target_dist = Categorical(logits=target_logits)
+            total_logprob[craft_item_mask] += target_dist.log_prob(target_index)
+            total_entropy[craft_item_mask] += target_dist.entropy()
+
         # SELL
         sell_mask = action_type == 5
         if sell_mask.any():
