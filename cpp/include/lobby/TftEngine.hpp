@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include "combat/CombatInput.hpp"
+
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -134,6 +136,9 @@ struct UnitInstance {
 
     // ⭐ Estado mutável da unidade.
     std::int32_t star{1};
+
+    // Equipment belongs to this specific unit copy, not the champion definition.
+    std::vector<CombatItem> items;
 
     // Retorna se a instância possui uma referência válida.
     bool is_valid() const noexcept {
@@ -365,6 +370,7 @@ struct AuditUnitSnapshot {
     std::string uuid;
     std::int32_t star{0};
     std::int32_t cost{0};
+    std::vector<std::string> item_ids;
 };
 
 struct AuditPlayerSnapshot {
@@ -438,6 +444,13 @@ public:
         std::int32_t slot,
         const std::string& champion_api_name,
         std::int32_t star = 1
+    );
+    // Deterministic fixture hook for combat/equipment regression tests only.
+    bool set_unit_items_for_testing(
+        std::int32_t player_id,
+        bool on_board,
+        std::int32_t slot,
+        const std::vector<CombatItem>& items
     );
     bool set_player_alive_for_testing(std::int32_t player_id, bool alive);
     bool set_player_economy_for_testing(
