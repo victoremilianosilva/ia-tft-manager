@@ -6,10 +6,10 @@ from policy import TFTPolicy
 
 def _fixture():
     torch.manual_seed(781)
-    policy = TFTPolicy(obs_dim=162, action_dims=[7, 5, 9, 28, 28, 28], hidden_size=64)
+    policy = TFTPolicy(obs_dim=162, action_dims=[9, 5, 9, 28, 28, 28], hidden_size=64)
     obs = torch.randn(2, 162)
     masks = {
-        "type_mask": torch.zeros(2, 7, dtype=torch.bool),
+        "type_mask": torch.zeros(2, 9, dtype=torch.bool),
         "shop_mask": torch.ones(2, 5, dtype=torch.bool),
         "bench_source_mask": torch.ones(2, 9, dtype=torch.bool),
         "bench_move_source_mask": torch.ones(2, 9, dtype=torch.bool),
