@@ -194,7 +194,7 @@ public:
         // the lineup across many traits that never become active.
         const auto trait_milestone_potential = [&](const std::string& trait, int count) {
             const auto found = milestones.find(trait);
-            const std::vector<int> fallback{2};
+            static const std::vector<int> fallback{2};
             const auto& thresholds = found == milestones.end() ? fallback : found->second;
             double value = 0.0;
             int next_milestone = 0;
