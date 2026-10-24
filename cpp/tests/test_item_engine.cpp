@@ -33,7 +33,13 @@ int main() {
     guard.armor = 20.0;
     guard.tank_weight = 1.0;
 
-    ItemEngine engine({damage, guard});
+    ItemDefinition double_component;
+    double_component.id = "double_rod";
+    double_component.name = "Double Rod";
+    double_component.recipe_components = {"rod", "rod"};
+    double_component.ability_power = 10.0;
+
+    ItemEngine engine({damage, guard, double_component});
     UnitProfile carry{"carry-1", 2, 1, false, true, 80.0, 1.2, 0.0, 900.0, 30.0, 30.0, 0.9};
     UnitProfile tank{"tank-1", 2, 0, true, false, 35.0, 0.7, 0.0, 1800.0, 70.0, 60.0, 0.8};
 
@@ -64,7 +70,21 @@ int main() {
     require(crafted_guard && *crafted_guard == "guard_plate", "recipe order is symmetric");
 
     require(!engine.craft("sword", "bow"), "missing components cannot be crafted");
-    require(engine.metrics().crafts == 2, "craft metric");
+    require(engine.add_component("rod"), "first repeated component accepted");
+    require(engine.add_component("rod"), "second repeated component accepted");
+    const auto double_craft = engine.craft("rod", "rod");
+    require(double_craft && *double_craft == "double_rod",
+            "recipes may consume two copies of the same component");
+    require(item_action_reward(2.0, 1.0, 1.0) > 0.0,
+            "valuable immediate item gain under pressure should be positive");
+    require(item_action_reward(0.2, 2.0, 0.0) < 0.0,
+            "preserving high future value early should discourage a weak craft");
+    require(item_action_reward(0.0, 0.0, 0.5, 0.0) == 0.0,
+            "no-op transfer must not create reward");
+    require(item_action_reward(1.0, 0.0, 0.5, 2.0) >
+            item_action_reward(1.0, 0.0, 0.5, -2.0),
+            "transfer reward should depend on marginal holder improvement");
+    require(engine.metrics().crafts == 3, "craft metric");
     require(engine.metrics().equips == 1, "equip metric");
     require(engine.metrics().transfers == 1, "transfer metric");
     require(engine.metrics().unequips == 1, "unequip metric");
