@@ -38,11 +38,12 @@ class CppTFTLobbyWrapper:
     PLAYERS_PER_LOBBY = 8
     ACTION_COMPONENTS = 6
 
-    def __init__(self, seed: int | None = None, catalog_path: str | None = None):
+    def __init__(self, seed: int | None = None, catalog_path: str | None = None, item_catalog_path: str | None = None):
         native_seed = 0 if seed is None else int(seed)
         self._engine = _NativeTFTLobby(
             native_seed,
             "" if catalog_path is None else str(catalog_path),
+            "" if item_catalog_path is None else str(item_catalog_path),
         )
         self._last_dones = np.zeros(self.PLAYERS_PER_LOBBY, dtype=np.bool_)
         self._players = [
