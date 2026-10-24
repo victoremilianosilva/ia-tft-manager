@@ -107,32 +107,43 @@ int main() {
     const auto double_craft = engine.craft("rod", "rod");
     require(double_craft && *double_craft == "double_rod",
             "recipes may consume two copies of the same component");
-    require(item_action_reward(2.0, 1.0, 1.0) > 0.0,
-            "valuable immediate item gain under pressure should be positive");
-    require(item_action_reward(0.2, 2.0, 0.0) < 0.0,
-            "preserving high future value early should discourage a weak craft");
     require(engine.metrics().crafts == 3, "craft metric");
     require(engine.metrics().equips == 1, "equip metric");
     require(engine.metrics().invalid_actions >= 2, "invalid operations are counted");
 
-    const auto missing_components = engine.decide_craft("sword", "bow", {carry, tank}, 6, 20.0);
-    require(missing_components.kind == DecisionKind::WAIT,
-            "decision must not craft components that are not in inventory");
-    require(engine.add_component("sword"), "decision test sword accepted");
-    require(engine.add_component("bow"), "decision test bow accepted");
-    const auto urgent = engine.decide_craft("sword", "bow", {carry, tank}, 6, 20.0);
-    require(urgent.kind == DecisionKind::CRAFT_AND_EQUIP,
-            "useful craft under pressure should be considered");
-    require(urgent.target_unit_uuid == "carry-1",
-            "decision should choose the stronger item holder");
-    const auto no_recipe = engine.decide_craft("component_a", "component_b", {carry}, 2, 100.0);
-    require(no_recipe.kind == DecisionKind::WAIT,
-            "no known recipe must preserve components");
-    const auto best_action = engine.decide_best_action({carry, tank}, 2, 100.0);
-    require(best_action.kind == DecisionKind::EQUIP_FROM_INVENTORY ||
-            best_action.kind == DecisionKind::CRAFT_AND_EQUIP,
-            "best-action search should compare inventory and craft options");
+    // Item operations are commands selected by the main policy. There is
+    // no item-specific WAIT or parallel heuristic decision function.
+    ItemActionCommand equip_command;
+    equip_command.operation = ItemOperation::EQUIP_FROM_INVENTORY;
+    equip_command.item_id = "guard_plate";
+    equip_command.target_unit_uuid = "tank-1";
+    const auto equip_result = engine.apply_action(equip_command, {carry, tank});
+    require(equip_result.success, "policy equip action should execute");
+    require(engine.equipped("tank-1").size() == 1 &&
+            engine.inventory().size() == 1,
+            "equip action should consume exactly one inventory item");
 
+    require(engine.add_component("sword"), "policy craft sword accepted");
+    require(engine.add_component("bow"), "policy craft bow accepted");
+    ItemActionCommand craft_command;
+    craft_command.operation = ItemOperation::CRAFT_AND_EQUIP;
+    craft_command.first_component_id = "sword";
+    craft_command.second_component_id = "bow";
+    craft_command.target_unit_uuid = "carry-1";
+    const auto craft_result = engine.apply_action(craft_command, {carry, tank});
+    require(craft_result.success, "policy craft-and-equip action should execute");
+    require(engine.components().empty() &&
+            engine.equipped("carry-1").size() == 2,
+            "craft-and-equip should consume components and equip exactly once");
+
+    ItemActionCommand invalid_command;
+    invalid_command.target_unit_uuid = "carry-1";
+    const auto invalid_result = engine.apply_action(invalid_command, {carry, tank});
+    require(!invalid_result.success && invalid_result.reward == 0.0,
+            "missing operation must be rejected rather than interpreted as WAIT");
+    require(engine.metrics().crafts == 4, "craft metric");
+    require(engine.metrics().equips == 3, "equip metric");
+    require(engine.metrics().invalid_actions >= 2, "invalid operations are counted");
 
     // Phase 1 contract: repeated component IDs represent separate copies,
     // and equipment is keyed by unit-instance UUID rather than champion ID.
@@ -151,7 +162,8 @@ int main() {
     item_command.operation = tft::items::ItemOperation::EQUIP_FROM_INVENTORY;
     item_command.item_id = "damage_blade";
     item_command.target_unit_uuid = "unit-copy-b";
-    require(item_command.operation == tft::items::ItemOperation::EQUIP_FROM_INVENTORY &&
+    require(item_command.operation.has_value() &&
+            *item_command.operation == tft::items::ItemOperation::EQUIP_FROM_INVENTORY &&
             item_command.target_unit_uuid == "unit-copy-b",
             "semantic equip command must identify the target unit instance");
 
