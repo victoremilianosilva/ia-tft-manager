@@ -86,6 +86,57 @@ float mitigate_physical_damage(float damage, float armor) {
     return std::max(0.0f, damage * multiplier);
 }
 
+bool apply_item_stats(CombatUnit& unit, std::string& error) {
+    if (unit.items.size() > 3) {
+        error = "Uma unidade nao pode carregar mais de tres itens.";
+        return false;
+    }
+
+    for (const auto& item : unit.items) {
+        const float values[] = {
+            item.attack_damage, item.ability_power, item.attack_speed,
+            item.critical_strike_chance, item.critical_strike_damage,
+            item.health, item.armor, item.magic_resist, item.mana,
+            item.omnivamp, item.damage_amplification, item.damage_reduction
+        };
+        for (const float value : values) {
+            if (!std::isfinite(value) || value < 0.0f) {
+                error = "Item possui atributo nao finito ou negativo.";
+                return false;
+            }
+        }
+
+        // CombatItem values are additive bonuses. Percentages are represented
+        // as fractions (e.g. 0.15 = +15% attack speed / damage amplification).
+        unit.attack_damage += item.attack_damage;
+        unit.ability_power += item.ability_power;
+        unit.attack_speed += item.attack_speed;
+        unit.critical_strike_chance += item.critical_strike_chance;
+        unit.critical_strike_damage += item.critical_strike_damage;
+        unit.max_hp += item.health;
+        unit.hp += item.health;
+        unit.armor += item.armor;
+        unit.magic_resist += item.magic_resist;
+        unit.mana += item.mana;
+        unit.omnivamp += item.omnivamp;
+        unit.damage_amplification += item.damage_amplification;
+        unit.damage_reduction += item.damage_reduction;
+    }
+
+    unit.critical_strike_chance =
+        std::clamp(unit.critical_strike_chance, 0.0f, 1.0f);
+    unit.damage_reduction = std::clamp(unit.damage_reduction, 0.0f, 1.0f);
+    unit.omnivamp = std::clamp(unit.omnivamp, 0.0f, 1.0f);
+    if (!std::isfinite(unit.max_hp) || !std::isfinite(unit.hp) ||
+        !std::isfinite(unit.attack_damage) || !std::isfinite(unit.attack_speed) ||
+        !std::isfinite(unit.armor) || !std::isfinite(unit.magic_resist) ||
+        !std::isfinite(unit.damage_amplification)) {
+        error = "A soma dos atributos de itens excede os limites numericos.";
+        return false;
+    }
+    return true;
+}
+
 void append_generic_event(CombatResult& result,
                           float time,
                           const std::string& type,
@@ -187,26 +238,33 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 return false;
             }
 
-            if (!std::isfinite(unit.hp) ||
-                !std::isfinite(unit.max_hp) ||
-                unit.max_hp <= 0.0f ||
-                unit.hp <= 0.0f ||
-                unit.hp > unit.max_hp ||
-                !std::isfinite(unit.attack_speed) ||
-                unit.attack_speed <= 0.0f ||
-                !std::isfinite(unit.attack_damage) ||
-                unit.attack_damage < 0.0f ||
-                !std::isfinite(unit.attack_range) ||
-                unit.attack_range < 0.0f ||
-                !std::isfinite(unit.armor) ||
-                !std::isfinite(unit.critical_strike_chance) ||
-                !std::isfinite(unit.critical_strike_damage)) {
+            CombatUnit effective_unit = unit;
+            std::string item_error;
+            if (!apply_item_stats(effective_unit, item_error)) {
+                set_error(result, "INVALID_ITEM_ATTRIBUTES", item_error);
+                return false;
+            }
+
+            if (!std::isfinite(effective_unit.hp) ||
+                !std::isfinite(effective_unit.max_hp) ||
+                effective_unit.max_hp <= 0.0f ||
+                effective_unit.hp <= 0.0f ||
+                effective_unit.hp > effective_unit.max_hp ||
+                !std::isfinite(effective_unit.attack_speed) ||
+                effective_unit.attack_speed <= 0.0f ||
+                !std::isfinite(effective_unit.attack_damage) ||
+                effective_unit.attack_damage < 0.0f ||
+                !std::isfinite(effective_unit.attack_range) ||
+                effective_unit.attack_range < 0.0f ||
+                !std::isfinite(effective_unit.armor) ||
+                !std::isfinite(effective_unit.critical_strike_chance) ||
+                !std::isfinite(effective_unit.critical_strike_damage)) {
                 set_error(result, "INVALID_UNIT_ATTRIBUTES",
                           "Atributos numericos invalidos.");
                 return false;
             }
 
-            units.push_back(RuntimeUnit{unit, unit.hp});
+            units.push_back(RuntimeUnit{effective_unit, effective_unit.hp});
         }
         return true;
     };
@@ -318,6 +376,11 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             target.unit.hp -= damage;
             target.damage_taken += damage;
             actor.damage_dealt += damage;
+            if (actor.unit.omnivamp > 0.0f && damage > 0.0f) {
+                actor.unit.hp = std::min(
+                    actor.unit.max_hp,
+                    actor.unit.hp + damage * actor.unit.omnivamp);
+            }
             ++actor.attacks;
 
             if (config.record_damage) {
