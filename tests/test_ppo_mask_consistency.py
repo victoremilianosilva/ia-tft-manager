@@ -168,8 +168,8 @@ def test_item_actions_use_the_same_policy_and_ppo_logprob_path():
         "bench_move_source_mask": torch.ones(2, 9, dtype=torch.bool),
         "bench_to_board_target_masks": torch.ones(2, 9, 28, dtype=torch.bool),
         "item_inventory_mask": torch.zeros(2, 9, dtype=torch.bool),
-        "item_component_first_mask": torch.zeros(2, 9, dtype=torch.bool),
-        "item_component_pair_masks": torch.zeros(2, 9, 9, dtype=torch.bool),
+        "item_component_first_mask": torch.zeros(2, 10, dtype=torch.bool),
+        "item_component_pair_masks": torch.zeros(2, 10, 10, dtype=torch.bool),
         "item_target_mask": torch.zeros(2, 37, dtype=torch.bool),
     }
     masks["type_mask"][0, 7] = True
