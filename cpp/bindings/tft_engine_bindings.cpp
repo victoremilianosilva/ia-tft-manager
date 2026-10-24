@@ -636,6 +636,7 @@ PYBIND11_MODULE(tft_engine, module) {
                     d["uuid"] = unit.uuid;
                     d["star"] = unit.star;
                     d["cost"] = unit.cost;
+                    d["items"] = unit.item_ids;
                     return d;
                 };
                 for (const auto& player : snapshot.players) {
