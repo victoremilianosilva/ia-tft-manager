@@ -437,6 +437,11 @@ class TFTPolicy(nn.Module):
         type_logits = self.type_head(features)
         if masks is not None:
             type_logits = self._mask_logits(type_logits, masks["type_mask"])
+        else:
+            # Without the native legality snapshot, do not sample item commands
+            # that cannot be resolved/validated by the runtime.
+            type_logits = type_logits.clone()
+            type_logits[:, 7:] = torch.finfo(type_logits.dtype).min
         action_type = self._sample_categorical(type_logits, deterministic)
         
         type_dist = Categorical(logits=type_logits)
