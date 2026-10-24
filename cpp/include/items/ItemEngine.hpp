@@ -59,7 +59,6 @@ struct UnitProfile {
 
 struct ItemActionResult {
     bool success{false};
-    double reward{0.0};
     std::string reason;
 };
 
@@ -241,7 +240,7 @@ public:
         const std::vector<UnitProfile>& candidates) {
         const auto reject = [this](const char* reason) {
             ++metrics_.invalid_actions;
-            return ItemActionResult{false, 0.0, reason};
+            return ItemActionResult{false, reason};
         };
         if (!command.operation) return reject("missing_item_operation");
 
@@ -262,7 +261,7 @@ public:
                 return reject("item_not_available_in_inventory");
             if (!equip(command.item_id, *target))
                 return reject("equip_transition_failed");
-            return {true, 0.0, {}};
+            return {true, {}};
         }
 
         if (*command.operation == ItemOperation::CRAFT_AND_EQUIP) {
@@ -297,7 +296,7 @@ public:
                 components_.push_back(command.first_component_id);
                 components_.push_back(command.second_component_id);
                 ++metrics_.invalid_actions;
-                return {false, 0.0, "equip_transition_failed_rolled_back"};
+                return {false, "equip_transition_failed_rolled_back"};
             }
             return {true, 0.0, {}};
         }
