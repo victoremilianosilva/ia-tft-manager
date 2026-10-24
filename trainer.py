@@ -827,31 +827,33 @@ class Trainer:
                     agent_idx
                 ]
 
-                players.append({
-                    "type": int(
-                        action[0]
-                    ),
+                action_type = int(action[0])
 
-                    "shop_slot": int(
-                        action[1]
-                    ),
-
-                    "bench_slot": int(
-                        action[2]
-                    ),
-
-                    "board_target": int(
-                        action[3]
-                    ),
-
-                    "board_source": int(
-                        action[4]
-                    ),
-
-                    "board_move_target": int(
-                        action[5]
-                    )
-                })
+                # Keep the six-value PPO action record unchanged, but decode
+                # item arguments into the exact keys consumed by the native
+                # adapter. Generic shop/bench keys are not aliases for items.
+                if action_type == int(ActionType.EQUIP_FROM_INVENTORY):
+                    players.append({
+                        "type": action_type,
+                        "item_slot": int(action[1]),
+                        "item_target": int(action[2]),
+                    })
+                elif action_type == int(ActionType.CRAFT_AND_EQUIP):
+                    players.append({
+                        "type": action_type,
+                        "component_first": int(action[1]),
+                        "component_second": int(action[2]),
+                        "item_target": int(action[3]),
+                    })
+                else:
+                    players.append({
+                        "type": action_type,
+                        "shop_slot": int(action[1]),
+                        "bench_slot": int(action[2]),
+                        "board_target": int(action[3]),
+                        "board_source": int(action[4]),
+                        "board_move_target": int(action[5]),
+                    })
 
             lobby_actions.append(
                 players
@@ -1099,8 +1101,9 @@ class Trainer:
             # LOGGING
             # --------------------------------------------------------
 
+            # Include item actions in the shared policy action histogram.
             action_type_counts = np.zeros(
-                7,
+                len(ActionType),
                 dtype=np.int32
             )
 
@@ -1255,7 +1258,7 @@ class Trainer:
                     )
 
                     if (
-                        0 <= action_type < 7
+                        0 <= action_type < len(ActionType)
                     ):
 
                         action_type_counts[
