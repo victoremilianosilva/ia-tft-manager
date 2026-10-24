@@ -98,6 +98,35 @@ int main() {
     assert(std::any_of(viable_plan.acquisition_notes.begin(), viable_plan.acquisition_notes.end(),
         [](const std::string& note) { return note.find("ObtainableCarry") != std::string::npos; }));
 
+    // Regression: the planner must close the actual 2/4/6 breakpoints,
+    // not scatter four slots over several unrelated two-piece traits.
+    std::vector<ChampionDefinition> brawler_pool{
+        champion(31, "BrawlerCarry", 1, {"Brawler", "Marksman"}, 2),
+        champion(32, "BrawlerTankA", 0, {"Brawler", "Guardian"}, 2),
+        champion(33, "BrawlerFighter", 3, {"Brawler", "Guardian"}, 2),
+        champion(34, "BrawlerTankB", 0, {"Brawler", "Mystic"}, 2),
+        champion(35, "MageCarry", 1, {"Mage", "Marksman"}, 2),
+        champion(36, "MageSupport", 2, {"Mage", "Mystic"}, 2),
+        champion(37, "GuardianTank", 0, {"Guardian", "Mystic"}, 2)
+    };
+    const CompositionPlanner::TraitMilestones set_milestones{
+        {"Brawler", {2, 4, 6}}, {"Guardian", {2, 4}},
+        {"Mage", {2, 4}}, {"Mystic", {2, 4}}, {"Marksman", {2, 4}}
+    };
+    const auto closed_plan = CompositionPlanner::build(
+        brawler_pool, set_milestones, "Brawler", {{"Brawler", 5.0}}, {}, 4);
+    int brawler_count = 0;
+    for (const auto id : closed_plan.unit_ids) {
+        const auto it = std::find_if(brawler_pool.begin(), brawler_pool.end(),
+            [id](const ChampionDefinition& c) { return c.internal_id == id; });
+        if (it != brawler_pool.end() &&
+            std::find(it->traits.begin(), it->traits.end(), "Brawler") != it->traits.end())
+            ++brawler_count;
+    }
+    assert(brawler_count >= 4);
+    assert(std::find(closed_plan.core_traits.begin(), closed_plan.core_traits.end(), "Brawler")
+           != closed_plan.core_traits.end());
+
     // With no direction, no empty-string trait should be fabricated.
     const auto open_plan = CompositionPlanner::build(pool, milestones, "", {}, {}, 4);
     assert(open_plan.unit_ids.size() == 4);
