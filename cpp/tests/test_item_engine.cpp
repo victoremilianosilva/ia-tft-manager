@@ -1,9 +1,11 @@
 #include "items/ItemEngine.hpp"
 #include "items/CombatItemAdapter.hpp"
+#include "items/ItemCatalog.hpp"
 
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 
 namespace {
@@ -42,6 +44,27 @@ int main() {
     double_component.name = "Double Rod";
     double_component.recipe_components = {"rod", "rod"};
     double_component.ability_power = 10.0;
+
+    std::istringstream catalog_json(R"json({
+        "schema_version": 1,
+        "set_id": "synthetic-test-only",
+        "components": [
+            {"id": "sword", "name": "Test Sword"},
+            {"id": "bow", "name": "Test Bow"}
+        ],
+        "items": [{
+            "id": "catalog_blade", "name": "Catalog Blade",
+            "recipe_components": ["sword", "bow"],
+            "stats": {"attack_damage": 12.0, "attack_speed": 0.15},
+            "weights": {"carry": 1.0}
+        }]
+    })json");
+    const auto loaded_catalog = load_item_catalog(catalog_json);
+    require(loaded_catalog.set_id == "synthetic-test-only" &&
+            loaded_catalog.components.size() == 2 &&
+            loaded_catalog.items.size() == 1 &&
+            loaded_catalog.items.front().recipe_components[0] == "sword",
+            "versioned external item catalog should load without hard-coded recipes");
 
     const auto combat_damage = to_combat_item(damage);
     require(combat_damage.api_name == "damage_blade" &&
