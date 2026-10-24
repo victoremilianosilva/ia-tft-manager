@@ -3104,8 +3104,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     sold_unit_protects_upgrade, old_bench_count >= static_cast<int>(kBenchSlots))
                 : -0.10;
             if (success && purchase_was_recently_reversed &&
-                !sold_core_unit &&
                 old_bench_count < static_cast<int>(kBenchSlots)) {
+                // Do not exempt a unit merely because update_strategy promoted
+                // it to core after the purchase. That would let the buy itself
+                // manufacture the exception and hide the immediate reversal.
                 action_reward += reward_model::reversed_purchase_penalty();
             }
         } else {
