@@ -130,7 +130,10 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
     }
 
     // Reuse the engine's validation for duplicate IDs/recipes as a final guard.
-    (void)ItemEngine(catalog.items);
+    std::vector<std::string> component_id_list;
+    component_id_list.reserve(catalog.components.size());
+    for (const auto& component : catalog.components) component_id_list.push_back(component.first);
+    (void)ItemEngine(catalog.items, std::move(component_id_list));
     return catalog;
 }
 
