@@ -745,11 +745,37 @@ struct TFTEngine::Impl {
             current.type_mask[8] = recipe_available && target_available ? 1 : 0;
             for (std::size_t slot = 0; slot < kBenchSlots; ++slot) {
                 const auto& unit = player.bench[slot];
-                if (unit && !player.item_engine->equipped(unit->uuid).empty())
+                if (unit && (!unit->items.empty() || !player.item_engine->equipped(unit->uuid).empty()))
                     current.bench_source_mask[slot] = 0;
             }
             if (std::none_of(current.bench_source_mask.begin(), current.bench_source_mask.end(),
                 [](std::uint8_t value) { return value == 1; })) current.type_mask[5] = 0;
+            for (std::size_t shop_slot = 0; shop_slot < kShopSlots; ++shop_slot) {
+                if (current.shop_mask[shop_slot] != 1 || !player.shop) continue;
+                const auto* offer = player.shop->get_unit(static_cast<std::int32_t>(shop_slot));
+                if (!offer) continue;
+                int matching_copies = 0;
+                bool matching_copy_has_items = false;
+                for (const auto& unit : player.board) {
+                    if (!unit || unit->champion_internal_id != offer->champion_internal_id ||
+                        unit->star != offer->star) continue;
+                    ++matching_copies;
+                    matching_copy_has_items = matching_copy_has_items ||
+                        !unit->items.empty() || !player.item_engine->equipped(unit->uuid).empty();
+                }
+                for (const auto& unit : player.bench) {
+                    if (!unit || unit->champion_internal_id != offer->champion_internal_id ||
+                        unit->star != offer->star) continue;
+                    ++matching_copies;
+                    matching_copy_has_items = matching_copy_has_items ||
+                        !unit->items.empty() || !player.item_engine->equipped(unit->uuid).empty();
+                }
+                if (matching_copies >= 2 && matching_copy_has_items)
+                    current.shop_mask[shop_slot] = 0;
+            }
+            if (std::none_of(current.shop_mask.begin(), current.shop_mask.end(),
+                [](std::uint8_t value) { return value == 1; })) current.type_mask[0] = 0;
+
         }
 
         for (std::size_t source = 0;
