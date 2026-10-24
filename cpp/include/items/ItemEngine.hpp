@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -113,6 +114,8 @@ public:
             const auto& a = item.recipe_components[0];
             const auto& b = item.recipe_components[1];
             if (!a.empty() && !b.empty()) {
+                component_ids_.insert(a);
+                component_ids_.insert(b);
                 const auto key = recipe_key(a, b);
                 if (recipes_.contains(key))
                     throw std::invalid_argument("Item catalog has duplicate component recipe");
@@ -129,7 +132,7 @@ public:
     }
 
     bool add_component(const std::string& component_id) {
-        if (component_id.empty()) {
+        if (component_id.empty() || !component_ids_.contains(component_id)) {
             ++metrics_.invalid_actions;
             return false;
         }
@@ -429,6 +432,7 @@ public:
 private:
     std::vector<ItemDefinition> catalog_;
     std::unordered_map<std::string, std::size_t> index_;
+    std::unordered_set<std::string> component_ids_;
     std::unordered_map<std::string, std::string> recipes_;
     std::vector<std::string> components_;
     std::vector<std::string> inventory_;
