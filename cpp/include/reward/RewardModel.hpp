@@ -158,6 +158,12 @@ inline double spending_timing_reward(
 // but only when a genuinely useful shop purchase or upgrade is available.
 // The caller must establish that opportunity; an empty/weak shop is not a
 // reason to force spending.
+inline double reroll_quality_reward(double old_best_fit, double new_best_fit) noexcept {
+    // Reward only a real increase in the best available offer; rerolling itself
+    // is not progress and repeatedly rerolling a weak shop cannot farm reward.
+    return 0.16 * std::tanh((new_best_fit - old_best_fit) / 5.0);
+}
+
 inline double pass_opportunity_penalty(
     int gold,
     double hp,
