@@ -641,6 +641,53 @@ int main(int argc, char** argv) {
                     "Direcao mudou imediatamente apesar do lock ativo.");
         }
 
+        // End-to-end regression for the Viewer buy/sell loop (Teemo/Caitlyn):
+        // buying a low-fit unit and selling it on the next action must not escape
+        // the reversal penalty just because the purchase itself updated comp focus.
+        tft::TFTEngine reversal_engine(24680, json_path);
+        const auto teemo = std::find_if(
+            catalog.all().begin(), catalog.all().end(),
+            [](const auto& champion) {
+                return champion.api_name == "Teemo" ||
+                    champion.name == "Teemo" ||
+                    champion.character_name == "Teemo" ||
+                    champion.api_name.find("Teemo") != std::string::npos ||
+                    champion.name.find("Teemo") != std::string::npos;
+            });
+        require(teemo != catalog.all().end(),
+                "Catalogo precisa conter Teemo para reproduzir o ciclo do Viewer.");
+        require(reversal_engine.set_player_economy_for_testing(0, 10, 2, 0),
+                "Nao foi possivel configurar ouro para o teste de compra/venda.");
+        require(reversal_engine.set_shop_offer_for_testing(0, 0, teemo->api_name),
+                "Nao foi possivel colocar Teemo na loja de teste.");
+
+        std::array<tft::PlayerAction, tft::kPlayersPerLobby> reversal_actions{};
+        for (auto& action : reversal_actions)
+            action.values = {6, 0, 0, 0, 0, 0};
+        reversal_actions[0].values = {0, 0, 0, 0, 0, 0};
+        const auto teemo_buy = reversal_engine.step(reversal_actions);
+        const float buy_reward = teemo_buy.action_rewards[0];
+
+        const auto after_teemo_buy = reversal_engine.get_audit_snapshot();
+        std::int32_t teemo_bench_slot = -1;
+        for (std::size_t slot = 0; slot < after_teemo_buy.players[0].bench.size(); ++slot) {
+            const auto& unit = after_teemo_buy.players[0].bench[slot];
+            if (unit.occupied &&
+                (unit.champion_id == teemo->api_name ||
+                 unit.champion_id == teemo->character_name ||
+                 unit.champion_id == teemo->name)) {
+                teemo_bench_slot = static_cast<std::int32_t>(slot);
+                break;
+            }
+        }
+        require(teemo_bench_slot >= 0,
+                "Compra de Teemo nao deixou uma unidade correspondente no banco.");
+        reversal_actions[0].values = {5, 0, teemo_bench_slot, 0, 0, 0};
+        const auto teemo_sell = reversal_engine.step(reversal_actions);
+        const float sell_reward = teemo_sell.action_rewards[0];
+        require(buy_reward + sell_reward <= -0.05f,
+                "Compra e venda imediata de Teemo manteve recompensa agregada nao negativa; a penalidade de reversao nao foi aplicada.");
+
         std::cout << "TFTEngine + loja/economia/ActionMask/AntiLoop/CompLock: OK\n";
         return 0;
     } catch (const std::exception& e) {
