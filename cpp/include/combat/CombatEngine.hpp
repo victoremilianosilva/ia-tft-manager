@@ -10,11 +10,11 @@ namespace tft {
 /**
  * @brief Executa uma simulação determinística de combate em C++.
  *
- * Recebe equipes, posições, atributos e configuração através de CombatInput,
+ * Recebe equipes, posições, atributos, itens e configuração através de CombatInput,
  * e devolve o resultado e os eventos através de CombatResult. O lobby Python
- * e a lobby nativa usam este mesmo motor. A simulação atual resolve movimento
- * e ataques básicos; os campos de habilidade, itens e traits ainda não são
- * consumidos pelo loop de combate e não devem ser considerados mecânicas ativas.
+ * e a lobby nativa usam este mesmo motor. A simulação aplica os bônus numéricos
+ * dos CombatItem e resolve movimento/ataques básicos. Habilidades, dano mágico,
+ * traits e efeitos especiais ainda não são simulados por este loop.
  */
 class CombatEngine {
 public:
