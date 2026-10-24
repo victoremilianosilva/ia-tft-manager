@@ -714,7 +714,6 @@ struct TFTEngine::Impl {
         // Item masks are generated from the exact per-player ItemEngine state.
         auto& player = player_envs[player_index];
         if (player.item_engine) {
-            const auto& components = player.item_engine->components();
             const auto& inventory = player.item_engine->inventory();
             for (std::size_t i = 0; i < std::min<std::size_t>(9, inventory.size()); ++i)
                 current.item_inventory_mask[i] = 1;
