@@ -85,7 +85,7 @@ class TFTPolicy(nn.Module):
         # Item operations share the same action type distribution and six-value
         # action record, but use conditional argument heads so legacy shop/move
         # argument heads retain their original dimensions.
-        self.item_inventory_head = nn.Linear(hidden_size + self.num_action_types, 5)
+        self.item_inventory_head = nn.Linear(hidden_size + self.num_action_types, 9)
         self.item_component_first_head = nn.Linear(hidden_size + self.num_action_types, 9)
         self.item_component_second_head = nn.Linear(
             hidden_size + self.num_action_types + 9, 9
@@ -613,8 +613,7 @@ class TFTPolicy(nn.Module):
             total_entropy[equip_item_mask] += dist.entropy()
             record_distribution("item_inventory", logits, item_index, torch.where(equip_item_mask)[0], inventory_mask)
 
-            item_context = F.one_hot(item_index, num_classes=5).to(dtype=conditioned.dtype)
-            item_context = F.pad(item_context, (0, 4))
+            item_context = F.one_hot(item_index, num_classes=9).to(dtype=conditioned.dtype)
             target_context = torch.cat([item_context, torch.zeros_like(item_context)], dim=-1)
             target_logits = self.item_target_head(torch.cat([conditioned_item, target_context], dim=-1))
             target_mask = masks["item_target_mask"][equip_item_mask] if masks is not None else None
@@ -880,8 +879,7 @@ class TFTPolicy(nn.Module):
             total_entropy[equip_item_mask] += dist.entropy()
 
             target_index = actions[equip_item_mask, 2].long()
-            item_context = F.one_hot(item_index, num_classes=5).to(dtype=conditioned.dtype)
-            item_context = F.pad(item_context, (0, 4))
+            item_context = F.one_hot(item_index, num_classes=9).to(dtype=conditioned.dtype)
             target_context = torch.cat([item_context, torch.zeros_like(item_context)], dim=-1)
             target_mask = masks["item_target_mask"][equip_item_mask]
             target_logits = self._mask_logits(
