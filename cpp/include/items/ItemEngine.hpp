@@ -298,7 +298,7 @@ public:
                 ++metrics_.invalid_actions;
                 return {false, "equip_transition_failed_rolled_back"};
             }
-            return {true, 0.0, {}};
+            return {true, {}};
         }
         return reject("unsupported_item_operation");
     }
