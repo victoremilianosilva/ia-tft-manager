@@ -3012,10 +3012,18 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     composition_quality_delta, false);
             }
             if (success && buy_completes_upgrade) {
-                action_reward += 0.12;
+                action_reward += 0.25;
             } else if (success && buy_builds_pair) {
                 action_reward += reward_model::purchase_pair_quality(
                     candidate_comp_score);
+            }
+            if (success && economy.gold < old_gold) {
+                const double normalized_fit = has_candidate_comp_score
+                    ? std::clamp(candidate_comp_score / 32.5, 0.0, 1.0)
+                    : 0.0;
+                action_reward += reward_model::spending_timing_reward(
+                    old_gold, this->info.hp, lobby.stage, normalized_fit,
+                    buy_completes_upgrade, false);
             }
         } else if (type == 1) {
             success = economy.gold == old_gold - EconomyEngine::REROLL_COST;
@@ -3030,6 +3038,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 action_reward += reward_model::level(
                     economy.level, this->previous_reward_level);
                 this->previous_reward_level = economy.level;
+                action_reward += reward_model::spending_timing_reward(
+                    old_gold, this->info.hp, lobby.stage, 0.0, false, true);
             }
             (void)old_level;
             (void)old_xp;
@@ -3119,6 +3129,33 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             }
         } else {
             success = true;
+            if (type == 6 && !this->strategy.empty()) {
+                bool useful_purchase_available = false;
+                const auto& current_strategy = this->strategy.back();
+                for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
+                    const auto* offer = shop.get_unit(static_cast<std::int32_t>(slot));
+                    if (!offer) continue;
+                    const auto* definition = lobby.catalog->find_by_id(offer->champion_internal_id);
+                    if (!definition || economy.gold < definition->cost) continue;
+                    const double fit = unit_composition_score(
+                        current_strategy, *definition, offer->star, lobby.trait_milestones);
+                    const double normalized_fit = std::clamp(fit / 32.5, 0.0, 1.0);
+                    int copies = 0;
+                    for (const auto& unit : this->board)
+                        if (unit && unit->champion_internal_id == offer->champion_internal_id)
+                            copies += star_copies(unit->star);
+                    for (const auto& unit : this->bench)
+                        if (unit && unit->champion_internal_id == offer->champion_internal_id)
+                            copies += star_copies(unit->star);
+                    const bool completes_upgrade = copies == 2 && offer->star == 1;
+                    if (completes_upgrade || normalized_fit >= 0.45) {
+                        useful_purchase_available = true;
+                        break;
+                    }
+                }
+                action_reward += reward_model::pass_opportunity_penalty(
+                    economy.gold, this->info.hp, lobby.stage, useful_purchase_available);
+            }
         }
 
         // Give spending decisions immediate feedback for the opportunity cost
