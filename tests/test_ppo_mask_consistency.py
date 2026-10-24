@@ -3,6 +3,7 @@ import torch
 
 from policy import TFTPolicy
 from trainer import Trainer
+from rollout import RolloutBuffer
 
 
 def create_test_batch():
@@ -632,3 +633,107 @@ def test_evaluate_actions_rejects_masked_action():
 
     with pytest.raises(ValueError, match="shop_slot"):
         policy.evaluate_actions(obs, actions, masks)
+
+def test_trainer_preserves_sampled_item_arguments_for_native_adapter():
+    # Exercise the production action encoder without constructing environments.
+    trainer = object.__new__(Trainer)
+    trainer.num_envs = 1
+    trainer.num_agents = 8
+    actions = torch.zeros((8, Trainer.ACTION_DIM), dtype=torch.long)
+    actions[0] = torch.tensor([7, 4, 36, 0, 0, 0])
+    actions[1] = torch.tensor([8, 9, 3, 35, 0, 0])
+    actions[2] = torch.tensor([0, 2, 6, 17, 9, 11])
+
+    encoded = trainer._actions_to_lobby_format(actions)
+
+    assert encoded[0][0] == {
+        "type": 7,
+        "item_slot": 4,
+        "item_target": 36,
+    }
+    assert encoded[0][1] == {
+        "type": 8,
+        "component_first": 9,
+        "component_second": 3,
+        "item_target": 35,
+    }
+    assert encoded[0][2] == {
+        "type": 0,
+        "shop_slot": 2,
+        "bench_slot": 6,
+        "board_target": 17,
+        "board_source": 9,
+        "board_move_target": 11,
+    }
+
+
+def test_item_masks_survive_rollout_and_ppo_minibatch_evaluation():
+    torch.manual_seed(81)
+    obs = torch.randn(2, 162)
+    masks = {
+        "type_mask": torch.zeros(2, 9, dtype=torch.bool),
+        "shop_mask": torch.ones(2, 5, dtype=torch.bool),
+        "bench_source_mask": torch.ones(2, 9, dtype=torch.bool),
+        "board_target_mask": torch.ones(2, 28, dtype=torch.bool),
+        "board_source_mask": torch.ones(2, 28, dtype=torch.bool),
+        "board_move_target_masks": torch.ones(2, 28, 28, dtype=torch.bool),
+        "bench_move_source_mask": torch.ones(2, 9, dtype=torch.bool),
+        "bench_to_board_target_masks": torch.ones(2, 9, 28, dtype=torch.bool),
+        "item_inventory_mask": torch.zeros(2, 9, dtype=torch.bool),
+        "item_component_first_mask": torch.zeros(2, 10, dtype=torch.bool),
+        "item_component_pair_masks": torch.zeros(2, 10, 10, dtype=torch.bool),
+        "item_target_mask": torch.zeros(2, 37, dtype=torch.bool),
+    }
+    masks["type_mask"][0, 7] = True
+    masks["type_mask"][1, 8] = True
+    masks["item_inventory_mask"][0, 4] = True
+    masks["item_target_mask"][0, 36] = True
+    masks["item_component_first_mask"][1, 9] = True
+    masks["item_component_pair_masks"][1, 9, 3] = True
+    masks["item_target_mask"][1, 35] = True
+
+    policy = TFTPolicy(obs_dim=162, action_dims=Trainer.ACTION_DIMS, hidden_size=32)
+    policy.eval()
+    actions, logprobs, _, values = policy.get_action_and_value(
+        obs, masks=masks, deterministic=True
+    )
+
+    rollout = RolloutBuffer(
+        num_steps=1,
+        num_envs=2,
+        obs_dim=162,
+        action_dim=Trainer.ACTION_DIM,
+        device="cpu",
+        mask_shapes=Trainer.MASK_SHAPES,
+    )
+    rollout.add(
+        obs,
+        actions,
+        logprobs,
+        torch.zeros(2),
+        torch.zeros(2),
+        values,
+        masks,
+        valid=torch.ones(2, dtype=torch.bool),
+    )
+
+    batch = next(rollout.get_batches(batch_size=2))
+    # RolloutBuffer shuffles valid transition indices; compare the rows as
+    # a set so the test validates preservation without assuming row order.
+    def sorted_rows(tensor):
+        return sorted(row.contiguous().numpy().tobytes() for row in tensor)
+
+    assert sorted_rows(batch["masks"]["item_inventory_mask"]) == sorted_rows(
+        masks["item_inventory_mask"]
+    )
+    assert sorted_rows(batch["masks"]["item_component_pair_masks"]) == sorted_rows(
+        masks["item_component_pair_masks"]
+    )
+    assert sorted_rows(batch["masks"]["item_target_mask"]) == sorted_rows(
+        masks["item_target_mask"]
+    )
+
+    evaluated, _, _ = policy.evaluate_actions(
+        batch["obs"], batch["actions"], batch["masks"]
+    )
+    assert torch.allclose(batch["logprobs"], evaluated, atol=1e-5, rtol=1e-5)

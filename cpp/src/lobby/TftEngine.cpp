@@ -727,7 +727,7 @@ struct TFTEngine::Impl {
                 [](std::uint8_t value) { return value == 1; });
             if (item_catalog) {
                 for (std::size_t first = 0; first < std::min<std::size_t>(10, item_catalog->components.size()); ++first) {
-                    for (std::size_t second = 0; second < std::min<std::size_t>(9, item_catalog->components.size()); ++second) {
+                    for (std::size_t second = 0; second < std::min<std::size_t>(10, item_catalog->components.size()); ++second) {
                         if (!player.item_engine->can_craft(
                                 item_catalog->components[first].first,
                                 item_catalog->components[second].first)) continue;
