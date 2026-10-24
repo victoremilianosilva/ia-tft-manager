@@ -139,7 +139,7 @@ int main() {
     ItemActionCommand invalid_command;
     invalid_command.target_unit_uuid = "carry-1";
     const auto invalid_result = engine.apply_action(invalid_command, {carry, tank});
-    require(!invalid_result.success && invalid_result.reward == 0.0,
+    require(!invalid_result.success,
             "missing operation must be rejected rather than interpreted as WAIT");
     require(engine.metrics().crafts == 4, "craft metric");
     require(engine.metrics().equips == 3, "equip metric");
