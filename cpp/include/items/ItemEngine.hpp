@@ -103,8 +103,14 @@ class ItemEngine {
 public:
     static constexpr std::size_t kMaxItemsPerUnit = 3;
 
-    explicit ItemEngine(std::vector<ItemDefinition> catalog)
+    explicit ItemEngine(std::vector<ItemDefinition> catalog,
+                        std::vector<std::string> component_ids = {})
         : catalog_(std::move(catalog)) {
+        for (const auto& component_id : component_ids) {
+            if (component_id.empty() || !component_ids_.insert(component_id).second) {
+                throw std::invalid_argument("Item catalog has an empty or duplicate component id");
+            }
+        }
         for (std::size_t i = 0; i < catalog_.size(); ++i) {
             const auto& item = catalog_[i];
             if (item.id.empty() || index_.contains(item.id)) {
