@@ -53,7 +53,7 @@ class Trainer:
         "board_move_target_masks": (28, 28),
         "bench_move_source_mask": (9,),
         "bench_to_board_target_masks": (9, 28),
-        "item_inventory_mask": (5,),
+        "item_inventory_mask": (9,),
         "item_component_first_mask": (9,),
         "item_component_pair_masks": (9, 9),
         "item_target_mask": (37,),
