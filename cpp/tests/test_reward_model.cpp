@@ -112,13 +112,16 @@ int main() {
     }
     require_close(reversed_sequence_adjustment(-0.10, -0.20), 0.0,
                   "already-negative reversal sequence needs no extra adjustment");
-    require_close(purchase_pair_quality(0.0), 0.10,
+    require_close(purchase_pair_quality(0.0), 0.18,
                   "pair-building baseline bonus");
     if (!(purchase_pair_quality(10.0) > purchase_pair_quality(0.0))) {
         throw std::runtime_error("pair reward must increase with composition fit");
     }
-    if (!(purchase_pair_quality(10.0) < 0.15)) {
-        throw std::runtime_error("pair reward must remain smaller than upgrade completion");
+    if (!(purchase_pair_quality(10.0) > purchase_quality(0.0, true))) {
+        throw std::runtime_error("forming a pair must be valued above a generic upgrade signal");
+    }
+    if (!(sale_quality(0.0, false, true, true) < 0.0)) {
+        throw std::runtime_error("selling a pair copy must remain unattractive even when it frees bench space");
     }
     require_close(sale_quality(0.0, false, false, true), 0.10,
                   "sale of low-fit non-core unit frees space");
