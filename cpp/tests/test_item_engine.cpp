@@ -1,4 +1,5 @@
 #include "items/ItemEngine.hpp"
+#include "items/ItemActionContract.hpp"
 #include "items/CombatItemAdapter.hpp"
 #include "items/ItemCatalog.hpp"
 
@@ -194,6 +195,28 @@ int main() {
     require(capacity_engine.equipped("tank-1").size() == 1 &&
             capacity_engine.equipped("carry-1").size() == 3,
             "rejected transfer must not mutate source or destination equipment");
+
+    // Phase 1 contract: repeated component IDs represent separate copies,
+    // and equipment is keyed by unit-instance UUID rather than champion ID.
+    tft::items::ItemPlayerState item_state;
+    item_state.components = {"sword", "sword"};
+    item_state.inventory = {"damage_blade"};
+    item_state.equipped_by_unit_uuid["unit-copy-a"] = {"damage_blade"};
+    item_state.equipped_by_unit_uuid["unit-copy-b"] = {};
+    require(item_state.components.size() == 2 &&
+            item_state.components[0] == item_state.components[1],
+            "item state must preserve duplicate component copies");
+    require(item_state.equipped_by_unit_uuid["unit-copy-a"].size() == 1 &&
+            item_state.equipped_by_unit_uuid["unit-copy-b"].empty(),
+            "equipment must be tracked independently for each unit UUID");
+    tft::items::ItemActionCommand item_command;
+    item_command.operation = tft::items::ItemOperation::TRANSFER;
+    item_command.item_id = "damage_blade";
+    item_command.source_unit_uuid = "unit-copy-a";
+    item_command.target_unit_uuid = "unit-copy-b";
+    require(item_command.operation == tft::items::ItemOperation::TRANSFER &&
+            item_command.source_unit_uuid != item_command.target_unit_uuid,
+            "semantic transfer command must carry distinct unit identities");
 
     std::cout << "[PASS] Item inventory, recipes, equip, transfer, and decision tests.\n";
     return EXIT_SUCCESS;
