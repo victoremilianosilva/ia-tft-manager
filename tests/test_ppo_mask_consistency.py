@@ -3,6 +3,7 @@ import torch
 
 from policy import TFTPolicy
 from trainer import Trainer
+from rollout import RolloutBuffer
 
 
 def create_test_batch():
@@ -663,3 +664,73 @@ def test_trainer_preserves_sampled_item_arguments_for_native_adapter():
         "board_source": 9,
         "board_move_target": 11,
     }
+
+
+def test_item_masks_survive_rollout_and_ppo_minibatch_evaluation():
+    torch.manual_seed(81)
+    obs = torch.randn(2, 162)
+    masks = {
+        "type_mask": torch.zeros(2, 9, dtype=torch.bool),
+        "shop_mask": torch.ones(2, 5, dtype=torch.bool),
+        "bench_source_mask": torch.ones(2, 9, dtype=torch.bool),
+        "board_target_mask": torch.ones(2, 28, dtype=torch.bool),
+        "board_source_mask": torch.ones(2, 28, dtype=torch.bool),
+        "board_move_target_masks": torch.ones(2, 28, 28, dtype=torch.bool),
+        "bench_move_source_mask": torch.ones(2, 9, dtype=torch.bool),
+        "bench_to_board_target_masks": torch.ones(2, 9, 28, dtype=torch.bool),
+        "item_inventory_mask": torch.zeros(2, 9, dtype=torch.bool),
+        "item_component_first_mask": torch.zeros(2, 10, dtype=torch.bool),
+        "item_component_pair_masks": torch.zeros(2, 10, 10, dtype=torch.bool),
+        "item_target_mask": torch.zeros(2, 37, dtype=torch.bool),
+    }
+    masks["type_mask"][0, 7] = True
+    masks["type_mask"][1, 8] = True
+    masks["item_inventory_mask"][0, 4] = True
+    masks["item_target_mask"][0, 36] = True
+    masks["item_component_first_mask"][1, 9] = True
+    masks["item_component_pair_masks"][1, 9, 3] = True
+    masks["item_target_mask"][1, 35] = True
+
+    policy = TFTPolicy(obs_dim=162, action_dims=Trainer.ACTION_DIMS, hidden_size=32)
+    policy.eval()
+    actions, logprobs, _, values = policy.get_action_and_value(
+        obs, masks=masks, deterministic=True
+    )
+
+    rollout = RolloutBuffer(
+        num_steps=1,
+        num_envs=2,
+        obs_dim=162,
+        action_dim=Trainer.ACTION_DIM,
+        device="cpu",
+        mask_shapes=Trainer.MASK_SHAPES,
+    )
+    rollout.add(
+        obs,
+        actions,
+        logprobs,
+        torch.zeros(2),
+        torch.zeros(2),
+        values,
+        masks,
+        valid=torch.ones(2, dtype=torch.bool),
+    )
+
+    batch = next(rollout.get_batches(batch_size=2))
+    assert torch.equal(
+        batch["masks"]["item_inventory_mask"],
+        masks["item_inventory_mask"],
+    )
+    assert torch.equal(
+        batch["masks"]["item_component_pair_masks"],
+        masks["item_component_pair_masks"],
+    )
+    assert torch.equal(
+        batch["masks"]["item_target_mask"],
+        masks["item_target_mask"],
+    )
+
+    evaluated, _, _ = policy.evaluate_actions(
+        batch["obs"], batch["actions"], batch["masks"]
+    )
+    assert torch.allclose(batch["logprobs"], evaluated, atol=1e-5, rtol=1e-5)
