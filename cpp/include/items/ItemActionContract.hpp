@@ -11,7 +11,6 @@ namespace tft::items {
 // independent from the PPO's positional action vector: the policy adapter will
 // map sampled indices to stable catalog IDs and unit UUIDs.
 enum class ItemOperation {
-    WAIT,
     EQUIP_FROM_INVENTORY,
     CRAFT_AND_EQUIP
 };
@@ -43,7 +42,7 @@ struct ItemPlayerState {
 // transient inventory positions. A decoder must resolve sampled indices against
 // the exact observation used to sample the action.
 struct ItemActionCommand {
-    ItemOperation operation{ItemOperation::WAIT};
+    std::optional<ItemOperation> operation;
     std::string item_id;
     std::string target_unit_uuid;
     std::string first_component_id;
