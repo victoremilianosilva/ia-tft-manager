@@ -61,6 +61,30 @@ def test_valid_masks_are_converted_to_bool_tensors(trainer):
         )
 
 
+def test_item_actions_are_audited_against_their_conditional_masks(trainer):
+    masks = trainer._flatten_masks(create_valid_masks())
+    actions = torch.tensor([[6, 0, 0, 0, 0, 0] for _ in range(8)], dtype=torch.long)
+
+    masks["type_mask"][0, 7] = True
+    masks["item_inventory_mask"][0, 2] = True
+    masks["item_target_mask"][0, 36] = True
+    actions[0] = torch.tensor([7, 2, 36, 0, 0, 0])
+
+    masks["type_mask"][1, 8] = True
+    masks["item_component_first_mask"][1, 1] = True
+    masks["item_component_pair_masks"][1, 1, 2] = True
+    masks["item_target_mask"][1, 4] = True
+    actions[1] = torch.tensor([8, 1, 2, 4, 0, 0])
+
+    valid = trainer._audit_selected_action_masks(actions, masks)
+    assert valid["selected_invalid"] == 0
+
+    actions[1, 2] = 3
+    invalid = trainer._audit_selected_action_masks(actions, masks)
+    assert invalid["conditional_invalid"] == 1
+    assert invalid["selected_invalid"] == 1
+
+
 def test_rejects_wrong_mask_dimensions(trainer):
     gym_masks = create_valid_masks()
     gym_masks[0][0]["shop_mask"] = np.ones(4)
