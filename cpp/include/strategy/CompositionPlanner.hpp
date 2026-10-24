@@ -201,7 +201,8 @@ public:
             for (const int milestone : thresholds) {
                 if (milestone <= 0) continue;
                 if (count >= milestone) value += 2.0;
-                else if (next_milestone == 0) next_milestone = milestone;
+                else if (next_milestone == 0 || milestone < next_milestone)
+                    next_milestone = milestone;
             }
             // A small progress value rewards staying near the next breakpoint,
             // without making a 3/4 trait look as valuable as a completed 4/4.
