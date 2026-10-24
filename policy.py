@@ -86,12 +86,12 @@ class TFTPolicy(nn.Module):
         # action record, but use conditional argument heads so legacy shop/move
         # argument heads retain their original dimensions.
         self.item_inventory_head = nn.Linear(hidden_size + self.num_action_types, 9)
-        self.item_component_first_head = nn.Linear(hidden_size + self.num_action_types, 9)
+        self.item_component_first_head = nn.Linear(hidden_size + self.num_action_types, 10)
         self.item_component_second_head = nn.Linear(
-            hidden_size + self.num_action_types + 9, 9
+            hidden_size + self.num_action_types + 10, 10
         )
         self.item_target_head = nn.Linear(
-            hidden_size + self.num_action_types + 18, 37
+            hidden_size + self.num_action_types + 20, 37
         )
         self.value_head = nn.Linear(hidden_size, 1)
 
@@ -619,6 +619,7 @@ class TFTPolicy(nn.Module):
             record_distribution("item_inventory", logits, item_index, torch.where(equip_item_mask)[0], inventory_mask)
 
             item_context = F.one_hot(item_index, num_classes=9).to(dtype=conditioned.dtype)
+            item_context = F.pad(item_context, (0, 1))
             target_context = torch.cat([item_context, torch.zeros_like(item_context)], dim=-1)
             target_logits = self.item_target_head(torch.cat([conditioned_item, target_context], dim=-1))
             target_mask = masks["item_target_mask"][equip_item_mask] if masks is not None else None
@@ -646,7 +647,7 @@ class TFTPolicy(nn.Module):
             total_entropy[craft_item_mask] += first_dist.entropy()
             record_distribution("item_component_first", first_logits, first_index, torch.where(craft_item_mask)[0], first_mask)
 
-            first_onehot = F.one_hot(first_index, num_classes=9).to(dtype=conditioned.dtype)
+            first_onehot = F.one_hot(first_index, num_classes=10).to(dtype=conditioned.dtype)
             second_input = torch.cat([conditioned_item, first_onehot], dim=-1)
             second_logits = self.item_component_second_head(second_input)
             pair_masks = masks["item_component_pair_masks"][craft_item_mask] if masks is not None else None
@@ -660,7 +661,7 @@ class TFTPolicy(nn.Module):
             total_entropy[craft_item_mask] += second_dist.entropy()
             record_distribution("item_component_second", second_logits, second_index, torch.where(craft_item_mask)[0], second_mask)
 
-            second_onehot = F.one_hot(second_index, num_classes=9).to(dtype=conditioned.dtype)
+            second_onehot = F.one_hot(second_index, num_classes=10).to(dtype=conditioned.dtype)
             target_context = torch.cat([first_onehot, second_onehot], dim=-1)
             target_logits = self.item_target_head(torch.cat([conditioned_item, target_context], dim=-1))
             target_mask = masks["item_target_mask"][craft_item_mask] if masks is not None else None
