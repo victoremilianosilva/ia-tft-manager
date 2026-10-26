@@ -359,6 +359,47 @@ void test_shojin_changes_cast_timing_and_dragons_claw_heals() {
             "Dragon's Claw should periodically heal and record healing in the combat result.");
 }
 
+void test_titans_resolve_and_seeded_item_impact() {
+    tft::CombatEngine engine;
+    auto base = make_input();
+    base.config.max_duration = 4.1f;
+    base.config.record_damage = true;
+    base.player_a.units[0].attack_damage = 10.0f;
+    base.player_a.units[0].attack_speed = 1.0f;
+    base.player_b.units[0].attack_damage = 0.1f;
+    base.player_b.units[0].attack_speed = 0.1f;
+    base.player_b.units[0].max_hp = base.player_b.units[0].hp = 5000.0f;
+
+    const auto no_titans = engine.simulate(base);
+    tft::CombatItem titans;
+    titans.api_name = "TFT_Item_TitansResolve";
+    auto with_titans_input = base;
+    with_titans_input.player_a.units[0].items.push_back(titans);
+    const auto with_titans = engine.simulate(with_titans_input);
+    require(no_titans.success && with_titans.success, "Titan's Resolve comparison should simulate.");
+    require(with_titans.units.front().damage_dealt > no_titans.units.front().damage_dealt,
+            "Titan's Resolve stacks should increase actual damage dealt.");
+
+    // Repeated deterministic battles check that a combined offensive build
+    // changes combat output consistently rather than only changing metadata.
+    for (std::uint64_t seed = 20261020; seed < 20261028; ++seed) {
+        auto baseline = base;
+        baseline.seed = seed;
+        auto equipped = base;
+        equipped.seed = seed;
+        equipped.player_a.units[0].items.push_back(titans);
+        tft::CombatItem guinsoo;
+        guinsoo.api_name = "TFT_Item_GuinsoosRageblade";
+        equipped.player_a.units[0].items.push_back(guinsoo);
+        const auto before = engine.simulate(baseline);
+        const auto after = engine.simulate(equipped);
+        require(before.success && after.success,
+                "Seeded item outcome comparison must complete successfully.");
+        require(after.units.front().damage_dealt > before.units.front().damage_dealt,
+                "Combined unique items should improve actual damage across deterministic seeds.");
+    }
+}
+
 } // namespace
 
 int main() {
@@ -372,6 +413,7 @@ int main() {
         test_item_mana_can_enable_an_early_cast();
         test_unique_item_effects_and_combinations();
         test_shojin_changes_cast_timing_and_dragons_claw_heals();
+        test_titans_resolve_and_seeded_item_impact();
     } catch (const std::exception& error) {
         std::cerr << "test_combat_engine: " << error.what() << '\n';
         return 1;
