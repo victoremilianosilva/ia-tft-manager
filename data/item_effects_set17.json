@@ -96,7 +96,42 @@
     "TFT17_Item_DRXEmblemItem": {
       "grants_trait": "TFT17_DRX",
       "granted_trait_active_count": 1,
-      "combat_effects": []
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_speed",
+          "target": "allies",
+          "condition": "trait_count_at_least",
+          "condition_trait": "TFT17_DRX",
+          "min_trait_count": 5,
+          "damage_type": "MAGIC",
+          "value": 0.1,
+          "percent_of_stat": true
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "armor",
+          "target": "allies",
+          "condition": "trait_count_at_least",
+          "condition_trait": "TFT17_DRX",
+          "min_trait_count": 5,
+          "damage_type": "MAGIC",
+          "value": 10
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "magic_resist",
+          "target": "allies",
+          "condition": "trait_count_at_least",
+          "condition_trait": "TFT17_DRX",
+          "min_trait_count": 5,
+          "damage_type": "MAGIC",
+          "value": 10
+        }
+      ]
     },
     "TFT17_Item_DarkStarEmblemItem": {
       "grants_trait": "TFT17_DarkStar",
