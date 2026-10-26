@@ -201,6 +201,27 @@ int main() {
             item_command.target_unit_uuid == "unit-copy-b",
             "semantic equip command must identify the target unit instance");
 
+    // Selling/removing a unit must return every equipped item to the bag,
+    // after which any of those copies can be equipped on another unit.
+    const auto inventory_before_release = engine.inventory().size();
+    const auto carry_equipped_before_release = engine.equipped("carry-1").size();
+    require(carry_equipped_before_release == 2,
+            "fixture should have two equipped items before unit sale");
+    require(engine.return_equipped_to_inventory("carry-1"),
+            "selling an equipped unit should release its items into inventory");
+    require(engine.equipped("carry-1").empty(),
+            "sold unit must no longer own equipped items");
+    require(engine.inventory().size() ==
+                inventory_before_release + carry_equipped_before_release,
+            "sale must return every equipped item exactly once");
+    require(engine.equip("damage_blade", tank),
+            "returned item must be equippable on another unit");
+    require(engine.equipped("tank-1").size() == 2,
+            "new target should own the re-equipped item");
+    require(engine.inventory().size() ==
+                inventory_before_release + carry_equipped_before_release - 1,
+            "re-equipping consumes exactly one returned item");
+
     std::cout << "[PASS] Item inventory, recipes, equip, and decision tests.\n";
     return EXIT_SUCCESS;
 }
