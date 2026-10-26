@@ -93,12 +93,38 @@ bool has_item(const CombatUnit& unit, const char* api_name) {
         [&](const CombatItem& item) { return item.api_name == api_name; });
 }
 
-float item_effect_value(const CombatUnit& unit, const char* api_name,
-                        float fallback) {
-    for (const auto& item : unit.items) {
-        if (item.api_name == api_name) return fallback;
+void trigger_defensive_items(RuntimeUnit& unit, float now) {
+    if (!is_alive(unit)) return;
+    if (has_item(unit.unit, "TFT_Item_Bloodthirster") &&
+        !unit.bloodthirster_triggered && unit.unit.hp <= unit.unit.max_hp * 0.40f) {
+        unit.shield_hp += unit.unit.max_hp * 0.25f;
+        unit.shield_expires_at = std::max(unit.shield_expires_at, now + 5.0f);
+        unit.bloodthirster_triggered = true;
     }
-    return 0.0f;
+    if (has_item(unit.unit, "TFT_Item_SteraksGage") &&
+        !unit.sterak_triggered && unit.unit.hp <= unit.unit.max_hp * 0.60f) {
+        unit.shield_hp += unit.unit.max_hp * 0.40f;
+        unit.shield_expires_at = std::max(unit.shield_expires_at, now + 4.0f);
+        unit.sterak_triggered = true;
+    }
+    if (has_item(unit.unit, "TFT_Item_FrozenHeart") &&
+        !unit.frozen_heart_triggered && unit.unit.hp <= unit.unit.max_hp * 0.40f) {
+        unit.unit.mana = std::min(unit.unit.max_mana, unit.unit.mana + 15.0f);
+        unit.shield_hp += unit.unit.max_hp * 0.20f;
+        unit.shield_expires_at = std::max(unit.shield_expires_at, now + 60.0f);
+        unit.frozen_heart_triggered = true;
+    }
+    if (has_item(unit.unit, "TFT_Item_GuardianAngel") &&
+        !unit.guardian_angel_triggered && unit.unit.hp <= unit.unit.max_hp * 0.60f) {
+        unit.guardian_angel_triggered = true;
+        unit.unit.damage_reduction = 1.0f;
+        unit.guardian_angel_until = now + 1.0f;
+        const float heal = std::max(0.0f, (unit.unit.max_hp - unit.unit.hp) * 0.20f);
+        unit.unit.hp = std::min(unit.unit.max_hp, unit.unit.hp + heal);
+        if (unit.unit.hp <= 0.0f) unit.unit.hp = unit.unit.max_hp * 0.20f;
+        unit.unit.alive = true;
+        unit.healing_done += heal;
+    }
 }
 
 int count_alive(const std::vector<RuntimeUnit>& units,
@@ -359,6 +385,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             runtime.shield_hp += runtime.unit.max_hp * 0.25f;
             runtime.crown_shield_triggered = true;
             runtime.crown_shield_expires_at = 8.0f;
+            runtime.shield_expires_at = 8.0f;
         }
         if (has_item(runtime.unit, "TFT_Item_FrozenHeart"))
             runtime.unit.mana = std::min(runtime.unit.max_mana,
@@ -516,28 +543,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             }
             actor.last_status_tick = now;
         }
-        if (has_item(actor.unit, "TFT_Item_Bloodthirster") &&
-            !actor.bloodthirster_triggered &&
-            actor.unit.hp <= actor.unit.max_hp * 0.40f) {
-            actor.shield_hp += actor.unit.max_hp * 0.25f;
-            actor.shield_expires_at = now + 5.0f;
-            actor.bloodthirster_triggered = true;
-        }
-        if (has_item(actor.unit, "TFT_Item_SteraksGage") &&
-            !actor.sterak_triggered &&
-            actor.unit.hp <= actor.unit.max_hp * 0.60f) {
-            actor.shield_hp += actor.unit.max_hp * 0.40f;
-            actor.shield_expires_at = std::max(actor.shield_expires_at, now + 4.0f);
-            actor.sterak_triggered = true;
-        }
-        if (has_item(actor.unit, "TFT_Item_FrozenHeart") &&
-            !actor.frozen_heart_triggered &&
-            actor.unit.hp <= actor.unit.max_hp * 0.40f) {
-            actor.unit.mana = std::min(actor.unit.max_mana, actor.unit.mana + 15.0f);
-            actor.shield_hp += actor.unit.max_hp * 0.20f;
-            actor.shield_expires_at = std::max(actor.shield_expires_at, now + 60.0f);
-            actor.frozen_heart_triggered = true;
-        }
+        trigger_defensive_items(actor, now);
         if (actor.shield_expires_at > 0.0f && now >= actor.shield_expires_at) {
             actor.shield_hp = 0.0f;
             actor.shield_expires_at = 0.0f;
@@ -725,6 +731,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                         const float hp_damage = std::min(ability_target.unit.hp, damage - absorbed);
                         ability_target.unit.hp -= hp_damage;
                         ability_target.damage_taken += damage;
+                        trigger_defensive_items(ability_target, now);
                         actor.damage_dealt += damage;
                         ability_event.damage += damage;
                         if (actor.unit.omnivamp > 0.0f && damage > 0.0f)
@@ -779,6 +786,47 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                         }
                     }
                 }
+                // Centelha Iônica pune conjurações inimigas próximas, com recarga.
+                for (auto& holder : units) {
+                    if (!is_alive(holder) || holder.unit.team == actor.unit.team ||
+                        !has_item(holder.unit, "TFT_Item_IonicSpark") ||
+                        now - holder.last_ionic_proc < 2.0f ||
+                        distance_between(holder.unit, actor.unit) > 2) continue;
+                    holder.last_ionic_proc = now;
+                    const float raw = ability.mana_cost * 1.50f;
+                    const float mitigated = mitigate_physical_damage(raw, actor.unit.magic_resist);
+                    const float final_damage = mitigated *
+                        std::clamp(1.0f - actor.unit.damage_reduction, 0.0f, 1.0f);
+                    const float absorbed = std::min(actor.shield_hp, final_damage);
+                    actor.shield_hp -= absorbed;
+                    const float hp_loss = std::min(actor.unit.hp, final_damage - absorbed);
+                    actor.unit.hp -= hp_loss;
+                    actor.damage_taken += final_damage;
+                    holder.damage_dealt += final_damage;
+                    if (config.record_damage) {
+                        DamageEvent spark;
+                        spark.timestamp = now;
+                        spark.source_unit_id = holder.unit.id;
+                        spark.target_unit_id = actor.unit.id;
+                        spark.damage_type = DamageType::MAGIC;
+                        spark.raw_damage = raw;
+                        spark.final_damage = final_damage;
+                        result.damage_events.push_back(spark);
+                    }
+                    if (actor.unit.hp <= 0.0f) {
+                        trigger_defensive_items(actor, now);
+                        if (actor.unit.hp <= 0.0f) {
+                            actor.unit.alive = false;
+                            if (config.record_events) {
+                                DeathEvent death;
+                                death.timestamp = now;
+                                death.unit_id = actor.unit.id;
+                                death.killer_unit_id = holder.unit.id;
+                                result.death_events.push_back(death);
+                            }
+                        }
+                    }
+                }
                 if (config.record_abilities) result.ability_events.push_back(ability_event);
                 if (config.record_events)
                     append_generic_event(result, now, "ability",
@@ -821,6 +869,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             const float hp_damage = std::min(target.unit.hp, damage - absorbed);
             target.unit.hp -= hp_damage;
             target.damage_taken += damage;
+            trigger_defensive_items(target, now);
             actor.damage_dealt += damage;
             if (actor.unit.omnivamp > 0.0f && damage > 0.0f) {
                 actor.unit.hp = std::min(
