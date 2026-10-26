@@ -3490,7 +3490,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         // Equipment belongs to the player, not to the unit.
                         // Return it to the bag before removing the unit so it
                         // can be equipped on another unit without loss/duplication.
-                        if (!this->item_engine ||
+                        if (this->item_engine &&
                             !this->item_engine->return_equipped_to_inventory(sold_uuid)) {
                             for (std::int32_t copy = 0; copy < returned; ++copy)
                                 (void)lobby.pool->take(unit.champion_internal_id);
