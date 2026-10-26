@@ -125,7 +125,44 @@
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
       "grants_trait": "TFT17_ASTrait",
       "granted_trait_active_count": 1,
-      "combat_effects": []
+      "combat_effects": [
+        {
+          "trigger": "on_kill",
+          "operation": "grant_charges",
+          "stat": "",
+          "target": "self",
+          "condition": "",
+          "condition_trait": "",
+          "stack_key": "challenger_next_attacks",
+          "damage_type": "MAGIC",
+          "value": 3,
+          "duration": 0,
+          "interval": 0,
+          "delay": 0,
+          "health_threshold": 0,
+          "max_stacks": 3,
+          "percent_of_max_health": false,
+          "percent_of_stat": false
+        },
+        {
+          "trigger": "on_attack",
+          "operation": "heal_max_hp_pct",
+          "stat": "",
+          "target": "self",
+          "condition": "",
+          "condition_trait": "",
+          "stack_key": "challenger_next_attacks",
+          "damage_type": "MAGIC",
+          "value": 0.05,
+          "duration": 0,
+          "interval": 0,
+          "delay": 0,
+          "health_threshold": 0,
+          "max_stacks": 3,
+          "percent_of_max_health": false,
+          "percent_of_stat": false
+        }
+      ]
     },
     {
       "id": "TFT17_Item_AssassinTraitEmblemItem",
@@ -167,7 +204,29 @@
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
       "grants_trait": "TFT17_AssassinTrait",
       "granted_trait_active_count": 1,
-      "combat_effects": []
+      "combat_effects": [
+        {
+          "trigger": "while_hp_below",
+          "operation": "add_stat",
+          "stat": "omnivamp",
+          "target": "self",
+          "condition": "",
+          "condition_trait": "",
+          "stack_key": "",
+          "damage_type": "MAGIC",
+          "value": 0.25,
+          "duration": 5,
+          "interval": 0,
+          "delay": 0,
+          "health_threshold": 0.5,
+          "max_stacks": 0,
+          "percent_of_max_health": false,
+          "percent_of_stat": false
+        }
+      ],
+      "deferred_stats": [
+        "omnivamp"
+      ]
     },
     {
       "id": "TFT17_Item_AstronautEmblemItem",
@@ -651,7 +710,29 @@
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
       "grants_trait": "TFT17_ResistTank",
       "granted_trait_active_count": 1,
-      "combat_effects": []
+      "combat_effects": [
+        {
+          "trigger": "after_delay",
+          "operation": "add_stat",
+          "stat": "attack_speed",
+          "target": "self",
+          "condition": "",
+          "condition_trait": "",
+          "stack_key": "",
+          "damage_type": "MAGIC",
+          "value": 0.7,
+          "duration": 0,
+          "interval": 0,
+          "delay": 10,
+          "health_threshold": 0,
+          "max_stacks": 0,
+          "percent_of_max_health": false,
+          "percent_of_stat": true
+        }
+      ],
+      "deferred_stats": [
+        "attack_speed"
+      ]
     },
     {
       "id": "TFT17_Item_ShieldTankEmblemItem",
@@ -691,7 +772,26 @@
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
       "grants_trait": "TFT17_ShieldTank",
       "granted_trait_active_count": 1,
-      "combat_effects": []
+      "combat_effects": [
+        {
+          "trigger": "on_ally_shield",
+          "operation": "add_stat",
+          "stat": "ability_power",
+          "target": "self",
+          "condition": "",
+          "condition_trait": "",
+          "stack_key": "",
+          "damage_type": "MAGIC",
+          "value": 2,
+          "duration": 0,
+          "interval": 0,
+          "delay": 0,
+          "health_threshold": 0,
+          "max_stacks": 0,
+          "percent_of_max_health": false,
+          "percent_of_stat": false
+        }
+      ]
     },
     {
       "id": "TFT17_Item_SpaceGrooveEmblemItem",
