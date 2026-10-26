@@ -25,6 +25,9 @@ struct RuntimeUnit {
     int attacks = 0;
     int ability_casts = 0;
     int kills = 0;
+    int titans_stacks = 0;
+    float last_guinsoo_tick = 0.0f;
+    float last_dragons_claw_tick = 0.0f;
 };
 
 struct ScheduledEvent {
@@ -356,6 +359,30 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             continue;
         }
 
+        // Efeitos únicos de Set 17, identificados pelo api_name canônico do catálogo.
+        // São efeitos de combate explícitos; source_effects genéricos não são
+        // interpretados automaticamente para evitar atribuir semântica errada.
+        for (const auto& item : actor.unit.items) {
+            if (item.api_name == "TFT_Item_GuinsoosRageblade") {
+                const int ticks = static_cast<int>(std::floor(now)) -
+                                  static_cast<int>(std::floor(actor.last_guinsoo_tick));
+                if (ticks > 0) {
+                    actor.unit.attack_speed += 0.07f * static_cast<float>(ticks);
+                    actor.last_guinsoo_tick = now;
+                }
+            } else if (item.api_name == "TFT_Item_DragonsClaw") {
+                const int ticks = static_cast<int>(std::floor(now / 2.0f)) -
+                                  static_cast<int>(std::floor(actor.last_dragons_claw_tick / 2.0f));
+                if (ticks > 0) {
+                    const float heal = std::min(actor.unit.max_hp - actor.unit.hp,
+                        actor.unit.max_hp * 0.025f * static_cast<float>(ticks));
+                    actor.unit.hp += heal;
+                    actor.healing_done += heal;
+                    actor.last_dragons_claw_tick = now;
+                }
+            }
+        }
+
         // Escolhe o inimigo vivo mais próximo; desempate por ID.
         std::size_t target_index = units.size();
         int best_distance = 1'000'000;
@@ -604,6 +631,69 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             }
             ++actor.attacks;
             actor.unit.mana = std::min(actor.unit.max_mana, actor.unit.mana + 10.0f);
+
+            // Shojin e Leviathan: mana adicional por ataque acertado.
+            for (const auto& item : actor.unit.items) {
+                if (item.api_name == "TFT_Item_SpearOfShojin")
+                    actor.unit.mana = std::min(actor.unit.max_mana, actor.unit.mana + 5.0f);
+                else if (item.api_name == "TFT_Item_Leviathan")
+                    actor.unit.mana = std::min(actor.unit.max_mana, actor.unit.mana + 2.0f);
+                else if (item.api_name == "TFT_Item_TitansResolve" &&
+                         actor.titans_stacks < 25) {
+                    ++actor.titans_stacks;
+                    actor.unit.attack_damage += actor.unit.attack_damage * 0.02f;
+                    actor.unit.ability_power += 2.0f;
+                    if (actor.titans_stacks == 25)
+                        actor.unit.damage_amplification += 0.10f;
+                }
+            }
+
+            // Colete Espinhoso: dano mágico de retorno ao atacante.
+            for (const auto& item : target.unit.items) {
+                if (item.api_name == "TFT_Item_BrambleVest" && is_alive(actor)) {
+                    const float reflected = mitigate_physical_damage(100.0f, actor.unit.magic_resist);
+                    const float reflected_hp = std::min(actor.unit.hp, reflected);
+                    actor.unit.hp -= reflected_hp;
+                    actor.damage_taken += reflected_hp;
+                    target.damage_dealt += reflected_hp;
+                    if (config.record_damage) {
+                        DamageEvent reflected_event;
+                        reflected_event.timestamp = now;
+                        reflected_event.source_unit_id = target.unit.id;
+                        reflected_event.target_unit_id = actor.unit.id;
+                        reflected_event.damage_type = DamageType::MAGIC;
+                        reflected_event.raw_damage = 100.0f;
+                        reflected_event.final_damage = reflected_hp;
+                        reflected_event.ability_damage = false;
+                        result.damage_events.push_back(reflected_event);
+                    }
+                    if (actor.unit.hp <= 0.0f && actor.unit.alive) {
+                        actor.unit.hp = 0.0f;
+                        actor.unit.alive = false;
+                        ++target.kills;
+                        if (config.record_events) {
+                            DeathEvent death;
+                            death.timestamp = now;
+                            death.unit_id = actor.unit.id;
+                            death.killer_unit_id = target.unit.id;
+                            result.death_events.push_back(death);
+                        }
+                    }
+                    break;
+                }
+            }
+
+            // Sterak: escudo único ao cruzar o limiar de vida.
+            if (target.unit.alive && target.unit.hp > 0.0f) {
+                for (const auto& item : target.unit.items) {
+                    if (item.api_name == "TFT_Item_SteraksGage" &&
+                        target.unit.hp <= target.unit.max_hp * 0.60f &&
+                        target.shield_hp <= 0.0f) {
+                        target.shield_hp += target.unit.max_hp * 0.40f;
+                        break;
+                    }
+                }
+            }
 
             if (config.record_damage) {
                 DamageEvent de;
