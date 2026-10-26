@@ -120,6 +120,13 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 }
                 effect.max_stacks = raw["max_stacks"].get<int>();
             }
+            if (raw.contains("min_trait_count")) {
+                if (!raw["min_trait_count"].is_number_integer() ||
+                    raw["min_trait_count"].get<int>() < 0) {
+                    throw std::invalid_argument("combat effect min_trait_count must be a nonnegative integer");
+                }
+                effect.min_trait_count = raw["min_trait_count"].get<int>();
+            }
             const auto read_bool = [&](const char* key, bool& output) {
                 if (!raw.contains(key)) return;
                 if (!raw[key].is_boolean()) {
