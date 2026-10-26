@@ -20,6 +20,22 @@ void require(bool condition, const char* message) {
 }
 
 
+// Test harness helper: PASS-driven simulations must still resolve forced anvils.
+// It only substitutes an action when PASS is masked out and the anvil-choice
+// action is the only enabled decision head; ordinary invalid-action tests remain intact.
+tft::StepResult step_with_pending_anvils(
+    tft::TFTEngine& engine,
+    std::array<tft::PlayerAction, tft::kPlayersPerLobby> actions
+) {
+    const auto masks = engine.get_action_masks();
+    for (std::size_t player = 0; player < actions.size(); ++player) {
+        if (masks[player].type_mask[6] == 0 && masks[player].type_mask[7] == 1) {
+            actions[player].values = {7, 0, 0, 0, 0, 0};
+        }
+    }
+    return engine.step(actions);
+}
+
 int main(int argc, char** argv) {
     try {
         require(argc == 2 || argc == 3, "Informe o caminho do catalogo de campeoes e, opcionalmente, o catalogo de itens.");
@@ -236,7 +252,7 @@ int main(int argc, char** argv) {
 
         bool invalid_sell_rejected = false;
         try {
-            (void)engine.step(invalid_actions);
+            (void)step_with_pending_anvils(engine, invalid_actions);
         } catch (const std::invalid_argument&) {
             invalid_sell_rejected = true;
         }
@@ -252,7 +268,7 @@ int main(int argc, char** argv) {
         invalid_actions[0].values = {0, 0, 0, 0, 0, 0}; // Sem ouro.
         bool invalid_buy_rejected = false;
         try {
-            (void)engine.step(invalid_actions);
+            (void)step_with_pending_anvils(engine, invalid_actions);
         } catch (const std::invalid_argument&) {
             invalid_buy_rejected = true;
         }
@@ -271,7 +287,7 @@ int main(int argc, char** argv) {
         // O treinamento só resolve a preparação depois de 10 ações de cada
         // jogador; PASS conta como ação, mas não encerra a rodada sozinho.
         for (int action = 0; action < 20; ++action) {
-            (void)engine.step(actions);
+            (void)step_with_pending_anvils(engine, actions);
         } // duas rodadas completas de 10 ações
 
         // Uma ação inválida do jogador 0 não pode permitir que uma compra
@@ -300,7 +316,7 @@ int main(int argc, char** argv) {
 
         bool mixed_batch_rejected = false;
         try {
-            (void)engine.step(actions);
+            (void)step_with_pending_anvils(engine, actions);
         } catch (const std::invalid_argument&) {
             mixed_batch_rejected = true;
         }
@@ -329,7 +345,7 @@ int main(int argc, char** argv) {
         }
         require(buy_slot >= 0, "Nenhum slot de compra válido foi mascarado.");
         actions[0].values = {0, buy_slot, 0, 0, 0, 0};
-        const auto bought = engine.step(actions);
+        const auto bought = step_with_pending_anvils(engine, actions);
         require(bought.players[0].gold >= 0,
                 "Compra deixou ouro negativo.");
         require(std::abs(bought.rewards[0] - bought.action_rewards[0]) < 1e-6f,
@@ -362,7 +378,7 @@ int main(int argc, char** argv) {
         actions[0].values = {3, 0, 8, 27, 0, 0}; // Slot 8 vazio.
         bool invalid_move_rejected = false;
         try {
-            (void)engine.step(actions);
+            (void)step_with_pending_anvils(engine, actions);
         } catch (const std::invalid_argument&) {
             invalid_move_rejected = true;
         }
@@ -389,7 +405,7 @@ int main(int argc, char** argv) {
 
         const auto pool_before_sale = engine.pool_total_available();
         actions[0].values = {5, 0, 0, 0, 0, 0};
-        const auto sold = engine.step(actions);
+        const auto sold = step_with_pending_anvils(engine, actions);
         require(engine.pool_total_available() == pool_before_sale + 1,
                 "Venda não devolveu exatamente uma cópia ao pool.");
         const auto sale_gold_delta =
@@ -414,7 +430,7 @@ int main(int argc, char** argv) {
         }
         require(second_buy_slot >= 0, "Nenhuma oferta válida para segunda compra.");
         actions[0].values = {0, second_buy_slot, 0, 0, 0, 0};
-        (void)engine.step(actions);
+        (void)step_with_pending_anvils(engine, actions);
 
         const auto bench_masks = engine.get_action_masks();
         require(bench_masks[0].type_mask[3] == 1,
@@ -437,7 +453,7 @@ int main(int argc, char** argv) {
         require(bench_slot >= 0 && board_target >= 0,
                 "ActionMaskEngine não encontrou movimento banco-tabuleiro.");
         actions[0].values = {3, 0, bench_slot, board_target, 0, 0};
-        (void)engine.step(actions);
+        (void)step_with_pending_anvils(engine, actions);
 
         auto metrics = engine.get_anti_loop_metrics();
         require(metrics[0].execution_attempts == 1,
@@ -467,7 +483,7 @@ int main(int argc, char** argv) {
         require(board_source >= 0 && next_target >= 0,
                 "ActionMaskEngine não encontrou movimento de tabuleiro válido.");
         actions[0].values = {4, 0, 0, 0, board_source, next_target};
-        (void)engine.step(actions);
+        (void)step_with_pending_anvils(engine, actions);
 
         metrics = engine.get_anti_loop_metrics();
         require(metrics[0].execution_attempts == 2,
@@ -476,7 +492,7 @@ int main(int argc, char** argv) {
                 "Movimento no tabuleiro não foi contabilizado.");
 
         actions[0].values = {4, 0, 0, 0, next_target, board_source};
-        (void)engine.step(actions);
+        (void)step_with_pending_anvils(engine, actions);
         metrics = engine.get_anti_loop_metrics();
         require(metrics[0].execution_attempts == 3,
                 "Tentativa de movimento reverso não foi contabilizada.");
@@ -486,7 +502,7 @@ int main(int argc, char** argv) {
         // Mesmo quando todos enviam PASS, o treinamento aguarda 10 ações.
         const auto round_before_pass = engine.round();
         actions[0].values = {6, 0, 0, 0, 0, 0};
-        const auto after_pass = engine.step(actions);
+        const auto after_pass = step_with_pending_anvils(engine, actions);
         require(
             engine.round() == round_before_pass,
             "PASS encerrou a rodada antes de completar 10 ações."
@@ -511,7 +527,7 @@ int main(int argc, char** argv) {
             for (auto& action : actions) {
                 action.values = {6, 0, 0, 0, 0, 0};
             }
-            combat_round = engine.step(actions);
+            combat_round = step_with_pending_anvils(engine, actions);
         }
         require(
             combat_round.players[0].wins >= 1,
@@ -557,15 +573,15 @@ int main(int argc, char** argv) {
         require(masks_before_reroll[0].type_mask[1] == 1,
                 "REROLL deveria estar habilitado com ouro suficiente.");
         actions[0].values = {1, 0, 0, 0, 0, 0};
-        const auto rerolled = engine.step(actions);
+        const auto rerolled = step_with_pending_anvils(engine, actions);
         require(rerolled.players[0].gold == gold_before_reroll - 2,
                 "REROLL não descontou exatamente 2 de ouro.");
         require(engine.round() == round_before_economic_actions,
                 "REROLL encerrou a rodada sem PASS.");
         actions[0].values = {6, 0, 0, 0, 0, 0};
-        auto next_round = engine.step(actions);
+        auto next_round = step_with_pending_anvils(engine, actions);
         for (int action = 2; action < 10; ++action) {
-            next_round = engine.step(actions);
+            next_round = step_with_pending_anvils(engine, actions);
         }
         require(engine.round() == round_before_economic_actions + 1,
                 "A rodada não avançou após 10 ações por jogador.");
@@ -581,7 +597,7 @@ int main(int argc, char** argv) {
         const auto level_before_xp = next_round.players[0].level;
         const auto xp_before_xp = next_round.players[0].xp;
         actions[0].values = {2, 0, 0, 0, 0, 0};
-        const auto bought_xp = engine.step(actions);
+        const auto bought_xp = step_with_pending_anvils(engine, actions);
         require(bought_xp.players[0].gold == gold_before_xp - 4,
                 "BUY_XP não descontou exatamente 4 de ouro.");
         require(level_before_xp == 4 && xp_before_xp == 4,
@@ -632,14 +648,14 @@ int main(int argc, char** argv) {
              completed_rounds < 14 && comp_engine.stage() < 3;
              ++completed_rounds) {
             for (int action = 0; action < 10; ++action)
-                (void)comp_engine.step(pass_actions);
+                (void)comp_step_with_pending_anvils(engine, pass_actions);
         }
         require(comp_engine.stage() >= 3,
                 "Fixture nao alcancou stage 3 para validar o comp lock.");
         // Stage is advanced after combat resolution; let the strategy update
         // run twice in the newly opened stage-3 preparation phase.
-        (void)comp_engine.step(pass_actions);
-        (void)comp_engine.step(pass_actions);
+        (void)comp_step_with_pending_anvils(engine, pass_actions);
+        (void)comp_step_with_pending_anvils(engine, pass_actions);
         auto comp_state = comp_engine.get_strategies()[0].back();
         require(comp_state.composition_locked,
                 "Composicao dominante com seis unidades nao ativou o lock no stage 3.");
@@ -708,7 +724,7 @@ int main(int argc, char** argv) {
             for (auto& action : reversal_actions)
                 action.values = {6, 0, 0, 0, 0, 0};
             reversal_actions[0].values = {0, 0, 0, 0, 0, 0};
-            const auto buy_result = reversal_engine.step(reversal_actions);
+            const auto buy_result = reversal_step_with_pending_anvils(engine, reversal_actions);
             const float buy_reward = buy_result.action_rewards[0];
 
             const auto after_buy = reversal_engine.get_audit_snapshot();
@@ -729,7 +745,7 @@ int main(int argc, char** argv) {
             require(purchased_slot >= 0,
                     ("Compra de " + target_name + " nao deixou a nova copia no banco.").c_str());
             reversal_actions[0].values = {5, 0, purchased_slot, 0, 0, 0};
-            const auto sell_result = reversal_engine.step(reversal_actions);
+            const auto sell_result = reversal_step_with_pending_anvils(engine, reversal_actions);
             const float sell_reward = sell_result.action_rewards[0];
             require(sell_reward < 0.0f,
                     ("Venda imediata de " + target_name +
@@ -760,8 +776,8 @@ int main(int argc, char** argv) {
             for (auto& action : paired_actions) action.values = {6, 0, 0, 0, 0, 0};
             isolated_actions[0].values = {5, 0, 0, 0, 0, 0};
             paired_actions[0].values = {5, 0, 0, 0, 0, 0};
-            const auto isolated_sale = isolated_sale_engine.step(isolated_actions);
-            const auto paired_sale = paired_sale_engine.step(paired_actions);
+            const auto isolated_sale = isolated_sale_step_with_pending_anvils(engine, isolated_actions);
+            const auto paired_sale = paired_sale_step_with_pending_anvils(engine, paired_actions);
             require(paired_sale.action_rewards[0] < isolated_sale.action_rewards[0] - 0.15f,
                     "Vender uma copia que protege um par nao recebeu penalidade adicional suficiente.");
         }
@@ -780,7 +796,7 @@ int main(int argc, char** argv) {
             std::array<tft::PlayerAction, tft::kPlayersPerLobby> item_actions{};
             for (auto& action : item_actions) action.values = {6, 0, 0, 0, 0, 0};
             item_actions[0].values = {8, 0, 1, 0, 0, 0};
-            (void)item_action_engine.step(item_actions);
+            (void)item_action_step_with_pending_anvils(engine, item_actions);
             auto item_audit = item_action_engine.get_audit_snapshot();
             require(item_audit.players[0].board[0].item_ids.size() == 1 &&
                     item_audit.players[0].board[0].item_ids[0] == "damage_blade",
@@ -792,7 +808,7 @@ int main(int argc, char** argv) {
             require(masks[0].type_mask[7] == 1,
                     "EQUIP_FROM_INVENTORY deveria estar habilitada com item e alvo validos.");
             item_actions[0].values = {7, 0, 0, 0, 0, 0};
-            (void)item_action_engine.step(item_actions);
+            (void)item_action_step_with_pending_anvils(engine, item_actions);
             item_audit = item_action_engine.get_audit_snapshot();
             require(item_audit.players[0].board[0].item_ids.size() == 2,
                     "EQUIP_FROM_INVENTORY nao anexou o item ao estado de combate.");
