@@ -658,6 +658,8 @@ void test_data_driven_trait_emblem_effects() {
     tft::CombatItem nova_emblem;
     nova_emblem.api_name = "unrecognized_nova_emblem";
     nova_emblem.grants_trait = "TFT17_DRX";
+    // Exercise the actual emblem grant path for the capstone threshold too.
+    nova_emblem.granted_trait_active_count = 5;
     tft::CombatEffectDefinition nova_capstone;
     nova_capstone.trigger = "on_attack";
     nova_capstone.operation = "bonus_damage";
