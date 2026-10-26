@@ -96,7 +96,8 @@ int main(int argc, char** argv) {
         require(player_observation[unit_fit_offset] > 0.0f,
                 "Score de compatibilidade da unidade nao chegou a observacao PPO.");
         const std::size_t candidate_features_offset =
-            expected_observation_dim - 8 * (tft::kBenchSlots + tft::kShopSlots);
+            expected_observation_dim - 8 * (tft::kBenchSlots + tft::kShopSlots) -
+            (3 + 9 * 11); // Anvil features are inserted before candidate features.
         const std::size_t focus_weights_offset =
             candidate_features_offset - trait_order.size() - 2;
         const std::size_t locked_offset = focus_weights_offset + trait_order.size();
