@@ -400,6 +400,141 @@ void test_titans_resolve_and_seeded_item_impact() {
     }
 }
 
+void test_set17_burn_and_shred_change_combat_damage() {
+    tft::CombatEngine engine;
+    auto base = make_input();
+    base.config.max_duration = 3.1f;
+    base.player_a.units[0].attack_damage = 10.0f;
+    base.player_a.units[0].attack_speed = 1.0f;
+    base.player_b.units[0].attack_damage = 0.1f;
+    base.player_b.units[0].attack_speed = 0.1f;
+    base.player_b.units[0].armor = 100.0f;
+    base.player_b.units[0].max_hp = base.player_b.units[0].hp = 5000.0f;
+
+    const auto baseline = engine.simulate(base);
+    auto burned_input = base;
+    tft::CombatItem morello;
+    morello.api_name = "TFT_Item_Morellonomicon";
+    burned_input.player_a.units[0].items.push_back(morello);
+    const auto burned = engine.simulate(burned_input);
+    require(baseline.success && burned.success, "Burn comparison battles should complete.");
+    require(burned.units.front().damage_dealt > baseline.units.front().damage_dealt,
+            "Morellonomicon burn should increase actual damage dealt over time.");
+
+    auto shredded_input = base;
+    tft::CombatItem whisper;
+    whisper.api_name = "TFT_Item_LastWhisper";
+    shredded_input.player_a.units[0].items.push_back(whisper);
+    const auto shredded = engine.simulate(shredded_input);
+    require(shredded.success, "Armor shred battle should complete.");
+    require(shredded.units.front().damage_dealt > baseline.units.front().damage_dealt,
+            "Last Whisper should increase subsequent damage through armor shred.");
+}
+
+void test_set17_healing_and_defensive_items_change_survival() {
+    tft::CombatEngine engine;
+    auto base = make_input();
+    base.config.max_duration = 3.1f;
+    base.player_a.units[0].attack_damage = 0.1f;
+    base.player_a.units[0].attack_speed = 0.1f;
+    base.player_a.units[0].max_hp = base.player_a.units[0].hp = 100.0f;
+    base.player_b.units[0].attack_damage = 30.0f;
+    base.player_b.units[0].attack_speed = 1.0f;
+    base.player_b.units[0].max_hp = base.player_b.units[0].hp = 1000.0f;
+
+    const auto baseline = engine.simulate(base);
+    auto protected_input = base;
+    tft::CombatItem bloodthirster;
+    bloodthirster.api_name = "TFT_Item_Bloodthirster";
+    protected_input.player_a.units[0].items.push_back(bloodthirster);
+    const auto protected_result = engine.simulate(protected_input);
+    require(baseline.success && protected_result.success,
+            "Defensive item comparison battles should complete.");
+    require(protected_result.units.front().final_hp > baseline.units.front().final_hp,
+            "Bloodthirster shield should improve survival after its health threshold.");
+
+    auto healing_input = make_input();
+    healing_input.config.max_duration = 2.1f;
+    healing_input.player_a.units[0].attack_damage = 20.0f;
+    healing_input.player_a.units[0].attack_speed = 1.0f;
+    healing_input.player_b.units[0].attack_damage = 0.1f;
+    healing_input.player_b.units[0].attack_speed = 0.1f;
+    healing_input.player_b.units[0].max_hp = healing_input.player_b.units[0].hp = 1000.0f;
+    tft::CombatUnit ally;
+    ally.id = 2;
+    ally.api_name = "test_ally";
+    ally.name = "Test Ally";
+    ally.team = tft::UnitTeam::PLAYER_A;
+    ally.role = tft::UnitRole::SUPPORT;
+    ally.position = {4, 1};
+    ally.hp = 40.0f;
+    ally.max_hp = 100.0f;
+    ally.attack_damage = 0.1f;
+    ally.attack_speed = 0.1f;
+    ally.alive = true;
+    healing_input.player_a.units.push_back(ally);
+    tft::CombatItem gunblade;
+    gunblade.api_name = "TFT_Item_HextechGunblade";
+    healing_input.player_a.units[0].items.push_back(gunblade);
+    const auto healed = engine.simulate(healing_input);
+    require(healed.success, "Gunblade ally-healing battle should complete.");
+    bool ally_healed = false;
+    for (const auto& unit : healed.units)
+        if (unit.unit_id == 2 && unit.healing_done > 0.0f) ally_healed = true;
+    require(ally_healed, "Hextech Gunblade should heal the lowest-health ally from damage dealt.");
+}
+
+void test_set17_ionic_spark_and_emblem_passives() {
+    tft::CombatEngine engine;
+    auto spark_input = make_input();
+    spark_input.config.max_duration = 0.1f;
+    spark_input.config.record_damage = true;
+    spark_input.player_a.units[0].can_attack = false;
+    spark_input.player_a.units[0].can_cast = false;
+    spark_input.player_a.units[0].max_hp = spark_input.player_a.units[0].hp = 1000.0f;
+    spark_input.player_b.units[0].can_attack = false;
+    spark_input.player_b.units[0].attack_damage = 0.1f;
+    spark_input.player_b.units[0].mana = 100.0f;
+    spark_input.player_b.units[0].max_mana = 100.0f;
+    spark_input.player_b.units[0].ability.api_name = "ionic_trigger_test";
+    spark_input.player_b.units[0].ability.mana_cost = 100.0f;
+    spark_input.player_b.units[0].ability.base_damage = 1.0f;
+    spark_input.player_b.units[0].ability.has_damage = true;
+    spark_input.player_b.units[0].ability.target_type = tft::AbilityTargetType::ENEMY;
+    tft::CombatItem ionic;
+    ionic.api_name = "TFT_Item_IonicSpark";
+    spark_input.player_a.units[0].items.push_back(ionic);
+    const auto spark = engine.simulate(spark_input);
+    require(spark.success, "Ionic Spark trigger battle should complete.");
+    bool saw_spark = false;
+    for (const auto& event : spark.damage_events)
+        if (event.source_unit_id == spark_input.player_a.units[0].id &&
+            event.target_unit_id == spark_input.player_b.units[0].id &&
+            std::abs(event.raw_damage - 150.0f) < 0.001f) saw_spark = true;
+    require(saw_spark, "Ionic Spark should damage a nearby enemy when it casts.");
+
+    auto tank_input = make_input();
+    tank_input.config.max_duration = 0.1f;
+    tank_input.config.record_damage = true;
+    tank_input.player_a.units[0].attack_damage = 10.0f;
+    tank_input.player_a.units[0].max_hp = tank_input.player_a.units[0].hp = 1000.0f;
+    tank_input.player_b.units[0].max_hp = tank_input.player_b.units[0].hp = 2000.0f;
+    tank_input.player_b.units[0].magic_resist = 0.0f;
+    tank_input.player_b.units[0].attack_damage = 0.1f;
+    tft::CombatItem fighter_emblem;
+    fighter_emblem.api_name = "TFT17_Item_HPTankEmblemItem";
+    tank_input.player_a.units[0].items.push_back(fighter_emblem);
+    const auto emblem = engine.simulate(tank_input);
+    require(emblem.success, "Fighter emblem combat should complete.");
+    bool saw_magic_bonus = false;
+    for (const auto& event : emblem.damage_events)
+        if (event.source_unit_id == tank_input.player_a.units[0].id &&
+            event.target_unit_id == tank_input.player_b.units[0].id &&
+            event.damage_type == tft::DamageType::MAGIC &&
+            std::abs(event.raw_damage - 30.0f) < 0.001f) saw_magic_bonus = true;
+    require(saw_magic_bonus, "Fighter emblem should add magic damage based on max health.");
+}
+
 } // namespace
 
 int main() {
@@ -414,6 +549,9 @@ int main() {
         test_unique_item_effects_and_combinations();
         test_shojin_changes_cast_timing_and_dragons_claw_heals();
         test_titans_resolve_and_seeded_item_impact();
+        test_set17_burn_and_shred_change_combat_damage();
+        test_set17_healing_and_defensive_items_change_survival();
+        test_set17_ionic_spark_and_emblem_passives();
     } catch (const std::exception& error) {
         std::cerr << "test_combat_engine: " << error.what() << '\n';
         return 1;

@@ -28,6 +28,46 @@ struct RuntimeUnit {
     int titans_stacks = 0;
     float last_guinsoo_tick = 0.0f;
     float last_dragons_claw_tick = 0.0f;
+    float last_redemption_tick = 0.0f;
+    float last_archangel_tick = 0.0f;
+    float last_quicksilver_tick = 0.0f;
+    float last_redbuff_tick = 0.0f;
+    float last_bramble_proc = -1000.0f;
+    float last_ionic_proc = -1000.0f;
+    float shield_expires_at = 0.0f;
+    float crown_shield_expires_at = 0.0f;
+    float burn_until = 0.0f;
+    float burn_next_tick = 0.0f;
+    float burn_percent = 0.0f;
+    int burn_source_id = -1;
+    float grievous_until = 0.0f;
+    float armor_shred_until = 0.0f;
+    float armor_shred_percent = 0.0f;
+    float mr_shred_until = 0.0f;
+    float mr_shred_percent = 0.0f;
+    int runaan_stacks = 0;
+    int power_gauntlet_stacks = 0;
+    int challenger_attacks_remaining = 0;
+    bool resist_emblem_triggered = false;
+    bool assassin_omnivamp_active = false;
+    bool bloodthirster_triggered = false;
+    bool sterak_triggered = false;
+    bool frozen_heart_triggered = false;
+    bool guardian_angel_triggered = false;
+    bool crown_shield_triggered = false;
+    bool night_harvester_bonus_active = false;
+    bool hand_of_justice_ad_ap_active = false;
+    float hand_of_justice_ad_bonus = 0.0f;
+    float hand_of_justice_ap_bonus = 15.0f;
+    float guardian_angel_until = 0.0f;
+    float guardian_previous_damage_reduction = 0.0f;
+    float last_status_tick = 0.0f;
+    float mana_regen_per_second = 0.0f;
+    float mana_gain_multiplier = 1.0f;
+    float base_attack_speed = 1.0f;
+    float titans_base_ad = 0.0f;
+    float runaans_base_ad = 0.0f;
+    std::vector<float> power_gauntlet_stack_times;
 };
 
 struct ScheduledEvent {
@@ -60,6 +100,62 @@ int distance_between(const CombatUnit& a, const CombatUnit& b) {
 
 bool is_alive(const RuntimeUnit& unit) {
     return unit.unit.alive && unit.unit.hp > 0.0f;
+}
+
+bool has_item(const CombatUnit& unit, const char* api_name) {
+    return std::any_of(unit.items.begin(), unit.items.end(),
+        [&](const CombatItem& item) { return item.api_name == api_name; });
+}
+
+void add_titans_stack(RuntimeUnit& unit) {
+    if (unit.titans_stacks >= 25) return;
+    ++unit.titans_stacks;
+    unit.unit.attack_damage += unit.titans_base_ad * 0.02f;
+    unit.unit.ability_power += 2.0f;
+    if (unit.titans_stacks == 25)
+        unit.unit.damage_amplification += 0.10f;
+}
+
+float apply_heal(RuntimeUnit& target, float amount, float now) {
+    if (target.grievous_until > now) amount *= 0.67f;
+    const float actual = std::min(std::max(0.0f, amount),
+        std::max(0.0f, target.unit.max_hp - target.unit.hp));
+    target.unit.hp += actual;
+    return actual;
+}
+
+void trigger_defensive_items(RuntimeUnit& unit, float now) {
+    if (has_item(unit.unit, "TFT_Item_Bloodthirster") &&
+        !unit.bloodthirster_triggered && unit.unit.hp <= unit.unit.max_hp * 0.40f) {
+        unit.shield_hp += unit.unit.max_hp * 0.25f;
+        unit.shield_expires_at = std::max(unit.shield_expires_at, now + 5.0f);
+        unit.bloodthirster_triggered = true;
+    }
+    if (has_item(unit.unit, "TFT_Item_SteraksGage") &&
+        !unit.sterak_triggered && unit.unit.hp <= unit.unit.max_hp * 0.60f) {
+        unit.shield_hp += unit.unit.max_hp * 0.40f;
+        unit.shield_expires_at = std::max(unit.shield_expires_at, now + 4.0f);
+        unit.sterak_triggered = true;
+    }
+    if (has_item(unit.unit, "TFT_Item_FrozenHeart") &&
+        !unit.frozen_heart_triggered && unit.unit.hp <= unit.unit.max_hp * 0.40f) {
+        unit.unit.mana = std::min(unit.unit.max_mana, unit.unit.mana + 15.0f);
+        unit.shield_hp += unit.unit.max_hp * 0.20f;
+        unit.shield_expires_at = std::max(unit.shield_expires_at, now + 60.0f);
+        unit.frozen_heart_triggered = true;
+    }
+    if (has_item(unit.unit, "TFT_Item_GuardianAngel") &&
+        !unit.guardian_angel_triggered && unit.unit.hp <= unit.unit.max_hp * 0.60f) {
+        unit.guardian_angel_triggered = true;
+        unit.guardian_previous_damage_reduction = unit.unit.damage_reduction;
+        unit.unit.damage_reduction = 1.0f;
+        unit.guardian_angel_until = now + 1.0f;
+        const float heal = apply_heal(unit,
+            std::max(0.0f, (unit.unit.max_hp - unit.unit.hp) * 0.20f), now);
+        if (unit.unit.hp <= 0.0f) unit.unit.hp = unit.unit.max_hp * 0.20f;
+        unit.unit.alive = true;
+        unit.healing_done += heal;
+    }
 }
 
 int count_alive(const std::vector<RuntimeUnit>& units,
@@ -99,6 +195,8 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
         return false;
     }
 
+    const float base_attack_damage = unit.attack_damage;
+    const float base_max_hp = unit.max_hp;
     for (const auto& item : unit.items) {
         const float values[] = {
             item.attack_damage, item.ability_power, item.attack_speed,
@@ -117,7 +215,8 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
         // as fractions (e.g. 0.15 = +15% attack speed / damage amplification).
         unit.attack_damage += item.attack_damage;
         unit.ability_power += item.ability_power;
-        unit.attack_speed += item.attack_speed;
+        if (item.api_name != "TFT17_Item_ResistTankEmblemItem")
+            unit.attack_speed += item.attack_speed;
         unit.critical_strike_chance += item.critical_strike_chance;
         unit.critical_strike_damage += item.critical_strike_damage;
         unit.max_hp += item.health;
@@ -125,9 +224,48 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
         unit.armor += item.armor;
         unit.magic_resist += item.magic_resist;
         unit.mana += item.mana;
-        unit.omnivamp += item.omnivamp;
+        if (item.api_name != "TFT17_Item_AssassinTraitEmblemItem")
+            unit.omnivamp += item.omnivamp;
         unit.damage_amplification += item.damage_amplification;
         unit.damage_reduction += item.damage_reduction;
+
+        // Percentuais que o normalizador do catálogo preserva em source_effects,
+        // mas que não aparecem como atributo aditivo no campo stats.
+        if (item.api_name == "TFT_Item_Deathblade")
+            unit.attack_damage += base_attack_damage * 0.55f;
+        else if (item.api_name == "TFT_Item_Bloodthirster")
+            unit.attack_damage += base_attack_damage * 0.15f;
+        else if (item.api_name == "TFT_Item_BlueBuff")
+            unit.attack_damage += base_attack_damage * 0.15f;
+        else if (item.api_name == "TFT_Item_LastWhisper")
+            unit.attack_damage += base_attack_damage * 0.15f;
+        else if (item.api_name == "TFT_Item_RunaansHurricane")
+            unit.attack_damage += base_attack_damage * 0.10f;
+        else if (item.api_name == "TFT_Item_SteraksGage")
+            unit.attack_damage += base_attack_damage * 0.45f;
+        else if (item.api_name == "TFT_Item_MadredsBloodrazor")
+            unit.attack_damage += base_attack_damage * 0.15f;
+        else if (item.api_name == "TFT_Item_InfinityEdge")
+            unit.attack_damage += base_attack_damage * 0.35f;
+        else if (item.api_name == "TFT_Item_WarmogsArmor")
+            unit.max_hp += base_max_hp * 0.18f, unit.hp += base_max_hp * 0.18f;
+        else if (item.api_name == "TFT_Item_DragonsClaw")
+            unit.max_hp += base_max_hp * 0.06f, unit.hp += base_max_hp * 0.06f;
+        else if (item.api_name == "TFT_Item_BrambleVest")
+            unit.max_hp += base_max_hp * 0.06f, unit.hp += base_max_hp * 0.06f;
+        else if (item.api_name == "TFT_Item_RedBuff")
+            unit.max_hp += base_max_hp * 0.08f, unit.hp += base_max_hp * 0.08f;
+        else if (item.api_name == "TFT_Item_UnstableConcoction") {
+            unit.attack_damage += base_attack_damage * 0.15f;
+            unit.ability_power += 15.0f;
+            unit.omnivamp = std::min(1.0f, unit.omnivamp + 0.12f);
+        } else if (item.api_name == "TFT17_Item_FlexTraitEmblemItem") {
+            unit.attack_damage += base_attack_damage * 0.20f;
+        } else if (item.api_name == "TFT17_Item_DarkStarEmblemItem") {
+            unit.attack_damage += base_attack_damage * 0.18f;
+        } else if (item.api_name == "TFT17_Item_StargazerEmblemItem") {
+            unit.attack_damage += base_attack_damage * 0.15f;
+        }
     }
 
     if (!std::isfinite(unit.max_hp) || !std::isfinite(unit.hp) ||
@@ -302,6 +440,36 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             }
 
             units.push_back(RuntimeUnit{effective_unit, effective_unit.hp});
+            auto& loaded = units.back();
+            loaded.base_attack_speed = loaded.unit.attack_speed;
+            loaded.titans_base_ad = loaded.unit.attack_damage;
+            loaded.runaans_base_ad = loaded.unit.attack_damage;
+            if (has_item(loaded.unit, "TFT_Item_AdaptiveHelm"))
+                loaded.mana_gain_multiplier = 1.15f;
+            for (const auto& item : loaded.unit.items) {
+                if (item.api_name == "TFT_Item_AdaptiveHelm") loaded.mana_regen_per_second += 3.0f;
+                else if (item.api_name == "TFT_Item_ArchangelsStaff" ||
+                         item.api_name == "TFT_Item_HextechGunblade" ||
+                         item.api_name == "TFT_Item_Morellonomicon" ||
+                         item.api_name == "TFT_Item_SpearOfShojin" ||
+                         item.api_name == "TFT_Item_StatikkShiv") loaded.mana_regen_per_second += 1.0f;
+                else if (item.api_name == "TFT_Item_BlueBuff") loaded.mana_regen_per_second += 5.0f;
+                else if (item.api_name == "TFT_Item_Redemption") loaded.mana_regen_per_second += 2.0f;
+                else if (item.api_name == "TFT17_Item_AstronautEmblemItem" ||
+                         item.api_name == "TFT17_Item_SummonTraitEmblemItem") loaded.mana_regen_per_second += 2.0f;
+            }
+            if (has_item(loaded.unit, "TFT_Item_UnstableConcoction")) {
+                loaded.hand_of_justice_ad_bonus =
+                    loaded.unit.attack_damage * (0.15f / 1.15f);
+                loaded.hand_of_justice_ad_ap_active =
+                    loaded.unit.hp / loaded.unit.max_hp > 0.50f;
+                if (loaded.hand_of_justice_ad_ap_active) {
+                    loaded.unit.attack_damage += loaded.hand_of_justice_ad_bonus;
+                    loaded.unit.ability_power += loaded.hand_of_justice_ap_bonus;
+                } else {
+                    loaded.unit.omnivamp = std::min(1.0f, loaded.unit.omnivamp + 0.12f);
+                }
+            }
         }
         return true;
     };
@@ -314,6 +482,78 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
     std::unordered_map<int, std::size_t> index_by_id;
     for (std::size_t i = 0; i < units.size(); ++i) {
         index_by_id[units[i].unit.id] = i;
+        auto& runtime = units[i];
+        // Efeitos de início de combate: escudo e mana inicial.
+        if (has_item(runtime.unit, "TFT_Item_Crownguard")) {
+            runtime.shield_hp += runtime.unit.max_hp * 0.25f;
+            runtime.crown_shield_triggered = true;
+            runtime.crown_shield_expires_at = 8.0f;
+            runtime.shield_expires_at = 8.0f;
+        }
+        if (has_item(runtime.unit, "TFT_Item_FrozenHeart"))
+            runtime.unit.mana = std::min(runtime.unit.max_mana,
+                runtime.unit.mana + 20.0f * runtime.mana_gain_multiplier);
+        if (has_item(runtime.unit, "TFT_Item_AdaptiveHelm")) {
+
+            if (runtime.unit.role == UnitRole::TANK ||
+                runtime.unit.role == UnitRole::FIGHTER) {
+                runtime.unit.armor += 30.0f;
+                runtime.unit.magic_resist += 30.0f;
+            } else {
+                runtime.unit.attack_damage *= 1.10f;
+                runtime.unit.ability_power *= 1.10f;
+            }
+        }
+        if (has_item(runtime.unit, "TFT_Item_BlueBuff")) {
+            runtime.unit.attack_damage *= 1.10f;
+            runtime.unit.ability_power *= 1.10f;
+        }
+        if (has_item(runtime.unit, "TFT_Item_Deathblade"))
+            runtime.unit.damage_amplification += 0.10f;
+        if (has_item(runtime.unit, "TFT_Item_RabadonsDeathcap"))
+            runtime.unit.damage_amplification += 0.15f;
+        if (has_item(runtime.unit, "TFT_Item_NightHarvester")) {
+            runtime.unit.damage_reduction += 0.05f;
+            if (runtime.unit.hp / runtime.unit.max_hp > 0.50f)
+                runtime.unit.damage_reduction += 0.15f;
+            runtime.night_harvester_bonus_active =
+                runtime.unit.hp / runtime.unit.max_hp > 0.50f;
+        }
+        if (has_item(runtime.unit, "TFT17_Item_FlexTraitEmblemItem")) {
+            for (auto& ally : units) {
+                if (ally.unit.team != runtime.unit.team ||
+                    std::abs(ally.unit.position.y - runtime.unit.position.y) != 0 ||
+                    std::abs(ally.unit.position.x - runtime.unit.position.x) > 1) continue;
+                if (ally.unit.role == UnitRole::TANK) {
+                    ally.unit.armor += 10.0f;
+                    ally.unit.magic_resist += 10.0f;
+                } else if (ally.unit.role == UnitRole::FIGHTER ||
+                           ally.unit.role == UnitRole::ASSASSIN) {
+                    ally.unit.omnivamp = std::min(1.0f, ally.unit.omnivamp + 0.10f);
+                } else {
+                    ally.unit.attack_speed += 0.10f;
+                }
+            }
+        }
+        if (has_item(runtime.unit, "TFT_Item_IonicSpark")) {
+            for (auto& enemy : units) {
+                if (enemy.unit.team != runtime.unit.team && is_alive(enemy) &&
+                    distance_between(runtime.unit, enemy.unit) <= 2) {
+                    enemy.mr_shred_until = config.max_duration;
+                    enemy.mr_shred_percent = 0.30f;
+                }
+            }
+        }
+        if (has_item(runtime.unit, "TFT_Item_GargoyleStoneplate")) {
+            int nearby_enemies = 0;
+            for (const auto& enemy : units) {
+                if (enemy.unit.team != runtime.unit.team &&
+                    is_alive(enemy) && distance_between(runtime.unit, enemy.unit) <= 2)
+                    ++nearby_enemies;
+            }
+            runtime.unit.armor += 10.0f * nearby_enemies;
+            runtime.unit.magic_resist += 10.0f * nearby_enemies;
+        }
     }
 
     std::mt19937_64 rng(
@@ -354,31 +594,125 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
         now = event.time;
         ++result.events_processed;
 
+        // Processa queimadura uma vez por segundo, independentemente da ordem
+        // de ações da unidade que aplicou o efeito.
+        for (auto& burning : units) {
+            if (!is_alive(burning) || burning.burn_until <= now ||
+                burning.burn_next_tick > now) continue;
+            const float raw_burn = burning.unit.max_hp * burning.burn_percent / 100.0f;
+            const float hp_loss = std::min(burning.unit.hp, raw_burn);
+            burning.unit.hp -= hp_loss;
+            burning.damage_taken += hp_loss;
+            if (burning.burn_source_id >= 0) {
+                const auto source_it = index_by_id.find(burning.burn_source_id);
+                if (source_it != index_by_id.end())
+                    units[source_it->second].damage_dealt += hp_loss;
+            }
+            if (config.record_damage) {
+                DamageEvent burn_event;
+                burn_event.timestamp = now;
+                burn_event.source_unit_id = burning.burn_source_id;
+                burn_event.target_unit_id = burning.unit.id;
+                burn_event.damage_type = DamageType::TRUE_DAMAGE;
+                burn_event.raw_damage = raw_burn;
+                burn_event.final_damage = hp_loss;
+                result.damage_events.push_back(burn_event);
+            }
+            burning.burn_next_tick += 1.0f;
+            if (burning.unit.hp <= 0.0f && burning.unit.alive) {
+                burning.unit.hp = 0.0f;
+                burning.unit.alive = false;
+                if (burning.burn_source_id >= 0) {
+                    const auto source_it = index_by_id.find(burning.burn_source_id);
+                    if (source_it != index_by_id.end()) ++units[source_it->second].kills;
+                }
+                if (config.record_events) {
+                    DeathEvent death;
+                    death.timestamp = now;
+                    death.unit_id = burning.unit.id;
+                    death.killer_unit_id = burning.burn_source_id;
+                    result.death_events.push_back(death);
+                }
+            }
+        }
+
         auto& actor = units[event.unit_index];
         if (!is_alive(actor) || (!actor.unit.can_attack && !actor.unit.can_cast)) {
             continue;
         }
 
-        // Efeitos únicos de Set 17, identificados pelo api_name canônico do catálogo.
-        // São efeitos de combate explícitos; source_effects genéricos não são
-        // interpretados automaticamente para evitar atribuir semântica errada.
+        // Passivas temporizadas e gatilhos defensivos dos itens do Set 17.
+        const float elapsed = std::max(0.0f, now - actor.last_status_tick);
+        if (elapsed > 0.0f) {
+            actor.unit.mana = std::min(actor.unit.max_mana,
+                actor.unit.mana + actor.mana_regen_per_second *
+                    elapsed * actor.mana_gain_multiplier);
+            if (has_item(actor.unit, "TFT_Item_ArchangelsStaff") &&
+                now - actor.last_archangel_tick >= 5.0f) {
+                const int ticks = static_cast<int>((now - actor.last_archangel_tick) / 5.0f);
+                actor.unit.ability_power += actor.unit.ability_power * 0.20f * ticks;
+                actor.last_archangel_tick += 5.0f * ticks;
+            }
+            if (has_item(actor.unit, "TFT_Item_Quicksilver") &&
+                now - actor.last_quicksilver_tick >= 1.0f) {
+                const int ticks = static_cast<int>(now - actor.last_quicksilver_tick);
+                actor.unit.attack_speed += 0.03f * ticks;
+                actor.last_quicksilver_tick += static_cast<float>(ticks);
+            }
+            if (has_item(actor.unit, "TFT_Item_Redemption") &&
+                now - actor.last_redemption_tick >= 1.0f) {
+                const int ticks = static_cast<int>(now - actor.last_redemption_tick);
+                const float missing = actor.unit.max_hp - actor.unit.hp;
+                const float heal = apply_heal(actor,
+                    std::min(missing * 0.02f * ticks, 250.0f * ticks), now);
+                actor.healing_done += heal;
+                actor.last_redemption_tick += static_cast<float>(ticks);
+            }
+            if (has_item(actor.unit, "TFT_Item_DragonsClaw") &&
+                now - actor.last_dragons_claw_tick >= 2.0f) {
+                const int ticks = static_cast<int>((now - actor.last_dragons_claw_tick) / 2.0f);
+                const float heal = apply_heal(actor,
+                    actor.unit.max_hp * 0.025f * ticks, now);
+                actor.healing_done += heal;
+                actor.last_dragons_claw_tick += 2.0f * ticks;
+            }
+            if (actor.crown_shield_triggered && actor.crown_shield_expires_at > 0.0f &&
+                now >= actor.crown_shield_expires_at) {
+                actor.unit.ability_power += 25.0f;
+                actor.crown_shield_expires_at = 0.0f;
+            }
+            actor.last_status_tick = now;
+        }
+        if (has_item(actor.unit, "TFT_Item_PowerGauntlet")) {
+            while (!actor.power_gauntlet_stack_times.empty() &&
+                   now - actor.power_gauntlet_stack_times.front() >= 5.0f) {
+                actor.power_gauntlet_stack_times.erase(
+                    actor.power_gauntlet_stack_times.begin());
+                actor.unit.damage_amplification = std::max(
+                    0.0f, actor.unit.damage_amplification - 0.05f);
+            }
+            actor.power_gauntlet_stacks =
+                static_cast<int>(actor.power_gauntlet_stack_times.size());
+        }
+        trigger_defensive_items(actor, now);
+        if (actor.shield_expires_at > 0.0f && now >= actor.shield_expires_at) {
+            actor.shield_hp = 0.0f;
+            actor.shield_expires_at = 0.0f;
+        }
+        if (actor.guardian_angel_until > 0.0f && now >= actor.guardian_angel_until) {
+            actor.unit.damage_reduction = actor.guardian_previous_damage_reduction;
+            actor.guardian_angel_until = 0.0f;
+        }
+
+
+        // Guinsoo's and item cooldown clocks use elapsed combat time.
         for (const auto& item : actor.unit.items) {
             if (item.api_name == "TFT_Item_GuinsoosRageblade") {
                 const int ticks = static_cast<int>(std::floor(now)) -
                                   static_cast<int>(std::floor(actor.last_guinsoo_tick));
                 if (ticks > 0) {
-                    actor.unit.attack_speed += 0.07f * static_cast<float>(ticks);
+                    actor.unit.attack_speed += actor.base_attack_speed * 0.07f * static_cast<float>(ticks);
                     actor.last_guinsoo_tick = now;
-                }
-            } else if (item.api_name == "TFT_Item_DragonsClaw") {
-                const int ticks = static_cast<int>(std::floor(now / 2.0f)) -
-                                  static_cast<int>(std::floor(actor.last_dragons_claw_tick / 2.0f));
-                if (ticks > 0) {
-                    const float heal = std::min(actor.unit.max_hp - actor.unit.hp,
-                        actor.unit.max_hp * 0.025f * static_cast<float>(ticks));
-                    actor.unit.hp += heal;
-                    actor.healing_done += heal;
-                    actor.last_dragons_claw_tick = now;
                 }
             }
         }
@@ -520,10 +854,17 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                                 actor.unit.attack_damage;
                         raw *= std::max(0.0f, 1.0f + actor.unit.damage_amplification);
                         float damage = raw;
-                        if (ability.damage_type == DamageType::PHYSICAL)
-                            damage = mitigate_physical_damage(damage, ability_target.unit.armor);
-                        else if (ability.damage_type == DamageType::MAGIC)
-                            damage = mitigate_physical_damage(damage, ability_target.unit.magic_resist);
+                        if (ability.damage_type == DamageType::PHYSICAL) {
+                            const float armor = ability_target.armor_shred_until > now
+                                ? ability_target.unit.armor * (1.0f - ability_target.armor_shred_percent)
+                                : ability_target.unit.armor;
+                            damage = mitigate_physical_damage(damage, armor);
+                        } else if (ability.damage_type == DamageType::MAGIC) {
+                            const float mr = ability_target.mr_shred_until > now
+                                ? ability_target.unit.magic_resist * (1.0f - ability_target.mr_shred_percent)
+                                : ability_target.unit.magic_resist;
+                            damage = mitigate_physical_damage(damage, mr);
+                        }
                         damage *= std::clamp(1.0f - ability_target.unit.damage_reduction, 0.0f, 1.0f);
                         damage = std::min(damage, ability_target.unit.hp + ability_target.shield_hp);
                         const float absorbed = std::min(ability_target.shield_hp, damage);
@@ -531,11 +872,58 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                         const float hp_damage = std::min(ability_target.unit.hp, damage - absorbed);
                         ability_target.unit.hp -= hp_damage;
                         ability_target.damage_taken += damage;
+                        if (has_item(ability_target.unit, "TFT_Item_TitansResolve"))
+                            add_titans_stack(ability_target);
+                        trigger_defensive_items(ability_target, now);
                         actor.damage_dealt += damage;
                         ability_event.damage += damage;
-                        if (actor.unit.omnivamp > 0.0f && damage > 0.0f)
-                            actor.unit.hp = std::min(actor.unit.max_hp,
-                                actor.unit.hp + damage * actor.unit.omnivamp);
+                        if (has_item(actor.unit, "TFT_Item_MadredsBloodrazor") &&
+                            ability_target.unit.role == UnitRole::TANK) {
+                            const float bonus = damage * 0.15f;
+                            const float extra_hp = std::min(ability_target.unit.hp, bonus);
+                            ability_target.unit.hp -= extra_hp;
+                            ability_target.damage_taken += extra_hp;
+                            actor.damage_dealt += extra_hp;
+                            ability_event.damage += extra_hp;
+                        }
+                        if (has_item(actor.unit, "TFT_Item_LastWhisper")) {
+                            ability_target.armor_shred_until = now + 3.0f;
+                            ability_target.armor_shred_percent = 0.30f;
+                        }
+                        if (has_item(actor.unit, "TFT_Item_StatikkShiv")) {
+                            ability_target.mr_shred_until = now + 5.0f;
+                            ability_target.mr_shred_percent = 0.30f;
+                        }
+                        if (has_item(actor.unit, "TFT_Item_Morellonomicon") ||
+                            has_item(actor.unit, "TFT_Item_RedBuff") ||
+                            has_item(actor.unit, "TFT_Item_RapidFireCannon")) {
+                            ability_target.burn_until = std::max(ability_target.burn_until,
+                                now + (has_item(actor.unit, "TFT_Item_Morellonomicon") ? 10.0f : 5.0f));
+                            ability_target.burn_percent = std::max(ability_target.burn_percent, 1.0f);
+                            ability_target.burn_source_id = actor.unit.id;
+                            if (ability_target.burn_next_tick < now)
+                                ability_target.burn_next_tick = now + 1.0f;
+                            ability_target.grievous_until = std::max(ability_target.grievous_until,
+                                now + (has_item(actor.unit, "TFT_Item_Morellonomicon") ? 10.0f : 5.0f));
+                        }
+                        if (has_item(actor.unit, "TFT_Item_HextechGunblade")) {
+                            std::size_t ally = units.size();
+                            float lowest = std::numeric_limits<float>::infinity();
+                            for (std::size_t i = 0; i < units.size(); ++i) {
+                                if (!is_alive(units[i]) || units[i].unit.team != actor.unit.team) continue;
+                                const float ratio = units[i].unit.hp / units[i].unit.max_hp;
+                                if (ratio < lowest) { lowest = ratio; ally = i; }
+                            }
+                            if (ally < units.size()) {
+                                const float heal = apply_heal(units[ally], damage * 0.20f, now);
+                                units[ally].healing_done += heal;
+                            }
+                        }
+                        if (actor.unit.omnivamp > 0.0f && damage > 0.0f) {
+                            const float heal = apply_heal(actor,
+                                damage * actor.unit.omnivamp, now);
+                            actor.healing_done += heal;
+                        }
 
                         if (config.record_damage) {
                             DamageEvent de;
@@ -554,9 +942,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                         const float healing = std::max(0.0f, ability.base_healing) +
                             std::max(0.0f, ability.ability_power_ratio) *
                                 actor.unit.ability_power;
-                        const float actual = std::min(healing,
-                            ability_target.unit.max_hp - ability_target.unit.hp);
-                        ability_target.unit.hp += actual;
+                        const float actual = apply_heal(ability_target, healing, now);
                         actor.healing_done += actual;
                         ability_event.healing += actual;
                     }
@@ -566,12 +952,19 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                                 actor.unit.ability_power;
                         ability_target.shield_hp += shield;
                         ability_event.shield += shield;
+                        for (auto& ally : units) {
+                            if (ally.unit.team == actor.unit.team &&
+                                has_item(ally.unit, "TFT17_Item_ShieldTankEmblemItem"))
+                                ally.unit.ability_power += 2.0f;
+                        }
                     }
 
                     if (ability_target.unit.hp <= 0.0f && ability_target.unit.alive) {
                         ability_target.unit.hp = 0.0f;
                         ability_target.unit.alive = false;
                         ++actor.kills;
+                        if (has_item(actor.unit, "TFT17_Item_ASTraitEmblemItem"))
+                            actor.challenger_attacks_remaining = 3;
                         if (config.record_events) {
                             DeathEvent death;
                             death.timestamp = now;
@@ -580,6 +973,47 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                             result.death_events.push_back(death);
                             append_generic_event(result, now, "death",
                                 actor.unit.id, ability_target.unit.id);
+                        }
+                    }
+                }
+                // Centelha Iônica pune conjurações inimigas próximas, com recarga.
+                for (auto& holder : units) {
+                    if (!is_alive(holder) || holder.unit.team == actor.unit.team ||
+                        !has_item(holder.unit, "TFT_Item_IonicSpark") ||
+                        now - holder.last_ionic_proc < 2.0f ||
+                        distance_between(holder.unit, actor.unit) > 2) continue;
+                    holder.last_ionic_proc = now;
+                    const float raw = ability.mana_cost * 1.50f;
+                    const float mitigated = mitigate_physical_damage(raw, actor.unit.magic_resist);
+                    const float final_damage = mitigated *
+                        std::clamp(1.0f - actor.unit.damage_reduction, 0.0f, 1.0f);
+                    const float absorbed = std::min(actor.shield_hp, final_damage);
+                    actor.shield_hp -= absorbed;
+                    const float hp_loss = std::min(actor.unit.hp, final_damage - absorbed);
+                    actor.unit.hp -= hp_loss;
+                    actor.damage_taken += final_damage;
+                    holder.damage_dealt += final_damage;
+                    if (config.record_damage) {
+                        DamageEvent spark;
+                        spark.timestamp = now;
+                        spark.source_unit_id = holder.unit.id;
+                        spark.target_unit_id = actor.unit.id;
+                        spark.damage_type = DamageType::MAGIC;
+                        spark.raw_damage = raw;
+                        spark.final_damage = final_damage;
+                        result.damage_events.push_back(spark);
+                    }
+                    if (actor.unit.hp <= 0.0f) {
+                        trigger_defensive_items(actor, now);
+                        if (actor.unit.hp <= 0.0f) {
+                            actor.unit.alive = false;
+                            if (config.record_events) {
+                                DeathEvent death;
+                                death.timestamp = now;
+                                death.unit_id = actor.unit.id;
+                                death.killer_unit_id = holder.unit.id;
+                                result.death_events.push_back(death);
+                            }
                         }
                     }
                 }
@@ -609,89 +1043,172 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
 
             raw_damage *= std::max(
                 0.0f, 1.0f + actor.unit.damage_amplification);
+            if (has_item(actor.unit, "TFT_Item_MadredsBloodrazor") &&
+                target.unit.role == UnitRole::TANK)
+                raw_damage *= 1.15f;
 
-            float damage = mitigate_physical_damage(
-                raw_damage, target.unit.armor);
+            const float effective_armor = target.armor_shred_until > now
+                ? target.unit.armor * (1.0f - target.armor_shred_percent)
+                : target.unit.armor;
+            float damage = mitigate_physical_damage(raw_damage, effective_armor);
 
             damage *= std::clamp(
                 1.0f - target.unit.damage_reduction, 0.0f, 1.0f);
+            if (has_item(target.unit, "TFT_Item_BrambleVest"))
+                damage *= 0.95f;
 
-            damage = std::min(damage, target.unit.hp);
+            damage = std::min(damage, target.unit.hp + target.shield_hp);
 
             const float absorbed = std::min(target.shield_hp, damage);
             target.shield_hp -= absorbed;
             const float hp_damage = std::min(target.unit.hp, damage - absorbed);
             target.unit.hp -= hp_damage;
             target.damage_taken += damage;
+            if (has_item(target.unit, "TFT_Item_TitansResolve"))
+                add_titans_stack(target);
+            trigger_defensive_items(target, now);
             actor.damage_dealt += damage;
             if (actor.unit.omnivamp > 0.0f && damage > 0.0f) {
-                actor.unit.hp = std::min(
-                    actor.unit.max_hp,
-                    actor.unit.hp + damage * actor.unit.omnivamp);
+                const float heal = apply_heal(actor,
+                    damage * actor.unit.omnivamp, now);
+                actor.healing_done += heal;
             }
             ++actor.attacks;
-            actor.unit.mana = std::min(actor.unit.max_mana, actor.unit.mana + 10.0f);
+            if (actor.challenger_attacks_remaining > 0) {
+                const float heal = apply_heal(actor,
+                    actor.unit.max_hp * 0.05f, now);
+                actor.healing_done += heal;
+                --actor.challenger_attacks_remaining;
+            }
+            // Emblema de Lutador: dano mágico adicional baseado na vida máxima.
+            if (has_item(actor.unit, "TFT17_Item_HPTankEmblemItem")) {
+                const float raw_bonus = actor.unit.max_hp * 0.03f;
+                const float bonus = mitigate_physical_damage(raw_bonus, target.unit.magic_resist);
+                const float absorbed_bonus = std::min(target.shield_hp, bonus);
+                target.shield_hp -= absorbed_bonus;
+                const float hp_bonus = std::min(target.unit.hp, bonus - absorbed_bonus);
+                target.unit.hp -= hp_bonus;
+                target.damage_taken += bonus;
+                trigger_defensive_items(target, now);
+                actor.damage_dealt += bonus;
+                if (config.record_damage) {
+                    DamageEvent bonus_event;
+                    bonus_event.timestamp = now;
+                    bonus_event.source_unit_id = actor.unit.id;
+                    bonus_event.target_unit_id = target.unit.id;
+                    bonus_event.damage_type = DamageType::MAGIC;
+                    bonus_event.raw_damage = raw_bonus;
+                    bonus_event.final_damage = bonus;
+                    result.damage_events.push_back(bonus_event);
+                }
+            }
+            actor.unit.mana = std::min(actor.unit.max_mana,
+                actor.unit.mana + 10.0f * actor.mana_gain_multiplier);
 
             // Shojin e Leviathan: mana adicional por ataque acertado.
             for (const auto& item : actor.unit.items) {
                 if (item.api_name == "TFT_Item_SpearOfShojin")
-                    actor.unit.mana = std::min(actor.unit.max_mana, actor.unit.mana + 5.0f);
-                else if (item.api_name == "TFT_Item_Leviathan")
-                    actor.unit.mana = std::min(actor.unit.max_mana, actor.unit.mana + 2.0f);
-                else if (item.api_name == "TFT_Item_TitansResolve" &&
-                         actor.titans_stacks < 25) {
-                    ++actor.titans_stacks;
-                    actor.unit.attack_damage += actor.unit.attack_damage * 0.02f;
-                    actor.unit.ability_power += 2.0f;
-                    if (actor.titans_stacks == 25)
-                        actor.unit.damage_amplification += 0.10f;
+                    actor.unit.mana = std::min(actor.unit.max_mana,
+                        actor.unit.mana + 5.0f * actor.mana_gain_multiplier);
+                else if (item.api_name == "TFT_Item_Leviathan") {
+                    const float mana_on_hit = critical ? 4.0f : 2.0f;
+                    actor.unit.mana = std::min(actor.unit.max_mana,
+                        actor.unit.mana + mana_on_hit * actor.mana_gain_multiplier);
+                }
+                else if (item.api_name == "TFT_Item_TitansResolve")
+                    add_titans_stack(actor);
+                else if (item.api_name == "TFT_Item_RunaansHurricane") {
+                    if (actor.runaan_stacks < 15) {
+                        ++actor.runaan_stacks;
+                        actor.unit.attack_damage += actor.runaans_base_ad * 0.035f;
+                        if (actor.runaan_stacks == 15)
+                            actor.unit.attack_speed += actor.base_attack_speed * 0.15f;
+                    }
+                }
+                else if (item.api_name == "TFT_Item_PowerGauntlet" && critical) {
+                    if (actor.power_gauntlet_stacks < 4) {
+                        actor.power_gauntlet_stack_times.push_back(now);
+                        ++actor.power_gauntlet_stacks;
+                        actor.unit.damage_amplification += 0.05f;
+                    }
                 }
             }
 
-            // Colete Espinhoso: dano mágico de retorno ao atacante.
+            // Efeitos aplicados ao alvo por ataques: fatiamento, queimadura e ferimentos.
+            if (has_item(actor.unit, "TFT_Item_LastWhisper")) {
+                target.armor_shred_until = now + 3.0f;
+                target.armor_shred_percent = 0.30f;
+            }
+            if (has_item(actor.unit, "TFT_Item_StatikkShiv")) {
+                target.mr_shred_until = now + 5.0f;
+                target.mr_shred_percent = 0.30f;
+            }
+            if (has_item(actor.unit, "TFT_Item_Morellonomicon") ||
+                has_item(actor.unit, "TFT_Item_RedBuff") ||
+                has_item(actor.unit, "TFT_Item_RapidFireCannon")) {
+                target.burn_until = std::max(target.burn_until, now +
+                    (has_item(actor.unit, "TFT_Item_Morellonomicon") ? 10.0f : 5.0f));
+                target.burn_percent = std::max(target.burn_percent, 1.0f);
+                target.burn_source_id = actor.unit.id;
+                if (target.burn_next_tick < now) target.burn_next_tick = now + 1.0f;
+                target.grievous_until = std::max(target.grievous_until,
+                    now + (has_item(actor.unit, "TFT_Item_Morellonomicon") ? 10.0f : 5.0f));
+            }
+            if (has_item(actor.unit, "TFT_Item_HextechGunblade") && damage > 0.0f) {
+                std::size_t ally = units.size();
+                float lowest = std::numeric_limits<float>::infinity();
+                for (std::size_t i = 0; i < units.size(); ++i) {
+                    if (!is_alive(units[i]) || units[i].unit.team != actor.unit.team) continue;
+                    const float ratio = units[i].unit.hp / units[i].unit.max_hp;
+                    if (ratio < lowest) { lowest = ratio; ally = i; }
+                }
+                if (ally < units.size()) {
+                    const float heal = apply_heal(units[ally], damage * 0.20f, now);
+                    units[ally].healing_done += heal;
+                }
+            }
+
+            // Colete Espinhoso: dano mágico em área com recarga de 2 segundos.
             for (const auto& item : target.unit.items) {
-                if (item.api_name == "TFT_Item_BrambleVest" && is_alive(actor)) {
-                    const float reflected = mitigate_physical_damage(100.0f, actor.unit.magic_resist);
-                    const float reflected_hp = std::min(actor.unit.hp, reflected);
-                    actor.unit.hp -= reflected_hp;
-                    actor.damage_taken += reflected_hp;
-                    target.damage_dealt += reflected_hp;
-                    if (config.record_damage) {
-                        DamageEvent reflected_event;
-                        reflected_event.timestamp = now;
-                        reflected_event.source_unit_id = target.unit.id;
-                        reflected_event.target_unit_id = actor.unit.id;
-                        reflected_event.damage_type = DamageType::MAGIC;
-                        reflected_event.raw_damage = 100.0f;
-                        reflected_event.final_damage = reflected_hp;
-                        reflected_event.ability_damage = false;
-                        result.damage_events.push_back(reflected_event);
-                    }
-                    if (actor.unit.hp <= 0.0f && actor.unit.alive) {
-                        actor.unit.hp = 0.0f;
-                        actor.unit.alive = false;
-                        ++target.kills;
-                        if (config.record_events) {
-                            DeathEvent death;
-                            death.timestamp = now;
-                            death.unit_id = actor.unit.id;
-                            death.killer_unit_id = target.unit.id;
-                            result.death_events.push_back(death);
+                if (item.api_name == "TFT_Item_BrambleVest" &&
+                    now - target.last_bramble_proc >= 2.0f) {
+                    target.last_bramble_proc = now;
+                    for (auto& enemy : units) {
+                        if (!is_alive(enemy) || enemy.unit.team == target.unit.team ||
+                            distance_between(enemy.unit, target.unit) > 2) continue;
+                        const float reflected = mitigate_physical_damage(100.0f,
+                            enemy.unit.magic_resist);
+                        const float absorbed_reflect = std::min(enemy.shield_hp, reflected);
+                        enemy.shield_hp -= absorbed_reflect;
+                        const float hp_loss = std::min(enemy.unit.hp, reflected - absorbed_reflect);
+                        enemy.unit.hp -= hp_loss;
+                        enemy.damage_taken += reflected;
+                        target.damage_dealt += reflected;
+                        if (config.record_damage) {
+                            DamageEvent reflected_event;
+                            reflected_event.timestamp = now;
+                            reflected_event.source_unit_id = target.unit.id;
+                            reflected_event.target_unit_id = enemy.unit.id;
+                            reflected_event.damage_type = DamageType::MAGIC;
+                            reflected_event.raw_damage = 100.0f;
+                            reflected_event.final_damage = reflected;
+                            reflected_event.ability_damage = false;
+                            result.damage_events.push_back(reflected_event);
+                        }
+                        if (enemy.unit.hp <= 0.0f && enemy.unit.alive) {
+                            enemy.unit.hp = 0.0f;
+                            enemy.unit.alive = false;
+                            ++target.kills;
+                            if (config.record_events) {
+                                DeathEvent death;
+                                death.timestamp = now;
+                                death.unit_id = enemy.unit.id;
+                                death.killer_unit_id = target.unit.id;
+                                result.death_events.push_back(death);
+                            }
                         }
                     }
                     break;
-                }
-            }
-
-            // Sterak: escudo único ao cruzar o limiar de vida.
-            if (target.unit.alive && target.unit.hp > 0.0f) {
-                for (const auto& item : target.unit.items) {
-                    if (item.api_name == "TFT_Item_SteraksGage" &&
-                        target.unit.hp <= target.unit.max_hp * 0.60f &&
-                        target.shield_hp <= 0.0f) {
-                        target.shield_hp += target.unit.max_hp * 0.40f;
-                        break;
-                    }
                 }
             }
 
@@ -724,6 +1241,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 target.unit.hp = 0.0f;
                 target.unit.alive = false;
                 ++actor.kills;
+                if (has_item(actor.unit, "TFT17_Item_ASTraitEmblemItem"))
+                    actor.challenger_attacks_remaining = 3;
 
                 if (config.record_events) {
                     DeathEvent de;
