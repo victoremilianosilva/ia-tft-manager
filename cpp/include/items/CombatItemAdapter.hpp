@@ -28,7 +28,9 @@ inline CombatItem to_combat_item(const ItemDefinition& definition) {
     item.armor = static_cast<float>(definition.armor);
     item.magic_resist = static_cast<float>(definition.magic_resist);
     item.mana = static_cast<float>(definition.mana);
-    item.omnivamp = static_cast<float>(definition.omnivamp);
+    item.omnivamp = std::find(definition.deferred_stats.begin(),
+        definition.deferred_stats.end(), "omnivamp") != definition.deferred_stats.end()
+        ? 0.0f : static_cast<float>(definition.omnivamp);
     item.damage_amplification =
         static_cast<float>(definition.damage_amplification);
     item.damage_reduction =
