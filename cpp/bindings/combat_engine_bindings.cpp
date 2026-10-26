@@ -82,6 +82,7 @@ PYBIND11_MODULE(combat_engine, module)
         .def_readwrite("delay", &CombatEffectDefinition::delay)
         .def_readwrite("health_threshold", &CombatEffectDefinition::health_threshold)
         .def_readwrite("max_stacks", &CombatEffectDefinition::max_stacks)
+        .def_readwrite("min_trait_count", &CombatEffectDefinition::min_trait_count)
         .def_readwrite("percent_of_max_health", &CombatEffectDefinition::percent_of_max_health)
         .def_readwrite("percent_of_stat", &CombatEffectDefinition::percent_of_stat);
 
