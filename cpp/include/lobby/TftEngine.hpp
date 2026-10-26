@@ -22,7 +22,7 @@ inline constexpr std::size_t kShopSlots = 5;
 inline constexpr std::size_t kActionComponents = 6;
 
 inline constexpr std::array<std::size_t, kActionComponents>
-    kActionDims{9, 5, 9, 28, 28, 28};
+    kActionDims{10, 5, 9, 28, 28, 28};
 
 
  // ============================================================
@@ -166,7 +166,7 @@ struct PlayerAction {
 // Todas as máscaras são armazenadas como uint8_t:
 // 0 = inválido, 1 = válido.
 struct PlayerActionMasks {
-    std::array<std::uint8_t, 9> type_mask{};
+    std::array<std::uint8_t, 10> type_mask{};
     std::array<std::uint8_t, 5> shop_mask{};
     std::array<std::uint8_t, 9> bench_source_mask{};
     std::array<std::uint8_t, 28> board_target_mask{};
@@ -188,6 +188,7 @@ struct PlayerActionMasks {
     std::array<std::uint8_t, 10> item_component_first_mask{};
     std::array<std::uint8_t, 10 * 10> item_component_pair_masks{};
     std::array<std::uint8_t, 37> item_target_mask{};
+    std::array<std::uint8_t, 9> carousel_option_mask{};
 };
 
 struct RewardState {
