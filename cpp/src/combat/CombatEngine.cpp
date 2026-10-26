@@ -60,6 +60,7 @@ struct RuntimeUnit {
     float hand_of_justice_ad_bonus = 0.0f;
     float hand_of_justice_ap_bonus = 15.0f;
     float guardian_angel_until = 0.0f;
+    float guardian_previous_damage_reduction = 0.0f;
     float last_status_tick = 0.0f;
     float mana_regen_per_second = 0.0f;
 };
@@ -124,6 +125,7 @@ void trigger_defensive_items(RuntimeUnit& unit, float now) {
     if (has_item(unit.unit, "TFT_Item_GuardianAngel") &&
         !unit.guardian_angel_triggered && unit.unit.hp <= unit.unit.max_hp * 0.60f) {
         unit.guardian_angel_triggered = true;
+        unit.guardian_previous_damage_reduction = unit.unit.damage_reduction;
         unit.unit.damage_reduction = 1.0f;
         unit.guardian_angel_until = now + 1.0f;
         const float heal = std::max(0.0f, (unit.unit.max_hp - unit.unit.hp) * 0.20f);
@@ -661,13 +663,14 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             actor.shield_expires_at = 0.0f;
         }
         if (actor.guardian_angel_until > 0.0f && now >= actor.guardian_angel_until) {
-            actor.unit.damage_reduction = 0.0f;
+            actor.unit.damage_reduction = actor.guardian_previous_damage_reduction;
             actor.guardian_angel_until = 0.0f;
         }
         if (has_item(actor.unit, "TFT_Item_GuardianAngel") &&
             !actor.guardian_angel_triggered &&
             actor.unit.hp <= actor.unit.max_hp * 0.60f) {
             actor.guardian_angel_triggered = true;
+            actor.guardian_previous_damage_reduction = actor.unit.damage_reduction;
             actor.unit.damage_reduction = 1.0f;
             actor.guardian_angel_until = now + 1.0f;
             const float heal = (actor.unit.max_hp - actor.unit.hp) * 0.20f;
@@ -936,6 +939,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                         ability_target.unit.hp = 0.0f;
                         ability_target.unit.alive = false;
                         ++actor.kills;
+                        if (has_item(actor.unit, "TFT17_Item_ASTraitEmblemItem"))
+                            actor.challenger_attacks_remaining = 3;
                         if (config.record_events) {
                             DeathEvent death;
                             death.timestamp = now;
@@ -1059,6 +1064,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 const float hp_bonus = std::min(target.unit.hp, bonus - absorbed_bonus);
                 target.unit.hp -= hp_bonus;
                 target.damage_taken += bonus;
+                trigger_defensive_items(target, now);
                 actor.damage_dealt += bonus;
                 if (config.record_damage) {
                     DamageEvent bonus_event;
