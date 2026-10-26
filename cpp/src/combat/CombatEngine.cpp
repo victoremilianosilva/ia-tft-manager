@@ -61,6 +61,7 @@ struct RuntimeUnit {
     float hand_of_justice_ap_bonus = 15.0f;
     float guardian_angel_until = 0.0f;
     float last_status_tick = 0.0f;
+    float mana_regen_per_second = 0.0f;
 };
 
 struct ScheduledEvent {
@@ -416,6 +417,18 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
 
             units.push_back(RuntimeUnit{effective_unit, effective_unit.hp});
             auto& loaded = units.back();
+            for (const auto& item : loaded.unit.items) {
+                if (item.api_name == "TFT_Item_AdaptiveHelm") loaded.mana_regen_per_second += 3.0f;
+                else if (item.api_name == "TFT_Item_ArchangelsStaff" ||
+                         item.api_name == "TFT_Item_HextechGunblade" ||
+                         item.api_name == "TFT_Item_Morellonomicon" ||
+                         item.api_name == "TFT_Item_SpearOfShojin" ||
+                         item.api_name == "TFT_Item_StatikkShiv") loaded.mana_regen_per_second += 1.0f;
+                else if (item.api_name == "TFT_Item_BlueBuff") loaded.mana_regen_per_second += 5.0f;
+                else if (item.api_name == "TFT_Item_Redemption") loaded.mana_regen_per_second += 2.0f;
+                else if (item.api_name == "TFT17_Item_AstronautEmblemItem" ||
+                         item.api_name == "TFT17_Item_SummonTraitEmblemItem") loaded.mana_regen_per_second += 2.0f;
+            }
             if (has_item(loaded.unit, "TFT_Item_UnstableConcoction")) {
                 loaded.hand_of_justice_ad_bonus =
                     loaded.unit.attack_damage * (0.15f / 1.15f);
@@ -603,6 +616,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
         // Passivas temporizadas e gatilhos defensivos dos itens do Set 17.
         const float elapsed = std::max(0.0f, now - actor.last_status_tick);
         if (elapsed > 0.0f) {
+            actor.unit.mana = std::min(actor.unit.max_mana,
+                actor.unit.mana + actor.mana_regen_per_second * elapsed);
             if (has_item(actor.unit, "TFT_Item_ArchangelsStaff") &&
                 now - actor.last_archangel_tick >= 5.0f) {
                 const int ticks = static_cast<int>((now - actor.last_archangel_tick) / 5.0f);
