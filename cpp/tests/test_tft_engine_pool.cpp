@@ -648,14 +648,14 @@ int main(int argc, char** argv) {
              completed_rounds < 14 && comp_engine.stage() < 3;
              ++completed_rounds) {
             for (int action = 0; action < 10; ++action)
-                (void)comp_step_with_pending_anvils(engine, pass_actions);
+                (void)step_with_pending_anvils(comp_engine, pass_actions);
         }
         require(comp_engine.stage() >= 3,
                 "Fixture nao alcancou stage 3 para validar o comp lock.");
         // Stage is advanced after combat resolution; let the strategy update
         // run twice in the newly opened stage-3 preparation phase.
-        (void)comp_step_with_pending_anvils(engine, pass_actions);
-        (void)comp_step_with_pending_anvils(engine, pass_actions);
+        (void)step_with_pending_anvils(comp_engine, pass_actions);
+        (void)step_with_pending_anvils(comp_engine, pass_actions);
         auto comp_state = comp_engine.get_strategies()[0].back();
         require(comp_state.composition_locked,
                 "Composicao dominante com seis unidades nao ativou o lock no stage 3.");
@@ -724,7 +724,7 @@ int main(int argc, char** argv) {
             for (auto& action : reversal_actions)
                 action.values = {6, 0, 0, 0, 0, 0};
             reversal_actions[0].values = {0, 0, 0, 0, 0, 0};
-            const auto buy_result = reversal_step_with_pending_anvils(engine, reversal_actions);
+            const auto buy_result = step_with_pending_anvils(reversal_engine, reversal_actions);
             const float buy_reward = buy_result.action_rewards[0];
 
             const auto after_buy = reversal_engine.get_audit_snapshot();
@@ -745,7 +745,7 @@ int main(int argc, char** argv) {
             require(purchased_slot >= 0,
                     ("Compra de " + target_name + " nao deixou a nova copia no banco.").c_str());
             reversal_actions[0].values = {5, 0, purchased_slot, 0, 0, 0};
-            const auto sell_result = reversal_step_with_pending_anvils(engine, reversal_actions);
+            const auto sell_result = step_with_pending_anvils(reversal_engine, reversal_actions);
             const float sell_reward = sell_result.action_rewards[0];
             require(sell_reward < 0.0f,
                     ("Venda imediata de " + target_name +
