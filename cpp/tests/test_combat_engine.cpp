@@ -562,6 +562,7 @@ void test_data_driven_trait_emblem_effects() {
     tft::CombatEffectDefinition trait_attack_bonus;
     trait_attack_bonus.trigger = "on_attack";
     trait_attack_bonus.operation = "bonus_damage";
+    trait_attack_bonus.damage_type = tft::DamageType::PHYSICAL;
     trait_attack_bonus.value = 0.01f;
     trait_attack_bonus.percent_of_max_health = true;
     trait_attack_bonus.condition = "has_trait";
