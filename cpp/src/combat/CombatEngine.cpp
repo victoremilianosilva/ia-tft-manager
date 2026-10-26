@@ -310,7 +310,15 @@ bool effect_condition_matches(const CombatUnit& unit,
 }
 
 void apply_effect_stat(CombatUnit& unit, const CombatEffectDefinition& effect) {
-    const float amount = effect.value;
+    float amount = effect.value;
+    if (effect.percent_of_stat) {
+        if (effect.stat == "attack_damage") amount *= unit.attack_damage;
+        else if (effect.stat == "attack_speed") amount *= unit.attack_speed;
+        else if (effect.stat == "ability_power") amount *= unit.ability_power;
+        else if (effect.stat == "max_hp") amount *= unit.max_hp;
+        else if (effect.stat == "armor") amount *= unit.armor;
+        else if (effect.stat == "magic_resist") amount *= unit.magic_resist;
+    }
     if (effect.stat == "attack_damage") unit.attack_damage += amount;
     else if (effect.stat == "attack_speed") unit.attack_speed += amount;
     else if (effect.stat == "ability_power") unit.ability_power += amount;
