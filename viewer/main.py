@@ -1330,10 +1330,21 @@ class ViewerWindow(QMainWindow):
             f"{_composition_status_text(strategy)}\n"
             f"Core traits: {core_traits_text}\nTraits ativos: {traits_text}"
         )
-        lines = ["TABULEIRO:"]
-        lines.extend(f"  {index:02d}: {unit_label(u)}" for index, u in enumerate(board) if u and u.get("occupied"))
+        components = list(audit.get("item_components", []) or [])
+        inventory = list(audit.get("item_inventory", []) or [])
+        lines = ["ITENS NA BAG:"]
+        lines.append("  Componentes: " + (", ".join(map(str, components)) if components else "nenhum"))
+        lines.append("  Itens completos: " + (", ".join(map(str, inventory)) if inventory else "nenhum"))
+
+        def unit_roster_line(index, unit):
+            equipped = list(unit.get("items", []) or [])
+            suffix = " | Equipados: " + (", ".join(map(str, equipped)) if equipped else "nenhum")
+            return f"  {index:02d}: {unit_label(unit)}{suffix}"
+
+        lines.append("\nTABULEIRO:")
+        lines.extend(unit_roster_line(index, u) for index, u in enumerate(board) if u and u.get("occupied"))
         lines.append("\nBANCO:")
-        lines.extend(f"  {index:02d}: {unit_label(u)}" for index, u in enumerate(audit.get("bench", [])) if u and u.get("occupied"))
+        lines.extend(unit_roster_line(index, u) for index, u in enumerate(audit.get("bench", [])) if u and u.get("occupied"))
         lines.append("\nLOJA:")
         lines.extend(f"  {index:02d}: {unit_label(u)}" for index, u in enumerate(audit.get("shop", [])) if u and u.get("occupied"))
         self.roster.setPlainText("\n".join(lines))
