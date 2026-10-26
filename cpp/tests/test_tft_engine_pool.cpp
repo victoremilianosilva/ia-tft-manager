@@ -53,6 +53,7 @@ int main(int argc, char** argv) {
             legacy_observation_dim + 2 * trait_order.size() +
             tft::kBoardSlots + tft::kBenchSlots + tft::kShopSlots +
             1 + tft::kBoardSlots + trait_order.size() + 2 +
+            3 + 9 * 11 + // pending-anvil state and nine option feature records
             8 * (tft::kBenchSlots + tft::kShopSlots);
         require(engine.observation_dim() == expected_observation_dim,
                 "Dimensao PPO nao inclui os novos recursos de composicao.");
