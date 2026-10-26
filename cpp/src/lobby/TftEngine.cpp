@@ -1,4 +1,5 @@
 
+#include "lobby/TraitMilestones.hpp"
 #include "lobby/TftEngine.hpp"
 
 #include <algorithm>
@@ -467,42 +468,26 @@ struct TFTEngine::Impl {
             }
         }
 
-        // Usa os mesmos marcos de traits.json que SynergyManager.py,
-        // em vez de presumir níveis genéricos 2/4/6 para toda trait.
+        // Load actual active-set milestones. Prefer traits.json beside the
+        // selected unit catalog; custom/test catalogs may use the repository
+        // default. A present but malformed file is an error, never a silent
+        // fallback to generic 2-unit milestones.
         const auto separator = resolved_path.find_last_of("/\\");
         const auto directory = separator == std::string::npos
             ? std::string{}
             : resolved_path.substr(0, separator + 1);
-        std::ifstream traits_file(directory + "traits.json");
-        if (traits_file) {
-            try {
-                nlohmann::json traits_json;
-                traits_file >> traits_json;
-                const auto& traits = traits_json.is_object() && traits_json.contains("traits")
-                    ? traits_json.at("traits") : traits_json;
-                if (traits.is_array()) {
-                    for (const auto& trait : traits) {
-                        if (!trait.is_object() || !trait.contains("name") ||
-                            !trait.contains("effects") || !trait.at("effects").is_array())
-                            continue;
-                        std::vector<int> milestones;
-                        for (const auto& effect : trait.at("effects")) {
-                            if (effect.is_object() && effect.contains("minUnits") &&
-                                effect.at("minUnits").is_number_integer())
-                                milestones.push_back(effect.at("minUnits").get<int>());
-                        }
-                        std::sort(milestones.begin(), milestones.end());
-                        milestones.erase(std::unique(milestones.begin(), milestones.end()),
-                                          milestones.end());
-                        if (!milestones.empty())
-                            trait_milestones[trait.at("name").get<std::string>()] =
-                                std::move(milestones);
-                    }
-                }
-            } catch (const std::exception&) {
-                trait_milestones.clear();
-            }
+        std::string traits_path = directory + "traits.json";
+        std::ifstream traits_file(traits_path);
+#ifdef TFT_DEFAULT_TRAITS_PATH
+        if (!traits_file) {
+            traits_path = TFT_DEFAULT_TRAITS_PATH;
+            traits_file.open(traits_path);
         }
+#endif
+        if (!traits_file) {
+            throw std::runtime_error("Nao foi possivel abrir catalogo de traits: " + traits_path);
+        }
+        trait_milestones = load_trait_milestones(traits_file);
 
         pool = std::make_unique<UnitPool>(*catalog);
 
