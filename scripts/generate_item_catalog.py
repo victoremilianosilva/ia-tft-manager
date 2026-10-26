@@ -197,46 +197,34 @@ def build_catalog(
     ]
     craftable: list[dict[str, Any]] = []
     for item in selected_records:
+        item_id = str(item.get("apiName") or "")
+        # This engine catalog intentionally uses the DA_ item family only.
+        # TFT_Item_* records are aliases/parallel records and must not create
+        # duplicate component dimensions or recipes in the action space.
+        if not item_id.startswith("DA_"):
+            continue
         recipe = item.get("composition")
         if item.get("isAugment") is True or not isinstance(recipe, list) or len(recipe) != 2:
             continue
         if not all(isinstance(component_id, str) and component_id for component_id in recipe):
-            raise ValueError(f"Receita inválida em {item.get('apiName', '<sem ID>')}: {recipe!r}")
-        # The engine's component action space must be built from source items
-        # explicitly tagged "component". A two-part composition alone is not
-        # enough: CommunityDragon also uses composition for special/consumable
-        # records, which must not inflate the base-component dimension.
-        if any(not _is_component(item_by_id.get(component_id)) for component_id in recipe):
+            raise ValueError(f"Receita inválida em {item_id or '<sem ID>'}: {recipe!r}")
+        # A completed DA_ item is craftable only when both ingredients are
+        # actual DA_Component_* records tagged as components.
+        if any(
+            not component_id.startswith("DA_Component_")
+            or not _is_component(item_by_id.get(component_id))
+            for component_id in recipe
+        ):
             continue
         craftable.append(item)
     if not craftable:
-        raise ValueError(f"Nenhum item com receita de dois componentes encontrado no set {set_name}.")
+        raise ValueError(f"Nenhum item DA_ com receita de dois componentes DA_Component_* encontrado no set {set_name}.")
 
     component_ids = sorted({
         component_id
         for item in craftable
         for component_id in item["composition"]
-        if _is_component(item_by_id.get(component_id))
     })
-    # Diagnostic output: print the exact source records counted as components.
-    print(
-        f"\\n[DEBUG] Componentes selecionados para set {set_number} ({set_name}) "
-        f"— {len(component_ids)} IDs únicos:",
-        file=sys.stderr,
-    )
-    for component_id in component_ids:
-        component = item_by_id.get(component_id, {})
-        used_by = [
-            str(item.get("apiName") or item.get("name") or "<sem ID>")
-            for item in craftable
-            if component_id in item.get("composition", [])
-        ]
-        print(
-            f"  - id={component_id} | nome={component.get('name', '<sem nome>')} "
-            f"| tags={component.get('tags', [])!r} "
-            f"| usado_em={', '.join(used_by) or '<nenhuma receita>'}",
-            file=sys.stderr,
-        )
 
     if len(component_ids) > 10:
         raise ValueError(f"O set {set_name} usa {len(component_ids)} componentes; a cabeça de ações da engine aceita no máximo 10.")
@@ -246,8 +234,6 @@ def build_catalog(
         component = item_by_id.get(component_id)
         if component is None:
             raise ValueError(f"Componente referenciado por uma receita, mas ausente na origem: {component_id}")
-        if component_id not in set_item_ids:
-            raise ValueError(f"O componente {component_id} é usado por uma receita, mas não pertence à lista de itens do set {set_name}.")
         components.append({
             "id": component_id,
             "name": str(component.get("name") or component_id),
