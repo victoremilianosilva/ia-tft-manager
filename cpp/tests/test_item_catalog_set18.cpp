@@ -18,8 +18,10 @@ int main(int argc, char** argv) {
 
     try {
         const auto catalog = tft::items::load_item_catalog(input);
-        if (catalog.set_id != "Set18") {
-            std::cerr << "unexpected set_id: " << catalog.set_id << '\n';
+        // CommunityDragon's Set 18 patch data is internally labeled Set10;
+        // source_set_number in the generated JSON records the actual set number.
+        if (catalog.set_id != "Set10") {
+            std::cerr << "unexpected CommunityDragon set_id: " << catalog.set_id << '\n';
             return 4;
         }
         if (catalog.components.size() != 10) {
@@ -65,9 +67,9 @@ int main(int argc, char** argv) {
             return 10;
         }
 
-        std::cout << "Loaded " << catalog.set_id << ": "
-                  << catalog.components.size() << " DA_ components, "
-                  << catalog.items.size() << " DA_ craftable items, "
+        std::cout << "Loaded Set 18 CommunityDragon catalog (" << catalog.set_id << "): "
+                  << catalog.components.size() << " components, "
+                  << catalog.items.size() << " craftable items, "
                   << emblems_with_traits << " trait emblems\n";
         return 0;
     } catch (const std::exception& error) {
