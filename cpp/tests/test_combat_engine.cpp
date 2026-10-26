@@ -515,6 +515,7 @@ void test_set17_ionic_spark_and_emblem_passives() {
 
     auto tank_input = make_input();
     tank_input.config.max_duration = 0.1f;
+    tank_input.config.record_damage = true;
     tank_input.player_a.units[0].attack_damage = 10.0f;
     tank_input.player_a.units[0].max_hp = tank_input.player_a.units[0].hp = 1000.0f;
     tank_input.player_b.units[0].max_hp = tank_input.player_b.units[0].hp = 2000.0f;
