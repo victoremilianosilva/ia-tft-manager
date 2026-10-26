@@ -209,7 +209,23 @@
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
       "grants_trait": "TFT17_Astronaut",
       "granted_trait_active_count": 1,
-      "combat_effects": []
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "mana_regen",
+          "stat": "",
+          "target": "self",
+          "condition": "",
+          "condition_trait": "",
+          "damage_type": "MAGIC",
+          "value": 2,
+          "duration": 0,
+          "interval": 0,
+          "max_stacks": 0,
+          "percent_of_max_health": false,
+          "percent_of_stat": false
+        }
+      ]
     },
     {
       "id": "TFT17_Item_DRXEmblemItem",
@@ -809,7 +825,23 @@
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
       "grants_trait": "TFT17_SummonTrait",
       "granted_trait_active_count": 1,
-      "combat_effects": []
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "mana_regen",
+          "stat": "",
+          "target": "self",
+          "condition": "",
+          "condition_trait": "",
+          "damage_type": "MAGIC",
+          "value": 2,
+          "duration": 0,
+          "interval": 0,
+          "max_stacks": 0,
+          "percent_of_max_health": false,
+          "percent_of_stat": false
+        }
+      ]
     },
     {
       "id": "TFT_Item_AdaptiveHelm",
