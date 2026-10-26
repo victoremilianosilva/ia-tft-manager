@@ -103,7 +103,16 @@ def test_native_match_finishes_with_unique_ordered_placements_and_one_reward_eac
                 event.startswith("COMPLETED_ITEM_ANVIL_GRANTED:") for event in events
             )
         else:
-            pytest.fail("Native lobby did not finish within 500 mask-valid transitions")
+            diagnostic_state = engine.get_public_state()
+            diagnostic_players = diagnostic_state.get("players", [])
+            pytest.fail(
+                "Native lobby did not finish within 500 mask-valid transitions; "
+                f"round={diagnostic_state.get('round', diagnostic_state.get('current_round'))!r}, "
+                f"finished={diagnostic_state.get('finished')!r}, "
+                f"alive={sum(not bool(p.get('eliminated', False)) for p in diagnostic_players)}, "
+                f"placements={[p.get('placement') for p in diagnostic_players]}, "
+                f"last_events={events[-12:] if 'events' in locals() else []}"
+            )
 
         state = engine.get_public_state()
         assert state["finished"] is True
