@@ -596,7 +596,7 @@ void test_data_driven_trait_emblem_effects() {
     aura_input.config.max_duration = 0.1f;
     aura_input.config.record_damage = true;
     aura_input.player_a.units[0].role = tft::UnitRole::FIGHTER;
-    aura_input.player_a.units[0].position.x = 2;
+    aura_input.player_a.units[0].position.x = 1;
     aura_input.player_a.units[0].attack_damage = 0.1f;
     aura_input.player_a.units[0].attack_speed = 0.1f;
     aura_input.player_a.units[0].hp = aura_input.player_a.units[0].max_hp = 1000.0f;
