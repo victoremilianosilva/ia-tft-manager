@@ -16,7 +16,23 @@
     "TFT17_Item_AstronautEmblemItem": {
       "grants_trait": "TFT17_Astronaut",
       "granted_trait_active_count": 1,
-      "combat_effects": []
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "mana_regen",
+          "stat": "",
+          "target": "self",
+          "condition": "",
+          "condition_trait": "",
+          "damage_type": "MAGIC",
+          "value": 2,
+          "duration": 0,
+          "interval": 0,
+          "max_stacks": 0,
+          "percent_of_max_health": false,
+          "percent_of_stat": false
+        }
+      ]
     },
     "TFT17_Item_DRXEmblemItem": {
       "grants_trait": "TFT17_DRX",
@@ -161,7 +177,23 @@
     "TFT17_Item_SummonTraitEmblemItem": {
       "grants_trait": "TFT17_SummonTrait",
       "granted_trait_active_count": 1,
-      "combat_effects": []
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "mana_regen",
+          "stat": "",
+          "target": "self",
+          "condition": "",
+          "condition_trait": "",
+          "damage_type": "MAGIC",
+          "value": 2,
+          "duration": 0,
+          "interval": 0,
+          "max_stacks": 0,
+          "percent_of_max_health": false,
+          "percent_of_stat": false
+        }
+      ]
     }
   }
 }
