@@ -30,7 +30,7 @@ class Trainer:
     # ================================================================
 
     ACTION_DIMS = [
-        9,   # type
+        10,  # type (including shared-carousel selection)
         5,   # shop_slot
         9,   # bench_slot
         28,  # board_target
@@ -45,7 +45,7 @@ class Trainer:
     # ================================================================
 
     MASK_SHAPES = {
-        "type_mask": (9,),
+        "type_mask": (10,),
         "shop_mask": (5,),
         "bench_source_mask": (9,),
         "board_target_mask": (28,),
@@ -57,6 +57,7 @@ class Trainer:
         "item_component_first_mask": (10,),
         "item_component_pair_masks": (10, 10),
         "item_target_mask": (37,),
+        "carousel_option_mask": (9,),
     }
 
     def __init__(
