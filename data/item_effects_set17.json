@@ -1,0 +1,424 @@
+{
+  "schema_version": 1,
+  "set_id": "Set17",
+  "description": "Set-specific overrides interpreted by the generic C++ combat-effect runtime.",
+  "items": {
+    "TFT17_Item_ASTraitEmblemItem": {
+      "grants_trait": "TFT17_ASTrait",
+      "granted_trait_active_count": 1,
+      "combat_effects": [
+        {
+          "trigger": "on_kill",
+          "operation": "grant_charges",
+          "stat": "",
+          "target": "self",
+          "condition": "",
+          "condition_trait": "",
+          "stack_key": "challenger_next_attacks",
+          "damage_type": "MAGIC",
+          "value": 3,
+          "duration": 0,
+          "interval": 0,
+          "delay": 0,
+          "health_threshold": 0,
+          "max_stacks": 3,
+          "percent_of_max_health": false,
+          "percent_of_stat": false
+        },
+        {
+          "trigger": "on_attack",
+          "operation": "heal_max_hp_pct",
+          "stat": "",
+          "target": "self",
+          "condition": "",
+          "condition_trait": "",
+          "stack_key": "challenger_next_attacks",
+          "damage_type": "MAGIC",
+          "value": 0.05,
+          "duration": 0,
+          "interval": 0,
+          "delay": 0,
+          "health_threshold": 0,
+          "max_stacks": 3,
+          "percent_of_max_health": false,
+          "percent_of_stat": false
+        }
+      ]
+    },
+    "TFT17_Item_AssassinTraitEmblemItem": {
+      "grants_trait": "TFT17_AssassinTrait",
+      "granted_trait_active_count": 1,
+      "combat_effects": [
+        {
+          "trigger": "while_hp_below",
+          "operation": "add_stat",
+          "stat": "omnivamp",
+          "target": "self",
+          "condition": "",
+          "condition_trait": "",
+          "stack_key": "",
+          "damage_type": "MAGIC",
+          "value": 0.25,
+          "duration": 5,
+          "interval": 0,
+          "delay": 0,
+          "health_threshold": 0.5,
+          "max_stacks": 0,
+          "percent_of_max_health": false,
+          "percent_of_stat": false
+        }
+      ],
+      "deferred_stats": [
+        "omnivamp"
+      ]
+    },
+    "TFT17_Item_AstronautEmblemItem": {
+      "grants_trait": "TFT17_Astronaut",
+      "granted_trait_active_count": 1,
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "mana_regen",
+          "stat": "",
+          "target": "self",
+          "condition": "",
+          "condition_trait": "",
+          "damage_type": "MAGIC",
+          "value": 2,
+          "duration": 0,
+          "interval": 0,
+          "max_stacks": 0,
+          "percent_of_max_health": false,
+          "percent_of_stat": false
+        }
+      ]
+    },
+    "TFT17_Item_DRXEmblemItem": {
+      "grants_trait": "TFT17_DRX",
+      "granted_trait_active_count": 1,
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_speed",
+          "target": "allies",
+          "condition": "trait_count_at_least",
+          "condition_trait": "TFT17_DRX",
+          "min_trait_count": 5,
+          "damage_type": "MAGIC",
+          "value": 0.1,
+          "percent_of_stat": true
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "armor",
+          "target": "allies",
+          "condition": "trait_count_at_least",
+          "condition_trait": "TFT17_DRX",
+          "min_trait_count": 5,
+          "damage_type": "MAGIC",
+          "value": 10
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "magic_resist",
+          "target": "allies",
+          "condition": "trait_count_at_least",
+          "condition_trait": "TFT17_DRX",
+          "min_trait_count": 5,
+          "damage_type": "MAGIC",
+          "value": 10
+        }
+      ]
+    },
+    "TFT17_Item_DarkStarEmblemItem": {
+      "grants_trait": "TFT17_DarkStar",
+      "granted_trait_active_count": 1,
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_damage",
+          "target": "self",
+          "condition": "",
+          "condition_trait": "",
+          "damage_type": "MAGIC",
+          "value": 0.18,
+          "duration": 0,
+          "interval": 0,
+          "max_stacks": 0,
+          "percent_of_max_health": false,
+          "percent_of_stat": true
+        }
+      ]
+    },
+    "TFT17_Item_FavoredEmblemItem": {
+      "grants_trait": "TFT17_ADMIN",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
+    },
+    "TFT17_Item_FlexTraitEmblemItem": {
+      "grants_trait": "TFT17_FlexTrait",
+      "granted_trait_active_count": 1,
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_damage",
+          "target": "self",
+          "condition": "",
+          "condition_trait": "",
+          "damage_type": "MAGIC",
+          "value": 0.2,
+          "duration": 0,
+          "interval": 0,
+          "max_stacks": 0,
+          "percent_of_max_health": false,
+          "percent_of_stat": true
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "armor",
+          "target": "allies_same_row_within_1",
+          "condition": "role_tank",
+          "condition_trait": "",
+          "stack_key": "",
+          "damage_type": "MAGIC",
+          "value": 10,
+          "duration": 0,
+          "interval": 0,
+          "delay": 0,
+          "health_threshold": 0,
+          "max_stacks": 0,
+          "percent_of_max_health": false,
+          "percent_of_stat": false
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "magic_resist",
+          "target": "allies_same_row_within_1",
+          "condition": "role_tank",
+          "condition_trait": "",
+          "stack_key": "",
+          "damage_type": "MAGIC",
+          "value": 10,
+          "duration": 0,
+          "interval": 0,
+          "delay": 0,
+          "health_threshold": 0,
+          "max_stacks": 0,
+          "percent_of_max_health": false,
+          "percent_of_stat": false
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "omnivamp",
+          "target": "allies_same_row_within_1",
+          "condition": "role_fighter",
+          "condition_trait": "",
+          "stack_key": "",
+          "damage_type": "MAGIC",
+          "value": 0.1,
+          "duration": 0,
+          "interval": 0,
+          "delay": 0,
+          "health_threshold": 0,
+          "max_stacks": 0,
+          "percent_of_max_health": false,
+          "percent_of_stat": false
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "omnivamp",
+          "target": "allies_same_row_within_1",
+          "condition": "role_assassin",
+          "condition_trait": "",
+          "stack_key": "",
+          "damage_type": "MAGIC",
+          "value": 0.1,
+          "duration": 0,
+          "interval": 0,
+          "delay": 0,
+          "health_threshold": 0,
+          "max_stacks": 0,
+          "percent_of_max_health": false,
+          "percent_of_stat": false
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_speed",
+          "target": "allies_same_row_within_1",
+          "condition": "role_other",
+          "condition_trait": "",
+          "stack_key": "",
+          "damage_type": "MAGIC",
+          "value": 0.1,
+          "duration": 0,
+          "interval": 0,
+          "delay": 0,
+          "health_threshold": 0,
+          "max_stacks": 0,
+          "percent_of_max_health": false,
+          "percent_of_stat": true
+        }
+      ]
+    },
+    "TFT17_Item_HPTankEmblemItem": {
+      "grants_trait": "TFT17_HPTank",
+      "granted_trait_active_count": 1,
+      "combat_effects": [
+        {
+          "trigger": "on_attack",
+          "operation": "bonus_damage",
+          "stat": "",
+          "target": "self",
+          "condition": "",
+          "condition_trait": "",
+          "damage_type": "MAGIC",
+          "value": 0.03,
+          "duration": 0,
+          "interval": 0,
+          "max_stacks": 0,
+          "percent_of_max_health": true,
+          "percent_of_stat": false
+        }
+      ]
+    },
+    "TFT17_Item_MeleeTraitEmblemItem": {
+      "grants_trait": "TFT17_MeleeTrait",
+      "granted_trait_active_count": 1,
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_damage",
+          "target": "self",
+          "condition": "",
+          "condition_trait": "",
+          "damage_type": "MAGIC",
+          "value": 0.2,
+          "duration": 0,
+          "interval": 0,
+          "max_stacks": 0,
+          "percent_of_max_health": false,
+          "percent_of_stat": true
+        }
+      ]
+    },
+    "TFT17_Item_PrimordianEmblemItem": {
+      "grants_trait": "TFT17_Primordian",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
+    },
+    "TFT17_Item_PulsefireEmblemItem": {
+      "grants_trait": "TFT17_Timebreaker",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
+    },
+    "TFT17_Item_ResistTankEmblemItem": {
+      "grants_trait": "TFT17_ResistTank",
+      "granted_trait_active_count": 1,
+      "combat_effects": [
+        {
+          "trigger": "after_delay",
+          "operation": "add_stat",
+          "stat": "attack_speed",
+          "target": "self",
+          "condition": "",
+          "condition_trait": "",
+          "stack_key": "",
+          "damage_type": "MAGIC",
+          "value": 0.7,
+          "duration": 0,
+          "interval": 0,
+          "delay": 10,
+          "health_threshold": 0,
+          "max_stacks": 0,
+          "percent_of_max_health": false,
+          "percent_of_stat": true
+        }
+      ],
+      "deferred_stats": [
+        "attack_speed"
+      ]
+    },
+    "TFT17_Item_ShieldTankEmblemItem": {
+      "grants_trait": "TFT17_ShieldTank",
+      "granted_trait_active_count": 1,
+      "combat_effects": [
+        {
+          "trigger": "on_ally_shield",
+          "operation": "add_stat",
+          "stat": "ability_power",
+          "target": "self",
+          "condition": "",
+          "condition_trait": "",
+          "stack_key": "",
+          "damage_type": "MAGIC",
+          "value": 2,
+          "duration": 0,
+          "interval": 0,
+          "delay": 0,
+          "health_threshold": 0,
+          "max_stacks": 0,
+          "percent_of_max_health": false,
+          "percent_of_stat": false
+        }
+      ]
+    },
+    "TFT17_Item_SpaceGrooveEmblemItem": {
+      "grants_trait": "TFT17_SpaceGroove",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
+    },
+    "TFT17_Item_StargazerEmblemItem": {
+      "grants_trait": "TFT17_Stargazer",
+      "granted_trait_active_count": 1,
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_damage",
+          "target": "self",
+          "condition": "",
+          "condition_trait": "",
+          "damage_type": "MAGIC",
+          "value": 0.15,
+          "duration": 0,
+          "interval": 0,
+          "max_stacks": 0,
+          "percent_of_max_health": false,
+          "percent_of_stat": true
+        }
+      ]
+    },
+    "TFT17_Item_SummonTraitEmblemItem": {
+      "grants_trait": "TFT17_SummonTrait",
+      "granted_trait_active_count": 1,
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "mana_regen",
+          "stat": "",
+          "target": "self",
+          "condition": "",
+          "condition_trait": "",
+          "damage_type": "MAGIC",
+          "value": 2,
+          "duration": 0,
+          "interval": 0,
+          "max_stacks": 0,
+          "percent_of_max_health": false,
+          "percent_of_stat": false
+        }
+      ]
+    }
+  }
+}

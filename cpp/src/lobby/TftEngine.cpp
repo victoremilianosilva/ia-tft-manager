@@ -9,6 +9,7 @@
 #include <map>
 #include <limits>
 #include <unordered_map>
+#include <unordered_set>
 #include <nlohmann/json.hpp>
 #include <memory>
 #include <optional>
@@ -1486,7 +1487,14 @@ struct TFTEngine::Impl {
             if (!unit) continue;
             const auto* def = catalog->find_by_id(unit->champion_internal_id);
             if (!def) continue;
-            entries.emplace_back(unit->champion_internal_id, def->traits);
+            auto traits = def->traits;
+            for (const auto& item : unit->items) {
+                if (!item.grants_trait.empty() &&
+                    std::find(traits.begin(), traits.end(), item.grants_trait) == traits.end()) {
+                    traits.push_back(item.grants_trait);
+                }
+            }
+            entries.emplace_back(unit->champion_internal_id, std::move(traits));
         }
         // Keep the same unique-by-unit["id"] semantics as Python.
         const auto counts = strategy::count_unique_champion_traits(entries);
@@ -1661,7 +1669,14 @@ struct TFTEngine::Impl {
             if (copies_by_unit.find(id) == copies_by_unit.end()) unit_order.push_back(id);
             unit_names[id] = def->api_name;
             copies_by_unit[id] += star_copies(unit.star);
-            for (const auto& trait : def->traits) {
+            // Trait emblems count as a trait-bearing unit in the owned-team
+            // planner, just as they do in combat. Deduplicate per unit so two
+            // copies of the same emblem cannot count as two units for a breakpoint.
+            std::unordered_set<std::string> unit_traits(def->traits.begin(), def->traits.end());
+            for (const auto& item : unit.items) {
+                if (!item.grants_trait.empty()) unit_traits.insert(item.grants_trait);
+            }
+            for (const auto& trait : unit_traits) {
                 if (trait_counts.find(trait) == trait_counts.end())
                     trait_order.push_back(trait);
                 ++trait_counts[trait];
@@ -1732,7 +1747,11 @@ struct TFTEngine::Impl {
             if (!unit) continue;
             const auto* def = catalog->find_by_id(unit->champion_internal_id);
             if (!def) continue;
-            for (const auto& trait : def->traits) ++board_trait_counts[trait];
+            std::unordered_set<std::string> unit_traits(def->traits.begin(), def->traits.end());
+            for (const auto& item : unit->items) {
+                if (!item.grants_trait.empty()) unit_traits.insert(item.grants_trait);
+            }
+            for (const auto& trait : unit_traits) ++board_trait_counts[trait];
         }
         // Active traits mirror Python's board-only SynergyManager.active_traits.
         for (const auto& trait : trait_order) {
@@ -1756,7 +1775,11 @@ struct TFTEngine::Impl {
             const double base = 1.0 + def->cost * 0.15 +
                 (std::clamp(unit.star, 1, 3) - 1) * 0.5;
             const double weighted = base * offensive_factor(*def);
-            for (const auto& trait : def->traits) trait_score[trait] += weighted;
+            std::unordered_set<std::string> unit_traits(def->traits.begin(), def->traits.end());
+            for (const auto& item : unit.items) {
+                if (!item.grants_trait.empty()) unit_traits.insert(item.grants_trait);
+            }
+            for (const auto& trait : unit_traits) trait_score[trait] += weighted;
         };
         for (const auto& unit : player_envs[i].board) if (unit) score_composition_unit(*unit);
         for (const auto& unit : player_envs[i].bench) if (unit) score_composition_unit(*unit);
@@ -2338,6 +2361,21 @@ struct TFTEngine::Impl {
         output.player_id = static_cast<std::int32_t>(player_index);
         output.player_hp = player_envs[player_index].info.hp;
 
+        // Build team-wide trait counts once, including emblems. Counts are
+        // unique per champion instance, matching lobby breakpoint semantics.
+        std::unordered_map<std::string, int> combat_trait_counts;
+        for (const auto& candidate : player_envs[player_index].board) {
+            if (!candidate) continue;
+            const auto* candidate_def = catalog->find_by_id(candidate->champion_internal_id);
+            if (!candidate_def) continue;
+            std::unordered_set<std::string> candidate_traits(
+                candidate_def->traits.begin(), candidate_def->traits.end());
+            for (const auto& item : candidate->items) {
+                if (!item.grants_trait.empty()) candidate_traits.insert(item.grants_trait);
+            }
+            for (const auto& trait : candidate_traits) ++combat_trait_counts[trait];
+        }
+
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
             if (!player_envs[player_index].board[slot]) {
                 continue;
@@ -2408,6 +2446,21 @@ struct TFTEngine::Impl {
                     : stats.magic_resist);
 
             unit.items = instance.items;
+
+            std::unordered_set<std::string> unit_traits(
+                definition->traits.begin(), definition->traits.end());
+            for (const auto& item : instance.items) {
+                if (!item.grants_trait.empty()) unit_traits.insert(item.grants_trait);
+            }
+            for (const auto& trait_name : unit_traits) {
+                CombatTrait trait;
+                trait.api_name = trait_name;
+                trait.name = trait_name;
+                const auto count = combat_trait_counts.find(trait_name);
+                trait.active_count = count == combat_trait_counts.end() ? 0 : count->second;
+                trait.active = trait.active_count > 0;
+                unit.traits.push_back(std::move(trait));
+            }
 
             unit.alive = true;
             unit.can_move = true;

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <istream>
+#include <limits>
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -58,6 +59,87 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
     if (catalog.components.size() > 10) {
         throw std::invalid_argument("Item catalog exceeds the ten component-type policy head");
     }
+
+    const auto parse_effects = [](const Json& effects) {
+        std::vector<CombatEffectDefinition> parsed;
+        if (!effects.is_array()) {
+            throw std::invalid_argument("combat_effects must be an array");
+        }
+        for (const auto& raw : effects) {
+            if (!raw.is_object() || !raw.contains("trigger") ||
+                !raw["trigger"].is_string() || !raw.contains("operation") ||
+                !raw["operation"].is_string()) {
+                throw std::invalid_argument("Each combat effect requires trigger and operation strings");
+            }
+            CombatEffectDefinition effect;
+            effect.trigger = raw["trigger"].get<std::string>();
+            effect.operation = raw["operation"].get<std::string>();
+            const auto read_string = [&](const char* key, std::string& output) {
+                if (!raw.contains(key)) return;
+                if (!raw[key].is_string()) {
+                    throw std::invalid_argument(std::string("Combat effect field must be a string: ") + key);
+                }
+                output = raw[key].get<std::string>();
+            };
+            read_string("stat", effect.stat);
+            read_string("target", effect.target);
+            read_string("condition", effect.condition);
+            read_string("condition_trait", effect.condition_trait);
+            read_string("stack_key", effect.stack_key);
+            if (raw.contains("damage_type")) {
+                if (!raw["damage_type"].is_string()) {
+                    throw std::invalid_argument("combat effect damage_type must be a string");
+                }
+                const auto damage_type = raw["damage_type"].get<std::string>();
+                if (damage_type == "PHYSICAL") effect.damage_type = DamageType::PHYSICAL;
+                else if (damage_type == "MAGIC") effect.damage_type = DamageType::MAGIC;
+                else if (damage_type == "TRUE_DAMAGE") effect.damage_type = DamageType::TRUE_DAMAGE;
+                else throw std::invalid_argument("Unknown combat effect damage_type: " + damage_type);
+            }
+            const auto read_number = [&](const char* key, float& output) {
+                if (!raw.contains(key)) return;
+                if (!raw[key].is_number()) {
+                    throw std::invalid_argument(std::string("Combat effect field must be numeric: ") + key);
+                }
+                const double value = raw[key].get<double>();
+                if (!std::isfinite(value) || value < 0.0 ||
+                    value > static_cast<double>(std::numeric_limits<float>::max())) {
+                    throw std::invalid_argument(std::string("Invalid combat effect value: ") + key);
+                }
+                output = static_cast<float>(value);
+            };
+            read_number("value", effect.value);
+            read_number("duration", effect.duration);
+            read_number("interval", effect.interval);
+            read_number("delay", effect.delay);
+            read_number("health_threshold", effect.health_threshold);
+            if (raw.contains("max_stacks")) {
+                if (!raw["max_stacks"].is_number_integer() ||
+                    raw["max_stacks"].get<int>() < 0) {
+                    throw std::invalid_argument("combat effect max_stacks must be a nonnegative integer");
+                }
+                effect.max_stacks = raw["max_stacks"].get<int>();
+            }
+            if (raw.contains("min_trait_count")) {
+                if (!raw["min_trait_count"].is_number_integer() ||
+                    raw["min_trait_count"].get<int>() < 0) {
+                    throw std::invalid_argument("combat effect min_trait_count must be a nonnegative integer");
+                }
+                effect.min_trait_count = raw["min_trait_count"].get<int>();
+            }
+            const auto read_bool = [&](const char* key, bool& output) {
+                if (!raw.contains(key)) return;
+                if (!raw[key].is_boolean()) {
+                    throw std::invalid_argument(std::string("Combat effect field must be boolean: ") + key);
+                }
+                output = raw[key].get<bool>();
+            };
+            read_bool("percent_of_max_health", effect.percent_of_max_health);
+            read_bool("percent_of_stat", effect.percent_of_stat);
+            parsed.push_back(std::move(effect));
+        }
+        return parsed;
+    };
 
     std::set<std::string> item_ids;
     std::set<std::string> recipes;
@@ -130,6 +212,34 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
         item.tank_weight = number(weights, "tank");
         item.support_weight = number(weights, "support");
         item.utility_weight = number(weights, "utility");
+        if (entry.contains("grants_trait")) {
+            if (!entry["grants_trait"].is_string()) {
+                throw std::invalid_argument("grants_trait must be a string");
+            }
+            item.grants_trait = entry["grants_trait"].get<std::string>();
+        }
+        if (entry.contains("granted_trait_active_count")) {
+            if (!entry["granted_trait_active_count"].is_number_integer() ||
+                entry["granted_trait_active_count"].get<int>() < 1) {
+                throw std::invalid_argument("granted_trait_active_count must be a positive integer");
+            }
+            item.granted_trait_active_count =
+                entry["granted_trait_active_count"].get<int>();
+        }
+        if (entry.contains("combat_effects")) {
+            item.combat_effects = parse_effects(entry["combat_effects"]);
+        }
+        if (entry.contains("deferred_stats")) {
+            if (!entry["deferred_stats"].is_array()) {
+                throw std::invalid_argument("deferred_stats must be an array");
+            }
+            for (const auto& stat : entry["deferred_stats"]) {
+                if (!stat.is_string()) {
+                    throw std::invalid_argument("deferred_stats entries must be strings");
+                }
+                item.deferred_stats.push_back(stat.get<std::string>());
+            }
+        }
         catalog.items.push_back(std::move(item));
     }
 

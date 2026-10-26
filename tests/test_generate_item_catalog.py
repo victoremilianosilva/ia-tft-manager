@@ -114,3 +114,26 @@ def test_rejects_more_than_engine_component_head_limit():
         source["setData"][0]["items"].extend([component_id, recipe_id])
     with pytest.raises(ValueError, match="no máximo 10"):
         build_catalog(source, "16")
+
+def test_applies_set_specific_trait_item_metadata_without_overriding_source():
+    metadata = {
+        "TFT_Item_TestBlade": {
+            "grants_trait": "TFT17_TestTrait",
+            "granted_trait_active_count": 1,
+            "combat_effects": [{
+                "trigger": "on_attack",
+                "operation": "bonus_damage",
+                "damage_type": "MAGIC",
+                "value": 0.03,
+                "percent_of_max_health": True,
+            }],
+            "name": "must not override source name",
+            "stats": {"ability_power": 999},
+        }
+    }
+    catalog = build_catalog(source_fixture(), "16", metadata)
+    item = next(item for item in catalog["items"] if item["id"] == "TFT_Item_TestBlade")
+    assert item["grants_trait"] == "TFT17_TestTrait"
+    assert item["combat_effects"][0]["operation"] == "bonus_damage"
+    assert item["name"] == "Test Blade"
+    assert item["stats"]["ability_power"] == 20

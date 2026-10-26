@@ -122,7 +122,10 @@
         "NumAttacks": 3,
         "PercentHealthHeal": 0.05000000074505806
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "TFT17_ASTrait",
+      "granted_trait_active_count": 1,
+      "combat_effects": [{"trigger":"on_kill","operation":"grant_charges","stat":"","target":"self","condition":"","condition_trait":"","stack_key":"challenger_next_attacks","damage_type":"MAGIC","value":3,"duration":0,"interval":0,"delay":0,"health_threshold":0,"max_stacks":3,"percent_of_max_health":false,"percent_of_stat":false},{"trigger":"on_attack","operation":"heal_max_hp_pct","stat":"","target":"self","condition":"","condition_trait":"","stack_key":"challenger_next_attacks","damage_type":"MAGIC","value":0.05,"duration":0,"interval":0,"delay":0,"health_threshold":0,"max_stacks":3,"percent_of_max_health":false,"percent_of_stat":false}]
     },
     {
       "id": "TFT17_Item_AssassinTraitEmblemItem",
@@ -161,7 +164,11 @@
         "Omnivamp": 0.25,
         "{1543aa48}": 0.10000000149011612
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "TFT17_AssassinTrait",
+      "granted_trait_active_count": 1,
+      "combat_effects": [{"trigger":"while_hp_below","operation":"add_stat","stat":"omnivamp","target":"self","condition":"","condition_trait":"","stack_key":"","damage_type":"MAGIC","value":0.25,"duration":5,"interval":0,"delay":0,"health_threshold":0.5,"max_stacks":0,"percent_of_max_health":false,"percent_of_stat":false}],
+      "deferred_stats": ["omnivamp"]
     },
     {
       "id": "TFT17_Item_AstronautEmblemItem",
@@ -200,7 +207,10 @@
         "MagicResist": 20.0,
         "ManaRegen": 2.0
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "TFT17_Astronaut",
+      "granted_trait_active_count": 1,
+      "combat_effects": [{"trigger":"combat_start","operation":"mana_regen","stat":"","target":"self","condition":"","condition_trait":"","damage_type":"MAGIC","value":2,"duration":0,"interval":0,"max_stacks":0,"percent_of_max_health":false,"percent_of_stat":false}]
     },
     {
       "id": "TFT17_Item_DRXEmblemItem",
@@ -240,7 +250,45 @@
         "CritChance": 20.0,
         "Health": 200.0
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "TFT17_DRX",
+      "granted_trait_active_count": 1,
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_speed",
+          "target": "allies",
+          "condition": "trait_count_at_least",
+          "condition_trait": "TFT17_DRX",
+          "min_trait_count": 5,
+          "damage_type": "MAGIC",
+          "value": 0.1,
+          "percent_of_stat": true
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "armor",
+          "target": "allies",
+          "condition": "trait_count_at_least",
+          "condition_trait": "TFT17_DRX",
+          "min_trait_count": 5,
+          "damage_type": "MAGIC",
+          "value": 10
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "magic_resist",
+          "target": "allies",
+          "condition": "trait_count_at_least",
+          "condition_trait": "TFT17_DRX",
+          "min_trait_count": 5,
+          "damage_type": "MAGIC",
+          "value": 10
+        }
+      ]
     },
     {
       "id": "TFT17_Item_DarkStarEmblemItem",
@@ -276,7 +324,10 @@
         "AD": 0.18000000715255737,
         "AP": 18.0
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "TFT17_DarkStar",
+      "granted_trait_active_count": 1,
+      "combat_effects": [{"trigger":"combat_start","operation":"add_stat","stat":"attack_damage","target":"self","condition":"","condition_trait":"","damage_type":"MAGIC","value":0.18,"duration":0,"interval":0,"max_stacks":0,"percent_of_max_health":false,"percent_of_stat":true}]
     },
     {
       "id": "TFT17_Item_FavoredEmblemItem",
@@ -313,7 +364,10 @@
         "Armor": 20.0,
         "MagicResist": 20.0
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "TFT17_ADMIN",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
     },
     {
       "id": "TFT17_Item_FlexTraitEmblemItem",
@@ -352,7 +406,10 @@
         "BonusAttackSpeed": 0.10000000149011612,
         "BonusOmnivamp": 0.10000000149011612
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "TFT17_FlexTrait",
+      "granted_trait_active_count": 1,
+      "combat_effects": [{"trigger":"combat_start","operation":"add_stat","stat":"attack_damage","target":"self","condition":"","condition_trait":"","damage_type":"MAGIC","value":0.2,"duration":0,"interval":0,"max_stacks":0,"percent_of_max_health":false,"percent_of_stat":true},{"trigger":"combat_start","operation":"add_stat","stat":"armor","target":"allies_same_row_within_1","condition":"role_tank","condition_trait":"","stack_key":"","damage_type":"MAGIC","value":10,"duration":0,"interval":0,"delay":0,"health_threshold":0,"max_stacks":0,"percent_of_max_health":false,"percent_of_stat":false},{"trigger":"combat_start","operation":"add_stat","stat":"magic_resist","target":"allies_same_row_within_1","condition":"role_tank","condition_trait":"","stack_key":"","damage_type":"MAGIC","value":10,"duration":0,"interval":0,"delay":0,"health_threshold":0,"max_stacks":0,"percent_of_max_health":false,"percent_of_stat":false},{"trigger":"combat_start","operation":"add_stat","stat":"omnivamp","target":"allies_same_row_within_1","condition":"role_fighter","condition_trait":"","stack_key":"","damage_type":"MAGIC","value":0.1,"duration":0,"interval":0,"delay":0,"health_threshold":0,"max_stacks":0,"percent_of_max_health":false,"percent_of_stat":false},{"trigger":"combat_start","operation":"add_stat","stat":"omnivamp","target":"allies_same_row_within_1","condition":"role_assassin","condition_trait":"","stack_key":"","damage_type":"MAGIC","value":0.1,"duration":0,"interval":0,"delay":0,"health_threshold":0,"max_stacks":0,"percent_of_max_health":false,"percent_of_stat":false},{"trigger":"combat_start","operation":"add_stat","stat":"attack_speed","target":"allies_same_row_within_1","condition":"role_other","condition_trait":"","stack_key":"","damage_type":"MAGIC","value":0.1,"duration":0,"interval":0,"delay":0,"health_threshold":0,"max_stacks":0,"percent_of_max_health":false,"percent_of_stat":true}]
     },
     {
       "id": "TFT17_Item_HPTankEmblemItem",
@@ -388,7 +445,10 @@
         "Health": 250.0,
         "PercentHPAttack": 0.029999999329447746
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "TFT17_HPTank",
+      "granted_trait_active_count": 1,
+      "combat_effects": [{"trigger":"on_attack","operation":"bonus_damage","stat":"","target":"self","condition":"","condition_trait":"","damage_type":"MAGIC","value":0.03,"duration":0,"interval":0,"max_stacks":0,"percent_of_max_health":true,"percent_of_stat":false}]
     },
     {
       "id": "TFT17_Item_MeleeTraitEmblemItem",
@@ -426,7 +486,10 @@
         "GoldDropChance": 33.0,
         "StatOmnivamp": 0.10000000149011612
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "TFT17_MeleeTrait",
+      "granted_trait_active_count": 1,
+      "combat_effects": [{"trigger":"combat_start","operation":"add_stat","stat":"attack_damage","target":"self","condition":"","condition_trait":"","damage_type":"MAGIC","value":0.2,"duration":0,"interval":0,"max_stacks":0,"percent_of_max_health":false,"percent_of_stat":true}]
     },
     {
       "id": "TFT17_Item_PrimordianEmblemItem",
@@ -461,7 +524,10 @@
       "source_effects": {
         "Health": 450.0
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "TFT17_Primordian",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
     },
     {
       "id": "TFT17_Item_PulsefireEmblemItem",
@@ -497,7 +563,10 @@
         "AS": 15.0,
         "Health": 200.0
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "TFT17_Timebreaker",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
     },
     {
       "id": "TFT17_Item_ResistTankEmblemItem",
@@ -535,7 +604,11 @@
         "Delay": 10.0,
         "MagicResist": 30.0
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "TFT17_ResistTank",
+      "granted_trait_active_count": 1,
+      "combat_effects": [{"trigger":"after_delay","operation":"add_stat","stat":"attack_speed","target":"self","condition":"","condition_trait":"","stack_key":"","damage_type":"MAGIC","value":0.7,"duration":0,"interval":0,"delay":10,"health_threshold":0,"max_stacks":0,"percent_of_max_health":false,"percent_of_stat":true}],
+      "deferred_stats": ["attack_speed"]
     },
     {
       "id": "TFT17_Item_ShieldTankEmblemItem",
@@ -572,7 +645,10 @@
         "Armor": 20.0,
         "MagicResist": 20.0
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "TFT17_ShieldTank",
+      "granted_trait_active_count": 1,
+      "combat_effects": [{"trigger":"on_ally_shield","operation":"add_stat","stat":"ability_power","target":"self","condition":"","condition_trait":"","stack_key":"","damage_type":"MAGIC","value":2,"duration":0,"interval":0,"delay":0,"health_threshold":0,"max_stacks":0,"percent_of_max_health":false,"percent_of_stat":false}]
     },
     {
       "id": "TFT17_Item_SpaceGrooveEmblemItem",
@@ -609,7 +685,10 @@
         "Health": 200.0,
         "ICD": 4.0
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "TFT17_SpaceGroove",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
     },
     {
       "id": "TFT17_Item_StargazerEmblemItem",
@@ -645,7 +724,10 @@
         "AD": 0.15000000596046448,
         "AP": 15.0
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "TFT17_Stargazer",
+      "granted_trait_active_count": 1,
+      "combat_effects": [{"trigger":"combat_start","operation":"add_stat","stat":"attack_damage","target":"self","condition":"","condition_trait":"","damage_type":"MAGIC","value":0.15,"duration":0,"interval":0,"max_stacks":0,"percent_of_max_health":false,"percent_of_stat":true}]
     },
     {
       "id": "TFT17_Item_SummonTraitEmblemItem",
@@ -681,7 +763,10 @@
         "ManaRegen": 2.0,
         "ManaSharePercent": 0.07999999821186066
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "TFT17_SummonTrait",
+      "granted_trait_active_count": 1,
+      "combat_effects": [{"trigger":"combat_start","operation":"mana_regen","stat":"","target":"self","condition":"","condition_trait":"","damage_type":"MAGIC","value":2,"duration":0,"interval":0,"max_stacks":0,"percent_of_max_health":false,"percent_of_stat":false}]
     },
     {
       "id": "TFT_Item_AdaptiveHelm",

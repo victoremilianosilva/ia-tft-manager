@@ -70,6 +70,33 @@ struct CombatPosition
 
 
 // ============================================================
+// Data-driven combat effects
+// ============================================================
+
+// Effect definitions are supplied by the set catalog/adapter. The engine
+// interprets these stable operations instead of branching on item API names.
+struct CombatEffectDefinition
+{
+    std::string trigger;       // combat_start, every_second, on_attack, on_cast, on_kill, on_ally_shield
+    std::string operation;     // add_stat, bonus_damage, heal_max_hp_pct, grant_mana, mana_share, grant_shield
+    std::string stat;          // attack_damage, attack_speed, ability_power, armor, magic_resist, omnivamp, damage_amplification
+    std::string target;        // self, allies, enemies, lowest_health_ally
+    std::string condition;     // empty, role_tank, role_fighter, role_assassin, role_other, has_trait
+    std::string condition_trait;
+    std::string stack_key;
+    DamageType damage_type = DamageType::MAGIC;
+    float value = 0.0f;
+    float duration = 0.0f;
+    float interval = 0.0f;
+    float delay = 0.0f;
+    float health_threshold = 0.0f;
+    int max_stacks = 0;
+    int min_trait_count = 0;
+    bool percent_of_max_health = false;
+    bool percent_of_stat = false;
+};
+
+// ============================================================
 // Item
 // ============================================================
 
@@ -99,6 +126,11 @@ struct CombatItem
     float damage_reduction = 0.0f;
 
     bool is_temporary = false;
+
+    // Data-driven emblem and unique-passive metadata.
+    std::string grants_trait;
+    int granted_trait_active_count = 1;
+    std::vector<CombatEffectDefinition> effects;
 };
 
 
@@ -117,6 +149,8 @@ struct CombatTrait
     int tier = 0;
 
     bool active = false;
+
+    std::vector<CombatEffectDefinition> effects;
 };
 
 

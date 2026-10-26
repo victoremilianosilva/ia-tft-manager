@@ -122,7 +122,11 @@ def _selector_matches(selector: str, entry: dict[str, Any]) -> bool:
     )
 
 
-def build_catalog(source: dict[str, Any], set_selector: str) -> dict[str, Any]:
+def build_catalog(
+    source: dict[str, Any],
+    set_selector: str,
+    trait_item_metadata: dict[str, dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     if not isinstance(source, dict):
         raise ValueError("O JSON de origem precisa ser um objeto.")
     if not isinstance(source.get("items"), list) or not isinstance(source.get("setData"), list):
@@ -210,7 +214,7 @@ def build_catalog(source: dict[str, Any], set_selector: str) -> dict[str, Any]:
         effects = source_item.get("effects")
         if not isinstance(effects, dict):
             effects = {}
-        output_items.append({
+        output_item = {
             "id": item_id,
             "name": name,
             "recipe_components": recipe,
@@ -221,7 +225,16 @@ def build_catalog(source: dict[str, Any], set_selector: str) -> dict[str, Any]:
             "source_icon": source_item.get("icon") or "",
             "source_effects": effects,
             "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-        })
+        }
+        # Special/trait mechanics are set data, not API-name branches in C++.
+        metadata = (trait_item_metadata or {}).get(item_id)
+        if metadata:
+            # Only allow combat metadata fields; never let an override replace
+            # source identity, recipe, stats, or provenance.
+            for key in ("grants_trait", "granted_trait_active_count", "combat_effects", "deferred_stats"):
+                if key in metadata:
+                    output_item[key] = metadata[key]
+        output_items.append(output_item)
 
     return {
         "schema_version": 1,
@@ -257,7 +270,22 @@ def main(argv: list[str] | None = None) -> int:
     try:
         with source_path.open("r", encoding="utf-8") as handle:
             source = json.load(handle)
-        catalog = build_catalog(source, args.set_selector)
+        set_slug = re.sub(r"[^a-z0-9]+", "_", args.set_selector.lower()).strip("_")
+        metadata_candidates = [Path("data") / f"item_effects_{set_slug}.json"]
+        if set_slug.isdigit():
+            metadata_candidates.append(Path("data") / f"item_effects_set{set_slug}.json")
+        trait_item_metadata: dict[str, dict[str, Any]] = {}
+        metadata_path = next((path for path in metadata_candidates if path.is_file()), None)
+        if metadata_path is not None:
+            with metadata_path.open("r", encoding="utf-8") as handle:
+                metadata_document = json.load(handle)
+            raw_metadata = metadata_document.get("items", {})
+            if isinstance(raw_metadata, dict):
+                trait_item_metadata = {
+                    str(item_id): metadata for item_id, metadata in raw_metadata.items()
+                    if isinstance(item_id, str) and isinstance(metadata, dict)
+                }
+        catalog = build_catalog(source, args.set_selector, trait_item_metadata)
         output_path = Path(args.output) if args.output else Path("data") / f"item_catalog_{args.set_selector.lower().replace(' ', '_')}.json"
         output_path.parent.mkdir(parents=True, exist_ok=True)
         with output_path.open("w", encoding="utf-8", newline="\n") as handle:

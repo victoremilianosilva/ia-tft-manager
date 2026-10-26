@@ -68,6 +68,11 @@ struct RuntimeUnit {
     float titans_base_ad = 0.0f;
     float runaans_base_ad = 0.0f;
     std::vector<float> power_gauntlet_stack_times;
+    std::unordered_map<std::string, int> generic_effect_charges;
+    std::unordered_set<std::string> generic_effects_applied;
+    std::unordered_set<std::string> generic_effects_active;
+    std::unordered_set<std::string> generic_effects_triggered;
+    std::unordered_map<std::string, float> generic_effect_expiry;
 };
 
 struct ScheduledEvent {
@@ -215,8 +220,7 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
         // as fractions (e.g. 0.15 = +15% attack speed / damage amplification).
         unit.attack_damage += item.attack_damage;
         unit.ability_power += item.ability_power;
-        if (item.api_name != "TFT17_Item_ResistTankEmblemItem")
-            unit.attack_speed += item.attack_speed;
+        unit.attack_speed += item.attack_speed;
         unit.critical_strike_chance += item.critical_strike_chance;
         unit.critical_strike_damage += item.critical_strike_damage;
         unit.max_hp += item.health;
@@ -224,8 +228,7 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
         unit.armor += item.armor;
         unit.magic_resist += item.magic_resist;
         unit.mana += item.mana;
-        if (item.api_name != "TFT17_Item_AssassinTraitEmblemItem")
-            unit.omnivamp += item.omnivamp;
+        unit.omnivamp += item.omnivamp;
         unit.damage_amplification += item.damage_amplification;
         unit.damage_reduction += item.damage_reduction;
 
@@ -259,12 +262,6 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
             unit.attack_damage += base_attack_damage * 0.15f;
             unit.ability_power += 15.0f;
             unit.omnivamp = std::min(1.0f, unit.omnivamp + 0.12f);
-        } else if (item.api_name == "TFT17_Item_FlexTraitEmblemItem") {
-            unit.attack_damage += base_attack_damage * 0.20f;
-        } else if (item.api_name == "TFT17_Item_DarkStarEmblemItem") {
-            unit.attack_damage += base_attack_damage * 0.18f;
-        } else if (item.api_name == "TFT17_Item_StargazerEmblemItem") {
-            unit.attack_damage += base_attack_damage * 0.15f;
         }
     }
 
@@ -285,6 +282,327 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
     unit.damage_reduction = std::clamp(unit.damage_reduction, 0.0f, 1.0f);
     unit.omnivamp = std::clamp(unit.omnivamp, 0.0f, 1.0f);
     return true;
+}
+
+bool has_trait(const CombatUnit& unit, const std::string& trait_name) {
+    return std::any_of(unit.traits.begin(), unit.traits.end(),
+        [&](const CombatTrait& trait) {
+            return trait.api_name == trait_name && (trait.active || trait.active_count > 0);
+        });
+}
+
+bool effect_condition_matches(const CombatUnit& unit,
+                              const CombatEffectDefinition& effect) {
+    if (effect.condition.empty()) return true;
+    if (effect.condition == "has_trait")
+        return has_trait(unit, effect.condition_trait);
+    if (effect.condition == "trait_count_at_least") {
+        if (effect.condition_trait.empty() || effect.min_trait_count <= 0) return false;
+        const auto found = std::find_if(unit.traits.begin(), unit.traits.end(),
+            [&](const CombatTrait& trait) {
+                return trait.api_name == effect.condition_trait &&
+                    (trait.active || trait.active_count > 0);
+            });
+        return found != unit.traits.end() && found->active_count >= effect.min_trait_count;
+    }
+    if (effect.condition == "role_tank") return unit.role == UnitRole::TANK;
+    if (effect.condition == "role_fighter") return unit.role == UnitRole::FIGHTER;
+    if (effect.condition == "role_assassin") return unit.role == UnitRole::ASSASSIN;
+    if (effect.condition == "role_other")
+        return unit.role != UnitRole::TANK &&
+               unit.role != UnitRole::FIGHTER &&
+               unit.role != UnitRole::ASSASSIN;
+    return false;
+}
+
+void apply_effect_stat(CombatUnit& unit, const CombatEffectDefinition& effect) {
+    float amount = effect.value;
+    if (effect.percent_of_stat) {
+        if (effect.stat == "attack_damage") amount *= unit.attack_damage;
+        else if (effect.stat == "attack_speed") amount *= unit.attack_speed;
+        else if (effect.stat == "ability_power") amount *= unit.ability_power;
+        else if (effect.stat == "max_hp") amount *= unit.max_hp;
+        else if (effect.stat == "armor") amount *= unit.armor;
+        else if (effect.stat == "magic_resist") amount *= unit.magic_resist;
+    }
+    if (effect.stat == "attack_damage") unit.attack_damage += amount;
+    else if (effect.stat == "attack_speed") unit.attack_speed += amount;
+    else if (effect.stat == "ability_power") unit.ability_power += amount;
+    else if (effect.stat == "armor") unit.armor += amount;
+    else if (effect.stat == "magic_resist") unit.magic_resist += amount;
+    else if (effect.stat == "omnivamp")
+        unit.omnivamp = std::clamp(unit.omnivamp + amount, 0.0f, 1.0f);
+    else if (effect.stat == "damage_amplification")
+        unit.damage_amplification += amount;
+    else if (effect.stat == "damage_reduction")
+        unit.damage_reduction = std::clamp(unit.damage_reduction + amount, 0.0f, 1.0f);
+    else if (effect.stat == "max_hp") {
+        unit.max_hp += amount;
+        unit.hp += amount;
+    }
+}
+
+void apply_start_combat_effects(CombatUnit& unit) {
+    auto apply = [&](const std::vector<CombatEffectDefinition>& effects) {
+        for (const auto& effect : effects) {
+            if (effect.trigger == "combat_start" && effect.operation == "add_stat" &&
+                (effect.target.empty() || effect.target == "self") &&
+                effect_condition_matches(unit, effect))
+                apply_effect_stat(unit, effect);
+        }
+    };
+    for (const auto& item : unit.items) apply(item.effects);
+    for (const auto& trait : unit.traits) {
+        if (trait.active || trait.active_count > 0) apply(trait.effects);
+    }
+}
+
+void apply_start_combat_team_effects(std::vector<RuntimeUnit>& units) {
+    struct PendingTeamEffect {
+        std::size_t recipient_index;
+        CombatEffectDefinition effect;
+        bool attach_as_runtime_effect;
+    };
+    std::vector<PendingTeamEffect> pending;
+
+    // Collect before mutating recipient trait vectors: a source can also be a
+    // recipient, so applying effects while iterating those vectors would
+    // invalidate iterators and could recursively re-apply an aura.
+    for (const auto& source : units) {
+        const auto collect = [&](const std::vector<CombatEffectDefinition>& effects) {
+            for (const auto& effect : effects) {
+                const bool role_condition =
+                    effect.condition == "role_tank" ||
+                    effect.condition == "role_fighter" ||
+                    effect.condition == "role_assassin" ||
+                    effect.condition == "role_other";
+                // Trait/count conditions describe the aura source; role
+                // conditions describe which allied recipients qualify.
+                if (!role_condition && !effect_condition_matches(source.unit, effect)) continue;
+                const bool team_stat = effect.trigger == "combat_start" &&
+                    effect.operation == "add_stat" &&
+                    (effect.target == "allies" ||
+                     effect.target == "allies_same_row_within_1");
+                const bool team_attack_effect = effect.target == "allies" &&
+                    effect.trigger == "on_attack" &&
+                    effect.operation == "bonus_damage";
+                if (!team_stat && !team_attack_effect) continue;
+
+                for (std::size_t i = 0; i < units.size(); ++i) {
+                    const auto& recipient = units[i];
+                    if (recipient.unit.team != source.unit.team) continue;
+                    // The source already evaluates its own on_attack effect from
+                    // its item/trait. Do not attach a second copy of that aura
+                    // to the source itself; recipients other than the source need
+                    // the runtime copy so they inherit the team bonus.
+                    if (team_attack_effect &&
+                        recipient.unit.id == source.unit.id) continue;
+                    if (role_condition && !effect_condition_matches(recipient.unit, effect))
+                        continue;
+                    if (effect.target == "allies_same_row_within_1" &&
+                        (recipient.unit.position.y != source.unit.position.y ||
+                         std::abs(recipient.unit.position.x - source.unit.position.x) > 1))
+                        continue;
+                    if (team_stat) pending.push_back({i, effect, false});
+                    else pending.push_back({i, effect, true});
+                }
+            }
+        };
+        for (const auto& item : source.unit.items) collect(item.effects);
+        for (const auto& trait : source.unit.traits) {
+            if (trait.active || trait.active_count > 0) collect(trait.effects);
+        }
+    }
+
+    for (const auto& pending_effect : pending) {
+        auto& recipient = units[pending_effect.recipient_index];
+        if (!is_alive(recipient)) continue;
+        if (pending_effect.attach_as_runtime_effect) {
+            CombatEffectDefinition effect = pending_effect.effect;
+            effect.target = "self";
+            effect.condition.clear();
+            effect.condition_trait.clear();
+            CombatTrait runtime_effect;
+            runtime_effect.api_name = "generic_team_aura";
+            runtime_effect.name = "generic_team_aura";
+            runtime_effect.active = true;
+            runtime_effect.active_count = 1;
+            runtime_effect.effects.push_back(std::move(effect));
+            recipient.unit.traits.push_back(std::move(runtime_effect));
+        } else {
+            apply_effect_stat(recipient.unit, pending_effect.effect);
+        }
+    }
+}
+
+float effect_attack_bonus(const CombatUnit& unit, DamageType damage_type) {
+    float bonus = 0.0f;
+    auto accumulate = [&](const std::vector<CombatEffectDefinition>& effects) {
+        for (const auto& effect : effects) {
+            if (effect.trigger == "on_attack" && effect.operation == "bonus_damage" &&
+                effect.damage_type == damage_type &&
+                effect_condition_matches(unit, effect))
+                if (effect.percent_of_max_health) {
+                    bonus += unit.max_hp * effect.value;
+                } else if (effect.percent_of_stat) {
+                    float base_stat = 0.0f;
+                    if (effect.stat == "attack_damage") base_stat = unit.attack_damage;
+                    else if (effect.stat == "attack_speed") base_stat = unit.attack_speed;
+                    else if (effect.stat == "ability_power") base_stat = unit.ability_power;
+                    else if (effect.stat == "max_hp") base_stat = unit.max_hp;
+                    else if (effect.stat == "armor") base_stat = unit.armor;
+                    else if (effect.stat == "magic_resist") base_stat = unit.magic_resist;
+                    bonus += base_stat * effect.value;
+                } else {
+                    bonus += effect.value;
+                }
+        }
+    };
+    for (const auto& item : unit.items) accumulate(item.effects);
+    for (const auto& trait : unit.traits) {
+        if (trait.active || trait.active_count > 0) accumulate(trait.effects);
+    }
+    return bonus;
+}
+
+float effect_mana_regeneration(const CombatUnit& unit) {
+    float amount = 0.0f;
+    auto accumulate = [&](const std::vector<CombatEffectDefinition>& effects) {
+        for (const auto& effect : effects) {
+            if (effect.operation == "mana_regen" &&
+                (effect.trigger.empty() || effect.trigger == "combat_start") &&
+                effect_condition_matches(unit, effect))
+                amount += effect.value;
+        }
+    };
+    for (const auto& item : unit.items) accumulate(item.effects);
+    for (const auto& trait : unit.traits) {
+        if (trait.active || trait.active_count > 0) accumulate(trait.effects);
+    }
+    return amount;
+}
+
+template <typename Callback>
+void visit_generic_effects(CombatUnit& unit, Callback callback) {
+    for (std::size_t item_index = 0; item_index < unit.items.size(); ++item_index) {
+        const auto& item = unit.items[item_index];
+        for (std::size_t effect_index = 0; effect_index < item.effects.size(); ++effect_index) {
+            callback(item.effects[effect_index],
+                "item:" + item.api_name + ":" + std::to_string(item_index) + ":");
+        }
+    }
+    for (std::size_t trait_index = 0; trait_index < unit.traits.size(); ++trait_index) {
+        auto& trait = unit.traits[trait_index];
+        if (!trait.active && trait.active_count <= 0) continue;
+        for (std::size_t effect_index = 0; effect_index < trait.effects.size(); ++effect_index) {
+            callback(trait.effects[effect_index],
+                "trait:" + trait.api_name + ":" + std::to_string(trait_index) + ":");
+        }
+    }
+}
+
+void grant_on_kill_effect_charges(RuntimeUnit& actor) {
+    visit_generic_effects(actor.unit, [&](const CombatEffectDefinition& effect,
+                                         const std::string& prefix) {
+        if (effect.trigger != "on_kill" || effect.operation != "grant_charges" ||
+            effect.stack_key.empty() || !effect_condition_matches(actor.unit, effect)) return;
+        const int amount = effect.max_stacks > 0
+            ? std::min(effect.max_stacks, static_cast<int>(effect.value))
+            : static_cast<int>(effect.value);
+        if (amount > 0) actor.generic_effect_charges[prefix + effect.stack_key] = amount;
+    });
+}
+
+float apply_charged_attack_healing(RuntimeUnit& actor, float now) {
+    float total = 0.0f;
+    visit_generic_effects(actor.unit, [&](const CombatEffectDefinition& effect,
+                                         const std::string& prefix) {
+        if (effect.trigger != "on_attack" || effect.operation != "heal_max_hp_pct" ||
+            effect.stack_key.empty() || !effect_condition_matches(actor.unit, effect)) return;
+        auto it = actor.generic_effect_charges.find(prefix + effect.stack_key);
+        if (it == actor.generic_effect_charges.end() || it->second <= 0) return;
+        total += actor.unit.max_hp * effect.value;
+        --it->second;
+    });
+    return total > 0.0f ? apply_heal(actor, total, now) : 0.0f;
+}
+
+void apply_delayed_effects(RuntimeUnit& runtime, float now) {
+    visit_generic_effects(runtime.unit, [&](const CombatEffectDefinition& effect,
+                                           const std::string& prefix) {
+        if (effect.trigger != "after_delay" || effect.operation != "add_stat" ||
+            now < effect.delay || !effect_condition_matches(runtime.unit, effect)) return;
+        const std::string key = prefix + "delayed:" + effect.stat + ":" +
+            std::to_string(effect.delay) + ":" + std::to_string(effect.value);
+        if (runtime.generic_effects_applied.insert(key).second)
+            apply_effect_stat(runtime.unit, effect);
+    });
+}
+
+void update_conditional_effects(RuntimeUnit& runtime, float now) {
+    visit_generic_effects(runtime.unit, [&](const CombatEffectDefinition& effect,
+                                           const std::string& prefix) {
+        if (effect.trigger != "while_hp_below" || effect.operation != "add_stat" ||
+            effect.health_threshold <= 0.0f ||
+            !effect_condition_matches(runtime.unit, effect)) return;
+        const std::string key = prefix + "conditional:" + effect.stat + ":" +
+            std::to_string(effect.health_threshold) + ":" + std::to_string(effect.value);
+        const bool below = runtime.unit.hp / runtime.unit.max_hp <= effect.health_threshold;
+        const bool active = runtime.generic_effects_active.contains(key);
+        const bool triggered = runtime.generic_effects_triggered.contains(key);
+        if (below && !active && !triggered) {
+            apply_effect_stat(runtime.unit, effect);
+            runtime.generic_effects_active.insert(key);
+            runtime.generic_effects_triggered.insert(key);
+            if (effect.duration > 0.0f)
+                runtime.generic_effect_expiry[key] = now + effect.duration;
+        } else if (active) {
+            const auto expiry = runtime.generic_effect_expiry.find(key);
+            const bool expired = expiry != runtime.generic_effect_expiry.end() &&
+                                 now >= expiry->second;
+            const bool condition_ended = effect.duration <= 0.0f && !below;
+            if (expired || condition_ended) {
+                CombatEffectDefinition inverse = effect;
+                inverse.value = -inverse.value;
+                apply_effect_stat(runtime.unit, inverse);
+                runtime.generic_effects_active.erase(key);
+                runtime.generic_effect_expiry.erase(key);
+                if (condition_ended) runtime.generic_effects_triggered.erase(key);
+            }
+        }
+    });
+}
+
+void apply_ally_shield_effects(std::vector<RuntimeUnit>& units,
+                               std::size_t shielded_index) {
+    if (shielded_index >= units.size()) return;
+    const auto team = units[shielded_index].unit.team;
+    for (auto& recipient : units) {
+        if (recipient.unit.team != team || !is_alive(recipient)) continue;
+        visit_generic_effects(recipient.unit,
+            [&](const CombatEffectDefinition& effect, const std::string&) {
+                if (effect.trigger == "on_ally_shield" &&
+                    effect.operation == "add_stat" &&
+                    effect_condition_matches(recipient.unit, effect))
+                    apply_effect_stat(recipient.unit, effect);
+            });
+    }
+}
+
+float effect_kill_healing(const CombatUnit& unit) {
+    float healing = 0.0f;
+    auto accumulate = [&](const std::vector<CombatEffectDefinition>& effects) {
+        for (const auto& effect : effects) {
+            if (effect.trigger == "on_kill" && effect.operation == "heal_max_hp_pct" &&
+                effect_condition_matches(unit, effect))
+                healing += unit.max_hp * effect.value;
+        }
+    };
+    for (const auto& item : unit.items) accumulate(item.effects);
+    for (const auto& trait : unit.traits) {
+        if (trait.active || trait.active_count > 0) accumulate(trait.effects);
+    }
+    return healing;
 }
 
 void append_generic_event(CombatResult& result,
@@ -414,6 +732,26 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             }
 
             CombatUnit effective_unit = unit;
+            // Emblems declare granted traits in catalog data, not in item-name switches.
+            for (const auto& item : effective_unit.items) {
+                if (item.grants_trait.empty()) continue;
+                auto it = std::find_if(effective_unit.traits.begin(),
+                    effective_unit.traits.end(), [&](const CombatTrait& trait) {
+                        return trait.api_name == item.grants_trait;
+                    });
+                if (it == effective_unit.traits.end()) {
+                    CombatTrait granted;
+                    granted.api_name = item.grants_trait;
+                    granted.name = item.grants_trait;
+                    granted.active_count = item.granted_trait_active_count;
+                    granted.active = true;
+                    effective_unit.traits.push_back(granted);
+                } else {
+                    it->active_count = std::max(it->active_count,
+                        item.granted_trait_active_count);
+                    it->active = true;
+                }
+            }
             std::string item_error;
             if (!apply_item_stats(effective_unit, item_error)) {
                 set_error(result, "INVALID_ITEM_ATTRIBUTES", item_error);
@@ -455,9 +793,9 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                          item.api_name == "TFT_Item_StatikkShiv") loaded.mana_regen_per_second += 1.0f;
                 else if (item.api_name == "TFT_Item_BlueBuff") loaded.mana_regen_per_second += 5.0f;
                 else if (item.api_name == "TFT_Item_Redemption") loaded.mana_regen_per_second += 2.0f;
-                else if (item.api_name == "TFT17_Item_AstronautEmblemItem" ||
-                         item.api_name == "TFT17_Item_SummonTraitEmblemItem") loaded.mana_regen_per_second += 2.0f;
+
             }
+            loaded.mana_regen_per_second += effect_mana_regeneration(loaded.unit);
             if (has_item(loaded.unit, "TFT_Item_UnstableConcoction")) {
                 loaded.hand_of_justice_ad_bonus =
                     loaded.unit.attack_damage * (0.15f / 1.15f);
@@ -478,6 +816,11 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
         !load_team(input.player_b, UnitTeam::PLAYER_B, occupied_b)) {
         return result;
     }
+
+    // Apply self and team-targeted start-of-combat effects only after both
+    // teams are present, so ally targeting is independent of input order.
+    for (auto& runtime : units) apply_start_combat_effects(runtime.unit);
+    apply_start_combat_team_effects(units);
 
     std::unordered_map<int, std::size_t> index_by_id;
     for (std::size_t i = 0; i < units.size(); ++i) {
@@ -593,6 +936,10 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
 
         now = event.time;
         ++result.events_processed;
+        for (auto& runtime : units) {
+            apply_delayed_effects(runtime, now);
+            update_conditional_effects(runtime, now);
+        }
 
         // Processa queimadura uma vez por segundo, independentemente da ordem
         // de ações da unidade que aplicou o efeito.
@@ -963,6 +1310,12 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                         ability_target.unit.hp = 0.0f;
                         ability_target.unit.alive = false;
                         ++actor.kills;
+                        grant_on_kill_effect_charges(actor);
+                        const float generic_kill_heal = effect_kill_healing(actor.unit);
+                        if (generic_kill_heal > 0.0f) {
+                            const float actual_heal = apply_heal(actor, generic_kill_heal, now);
+                            actor.healing_done += actual_heal;
+                        }
                         if (has_item(actor.unit, "TFT17_Item_ASTraitEmblemItem"))
                             actor.challenger_attacks_remaining = 3;
                         if (config.record_events) {
@@ -1040,6 +1393,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 raw_damage *= std::max(
                     1.0f, actor.unit.critical_strike_damage);
             }
+            raw_damage += effect_attack_bonus(actor.unit, DamageType::PHYSICAL);
 
             raw_damage *= std::max(
                 0.0f, 1.0f + actor.unit.damage_amplification);
@@ -1074,16 +1428,22 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 actor.healing_done += heal;
             }
             ++actor.attacks;
+            const float generic_charged_heal = apply_charged_attack_healing(actor, now);
+            actor.healing_done += generic_charged_heal;
             if (actor.challenger_attacks_remaining > 0) {
                 const float heal = apply_heal(actor,
                     actor.unit.max_hp * 0.05f, now);
                 actor.healing_done += heal;
                 --actor.challenger_attacks_remaining;
             }
-            // Emblema de Lutador: dano mágico adicional baseado na vida máxima.
-            if (has_item(actor.unit, "TFT17_Item_HPTankEmblemItem")) {
-                const float raw_bonus = actor.unit.max_hp * 0.03f;
-                const float bonus = mitigate_physical_damage(raw_bonus, target.unit.magic_resist);
+            // Generic data-driven bonus damage supports physical, magic and true damage.
+            for (const DamageType bonus_type : {DamageType::MAGIC, DamageType::TRUE_DAMAGE}) {
+                const float raw_bonus = effect_attack_bonus(actor.unit, bonus_type);
+                if (raw_bonus <= 0.0f) continue;
+                const float mitigated = bonus_type == DamageType::MAGIC
+                    ? mitigate_physical_damage(raw_bonus, target.unit.magic_resist)
+                    : raw_bonus;
+                const float bonus = std::min(mitigated, target.unit.hp + target.shield_hp);
                 const float absorbed_bonus = std::min(target.shield_hp, bonus);
                 target.shield_hp -= absorbed_bonus;
                 const float hp_bonus = std::min(target.unit.hp, bonus - absorbed_bonus);
@@ -1096,7 +1456,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                     bonus_event.timestamp = now;
                     bonus_event.source_unit_id = actor.unit.id;
                     bonus_event.target_unit_id = target.unit.id;
-                    bonus_event.damage_type = DamageType::MAGIC;
+                    bonus_event.damage_type = bonus_type;
                     bonus_event.raw_damage = raw_bonus;
                     bonus_event.final_damage = bonus;
                     result.damage_events.push_back(bonus_event);
@@ -1241,6 +1601,12 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 target.unit.hp = 0.0f;
                 target.unit.alive = false;
                 ++actor.kills;
+                grant_on_kill_effect_charges(actor);
+                const float generic_kill_heal = effect_kill_healing(actor.unit);
+                if (generic_kill_heal > 0.0f) {
+                    const float actual_heal = apply_heal(actor, generic_kill_heal, now);
+                    actor.healing_done += actual_heal;
+                }
                 if (has_item(actor.unit, "TFT17_Item_ASTraitEmblemItem"))
                     actor.challenger_attacks_remaining = 3;
 

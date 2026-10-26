@@ -1,5 +1,7 @@
 #include "items/ItemCatalog.hpp"
+#include "items/CombatItemAdapter.hpp"
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 
@@ -44,6 +46,78 @@ int main(int argc, char** argv) {
         if (!found_expected_item) {
             std::cerr << "expected Set17 item was not loaded\n";
             return 8;
+        }
+
+        bool found_data_driven_brawler = false;
+        for (const auto& item : catalog.items) {
+            if (item.id != "TFT17_Item_HPTankEmblemItem") continue;
+            found_data_driven_brawler = true;
+            if (item.grants_trait != "TFT17_HPTank" || item.combat_effects.empty() ||
+                item.combat_effects.front().trigger != "on_attack" ||
+                item.combat_effects.front().operation != "bonus_damage" ||
+                item.combat_effects.front().damage_type != tft::DamageType::MAGIC ||
+                !item.combat_effects.front().percent_of_max_health) {
+                std::cerr << "Brawler emblem generic effect metadata was not loaded\n";
+                return 9;
+            }
+            const auto combat_item = tft::items::to_combat_item(item);
+            if (combat_item.grants_trait != item.grants_trait ||
+                combat_item.effects.size() != item.combat_effects.size()) {
+                std::cerr << "combat adapter dropped trait effect metadata\n";
+                return 10;
+            }
+            break;
+        }
+        if (!found_data_driven_brawler) {
+            std::cerr << "Brawler emblem was not loaded\n";
+            return 11;
+        }
+
+        bool found_bastion_delay = false;
+        bool found_rogue_threshold = false;
+        for (const auto& item : catalog.items) {
+            if (item.id == "TFT17_Item_ResistTankEmblemItem") {
+                found_bastion_delay = std::find(item.deferred_stats.begin(),
+                    item.deferred_stats.end(), "attack_speed") != item.deferred_stats.end() &&
+                    std::any_of(item.combat_effects.begin(), item.combat_effects.end(),
+                        [](const auto& effect) {
+                            return effect.trigger == "after_delay" &&
+                                effect.stat == "attack_speed" && effect.delay == 10.0f;
+                        });
+            }
+            if (item.id == "TFT17_Item_AssassinTraitEmblemItem") {
+                found_rogue_threshold = std::find(item.deferred_stats.begin(),
+                    item.deferred_stats.end(), "omnivamp") != item.deferred_stats.end() &&
+                    std::any_of(item.combat_effects.begin(), item.combat_effects.end(),
+                        [](const auto& effect) {
+                            return effect.trigger == "while_hp_below" &&
+                                effect.stat == "omnivamp" &&
+                                effect.health_threshold == 0.5f;
+                        });
+            }
+        }
+        if (!found_bastion_delay || !found_rogue_threshold) {
+            std::cerr << "Delayed/conditional trait effects were not loaded\n";
+            return 12;
+        }
+
+        bool found_nova_capstone = false;
+        for (const auto& item : catalog.items) {
+            if (item.id != "TFT17_Item_DRXEmblemItem") continue;
+            found_nova_capstone = item.grants_trait == "TFT17_DRX" &&
+                std::count_if(item.combat_effects.begin(), item.combat_effects.end(),
+                    [](const auto& effect) {
+                        return effect.trigger == "combat_start" &&
+                            effect.operation == "add_stat" &&
+                            effect.target == "allies" &&
+                            effect.condition == "trait_count_at_least" &&
+                            effect.condition_trait == "TFT17_DRX" &&
+                            effect.min_trait_count == 5;
+                    }) == 3;
+        }
+        if (!found_nova_capstone) {
+            std::cerr << "N.O.V.A. capstone condition/team effects were not loaded\n";
+            return 13;
         }
 
         std::cout << "Loaded " << catalog.set_id << ": "

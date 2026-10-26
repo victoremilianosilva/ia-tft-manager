@@ -522,7 +522,15 @@ void test_set17_ionic_spark_and_emblem_passives() {
     tank_input.player_b.units[0].magic_resist = 0.0f;
     tank_input.player_b.units[0].attack_damage = 0.1f;
     tft::CombatItem fighter_emblem;
-    fighter_emblem.api_name = "TFT17_Item_HPTankEmblemItem";
+    fighter_emblem.api_name = "an_item_name_not_known_to_the_engine";
+    fighter_emblem.grants_trait = "TFT17_HPTank";
+    tft::CombatEffectDefinition brawler_damage;
+    brawler_damage.trigger = "on_attack";
+    brawler_damage.operation = "bonus_damage";
+    brawler_damage.damage_type = tft::DamageType::MAGIC;
+    brawler_damage.value = 0.03f;
+    brawler_damage.percent_of_max_health = true;
+    fighter_emblem.effects.push_back(brawler_damage);
     tank_input.player_a.units[0].items.push_back(fighter_emblem);
     const auto emblem = engine.simulate(tank_input);
     require(emblem.success, "Fighter emblem combat should complete.");
@@ -533,6 +541,155 @@ void test_set17_ionic_spark_and_emblem_passives() {
             event.damage_type == tft::DamageType::MAGIC &&
             std::abs(event.raw_damage - 30.0f) < 0.001f) saw_magic_bonus = true;
     require(saw_magic_bonus, "Fighter emblem should add magic damage based on max health.");
+}
+
+void test_data_driven_trait_emblem_effects() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 0.5f;
+    input.config.record_damage = true;
+    input.player_a.units[0].hp = input.player_a.units[0].max_hp = 1000.0f;
+    input.player_a.units[0].attack_damage = 10.0f;
+    input.player_a.units[0].attack_speed = 10.0f;
+    input.player_b.units[0].hp = input.player_b.units[0].max_hp = 5000.0f;
+    input.player_b.units[0].armor = 0.0f;
+    input.player_b.units[0].attack_damage = 0.1f;
+
+    tft::CombatItem emblem;
+    emblem.api_name = "an_item_name_not_known_to_the_engine";
+    emblem.grants_trait = "TFT17_TestTrait";
+    emblem.granted_trait_active_count = 1;
+
+    tft::CombatEffectDefinition start_bonus;
+    start_bonus.trigger = "combat_start";
+    start_bonus.operation = "add_stat";
+    start_bonus.stat = "attack_damage";
+    start_bonus.value = 5.0f;
+    emblem.effects.push_back(start_bonus);
+
+    tft::CombatEffectDefinition trait_attack_bonus;
+    trait_attack_bonus.trigger = "on_attack";
+    trait_attack_bonus.operation = "bonus_damage";
+    trait_attack_bonus.damage_type = tft::DamageType::PHYSICAL;
+    trait_attack_bonus.value = 0.01f;
+    trait_attack_bonus.percent_of_max_health = true;
+    trait_attack_bonus.condition = "has_trait";
+    trait_attack_bonus.condition_trait = "TFT17_TestTrait";
+    emblem.effects.push_back(trait_attack_bonus);
+    input.player_a.units[0].items.push_back(emblem);
+
+    const auto result = engine.simulate(input);
+    require(result.success, "Data-driven trait emblem combat should complete.");
+    bool saw_data_driven_damage = false;
+    for (const auto& event : result.damage_events) {
+        if (event.source_unit_id == input.player_a.units[0].id &&
+            event.target_unit_id == input.player_b.units[0].id &&
+            std::abs(event.raw_damage - 25.0f) < 0.001f) {
+            saw_data_driven_damage = true;
+            break;
+        }
+    }
+    require(saw_data_driven_damage,
+        "Trait grant and item effects should work without an item API-name branch.");
+
+    auto aura_input = make_input();
+    aura_input.config.max_duration = 0.1f;
+    aura_input.config.record_damage = true;
+    aura_input.player_a.units[0].role = tft::UnitRole::FIGHTER;
+    aura_input.player_a.units[0].position.x = 1;
+    aura_input.player_a.units[0].attack_damage = 0.1f;
+    aura_input.player_a.units[0].attack_speed = 0.1f;
+    aura_input.player_a.units[0].hp = aura_input.player_a.units[0].max_hp = 1000.0f;
+    auto tank_ally = aura_input.player_a.units[0];
+    tank_ally.id = 77;
+    tank_ally.role = tft::UnitRole::TANK;
+    tank_ally.position.x = 0;
+    tank_ally.armor = 0.0f;
+    tank_ally.items.clear();
+    aura_input.player_a.units.push_back(tank_ally);
+    aura_input.player_b.units[0].position.x = 0;
+    aura_input.player_b.units[0].attack_damage = 100.0f;
+    aura_input.player_b.units[0].attack_speed = 10.0f;
+    aura_input.player_b.units[0].hp = aura_input.player_b.units[0].max_hp = 1000.0f;
+
+    tft::CombatItem role_aura;
+    role_aura.api_name = "unknown_voyager_emblem";
+    role_aura.grants_trait = "TFT17_FlexTrait";
+    tft::CombatEffectDefinition tank_resists;
+    tank_resists.trigger = "combat_start";
+    tank_resists.operation = "add_stat";
+    tank_resists.stat = "armor";
+    tank_resists.target = "allies_same_row_within_1";
+    tank_resists.condition = "role_tank";
+    tank_resists.value = 10.0f;
+    role_aura.effects.push_back(tank_resists);
+    aura_input.player_a.units[0].items.push_back(role_aura);
+
+    const auto aura_result = engine.simulate(aura_input);
+    require(aura_result.success, "Data-driven team aura combat should complete.");
+    bool saw_armor_mitigated_hit = false;
+    for (const auto& event : aura_result.damage_events) {
+        if (event.source_unit_id == aura_input.player_b.units[0].id &&
+            event.target_unit_id == tank_ally.id &&
+            std::abs(event.final_damage - (100.0f * 100.0f / 110.0f)) < 0.05f) {
+            saw_armor_mitigated_hit = true;
+            break;
+        }
+    }
+    require(saw_armor_mitigated_hit,
+        "Generic role-conditioned aura should apply to same-row allies at combat start.");
+
+    // N.O.V.A.'s capstone is data-driven: the team effect only activates when
+    // the source unit sees the required team trait count, and its true-damage
+    // bonus is inherited by allies rather than staying on the emblem carrier.
+    auto capstone_input = make_input();
+    capstone_input.config.max_duration = 0.5f;
+    capstone_input.config.record_damage = true;
+    auto& capstone_source = capstone_input.player_a.units[0];
+    capstone_source.attack_damage = 10.0f;
+    capstone_source.attack_speed = 10.0f;
+    capstone_source.hp = capstone_source.max_hp = 1000.0f;
+    tft::CombatTrait nova_trait;
+    nova_trait.api_name = "TFT17_DRX";
+    nova_trait.active = true;
+    nova_trait.active_count = 5;
+    capstone_source.traits.push_back(nova_trait);
+    capstone_source.items.clear();
+    tft::CombatItem nova_emblem;
+    nova_emblem.api_name = "unrecognized_nova_emblem";
+    nova_emblem.grants_trait = "TFT17_DRX";
+    // Exercise the actual emblem grant path for the capstone threshold too.
+    nova_emblem.granted_trait_active_count = 5;
+    tft::CombatEffectDefinition nova_capstone;
+    nova_capstone.trigger = "on_attack";
+    nova_capstone.operation = "bonus_damage";
+    nova_capstone.target = "allies";
+    nova_capstone.condition = "trait_count_at_least";
+    nova_capstone.condition_trait = "TFT17_DRX";
+    nova_capstone.min_trait_count = 5;
+    nova_capstone.damage_type = tft::DamageType::TRUE_DAMAGE;
+    nova_capstone.value = 0.10f;
+    nova_capstone.percent_of_stat = true;
+    nova_capstone.stat = "attack_damage";
+    nova_emblem.effects.push_back(nova_capstone);
+    capstone_source.items.push_back(nova_emblem);
+    capstone_input.player_b.units[0].attack_damage = 0.1f;
+    capstone_input.player_b.units[0].attack_speed = 10.0f;
+    capstone_input.player_b.units[0].hp = capstone_input.player_b.units[0].max_hp = 5000.0f;
+
+    const auto capstone_result = engine.simulate(capstone_input);
+    require(capstone_result.success, "Trait-count-gated capstone combat should complete.");
+    bool saw_capstone_true_damage = false;
+    for (const auto& event : capstone_result.damage_events) {
+        if (event.source_unit_id == capstone_source.id &&
+            event.damage_type == tft::DamageType::TRUE_DAMAGE &&
+            std::abs(event.raw_damage - 1.0f) < 0.001f) {
+            saw_capstone_true_damage = true;
+            break;
+        }
+    }
+    require(saw_capstone_true_damage,
+        "A trait-count-gated team aura should grant the generic true-damage effect.");
 }
 
 } // namespace
@@ -552,6 +709,7 @@ int main() {
         test_set17_burn_and_shred_change_combat_damage();
         test_set17_healing_and_defensive_items_change_survival();
         test_set17_ionic_spark_and_emblem_passives();
+        test_data_driven_trait_emblem_effects();
     } catch (const std::exception& error) {
         std::cerr << "test_combat_engine: " << error.what() << '\n';
         return 1;
