@@ -1,4 +1,5 @@
 #include "items/ItemCatalog.hpp"
+#include "items/CombatItemAdapter.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -44,6 +45,31 @@ int main(int argc, char** argv) {
         if (!found_expected_item) {
             std::cerr << "expected Set17 item was not loaded\n";
             return 8;
+        }
+
+        bool found_data_driven_brawler = false;
+        for (const auto& item : catalog.items) {
+            if (item.id != "TFT17_Item_HPTankEmblemItem") continue;
+            found_data_driven_brawler = true;
+            if (item.grants_trait != "TFT17_HPTank" || item.combat_effects.empty() ||
+                item.combat_effects.front().trigger != "on_attack" ||
+                item.combat_effects.front().operation != "bonus_damage" ||
+                item.combat_effects.front().damage_type != tft::DamageType::MAGIC ||
+                !item.combat_effects.front().percent_of_max_health) {
+                std::cerr << "Brawler emblem generic effect metadata was not loaded\n";
+                return 9;
+            }
+            const auto combat_item = tft::items::to_combat_item(item);
+            if (combat_item.grants_trait != item.grants_trait ||
+                combat_item.effects.size() != item.combat_effects.size()) {
+                std::cerr << "combat adapter dropped trait effect metadata\n";
+                return 10;
+            }
+            break;
+        }
+        if (!found_data_driven_brawler) {
+            std::cerr << "Brawler emblem was not loaded\n";
+            return 11;
         }
 
         std::cout << "Loaded " << catalog.set_id << ": "
