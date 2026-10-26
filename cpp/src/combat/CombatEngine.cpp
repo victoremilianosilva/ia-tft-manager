@@ -28,6 +28,30 @@ struct RuntimeUnit {
     int titans_stacks = 0;
     float last_guinsoo_tick = 0.0f;
     float last_dragons_claw_tick = 0.0f;
+    float last_redemption_tick = 0.0f;
+    float last_archangel_tick = 0.0f;
+    float last_quicksilver_tick = 0.0f;
+    float last_redbuff_tick = 0.0f;
+    float last_bramble_proc = -1000.0f;
+    float last_ionic_proc = -1000.0f;
+    float shield_expires_at = 0.0f;
+    float crown_shield_expires_at = 0.0f;
+    float burn_until = 0.0f;
+    float burn_next_tick = 0.0f;
+    float burn_percent = 0.0f;
+    float grievous_until = 0.0f;
+    float armor_shred_until = 0.0f;
+    float armor_shred_percent = 0.0f;
+    float mr_shred_until = 0.0f;
+    float mr_shred_percent = 0.0f;
+    int runaan_stacks = 0;
+    int power_gauntlet_stacks = 0;
+    bool bloodthirster_triggered = false;
+    bool sterak_triggered = false;
+    bool frozen_heart_triggered = false;
+    bool guardian_angel_triggered = false;
+    bool crown_shield_triggered = false;
+    float last_status_tick = 0.0f;
 };
 
 struct ScheduledEvent {
@@ -60,6 +84,19 @@ int distance_between(const CombatUnit& a, const CombatUnit& b) {
 
 bool is_alive(const RuntimeUnit& unit) {
     return unit.unit.alive && unit.unit.hp > 0.0f;
+}
+
+bool has_item(const CombatUnit& unit, const char* api_name) {
+    return std::any_of(unit.items.begin(), unit.items.end(),
+        [&](const CombatItem& item) { return item.api_name == api_name; });
+}
+
+float item_effect_value(const CombatUnit& unit, const char* api_name,
+                        float fallback) {
+    for (const auto& item : unit.items) {
+        if (item.api_name == api_name) return fallback;
+    }
+    return 0.0f;
 }
 
 int count_alive(const std::vector<RuntimeUnit>& units,
@@ -314,6 +351,42 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
     std::unordered_map<int, std::size_t> index_by_id;
     for (std::size_t i = 0; i < units.size(); ++i) {
         index_by_id[units[i].unit.id] = i;
+        auto& runtime = units[i];
+        // Efeitos de início de combate: escudo e mana inicial.
+        if (has_item(runtime.unit, "TFT_Item_Crownguard")) {
+            runtime.shield_hp += runtime.unit.max_hp * 0.25f;
+            runtime.crown_shield_triggered = true;
+            runtime.crown_shield_expires_at = 8.0f;
+        }
+        if (has_item(runtime.unit, "TFT_Item_FrozenHeart"))
+            runtime.unit.mana = std::min(runtime.unit.max_mana,
+                runtime.unit.mana + 20.0f);
+        if (has_item(runtime.unit, "TFT_Item_AdaptiveHelm")) {
+            runtime.unit.mana = std::min(runtime.unit.max_mana,
+                runtime.unit.mana + runtime.unit.max_mana * 0.15f);
+            if (runtime.unit.role == UnitRole::TANK ||
+                runtime.unit.role == UnitRole::FIGHTER) {
+                runtime.unit.armor += 30.0f;
+                runtime.unit.magic_resist += 30.0f;
+            } else {
+                runtime.unit.attack_damage *= 1.10f;
+                runtime.unit.ability_power *= 1.10f;
+            }
+        }
+        if (has_item(runtime.unit, "TFT_Item_BlueBuff")) {
+            runtime.unit.attack_damage *= 1.10f;
+            runtime.unit.ability_power *= 1.10f;
+        }
+        if (has_item(runtime.unit, "TFT_Item_GargoyleStoneplate")) {
+            int nearby_enemies = 0;
+            for (const auto& enemy : units) {
+                if (enemy.unit.team != runtime.unit.team &&
+                    is_alive(enemy) && distance_between(runtime.unit, enemy.unit) <= 2)
+                    ++nearby_enemies;
+            }
+            runtime.unit.armor += 10.0f * nearby_enemies;
+            runtime.unit.magic_resist += 10.0f * nearby_enemies;
+        }
     }
 
     std::mt19937_64 rng(
@@ -359,9 +432,84 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             continue;
         }
 
-        // Efeitos únicos de Set 17, identificados pelo api_name canônico do catálogo.
-        // São efeitos de combate explícitos; source_effects genéricos não são
-        // interpretados automaticamente para evitar atribuir semântica errada.
+        // Passivas temporizadas e gatilhos defensivos dos itens do Set 17.
+        const float elapsed = std::max(0.0f, now - actor.last_status_tick);
+        if (elapsed > 0.0f) {
+            if (has_item(actor.unit, "TFT_Item_ArchangelsStaff") &&
+                now - actor.last_archangel_tick >= 5.0f) {
+                const int ticks = static_cast<int>((now - actor.last_archangel_tick) / 5.0f);
+                actor.unit.ability_power += actor.unit.ability_power * 0.20f * ticks;
+                actor.last_archangel_tick += 5.0f * ticks;
+            }
+            if (has_item(actor.unit, "TFT_Item_Quicksilver") &&
+                now - actor.last_quicksilver_tick >= 1.0f) {
+                const int ticks = static_cast<int>(now - actor.last_quicksilver_tick);
+                actor.unit.attack_speed += 0.03f * ticks;
+                actor.last_quicksilver_tick += static_cast<float>(ticks);
+            }
+            if (has_item(actor.unit, "TFT_Item_Redemption") &&
+                now - actor.last_redemption_tick >= 1.0f) {
+                const int ticks = static_cast<int>(now - actor.last_redemption_tick);
+                const float missing = actor.unit.max_hp - actor.unit.hp;
+                const float heal = std::min(missing, actor.unit.max_hp * 0.02f * ticks);
+                actor.unit.hp += heal;
+                actor.healing_done += heal;
+                actor.last_redemption_tick += static_cast<float>(ticks);
+            }
+            if (has_item(actor.unit, "TFT_Item_DragonsClaw") &&
+                now - actor.last_dragons_claw_tick >= 2.0f) {
+                const int ticks = static_cast<int>((now - actor.last_dragons_claw_tick) / 2.0f);
+                const float heal = std::min(actor.unit.max_hp - actor.unit.hp,
+                    actor.unit.max_hp * 0.025f * ticks);
+                actor.unit.hp += heal;
+                actor.healing_done += heal;
+                actor.last_dragons_claw_tick += 2.0f * ticks;
+            }
+            if (actor.crown_shield_triggered && actor.crown_shield_expires_at > 0.0f &&
+                now >= actor.crown_shield_expires_at) {
+                actor.unit.ability_power += 25.0f;
+                actor.crown_shield_expires_at = 0.0f;
+            }
+            actor.last_status_tick = now;
+        }
+        if (has_item(actor.unit, "TFT_Item_Bloodthirster") &&
+            !actor.bloodthirster_triggered &&
+            actor.unit.hp <= actor.unit.max_hp * 0.40f) {
+            actor.shield_hp += actor.unit.max_hp * 0.25f;
+            actor.shield_expires_at = now + 5.0f;
+            actor.bloodthirster_triggered = true;
+        }
+        if (has_item(actor.unit, "TFT_Item_SteraksGage") &&
+            !actor.sterak_triggered &&
+            actor.unit.hp <= actor.unit.max_hp * 0.60f) {
+            actor.shield_hp += actor.unit.max_hp * 0.40f;
+            actor.shield_expires_at = std::max(actor.shield_expires_at, now + 4.0f);
+            actor.sterak_triggered = true;
+        }
+        if (has_item(actor.unit, "TFT_Item_FrozenHeart") &&
+            !actor.frozen_heart_triggered &&
+            actor.unit.hp <= actor.unit.max_hp * 0.40f) {
+            actor.unit.mana = std::min(actor.unit.max_mana, actor.unit.mana + 15.0f);
+            actor.shield_hp += actor.unit.max_hp * 0.20f;
+            actor.shield_expires_at = std::max(actor.shield_expires_at, now + 60.0f);
+            actor.frozen_heart_triggered = true;
+        }
+        if (actor.shield_expires_at > 0.0f && now >= actor.shield_expires_at) {
+            actor.shield_hp = 0.0f;
+            actor.shield_expires_at = 0.0f;
+        }
+        if (has_item(actor.unit, "TFT_Item_GuardianAngel") &&
+            !actor.guardian_angel_triggered &&
+            actor.unit.hp <= actor.unit.max_hp * 0.60f) {
+            actor.guardian_angel_triggered = true;
+            actor.unit.damage_reduction = 1.0f;
+            const float heal = (actor.unit.max_hp - actor.unit.hp) * 0.20f;
+            actor.unit.hp = std::min(actor.unit.max_hp, actor.unit.hp + heal);
+            actor.healing_done += heal;
+            actor.shield_expires_at = std::max(actor.shield_expires_at, now + 1.0f);
+        }
+
+        // Guinsoo's and item cooldown clocks use elapsed combat time.
         for (const auto& item : actor.unit.items) {
             if (item.api_name == "TFT_Item_GuinsoosRageblade") {
                 const int ticks = static_cast<int>(std::floor(now)) -
@@ -369,16 +517,6 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 if (ticks > 0) {
                     actor.unit.attack_speed += 0.07f * static_cast<float>(ticks);
                     actor.last_guinsoo_tick = now;
-                }
-            } else if (item.api_name == "TFT_Item_DragonsClaw") {
-                const int ticks = static_cast<int>(std::floor(now / 2.0f)) -
-                                  static_cast<int>(std::floor(actor.last_dragons_claw_tick / 2.0f));
-                if (ticks > 0) {
-                    const float heal = std::min(actor.unit.max_hp - actor.unit.hp,
-                        actor.unit.max_hp * 0.025f * static_cast<float>(ticks));
-                    actor.unit.hp += heal;
-                    actor.healing_done += heal;
-                    actor.last_dragons_claw_tick = now;
                 }
             }
         }
