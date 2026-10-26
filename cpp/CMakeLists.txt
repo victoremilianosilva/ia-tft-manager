@@ -26,6 +26,11 @@ add_compile_definitions(
     TFT_COMP_DIRECTION_REQUIRED_UPDATES=${TFT_COMP_DIRECTION_REQUIRED_UPDATES}
 )
 
+# Default to the generated, versioned catalog for the active Set 17.
+add_compile_definitions(
+    TFT_DEFAULT_ITEM_CATALOG_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../data/item_catalog_set17.json"
+)
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
     "${CMAKE_BINARY_DIR}/bin"
 )
@@ -250,7 +255,7 @@ if(EXISTS "${TFT_LOBBY_SOURCE}")
     target_compile_definitions(
         tft_engine
         PRIVATE
-            TFT_DEFAULT_CATALOG_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../units_gerado.json"
+            TFT_DEFAULT_CATALOG_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../data/units_gerado.json"
     )
 
     target_include_directories(
@@ -463,7 +468,7 @@ if(BUILD_TESTING)
     add_test(
         NAME unit_instance_factory
         COMMAND test_unit_instance_factory
-            "${CMAKE_SOURCE_DIR}/../units_gerado.json"
+            "${CMAKE_SOURCE_DIR}/../data/units_gerado.json"
     )
 
     add_executable(
@@ -488,7 +493,7 @@ if(BUILD_TESTING)
     add_test(
         NAME unit_pool
         COMMAND test_unit_pool
-            "${CMAKE_CURRENT_SOURCE_DIR}/../units_gerado.json"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../data/units_gerado.json"
     )
 
     add_executable(
@@ -523,20 +528,39 @@ if(BUILD_TESTING)
     target_compile_definitions(
         test_tft_engine_pool
         PRIVATE
-            TFT_DEFAULT_CATALOG_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../units_gerado.json"
+            TFT_DEFAULT_CATALOG_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../data/units_gerado.json"
     )
 
     add_test(
         NAME tft_engine_pool
         COMMAND test_tft_engine_pool
-            "${CMAKE_CURRENT_SOURCE_DIR}/../units_gerado.json"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../data/units_gerado.json"
     )
 
     add_test(
         NAME tft_engine_item_actions
         COMMAND test_tft_engine_pool
-            "${CMAKE_CURRENT_SOURCE_DIR}/../units_gerado.json"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../data/units_gerado.json"
             "${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/items_test_catalog.json"
+    )
+
+    # Validate the generated production-shaped catalog with the runtime loader.
+    add_executable(
+        test_item_catalog
+        tests/test_item_catalog.cpp
+    )
+    target_include_directories(
+        test_item_catalog
+        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    )
+    target_link_libraries(
+        test_item_catalog
+        PRIVATE nlohmann_json::nlohmann_json
+    )
+    add_test(
+        NAME item_catalog_generated_set17
+        COMMAND test_item_catalog
+            "${CMAKE_CURRENT_SOURCE_DIR}/../data/item_catalog_set17.json"
     )
 
     # -----------------------------------------------------
@@ -576,13 +600,13 @@ if(BUILD_TESTING)
     target_compile_definitions(
         test_tft_combat_anti_loop_soak
         PRIVATE
-            TFT_DEFAULT_CATALOG_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../units_gerado.json"
+            TFT_DEFAULT_CATALOG_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../data/units_gerado.json"
     )
 
     add_test(
         NAME tft_combat_anti_loop_soak
         COMMAND test_tft_combat_anti_loop_soak
-            "${CMAKE_CURRENT_SOURCE_DIR}/../units_gerado.json"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../data/units_gerado.json"
     )
 
     # -----------------------------------------------------
@@ -600,7 +624,7 @@ if(BUILD_TESTING)
     target_link_libraries(test_shop_engine PRIVATE nlohmann_json::nlohmann_json)
     add_test(
         NAME shop_engine
-        COMMAND test_shop_engine "${CMAKE_CURRENT_SOURCE_DIR}/../units_gerado.json"
+        COMMAND test_shop_engine "${CMAKE_CURRENT_SOURCE_DIR}/../data/units_gerado.json"
     )
 
     # -----------------------------------------------------

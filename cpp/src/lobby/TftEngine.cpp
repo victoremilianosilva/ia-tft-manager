@@ -40,6 +40,10 @@
 #include "items/ItemEngine.hpp"
 #include "items/CombatItemAdapter.hpp"
 
+#ifndef TFT_DEFAULT_ITEM_CATALOG_PATH
+#define TFT_DEFAULT_ITEM_CATALOG_PATH ""
+#endif
+
 #ifndef TFT_COMP_DIRECTION_MIN_RELATIVE_ADVANTAGE
 #define TFT_COMP_DIRECTION_MIN_RELATIVE_ADVANTAGE 0.20
 #endif
@@ -436,11 +440,19 @@ struct TFTEngine::Impl {
             resolved_path
         );
 
-        // Item data is an explicit, versioned input; never silently invent a set.
-        if (!item_catalog_path.empty()) {
-            std::ifstream item_file(item_catalog_path);
+        // The generated, versioned active-set catalog is the default. An
+        // explicit path still supports controlled fixtures and set-specific runs.
+        const std::string resolved_item_catalog_path =
+            item_catalog_path.empty()
+                ? TFT_DEFAULT_ITEM_CATALOG_PATH
+                : item_catalog_path;
+        if (!resolved_item_catalog_path.empty()) {
+            std::ifstream item_file(resolved_item_catalog_path);
             if (!item_file) {
-                throw std::runtime_error("Nao foi possivel abrir catalogo de itens: " + item_catalog_path);
+                throw std::runtime_error(
+                    "Nao foi possivel abrir catalogo de itens: " +
+                    resolved_item_catalog_path
+                );
             }
             item_catalog = items::load_item_catalog(item_file);
         }
