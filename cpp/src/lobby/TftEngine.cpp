@@ -3859,7 +3859,13 @@ StepResult TFTEngine::step(
     // No viewer, o temporizador controla a fase e o limite de ações fica desativado.
     auto effective_actions = actions;
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
-        if (impl_->round_finished[i]) {
+        // A finished player normally idles with PASS, but a pending anvil is
+        // a forced decision that must be resolved before preparation can end.
+        // Do not overwrite that legal choice with PASS: the action mask has
+        // intentionally disabled PASS while the anvil is pending.
+        const auto* pending_anvil = impl_->player_envs[i].item_engine
+            ? impl_->player_envs[i].item_engine->pending_anvil() : nullptr;
+        if (impl_->round_finished[i] && pending_anvil == nullptr) {
             effective_actions[i].values = {6, 0, 0, 0, 0, 0};
         }
     }
