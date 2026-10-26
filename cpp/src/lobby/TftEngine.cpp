@@ -4462,6 +4462,34 @@ bool TFTEngine::set_next_shop_roll_for_testing(
     return player.shop->set_next_roll_for_testing(ids);
 }
 
+bool TFTEngine::set_player_hp_for_testing(
+    std::int32_t player_id,
+    float hp
+) {
+    if (!impl_) {
+        throw std::runtime_error("TFTEngine nao possui estado interno.");
+    }
+    impl_->ensure_open();
+    if (player_id < 0 ||
+        static_cast<std::size_t>(player_id) >= kPlayersPerLobby ||
+        !std::isfinite(hp) || hp <= 0.0f) {
+        return false;
+    }
+    auto& player = impl_->player_envs[static_cast<std::size_t>(player_id)].info;
+    player.hp = hp;
+    player.alive = true;
+    player.eliminated = false;
+    player.placement.reset();
+    impl_->alive_players = 0;
+    for (const auto& env : impl_->player_envs) {
+        if (env.info.alive) ++impl_->alive_players;
+    }
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        impl_->refresh_masks(i);
+    }
+    return true;
+}
+
 bool TFTEngine::set_player_alive_for_testing(
     std::int32_t player_id,
     bool alive
