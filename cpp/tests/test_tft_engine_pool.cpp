@@ -776,8 +776,8 @@ int main(int argc, char** argv) {
             for (auto& action : paired_actions) action.values = {6, 0, 0, 0, 0, 0};
             isolated_actions[0].values = {5, 0, 0, 0, 0, 0};
             paired_actions[0].values = {5, 0, 0, 0, 0, 0};
-            const auto isolated_sale = isolated_sale_step_with_pending_anvils(engine, isolated_actions);
-            const auto paired_sale = paired_sale_step_with_pending_anvils(engine, paired_actions);
+            const auto isolated_sale = step_with_pending_anvils(isolated_sale_engine, isolated_actions);
+            const auto paired_sale = step_with_pending_anvils(paired_sale_engine, paired_actions);
             require(paired_sale.action_rewards[0] < isolated_sale.action_rewards[0] - 0.15f,
                     "Vender uma copia que protege um par nao recebeu penalidade adicional suficiente.");
         }
@@ -796,7 +796,7 @@ int main(int argc, char** argv) {
             std::array<tft::PlayerAction, tft::kPlayersPerLobby> item_actions{};
             for (auto& action : item_actions) action.values = {6, 0, 0, 0, 0, 0};
             item_actions[0].values = {8, 0, 1, 0, 0, 0};
-            (void)item_action_step_with_pending_anvils(engine, item_actions);
+            (void)step_with_pending_anvils(item_action_engine, item_actions);
             auto item_audit = item_action_engine.get_audit_snapshot();
             require(item_audit.players[0].board[0].item_ids.size() == 1 &&
                     item_audit.players[0].board[0].item_ids[0] == "damage_blade",
@@ -808,7 +808,7 @@ int main(int argc, char** argv) {
             require(masks[0].type_mask[7] == 1,
                     "EQUIP_FROM_INVENTORY deveria estar habilitada com item e alvo validos.");
             item_actions[0].values = {7, 0, 0, 0, 0, 0};
-            (void)item_action_step_with_pending_anvils(engine, item_actions);
+            (void)step_with_pending_anvils(item_action_engine, item_actions);
             item_audit = item_action_engine.get_audit_snapshot();
             require(item_audit.players[0].board[0].item_ids.size() == 2,
                     "EQUIP_FROM_INVENTORY nao anexou o item ao estado de combate.");
