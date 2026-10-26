@@ -77,6 +77,38 @@ def test_merges_same_set_entries_and_filters_recipes():
     }
 
 
+def test_ignores_tft_item_aliases_even_when_they_have_valid_da_recipe():
+    source = source_fixture()
+    source["items"].extend([
+        {
+            "apiName": "TFT_Item_AliasBlade",
+            "name": "TFT alias blade",
+            "composition": ["DA_Component_Sword", "DA_Component_Bow"],
+            "effects": {"AP": 500},
+        },
+        {
+            "apiName": "TFT_Item_AliasComponent",
+            "name": "TFT alias component",
+            "tags": ["component"],
+            "composition": [],
+            "effects": {},
+        },
+    ])
+    source["setData"][0]["items"].extend([
+        "TFT_Item_AliasBlade",
+        "TFT_Item_AliasComponent",
+    ])
+    catalog = build_catalog(source, "16")
+    assert {item["id"] for item in catalog["items"]} == {
+        "DA_Item_TestBlade",
+        "DA_Item_TestBlade_Alt",
+    }
+    assert {component["id"] for component in catalog["components"]} == {
+        "DA_Component_Sword",
+        "DA_Component_Bow",
+    }
+
+
 def test_ignores_items_tagged_as_consumable_and_recipes_using_them():
     catalog = build_catalog(source_fixture(), "16")
     output_ids = {item["id"] for item in catalog["items"]}
