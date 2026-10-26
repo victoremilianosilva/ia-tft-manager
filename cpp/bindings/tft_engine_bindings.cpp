@@ -93,6 +93,7 @@ py::dict masks_to_dict(const PlayerActionMasks& masks) {
     result["item_component_first_mask"] = mask_1d(masks.item_component_first_mask);
     result["item_component_pair_masks"] = mask_2d<10, 10>(masks.item_component_pair_masks);
     result["item_target_mask"] = mask_1d(masks.item_target_mask);
+    result["carousel_option_mask"] = mask_1d(masks.carousel_option_mask);
 
     return result;
 }
