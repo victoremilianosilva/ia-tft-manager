@@ -670,58 +670,63 @@ struct TFTEngine::Impl {
         return unit ? &*unit : nullptr;
     }
 
-    void grant_round_item_anvils(std::uint32_t current_round_number, std::vector<std::string>& events) {
-        if (!item_catalog || current_round_number <= 4) return;
+    void grant_round_component_loot(std::uint32_t current_round_number, std::vector<std::string>& events) {
+        if (!item_catalog || item_catalog->components.empty() || current_round_number <= 4) return;
+
         const auto current_stage = stage_for_round(current_round_number);
         const auto round_in_stage = ((current_round_number - 5) % kRoundsPerStage) + 1;
-        if (round_in_stage != 7) return;
+        // Only PvE stage-end encounters produce this modeled component reward.
+        // Components are granted directly: no Pengu armory/offer and no choice UI.
+        if (round_in_stage != 7 || current_stage < 2 || current_stage > 6) return;
 
-        items::ItemAnvilKind kind;
-        std::size_t option_count = 0;
+        // Set 17's 4-7 God Blessing grants 1-3 components. Other stage-end
+        // component counts remain an explicit engine approximation until a
+        // versioned, authoritative loot table is added to the item catalog.
+        std::size_t component_count = 1;
         if (current_stage == 4) {
-            // Classic TFT item-anvil cadence: component anvil at 4-7.
-            kind = items::ItemAnvilKind::COMPONENT;
-            option_count = 3;
-        } else if (current_stage == 5 || current_stage == 6) {
-            // Completed-item anvils are offered by the later PvE encounters.
-            kind = items::ItemAnvilKind::COMPLETED_ITEM;
-            option_count = 4;
-        } else {
-            return;
+            const auto mixed_seed = seed ^
+                (episode_id * 0x9E3779B97F4A7C15ULL) ^
+                (static_cast<std::uint64_t>(current_round_number) << 16U);
+            std::mt19937_64 count_rng(mixed_seed);
+            component_count = 1U + static_cast<std::size_t>(count_rng() % 3U);
+        } else if (current_stage == 3) {
+            // Patch 17.1 reduced the 3-7 component count by one; this
+            // lightweight loot model therefore does not grant a component here.
+            component_count = 0;
+        } else if (current_stage >= 5) {
+            component_count = 2;
         }
-
-        std::vector<std::string> pool;
-        if (kind == items::ItemAnvilKind::COMPONENT) {
-            for (const auto& component : item_catalog->components)
-                pool.push_back(component.first);
-        } else {
-            for (const auto& item : item_catalog->items)
-                pool.push_back(item.id);
-        }
-        if (pool.size() < option_count) return;
 
         for (std::size_t player_index = 0; player_index < kPlayersPerLobby; ++player_index) {
             auto& player = player_envs[player_index];
             if (!player.info.alive || !player.item_engine) continue;
-            auto options = pool;
+
             const auto mixed_seed = seed ^
-                (episode_id * 0x9E3779B97F4A7C15ULL) ^
+                (episode_id * 0xD1B54A32D192ED03ULL) ^
                 (static_cast<std::uint64_t>(current_round_number) << 16U) ^
                 static_cast<std::uint64_t>(player_index);
-            std::mt19937_64 option_rng(mixed_seed);
-            std::shuffle(options.begin(), options.end(), option_rng);
-            options.resize(option_count);
-            const bool granted = kind == items::ItemAnvilKind::COMPONENT
-                ? player.item_engine->grant_component_anvil(std::move(options))
-                : player.item_engine->grant_completed_item_anvil(std::move(options));
-            if (granted) {
-                events.emplace_back(
-                    "ITEM_ANVIL_GRANTED: player=" + std::to_string(player_index) +
-                    ", stage=" + std::to_string(current_stage) +
-                    ", kind=" + (kind == items::ItemAnvilKind::COMPONENT
-                        ? std::string("component") : std::string("completed_item")) +
-                    ", options=" + std::to_string(option_count));
+            std::mt19937_64 loot_rng(mixed_seed);
+            auto pool = item_catalog->components;
+            std::shuffle(pool.begin(), pool.end(), loot_rng);
+
+            std::size_t granted_count = 0;
+            for (std::size_t drop = 0; drop < component_count; ++drop) {
+                // A component can drop more than once; shuffle each draw to
+                // keep duplicates legal while retaining deterministic replay.
+                if (pool.empty()) break;
+                if (drop > 0 && drop % pool.size() == 0)
+                    std::shuffle(pool.begin(), pool.end(), loot_rng);
+                const auto& component_id = pool[drop % pool.size()].first;
+                if (player.item_engine->add_component(component_id)) ++granted_count;
             }
+            if (granted_count > 0) {
+                events.emplace_back(
+                    "COMPONENT_LOOT_GRANTED: player=" + std::to_string(player_index) +
+                    ", stage=" + std::to_string(current_stage) +
+                    ", count=" + std::to_string(granted_count) +
+                    ", source=pve_direct_drop");
+            }
+            refresh_masks(player_index);
         }
     }
 
@@ -3934,7 +3939,7 @@ StepResult TFTEngine::step(
         // Resolve item-anvil rewards from the completed PvE encounter. The
         // choices are generated once from the active catalog and then selected
         // by the policy during the next preparation phase.
-        impl_->grant_round_item_anvils(current_round_number, round_events);
+        impl_->grant_round_component_loot(current_round_number, round_events);
 
         // A renda/XP calculada é para a próxima preparação; o estado começa
         // em round=0 (1-1), então a próxima rodada é current_round_number + 1.
