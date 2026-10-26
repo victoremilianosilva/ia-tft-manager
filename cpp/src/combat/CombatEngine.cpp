@@ -39,6 +39,7 @@ struct RuntimeUnit {
     float burn_until = 0.0f;
     float burn_next_tick = 0.0f;
     float burn_percent = 0.0f;
+    int burn_source_id = -1;
     float grievous_until = 0.0f;
     float armor_shred_until = 0.0f;
     float armor_shred_percent = 0.0f;
@@ -428,6 +429,48 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
         now = event.time;
         ++result.events_processed;
 
+        // Processa queimadura uma vez por segundo, independentemente da ordem
+        // de ações da unidade que aplicou o efeito.
+        for (auto& burning : units) {
+            if (!is_alive(burning) || burning.burn_until <= now ||
+                burning.burn_next_tick > now) continue;
+            const float raw_burn = burning.unit.max_hp * burning.burn_percent / 100.0f;
+            const float hp_loss = std::min(burning.unit.hp, raw_burn);
+            burning.unit.hp -= hp_loss;
+            burning.damage_taken += hp_loss;
+            if (burning.burn_source_id >= 0) {
+                const auto source_it = index_by_id.find(burning.burn_source_id);
+                if (source_it != index_by_id.end())
+                    units[source_it->second].damage_dealt += hp_loss;
+            }
+            if (config.record_damage) {
+                DamageEvent burn_event;
+                burn_event.timestamp = now;
+                burn_event.source_unit_id = burning.burn_source_id;
+                burn_event.target_unit_id = burning.unit.id;
+                burn_event.damage_type = DamageType::TRUE_DAMAGE;
+                burn_event.raw_damage = raw_burn;
+                burn_event.final_damage = hp_loss;
+                result.damage_events.push_back(burn_event);
+            }
+            burning.burn_next_tick += 1.0f;
+            if (burning.unit.hp <= 0.0f && burning.unit.alive) {
+                burning.unit.hp = 0.0f;
+                burning.unit.alive = false;
+                if (burning.burn_source_id >= 0) {
+                    const auto source_it = index_by_id.find(burning.burn_source_id);
+                    if (source_it != index_by_id.end()) ++units[source_it->second].kills;
+                }
+                if (config.record_events) {
+                    DeathEvent death;
+                    death.timestamp = now;
+                    death.unit_id = burning.unit.id;
+                    death.killer_unit_id = burning.burn_source_id;
+                    result.death_events.push_back(death);
+                }
+            }
+        }
+
         auto& actor = units[event.unit_index];
         if (!is_alive(actor) || (!actor.unit.can_attack && !actor.unit.can_cast)) {
             continue;
@@ -664,10 +707,17 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                                 actor.unit.attack_damage;
                         raw *= std::max(0.0f, 1.0f + actor.unit.damage_amplification);
                         float damage = raw;
-                        if (ability.damage_type == DamageType::PHYSICAL)
-                            damage = mitigate_physical_damage(damage, ability_target.unit.armor);
-                        else if (ability.damage_type == DamageType::MAGIC)
-                            damage = mitigate_physical_damage(damage, ability_target.unit.magic_resist);
+                        if (ability.damage_type == DamageType::PHYSICAL) {
+                            const float armor = ability_target.armor_shred_until > now
+                                ? ability_target.unit.armor * (1.0f - ability_target.armor_shred_percent)
+                                : ability_target.unit.armor;
+                            damage = mitigate_physical_damage(damage, armor);
+                        } else if (ability.damage_type == DamageType::MAGIC) {
+                            const float mr = ability_target.mr_shred_until > now
+                                ? ability_target.unit.magic_resist * (1.0f - ability_target.mr_shred_percent)
+                                : ability_target.unit.magic_resist;
+                            damage = mitigate_physical_damage(damage, mr);
+                        }
                         damage *= std::clamp(1.0f - ability_target.unit.damage_reduction, 0.0f, 1.0f);
                         damage = std::min(damage, ability_target.unit.hp + ability_target.shield_hp);
                         const float absorbed = std::min(ability_target.shield_hp, damage);
@@ -698,7 +748,9 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                         const float healing = std::max(0.0f, ability.base_healing) +
                             std::max(0.0f, ability.ability_power_ratio) *
                                 actor.unit.ability_power;
-                        const float actual = std::min(healing,
+                        const float healing_after_wounds = ability_target.grievous_until > now
+                            ? healing * 0.67f : healing;
+                        const float actual = std::min(healing_after_wounds,
                             ability_target.unit.max_hp - ability_target.unit.hp);
                         ability_target.unit.hp += actual;
                         actor.healing_done += actual;
@@ -754,8 +806,10 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             raw_damage *= std::max(
                 0.0f, 1.0f + actor.unit.damage_amplification);
 
-            float damage = mitigate_physical_damage(
-                raw_damage, target.unit.armor);
+            const float effective_armor = target.armor_shred_until > now
+                ? target.unit.armor * (1.0f - target.armor_shred_percent)
+                : target.unit.armor;
+            float damage = mitigate_physical_damage(raw_damage, effective_armor);
 
             damage *= std::clamp(
                 1.0f - target.unit.damage_reduction, 0.0f, 1.0f);
@@ -810,13 +864,11 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
 
             // Efeitos aplicados ao alvo por ataques: fatiamento, queimadura e ferimentos.
             if (has_item(actor.unit, "TFT_Item_LastWhisper")) {
-                target.unit.armor = std::max(0.0f, target.unit.armor * 0.70f);
                 target.armor_shred_until = now + 3.0f;
                 target.armor_shred_percent = 0.30f;
             }
             if (has_item(actor.unit, "TFT_Item_StatikkShiv") ||
                 has_item(actor.unit, "TFT_Item_IonicSpark")) {
-                target.unit.magic_resist = std::max(0.0f, target.unit.magic_resist * 0.70f);
                 target.mr_shred_until = now +
                     (has_item(actor.unit, "TFT_Item_StatikkShiv") ? 5.0f : 2.0f);
                 target.mr_shred_percent = 0.30f;
@@ -827,6 +879,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 target.burn_until = std::max(target.burn_until, now +
                     (has_item(actor.unit, "TFT_Item_Morellonomicon") ? 10.0f : 5.0f));
                 target.burn_percent = std::max(target.burn_percent, 1.0f);
+                target.burn_source_id = actor.unit.id;
                 if (target.burn_next_tick < now) target.burn_next_tick = now + 1.0f;
                 target.grievous_until = std::max(target.grievous_until,
                     now + (has_item(actor.unit, "TFT_Item_Morellonomicon") ? 10.0f : 5.0f));
