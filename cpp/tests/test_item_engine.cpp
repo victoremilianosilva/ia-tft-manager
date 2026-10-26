@@ -145,6 +145,40 @@ int main() {
     require(engine.metrics().equips == 3, "equip metric");
     require(engine.metrics().invalid_actions >= 2, "invalid operations are counted");
 
+    // An anvil is a queued choice, not a random direct grant. Only the selected
+    // option enters the inventory, and queued anvils are opened one at a time.
+    require(engine.grant_component_anvil({"sword", "bow", "rod"}),
+            "component anvil should accept unique known component options");
+    require(engine.has_pending_anvil() &&
+            engine.pending_anvil()->kind == ItemAnvilKind::COMPONENT &&
+            engine.pending_anvil()->options.size() == 3,
+            "component anvil should expose its three choices");
+    const auto components_before_anvil_choice = engine.components().size();
+    require(!engine.choose_anvil_option(3),
+            "anvil choice outside the offered option range must be rejected");
+    require(engine.has_pending_anvil() &&
+            engine.components().size() == components_before_anvil_choice,
+            "invalid choice must not consume the anvil or grant a component");
+    require(engine.choose_anvil_option(1),
+            "policy should be able to select one offered component");
+    require(!engine.has_pending_anvil() &&
+            engine.components().back() == "bow",
+            "selected component is granted and the anvil is consumed exactly once");
+
+    require(engine.grant_completed_item_anvil({"damage_blade", "guard_plate"}),
+            "completed-item anvil should accept known catalog item options");
+    require(engine.choose_anvil_option(0),
+            "policy should select one completed item from the anvil");
+    require(engine.inventory().back() == "damage_blade" &&
+            !engine.has_pending_anvil(),
+            "completed-item choice grants only the selected catalog item");
+    require(engine.metrics().anvils_received == 2 &&
+            engine.metrics().anvil_choices == 2,
+            "anvil grant/choice metrics should count exactly once per transition");
+
+    require(!engine.grant_component_anvil({"sword", "sword"}),
+            "anvil must not present duplicate options");
+
     // Phase 1 contract: repeated component IDs represent separate copies,
     // and equipment is keyed by unit-instance UUID rather than champion ID.
     tft::items::ItemPlayerState item_state;
