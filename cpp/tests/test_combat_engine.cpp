@@ -241,6 +241,165 @@ void test_item_mana_can_enable_an_early_cast() {
             "Item-provided starting mana should enable a cast at combat start.");
 }
 
+void test_unique_item_effects_and_combinations() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 3.0f;
+    input.config.record_damage = true;
+    input.player_a.units[0].attack_damage = 10.0f;
+    input.player_a.units[0].attack_speed = 1.0f;
+    input.player_a.units[0].max_hp = input.player_a.units[0].hp = 500.0f;
+    input.player_a.units[0].mana = 0.0f;
+    input.player_a.units[0].max_mana = 100.0f;
+    input.player_b.units[0].attack_damage = 0.1f;
+    input.player_b.units[0].attack_speed = 0.1f;
+    input.player_b.units[0].max_hp = input.player_b.units[0].hp = 2000.0f;
+
+    // Guinsoo deve aumentar a velocidade ao longo do tempo; Shojin aumenta
+    // a mana gerada por ataques. Os dois efeitos devem coexistir.
+    tft::CombatItem guinsoo;
+    guinsoo.api_name = "TFT_Item_GuinsoosRageblade";
+    guinsoo.attack_speed = 0.1f;
+    tft::CombatItem shojin;
+    shojin.api_name = "TFT_Item_SpearOfShojin";
+    input.player_a.units[0].items = {guinsoo, shojin};
+    const auto combined = engine.simulate(input);
+    require(combined.success, "Combined unique item effects should simulate.");
+    require(combined.units.front().attacks >= 3,
+            "Combined attack-speed and mana items should allow repeated attacks.");
+    require(combined.units.front().damage_dealt > 30.0f,
+            "Combined item effects should change actual combat damage.");
+
+    // Bramble must deal extra damage back to an attacker, changing its HP.
+    auto bramble_input = make_input();
+    bramble_input.config.max_duration = 0.1f;
+    bramble_input.config.record_damage = true;
+    bramble_input.player_a.units[0].attack_damage = 1.0f;
+    bramble_input.player_a.units[0].max_hp = bramble_input.player_a.units[0].hp = 500.0f;
+    bramble_input.player_b.units[0].attack_damage = 10.0f;
+    bramble_input.player_b.units[0].max_hp = bramble_input.player_b.units[0].hp = 500.0f;
+    tft::CombatItem bramble;
+    bramble.api_name = "TFT_Item_BrambleVest";
+    bramble_input.player_b.units[0].items.push_back(bramble);
+    const auto reflected = engine.simulate(bramble_input);
+    require(reflected.success, "Bramble combat should simulate.");
+    bool saw_reflect = false;
+    for (const auto& event : reflected.damage_events) {
+        if (event.source_unit_id == bramble_input.player_b.units[0].id &&
+            event.target_unit_id == bramble_input.player_a.units[0].id &&
+            event.damage_type == tft::DamageType::MAGIC &&
+            std::abs(event.raw_damage - 100.0f) < 0.001f) saw_reflect = true;
+    }
+    require(saw_reflect, "Bramble should record its reflected magic damage.");
+    require(reflected.units.front().final_hp < reflected.units.front().initial_hp,
+            "Bramble reflection should reduce the attacker's final HP.");
+
+    // Sterak's shield should absorb a later hit after the health threshold.
+    auto sterak_input = make_input();
+    sterak_input.config.max_duration = 2.0f;
+    sterak_input.player_a.units[0].attack_damage = 0.1f;
+    sterak_input.player_a.units[0].attack_speed = 0.1f;
+    sterak_input.player_a.units[0].max_hp = sterak_input.player_a.units[0].hp = 100.0f;
+    sterak_input.player_b.units[0].attack_damage = 30.0f;
+    sterak_input.player_b.units[0].attack_speed = 1.0f;
+    sterak_input.player_b.units[0].max_hp = sterak_input.player_b.units[0].hp = 1000.0f;
+    const auto no_sterak = engine.simulate(sterak_input);
+    tft::CombatItem sterak;
+    sterak.api_name = "TFT_Item_SteraksGage";
+    sterak_input.player_a.units[0].items.push_back(sterak);
+    const auto shielded = engine.simulate(sterak_input);
+    require(shielded.success && no_sterak.success, "Sterak comparison combats should simulate.");
+    require(shielded.units.front().final_hp > no_sterak.units.front().final_hp,
+            "Sterak's threshold shield should preserve more HP than the no-item baseline.");
+}
+
+void test_shojin_changes_cast_timing_and_dragons_claw_heals() {
+    tft::CombatEngine engine;
+    auto mana_input = make_input();
+    mana_input.config.max_duration = 1.1f;
+    mana_input.player_a.units[0].attack_damage = 1.0f;
+    mana_input.player_a.units[0].attack_speed = 1.0f;
+    mana_input.player_a.units[0].mana = 0.0f;
+    mana_input.player_a.units[0].max_mana = 100.0f;
+    mana_input.player_a.units[0].ability.api_name = "shojin_timing_test";
+    mana_input.player_a.units[0].ability.mana_cost = 15.0f;
+    mana_input.player_a.units[0].ability.base_damage = 1.0f;
+    mana_input.player_a.units[0].ability.has_damage = true;
+    mana_input.player_a.units[0].ability.target_type = tft::AbilityTargetType::ENEMY;
+    mana_input.player_b.units[0].max_hp = mana_input.player_b.units[0].hp = 1000.0f;
+    mana_input.player_b.units[0].attack_damage = 0.1f;
+
+    const auto no_shojin = engine.simulate(mana_input);
+    tft::CombatItem shojin;
+    shojin.api_name = "TFT_Item_SpearOfShojin";
+    mana_input.player_a.units[0].items.push_back(shojin);
+    const auto with_shojin = engine.simulate(mana_input);
+    require(no_shojin.success && with_shojin.success, "Shojin comparison should simulate.");
+    require(no_shojin.units.front().ability_casts == 0 &&
+            with_shojin.units.front().ability_casts == 1,
+            "Shojin's bonus mana on attack should enable an earlier ability cast.");
+
+    auto healing_input = make_input();
+    healing_input.config.max_duration = 4.1f;
+    healing_input.player_a.units[0].attack_damage = 1.0f;
+    healing_input.player_a.units[0].attack_speed = 0.5f;
+    healing_input.player_a.units[0].max_hp = 500.0f;
+    healing_input.player_a.units[0].hp = 350.0f;
+    healing_input.player_b.units[0].attack_damage = 0.1f;
+    healing_input.player_b.units[0].attack_speed = 0.1f;
+    healing_input.player_b.units[0].max_hp = healing_input.player_b.units[0].hp = 1000.0f;
+
+    const auto no_claw = engine.simulate(healing_input);
+    tft::CombatItem claw;
+    claw.api_name = "TFT_Item_DragonsClaw";
+    healing_input.player_a.units[0].items.push_back(claw);
+    const auto with_claw = engine.simulate(healing_input);
+    require(no_claw.success && with_claw.success, "Dragon's Claw comparison should simulate.");
+    require(with_claw.units.front().healing_done > no_claw.units.front().healing_done,
+            "Dragon's Claw should periodically heal and record healing in the combat result.");
+}
+
+void test_titans_resolve_and_seeded_item_impact() {
+    tft::CombatEngine engine;
+    auto base = make_input();
+    base.config.max_duration = 4.1f;
+    base.config.record_damage = true;
+    base.player_a.units[0].attack_damage = 10.0f;
+    base.player_a.units[0].attack_speed = 1.0f;
+    base.player_b.units[0].attack_damage = 0.1f;
+    base.player_b.units[0].attack_speed = 0.1f;
+    base.player_b.units[0].max_hp = base.player_b.units[0].hp = 5000.0f;
+
+    const auto no_titans = engine.simulate(base);
+    tft::CombatItem titans;
+    titans.api_name = "TFT_Item_TitansResolve";
+    auto with_titans_input = base;
+    with_titans_input.player_a.units[0].items.push_back(titans);
+    const auto with_titans = engine.simulate(with_titans_input);
+    require(no_titans.success && with_titans.success, "Titan's Resolve comparison should simulate.");
+    require(with_titans.units.front().damage_dealt > no_titans.units.front().damage_dealt,
+            "Titan's Resolve stacks should increase actual damage dealt.");
+
+    // Repeated deterministic battles check that a combined offensive build
+    // changes combat output consistently rather than only changing metadata.
+    for (std::uint64_t seed = 20261020; seed < 20261028; ++seed) {
+        auto baseline = base;
+        baseline.seed = seed;
+        auto equipped = base;
+        equipped.seed = seed;
+        equipped.player_a.units[0].items.push_back(titans);
+        tft::CombatItem guinsoo;
+        guinsoo.api_name = "TFT_Item_GuinsoosRageblade";
+        equipped.player_a.units[0].items.push_back(guinsoo);
+        const auto before = engine.simulate(baseline);
+        const auto after = engine.simulate(equipped);
+        require(before.success && after.success,
+                "Seeded item outcome comparison must complete successfully.");
+        require(after.units.front().damage_dealt > before.units.front().damage_dealt,
+                "Combined unique items should improve actual damage across deterministic seeds.");
+    }
+}
+
 } // namespace
 
 int main() {
@@ -252,6 +411,9 @@ int main() {
         test_invalid_equipment_is_rejected();
         test_ability_cast_uses_mana_and_ability_power();
         test_item_mana_can_enable_an_early_cast();
+        test_unique_item_effects_and_combinations();
+        test_shojin_changes_cast_timing_and_dragons_claw_heals();
+        test_titans_resolve_and_seeded_item_impact();
     } catch (const std::exception& error) {
         std::cerr << "test_combat_engine: " << error.what() << '\n';
         return 1;
