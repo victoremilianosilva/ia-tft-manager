@@ -313,6 +313,52 @@ void test_unique_item_effects_and_combinations() {
             "Sterak's threshold shield should preserve more HP than the no-item baseline.");
 }
 
+void test_shojin_changes_cast_timing_and_dragons_claw_heals() {
+    tft::CombatEngine engine;
+    auto mana_input = make_input();
+    mana_input.config.max_duration = 1.1f;
+    mana_input.player_a.units[0].attack_damage = 1.0f;
+    mana_input.player_a.units[0].attack_speed = 1.0f;
+    mana_input.player_a.units[0].mana = 0.0f;
+    mana_input.player_a.units[0].max_mana = 100.0f;
+    mana_input.player_a.units[0].ability.api_name = "shojin_timing_test";
+    mana_input.player_a.units[0].ability.mana_cost = 15.0f;
+    mana_input.player_a.units[0].ability.base_damage = 1.0f;
+    mana_input.player_a.units[0].ability.has_damage = true;
+    mana_input.player_a.units[0].ability.target_type = tft::AbilityTargetType::ENEMY;
+    mana_input.player_b.units[0].max_hp = mana_input.player_b.units[0].hp = 1000.0f;
+    mana_input.player_b.units[0].attack_damage = 0.1f;
+
+    const auto no_shojin = engine.simulate(mana_input);
+    tft::CombatItem shojin;
+    shojin.api_name = "TFT_Item_SpearOfShojin";
+    mana_input.player_a.units[0].items.push_back(shojin);
+    const auto with_shojin = engine.simulate(mana_input);
+    require(no_shojin.success && with_shojin.success, "Shojin comparison should simulate.");
+    require(no_shojin.units.front().ability_casts == 0 &&
+            with_shojin.units.front().ability_casts == 1,
+            "Shojin's bonus mana on attack should enable an earlier ability cast.");
+
+    auto healing_input = make_input();
+    healing_input.config.max_duration = 4.1f;
+    healing_input.player_a.units[0].attack_damage = 1.0f;
+    healing_input.player_a.units[0].attack_speed = 0.5f;
+    healing_input.player_a.units[0].max_hp = 500.0f;
+    healing_input.player_a.units[0].hp = 350.0f;
+    healing_input.player_b.units[0].attack_damage = 0.1f;
+    healing_input.player_b.units[0].attack_speed = 0.1f;
+    healing_input.player_b.units[0].max_hp = healing_input.player_b.units[0].hp = 1000.0f;
+
+    const auto no_claw = engine.simulate(healing_input);
+    tft::CombatItem claw;
+    claw.api_name = "TFT_Item_DragonsClaw";
+    healing_input.player_a.units[0].items.push_back(claw);
+    const auto with_claw = engine.simulate(healing_input);
+    require(no_claw.success && with_claw.success, "Dragon's Claw comparison should simulate.");
+    require(with_claw.units.front().healing_done > no_claw.units.front().healing_done,
+            "Dragon's Claw should periodically heal and record healing in the combat result.");
+}
+
 } // namespace
 
 int main() {
@@ -325,6 +371,7 @@ int main() {
         test_ability_cast_uses_mana_and_ability_power();
         test_item_mana_can_enable_an_early_cast();
         test_unique_item_effects_and_combinations();
+        test_shojin_changes_cast_timing_and_dragons_claw_heals();
     } catch (const std::exception& error) {
         std::cerr << "test_combat_engine: " << error.what() << '\n';
         return 1;
