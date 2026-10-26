@@ -10,7 +10,7 @@ class TFTPolicy(nn.Module):
         super().__init__()
 
         # 🛡️ Valida o contrato das seis dimensões antes de criar as camadas.
-        expected_dims = [9, 5, 9, 28, 28, 28]
+        expected_dims = [10, 5, 9, 28, 28, 28]
 
         if list(action_dims) != expected_dims:
             raise ValueError(
@@ -93,6 +93,8 @@ class TFTPolicy(nn.Module):
         self.item_target_head = nn.Linear(
             hidden_size + self.num_action_types + 20, 37
         )
+        # Shared carousel offers are encoded in the native observation; action[2] selects one of 9.
+        self.carousel_head = nn.Linear(hidden_size + self.num_action_types, 9)
         self.value_head = nn.Linear(hidden_size, 1)
 
     def load_compatible_state_dict(self, state_dict):
@@ -106,7 +108,7 @@ class TFTPolicy(nn.Module):
         target = self.state_dict()
         item_head_keys = {key for key in target if key.startswith((
             "item_inventory_head.", "item_component_first_head.",
-            "item_component_second_head.", "item_target_head."
+            "item_component_second_head.", "item_target_head.", "carousel_head."
         ))}
         missing = sorted((set(target) - set(state_dict)) - item_head_keys)
         unexpected = sorted(set(state_dict) - set(target))
@@ -132,12 +134,12 @@ class TFTPolicy(nn.Module):
             if (
                 key in {"type_head.weight", "type_head.bias"}
                 and source_value.ndim == target_value.ndim
-                and source_value.shape[0] == 7
-                and target_value.shape[0] == 9
+                and source_value.shape[0] in {7, 9}
+                and target_value.shape[0] == 10
                 and source_value.shape[1:] == target_value.shape[1:]
             ):
                 expanded = torch.zeros_like(target_value)
-                expanded[:7] = source_value
+                expanded[:source_value.shape[0]] = source_value
                 loaded[key] = expanded
                 migrated = True
                 continue
@@ -632,6 +634,20 @@ class TFTPolicy(nn.Module):
             total_entropy[equip_item_mask] += target_dist.entropy()
             record_distribution("item_target", target_logits, target_index, torch.where(equip_item_mask)[0], target_mask)
 
+        # --- SHARED CAROUSEL ---
+        carousel_mask = action_type == 9
+        if carousel_mask.any():
+            logits = self.carousel_head(conditioned[carousel_mask])
+            option_mask = masks["carousel_option_mask"][carousel_mask] if masks is not None else None
+            if option_mask is not None:
+                logits = self._mask_logits(logits, option_mask)
+            sampled = self._sample_categorical(logits, deterministic)
+            bench_slot[carousel_mask] = sampled
+            dist = Categorical(logits=logits)
+            total_logprob[carousel_mask] += dist.log_prob(sampled)
+            total_entropy[carousel_mask] += dist.entropy()
+            record_distribution("carousel_option", logits, sampled, torch.where(carousel_mask)[0], option_mask)
+
         # --- CRAFT AND EQUIP ---
         craft_item_mask = action_type == 8
         if craft_item_mask.any():
@@ -897,6 +913,17 @@ class TFTPolicy(nn.Module):
             target_dist = Categorical(logits=target_logits)
             total_logprob[equip_item_mask] += target_dist.log_prob(target_index)
             total_entropy[equip_item_mask] += target_dist.entropy()
+
+        # SHARED CAROUSEL
+        carousel_mask = action_type == 9
+        if carousel_mask.any():
+            selected = actions[carousel_mask, 2].long()
+            option_mask = masks["carousel_option_mask"][carousel_mask]
+            logits = self._mask_logits(self.carousel_head(conditioned[carousel_mask]), option_mask)
+            self._validate_selected_actions(selected, option_mask, "carousel_option")
+            dist = Categorical(logits=logits)
+            total_logprob[carousel_mask] += dist.log_prob(selected)
+            total_entropy[carousel_mask] += dist.entropy()
 
         # CRAFT AND EQUIP
         craft_item_mask = action_type == 8
