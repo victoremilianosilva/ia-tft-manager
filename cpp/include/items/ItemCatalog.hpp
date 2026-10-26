@@ -222,6 +222,17 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
         if (entry.contains("combat_effects")) {
             item.combat_effects = parse_effects(entry["combat_effects"]);
         }
+        if (entry.contains("deferred_stats")) {
+            if (!entry["deferred_stats"].is_array()) {
+                throw std::invalid_argument("deferred_stats must be an array");
+            }
+            for (const auto& stat : entry["deferred_stats"]) {
+                if (!stat.is_string()) {
+                    throw std::invalid_argument("deferred_stats entries must be strings");
+                }
+                item.deferred_stats.push_back(stat.get<std::string>());
+            }
+        }
         catalog.items.push_back(std::move(item));
     }
 
