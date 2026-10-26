@@ -481,6 +481,7 @@ struct TFTEngine::Impl {
 #ifdef TFT_DEFAULT_TRAITS_PATH
         if (!traits_file) {
             traits_path = TFT_DEFAULT_TRAITS_PATH;
+            traits_file.clear();
             traits_file.open(traits_path);
         }
 #endif
