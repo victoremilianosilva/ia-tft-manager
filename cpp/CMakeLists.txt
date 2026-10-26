@@ -28,7 +28,7 @@ add_compile_definitions(
 
 # Default to the generated, versioned catalog for the active Set 17.
 add_compile_definitions(
-    TFT_DEFAULT_ITEM_CATALOG_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../data/item_catalog_set17.json"
+    TFT_DEFAULT_ITEM_CATALOG_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../data/itens.json"
     TFT_DEFAULT_TRAITS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../data/traits.json"
 )
 
@@ -551,7 +551,7 @@ if(BUILD_TESTING)
         COMMAND test_tft_engine_pool
             "${CMAKE_CURRENT_SOURCE_DIR}/../data/units_gerado.json"
             "${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/items_test_catalog.json"
-            "${CMAKE_CURRENT_SOURCE_DIR}/../data/item_catalog_set17.json"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../data/itens.json"
     )
 
     # Validate the generated production-shaped catalog with the runtime loader.
@@ -573,6 +573,25 @@ if(BUILD_TESTING)
             "${CMAKE_CURRENT_SOURCE_DIR}/../data/item_catalog_set17.json"
     )
 
+    # Validate the active Set 18 catalog consumed by the engine.
+    add_executable(
+        test_item_catalog_set18
+        tests/test_item_catalog_set18.cpp
+    )
+    target_include_directories(
+        test_item_catalog_set18
+        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    )
+    target_link_libraries(
+        test_item_catalog_set18
+        PRIVATE nlohmann_json::nlohmann_json
+    )
+    add_test(
+        NAME item_catalog_generated_set18
+        COMMAND test_item_catalog_set18
+            "${CMAKE_CURRENT_SOURCE_DIR}/../data/itens.json"
+    )
+
     # Validate the real Set 17 trait milestone catalog and identifier mapping.
     add_executable(
         test_trait_milestones
@@ -585,7 +604,7 @@ if(BUILD_TESTING)
         PRIVATE nlohmann_json::nlohmann_json
     )
     add_test(
-        NAME trait_milestones_set17
+        NAME trait_milestones_set18
         COMMAND test_trait_milestones
             "${CMAKE_CURRENT_SOURCE_DIR}/../data/traits.json"
     )
