@@ -4,6 +4,7 @@
 #include "items/ItemEngine.hpp"
 
 #include <string>
+#include <algorithm>
 
 namespace tft::items {
 
@@ -16,7 +17,9 @@ inline CombatItem to_combat_item(const ItemDefinition& definition) {
     item.name = definition.name;
     item.attack_damage = static_cast<float>(definition.attack_damage);
     item.ability_power = static_cast<float>(definition.ability_power);
-    item.attack_speed = static_cast<float>(definition.attack_speed);
+    item.attack_speed = std::find(definition.deferred_stats.begin(),
+        definition.deferred_stats.end(), "attack_speed") != definition.deferred_stats.end()
+        ? 0.0f : static_cast<float>(definition.attack_speed);
     item.critical_strike_chance =
         static_cast<float>(definition.critical_strike_chance);
     item.critical_strike_damage =
