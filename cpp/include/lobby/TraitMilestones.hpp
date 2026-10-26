@@ -4,14 +4,14 @@
 
 #include <algorithm>
 #include <istream>
-#include <map>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace tft {
 
-using TraitMilestones = std::map<std::string, std::vector<int>>;
+using TraitMilestones = std::unordered_map<std::string, std::vector<int>>;
 
 // Loads the active-set milestones and indexes them by identifiers used by
 // champion data (English trait name / API name). The localized display name is
