@@ -585,7 +585,7 @@ if(BUILD_TESTING)
         PRIVATE nlohmann_json::nlohmann_json
     )
     add_test(
-        NAME trait_milestones_set18
+        NAME trait_milestones_active
         COMMAND test_trait_milestones
             "${CMAKE_CURRENT_SOURCE_DIR}/../data/traits.json"
     )
