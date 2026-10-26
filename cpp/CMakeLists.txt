@@ -554,25 +554,6 @@ if(BUILD_TESTING)
             "${CMAKE_CURRENT_SOURCE_DIR}/../data/itens.json"
     )
 
-    # Validate the generated production-shaped catalog with the runtime loader.
-    add_executable(
-        test_item_catalog
-        tests/test_item_catalog.cpp
-    )
-    target_include_directories(
-        test_item_catalog
-        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include"
-    )
-    target_link_libraries(
-        test_item_catalog
-        PRIVATE nlohmann_json::nlohmann_json
-    )
-    add_test(
-        NAME item_catalog_generated_set17
-        COMMAND test_item_catalog
-            "${CMAKE_CURRENT_SOURCE_DIR}/../data/item_catalog_set17.json"
-    )
-
     # Validate the active Set 18 catalog consumed by the engine.
     add_executable(
         test_item_catalog_set18
