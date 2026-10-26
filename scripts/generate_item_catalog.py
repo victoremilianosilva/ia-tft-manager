@@ -111,6 +111,14 @@ def _normalise_stats(effects: dict[str, Any]) -> dict[str, float]:
     }
 
 
+def _is_consumable(item: dict[str, Any]) -> bool:
+    """Return whether CommunityDragon marks this item as a consumable."""
+    tags = item.get("tags")
+    if not isinstance(tags, list):
+        return False
+    return any(isinstance(tag, str) and tag.strip().casefold() == "consumable" for tag in tags)
+
+
 def _selector_matches(selector: str, entry: dict[str, Any]) -> bool:
     name = str(entry.get("name", "")).strip()
     number = entry.get("number")
@@ -166,7 +174,11 @@ def build_catalog(
                 raise ValueError(f"ID apiName duplicado na origem: {api_name}")
             item_by_id[api_name] = item
 
-    selected_records = [item_by_id[item_id] for item_id in sorted(set_item_ids) if item_id in item_by_id]
+    selected_records = [
+        item_by_id[item_id]
+        for item_id in sorted(set_item_ids)
+        if item_id in item_by_id and not _is_consumable(item_by_id[item_id])
+    ]
     craftable: list[dict[str, Any]] = []
     for item in selected_records:
         recipe = item.get("composition")
@@ -174,6 +186,14 @@ def build_catalog(
             continue
         if not all(isinstance(component_id, str) and component_id for component_id in recipe):
             raise ValueError(f"Receita inválida em {item.get('apiName', '<sem ID>')}: {recipe!r}")
+        # Consumables are not craftable item definitions for the engine. Also
+        # exclude recipes that reference a consumable as a component, so those
+        # IDs cannot inflate the component set or enter the action space.
+        if any(
+            component_id in item_by_id and _is_consumable(item_by_id[component_id])
+            for component_id in recipe
+        ):
+            continue
         craftable.append(item)
     if not craftable:
         raise ValueError(f"Nenhum item com receita de dois componentes encontrado no set {set_name}.")
