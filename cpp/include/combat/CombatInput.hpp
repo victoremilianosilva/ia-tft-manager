@@ -91,6 +91,7 @@ struct CombatEffectDefinition
     float delay = 0.0f;
     float health_threshold = 0.0f;
     int max_stacks = 0;
+    int min_trait_count = 0;
     bool percent_of_max_health = false;
     bool percent_of_stat = false;
 };
