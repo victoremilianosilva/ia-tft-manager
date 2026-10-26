@@ -675,49 +675,74 @@ struct TFTEngine::Impl {
 
         const auto current_stage = stage_for_round(current_round_number);
         const auto round_in_stage = ((current_round_number - 5) % kRoundsPerStage) + 1;
-        // Only PvE stage-end encounters produce this modeled component reward.
-        // Components are granted directly: no Pengu armory/offer and no choice UI.
         if (round_in_stage != 7 || current_stage < 2 || current_stage > 6) return;
 
-        // Set 17's 4-7 God Blessing grants 1-3 components. Other stage-end
-        // component counts remain an explicit engine approximation until a
-        // versioned, authoritative loot table is added to the item catalog.
+        // Direct PvE component loot. The counts below are an engine model,
+        // not a claim to reproduce every random orb in live TFT. Set 17's
+        // explicit 4-7 rule is 1-3 components; 3-7 was reduced by one.
         std::size_t component_count = 1;
-        if (current_stage == 4) {
+        if (current_stage == 3) component_count = 0;
+        else if (current_stage == 4) {
             const auto mixed_seed = seed ^
                 (episode_id * 0x9E3779B97F4A7C15ULL) ^
                 (static_cast<std::uint64_t>(current_round_number) << 16U);
             std::mt19937_64 count_rng(mixed_seed);
             component_count = 1U + static_cast<std::size_t>(count_rng() % 3U);
-        } else if (current_stage == 3) {
-            // Patch 17.1 reduced the 3-7 component count by one; this
-            // lightweight loot model therefore does not grant a component here.
-            component_count = 0;
-        } else if (current_stage >= 5) {
-            component_count = 2;
+        } else if (current_stage >= 5) component_count = 2;
+
+        // Set 17 replaces some random component drops with component anvils
+        // for players at the bottom of the HP standings. Use the two lowest
+        // living HP totals as this simulator's explicit catch-up approximation.
+        std::vector<std::size_t> living;
+        for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+            if (player_envs[i].info.alive && player_envs[i].item_engine)
+                living.push_back(i);
         }
+        std::stable_sort(living.begin(), living.end(), [this](std::size_t a, std::size_t b) {
+            if (player_envs[a].info.hp != player_envs[b].info.hp)
+                return player_envs[a].info.hp < player_envs[b].info.hp;
+            return a < b;
+        });
+        std::unordered_set<std::size_t> catchup_players;
+        for (std::size_t rank = 0; rank < std::min<std::size_t>(2, living.size()); ++rank)
+            catchup_players.insert(living[rank]);
 
-        for (std::size_t player_index = 0; player_index < kPlayersPerLobby; ++player_index) {
+        std::vector<std::string> component_pool;
+        for (const auto& component : item_catalog->components)
+            component_pool.push_back(component.first);
+        if (component_pool.empty()) return;
+
+        for (const auto player_index : living) {
             auto& player = player_envs[player_index];
-            if (!player.info.alive || !player.item_engine) continue;
-
             const auto mixed_seed = seed ^
                 (episode_id * 0xD1B54A32D192ED03ULL) ^
                 (static_cast<std::uint64_t>(current_round_number) << 16U) ^
                 static_cast<std::uint64_t>(player_index);
             std::mt19937_64 loot_rng(mixed_seed);
-            auto pool = item_catalog->components;
-            std::shuffle(pool.begin(), pool.end(), loot_rng);
 
+            if (component_count > 0 && catchup_players.count(player_index) != 0) {
+                auto options = component_pool;
+                std::shuffle(options.begin(), options.end(), loot_rng);
+                options.resize(std::min<std::size_t>(3, options.size()));
+                if (player.item_engine->grant_component_anvil(std::move(options))) {
+                    events.emplace_back(
+                        "COMPONENT_ANVIL_GRANTED: player=" + std::to_string(player_index) +
+                        ", stage=" + std::to_string(current_stage) +
+                        ", source=pve_low_hp_catchup");
+                }
+                refresh_masks(player_index);
+                continue;
+            }
+
+            auto pool = component_pool;
+            std::shuffle(pool.begin(), pool.end(), loot_rng);
             std::size_t granted_count = 0;
             for (std::size_t drop = 0; drop < component_count; ++drop) {
-                // A component can drop more than once; shuffle each draw to
-                // keep duplicates legal while retaining deterministic replay.
                 if (pool.empty()) break;
                 if (drop > 0 && drop % pool.size() == 0)
                     std::shuffle(pool.begin(), pool.end(), loot_rng);
-                const auto& component_id = pool[drop % pool.size()].first;
-                if (player.item_engine->add_component(component_id)) ++granted_count;
+                if (player.item_engine->add_component(pool[drop % pool.size()]))
+                    ++granted_count;
             }
             if (granted_count > 0) {
                 events.emplace_back(
