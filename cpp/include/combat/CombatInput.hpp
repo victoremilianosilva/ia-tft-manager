@@ -83,10 +83,12 @@ struct CombatEffectDefinition
     std::string target;        // self, allies, enemies, lowest_health_ally
     std::string condition;     // empty, role_tank, role_fighter, role_assassin, role_other, has_trait
     std::string condition_trait;
+    std::string stack_key;
     DamageType damage_type = DamageType::MAGIC;
     float value = 0.0f;
     float duration = 0.0f;
     float interval = 0.0f;
+    float delay = 0.0f;
     int max_stacks = 0;
     bool percent_of_max_health = false;
     bool percent_of_stat = false;
