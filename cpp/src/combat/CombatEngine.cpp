@@ -296,6 +296,15 @@ bool effect_condition_matches(const CombatUnit& unit,
     if (effect.condition.empty()) return true;
     if (effect.condition == "has_trait")
         return has_trait(unit, effect.condition_trait);
+    if (effect.condition == "trait_count_at_least") {
+        if (effect.condition_trait.empty() || effect.min_trait_count <= 0) return false;
+        const auto found = std::find_if(unit.traits.begin(), unit.traits.end(),
+            [&](const CombatTrait& trait) {
+                return trait.api_name == effect.condition_trait &&
+                    (trait.active || trait.active_count > 0);
+            });
+        return found != unit.traits.end() && found->active_count >= effect.min_trait_count;
+    }
     if (effect.condition == "role_tank") return unit.role == UnitRole::TANK;
     if (effect.condition == "role_fighter") return unit.role == UnitRole::FIGHTER;
     if (effect.condition == "role_assassin") return unit.role == UnitRole::ASSASSIN;
@@ -349,24 +358,64 @@ void apply_start_combat_effects(CombatUnit& unit) {
 }
 
 void apply_start_combat_team_effects(std::vector<RuntimeUnit>& units) {
+    struct PendingTeamEffect {
+        std::size_t recipient_index;
+        CombatEffectDefinition effect;
+        bool attach_as_runtime_effect;
+    };
+    std::vector<PendingTeamEffect> pending;
+
+    // Collect before mutating recipient trait vectors: a source can also be a
+    // recipient, so applying effects while iterating those vectors would
+    // invalidate iterators and could recursively re-apply an aura.
     for (const auto& source : units) {
-        auto apply_to_targets = [&](const std::vector<CombatEffectDefinition>& effects) {
+        const auto collect = [&](const std::vector<CombatEffectDefinition>& effects) {
             for (const auto& effect : effects) {
-                if (effect.trigger != "combat_start" || effect.operation != "add_stat" ||
-                    effect.target != "allies_same_row_within_1" ||
-                    !effect_condition_matches(source.unit, effect)) continue;
-                for (auto& recipient : units) {
-                    if (recipient.unit.team != source.unit.team ||
-                        recipient.unit.position.y != source.unit.position.y ||
-                        std::abs(recipient.unit.position.x - source.unit.position.x) > 1)
+                if (!effect_condition_matches(source.unit, effect)) continue;
+                const bool team_stat = effect.trigger == "combat_start" &&
+                    effect.operation == "add_stat" &&
+                    (effect.target == "allies" ||
+                     effect.target == "allies_same_row_within_1");
+                const bool team_attack_effect = effect.target == "allies" &&
+                    effect.trigger == "on_attack" &&
+                    effect.operation == "bonus_damage";
+                if (!team_stat && !team_attack_effect) continue;
+
+                for (std::size_t i = 0; i < units.size(); ++i) {
+                    const auto& recipient = units[i];
+                    if (recipient.unit.team != source.unit.team) continue;
+                    if (effect.target == "allies_same_row_within_1" &&
+                        (recipient.unit.position.y != source.unit.position.y ||
+                         std::abs(recipient.unit.position.x - source.unit.position.x) > 1))
                         continue;
-                    apply_effect_stat(recipient.unit, effect);
+                    if (team_stat) pending.push_back({i, effect, false});
+                    else pending.push_back({i, effect, true});
                 }
             }
         };
-        for (const auto& item : source.unit.items) apply_to_targets(item.effects);
+        for (const auto& item : source.unit.items) collect(item.effects);
         for (const auto& trait : source.unit.traits) {
-            if (trait.active || trait.active_count > 0) apply_to_targets(trait.effects);
+            if (trait.active || trait.active_count > 0) collect(trait.effects);
+        }
+    }
+
+    for (const auto& pending_effect : pending) {
+        auto& recipient = units[pending_effect.recipient_index];
+        if (!is_alive(recipient)) continue;
+        if (pending_effect.attach_as_runtime_effect) {
+            CombatEffectDefinition effect = pending_effect.effect;
+            effect.target = "self";
+            effect.condition.clear();
+            effect.condition_trait.clear();
+            CombatTrait runtime_effect;
+            runtime_effect.api_name = "generic_team_aura";
+            runtime_effect.name = "generic_team_aura";
+            runtime_effect.active = true;
+            runtime_effect.active_count = 1;
+            runtime_effect.effects.push_back(std::move(effect));
+            recipient.unit.traits.push_back(std::move(runtime_effect));
+        } else {
+            apply_effect_stat(recipient.unit, pending_effect.effect);
         }
     }
 }
