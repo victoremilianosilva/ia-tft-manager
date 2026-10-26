@@ -185,7 +185,8 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
         // as fractions (e.g. 0.15 = +15% attack speed / damage amplification).
         unit.attack_damage += item.attack_damage;
         unit.ability_power += item.ability_power;
-        unit.attack_speed += item.attack_speed;
+        if (item.api_name != "TFT17_Item_ResistTankEmblemItem")
+            unit.attack_speed += item.attack_speed;
         unit.critical_strike_chance += item.critical_strike_chance;
         unit.critical_strike_damage += item.critical_strike_damage;
         unit.max_hp += item.health;
