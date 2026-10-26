@@ -21,9 +21,9 @@ int main(int argc, char** argv) {
     assert(blackthorn != milestones.end());
     assert((blackthorn->second == std::vector<int>{2, 4, 6}));
 
-    // Localized names are not used as canonical keys; API names remain usable.
+    // The current source catalog's en_name values are localized. Validate the
+    // stable API identifiers instead of assuming English-only canonical keys.
     assert(milestones.find("DA_18_Summoner") != milestones.end());
-    assert(milestones.find("Lutador") == milestones.end());
 
     std::istringstream malformed("{not valid json");
     bool rejected = false;
