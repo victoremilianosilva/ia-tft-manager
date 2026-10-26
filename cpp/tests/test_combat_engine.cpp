@@ -591,6 +591,45 @@ void test_data_driven_trait_emblem_effects() {
     }
     require(saw_data_driven_damage,
         "Trait grant and item effects should work without an item API-name branch.");
+
+    auto aura_input = make_input();
+    aura_input.config.max_duration = 0.1f;
+    aura_input.config.record_damage = true;
+    aura_input.player_a.units[0].role = tft::UnitRole::TANK;
+    aura_input.player_a.units[0].attack_damage = 0.1f;
+    aura_input.player_a.units[0].attack_speed = 0.1f;
+    aura_input.player_a.units[0].armor = 0.0f;
+    aura_input.player_a.units[0].hp = aura_input.player_a.units[0].max_hp = 1000.0f;
+    aura_input.player_b.units[0].attack_damage = 100.0f;
+    aura_input.player_b.units[0].attack_speed = 10.0f;
+    aura_input.player_b.units[0].hp = aura_input.player_b.units[0].max_hp = 1000.0f;
+
+    tft::CombatItem role_aura;
+    role_aura.api_name = "unknown_voyager_emblem";
+    role_aura.grants_trait = "TFT17_FlexTrait";
+    tft::CombatEffectDefinition tank_resists;
+    tank_resists.trigger = "combat_start";
+    tank_resists.operation = "add_stat";
+    tank_resists.stat = "armor";
+    tank_resists.target = "allies_same_row_within_1";
+    tank_resists.condition = "role_tank";
+    tank_resists.value = 10.0f;
+    role_aura.effects.push_back(tank_resists);
+    aura_input.player_a.units[0].items.push_back(role_aura);
+
+    const auto aura_result = engine.simulate(aura_input);
+    require(aura_result.success, "Data-driven team aura combat should complete.");
+    bool saw_armor_mitigated_hit = false;
+    for (const auto& event : aura_result.damage_events) {
+        if (event.source_unit_id == aura_input.player_b.units[0].id &&
+            event.target_unit_id == aura_input.player_a.units[0].id &&
+            std::abs(event.final_damage - (100.0f * 100.0f / 110.0f)) < 0.05f) {
+            saw_armor_mitigated_hit = true;
+            break;
+        }
+    }
+    require(saw_armor_mitigated_hit,
+        "Generic role-conditioned aura should apply to same-row allies at combat start.");
 }
 
 } // namespace
