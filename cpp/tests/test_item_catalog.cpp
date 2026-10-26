@@ -101,6 +101,25 @@ int main(int argc, char** argv) {
             return 12;
         }
 
+        bool found_nova_capstone = false;
+        for (const auto& item : catalog.items) {
+            if (item.id != "TFT17_Item_DRXEmblemItem") continue;
+            found_nova_capstone = item.grants_trait == "TFT17_DRX" &&
+                std::count_if(item.combat_effects.begin(), item.combat_effects.end(),
+                    [](const auto& effect) {
+                        return effect.trigger == "combat_start" &&
+                            effect.operation == "add_stat" &&
+                            effect.target == "allies" &&
+                            effect.condition == "trait_count_at_least" &&
+                            effect.condition_trait == "TFT17_DRX" &&
+                            effect.min_trait_count == 5;
+                    }) == 3;
+        }
+        if (!found_nova_capstone) {
+            std::cerr << "N.O.V.A. capstone condition/team effects were not loaded\n";
+            return 13;
+        }
+
         std::cout << "Loaded " << catalog.set_id << ": "
                   << catalog.components.size() << " components, "
                   << catalog.items.size() << " craftable items\n";
