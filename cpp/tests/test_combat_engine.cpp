@@ -522,7 +522,15 @@ void test_set17_ionic_spark_and_emblem_passives() {
     tank_input.player_b.units[0].magic_resist = 0.0f;
     tank_input.player_b.units[0].attack_damage = 0.1f;
     tft::CombatItem fighter_emblem;
-    fighter_emblem.api_name = "TFT17_Item_HPTankEmblemItem";
+    fighter_emblem.api_name = "an_item_name_not_known_to_the_engine";
+    fighter_emblem.grants_trait = "TFT17_HPTank";
+    tft::CombatEffectDefinition brawler_damage;
+    brawler_damage.trigger = "on_attack";
+    brawler_damage.operation = "bonus_damage";
+    brawler_damage.damage_type = tft::DamageType::MAGIC;
+    brawler_damage.value = 0.03f;
+    brawler_damage.percent_of_max_health = true;
+    fighter_emblem.effects.push_back(brawler_damage);
     tank_input.player_a.units[0].items.push_back(fighter_emblem);
     const auto emblem = engine.simulate(tank_input);
     require(emblem.success, "Fighter emblem combat should complete.");
