@@ -63,6 +63,11 @@ struct RuntimeUnit {
     float guardian_previous_damage_reduction = 0.0f;
     float last_status_tick = 0.0f;
     float mana_regen_per_second = 0.0f;
+    float mana_gain_multiplier = 1.0f;
+    float base_attack_speed = 1.0f;
+    float titans_base_ad = 0.0f;
+    float runaans_base_ad = 0.0f;
+    std::vector<float> power_gauntlet_stack_times;
 };
 
 struct ScheduledEvent {
@@ -100,6 +105,15 @@ bool is_alive(const RuntimeUnit& unit) {
 bool has_item(const CombatUnit& unit, const char* api_name) {
     return std::any_of(unit.items.begin(), unit.items.end(),
         [&](const CombatItem& item) { return item.api_name == api_name; });
+}
+
+void add_titans_stack(RuntimeUnit& unit) {
+    if (unit.titans_stacks >= 25) return;
+    ++unit.titans_stacks;
+    unit.unit.attack_damage += unit.titans_base_ad * 0.02f;
+    unit.unit.ability_power += 2.0f;
+    if (unit.titans_stacks == 25)
+        unit.unit.damage_amplification += 0.10f;
 }
 
 void trigger_defensive_items(RuntimeUnit& unit, float now) {
@@ -419,6 +433,11 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
 
             units.push_back(RuntimeUnit{effective_unit, effective_unit.hp});
             auto& loaded = units.back();
+            loaded.base_attack_speed = loaded.unit.attack_speed;
+            loaded.titans_base_ad = loaded.unit.attack_damage;
+            loaded.runaans_base_ad = loaded.unit.attack_damage;
+            if (has_item(loaded.unit, "TFT_Item_AdaptiveHelm"))
+                loaded.mana_gain_multiplier = 1.15f;
             for (const auto& item : loaded.unit.items) {
                 if (item.api_name == "TFT_Item_AdaptiveHelm") loaded.mana_regen_per_second += 3.0f;
                 else if (item.api_name == "TFT_Item_ArchangelsStaff" ||
@@ -465,10 +484,9 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
         }
         if (has_item(runtime.unit, "TFT_Item_FrozenHeart"))
             runtime.unit.mana = std::min(runtime.unit.max_mana,
-                runtime.unit.mana + 20.0f);
+                runtime.unit.mana + 20.0f * runtime.mana_gain_multiplier);
         if (has_item(runtime.unit, "TFT_Item_AdaptiveHelm")) {
-            runtime.unit.mana = std::min(runtime.unit.max_mana,
-                runtime.unit.mana + runtime.unit.max_mana * 0.15f);
+
             if (runtime.unit.role == UnitRole::TANK ||
                 runtime.unit.role == UnitRole::FIGHTER) {
                 runtime.unit.armor += 30.0f;
@@ -619,7 +637,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
         const float elapsed = std::max(0.0f, now - actor.last_status_tick);
         if (elapsed > 0.0f) {
             actor.unit.mana = std::min(actor.unit.max_mana,
-                actor.unit.mana + actor.mana_regen_per_second * elapsed);
+                actor.unit.mana + actor.mana_regen_per_second *
+                    elapsed * actor.mana_gain_multiplier);
             if (has_item(actor.unit, "TFT_Item_ArchangelsStaff") &&
                 now - actor.last_archangel_tick >= 5.0f) {
                 const int ticks = static_cast<int>((now - actor.last_archangel_tick) / 5.0f);
@@ -636,7 +655,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 now - actor.last_redemption_tick >= 1.0f) {
                 const int ticks = static_cast<int>(now - actor.last_redemption_tick);
                 const float missing = actor.unit.max_hp - actor.unit.hp;
-                const float heal = std::min(missing, actor.unit.max_hp * 0.02f * ticks);
+                const float heal = std::min({missing,
+                    actor.unit.max_hp * 0.02f * ticks, 250.0f * ticks});
                 actor.unit.hp += heal;
                 actor.healing_done += heal;
                 actor.last_redemption_tick += static_cast<float>(ticks);
@@ -685,7 +705,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 const int ticks = static_cast<int>(std::floor(now)) -
                                   static_cast<int>(std::floor(actor.last_guinsoo_tick));
                 if (ticks > 0) {
-                    actor.unit.attack_speed += 0.07f * static_cast<float>(ticks);
+                    actor.unit.attack_speed += actor.base_attack_speed * 0.07f * static_cast<float>(ticks);
                     actor.last_guinsoo_tick = now;
                 }
             }
@@ -846,6 +866,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                         const float hp_damage = std::min(ability_target.unit.hp, damage - absorbed);
                         ability_target.unit.hp -= hp_damage;
                         ability_target.damage_taken += damage;
+                        if (has_item(ability_target.unit, "TFT_Item_TitansResolve"))
+                            add_titans_stack(ability_target);
                         trigger_defensive_items(ability_target, now);
                         actor.damage_dealt += damage;
                         ability_event.damage += damage;
@@ -1040,6 +1062,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             const float hp_damage = std::min(target.unit.hp, damage - absorbed);
             target.unit.hp -= hp_damage;
             target.damage_taken += damage;
+            if (has_item(target.unit, "TFT_Item_TitansResolve"))
+                add_titans_stack(target);
             trigger_defensive_items(target, now);
             actor.damage_dealt += damage;
             if (actor.unit.omnivamp > 0.0f && damage > 0.0f) {
@@ -1077,34 +1101,42 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                     result.damage_events.push_back(bonus_event);
                 }
             }
-            actor.unit.mana = std::min(actor.unit.max_mana, actor.unit.mana + 10.0f);
+            actor.unit.mana = std::min(actor.unit.max_mana,
+                actor.unit.mana + 10.0f * actor.mana_gain_multiplier);
 
             // Shojin e Leviathan: mana adicional por ataque acertado.
             for (const auto& item : actor.unit.items) {
                 if (item.api_name == "TFT_Item_SpearOfShojin")
-                    actor.unit.mana = std::min(actor.unit.max_mana, actor.unit.mana + 5.0f);
+                    actor.unit.mana = std::min(actor.unit.max_mana,
+                        actor.unit.mana + 5.0f * actor.mana_gain_multiplier);
                 else if (item.api_name == "TFT_Item_Leviathan")
-                    actor.unit.mana = std::min(actor.unit.max_mana, actor.unit.mana + 2.0f);
+                    actor.unit.mana = std::min(actor.unit.max_mana,
+                        actor.unit.mana + 2.0f * actor.mana_gain_multiplier);
                 else if (item.api_name == "TFT_Item_Leviathan" && critical)
-                    actor.unit.mana = std::min(actor.unit.max_mana, actor.unit.mana + 2.0f);
-                else if (item.api_name == "TFT_Item_TitansResolve" &&
-                         actor.titans_stacks < 25) {
-                    ++actor.titans_stacks;
-                    actor.unit.attack_damage += actor.unit.attack_damage * 0.02f;
-                    actor.unit.ability_power += 2.0f;
-                    if (actor.titans_stacks == 25)
-                        actor.unit.damage_amplification += 0.10f;
-                }
+                    actor.unit.mana = std::min(actor.unit.max_mana,
+                        actor.unit.mana + 2.0f * actor.mana_gain_multiplier);
+                else if (item.api_name == "TFT_Item_TitansResolve")
+                    add_titans_stack(actor);
                 else if (item.api_name == "TFT_Item_RunaansHurricane") {
                     if (actor.runaan_stacks < 15) {
                         ++actor.runaan_stacks;
-                        actor.unit.attack_damage += actor.unit.attack_damage * 0.035f;
+                        actor.unit.attack_damage += actor.runaans_base_ad * 0.035f;
                         if (actor.runaan_stacks == 15)
                             actor.unit.attack_speed += 0.15f;
                     }
                 }
                 else if (item.api_name == "TFT_Item_PowerGauntlet" && critical) {
+                    while (!actor.power_gauntlet_stack_times.empty() &&
+                           now - actor.power_gauntlet_stack_times.front() >= 5.0f) {
+                        actor.power_gauntlet_stack_times.erase(
+                            actor.power_gauntlet_stack_times.begin());
+                        actor.unit.damage_amplification = std::max(
+                            0.0f, actor.unit.damage_amplification - 0.05f);
+                    }
+                    actor.power_gauntlet_stacks =
+                        static_cast<int>(actor.power_gauntlet_stack_times.size());
                     if (actor.power_gauntlet_stacks < 4) {
+                        actor.power_gauntlet_stack_times.push_back(now);
                         ++actor.power_gauntlet_stacks;
                         actor.unit.damage_amplification += 0.05f;
                     }
