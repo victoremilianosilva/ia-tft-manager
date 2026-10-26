@@ -112,6 +112,7 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             read_number("duration", effect.duration);
             read_number("interval", effect.interval);
             read_number("delay", effect.delay);
+            read_number("health_threshold", effect.health_threshold);
             if (raw.contains("max_stacks")) {
                 if (!raw["max_stacks"].is_number_integer() ||
                     raw["max_stacks"].get<int>() < 0) {
