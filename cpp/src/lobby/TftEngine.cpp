@@ -2361,6 +2361,21 @@ struct TFTEngine::Impl {
         output.player_id = static_cast<std::int32_t>(player_index);
         output.player_hp = player_envs[player_index].info.hp;
 
+        // Build team-wide trait counts once, including emblems. Counts are
+        // unique per champion instance, matching lobby breakpoint semantics.
+        std::unordered_map<std::string, int> combat_trait_counts;
+        for (const auto& candidate : player_envs[player_index].board) {
+            if (!candidate) continue;
+            const auto* candidate_def = catalog->find_by_id(candidate->champion_internal_id);
+            if (!candidate_def) continue;
+            std::unordered_set<std::string> candidate_traits(
+                candidate_def->traits.begin(), candidate_def->traits.end());
+            for (const auto& item : candidate->items) {
+                if (!item.grants_trait.empty()) candidate_traits.insert(item.grants_trait);
+            }
+            for (const auto& trait : candidate_traits) ++combat_trait_counts[trait];
+        }
+
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
             if (!player_envs[player_index].board[slot]) {
                 continue;
@@ -2431,6 +2446,21 @@ struct TFTEngine::Impl {
                     : stats.magic_resist);
 
             unit.items = instance.items;
+
+            std::unordered_set<std::string> unit_traits(
+                definition->traits.begin(), definition->traits.end());
+            for (const auto& item : instance.items) {
+                if (!item.grants_trait.empty()) unit_traits.insert(item.grants_trait);
+            }
+            for (const auto& trait_name : unit_traits) {
+                CombatTrait trait;
+                trait.api_name = trait_name;
+                trait.name = trait_name;
+                const auto count = combat_trait_counts.find(trait_name);
+                trait.active_count = count == combat_trait_counts.end() ? 0 : count->second;
+                trait.active = trait.active_count > 0;
+                unit.traits.push_back(std::move(trait));
+            }
 
             unit.alive = true;
             unit.can_move = true;
