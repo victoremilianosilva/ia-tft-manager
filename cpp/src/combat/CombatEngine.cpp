@@ -259,12 +259,6 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
             unit.attack_damage += base_attack_damage * 0.15f;
             unit.ability_power += 15.0f;
             unit.omnivamp = std::min(1.0f, unit.omnivamp + 0.12f);
-        } else if (item.api_name == "TFT17_Item_FlexTraitEmblemItem") {
-            unit.attack_damage += base_attack_damage * 0.20f;
-        } else if (item.api_name == "TFT17_Item_DarkStarEmblemItem") {
-            unit.attack_damage += base_attack_damage * 0.18f;
-        } else if (item.api_name == "TFT17_Item_StargazerEmblemItem") {
-            unit.attack_damage += base_attack_damage * 0.15f;
         }
     }
 
