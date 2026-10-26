@@ -218,6 +218,26 @@ def build_catalog(
         for component_id in item["composition"]
         if _is_component(item_by_id.get(component_id))
     })
+    # Diagnostic output: print the exact source records counted as components.
+    print(
+        f"\\n[DEBUG] Componentes selecionados para set {set_number} ({set_name}) "
+        f"— {len(component_ids)} IDs únicos:",
+        file=sys.stderr,
+    )
+    for component_id in component_ids:
+        component = item_by_id.get(component_id, {})
+        used_by = [
+            str(item.get("apiName") or item.get("name") or "<sem ID>")
+            for item in craftable
+            if component_id in item.get("composition", [])
+        ]
+        print(
+            f"  - id={component_id} | nome={component.get('name', '<sem nome>')} "
+            f"| tags={component.get('tags', [])!r} "
+            f"| usado_em={', '.join(used_by) or '<nenhuma receita>'}",
+            file=sys.stderr,
+        )
+
     if len(component_ids) > 10:
         raise ValueError(f"O set {set_name} usa {len(component_ids)} componentes; a cabeça de ações da engine aceita no máximo 10.")
 
