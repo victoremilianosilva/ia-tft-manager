@@ -63,6 +63,26 @@ PYBIND11_MODULE(combat_engine, module)
         .def_readwrite("y", &CombatPosition::y);
 
     // =========================================================
+    // DATA-DRIVEN EFFECT DEFINITION
+    // =========================================================
+
+    py::class_<CombatEffectDefinition>(module, "CombatEffectDefinition")
+        .def(py::init<>())
+        .def_readwrite("trigger", &CombatEffectDefinition::trigger)
+        .def_readwrite("operation", &CombatEffectDefinition::operation)
+        .def_readwrite("stat", &CombatEffectDefinition::stat)
+        .def_readwrite("target", &CombatEffectDefinition::target)
+        .def_readwrite("condition", &CombatEffectDefinition::condition)
+        .def_readwrite("condition_trait", &CombatEffectDefinition::condition_trait)
+        .def_readwrite("damage_type", &CombatEffectDefinition::damage_type)
+        .def_readwrite("value", &CombatEffectDefinition::value)
+        .def_readwrite("duration", &CombatEffectDefinition::duration)
+        .def_readwrite("interval", &CombatEffectDefinition::interval)
+        .def_readwrite("max_stacks", &CombatEffectDefinition::max_stacks)
+        .def_readwrite("percent_of_max_health", &CombatEffectDefinition::percent_of_max_health)
+        .def_readwrite("percent_of_stat", &CombatEffectDefinition::percent_of_stat);
+
+    // =========================================================
     // ITEM
     // =========================================================
 
@@ -87,7 +107,10 @@ PYBIND11_MODULE(combat_engine, module)
                        &CombatItem::damage_amplification)
         .def_readwrite("damage_reduction",
                        &CombatItem::damage_reduction)
-        .def_readwrite("is_temporary", &CombatItem::is_temporary);
+        .def_readwrite("is_temporary", &CombatItem::is_temporary)
+        .def_readwrite("grants_trait", &CombatItem::grants_trait)
+        .def_readwrite("granted_trait_active_count", &CombatItem::granted_trait_active_count)
+        .def_readwrite("effects", &CombatItem::effects);
 
     // =========================================================
     // TRAIT
@@ -100,7 +123,8 @@ PYBIND11_MODULE(combat_engine, module)
         .def_readwrite("name", &CombatTrait::name)
         .def_readwrite("active_count", &CombatTrait::active_count)
         .def_readwrite("tier", &CombatTrait::tier)
-        .def_readwrite("active", &CombatTrait::active);
+        .def_readwrite("active", &CombatTrait::active)
+        .def_readwrite("effects", &CombatTrait::effects);
 
     // =========================================================
     // ABILITY
