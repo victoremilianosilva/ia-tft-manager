@@ -229,7 +229,11 @@ def build_catalog(
         # Special/trait mechanics are set data, not API-name branches in C++.
         metadata = (trait_item_metadata or {}).get(item_id)
         if metadata:
-            output_item.update(metadata)
+            # Only allow combat metadata fields; never let an override replace
+            # source identity, recipe, stats, or provenance.
+            for key in ("grants_trait", "granted_trait_active_count", "combat_effects"):
+                if key in metadata:
+                    output_item[key] = metadata[key]
         output_items.append(output_item)
 
     return {
