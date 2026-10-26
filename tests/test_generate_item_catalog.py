@@ -15,6 +15,19 @@ def source_fixture():
             {"apiName": "TFT_Item_Sword", "name": "Sword", "composition": [], "effects": {"AD": 0.1}},
             {"apiName": "TFT_Item_Bow", "name": "Bow", "composition": [], "effects": {"AS": 10}},
             {
+                "apiName": "TFT_Item_Consumable_Test",
+                "name": "Test Consumable",
+                "tags": ["Consumable"],
+                "composition": ["TFT_Item_Sword", "TFT_Item_Bow"],
+                "effects": {"AP": 999},
+            },
+            {
+                "apiName": "TFT_Item_Recipe_Using_Consumable",
+                "name": "Invalid Recipe Using Consumable",
+                "composition": ["TFT_Item_Consumable_Test", "TFT_Item_Sword"],
+                "effects": {"AP": 999},
+            },
+            {
                 "apiName": "TFT_Item_TestBlade",
                 "name": "Test Blade",
                 "composition": ["TFT_Item_Sword", "TFT_Item_Bow"],
@@ -43,7 +56,7 @@ def source_fixture():
             },
         ],
         "setData": [
-            {"number": 16, "name": "Set16", "items": ["TFT_Item_Sword", "TFT_Item_Bow", "TFT_Item_TestBlade"]},
+            {"number": 16, "name": "Set16", "items": ["TFT_Item_Sword", "TFT_Item_Bow", "TFT_Item_TestBlade", "TFT_Item_Consumable_Test", "TFT_Item_Recipe_Using_Consumable"]},
             {"number": 16, "name": "Set16", "items": ["TFT_Item_TestBlade_Alt", "TFT16_Augment_Test"]},
             {"number": 17, "name": "Set17", "items": ["TFT17_Item_Unrelated"]},
         ],
@@ -62,6 +75,15 @@ def test_merges_same_set_entries_and_filters_recipes():
         "TFT_Item_Sword",
         "TFT_Item_Bow",
     }
+
+
+def test_ignores_items_tagged_as_consumable_and_recipes_using_them():
+    catalog = build_catalog(source_fixture(), "16")
+    output_ids = {item["id"] for item in catalog["items"]}
+    component_ids = {component["id"] for component in catalog["components"]}
+    assert "TFT_Item_Consumable_Test" not in output_ids
+    assert "TFT_Item_Recipe_Using_Consumable" not in output_ids
+    assert "TFT_Item_Consumable_Test" not in component_ids
 
 
 def test_normalizes_supported_stats_and_preserves_raw_effects():
