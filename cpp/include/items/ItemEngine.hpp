@@ -67,12 +67,26 @@ struct ItemActionResult {
     std::string reason;
 };
 
+// An anvil is a deferred reward: the lobby grants a set of choices, and the
+// policy must select exactly one option before normal planning actions resume.
+enum class ItemAnvilKind : std::uint8_t {
+    COMPONENT = 0,
+    COMPLETED_ITEM = 1
+};
+
+struct ItemAnvil {
+    ItemAnvilKind kind{ItemAnvilKind::COMPONENT};
+    std::vector<std::string> options;
+};
+
 struct ItemMetrics {
     std::uint64_t components_collected{0};
     std::uint64_t crafts{0};
     std::uint64_t equips{0};
     std::uint64_t invalid_actions{0};
     std::uint64_t items_left_unused{0};
+    std::uint64_t anvils_received{0};
+    std::uint64_t anvil_choices{0};
 };
 
 class ItemEngine {
@@ -110,7 +124,42 @@ public:
         components_.clear();
         inventory_.clear();
         equipped_.clear();
+        anvils_.clear();
         metrics_ = {};
+    }
+
+    bool grant_component_anvil(std::vector<std::string> options) {
+        return grant_anvil(ItemAnvilKind::COMPONENT, std::move(options));
+    }
+
+    bool grant_completed_item_anvil(std::vector<std::string> options) {
+        return grant_anvil(ItemAnvilKind::COMPLETED_ITEM, std::move(options));
+    }
+
+    [[nodiscard]] const ItemAnvil* pending_anvil() const noexcept {
+        return anvils_.empty() ? nullptr : &anvils_.front();
+    }
+
+    [[nodiscard]] bool has_pending_anvil() const noexcept {
+        return !anvils_.empty();
+    }
+
+    // The selection is atomic: exactly one offered ID is added to inventory,
+    // and the active anvil is consumed only after the grant succeeds.
+    bool choose_anvil_option(std::size_t option_index) {
+        if (anvils_.empty() || option_index >= anvils_.front().options.size()) {
+            ++metrics_.invalid_actions;
+            return false;
+        }
+        const auto anvil = anvils_.front();
+        const auto& selected = anvil.options[option_index];
+        const bool granted = anvil.kind == ItemAnvilKind::COMPONENT
+            ? add_component(selected)
+            : add_completed_item(selected);
+        if (!granted) return false;
+        anvils_.erase(anvils_.begin());
+        ++metrics_.anvil_choices;
+        return true;
     }
 
     bool add_component(const std::string& component_id) {
@@ -353,6 +402,27 @@ private:
     std::vector<std::string> inventory_;
     std::unordered_map<std::string, std::vector<std::string>> equipped_;
     ItemMetrics metrics_{};
+    std::vector<ItemAnvil> anvils_;
+
+    bool grant_anvil(ItemAnvilKind kind, std::vector<std::string> options) {
+        if (options.empty() || options.size() > 9U) {
+            ++metrics_.invalid_actions;
+            return false;
+        }
+        std::unordered_set<std::string> seen;
+        for (const auto& option : options) {
+            const bool known = kind == ItemAnvilKind::COMPONENT
+                ? component_ids_.contains(option)
+                : find(option) != nullptr;
+            if (option.empty() || !known || !seen.insert(option).second) {
+                ++metrics_.invalid_actions;
+                return false;
+            }
+        }
+        anvils_.push_back(ItemAnvil{kind, std::move(options)});
+        ++metrics_.anvils_received;
+        return true;
+    }
 
     static std::string recipe_key(const std::string& a, const std::string& b) {
         return a < b ? a + "\x1f" + b : b + "\x1f" + a;
