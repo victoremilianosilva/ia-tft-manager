@@ -371,7 +371,14 @@ void apply_start_combat_team_effects(std::vector<RuntimeUnit>& units) {
     for (const auto& source : units) {
         const auto collect = [&](const std::vector<CombatEffectDefinition>& effects) {
             for (const auto& effect : effects) {
-                if (!effect_condition_matches(source.unit, effect)) continue;
+                const bool role_condition =
+                    effect.condition == "role_tank" ||
+                    effect.condition == "role_fighter" ||
+                    effect.condition == "role_assassin" ||
+                    effect.condition == "role_other";
+                // Trait/count conditions describe the aura source; role
+                // conditions describe which allied recipients qualify.
+                if (!role_condition && !effect_condition_matches(source.unit, effect)) continue;
                 const bool team_stat = effect.trigger == "combat_start" &&
                     effect.operation == "add_stat" &&
                     (effect.target == "allies" ||
@@ -384,6 +391,8 @@ void apply_start_combat_team_effects(std::vector<RuntimeUnit>& units) {
                 for (std::size_t i = 0; i < units.size(); ++i) {
                     const auto& recipient = units[i];
                     if (recipient.unit.team != source.unit.team) continue;
+                    if (role_condition && !effect_condition_matches(recipient.unit, effect))
+                        continue;
                     if (effect.target == "allies_same_row_within_1" &&
                         (recipient.unit.position.y != source.unit.position.y ||
                          std::abs(recipient.unit.position.x - source.unit.position.x) > 1))
