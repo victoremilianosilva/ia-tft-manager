@@ -554,7 +554,7 @@ if(BUILD_TESTING)
             "${CMAKE_CURRENT_SOURCE_DIR}/../data/itens.json"
     )
 
-    Validate the active item catalog consumed by the engine.
+    # Validate the active item catalog consumed by the engine.
     add_executable(
         test_item_catalog
         tests/test_item_catalog.cpp
