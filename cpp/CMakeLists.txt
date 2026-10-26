@@ -29,6 +29,7 @@ add_compile_definitions(
 # Default to the generated, versioned catalog for the active Set 17.
 add_compile_definitions(
     TFT_DEFAULT_ITEM_CATALOG_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../data/item_catalog_set17.json"
+    TFT_DEFAULT_TRAITS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../data/traits.json"
 )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
@@ -561,6 +562,23 @@ if(BUILD_TESTING)
         NAME item_catalog_generated_set17
         COMMAND test_item_catalog
             "${CMAKE_CURRENT_SOURCE_DIR}/../data/item_catalog_set17.json"
+    )
+
+    # Validate the real Set 17 trait milestone catalog and identifier mapping.
+    add_executable(
+        test_trait_milestones
+        tests/test_trait_milestones.cpp
+    )
+    configure_tft_module(test_trait_milestones)
+    enable_tft_test_assertions(test_trait_milestones)
+    target_link_libraries(
+        test_trait_milestones
+        PRIVATE nlohmann_json::nlohmann_json
+    )
+    add_test(
+        NAME trait_milestones_set17
+        COMMAND test_trait_milestones
+            "${CMAKE_CURRENT_SOURCE_DIR}/../data/traits.json"
     )
 
     # -----------------------------------------------------
