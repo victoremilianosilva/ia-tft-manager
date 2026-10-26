@@ -259,6 +259,18 @@ public:
         return true;
     }
 
+    // Detach a unit's equipment back into the player's bag. The operation
+    // preserves every item copy and removes the unit UUID as an equipment owner.
+    // It is used by sale/merge lifecycle transitions, not by policy actions.
+    bool return_equipped_to_inventory(const std::string& unit_uuid) {
+        if (unit_uuid.empty()) return false;
+        const auto it = equipped_.find(unit_uuid);
+        if (it == equipped_.end()) return true;
+        inventory_.insert(inventory_.end(), it->second.begin(), it->second.end());
+        equipped_.erase(it);
+        return true;
+    }
+
     [[nodiscard]] const std::vector<std::string>& components() const noexcept {
         return components_;
     }
