@@ -677,6 +677,17 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             }
             actor.last_status_tick = now;
         }
+        if (has_item(actor.unit, "TFT_Item_PowerGauntlet")) {
+            while (!actor.power_gauntlet_stack_times.empty() &&
+                   now - actor.power_gauntlet_stack_times.front() >= 5.0f) {
+                actor.power_gauntlet_stack_times.erase(
+                    actor.power_gauntlet_stack_times.begin());
+                actor.unit.damage_amplification = std::max(
+                    0.0f, actor.unit.damage_amplification - 0.05f);
+            }
+            actor.power_gauntlet_stacks =
+                static_cast<int>(actor.power_gauntlet_stack_times.size());
+        }
         trigger_defensive_items(actor, now);
         if (actor.shield_expires_at > 0.0f && now >= actor.shield_expires_at) {
             actor.shield_hp = 0.0f;
@@ -1109,12 +1120,11 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 if (item.api_name == "TFT_Item_SpearOfShojin")
                     actor.unit.mana = std::min(actor.unit.max_mana,
                         actor.unit.mana + 5.0f * actor.mana_gain_multiplier);
-                else if (item.api_name == "TFT_Item_Leviathan")
+                else if (item.api_name == "TFT_Item_Leviathan") {
+                    const float mana_on_hit = critical ? 4.0f : 2.0f;
                     actor.unit.mana = std::min(actor.unit.max_mana,
-                        actor.unit.mana + 2.0f * actor.mana_gain_multiplier);
-                else if (item.api_name == "TFT_Item_Leviathan" && critical)
-                    actor.unit.mana = std::min(actor.unit.max_mana,
-                        actor.unit.mana + 2.0f * actor.mana_gain_multiplier);
+                        actor.unit.mana + mana_on_hit * actor.mana_gain_multiplier);
+                }
                 else if (item.api_name == "TFT_Item_TitansResolve")
                     add_titans_stack(actor);
                 else if (item.api_name == "TFT_Item_RunaansHurricane") {
@@ -1122,19 +1132,10 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                         ++actor.runaan_stacks;
                         actor.unit.attack_damage += actor.runaans_base_ad * 0.035f;
                         if (actor.runaan_stacks == 15)
-                            actor.unit.attack_speed += 0.15f;
+                            actor.unit.attack_speed += actor.base_attack_speed * 0.15f;
                     }
                 }
                 else if (item.api_name == "TFT_Item_PowerGauntlet" && critical) {
-                    while (!actor.power_gauntlet_stack_times.empty() &&
-                           now - actor.power_gauntlet_stack_times.front() >= 5.0f) {
-                        actor.power_gauntlet_stack_times.erase(
-                            actor.power_gauntlet_stack_times.begin());
-                        actor.unit.damage_amplification = std::max(
-                            0.0f, actor.unit.damage_amplification - 0.05f);
-                    }
-                    actor.power_gauntlet_stacks =
-                        static_cast<int>(actor.power_gauntlet_stack_times.size());
                     if (actor.power_gauntlet_stacks < 4) {
                         actor.power_gauntlet_stack_times.push_back(now);
                         ++actor.power_gauntlet_stacks;
