@@ -350,11 +350,12 @@ void apply_start_combat_effects(CombatUnit& unit) {
     }
 }
 
-float effect_attack_bonus(const CombatUnit& unit) {
+float effect_attack_bonus(const CombatUnit& unit, DamageType damage_type) {
     float bonus = 0.0f;
     auto accumulate = [&](const std::vector<CombatEffectDefinition>& effects) {
         for (const auto& effect : effects) {
             if (effect.trigger == "on_attack" && effect.operation == "bonus_damage" &&
+                effect.damage_type == damage_type &&
                 effect_condition_matches(unit, effect))
                 bonus += effect.percent_of_max_health
                     ? unit.max_hp * effect.value : effect.value;
@@ -1167,7 +1168,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 raw_damage *= std::max(
                     1.0f, actor.unit.critical_strike_damage);
             }
-            raw_damage += effect_attack_bonus(actor.unit);
+            raw_damage += effect_attack_bonus(actor.unit, DamageType::PHYSICAL);
 
             raw_damage *= std::max(
                 0.0f, 1.0f + actor.unit.damage_amplification);
@@ -1208,10 +1209,14 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 actor.healing_done += heal;
                 --actor.challenger_attacks_remaining;
             }
-            // Emblema de Lutador: dano mágico adicional baseado na vida máxima.
-            if (has_item(actor.unit, "TFT17_Item_HPTankEmblemItem")) {
-                const float raw_bonus = actor.unit.max_hp * 0.03f;
-                const float bonus = mitigate_physical_damage(raw_bonus, target.unit.magic_resist);
+            // Generic data-driven bonus damage supports physical, magic and true damage.
+            for (const DamageType bonus_type : {DamageType::MAGIC, DamageType::TRUE_DAMAGE}) {
+                const float raw_bonus = effect_attack_bonus(actor.unit, bonus_type);
+                if (raw_bonus <= 0.0f) continue;
+                const float mitigated = bonus_type == DamageType::MAGIC
+                    ? mitigate_physical_damage(raw_bonus, target.unit.magic_resist)
+                    : raw_bonus;
+                const float bonus = std::min(mitigated, target.unit.hp + target.shield_hp);
                 const float absorbed_bonus = std::min(target.shield_hp, bonus);
                 target.shield_hp -= absorbed_bonus;
                 const float hp_bonus = std::min(target.unit.hp, bonus - absorbed_bonus);
@@ -1224,7 +1229,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                     bonus_event.timestamp = now;
                     bonus_event.source_unit_id = actor.unit.id;
                     bonus_event.target_unit_id = target.unit.id;
-                    bonus_event.damage_type = DamageType::MAGIC;
+                    bonus_event.damage_type = bonus_type;
                     bonus_event.raw_damage = raw_bonus;
                     bonus_event.final_damage = bonus;
                     result.damage_events.push_back(bonus_event);
