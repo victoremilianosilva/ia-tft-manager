@@ -303,14 +303,14 @@ void test_unique_item_effects_and_combinations() {
     sterak_input.player_b.units[0].attack_damage = 30.0f;
     sterak_input.player_b.units[0].attack_speed = 1.0f;
     sterak_input.player_b.units[0].max_hp = sterak_input.player_b.units[0].hp = 1000.0f;
+    const auto no_sterak = engine.simulate(sterak_input);
     tft::CombatItem sterak;
     sterak.api_name = "TFT_Item_SteraksGage";
-    sterak.health = 0.0f;
     sterak_input.player_a.units[0].items.push_back(sterak);
     const auto shielded = engine.simulate(sterak_input);
-    require(shielded.success, "Sterak combat should simulate.");
-    require(shielded.units.front().final_hp >= 0.0f,
-            "Threshold shield effect must preserve valid HP values.");
+    require(shielded.success && no_sterak.success, "Sterak comparison combats should simulate.");
+    require(shielded.units.front().final_hp > no_sterak.units.front().final_hp,
+            "Sterak's threshold shield should preserve more HP than the no-item baseline.");
 }
 
 } // namespace
