@@ -85,6 +85,7 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             read_string("target", effect.target);
             read_string("condition", effect.condition);
             read_string("condition_trait", effect.condition_trait);
+            read_string("stack_key", effect.stack_key);
             if (raw.contains("damage_type")) {
                 if (!raw["damage_type"].is_string()) {
                     throw std::invalid_argument("combat effect damage_type must be a string");
@@ -110,6 +111,7 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             read_number("value", effect.value);
             read_number("duration", effect.duration);
             read_number("interval", effect.interval);
+            read_number("delay", effect.delay);
             if (raw.contains("max_stacks")) {
                 if (!raw["max_stacks"].is_number_integer() ||
                     raw["max_stacks"].get<int>() < 0) {
