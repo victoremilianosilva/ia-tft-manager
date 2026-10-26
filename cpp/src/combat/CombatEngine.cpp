@@ -663,9 +663,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 now - actor.last_redemption_tick >= 1.0f) {
                 const int ticks = static_cast<int>(now - actor.last_redemption_tick);
                 const float missing = actor.unit.max_hp - actor.unit.hp;
-                const float heal = std::min({missing,
-                    actor.unit.max_hp * 0.02f * ticks, 250.0f * ticks});
-                actor.unit.hp += heal;
+                const float heal = apply_heal(actor,
+                    std::min(missing * 0.02f * ticks, 250.0f * ticks), now);
                 actor.healing_done += heal;
                 actor.last_redemption_tick += static_cast<float>(ticks);
             }
@@ -704,18 +703,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             actor.unit.damage_reduction = actor.guardian_previous_damage_reduction;
             actor.guardian_angel_until = 0.0f;
         }
-        if (has_item(actor.unit, "TFT_Item_GuardianAngel") &&
-            !actor.guardian_angel_triggered &&
-            actor.unit.hp <= actor.unit.max_hp * 0.60f) {
-            actor.guardian_angel_triggered = true;
-            actor.guardian_previous_damage_reduction = actor.unit.damage_reduction;
-            actor.unit.damage_reduction = 1.0f;
-            actor.guardian_angel_until = now + 1.0f;
-            const float heal = (actor.unit.max_hp - actor.unit.hp) * 0.20f;
-            actor.unit.hp = std::min(actor.unit.max_hp, actor.unit.hp + heal);
-            actor.healing_done += heal;
-            actor.shield_expires_at = std::max(actor.shield_expires_at, now + 1.0f);
-        }
+
 
         // Guinsoo's and item cooldown clocks use elapsed combat time.
         for (const auto& item : actor.unit.items) {
@@ -1087,9 +1075,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             }
             ++actor.attacks;
             if (actor.challenger_attacks_remaining > 0) {
-                const float heal = std::min(actor.unit.max_hp - actor.unit.hp,
-                    actor.unit.max_hp * 0.05f);
-                actor.unit.hp += heal;
+                const float heal = apply_heal(actor,
+                    actor.unit.max_hp * 0.05f, now);
                 actor.healing_done += heal;
                 --actor.challenger_attacks_remaining;
             }
