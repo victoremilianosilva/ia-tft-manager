@@ -391,6 +391,12 @@ void apply_start_combat_team_effects(std::vector<RuntimeUnit>& units) {
                 for (std::size_t i = 0; i < units.size(); ++i) {
                     const auto& recipient = units[i];
                     if (recipient.unit.team != source.unit.team) continue;
+                    // The source already evaluates its own on_attack effect from
+                    // its item/trait. Do not attach a second copy of that aura
+                    // to the source itself; recipients other than the source need
+                    // the runtime copy so they inherit the team bonus.
+                    if (team_attack_effect &&
+                        recipient.unit.id == source.unit.id) continue;
                     if (role_condition && !effect_condition_matches(recipient.unit, effect))
                         continue;
                     if (effect.target == "allies_same_row_within_1" &&
