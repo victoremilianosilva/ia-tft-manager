@@ -176,6 +176,7 @@ class PlayerJsonLogWriter:
             "role_abbreviation": ROLE_ABBREVIATIONS.get(role, "?"),
             "traits": list(definition.get("traits", []) or []), "impact": impact,
             "impact_method": "cost * star * 2.0 (native board_power contribution)",
+            "items": list(unit.get("items", []) or []),
         }
 
     def _player_snapshot(self, audit: dict, public: dict) -> dict:
@@ -256,6 +257,8 @@ class PlayerJsonLogWriter:
             "board": [self._unit_info(u, i, "board") for i, u in enumerate(audit.get("board", []))],
             "bench": [self._unit_info(u, i, "bench") for i, u in enumerate(audit.get("bench", []))],
             "shop": [self._unit_info(u, i, "shop") for i, u in enumerate(audit.get("shop", []))],
+            "item_components": list(audit.get("item_components", []) or []),
+            "item_inventory": list(audit.get("item_inventory", []) or []),
         }
 
 

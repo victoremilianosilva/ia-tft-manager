@@ -669,6 +669,8 @@ PYBIND11_MODULE(tft_engine, module) {
                     p["board"] = board;
                     p["bench"] = bench;
                     p["shop"] = shop;
+                    p["item_components"] = player.item_components;
+                    p["item_inventory"] = player.item_inventory;
                     p["action_masks"] = masks_to_dict(player.masks);
                     players.append(p);
                 }
