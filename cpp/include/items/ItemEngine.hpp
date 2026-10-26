@@ -44,6 +44,7 @@ struct ItemDefinition {
     std::string grants_trait;
     int granted_trait_active_count{1};
     std::vector<CombatEffectDefinition> combat_effects;
+    std::vector<std::string> deferred_stats;
 };
 
 struct UnitProfile {
