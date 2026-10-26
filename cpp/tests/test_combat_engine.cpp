@@ -535,6 +535,55 @@ void test_set17_ionic_spark_and_emblem_passives() {
     require(saw_magic_bonus, "Fighter emblem should add magic damage based on max health.");
 }
 
+void test_data_driven_trait_emblem_effects() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 0.5f;
+    input.config.record_damage = true;
+    input.player_a.units[0].hp = input.player_a.units[0].max_hp = 1000.0f;
+    input.player_a.units[0].attack_damage = 10.0f;
+    input.player_a.units[0].attack_speed = 10.0f;
+    input.player_b.units[0].hp = input.player_b.units[0].max_hp = 5000.0f;
+    input.player_b.units[0].armor = 0.0f;
+    input.player_b.units[0].attack_damage = 0.1f;
+
+    tft::CombatItem emblem;
+    emblem.api_name = "an_item_name_not_known_to_the_engine";
+    emblem.grants_trait = "TFT17_TestTrait";
+    emblem.granted_trait_active_count = 1;
+
+    tft::CombatEffectDefinition start_bonus;
+    start_bonus.trigger = "combat_start";
+    start_bonus.operation = "add_stat";
+    start_bonus.stat = "attack_damage";
+    start_bonus.value = 5.0f;
+    emblem.effects.push_back(start_bonus);
+
+    tft::CombatEffectDefinition trait_attack_bonus;
+    trait_attack_bonus.trigger = "on_attack";
+    trait_attack_bonus.operation = "bonus_damage";
+    trait_attack_bonus.value = 0.01f;
+    trait_attack_bonus.percent_of_max_health = true;
+    trait_attack_bonus.condition = "has_trait";
+    trait_attack_bonus.condition_trait = "TFT17_TestTrait";
+    emblem.effects.push_back(trait_attack_bonus);
+    input.player_a.units[0].items.push_back(emblem);
+
+    const auto result = engine.simulate(input);
+    require(result.success, "Data-driven trait emblem combat should complete.");
+    bool saw_data_driven_damage = false;
+    for (const auto& event : result.damage_events) {
+        if (event.source_unit_id == input.player_a.units[0].id &&
+            event.target_unit_id == input.player_b.units[0].id &&
+            std::abs(event.raw_damage - 25.0f) < 0.001f) {
+            saw_data_driven_damage = true;
+            break;
+        }
+    }
+    require(saw_data_driven_damage,
+        "Trait grant and item effects should work without an item API-name branch.");
+}
+
 } // namespace
 
 int main() {
@@ -552,6 +601,7 @@ int main() {
         test_set17_burn_and_shred_change_combat_damage();
         test_set17_healing_and_defensive_items_change_survival();
         test_set17_ionic_spark_and_emblem_passives();
+        test_data_driven_trait_emblem_effects();
     } catch (const std::exception& error) {
         std::cerr << "test_combat_engine: " << error.what() << '\n';
         return 1;
