@@ -116,6 +116,14 @@ void add_titans_stack(RuntimeUnit& unit) {
         unit.unit.damage_amplification += 0.10f;
 }
 
+float apply_heal(RuntimeUnit& target, float amount, float now) {
+    if (target.grievous_until > now) amount *= 0.67f;
+    const float actual = std::min(std::max(0.0f, amount),
+        std::max(0.0f, target.unit.max_hp - target.unit.hp));
+    target.unit.hp += actual;
+    return actual;
+}
+
 void trigger_defensive_items(RuntimeUnit& unit, float now) {
     if (has_item(unit.unit, "TFT_Item_Bloodthirster") &&
         !unit.bloodthirster_triggered && unit.unit.hp <= unit.unit.max_hp * 0.40f) {
@@ -142,8 +150,8 @@ void trigger_defensive_items(RuntimeUnit& unit, float now) {
         unit.guardian_previous_damage_reduction = unit.unit.damage_reduction;
         unit.unit.damage_reduction = 1.0f;
         unit.guardian_angel_until = now + 1.0f;
-        const float heal = std::max(0.0f, (unit.unit.max_hp - unit.unit.hp) * 0.20f);
-        unit.unit.hp = std::min(unit.unit.max_hp, unit.unit.hp + heal);
+        const float heal = apply_heal(unit,
+            std::max(0.0f, (unit.unit.max_hp - unit.unit.hp) * 0.20f), now);
         if (unit.unit.hp <= 0.0f) unit.unit.hp = unit.unit.max_hp * 0.20f;
         unit.unit.alive = true;
         unit.healing_done += heal;
@@ -664,9 +672,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             if (has_item(actor.unit, "TFT_Item_DragonsClaw") &&
                 now - actor.last_dragons_claw_tick >= 2.0f) {
                 const int ticks = static_cast<int>((now - actor.last_dragons_claw_tick) / 2.0f);
-                const float heal = std::min(actor.unit.max_hp - actor.unit.hp,
-                    actor.unit.max_hp * 0.025f * ticks);
-                actor.unit.hp += heal;
+                const float heal = apply_heal(actor,
+                    actor.unit.max_hp * 0.025f * ticks, now);
                 actor.healing_done += heal;
                 actor.last_dragons_claw_tick += 2.0f * ticks;
             }
@@ -920,15 +927,15 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                                 if (ratio < lowest) { lowest = ratio; ally = i; }
                             }
                             if (ally < units.size()) {
-                                const float heal = std::min(units[ally].unit.max_hp - units[ally].unit.hp,
-                                    damage * 0.20f);
-                                units[ally].unit.hp += heal;
+                                const float heal = apply_heal(units[ally], damage * 0.20f, now);
                                 units[ally].healing_done += heal;
                             }
                         }
-                        if (actor.unit.omnivamp > 0.0f && damage > 0.0f)
-                            actor.unit.hp = std::min(actor.unit.max_hp,
-                                actor.unit.hp + damage * actor.unit.omnivamp);
+                        if (actor.unit.omnivamp > 0.0f && damage > 0.0f) {
+                            const float heal = apply_heal(actor,
+                                damage * actor.unit.omnivamp, now);
+                            actor.healing_done += heal;
+                        }
 
                         if (config.record_damage) {
                             DamageEvent de;
@@ -947,11 +954,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                         const float healing = std::max(0.0f, ability.base_healing) +
                             std::max(0.0f, ability.ability_power_ratio) *
                                 actor.unit.ability_power;
-                        const float healing_after_wounds = ability_target.grievous_until > now
-                            ? healing * 0.67f : healing;
-                        const float actual = std::min(healing_after_wounds,
-                            ability_target.unit.max_hp - ability_target.unit.hp);
-                        ability_target.unit.hp += actual;
+                        const float actual = apply_heal(ability_target, healing, now);
                         actor.healing_done += actual;
                         ability_event.healing += actual;
                     }
@@ -1078,9 +1081,9 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             trigger_defensive_items(target, now);
             actor.damage_dealt += damage;
             if (actor.unit.omnivamp > 0.0f && damage > 0.0f) {
-                actor.unit.hp = std::min(
-                    actor.unit.max_hp,
-                    actor.unit.hp + damage * actor.unit.omnivamp);
+                const float heal = apply_heal(actor,
+                    damage * actor.unit.omnivamp, now);
+                actor.healing_done += heal;
             }
             ++actor.attacks;
             if (actor.challenger_attacks_remaining > 0) {
@@ -1173,9 +1176,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                     if (ratio < lowest) { lowest = ratio; ally = i; }
                 }
                 if (ally < units.size()) {
-                    const float heal = std::min(units[ally].unit.max_hp - units[ally].unit.hp,
-                        damage * 0.20f);
-                    units[ally].unit.hp += heal;
+                    const float heal = apply_heal(units[ally], damage * 0.20f, now);
                     units[ally].healing_done += heal;
                 }
             }
