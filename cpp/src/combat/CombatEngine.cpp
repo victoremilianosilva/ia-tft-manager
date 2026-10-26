@@ -362,6 +362,23 @@ float effect_attack_bonus(const CombatUnit& unit, DamageType damage_type) {
     return bonus;
 }
 
+float effect_mana_regeneration(const CombatUnit& unit) {
+    float amount = 0.0f;
+    auto accumulate = [&](const std::vector<CombatEffectDefinition>& effects) {
+        for (const auto& effect : effects) {
+            if (effect.operation == "mana_regen" &&
+                (effect.trigger.empty() || effect.trigger == "combat_start") &&
+                effect_condition_matches(unit, effect))
+                amount += effect.value;
+        }
+    };
+    for (const auto& item : unit.items) accumulate(item.effects);
+    for (const auto& trait : unit.traits) {
+        if (trait.active || trait.active_count > 0) accumulate(trait.effects);
+    }
+    return amount;
+}
+
 float effect_kill_healing(const CombatUnit& unit) {
     float healing = 0.0f;
     auto accumulate = [&](const std::vector<CombatEffectDefinition>& effects) {
@@ -567,9 +584,9 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                          item.api_name == "TFT_Item_StatikkShiv") loaded.mana_regen_per_second += 1.0f;
                 else if (item.api_name == "TFT_Item_BlueBuff") loaded.mana_regen_per_second += 5.0f;
                 else if (item.api_name == "TFT_Item_Redemption") loaded.mana_regen_per_second += 2.0f;
-                else if (item.api_name == "TFT17_Item_AstronautEmblemItem" ||
-                         item.api_name == "TFT17_Item_SummonTraitEmblemItem") loaded.mana_regen_per_second += 2.0f;
+
             }
+            loaded.mana_regen_per_second += effect_mana_regeneration(loaded.unit);
             if (has_item(loaded.unit, "TFT_Item_UnstableConcoction")) {
                 loaded.hand_of_justice_ad_bonus =
                     loaded.unit.attack_damage * (0.15f / 1.15f);
