@@ -630,6 +630,56 @@ void test_data_driven_trait_emblem_effects() {
     }
     require(saw_armor_mitigated_hit,
         "Generic role-conditioned aura should apply to same-row allies at combat start.");
+
+    // N.O.V.A.'s capstone is data-driven: the team effect only activates when
+    // the source unit sees the required team trait count, and its true-damage
+    // bonus is inherited by allies rather than staying on the emblem carrier.
+    auto capstone_input = make_input();
+    capstone_input.config.max_duration = 0.5f;
+    capstone_input.config.record_damage = true;
+    auto& capstone_source = capstone_input.player_a.units[0];
+    capstone_source.attack_damage = 10.0f;
+    capstone_source.attack_speed = 10.0f;
+    capstone_source.hp = capstone_source.max_hp = 1000.0f;
+    tft::CombatTrait nova_trait;
+    nova_trait.api_name = "TFT17_DRX";
+    nova_trait.active = true;
+    nova_trait.active_count = 5;
+    capstone_source.traits.push_back(nova_trait);
+    capstone_source.items.clear();
+    tft::CombatItem nova_emblem;
+    nova_emblem.api_name = "unrecognized_nova_emblem";
+    nova_emblem.grants_trait = "TFT17_DRX";
+    tft::CombatEffectDefinition nova_capstone;
+    nova_capstone.trigger = "on_attack";
+    nova_capstone.operation = "bonus_damage";
+    nova_capstone.target = "allies";
+    nova_capstone.condition = "trait_count_at_least";
+    nova_capstone.condition_trait = "TFT17_DRX";
+    nova_capstone.min_trait_count = 5;
+    nova_capstone.damage_type = tft::DamageType::TRUE_DAMAGE;
+    nova_capstone.value = 0.10f;
+    nova_capstone.percent_of_stat = true;
+    nova_capstone.stat = "attack_damage";
+    nova_emblem.effects.push_back(nova_capstone);
+    capstone_source.items.push_back(nova_emblem);
+    capstone_input.player_b.units[0].attack_damage = 0.1f;
+    capstone_input.player_b.units[0].attack_speed = 10.0f;
+    capstone_input.player_b.units[0].hp = capstone_input.player_b.units[0].max_hp = 5000.0f;
+
+    const auto capstone_result = engine.simulate(capstone_input);
+    require(capstone_result.success, "Trait-count-gated capstone combat should complete.");
+    bool saw_capstone_true_damage = false;
+    for (const auto& event : capstone_result.damage_events) {
+        if (event.source_unit_id == capstone_source.id &&
+            event.damage_type == tft::DamageType::TRUE_DAMAGE &&
+            std::abs(event.raw_damage - 1.0f) < 0.001f) {
+            saw_capstone_true_damage = true;
+            break;
+        }
+    }
+    require(saw_capstone_true_damage,
+        "A trait-count-gated team aura should grant the generic true-damage effect.");
 }
 
 } // namespace
