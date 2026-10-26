@@ -389,8 +389,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
         // and unmodeled buff/debuff semantics remain outside this resolver.
         const auto& ability = actor.unit.ability;
         const bool ability_has_effect = ability.has_damage || ability.has_healing ||
-            ability.has_shield || ability.has_buff || ability.has_debuff ||
-            ability.has_area_effect;
+            ability.has_shield;
         if (actor.unit.can_cast && ability_has_effect &&
             std::isfinite(ability.mana_cost) && ability.mana_cost > 0.0f &&
             actor.unit.mana >= ability.mana_cost) {
