@@ -89,6 +89,7 @@ struct CombatEffectDefinition
     float interval = 0.0f;
     int max_stacks = 0;
     bool percent_of_max_health = false;
+    bool percent_of_stat = false;
 };
 
 // ============================================================
