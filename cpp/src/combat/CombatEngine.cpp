@@ -71,6 +71,8 @@ struct RuntimeUnit {
     std::unordered_map<std::string, int> generic_effect_charges;
     std::unordered_set<std::string> generic_effects_applied;
     std::unordered_set<std::string> generic_effects_active;
+    std::unordered_set<std::string> generic_effects_triggered;
+    std::unordered_map<std::string, float> generic_effect_expiry;
 };
 
 struct ScheduledEvent {
@@ -437,7 +439,7 @@ void apply_delayed_effects(RuntimeUnit& runtime, float now) {
     });
 }
 
-void update_conditional_effects(RuntimeUnit& runtime) {
+void update_conditional_effects(RuntimeUnit& runtime, float now) {
     visit_generic_effects(runtime.unit, [&](const CombatEffectDefinition& effect,
                                            const std::string& prefix) {
         if (effect.trigger != "while_hp_below" || effect.operation != "add_stat" ||
@@ -445,16 +447,28 @@ void update_conditional_effects(RuntimeUnit& runtime) {
             !effect_condition_matches(runtime.unit, effect)) return;
         const std::string key = prefix + "conditional:" + effect.stat + ":" +
             std::to_string(effect.health_threshold) + ":" + std::to_string(effect.value);
-        const bool should_be_active = runtime.unit.hp / runtime.unit.max_hp <= effect.health_threshold;
-        const bool is_active = runtime.generic_effects_active.contains(key);
-        if (should_be_active && !is_active) {
+        const bool below = runtime.unit.hp / runtime.unit.max_hp <= effect.health_threshold;
+        const bool active = runtime.generic_effects_active.contains(key);
+        const bool triggered = runtime.generic_effects_triggered.contains(key);
+        if (below && !active && !triggered) {
             apply_effect_stat(runtime.unit, effect);
             runtime.generic_effects_active.insert(key);
-        } else if (!should_be_active && is_active) {
-            CombatEffectDefinition inverse = effect;
-            inverse.value = -inverse.value;
-            apply_effect_stat(runtime.unit, inverse);
-            runtime.generic_effects_active.erase(key);
+            runtime.generic_effects_triggered.insert(key);
+            if (effect.duration > 0.0f)
+                runtime.generic_effect_expiry[key] = now + effect.duration;
+        } else if (active) {
+            const auto expiry = runtime.generic_effect_expiry.find(key);
+            const bool expired = expiry != runtime.generic_effect_expiry.end() &&
+                                 now >= expiry->second;
+            const bool condition_ended = effect.duration <= 0.0f && !below;
+            if (expired || condition_ended) {
+                CombatEffectDefinition inverse = effect;
+                inverse.value = -inverse.value;
+                apply_effect_stat(runtime.unit, inverse);
+                runtime.generic_effects_active.erase(key);
+                runtime.generic_effect_expiry.erase(key);
+                if (condition_ended) runtime.generic_effects_triggered.erase(key);
+            }
         }
     });
 }
@@ -820,7 +834,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
         ++result.events_processed;
         for (auto& runtime : units) {
             apply_delayed_effects(runtime, now);
-            update_conditional_effects(runtime);
+            update_conditional_effects(runtime, now);
         }
 
         // Processa queimadura uma vez por segundo, independentemente da ordem
