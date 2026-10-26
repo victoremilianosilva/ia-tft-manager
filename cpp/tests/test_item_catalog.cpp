@@ -1,6 +1,7 @@
 #include "items/ItemCatalog.hpp"
 #include "items/CombatItemAdapter.hpp"
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 
@@ -70,6 +71,34 @@ int main(int argc, char** argv) {
         if (!found_data_driven_brawler) {
             std::cerr << "Brawler emblem was not loaded\n";
             return 11;
+        }
+
+        bool found_bastion_delay = false;
+        bool found_rogue_threshold = false;
+        for (const auto& item : catalog.items) {
+            if (item.id == "TFT17_Item_ResistTankEmblemItem") {
+                found_bastion_delay = std::find(item.deferred_stats.begin(),
+                    item.deferred_stats.end(), "attack_speed") != item.deferred_stats.end() &&
+                    std::any_of(item.combat_effects.begin(), item.combat_effects.end(),
+                        [](const auto& effect) {
+                            return effect.trigger == "after_delay" &&
+                                effect.stat == "attack_speed" && effect.delay == 10.0f;
+                        });
+            }
+            if (item.id == "TFT17_Item_AssassinTraitEmblemItem") {
+                found_rogue_threshold = std::find(item.deferred_stats.begin(),
+                    item.deferred_stats.end(), "omnivamp") != item.deferred_stats.end() &&
+                    std::any_of(item.combat_effects.begin(), item.combat_effects.end(),
+                        [](const auto& effect) {
+                            return effect.trigger == "while_hp_below" &&
+                                effect.stat == "omnivamp" &&
+                                effect.health_threshold == 0.5f;
+                        });
+            }
+        }
+        if (!found_bastion_delay || !found_rogue_threshold) {
+            std::cerr << "Delayed/conditional trait effects were not loaded\n";
+            return 12;
         }
 
         std::cout << "Loaded " << catalog.set_id << ": "
