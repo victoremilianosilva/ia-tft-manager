@@ -56,6 +56,9 @@ struct RuntimeUnit {
     bool guardian_angel_triggered = false;
     bool crown_shield_triggered = false;
     bool night_harvester_bonus_active = false;
+    bool hand_of_justice_ad_ap_active = false;
+    float hand_of_justice_ad_bonus = 0.0f;
+    float hand_of_justice_ap_bonus = 15.0f;
     float guardian_angel_until = 0.0f;
     float last_status_tick = 0.0f;
 };
@@ -167,6 +170,8 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
         return false;
     }
 
+    const float base_attack_damage = unit.attack_damage;
+    const float base_max_hp = unit.max_hp;
     for (const auto& item : unit.items) {
         const float values[] = {
             item.attack_damage, item.ability_power, item.attack_speed,
@@ -198,6 +203,47 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
             unit.omnivamp += item.omnivamp;
         unit.damage_amplification += item.damage_amplification;
         unit.damage_reduction += item.damage_reduction;
+
+        // Percentuais que o normalizador do catálogo preserva em source_effects,
+        // mas que não aparecem como atributo aditivo no campo stats.
+        if (item.api_name == "TFT_Item_Deathblade")
+            unit.attack_damage += base_attack_damage * 0.55f;
+        else if (item.api_name == "TFT_Item_Bloodthirster")
+            unit.attack_damage += base_attack_damage * 0.15f;
+        else if (item.api_name == "TFT_Item_BlueBuff")
+            unit.attack_damage += base_attack_damage * 0.15f;
+        else if (item.api_name == "TFT_Item_LastWhisper")
+            unit.attack_damage += base_attack_damage * 0.15f;
+        else if (item.api_name == "TFT_Item_RunaansHurricane")
+            unit.attack_damage += base_attack_damage * 0.10f;
+        else if (item.api_name == "TFT_Item_SteraksGage")
+            unit.attack_damage += base_attack_damage * 0.45f;
+        else if (item.api_name == "TFT_Item_MadredsBloodrazor")
+            unit.attack_damage += base_attack_damage * 0.15f;
+        else if (item.api_name == "TFT_Item_InfinityEdge")
+            unit.attack_damage += base_attack_damage * 0.35f;
+        else if (item.api_name == "TFT_Item_WarmogsArmor")
+            unit.max_hp += base_max_hp * 0.18f, unit.hp += base_max_hp * 0.18f;
+        else if (item.api_name == "TFT_Item_DragonsClaw")
+            unit.max_hp += base_max_hp * 0.06f, unit.hp += base_max_hp * 0.06f;
+        else if (item.api_name == "TFT_Item_BrambleVest")
+            unit.max_hp += base_max_hp * 0.06f, unit.hp += base_max_hp * 0.06f;
+        else if (item.api_name == "TFT_Item_RedBuff")
+            unit.max_hp += base_max_hp * 0.08f, unit.hp += base_max_hp * 0.08f;
+        else if (item.api_name == "TFT_Item_UnstableConcoction") {
+            unit.attack_damage += base_attack_damage * 0.15f;
+            unit.ability_power += 15.0f;
+            unit.omnivamp = std::min(1.0f, unit.omnivamp + 0.12f);
+        } else if (item.api_name == "TFT17_Item_FlexTraitEmblemItem") {
+            unit.attack_damage += base_attack_damage * 0.20f;
+            unit.ability_power += 20.0f;
+        } else if (item.api_name == "TFT17_Item_DarkStarEmblemItem") {
+            unit.attack_damage += base_attack_damage * 0.18f;
+            unit.ability_power += 18.0f;
+        } else if (item.api_name == "TFT17_Item_StargazerEmblemItem") {
+            unit.attack_damage += base_attack_damage * 0.15f;
+            unit.ability_power += 15.0f;
+        }
     }
 
     if (!std::isfinite(unit.max_hp) || !std::isfinite(unit.hp) ||
@@ -372,6 +418,19 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             }
 
             units.push_back(RuntimeUnit{effective_unit, effective_unit.hp});
+            auto& loaded = units.back();
+            if (has_item(loaded.unit, "TFT_Item_UnstableConcoction")) {
+                loaded.hand_of_justice_ad_bonus =
+                    loaded.unit.attack_damage * (0.15f / 1.15f);
+                loaded.hand_of_justice_ad_ap_active =
+                    loaded.unit.hp / loaded.unit.max_hp > 0.50f;
+                if (loaded.hand_of_justice_ad_ap_active) {
+                    loaded.unit.attack_damage += loaded.hand_of_justice_ad_bonus;
+                    loaded.unit.ability_power += loaded.hand_of_justice_ap_bonus;
+                } else {
+                    loaded.unit.omnivamp = std::min(1.0f, loaded.unit.omnivamp + 0.12f);
+                }
+            }
         }
         return true;
     };
@@ -947,6 +1006,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
 
             damage *= std::clamp(
                 1.0f - target.unit.damage_reduction, 0.0f, 1.0f);
+            if (has_item(target.unit, "TFT_Item_BrambleVest"))
+                damage *= 0.95f;
 
             damage = std::min(damage, target.unit.hp + target.shield_hp);
 
