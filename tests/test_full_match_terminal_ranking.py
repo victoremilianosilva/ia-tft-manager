@@ -18,7 +18,7 @@ for module_dir in (
 pytest.importorskip("tft_engine", reason="Build native TFT engine to test terminal ranking")
 from tft_engine import TFTLobby  # noqa: E402
 
-CATALOG_PATH = ROOT / "units_gerado.json"
+CATALOG_PATH = ROOT / "data" / "units_gerado.json"
 
 
 def test_native_match_finishes_with_unique_ordered_placements_and_one_reward_each():
