@@ -1,0 +1,10 @@
+{
+  "set": 18,
+  "name": "Set10",
+  "source": "itens.json",
+  "champions": 74,
+  "traits": 36,
+  "craftable_items": 55,
+  "components": 10,
+  "note": "Generated from CommunityDragon; item combat effects not represented by the engine remain source metadata, not simulated effects."
+}
