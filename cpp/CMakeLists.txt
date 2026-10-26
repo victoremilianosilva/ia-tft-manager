@@ -570,6 +570,7 @@ if(BUILD_TESTING)
         tests/test_trait_milestones.cpp
     )
     configure_tft_module(test_trait_milestones)
+    enable_tft_test_assertions(test_trait_milestones)
     target_link_libraries(
         test_trait_milestones
         PRIVATE nlohmann_json::nlohmann_json
