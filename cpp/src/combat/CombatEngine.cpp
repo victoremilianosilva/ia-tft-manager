@@ -1363,6 +1363,11 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 target.unit.hp = 0.0f;
                 target.unit.alive = false;
                 ++actor.kills;
+                const float generic_kill_heal = effect_kill_healing(actor.unit);
+                if (generic_kill_heal > 0.0f) {
+                    const float actual_heal = apply_heal(actor, generic_kill_heal, now);
+                    actor.healing_done += actual_heal;
+                }
                 if (has_item(actor.unit, "TFT17_Item_ASTraitEmblemItem"))
                     actor.challenger_attacks_remaining = 3;
 
