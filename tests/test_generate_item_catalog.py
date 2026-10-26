@@ -12,8 +12,8 @@ from scripts.generate_item_catalog import build_catalog  # noqa: E402
 def source_fixture():
     return {
         "items": [
-            {"apiName": "TFT_Item_Sword", "name": "Sword", "composition": [], "effects": {"AD": 0.1}},
-            {"apiName": "TFT_Item_Bow", "name": "Bow", "composition": [], "effects": {"AS": 10}},
+            {"apiName": "TFT_Item_Sword", "name": "Sword", "tags": ["component"], "composition": [], "effects": {"AD": 0.1}},
+            {"apiName": "TFT_Item_Bow", "name": "Bow", "tags": ["component"], "composition": [], "effects": {"AS": 10}},
             {
                 "apiName": "TFT_Item_Consumable_Test",
                 "name": "Test Consumable",
@@ -86,6 +86,34 @@ def test_ignores_items_tagged_as_consumable_and_recipes_using_them():
     assert "TFT_Item_Consumable_Test" not in component_ids
 
 
+def test_only_items_tagged_component_can_be_used_as_recipe_components():
+    source = source_fixture()
+    source["items"].append({
+        "apiName": "TFT_Item_NotAComponent",
+        "name": "Not a component",
+        "tags": ["Unique"],
+        "composition": [],
+        "effects": {},
+    })
+    source["items"].append({
+        "apiName": "TFT_Item_Recipe_With_NonComponent",
+        "name": "Recipe with non-component",
+        "composition": ["TFT_Item_NotAComponent", "TFT_Item_Sword"],
+        "effects": {},
+    })
+    source["setData"][0]["items"].extend([
+        "TFT_Item_NotAComponent",
+        "TFT_Item_Recipe_With_NonComponent",
+    ])
+
+    catalog = build_catalog(source, "16")
+    output_ids = {item["id"] for item in catalog["items"]}
+    component_ids = {component["id"] for component in catalog["components"]}
+    assert "TFT_Item_Recipe_With_NonComponent" not in output_ids
+    assert "TFT_Item_NotAComponent" not in component_ids
+    assert component_ids == {"TFT_Item_Sword", "TFT_Item_Bow"}
+
+
 def test_normalizes_supported_stats_and_preserves_raw_effects():
     catalog = build_catalog(source_fixture(), "Set16")
     item = next(item for item in catalog["items"] if item["id"] == "TFT_Item_TestBlade")
@@ -123,6 +151,7 @@ def test_rejects_more_than_engine_component_head_limit():
         source["items"].append({
             "apiName": component_id,
             "name": component_id,
+            "tags": ["component"],
             "composition": [],
             "effects": {},
         })
