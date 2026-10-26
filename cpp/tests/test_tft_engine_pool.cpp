@@ -884,6 +884,14 @@ int main(int argc, char** argv) {
 
         if (!anvil_catalog_path.empty()) {
             tft::TFTEngine anvil_engine(246801, json_path, anvil_catalog_path);
+            // This test isolates loot/anvil scheduling, not combat survival.
+            // Keep every participant alive long enough to exercise rounds 2-7,
+            // 4-7, 5-7 and 6-7 without weakening production elimination rules.
+            for (std::int32_t player = 0;
+                 player < static_cast<std::int32_t>(tft::kPlayersPerLobby); ++player) {
+                require(anvil_engine.set_player_hp_for_testing(player, 10000.0f),
+                        "Nao foi possivel preparar HP alto para teste de bigorna.");
+            }
             std::array<tft::PlayerAction, tft::kPlayersPerLobby> pass_actions{};
             for (auto& action : pass_actions) action.values = {6, 0, 0, 0, 0, 0};
             const auto finish_round = [&]() {
