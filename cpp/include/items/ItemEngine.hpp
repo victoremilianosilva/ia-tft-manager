@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "items/ItemActionContract.hpp"
+#include "combat/CombatInput.hpp"
 
 namespace tft::items {
 
@@ -40,6 +41,9 @@ struct ItemDefinition {
     double tank_weight{0.0};
     double support_weight{0.0};
     double utility_weight{0.0};
+    std::string grants_trait;
+    int granted_trait_active_count{1};
+    std::vector<CombatEffectDefinition> combat_effects;
 };
 
 struct UnitProfile {
