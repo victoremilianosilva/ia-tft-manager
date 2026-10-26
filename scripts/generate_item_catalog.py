@@ -118,6 +118,22 @@ def _is_consumable(item: dict[str, Any]) -> bool:
         return False
     return any(isinstance(tag, str) and tag.strip().casefold() == "consumable" for tag in tags)
 
+def _has_tag(item: dict[str, Any], expected_tag: str) -> bool:
+    """Match a CommunityDragon tag without depending on casing or whitespace."""
+    tags = item.get("tags")
+    if not isinstance(tags, list):
+        return False
+    expected = expected_tag.strip().casefold()
+    return any(
+        isinstance(tag, str) and tag.strip().casefold() == expected
+        for tag in tags
+    )
+
+
+def _is_component(item: dict[str, Any] | None) -> bool:
+    """Only source items explicitly tagged 'component' are base components."""
+    return item is not None and _has_tag(item, "component")
+
 
 def _selector_matches(selector: str, entry: dict[str, Any]) -> bool:
     name = str(entry.get("name", "")).strip()
@@ -186,19 +202,22 @@ def build_catalog(
             continue
         if not all(isinstance(component_id, str) and component_id for component_id in recipe):
             raise ValueError(f"Receita inválida em {item.get('apiName', '<sem ID>')}: {recipe!r}")
-        # Consumables are not craftable item definitions for the engine. Also
-        # exclude recipes that reference a consumable as a component, so those
-        # IDs cannot inflate the component set or enter the action space.
-        if any(
-            component_id in item_by_id and _is_consumable(item_by_id[component_id])
-            for component_id in recipe
-        ):
+        # The engine's component action space must be built from source items
+        # explicitly tagged "component". A two-part composition alone is not
+        # enough: CommunityDragon also uses composition for special/consumable
+        # records, which must not inflate the base-component dimension.
+        if any(not _is_component(item_by_id.get(component_id)) for component_id in recipe):
             continue
         craftable.append(item)
     if not craftable:
         raise ValueError(f"Nenhum item com receita de dois componentes encontrado no set {set_name}.")
 
-    component_ids = sorted({component_id for item in craftable for component_id in item["composition"]})
+    component_ids = sorted({
+        component_id
+        for item in craftable
+        for component_id in item["composition"]
+        if _is_component(item_by_id.get(component_id))
+    })
     if len(component_ids) > 10:
         raise ValueError(f"O set {set_name} usa {len(component_ids)} componentes; a cabeça de ações da engine aceita no máximo 10.")
 
