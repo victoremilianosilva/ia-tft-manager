@@ -26,7 +26,7 @@ add_compile_definitions(
     TFT_COMP_DIRECTION_REQUIRED_UPDATES=${TFT_COMP_DIRECTION_REQUIRED_UPDATES}
 )
 
-# Default to the generated, versioned catalog for the active Set 17.
+# Default to the generated, versioned catalog for the active Set 18.
 add_compile_definitions(
     TFT_DEFAULT_ITEM_CATALOG_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../data/itens.json"
     TFT_DEFAULT_TRAITS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../data/traits.json"
