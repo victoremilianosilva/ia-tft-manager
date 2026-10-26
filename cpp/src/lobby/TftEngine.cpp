@@ -670,77 +670,95 @@ struct TFTEngine::Impl {
         return unit ? &*unit : nullptr;
     }
 
-    void grant_round_component_loot(std::uint32_t current_round_number, std::vector<std::string>& events) {
-        if (!item_catalog || item_catalog->components.empty() || current_round_number <= 4) return;
+    void grant_round_pve_item_rewards(
+        std::uint32_t current_round_number,
+        std::vector<std::string>& events
+    ) {
+        if (!item_catalog || current_round_number <= 4) return;
 
         const auto current_stage = stage_for_round(current_round_number);
         const auto round_in_stage = ((current_round_number - 5) % kRoundsPerStage) + 1;
         if (round_in_stage != 7 || current_stage < 2 || current_stage > 6) return;
 
-        // Direct PvE component loot. The counts below are an engine model,
-        // not a claim to reproduce every random orb in live TFT. Set 17's
-        // explicit 4-7 rule is 1-3 components; 3-7 was reduced by one.
-        std::size_t component_count = 1;
-        if (current_stage == 3) component_count = 0;
-        else if (current_stage == 4) {
-            const auto mixed_seed = seed ^
-                (episode_id * 0x9E3779B97F4A7C15ULL) ^
-                (static_cast<std::uint64_t>(current_round_number) << 16U);
-            std::mt19937_64 count_rng(mixed_seed);
-            component_count = 1U + static_cast<std::size_t>(count_rng() % 3U);
-        } else if (current_stage >= 5) component_count = 2;
-
-        // Set 17 replaces some random component drops with component anvils
-        // for players at the bottom of the HP standings. Use the two lowest
-        // living HP totals as this simulator's explicit catch-up approximation.
         std::vector<std::size_t> living;
         for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
             if (player_envs[i].info.alive && player_envs[i].item_engine)
                 living.push_back(i);
         }
-        std::stable_sort(living.begin(), living.end(), [this](std::size_t a, std::size_t b) {
-            if (player_envs[a].info.hp != player_envs[b].info.hp)
-                return player_envs[a].info.hp < player_envs[b].info.hp;
-            return a < b;
-        });
-        std::unordered_set<std::size_t> catchup_players;
-        for (std::size_t rank = 0; rank < std::min<std::size_t>(2, living.size()); ++rank)
-            catchup_players.insert(living[rank]);
+        if (living.empty()) return;
 
-        std::vector<std::string> component_pool;
-        for (const auto& component : item_catalog->components)
-            component_pool.push_back(component.first);
-        if (component_pool.empty()) return;
-
-        for (const auto player_index : living) {
-            auto& player = player_envs[player_index];
+        const auto player_rng = [this, current_round_number](std::size_t player_index) {
             const auto mixed_seed = seed ^
                 (episode_id * 0xD1B54A32D192ED03ULL) ^
                 (static_cast<std::uint64_t>(current_round_number) << 16U) ^
                 static_cast<std::uint64_t>(player_index);
-            std::mt19937_64 loot_rng(mixed_seed);
+            return std::mt19937_64(mixed_seed);
+        };
 
-            if (component_count > 0 && catchup_players.count(player_index) != 0) {
+        // Standard anvil milestones are choices for every living player, not
+        // a catch-up reward restricted to the two lowest-health players.
+        // Keep normal PvE component drops separate from these forced choices.
+        if (current_stage == 4) { // 4-7: choose one of three components.
+            std::vector<std::string> component_pool;
+            for (const auto& component : item_catalog->components)
+                component_pool.push_back(component.first);
+            if (component_pool.empty()) return;
+
+            for (const auto player_index : living) {
                 auto options = component_pool;
+                auto loot_rng = player_rng(player_index);
                 std::shuffle(options.begin(), options.end(), loot_rng);
                 options.resize(std::min<std::size_t>(3, options.size()));
+                auto& player = player_envs[player_index];
                 if (player.item_engine->grant_component_anvil(std::move(options))) {
                     events.emplace_back(
                         "COMPONENT_ANVIL_GRANTED: player=" + std::to_string(player_index) +
-                        ", stage=" + std::to_string(current_stage) +
-                        ", source=pve_low_hp_catchup");
+                        ", stage=4, source=pve_4_7");
                 }
                 refresh_masks(player_index);
-                continue;
             }
+            return;
+        }
 
+        if (current_stage == 5 || current_stage == 6) { // 5-7 / 6-7: completed item.
+            std::vector<std::string> item_pool;
+            for (const auto& item : item_catalog->items)
+                item_pool.push_back(item.id);
+            if (item_pool.empty()) return;
+
+            for (const auto player_index : living) {
+                auto options = item_pool;
+                auto loot_rng = player_rng(player_index);
+                std::shuffle(options.begin(), options.end(), loot_rng);
+                options.resize(std::min<std::size_t>(4, options.size()));
+                auto& player = player_envs[player_index];
+                if (player.item_engine->grant_completed_item_anvil(std::move(options))) {
+                    events.emplace_back(
+                        "COMPLETED_ITEM_ANVIL_GRANTED: player=" + std::to_string(player_index) +
+                        ", stage=" + std::to_string(current_stage) +
+                        ", source=pve_stage_end");
+                }
+                refresh_masks(player_index);
+            }
+            return;
+        }
+
+        // Other stage-end PvE rewards remain ordinary loot: no Pengu/armory
+        // offer and no forced policy decision. The existing stage-2 drop is
+        // one randomly selected component; stage 3-7 grants none in this model.
+        const std::size_t component_count = current_stage == 2 ? 1U : 0U;
+        if (component_count == 0 || item_catalog->components.empty()) return;
+
+        std::vector<std::string> component_pool;
+        for (const auto& component : item_catalog->components)
+            component_pool.push_back(component.first);
+        for (const auto player_index : living) {
             auto pool = component_pool;
+            auto loot_rng = player_rng(player_index);
             std::shuffle(pool.begin(), pool.end(), loot_rng);
+            auto& player = player_envs[player_index];
             std::size_t granted_count = 0;
-            for (std::size_t drop = 0; drop < component_count; ++drop) {
-                if (pool.empty()) break;
-                if (drop > 0 && drop % pool.size() == 0)
-                    std::shuffle(pool.begin(), pool.end(), loot_rng);
+            for (std::size_t drop = 0; drop < component_count && !pool.empty(); ++drop) {
                 if (player.item_engine->add_component(pool[drop % pool.size()]))
                     ++granted_count;
             }
@@ -3970,7 +3988,7 @@ StepResult TFTEngine::step(
         // Resolve item-anvil rewards from the completed PvE encounter. The
         // choices are generated once from the active catalog and then selected
         // by the policy during the next preparation phase.
-        impl_->grant_round_component_loot(current_round_number, round_events);
+        impl_->grant_round_pve_item_rewards(current_round_number, round_events);
 
         // A renda/XP calculada é para a próxima preparação; o estado começa
         // em round=0 (1-1), então a próxima rodada é current_round_number + 1.
