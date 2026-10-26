@@ -170,6 +170,77 @@ void test_invalid_equipment_is_rejected() {
             "Non-finite item stats must be rejected.");
 }
 
+void test_ability_cast_uses_mana_and_ability_power() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 0.1f;
+    input.config.record_abilities = true;
+    input.config.record_damage = true;
+
+    auto& caster = input.player_a.units[0];
+    caster.attack_damage = 1.0f;
+    caster.attack_speed = 1.0f;
+    caster.ability_power = 50.0f;
+    caster.mana = 100.0f;
+    caster.max_mana = 100.0f;
+    caster.ability.api_name = "test_spell";
+    caster.ability.mana_cost = 100.0f;
+    caster.ability.target_type = tft::AbilityTargetType::ENEMY;
+    caster.ability.damage_type = tft::DamageType::MAGIC;
+    caster.ability.base_damage = 10.0f;
+    caster.ability.ability_power_ratio = 2.0f;
+    caster.ability.has_damage = true;
+
+    auto& target = input.player_b.units[0];
+    target.hp = target.max_hp = 1000.0f;
+    target.magic_resist = 0.0f;
+    target.attack_damage = 0.1f;
+
+    const auto result = engine.simulate(input);
+    require(result.success, "Ability combat should succeed.");
+    require(result.ability_events.size() == 1,
+            "A caster with enough mana should cast its ability.");
+    require(result.ability_events.front().ability_id == "test_spell",
+            "Ability event should identify the cast ability.");
+    require(result.ability_events.front().damage >= 109.9f,
+            "Ability damage should include base damage and AP scaling.");
+    bool saw_ability_damage = false;
+    for (const auto& event : result.damage_events)
+        if (event.ability_damage) saw_ability_damage = true;
+    require(saw_ability_damage,
+            "Ability damage should be distinguished in combat damage events.");
+
+    input.player_a.units[0].mana = 0.0f;
+    const auto no_mana = engine.simulate(input);
+    require(no_mana.success && no_mana.ability_events.empty(),
+            "A unit below ability mana cost must not cast.");
+}
+
+void test_item_mana_can_enable_an_early_cast() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 0.1f;
+    input.config.record_abilities = true;
+    input.player_a.units[0].attack_damage = 1.0f;
+    input.player_a.units[0].mana = 0.0f;
+    input.player_a.units[0].max_mana = 100.0f;
+    input.player_a.units[0].ability.api_name = "mana_test";
+    input.player_a.units[0].ability.mana_cost = 50.0f;
+    input.player_a.units[0].ability.base_damage = 1.0f;
+    input.player_a.units[0].ability.has_damage = true;
+    input.player_a.units[0].ability.target_type = tft::AbilityTargetType::ENEMY;
+    input.player_a.units[0].items.push_back(tft::CombatItem{
+        .id = 202, .api_name = "test_mana_item", .name = "Mana Start",
+        .mana = 50.0f
+    });
+    input.player_b.units[0].hp = input.player_b.units[0].max_hp = 1000.0f;
+    input.player_b.units[0].attack_damage = 0.1f;
+
+    const auto result = engine.simulate(input);
+    require(result.success && result.ability_events.size() == 1,
+            "Item-provided starting mana should enable a cast at combat start.");
+}
+
 } // namespace
 
 int main() {
@@ -179,6 +250,8 @@ int main() {
         test_invalid_configuration_returns_error();
         test_equipped_items_change_combat_stats();
         test_invalid_equipment_is_rejected();
+        test_ability_cast_uses_mana_and_ability_power();
+        test_item_mana_can_enable_an_early_cast();
     } catch (const std::exception& error) {
         std::cerr << "test_combat_engine: " << error.what() << '\n';
         return 1;

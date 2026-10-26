@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <limits>
 #include <queue>
 #include <random>
 #include <string>
@@ -19,7 +20,10 @@ struct RuntimeUnit {
     float initial_hp = 0.0f;
     float damage_dealt = 0.0f;
     float damage_taken = 0.0f;
+    float healing_done = 0.0f;
+    float shield_hp = 0.0f;
     int attacks = 0;
+    int ability_casts = 0;
     int kills = 0;
 };
 
@@ -249,9 +253,20 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 !std::isfinite(unit.attack_speed) || unit.attack_speed <= 0.0f ||
                 !std::isfinite(unit.attack_damage) || unit.attack_damage < 0.0f ||
                 !std::isfinite(unit.attack_range) || unit.attack_range < 0.0f ||
+                !std::isfinite(unit.mana) || unit.mana < 0.0f ||
+                !std::isfinite(unit.max_mana) || unit.max_mana <= 0.0f ||
+                !std::isfinite(unit.ability_power) || unit.ability_power < 0.0f ||
+                !std::isfinite(unit.magic_resist) ||
                 !std::isfinite(unit.armor) ||
                 !std::isfinite(unit.critical_strike_chance) ||
-                !std::isfinite(unit.critical_strike_damage)) {
+                !std::isfinite(unit.critical_strike_damage) ||
+                !std::isfinite(unit.ability.mana_cost) || unit.ability.mana_cost < 0.0f ||
+                !std::isfinite(unit.ability.base_damage) || unit.ability.base_damage < 0.0f ||
+                !std::isfinite(unit.ability.base_healing) || unit.ability.base_healing < 0.0f ||
+                !std::isfinite(unit.ability.shield_amount) || unit.ability.shield_amount < 0.0f ||
+                !std::isfinite(unit.ability.ability_power_ratio) || unit.ability.ability_power_ratio < 0.0f ||
+                !std::isfinite(unit.ability.attack_damage_ratio) || unit.ability.attack_damage_ratio < 0.0f ||
+                !std::isfinite(unit.ability.area_radius) || unit.ability.area_radius < 0.0f) {
                 set_error(result, "INVALID_UNIT_ATTRIBUTES",
                           "Atributos numericos invalidos.");
                 return false;
@@ -337,7 +352,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
         ++result.events_processed;
 
         auto& actor = units[event.unit_index];
-        if (!is_alive(actor) || !actor.unit.can_attack) {
+        if (!is_alive(actor) || (!actor.unit.can_attack && !actor.unit.can_cast)) {
             continue;
         }
 
@@ -369,7 +384,191 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
 
         auto& target = units[target_index];
 
-        if (static_cast<float>(best_distance) <= actor.unit.attack_range) {
+        // Generic ability resolution uses the ability data supplied by the
+        // adapter. It is deliberately data-driven; champion-specific scripts
+        // and unmodeled buff/debuff semantics remain outside this resolver.
+        const auto& ability = actor.unit.ability;
+        const bool ability_has_effect = ability.has_damage || ability.has_healing ||
+            ability.has_shield;
+        if (actor.unit.can_cast && ability_has_effect &&
+            std::isfinite(ability.mana_cost) && ability.mana_cost > 0.0f &&
+            actor.unit.mana >= ability.mana_cost) {
+            std::vector<std::size_t> ability_targets;
+            auto add_target = [&](std::size_t i) {
+                if (i < units.size() && is_alive(units[i]) &&
+                    std::find(ability_targets.begin(), ability_targets.end(), i) ==
+                        ability_targets.end()) {
+                    ability_targets.push_back(i);
+                }
+            };
+            auto lowest_hp_ally = [&]() -> std::size_t {
+                std::size_t best = units.size();
+                float ratio = std::numeric_limits<float>::infinity();
+                for (std::size_t i = 0; i < units.size(); ++i) {
+                    if (!is_alive(units[i]) || units[i].unit.team != actor.unit.team) continue;
+                    const float candidate = units[i].unit.hp / units[i].unit.max_hp;
+                    if (candidate < ratio || (candidate == ratio &&
+                        (best == units.size() || units[i].unit.id < units[best].unit.id))) {
+                        best = i;
+                        ratio = candidate;
+                    }
+                }
+                return best;
+            };
+            switch (ability.target_type) {
+            case AbilityTargetType::SELF:
+                add_target(event.unit_index);
+                break;
+            case AbilityTargetType::ALLY: {
+                const auto ally = lowest_hp_ally();
+                add_target(ally);
+                break;
+            }
+            case AbilityTargetType::ALL_ALLIES:
+                for (std::size_t i = 0; i < units.size(); ++i)
+                    if (units[i].unit.team == actor.unit.team) add_target(i);
+                break;
+            case AbilityTargetType::ALL_ENEMIES:
+                for (std::size_t i = 0; i < units.size(); ++i)
+                    if (units[i].unit.team != actor.unit.team) add_target(i);
+                break;
+            case AbilityTargetType::RANDOM_ENEMY: {
+                std::vector<std::size_t> enemies;
+                for (std::size_t i = 0; i < units.size(); ++i)
+                    if (is_alive(units[i]) && units[i].unit.team != actor.unit.team)
+                        enemies.push_back(i);
+                if (!enemies.empty()) {
+                    std::uniform_int_distribution<std::size_t> pick(0, enemies.size() - 1);
+                    add_target(enemies[pick(rng)]);
+                }
+                break;
+            }
+            case AbilityTargetType::LOWEST_HP_ENEMY:
+            case AbilityTargetType::HIGHEST_HP_ENEMY: {
+                std::size_t best = units.size();
+                for (std::size_t i = 0; i < units.size(); ++i) {
+                    if (!is_alive(units[i]) || units[i].unit.team == actor.unit.team) continue;
+                    if (best == units.size() ||
+                        (ability.target_type == AbilityTargetType::LOWEST_HP_ENEMY &&
+                         units[i].unit.hp < units[best].unit.hp) ||
+                        (ability.target_type == AbilityTargetType::HIGHEST_HP_ENEMY &&
+                         units[i].unit.hp > units[best].unit.hp) ||
+                        (units[i].unit.hp == units[best].unit.hp &&
+                         units[i].unit.id < units[best].unit.id)) best = i;
+                }
+                add_target(best);
+                break;
+            }
+            case AbilityTargetType::AREA:
+                for (std::size_t i = 0; i < units.size(); ++i) {
+                    if (!is_alive(units[i]) || units[i].unit.team == actor.unit.team) continue;
+                    if (distance_between(units[i].unit, target.unit) <=
+                        static_cast<int>(std::max(0.0f, std::ceil(ability.area_radius))))
+                        add_target(i);
+                }
+                if (ability_targets.empty()) add_target(target_index);
+                break;
+            case AbilityTargetType::ENEMY:
+            default:
+                add_target(target_index);
+                break;
+            }
+
+            if (!ability_targets.empty()) {
+                actor.unit.mana = std::max(0.0f, actor.unit.mana - ability.mana_cost);
+                ++actor.ability_casts;
+                AbilityEvent ability_event;
+                ability_event.timestamp = now;
+                ability_event.source_unit_id = actor.unit.id;
+                ability_event.ability_id = ability.api_name;
+                for (const auto target_id : ability_targets) {
+                    auto& ability_target = units[target_id];
+                    ability_event.target_unit_ids.push_back(ability_target.unit.id);
+
+                    if (ability.has_damage) {
+                        float raw = std::max(0.0f, ability.base_damage) +
+                            std::max(0.0f, ability.ability_power_ratio) *
+                                actor.unit.ability_power +
+                            std::max(0.0f, ability.attack_damage_ratio) *
+                                actor.unit.attack_damage;
+                        raw *= std::max(0.0f, 1.0f + actor.unit.damage_amplification);
+                        float damage = raw;
+                        if (ability.damage_type == DamageType::PHYSICAL)
+                            damage = mitigate_physical_damage(damage, ability_target.unit.armor);
+                        else if (ability.damage_type == DamageType::MAGIC)
+                            damage = mitigate_physical_damage(damage, ability_target.unit.magic_resist);
+                        damage *= std::clamp(1.0f - ability_target.unit.damage_reduction, 0.0f, 1.0f);
+                        damage = std::min(damage, ability_target.unit.hp + ability_target.shield_hp);
+                        const float absorbed = std::min(ability_target.shield_hp, damage);
+                        ability_target.shield_hp -= absorbed;
+                        const float hp_damage = std::min(ability_target.unit.hp, damage - absorbed);
+                        ability_target.unit.hp -= hp_damage;
+                        ability_target.damage_taken += damage;
+                        actor.damage_dealt += damage;
+                        ability_event.damage += damage;
+                        if (actor.unit.omnivamp > 0.0f && damage > 0.0f)
+                            actor.unit.hp = std::min(actor.unit.max_hp,
+                                actor.unit.hp + damage * actor.unit.omnivamp);
+
+                        if (config.record_damage) {
+                            DamageEvent de;
+                            de.timestamp = now;
+                            de.source_unit_id = actor.unit.id;
+                            de.target_unit_id = ability_target.unit.id;
+                            de.damage_type = ability.damage_type;
+                            de.raw_damage = raw;
+                            de.final_damage = damage;
+                            de.ability_damage = true;
+                            result.damage_events.push_back(de);
+                        }
+                    }
+
+                    if (ability.has_healing) {
+                        const float healing = std::max(0.0f, ability.base_healing) +
+                            std::max(0.0f, ability.ability_power_ratio) *
+                                actor.unit.ability_power;
+                        const float actual = std::min(healing,
+                            ability_target.unit.max_hp - ability_target.unit.hp);
+                        ability_target.unit.hp += actual;
+                        actor.healing_done += actual;
+                        ability_event.healing += actual;
+                    }
+                    if (ability.has_shield) {
+                        const float shield = std::max(0.0f, ability.shield_amount) +
+                            std::max(0.0f, ability.ability_power_ratio) *
+                                actor.unit.ability_power;
+                        ability_target.shield_hp += shield;
+                        ability_event.shield += shield;
+                    }
+
+                    if (ability_target.unit.hp <= 0.0f && ability_target.unit.alive) {
+                        ability_target.unit.hp = 0.0f;
+                        ability_target.unit.alive = false;
+                        ++actor.kills;
+                        if (config.record_events) {
+                            DeathEvent death;
+                            death.timestamp = now;
+                            death.unit_id = ability_target.unit.id;
+                            death.killer_unit_id = actor.unit.id;
+                            result.death_events.push_back(death);
+                            append_generic_event(result, now, "death",
+                                actor.unit.id, ability_target.unit.id);
+                        }
+                    }
+                }
+                if (config.record_abilities) result.ability_events.push_back(ability_event);
+                if (config.record_events)
+                    append_generic_event(result, now, "ability",
+                        actor.unit.id, ability_targets.front(), ability_event.damage);
+                schedule(event.unit_index, now + std::max(0.05f, 1.0f / actor.unit.attack_speed));
+                if (count_alive(units, UnitTeam::PLAYER_A) == 0 ||
+                    count_alive(units, UnitTeam::PLAYER_B) == 0) break;
+                continue;
+            }
+        }
+
+        if (actor.unit.can_attack &&
+            static_cast<float>(best_distance) <= actor.unit.attack_range) {
             // Ataque básico.
             float raw_damage = actor.unit.attack_damage;
             const bool critical =
@@ -392,7 +591,10 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
 
             damage = std::min(damage, target.unit.hp);
 
-            target.unit.hp -= damage;
+            const float absorbed = std::min(target.shield_hp, damage);
+            target.shield_hp -= absorbed;
+            const float hp_damage = std::min(target.unit.hp, damage - absorbed);
+            target.unit.hp -= hp_damage;
             target.damage_taken += damage;
             actor.damage_dealt += damage;
             if (actor.unit.omnivamp > 0.0f && damage > 0.0f) {
@@ -401,6 +603,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                     actor.unit.hp + damage * actor.unit.omnivamp);
             }
             ++actor.attacks;
+            actor.unit.mana = std::min(actor.unit.max_mana, actor.unit.mana + 10.0f);
 
             if (config.record_damage) {
                 DamageEvent de;
@@ -562,6 +765,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
         ur.damage_taken = u.damage_taken;
         ur.kills = u.kills;
         ur.attacks = u.attacks;
+        ur.ability_casts = u.ability_casts;
+        ur.healing_done = u.healing_done;
         ur.final_x = u.unit.position.x;
         ur.final_y = u.unit.position.y;
         result.units.push_back(ur);

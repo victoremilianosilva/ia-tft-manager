@@ -13,8 +13,10 @@ namespace tft {
  * Recebe equipes, posições, atributos, itens e configuração através de CombatInput,
  * e devolve o resultado e os eventos através de CombatResult. O lobby Python
  * e a lobby nativa usam este mesmo motor. A simulação aplica os bônus numéricos
- * dos CombatItem e resolve movimento/ataques básicos. Habilidades, dano mágico,
- * traits e efeitos especiais ainda não são simulados por este loop.
+ * dos CombatItem e resolve movimento, ataques básicos e conjuração genérica de habilidades
+ * (dano, cura, escudos, seleção de alvo, custo de mana e escalas de AP/AD). Scripts
+ * específicos de campeões, buffs/debuffs, traits e passivas únicas de itens ainda
+ * precisam de implementação própria.
  */
 class CombatEngine {
 public:
