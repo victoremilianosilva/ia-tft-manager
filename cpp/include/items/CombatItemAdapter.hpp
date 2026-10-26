@@ -30,6 +30,9 @@ inline CombatItem to_combat_item(const ItemDefinition& definition) {
         static_cast<float>(definition.damage_amplification);
     item.damage_reduction =
         static_cast<float>(definition.damage_reduction);
+    item.grants_trait = definition.grants_trait;
+    item.granted_trait_active_count = definition.granted_trait_active_count;
+    item.effects = definition.combat_effects;
     return item;
 }
 
