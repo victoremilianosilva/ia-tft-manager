@@ -387,8 +387,7 @@ void visit_generic_effects(CombatUnit& unit, Callback callback) {
         const auto& item = unit.items[item_index];
         for (std::size_t effect_index = 0; effect_index < item.effects.size(); ++effect_index) {
             callback(item.effects[effect_index],
-                "item:" + item.api_name + ":" + std::to_string(item_index) + ":" +
-                std::to_string(effect_index) + ":");
+                "item:" + item.api_name + ":" + std::to_string(item_index) + ":");
         }
     }
     for (std::size_t trait_index = 0; trait_index < unit.traits.size(); ++trait_index) {
@@ -396,8 +395,7 @@ void visit_generic_effects(CombatUnit& unit, Callback callback) {
         if (!trait.active && trait.active_count <= 0) continue;
         for (std::size_t effect_index = 0; effect_index < trait.effects.size(); ++effect_index) {
             callback(trait.effects[effect_index],
-                "trait:" + trait.api_name + ":" + std::to_string(trait_index) + ":" +
-                std::to_string(effect_index) + ":");
+                "trait:" + trait.api_name + ":" + std::to_string(trait_index) + ":");
         }
     }
 }
@@ -433,7 +431,8 @@ void apply_delayed_effects(RuntimeUnit& runtime, float now) {
                                            const std::string& prefix) {
         if (effect.trigger != "after_delay" || effect.operation != "add_stat" ||
             now < effect.delay || !effect_condition_matches(runtime.unit, effect)) return;
-        const std::string key = prefix + "delayed";
+        const std::string key = prefix + "delayed:" + effect.stat + ":" +
+            std::to_string(effect.delay) + ":" + std::to_string(effect.value);
         if (runtime.generic_effects_applied.insert(key).second)
             apply_effect_stat(runtime.unit, effect);
     });
