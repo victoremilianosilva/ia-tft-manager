@@ -68,6 +68,8 @@ struct RuntimeUnit {
     float titans_base_ad = 0.0f;
     float runaans_base_ad = 0.0f;
     std::vector<float> power_gauntlet_stack_times;
+    std::unordered_map<std::string, int> generic_effect_charges;
+    std::unordered_set<std::string> generic_effects_applied;
 };
 
 struct ScheduledEvent {
@@ -377,6 +379,80 @@ float effect_mana_regeneration(const CombatUnit& unit) {
         if (trait.active || trait.active_count > 0) accumulate(trait.effects);
     }
     return amount;
+}
+
+template <typename Callback>
+void visit_generic_effects(CombatUnit& unit, Callback callback) {
+    for (std::size_t item_index = 0; item_index < unit.items.size(); ++item_index) {
+        const auto& item = unit.items[item_index];
+        for (std::size_t effect_index = 0; effect_index < item.effects.size(); ++effect_index) {
+            callback(item.effects[effect_index],
+                "item:" + item.api_name + ":" + std::to_string(item_index) + ":" +
+                std::to_string(effect_index) + ":");
+        }
+    }
+    for (std::size_t trait_index = 0; trait_index < unit.traits.size(); ++trait_index) {
+        auto& trait = unit.traits[trait_index];
+        if (!trait.active && trait.active_count <= 0) continue;
+        for (std::size_t effect_index = 0; effect_index < trait.effects.size(); ++effect_index) {
+            callback(trait.effects[effect_index],
+                "trait:" + trait.api_name + ":" + std::to_string(trait_index) + ":" +
+                std::to_string(effect_index) + ":");
+        }
+    }
+}
+
+void grant_on_kill_effect_charges(RuntimeUnit& actor) {
+    visit_generic_effects(actor.unit, [&](const CombatEffectDefinition& effect,
+                                         const std::string& prefix) {
+        if (effect.trigger != "on_kill" || effect.operation != "grant_charges" ||
+            effect.stack_key.empty() || !effect_condition_matches(actor.unit, effect)) return;
+        const int amount = effect.max_stacks > 0
+            ? std::min(effect.max_stacks, static_cast<int>(effect.value))
+            : static_cast<int>(effect.value);
+        if (amount > 0) actor.generic_effect_charges[prefix + effect.stack_key] = amount;
+    });
+}
+
+float apply_charged_attack_healing(RuntimeUnit& actor, float now) {
+    float total = 0.0f;
+    visit_generic_effects(actor.unit, [&](const CombatEffectDefinition& effect,
+                                         const std::string& prefix) {
+        if (effect.trigger != "on_attack" || effect.operation != "heal_max_hp_pct" ||
+            effect.stack_key.empty() || !effect_condition_matches(actor.unit, effect)) return;
+        auto it = actor.generic_effect_charges.find(prefix + effect.stack_key);
+        if (it == actor.generic_effect_charges.end() || it->second <= 0) return;
+        total += actor.unit.max_hp * effect.value;
+        --it->second;
+    });
+    return total > 0.0f ? apply_heal(actor, total, now) : 0.0f;
+}
+
+void apply_delayed_effects(RuntimeUnit& runtime, float now) {
+    visit_generic_effects(runtime.unit, [&](const CombatEffectDefinition& effect,
+                                           const std::string& prefix) {
+        if (effect.trigger != "after_delay" || effect.operation != "add_stat" ||
+            now < effect.delay || !effect_condition_matches(runtime.unit, effect)) return;
+        const std::string key = prefix + "delayed";
+        if (runtime.generic_effects_applied.insert(key).second)
+            apply_effect_stat(runtime.unit, effect);
+    });
+}
+
+void apply_ally_shield_effects(std::vector<RuntimeUnit>& units,
+                               std::size_t shielded_index) {
+    if (shielded_index >= units.size()) return;
+    const auto team = units[shielded_index].unit.team;
+    for (auto& recipient : units) {
+        if (recipient.unit.team != team || !is_alive(recipient)) continue;
+        visit_generic_effects(recipient.unit,
+            [&](const CombatEffectDefinition& effect, const std::string&) {
+                if (effect.trigger == "on_ally_shield" &&
+                    effect.operation == "add_stat" &&
+                    effect_condition_matches(recipient.unit, effect))
+                    apply_effect_stat(recipient.unit, effect);
+            });
+    }
 }
 
 float effect_kill_healing(const CombatUnit& unit) {
