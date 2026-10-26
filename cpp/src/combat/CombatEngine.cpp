@@ -236,13 +236,10 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
             unit.omnivamp = std::min(1.0f, unit.omnivamp + 0.12f);
         } else if (item.api_name == "TFT17_Item_FlexTraitEmblemItem") {
             unit.attack_damage += base_attack_damage * 0.20f;
-            unit.ability_power += 20.0f;
         } else if (item.api_name == "TFT17_Item_DarkStarEmblemItem") {
             unit.attack_damage += base_attack_damage * 0.18f;
-            unit.ability_power += 18.0f;
         } else if (item.api_name == "TFT17_Item_StargazerEmblemItem") {
             unit.attack_damage += base_attack_damage * 0.15f;
-            unit.ability_power += 15.0f;
         }
     }
 
@@ -494,6 +491,15 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                     ally.unit.omnivamp = std::min(1.0f, ally.unit.omnivamp + 0.10f);
                 } else {
                     ally.unit.attack_speed += 0.10f;
+                }
+            }
+        }
+        if (has_item(runtime.unit, "TFT_Item_IonicSpark")) {
+            for (auto& enemy : units) {
+                if (enemy.unit.team != runtime.unit.team && is_alive(enemy) &&
+                    distance_between(runtime.unit, enemy.unit) <= 2) {
+                    enemy.mr_shred_until = config.max_duration;
+                    enemy.mr_shred_percent = 0.30f;
                 }
             }
         }
@@ -838,10 +844,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                             ability_target.armor_shred_until = now + 3.0f;
                             ability_target.armor_shred_percent = 0.30f;
                         }
-                        if (has_item(actor.unit, "TFT_Item_StatikkShiv") ||
-                            has_item(actor.unit, "TFT_Item_IonicSpark")) {
-                            ability_target.mr_shred_until = now +
-                                (has_item(actor.unit, "TFT_Item_StatikkShiv") ? 5.0f : 2.0f);
+                        if (has_item(actor.unit, "TFT_Item_StatikkShiv")) {
+                            ability_target.mr_shred_until = now + 5.0f;
                             ability_target.mr_shred_percent = 0.30f;
                         }
                         if (has_item(actor.unit, "TFT_Item_Morellonomicon") ||
@@ -1091,10 +1095,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 target.armor_shred_until = now + 3.0f;
                 target.armor_shred_percent = 0.30f;
             }
-            if (has_item(actor.unit, "TFT_Item_StatikkShiv") ||
-                has_item(actor.unit, "TFT_Item_IonicSpark")) {
-                target.mr_shred_until = now +
-                    (has_item(actor.unit, "TFT_Item_StatikkShiv") ? 5.0f : 2.0f);
+            if (has_item(actor.unit, "TFT_Item_StatikkShiv")) {
+                target.mr_shred_until = now + 5.0f;
                 target.mr_shred_percent = 0.30f;
             }
             if (has_item(actor.unit, "TFT_Item_Morellonomicon") ||
