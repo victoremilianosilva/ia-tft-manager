@@ -849,13 +849,10 @@ struct TFTEngine::Impl {
                 [](std::uint8_t value) { return value == 1; });
             current.type_mask[7] = inventory_available && target_available ? 1 : 0;
             current.type_mask[8] = recipe_available && target_available ? 1 : 0;
-            for (std::size_t slot = 0; slot < kBenchSlots; ++slot) {
-                const auto& unit = player.bench[slot];
-                if (unit && (!unit->items.empty() || !player.item_engine->equipped(unit->uuid).empty()))
-                    current.bench_source_mask[slot] = 0;
-            }
-            if (std::none_of(current.bench_source_mask.begin(), current.bench_source_mask.end(),
-                [](std::uint8_t value) { return value == 1; })) current.type_mask[5] = 0;
+            // Selling a bench unit is legal even when it carries equipment.
+            // The equipped items are returned to the shared item inventory as
+            // part of the sale transition; do not reuse the move-source mask
+            // to forbid selling equipped units.
             for (std::size_t shop_slot = 0; shop_slot < kShopSlots; ++shop_slot) {
                 if (current.shop_mask[shop_slot] != 1 || !player.shop) continue;
                 const auto* offer = player.shop->get_unit(static_cast<std::int32_t>(shop_slot));
@@ -3490,9 +3487,19 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         }
                     }
                     if (returned_all_copies) {
-                        this->bench[bench_slot].reset();
-                        (void)lobby.economy_engine.add_gold(economy, sell_value);
-                        lobby.register_position_state(player_id);
+                        // Equipment belongs to the player, not to the unit.
+                        // Return it to the bag before removing the unit so it
+                        // can be equipped on another unit without loss/duplication.
+                        if (this->item_engine &&
+                            !this->item_engine->return_equipped_to_inventory(sold_uuid)) {
+                            for (std::int32_t copy = 0; copy < returned; ++copy)
+                                (void)lobby.pool->take(unit.champion_internal_id);
+                            returned_all_copies = false;
+                        } else {
+                            this->bench[bench_slot].reset();
+                            (void)lobby.economy_engine.add_gold(economy, sell_value);
+                            lobby.register_position_state(player_id);
+                        }
                     } else {
                         for (std::int32_t copy = 0; copy < returned; ++copy)
                             (void)lobby.pool->take(unit.champion_internal_id);
