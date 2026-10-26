@@ -231,7 +231,7 @@ def build_catalog(
         if metadata:
             # Only allow combat metadata fields; never let an override replace
             # source identity, recipe, stats, or provenance.
-            for key in ("grants_trait", "granted_trait_active_count", "combat_effects"):
+            for key in ("grants_trait", "granted_trait_active_count", "combat_effects", "deferred_stats"):
                 if key in metadata:
                     output_item[key] = metadata[key]
         output_items.append(output_item)
