@@ -29,8 +29,20 @@ tft::StepResult step_with_pending_anvils(
 ) {
     const auto masks = engine.get_action_masks();
     for (std::size_t player = 0; player < actions.size(); ++player) {
-        if (masks[player].type_mask[6] == 0 && masks[player].type_mask[7] == 1) {
-            actions[player].values = {7, 0, 0, 0, 0, 0};
+        if (actions[player].values[0] != 6 ||
+            masks[player].type_mask[6] != 0 ||
+            masks[player].type_mask[7] != 1 ||
+            std::count(masks[player].type_mask.begin(), masks[player].type_mask.end(), 1) != 1 ||
+            masks[player].item_target_mask[0] != 1) {
+            continue;
+        }
+        const auto option = std::find(
+            masks[player].item_inventory_mask.begin(),
+            masks[player].item_inventory_mask.end(), 1);
+        if (option != masks[player].item_inventory_mask.end()) {
+            const auto option_index = static_cast<std::int32_t>(
+                std::distance(masks[player].item_inventory_mask.begin(), option));
+            actions[player].values = {7, option_index, 0, 0, 0, 0};
         }
     }
     return engine.step(actions);
