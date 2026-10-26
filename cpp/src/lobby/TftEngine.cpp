@@ -43,7 +43,7 @@
 #include "items/CombatItemAdapter.hpp"
 
 #ifndef TFT_DEFAULT_ITEM_CATALOG_PATH
-#define TFT_DEFAULT_ITEM_CATALOG_PATH "data/item_catalog_set17.json"
+#define TFT_DEFAULT_ITEM_CATALOG_PATH "data/itens.json"
 #endif
 
 #ifndef TFT_COMP_DIRECTION_MIN_RELATIVE_ADVANTAGE
