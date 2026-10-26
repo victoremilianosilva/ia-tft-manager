@@ -493,7 +493,7 @@ class ViewerWindow(QMainWindow):
         self.setMinimumSize(640, 480)
         self.session = ViewerSession()
         self.selected_player = 0
-        self.icon_loader = ChampionIconLoader(ROOT / "units_gerado.json", self)
+        self.icon_loader = ChampionIconLoader(ROOT / "data" / "units_gerado.json", self)
         self.icon_loader.loaded.connect(self._on_champion_icon_loaded)
         self._step_thread = None
         self._step_worker = None
@@ -1118,7 +1118,7 @@ class ViewerWindow(QMainWindow):
 
         catalog = {}
         try:
-            raw_catalog = json.loads((ROOT / "units_gerado.json").read_text(encoding="utf-8"))
+            raw_catalog = json.loads((ROOT / "data" / "units_gerado.json").read_text(encoding="utf-8"))
             for unit in raw_catalog if isinstance(raw_catalog, list) else []:
                 if not isinstance(unit, dict):
                     continue

@@ -18,7 +18,7 @@ from cpp_lobby_env import CppTFTLobbyWrapper
 from viewer.player_logs import PlayerJsonLogWriter
 
 ROOT = Path(__file__).resolve().parents[1]
-CATALOG = ROOT / "units_gerado.json"
+CATALOG = ROOT / "data" / "units_gerado.json"
 ACTION_NAMES = {
     0: "BUY", 1: "REROLL", 2: "BUY_XP", 3: "MOVE_BENCH",
     4: "MOVE_BOARD", 5: "SELL", 6: "PASS",
