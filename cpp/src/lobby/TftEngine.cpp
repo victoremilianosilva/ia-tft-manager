@@ -81,6 +81,11 @@ constexpr std::size_t kCompositionUnitSlots =
 constexpr std::size_t kCandidateFeatureDim = 8;
 constexpr std::size_t kStrategicCandidateObservationDim =
     (kBenchSlots + kShopSlots) * kCandidateFeatureDim;
+// Pending-anvil state plus nine option records: ten item/component features
+// and one strategic-fit score per option. Inserted before the candidate tail.
+constexpr std::size_t kAnvilOptionCount = 9;
+constexpr std::size_t kAnvilOptionFeatureDim = 11;
+constexpr std::size_t kAnvilObservationDim = 3 + kAnvilOptionCount * kAnvilOptionFeatureDim;
 constexpr std::size_t kActionMemoryObservationDim = 1 + kBoardSlots;
 constexpr std::uint32_t kActionMemoryHorizon = 10;
 
@@ -665,6 +670,61 @@ struct TFTEngine::Impl {
         return unit ? &*unit : nullptr;
     }
 
+    void grant_round_item_anvils(std::uint32_t current_round_number, std::vector<std::string>& events) {
+        if (!item_catalog || current_round_number <= 4) return;
+        const auto current_stage = stage_for_round(current_round_number);
+        const auto round_in_stage = ((current_round_number - 5) % kRoundsPerStage) + 1;
+        if (round_in_stage != 7) return;
+
+        items::ItemAnvilKind kind;
+        std::size_t option_count = 0;
+        if (current_stage == 4) {
+            // Classic TFT item-anvil cadence: component anvil at 4-7.
+            kind = items::ItemAnvilKind::COMPONENT;
+            option_count = 3;
+        } else if (current_stage == 5 || current_stage == 6) {
+            // Completed-item anvils are offered by the later PvE encounters.
+            kind = items::ItemAnvilKind::COMPLETED_ITEM;
+            option_count = 4;
+        } else {
+            return;
+        }
+
+        std::vector<std::string> pool;
+        if (kind == items::ItemAnvilKind::COMPONENT) {
+            for (const auto& component : item_catalog->components)
+                pool.push_back(component.first);
+        } else {
+            for (const auto& item : item_catalog->items)
+                pool.push_back(item.id);
+        }
+        if (pool.size() < option_count) return;
+
+        for (std::size_t player_index = 0; player_index < kPlayersPerLobby; ++player_index) {
+            auto& player = player_envs[player_index];
+            if (!player.info.alive || !player.item_engine) continue;
+            auto options = pool;
+            const auto mixed_seed = seed ^
+                (episode_id * 0x9E3779B97F4A7C15ULL) ^
+                (static_cast<std::uint64_t>(current_round_number) << 16U) ^
+                static_cast<std::uint64_t>(player_index);
+            std::mt19937_64 option_rng(mixed_seed);
+            std::shuffle(options.begin(), options.end(), option_rng);
+            options.resize(option_count);
+            const bool granted = kind == items::ItemAnvilKind::COMPONENT
+                ? player.item_engine->grant_component_anvil(std::move(options))
+                : player.item_engine->grant_completed_item_anvil(std::move(options));
+            if (granted) {
+                events.emplace_back(
+                    "ITEM_ANVIL_GRANTED: player=" + std::to_string(player_index) +
+                    ", stage=" + std::to_string(current_stage) +
+                    ", kind=" + (kind == items::ItemAnvilKind::COMPONENT
+                        ? std::string("component") : std::string("completed_item")) +
+                    ", options=" + std::to_string(option_count));
+            }
+        }
+    }
+
     void sync_unit_items_from_engine(std::size_t player_index, const std::string& uuid) {
         auto& player = player_envs[player_index];
         if (!player.item_engine || uuid.empty()) return;
@@ -773,6 +833,22 @@ struct TFTEngine::Impl {
             }
             if (std::none_of(current.shop_mask.begin(), current.shop_mask.end(),
                 [](std::uint8_t value) { return value == 1; })) current.type_mask[0] = 0;
+
+            // Opening an anvil suspends every other action until exactly one
+            // offered option is selected. Reuse the existing item-choice head
+            // to keep the six-component PPO action contract stable.
+            if (const auto* anvil = player.item_engine->pending_anvil()) {
+                current.type_mask.fill(0);
+                current.type_mask[7] = 1;
+                current.item_inventory_mask.fill(0);
+                for (std::size_t option = 0;
+                     option < std::min(kAnvilOptionCount, anvil->options.size()); ++option)
+                    current.item_inventory_mask[option] = 1;
+                current.item_target_mask.fill(0);
+                current.item_target_mask[0] = 1; // degenerate target head: no extra choice
+                current.item_component_first_mask.fill(0);
+                current.item_component_pair_masks.fill(0);
+            }
 
         }
 
@@ -912,7 +988,7 @@ struct TFTEngine::Impl {
             2 * observation_trait_names.size() + kCompositionUnitSlots +
             kActionMemoryObservationDim +
             observation_trait_names.size() + 2 +
-            kStrategicCandidateObservationDim;
+            kAnvilObservationDim + kStrategicCandidateObservationDim;
     }
 
     std::vector<float> build_observations() const {
@@ -1152,7 +1228,71 @@ struct TFTEngine::Impl {
             out[offset++] = static_cast<float>(
                 std::clamp(strategy.composition_strength / 10.0, 0.0, 1.0));
 
-            // 15) PER-CANDIDATE DECISION FEATURES. These are explicit slot-local
+            // 15) ITEM ANVIL CHOICES. A pending anvil is a forced single-choice
+            // decision. Each option exposes either a component one-hot or the
+            // completed item's combat-relevant stats, plus strategic fit.
+            const auto* pending_anvil = player_envs[i].item_engine
+                ? player_envs[i].item_engine->pending_anvil() : nullptr;
+            out[offset++] = pending_anvil ? 1.0f : 0.0f;
+            out[offset++] = pending_anvil &&
+                pending_anvil->kind == items::ItemAnvilKind::COMPONENT ? 1.0f : 0.0f;
+            out[offset++] = pending_anvil &&
+                pending_anvil->kind == items::ItemAnvilKind::COMPLETED_ITEM ? 1.0f : 0.0f;
+            const auto item_profiles = player_envs[i].item_engine
+                ? item_unit_profiles(i) : std::vector<items::UnitProfile>{};
+            for (std::size_t option_index = 0; option_index < kAnvilOptionCount; ++option_index) {
+                std::array<float, kAnvilOptionFeatureDim> features{};
+                if (pending_anvil && option_index < pending_anvil->options.size() && item_catalog) {
+                    const auto& option_id = pending_anvil->options[option_index];
+                    double best_fit = 0.0;
+                    if (pending_anvil->kind == items::ItemAnvilKind::COMPONENT) {
+                        const auto component = std::find_if(
+                            item_catalog->components.begin(), item_catalog->components.end(),
+                            [&](const auto& entry) { return entry.first == option_id; });
+                        if (component != item_catalog->components.end()) {
+                            const auto component_index = static_cast<std::size_t>(
+                                std::distance(item_catalog->components.begin(), component));
+                            if (component_index < 10) features[component_index] = 1.0f;
+                        }
+                        // A component is scored by the best catalog item it can
+                        // help complete for any currently owned unit.
+                        for (const auto& candidate_item : item_catalog->items) {
+                            if (candidate_item.recipe_components[0] != option_id &&
+                                candidate_item.recipe_components[1] != option_id) continue;
+                            for (const auto& profile : item_profiles)
+                                best_fit = std::max(best_fit,
+                                    player_envs[i].item_engine->item_fit(candidate_item.id, profile));
+                        }
+                    } else {
+                        const auto* definition = player_envs[i].item_engine->find(option_id);
+                        if (definition) {
+                            const std::array<double, 10> stats{
+                                definition->attack_damage / 100.0,
+                                definition->attack_speed / 2.0,
+                                definition->ability_power / 100.0,
+                                definition->critical_strike_chance,
+                                definition->critical_strike_damage / 2.0,
+                                definition->max_health / 2000.0,
+                                definition->armor / 100.0,
+                                definition->magic_resist / 100.0,
+                                definition->omnivamp,
+                                definition->damage_amplification
+                            };
+                            for (std::size_t stat = 0; stat < stats.size(); ++stat)
+                                features[stat] = static_cast<float>(
+                                    std::clamp(stats[stat], 0.0, 1.0));
+                            for (const auto& profile : item_profiles)
+                                best_fit = std::max(best_fit,
+                                    player_envs[i].item_engine->item_fit(option_id, profile));
+                        }
+                    }
+                    features[10] = static_cast<float>(
+                        std::clamp(best_fit / 20.0, 0.0, 1.0));
+                }
+                for (const float feature : features) out[offset++] = feature;
+            }
+
+            // 16) PER-CANDIDATE DECISION FEATURES. These are explicit slot-local
             // features so the policy can compare offers/sale candidates rather than
             // infer which global features correspond to each output index.
             const auto count_same_champion = [&](const UnitInstance& candidate) {
@@ -3154,67 +3294,74 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             }
         } else if (type == 7 || type == 8) {
             if (!this->item_engine) throw std::invalid_argument("Catalogo de itens nao configurado.");
-            const auto target_index = static_cast<std::size_t>(type == 7 ? action[2] : action[3]);
-            auto* target_unit = lobby.item_target_unit(player_id, target_index);
-            if (!target_unit) throw std::invalid_argument("Alvo de item nao existe.");
-            const auto profiles = lobby.item_unit_profiles(player_id);
-            items::ItemActionCommand command;
-            command.operation = type == 7 ? items::ItemOperation::EQUIP_FROM_INVENTORY
-                                           : items::ItemOperation::CRAFT_AND_EQUIP;
-            command.target_unit_uuid = target_unit->uuid;
-            if (type == 7) {
-                const auto slot = static_cast<std::size_t>(action[1]);
-                if (slot >= this->item_engine->inventory().size()) throw std::invalid_argument("Indice de item fora do inventario.");
-                command.item_id = this->item_engine->inventory()[slot];
+            if (type == 7 && this->item_engine->has_pending_anvil()) {
+                // The option index is the only meaningful argument while an
+                // anvil is pending; target-head index zero is a masked sentinel.
+                if (!this->item_engine->choose_anvil_option(static_cast<std::size_t>(action[1])))
+                    throw std::invalid_argument("Escolha de opcao da bigorna rejeitada.");
+                // Item value is learned through subsequent combat, not by
+                // forcing a handcrafted preference at the choice boundary.
             } else {
-                const auto first = static_cast<std::size_t>(action[1]);
-                const auto second = static_cast<std::size_t>(action[2]);
-                if (!lobby.item_catalog || first >= lobby.item_catalog->components.size() ||
-                    second >= lobby.item_catalog->components.size())
-                    throw std::invalid_argument("Indice de tipo de componente fora do catalogo.");
-                command.first_component_id = lobby.item_catalog->components[first].first;
-                command.second_component_id = lobby.item_catalog->components[second].first;
-            }
-            const auto result = this->item_engine->apply_action(command, profiles);
-            if (!result.success) throw std::invalid_argument("Acao de item rejeitada: " + result.reason);
-
-            // Score the actual catalog item and selected unit after the action
-            // succeeds. The reward uses numeric combat effects plus the unit's
-            // normalized composition fit and catalog role weights; it never
-            // encodes champion-specific item assignments.
-            const auto& equipped_items = this->item_engine->equipped(target_unit->uuid);
-            const auto target_profile = std::find_if(
-                profiles.begin(), profiles.end(),
-                [&](const items::UnitProfile& profile) { return profile.uuid == target_unit->uuid; });
-            if (!equipped_items.empty() && target_profile != profiles.end()) {
-                const auto* item_definition = this->item_engine->find(equipped_items.back());
-                if (item_definition) {
-                    double role_alignment = 0.0;
-                    switch (target_profile->role) {
-                        case 0: role_alignment = item_definition->tank_weight; break;
-                        case 1: role_alignment = item_definition->carry_weight; break;
-                        case 2: role_alignment = item_definition->support_weight; break;
-                        case 3: role_alignment = std::max(
-                            item_definition->carry_weight, item_definition->tank_weight); break;
-                        case 4: role_alignment = item_definition->carry_weight; break;
-                        default: role_alignment = item_definition->utility_weight; break;
-                    }
-                    const double immediate_strength = reward_model::item_immediate_strength(
-                        item_definition->attack_damage,
-                        item_definition->attack_speed,
-                        item_definition->max_health,
-                        item_definition->armor,
-                        item_definition->critical_strike_chance,
-                        item_definition->critical_strike_damage,
-                        item_definition->omnivamp,
-                        item_definition->damage_amplification,
-                        item_definition->damage_reduction);
-                    item_assignment_reward = reward_model::item_assignment_quality(
-                        immediate_strength, target_profile->composition_fit,
-                        role_alignment, static_cast<int>(lobby.stage));
+                const auto target_index = static_cast<std::size_t>(type == 7 ? action[2] : action[3]);
+                auto* target_unit = lobby.item_target_unit(player_id, target_index);
+                if (!target_unit) throw std::invalid_argument("Alvo de item nao existe.");
+                const auto profiles = lobby.item_unit_profiles(player_id);
+                items::ItemActionCommand command;
+                command.operation = type == 7 ? items::ItemOperation::EQUIP_FROM_INVENTORY
+                                               : items::ItemOperation::CRAFT_AND_EQUIP;
+                command.target_unit_uuid = target_unit->uuid;
+                if (type == 7) {
+                    const auto slot = static_cast<std::size_t>(action[1]);
+                    if (slot >= this->item_engine->inventory().size()) throw std::invalid_argument("Indice de item fora do inventario.");
+                    command.item_id = this->item_engine->inventory()[slot];
+                } else {
+                    const auto first = static_cast<std::size_t>(action[1]);
+                    const auto second = static_cast<std::size_t>(action[2]);
+                    if (!lobby.item_catalog || first >= lobby.item_catalog->components.size() ||
+                        second >= lobby.item_catalog->components.size())
+                        throw std::invalid_argument("Indice de tipo de componente fora do catalogo.");
+                    command.first_component_id = lobby.item_catalog->components[first].first;
+                    command.second_component_id = lobby.item_catalog->components[second].first;
                 }
+                const auto result = this->item_engine->apply_action(command, profiles);
+                if (!result.success) throw std::invalid_argument("Acao de item rejeitada: " + result.reason);
+
+                // Score the actual catalog item and selected unit after the action
+                // succeeds. Combat remains the source of truth for the long-term value.
+                const auto& equipped_items = this->item_engine->equipped(target_unit->uuid);
+                const auto target_profile = std::find_if(
+                    profiles.begin(), profiles.end(),
+                    [&](const items::UnitProfile& profile) { return profile.uuid == target_unit->uuid; });
+                if (!equipped_items.empty() && target_profile != profiles.end()) {
+                    const auto* item_definition = this->item_engine->find(equipped_items.back());
+                    if (item_definition) {
+                        double role_alignment = 0.0;
+                        switch (target_profile->role) {
+                            case 0: role_alignment = item_definition->tank_weight; break;
+                            case 1: role_alignment = item_definition->carry_weight; break;
+                            case 2: role_alignment = item_definition->support_weight; break;
+                            case 3: role_alignment = std::max(
+                                item_definition->carry_weight, item_definition->tank_weight); break;
+                            case 4: role_alignment = item_definition->carry_weight; break;
+                            default: role_alignment = item_definition->utility_weight; break;
+                        }
+                        const double immediate_strength = reward_model::item_immediate_strength(
+                            item_definition->attack_damage,
+                            item_definition->attack_speed,
+                            item_definition->max_health,
+                            item_definition->armor,
+                            item_definition->critical_strike_chance,
+                            item_definition->critical_strike_damage,
+                            item_definition->omnivamp,
+                            item_definition->damage_amplification,
+                            item_definition->damage_reduction);
+                        item_assignment_reward = reward_model::item_assignment_quality(
+                            immediate_strength, target_profile->composition_fit,
+                            role_alignment, static_cast<int>(lobby.stage));
+                    }
+                }
+                lobby.sync_unit_items_from_engine(player_id, target_unit->uuid);
             }
-            lobby.sync_unit_items_from_engine(player_id, target_unit->uuid);
         } else if (type == 5) {
             // SELL: vender unidade do banco
             const auto bench_slot =
@@ -3783,6 +3930,11 @@ StepResult TFTEngine::step(
                 "nenhum bônus PvP ou streak foi aplicado."
             );
         }
+
+        // Resolve item-anvil rewards from the completed PvE encounter. The
+        // choices are generated once from the active catalog and then selected
+        // by the policy during the next preparation phase.
+        impl_->grant_round_item_anvils(current_round_number, round_events);
 
         // A renda/XP calculada é para a próxima preparação; o estado começa
         // em round=0 (1-1), então a próxima rodada é current_round_number + 1.
