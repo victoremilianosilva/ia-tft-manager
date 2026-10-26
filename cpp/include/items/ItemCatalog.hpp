@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <istream>
+#include <limits>
 #include <set>
 #include <stdexcept>
 #include <string>
