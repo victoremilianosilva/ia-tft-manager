@@ -545,6 +545,15 @@ if(BUILD_TESTING)
             "${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/items_test_catalog.json"
     )
 
+    # Exercise the actual set catalog and PvE anvil schedule end-to-end.
+    add_test(
+        NAME tft_engine_item_anvil_rewards
+        COMMAND test_tft_engine_pool
+            "${CMAKE_CURRENT_SOURCE_DIR}/../data/units_gerado.json"
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/items_test_catalog.json"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../data/item_catalog_set17.json"
+    )
+
     # Validate the generated production-shaped catalog with the runtime loader.
     add_executable(
         test_item_catalog
