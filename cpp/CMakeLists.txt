@@ -573,7 +573,7 @@ if(BUILD_TESTING)
             "${CMAKE_CURRENT_SOURCE_DIR}/../data/itens.json"
     )
 
-    # Validate the real Set 17 trait milestone catalog and identifier mapping.
+    # Validate trait milestones and identifier mapping from the active production catalog.
     add_executable(
         test_trait_milestones
         tests/test_trait_milestones.cpp
