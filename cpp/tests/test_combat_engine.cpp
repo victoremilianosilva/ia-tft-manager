@@ -241,6 +241,78 @@ void test_item_mana_can_enable_an_early_cast() {
             "Item-provided starting mana should enable a cast at combat start.");
 }
 
+void test_unique_item_effects_and_combinations() {
+    tft::CombatEngine engine;
+    auto input = make_input();
+    input.config.max_duration = 3.0f;
+    input.config.record_damage = true;
+    input.player_a.units[0].attack_damage = 10.0f;
+    input.player_a.units[0].attack_speed = 1.0f;
+    input.player_a.units[0].max_hp = input.player_a.units[0].hp = 500.0f;
+    input.player_a.units[0].mana = 0.0f;
+    input.player_a.units[0].max_mana = 100.0f;
+    input.player_b.units[0].attack_damage = 0.1f;
+    input.player_b.units[0].attack_speed = 0.1f;
+    input.player_b.units[0].max_hp = input.player_b.units[0].hp = 2000.0f;
+
+    // Guinsoo deve aumentar a velocidade ao longo do tempo; Shojin aumenta
+    // a mana gerada por ataques. Os dois efeitos devem coexistir.
+    tft::CombatItem guinsoo;
+    guinsoo.api_name = "TFT_Item_GuinsoosRageblade";
+    guinsoo.attack_speed = 0.1f;
+    tft::CombatItem shojin;
+    shojin.api_name = "TFT_Item_SpearOfShojin";
+    input.player_a.units[0].items = {guinsoo, shojin};
+    const auto combined = engine.simulate(input);
+    require(combined.success, "Combined unique item effects should simulate.");
+    require(combined.units.front().attacks >= 3,
+            "Combined attack-speed and mana items should allow repeated attacks.");
+    require(combined.units.front().damage_dealt > 30.0f,
+            "Combined item effects should change actual combat damage.");
+
+    // Bramble must deal extra damage back to an attacker, changing its HP.
+    auto bramble_input = make_input();
+    bramble_input.config.max_duration = 0.1f;
+    bramble_input.config.record_damage = true;
+    bramble_input.player_a.units[0].attack_damage = 1.0f;
+    bramble_input.player_a.units[0].max_hp = bramble_input.player_a.units[0].hp = 500.0f;
+    bramble_input.player_b.units[0].attack_damage = 10.0f;
+    bramble_input.player_b.units[0].max_hp = bramble_input.player_b.units[0].hp = 500.0f;
+    tft::CombatItem bramble;
+    bramble.api_name = "TFT_Item_BrambleVest";
+    bramble_input.player_b.units[0].items.push_back(bramble);
+    const auto reflected = engine.simulate(bramble_input);
+    require(reflected.success, "Bramble combat should simulate.");
+    bool saw_reflect = false;
+    for (const auto& event : reflected.damage_events) {
+        if (event.source_unit_id == bramble_input.player_b.units[0].id &&
+            event.target_unit_id == bramble_input.player_a.units[0].id &&
+            event.damage_type == tft::DamageType::MAGIC &&
+            std::abs(event.raw_damage - 100.0f) < 0.001f) saw_reflect = true;
+    }
+    require(saw_reflect, "Bramble should record its reflected magic damage.");
+    require(reflected.units.front().final_hp < reflected.units.front().initial_hp,
+            "Bramble reflection should reduce the attacker's final HP.");
+
+    // Sterak's shield should absorb a later hit after the health threshold.
+    auto sterak_input = make_input();
+    sterak_input.config.max_duration = 2.0f;
+    sterak_input.player_a.units[0].attack_damage = 0.1f;
+    sterak_input.player_a.units[0].attack_speed = 0.1f;
+    sterak_input.player_a.units[0].max_hp = sterak_input.player_a.units[0].hp = 100.0f;
+    sterak_input.player_b.units[0].attack_damage = 30.0f;
+    sterak_input.player_b.units[0].attack_speed = 1.0f;
+    sterak_input.player_b.units[0].max_hp = sterak_input.player_b.units[0].hp = 1000.0f;
+    tft::CombatItem sterak;
+    sterak.api_name = "TFT_Item_SteraksGage";
+    sterak.health = 0.0f;
+    sterak_input.player_a.units[0].items.push_back(sterak);
+    const auto shielded = engine.simulate(sterak_input);
+    require(shielded.success, "Sterak combat should simulate.");
+    require(shielded.units.front().final_hp >= 0.0f,
+            "Threshold shield effect must preserve valid HP values.");
+}
+
 } // namespace
 
 int main() {
@@ -252,6 +324,7 @@ int main() {
         test_invalid_equipment_is_rejected();
         test_ability_cast_uses_mana_and_ability_power();
         test_item_mana_can_enable_an_early_cast();
+        test_unique_item_effects_and_combinations();
     } catch (const std::exception& error) {
         std::cerr << "test_combat_engine: " << error.what() << '\n';
         return 1;
