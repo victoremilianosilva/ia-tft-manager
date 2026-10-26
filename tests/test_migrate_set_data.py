@@ -1,4 +1,4 @@
-from scripts.migrate_set_data import build_traits, build_units, select_set
+from scripts.migrate_set_data import build_traits, build_units, item_catalog_filename, select_set
 
 
 def source_data():
@@ -63,3 +63,9 @@ def test_build_traits_references_units_by_canonical_api_name():
     assert len(traits) == 1
     assert traits[0]["apiName"] == "DA_18_Riftbeast"
     assert traits[0]["units"] == [{"unit": "DA_18_TestUnit", "unit_cost": 2}]
+
+
+
+def test_set18_migration_uses_generic_item_catalog_filename():
+    assert item_catalog_filename(18) == "itens.json"
+    assert item_catalog_filename(17) == "item_catalog_set17.json"

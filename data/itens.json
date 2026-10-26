@@ -77,30 +77,33 @@
         "DA_Component_GiantsBelt"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 1.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "DA_18_EmblemBlackthorn",
       "source_description": "",
       "source_icon": "assets/maps/particles/tft/item_icons/traits/spatula/set18/tft18_emblem_blackthorn.tex",
       "source_effects": {},
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "DA_18_Blackthorn",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
     },
     {
       "id": "DA_18_EmblemBlossom",
@@ -110,30 +113,33 @@
         "DA_Component_NeedlesslyLargeRod"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 1.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "DA_18_EmblemBlossom",
       "source_description": "",
       "source_icon": "assets/maps/particles/tft/item_icons/traits/spatula/set18/tft18_emblem_blossom.tex",
       "source_effects": {},
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "DA_18_Blossom",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
     },
     {
       "id": "DA_18_EmblemBrawler",
@@ -143,30 +149,33 @@
         "DA_Component_GiantsBelt"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 1.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "DA_18_EmblemBrawler",
       "source_description": "",
       "source_icon": "assets/maps/particles/tft/item_icons/traits/spatula/set18/tft18_emblem_brawler.tex",
       "source_effects": {},
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "DA_18_Brawler",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
     },
     {
       "id": "DA_18_EmblemElderwood",
@@ -176,30 +185,33 @@
         "DA_Component_ChainVest"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 1.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "DA_18_EmblemElderwood",
       "source_description": "",
       "source_icon": "assets/maps/particles/tft/item_icons/traits/spatula/set18/tft18_emblem_elderwood.tex",
       "source_effects": {},
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "DA_18_Elderwood",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
     },
     {
       "id": "DA_18_EmblemExecutioner",
@@ -209,30 +221,33 @@
         "DA_Component_SparringGloves"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 1.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "DA_18_EmblemExecutioner",
       "source_description": "",
       "source_icon": "assets/maps/particles/tft/item_icons/traits/spatula/set18/tft18_emblem_executioner.tex",
       "source_effects": {},
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "DA_18_Executioner",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
     },
     {
       "id": "DA_18_EmblemFae",
@@ -242,30 +257,33 @@
         "DA_Component_BFSword"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 1.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "DA_18_EmblemFae",
       "source_description": "",
       "source_icon": "assets/maps/particles/tft/item_icons/traits/spatula/set18/tft18_emblem_fae.tex",
       "source_effects": {},
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "DA_18_Fae",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
     },
     {
       "id": "DA_18_EmblemHunter",
@@ -275,30 +293,33 @@
         "DA_Component_BFSword"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 1.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "DA_18_EmblemHunter",
       "source_description": "",
       "source_icon": "assets/maps/particles/tft/item_icons/traits/spatula/set18/tft18_emblem_hunter.tex",
       "source_effects": {},
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "DA_18_Hunter",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
     },
     {
       "id": "DA_18_EmblemInferno",
@@ -308,30 +329,33 @@
         "DA_Component_RecurveBow"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 1.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "DA_18_EmblemInferno",
       "source_description": "",
       "source_icon": "assets/maps/particles/tft/item_icons/traits/spatula/set18/tft18_emblem_inferno.tex",
       "source_effects": {},
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "DA_18_Inferno",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
     },
     {
       "id": "DA_18_EmblemInvoker",
@@ -341,30 +365,33 @@
         "DA_Component_TearOfTheGoddess"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 1.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "DA_18_EmblemInvoker",
       "source_description": "",
       "source_icon": "assets/maps/particles/tft/item_icons/traits/spatula/set18/tft18_emblem_invoker.tex",
       "source_effects": {},
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "DA_18_Invoker",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
     },
     {
       "id": "DA_18_EmblemLunar",
@@ -374,30 +401,33 @@
         "DA_Component_TearOfTheGoddess"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 1.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "DA_18_EmblemLunar",
       "source_description": "",
       "source_icon": "assets/maps/particles/tft/item_icons/traits/spatula/set18/tft18_emblem_lunar.tex",
       "source_effects": {},
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "DA_18_Lunar",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
     },
     {
       "id": "DA_18_EmblemPrimal",
@@ -407,30 +437,33 @@
         "DA_Component_SparringGloves"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 1.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "DA_18_EmblemPrimal",
       "source_description": "",
       "source_icon": "assets/maps/particles/tft/item_icons/traits/spatula/set18/tft18_emblem_primal.tex",
       "source_effects": {},
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "DA_Primal18",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
     },
     {
       "id": "DA_18_EmblemRapidfire",
@@ -440,30 +473,33 @@
         "DA_Component_RecurveBow"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 1.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "DA_18_EmblemRapidfire",
       "source_description": "",
       "source_icon": "assets/maps/particles/tft/item_icons/traits/spatula/set18/tft18_emblem_rapidfire.tex",
       "source_effects": {},
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "DA_18_Rapidfire",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
     },
     {
       "id": "DA_18_EmblemSlayer",
@@ -473,30 +509,33 @@
         "DA_Component_NegatronCloak"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 1.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "DA_18_EmblemSlayer",
       "source_description": "",
       "source_icon": "assets/maps/particles/tft/item_icons/traits/spatula/set18/tft18_emblem_ravager.tex",
       "source_effects": {},
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "DA_18_Slayer",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
     },
     {
       "id": "DA_18_EmblemSpellweaver",
@@ -506,30 +545,33 @@
         "DA_Component_NeedlesslyLargeRod"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 1.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "DA_18_EmblemSpellweaver",
       "source_description": "",
       "source_icon": "assets/maps/particles/tft/item_icons/traits/spatula/set18/tft18_emblem_spellweaver.tex",
       "source_effects": {},
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "DA_18_Spellweaver",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
     },
     {
       "id": "DA_18_EmblemSprykin",
@@ -539,30 +581,33 @@
         "DA_Component_NegatronCloak"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 1.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "DA_18_EmblemSprykin",
       "source_description": "",
       "source_icon": "assets/maps/particles/tft/item_icons/traits/spatula/set18/tft18_emblem_sprykin.tex",
       "source_effects": {},
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "DA_18_Sprykin",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
     },
     {
       "id": "DA_18_EmblemVanguard",
@@ -572,30 +617,33 @@
         "DA_Component_ChainVest"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 1.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "DA_18_EmblemVanguard",
       "source_description": "",
       "source_icon": "assets/maps/particles/tft/item_icons/traits/spatula/set18/tft18_emblem_vanguard.tex",
       "source_effects": {},
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "grants_trait": "DA_18_Vanguard",
+      "granted_trait_active_count": 1,
+      "combat_effects": []
     },
     {
       "id": "DA_AdaptiveHelm",
@@ -605,24 +653,24 @@
         "DA_Component_NegatronCloak"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_AdaptiveHelm",
       "source_description": "",
@@ -638,24 +686,24 @@
         "DA_Component_TearOfTheGoddess"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_ArchangelsStaff",
       "source_description": "",
@@ -671,24 +719,24 @@
         "DA_Component_NegatronCloak"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_Bloodthirster",
       "source_description": "",
@@ -704,24 +752,24 @@
         "DA_Component_TearOfTheGoddess"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_BlueBuff",
       "source_description": "",
@@ -737,24 +785,24 @@
         "DA_Component_ChainVest"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_BrambleVest",
       "source_description": "",
@@ -770,24 +818,24 @@
         "DA_Component_ChainVest"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_Crownguard",
       "source_description": "",
@@ -803,24 +851,24 @@
         "DA_Component_BFSword"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_Deathblade",
       "source_description": "",
@@ -836,24 +884,24 @@
         "DA_Component_NegatronCloak"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_DragonsClaw",
       "source_description": "",
@@ -869,24 +917,24 @@
         "DA_Component_ChainVest"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_EdgeOfNight",
       "source_description": "",
@@ -902,24 +950,24 @@
         "DA_Component_GiantsBelt"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_Evenshroud",
       "source_description": "",
@@ -935,24 +983,24 @@
         "DA_Component_NegatronCloak"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_GargoyleStoneplate",
       "source_description": "",
@@ -968,24 +1016,24 @@
         "DA_Component_BFSword"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_GiantSlayer",
       "source_description": "",
@@ -1001,24 +1049,24 @@
         "DA_Component_NeedlesslyLargeRod"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_GuinsoosRageblade",
       "source_description": "",
@@ -1034,24 +1082,24 @@
         "DA_Component_SparringGloves"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_HandOfJustice",
       "source_description": "",
@@ -1067,24 +1115,24 @@
         "DA_Component_NeedlesslyLargeRod"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_HextechGunblade",
       "source_description": "",
@@ -1100,24 +1148,24 @@
         "DA_Component_SparringGloves"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_InfinityEdge",
       "source_description": "",
@@ -1133,24 +1181,24 @@
         "DA_Component_NegatronCloak"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_IonicSpark",
       "source_description": "",
@@ -1166,24 +1214,24 @@
         "DA_Component_NeedlesslyLargeRod"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_JeweledGauntlet",
       "source_description": "",
@@ -1199,24 +1247,24 @@
         "DA_Component_NegatronCloak"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_KrakensFury",
       "source_description": "",
@@ -1232,24 +1280,24 @@
         "DA_Component_SparringGloves"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_LastWhisper",
       "source_description": "",
@@ -1265,24 +1313,24 @@
         "DA_Component_NeedlesslyLargeRod"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_Morellonomicon",
       "source_description": "",
@@ -1298,24 +1346,24 @@
         "DA_Component_GiantsBelt"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_NashorsTooth",
       "source_description": "",
@@ -1331,24 +1379,24 @@
         "DA_Component_TearOfTheGoddess"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_ProtectorsVow",
       "source_description": "",
@@ -1364,24 +1412,24 @@
         "DA_Component_SparringGloves"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_Quicksilver",
       "source_description": "",
@@ -1397,24 +1445,24 @@
         "DA_Component_NeedlesslyLargeRod"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_RabadonsDeathcap",
       "source_description": "",
@@ -1430,24 +1478,24 @@
         "DA_Component_RecurveBow"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_RedBuff",
       "source_description": "",
@@ -1463,24 +1511,24 @@
         "DA_Component_BFSword"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_SpearOfShojin",
       "source_description": "",
@@ -1496,24 +1544,24 @@
         "DA_Component_TearOfTheGoddess"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_SpiritVisage",
       "source_description": "",
@@ -1529,24 +1577,24 @@
         "DA_Component_SparringGloves"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_SteadfastHeart",
       "source_description": "",
@@ -1562,24 +1610,24 @@
         "DA_Component_GiantsBelt"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_SteraksGage",
       "source_description": "",
@@ -1595,24 +1643,24 @@
         "DA_Component_SparringGloves"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_StrikersFlail",
       "source_description": "",
@@ -1628,24 +1676,24 @@
         "DA_Component_GiantsBelt"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_SunfireCape",
       "source_description": "",
@@ -1661,24 +1709,24 @@
         "DA_Component_FryingPan"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 1.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "DA_TacticiansCape",
       "source_description": "",
@@ -1694,24 +1742,24 @@
         "DA_Component_Spatula"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 1.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "DA_TacticiansCrown",
       "source_description": "",
@@ -1727,24 +1775,24 @@
         "DA_Component_FryingPan"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 1.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "DA_TacticiansShield",
       "source_description": "",
@@ -1760,24 +1808,24 @@
         "DA_Component_SparringGloves"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 1.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "DA_ThiefsGloves",
       "source_description": "",
@@ -1793,24 +1841,24 @@
         "DA_Component_ChainVest"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_TitansResolve",
       "source_description": "",
@@ -1826,24 +1874,24 @@
         "DA_Component_TearOfTheGoddess"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_VoidStaff",
       "source_description": "",
@@ -1859,24 +1907,24 @@
         "DA_Component_GiantsBelt"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "DA_WarmogsArmor",
       "source_description": "",

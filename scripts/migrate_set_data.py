@@ -156,6 +156,11 @@ def build_traits(entries: list[dict[str, Any]], units: list[dict[str, Any]]) -> 
     return {"traits": sorted(traits.values(), key=lambda item: item["apiName"])}
 
 
+def item_catalog_filename(set_number: int) -> str:
+    """Use the generic active-set catalog filename for Set 18."""
+    return "itens.json" if int(set_number) == 18 else f"item_catalog_set{int(set_number)}.json"
+
+
 def write_json(path: Path, data: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="\n") as handle:
@@ -181,7 +186,7 @@ def main(argv: list[str] | None = None) -> int:
         out = args.output_dir
         write_json(out / "units_gerado.json", units)
         write_json(out / "traits.json", traits)
-        write_json(out / f"item_catalog_set{args.set}.json", items)
+        write_json(out / item_catalog_filename(args.set), items)
         manifest = {
             "set": args.set,
             "name": set_name,
