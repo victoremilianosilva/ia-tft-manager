@@ -595,11 +595,19 @@ void test_data_driven_trait_emblem_effects() {
     auto aura_input = make_input();
     aura_input.config.max_duration = 0.1f;
     aura_input.config.record_damage = true;
-    aura_input.player_a.units[0].role = tft::UnitRole::TANK;
+    aura_input.player_a.units[0].role = tft::UnitRole::FIGHTER;
+    aura_input.player_a.units[0].position.x = 2;
     aura_input.player_a.units[0].attack_damage = 0.1f;
     aura_input.player_a.units[0].attack_speed = 0.1f;
-    aura_input.player_a.units[0].armor = 0.0f;
     aura_input.player_a.units[0].hp = aura_input.player_a.units[0].max_hp = 1000.0f;
+    auto tank_ally = aura_input.player_a.units[0];
+    tank_ally.id = 77;
+    tank_ally.role = tft::UnitRole::TANK;
+    tank_ally.position.x = 0;
+    tank_ally.armor = 0.0f;
+    tank_ally.items.clear();
+    aura_input.player_a.units.push_back(tank_ally);
+    aura_input.player_b.units[0].position.x = 0;
     aura_input.player_b.units[0].attack_damage = 100.0f;
     aura_input.player_b.units[0].attack_speed = 10.0f;
     aura_input.player_b.units[0].hp = aura_input.player_b.units[0].max_hp = 1000.0f;
@@ -622,7 +630,7 @@ void test_data_driven_trait_emblem_effects() {
     bool saw_armor_mitigated_hit = false;
     for (const auto& event : aura_result.damage_events) {
         if (event.source_unit_id == aura_input.player_b.units[0].id &&
-            event.target_unit_id == aura_input.player_a.units[0].id &&
+            event.target_unit_id == tank_ally.id &&
             std::abs(event.final_damage - (100.0f * 100.0f / 110.0f)) < 0.05f) {
             saw_armor_mitigated_hit = true;
             break;
