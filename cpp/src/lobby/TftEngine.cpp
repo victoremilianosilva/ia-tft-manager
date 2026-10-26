@@ -4238,6 +4238,10 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
             target.shop[slot] = describe_unit(source.shop->get_unit(
                 static_cast<std::int32_t>(slot)
             ));
+        if (source.item_engine) {
+            target.item_components = source.item_engine->components();
+            target.item_inventory = source.item_engine->inventory();
+        }
     }
     return snapshot;
 }
