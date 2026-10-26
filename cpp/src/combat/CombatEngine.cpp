@@ -798,6 +798,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
 
         now = event.time;
         ++result.events_processed;
+        for (auto& runtime : units) apply_delayed_effects(runtime, now);
 
         // Processa queimadura uma vez por segundo, independentemente da ordem
         // de ações da unidade que aplicou o efeito.
@@ -1168,6 +1169,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                         ability_target.unit.hp = 0.0f;
                         ability_target.unit.alive = false;
                         ++actor.kills;
+                        grant_on_kill_effect_charges(actor);
                         const float generic_kill_heal = effect_kill_healing(actor.unit);
                         if (generic_kill_heal > 0.0f) {
                             const float actual_heal = apply_heal(actor, generic_kill_heal, now);
@@ -1285,6 +1287,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 actor.healing_done += heal;
             }
             ++actor.attacks;
+            const float generic_charged_heal = apply_charged_attack_healing(actor, now);
+            actor.healing_done += generic_charged_heal;
             if (actor.challenger_attacks_remaining > 0) {
                 const float heal = apply_heal(actor,
                     actor.unit.max_hp * 0.05f, now);
@@ -1456,6 +1460,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 target.unit.hp = 0.0f;
                 target.unit.alive = false;
                 ++actor.kills;
+                grant_on_kill_effect_charges(actor);
                 const float generic_kill_heal = effect_kill_healing(actor.unit);
                 if (generic_kill_heal > 0.0f) {
                     const float actual_heal = apply_heal(actor, generic_kill_heal, now);
