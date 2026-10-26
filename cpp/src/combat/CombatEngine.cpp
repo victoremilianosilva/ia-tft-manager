@@ -427,8 +427,20 @@ float effect_attack_bonus(const CombatUnit& unit, DamageType damage_type) {
             if (effect.trigger == "on_attack" && effect.operation == "bonus_damage" &&
                 effect.damage_type == damage_type &&
                 effect_condition_matches(unit, effect))
-                bonus += effect.percent_of_max_health
-                    ? unit.max_hp * effect.value : effect.value;
+                if (effect.percent_of_max_health) {
+                    bonus += unit.max_hp * effect.value;
+                } else if (effect.percent_of_stat) {
+                    float base_stat = 0.0f;
+                    if (effect.stat == "attack_damage") base_stat = unit.attack_damage;
+                    else if (effect.stat == "attack_speed") base_stat = unit.attack_speed;
+                    else if (effect.stat == "ability_power") base_stat = unit.ability_power;
+                    else if (effect.stat == "max_hp") base_stat = unit.max_hp;
+                    else if (effect.stat == "armor") base_stat = unit.armor;
+                    else if (effect.stat == "magic_resist") base_stat = unit.magic_resist;
+                    bonus += base_stat * effect.value;
+                } else {
+                    bonus += effect.value;
+                }
         }
     };
     for (const auto& item : unit.items) accumulate(item.effects);
