@@ -271,9 +271,12 @@ def main(argv: list[str] | None = None) -> int:
         with source_path.open("r", encoding="utf-8") as handle:
             source = json.load(handle)
         set_slug = re.sub(r"[^a-z0-9]+", "_", args.set_selector.lower()).strip("_")
-        metadata_path = Path("data") / f"item_effects_{set_slug}.json"
+        metadata_candidates = [Path("data") / f"item_effects_{set_slug}.json"]
+        if set_slug.isdigit():
+            metadata_candidates.append(Path("data") / f"item_effects_set{set_slug}.json")
         trait_item_metadata: dict[str, dict[str, Any]] = {}
-        if metadata_path.is_file():
+        metadata_path = next((path for path in metadata_candidates if path.is_file()), None)
+        if metadata_path is not None:
             with metadata_path.open("r", encoding="utf-8") as handle:
                 metadata_document = json.load(handle)
             raw_metadata = metadata_document.get("items", {})
