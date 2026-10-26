@@ -1,11 +1,33 @@
-"""Integration regressions for the native C++ action mask and PPO strategy signals.
+"""Integration regressions for native action masks and PPO strategy signals.
 
-Unlike test_ppo_logged_loop_reproduction.py, this file uses masks emitted by the
-real native lobby and executes the attempted moves through TFTEngine.
+Champion identities are loaded from the active production catalog so these tests
+remain valid when the TFT set changes.
 """
-import pytest
+import json
+from pathlib import Path
 
 from cpp_lobby_env import CppTFTLobbyWrapper
+
+
+ROOT = Path(__file__).resolve().parents[1]
+CATALOG_PATH = ROOT / "data" / "units_gerado.json"
+
+
+def _active_champion_ids(count: int = 2) -> list[str]:
+    with CATALOG_PATH.open(encoding="utf-8") as source:
+        catalog = json.load(source)
+    ids = [
+        str(unit.get("apiName", "")).strip()
+        for unit in catalog
+        if str(unit.get("apiName", "")).strip()
+    ]
+    # Preserve catalog order while avoiding duplicate identifiers.
+    ids = list(dict.fromkeys(ids))
+    if len(ids) < count:
+        raise AssertionError(
+            f"Active champion catalog needs at least {count} unique API IDs; got {len(ids)}"
+        )
+    return ids[:count]
 
 
 def _state_signature(player):
@@ -24,21 +46,22 @@ def _move_action(source, target):
 
 
 def test_native_mask_blocks_reverse_swap_and_executor_rejects_forced_reverse():
+    first_champion, second_champion = _active_champion_ids(2)
     lobby = CppTFTLobbyWrapper(seed=20261022)
     try:
         lobby.reset(seed=20261022)
         native = lobby._engine
 
         assert native.set_player_economy_for_testing(0, 10, 3, 0)
-        assert native.set_unit_for_testing(0, True, 3, "TFT17_Nasus", 1)
-        assert native.set_unit_for_testing(0, True, 10, "TFT17_Briar", 1)
+        assert native.set_unit_for_testing(0, True, 3, first_champion, 1)
+        assert native.set_unit_for_testing(0, True, 10, second_champion, 1)
 
         before = lobby.get_audit_snapshot()["players"][0]
         before_signature = _state_signature(before)
         forward_masks = lobby.get_action_masks()[0]
         assert bool(forward_masks["type_mask"][4])
         assert bool(forward_masks["board_move_target_masks"][3][10]), (
-            "O movimento inicial Nasus/Briar deve ser elegível na máscara nativa."
+            "O movimento inicial deve ser elegível na máscara nativa."
         )
 
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
@@ -59,8 +82,7 @@ def test_native_mask_blocks_reverse_swap_and_executor_rejects_forced_reverse():
             f"board={_state_signature(after_forward)!r}"
         )
 
-        # Deliberately bypass the policy mask to test the executor's second line
-        # of defense. An invalid/reverse action must not mutate board or bench.
+        # Bypass the policy mask to exercise the executor's second line of defense.
         before_forced_reverse = _state_signature(after_forward)
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
         actions[0] = _move_action(10, 3)
@@ -75,21 +97,22 @@ def test_native_mask_blocks_reverse_swap_and_executor_rejects_forced_reverse():
 
 
 def test_native_composition_score_rewards_two_star_upgrade_separately():
+    champion_id = _active_champion_ids(1)[0]
     lobby = CppTFTLobbyWrapper(seed=20261023)
     try:
         lobby.reset(seed=20261023)
         native = lobby._engine
 
-        one_star = float(native.get_unit_comp_score(0, "TFT17_Nasus", 1))
-        two_star = float(native.get_unit_comp_score(0, "TFT17_Nasus", 2))
-        three_star = float(native.get_unit_comp_score(0, "TFT17_Nasus", 3))
+        one_star = float(native.get_unit_comp_score(0, champion_id, 1))
+        two_star = float(native.get_unit_comp_score(0, champion_id, 2))
+        three_star = float(native.get_unit_comp_score(0, champion_id, 3))
 
         assert two_star > one_star, (
-            "O sinal estratégico nativo não valoriza Nasus 2★ acima de 1★: "
+            f"O sinal estratégico nativo não valoriza {champion_id} 2★ acima de 1★: "
             f"1★={one_star}, 2★={two_star}"
         )
         assert three_star > two_star, (
-            "O sinal estratégico nativo não valoriza Nasus 3★ acima de 2★: "
+            f"O sinal estratégico nativo não valoriza {champion_id} 3★ acima de 2★: "
             f"2★={two_star}, 3★={three_star}"
         )
     finally:
