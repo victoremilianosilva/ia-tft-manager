@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <limits>
 #include <queue>
 #include <random>
 #include <string>
@@ -252,9 +253,20 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 !std::isfinite(unit.attack_speed) || unit.attack_speed <= 0.0f ||
                 !std::isfinite(unit.attack_damage) || unit.attack_damage < 0.0f ||
                 !std::isfinite(unit.attack_range) || unit.attack_range < 0.0f ||
+                !std::isfinite(unit.mana) || unit.mana < 0.0f ||
+                !std::isfinite(unit.max_mana) || unit.max_mana <= 0.0f ||
+                !std::isfinite(unit.ability_power) || unit.ability_power < 0.0f ||
+                !std::isfinite(unit.magic_resist) ||
                 !std::isfinite(unit.armor) ||
                 !std::isfinite(unit.critical_strike_chance) ||
-                !std::isfinite(unit.critical_strike_damage)) {
+                !std::isfinite(unit.critical_strike_damage) ||
+                !std::isfinite(unit.ability.mana_cost) || unit.ability.mana_cost < 0.0f ||
+                !std::isfinite(unit.ability.base_damage) || unit.ability.base_damage < 0.0f ||
+                !std::isfinite(unit.ability.base_healing) || unit.ability.base_healing < 0.0f ||
+                !std::isfinite(unit.ability.shield_amount) || unit.ability.shield_amount < 0.0f ||
+                !std::isfinite(unit.ability.ability_power_ratio) || unit.ability.ability_power_ratio < 0.0f ||
+                !std::isfinite(unit.ability.attack_damage_ratio) || unit.ability.attack_damage_ratio < 0.0f ||
+                !std::isfinite(unit.ability.area_radius) || unit.ability.area_radius < 0.0f) {
                 set_error(result, "INVALID_UNIT_ATTRIBUTES",
                           "Atributos numericos invalidos.");
                 return false;
