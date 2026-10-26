@@ -337,6 +337,7 @@ void apply_start_combat_effects(CombatUnit& unit) {
     auto apply = [&](const std::vector<CombatEffectDefinition>& effects) {
         for (const auto& effect : effects) {
             if (effect.trigger == "combat_start" && effect.operation == "add_stat" &&
+                (effect.target.empty() || effect.target == "self") &&
                 effect_condition_matches(unit, effect))
                 apply_effect_stat(unit, effect);
         }
@@ -344,6 +345,29 @@ void apply_start_combat_effects(CombatUnit& unit) {
     for (const auto& item : unit.items) apply(item.effects);
     for (const auto& trait : unit.traits) {
         if (trait.active || trait.active_count > 0) apply(trait.effects);
+    }
+}
+
+void apply_start_combat_team_effects(std::vector<RuntimeUnit>& units) {
+    for (const auto& source : units) {
+        auto apply_to_targets = [&](const std::vector<CombatEffectDefinition>& effects) {
+            for (const auto& effect : effects) {
+                if (effect.trigger != "combat_start" || effect.operation != "add_stat" ||
+                    effect.target != "allies_same_row_within_1" ||
+                    !effect_condition_matches(source.unit, effect)) continue;
+                for (auto& recipient : units) {
+                    if (recipient.unit.team != source.unit.team ||
+                        recipient.unit.position.y != source.unit.position.y ||
+                        std::abs(recipient.unit.position.x - source.unit.position.x) > 1)
+                        continue;
+                    apply_effect_stat(recipient.unit, effect);
+                }
+            }
+        };
+        for (const auto& item : source.unit.items) apply_to_targets(item.effects);
+        for (const auto& trait : source.unit.traits) {
+            if (trait.active || trait.active_count > 0) apply_to_targets(trait.effects);
+        }
     }
 }
 
@@ -679,7 +703,6 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
 
             units.push_back(RuntimeUnit{effective_unit, effective_unit.hp});
             auto& loaded = units.back();
-            apply_start_combat_effects(loaded.unit);
             loaded.base_attack_speed = loaded.unit.attack_speed;
             loaded.titans_base_ad = loaded.unit.attack_damage;
             loaded.runaans_base_ad = loaded.unit.attack_damage;
@@ -717,6 +740,11 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
         !load_team(input.player_b, UnitTeam::PLAYER_B, occupied_b)) {
         return result;
     }
+
+    // Apply self and team-targeted start-of-combat effects only after both
+    // teams are present, so ally targeting is independent of input order.
+    for (auto& runtime : units) apply_start_combat_effects(runtime.unit);
+    apply_start_combat_team_effects(units);
 
     std::unordered_map<int, std::size_t> index_by_id;
     for (std::size_t i = 0; i < units.size(); ++i) {
