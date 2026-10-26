@@ -47,6 +47,9 @@ struct RuntimeUnit {
     float mr_shred_percent = 0.0f;
     int runaan_stacks = 0;
     int power_gauntlet_stacks = 0;
+    int challenger_attacks_remaining = 0;
+    bool resist_emblem_triggered = false;
+    bool assassin_omnivamp_active = false;
     bool bloodthirster_triggered = false;
     bool sterak_triggered = false;
     bool frozen_heart_triggered = false;
@@ -190,7 +193,8 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
         unit.armor += item.armor;
         unit.magic_resist += item.magic_resist;
         unit.mana += item.mana;
-        unit.omnivamp += item.omnivamp;
+        if (item.api_name != "TFT17_Item_AssassinTraitEmblemItem")
+            unit.omnivamp += item.omnivamp;
         unit.damage_amplification += item.damage_amplification;
         unit.damage_reduction += item.damage_reduction;
     }
@@ -416,6 +420,22 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 runtime.unit.damage_reduction += 0.15f;
             runtime.night_harvester_bonus_active =
                 runtime.unit.hp / runtime.unit.max_hp > 0.50f;
+        }
+        if (has_item(runtime.unit, "TFT17_Item_FlexTraitEmblemItem")) {
+            for (auto& ally : units) {
+                if (ally.unit.team != runtime.unit.team ||
+                    std::abs(ally.unit.position.y - runtime.unit.position.y) != 0 ||
+                    std::abs(ally.unit.position.x - runtime.unit.position.x) > 1) continue;
+                if (ally.unit.role == UnitRole::TANK) {
+                    ally.unit.armor += 10.0f;
+                    ally.unit.magic_resist += 10.0f;
+                } else if (ally.unit.role == UnitRole::FIGHTER ||
+                           ally.unit.role == UnitRole::ASSASSIN) {
+                    ally.unit.omnivamp = std::min(1.0f, ally.unit.omnivamp + 0.10f);
+                } else {
+                    ally.unit.attack_speed += 0.10f;
+                }
+            }
         }
         if (has_item(runtime.unit, "TFT_Item_GargoyleStoneplate")) {
             int nearby_enemies = 0;
@@ -826,6 +846,11 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                                 actor.unit.ability_power;
                         ability_target.shield_hp += shield;
                         ability_event.shield += shield;
+                        for (auto& ally : units) {
+                            if (ally.unit.team == actor.unit.team &&
+                                has_item(ally.unit, "TFT17_Item_ShieldTankEmblemItem"))
+                                ally.unit.ability_power += 2.0f;
+                        }
                     }
 
                     if (ability_target.unit.hp <= 0.0f && ability_target.unit.alive) {
@@ -937,6 +962,34 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                     actor.unit.hp + damage * actor.unit.omnivamp);
             }
             ++actor.attacks;
+            if (actor.challenger_attacks_remaining > 0) {
+                const float heal = std::min(actor.unit.max_hp - actor.unit.hp,
+                    actor.unit.max_hp * 0.05f);
+                actor.unit.hp += heal;
+                actor.healing_done += heal;
+                --actor.challenger_attacks_remaining;
+            }
+            // Emblema de Lutador: dano mágico adicional baseado na vida máxima.
+            if (has_item(actor.unit, "TFT17_Item_HPTankEmblemItem")) {
+                const float raw_bonus = actor.unit.max_hp * 0.03f;
+                const float bonus = mitigate_physical_damage(raw_bonus, target.unit.magic_resist);
+                const float absorbed_bonus = std::min(target.shield_hp, bonus);
+                target.shield_hp -= absorbed_bonus;
+                const float hp_bonus = std::min(target.unit.hp, bonus - absorbed_bonus);
+                target.unit.hp -= hp_bonus;
+                target.damage_taken += bonus;
+                actor.damage_dealt += bonus;
+                if (config.record_damage) {
+                    DamageEvent bonus_event;
+                    bonus_event.timestamp = now;
+                    bonus_event.source_unit_id = actor.unit.id;
+                    bonus_event.target_unit_id = target.unit.id;
+                    bonus_event.damage_type = DamageType::MAGIC;
+                    bonus_event.raw_damage = raw_bonus;
+                    bonus_event.final_damage = bonus;
+                    result.damage_events.push_back(bonus_event);
+                }
+            }
             actor.unit.mana = std::min(actor.unit.max_mana, actor.unit.mana + 10.0f);
 
             // Shojin e Leviathan: mana adicional por ataque acertado.
@@ -1082,6 +1135,8 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 target.unit.hp = 0.0f;
                 target.unit.alive = false;
                 ++actor.kills;
+                if (has_item(actor.unit, "TFT17_Item_ASTraitEmblemItem"))
+                    actor.challenger_attacks_remaining = 3;
 
                 if (config.record_events) {
                     DeathEvent de;
