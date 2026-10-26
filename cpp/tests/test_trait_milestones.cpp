@@ -13,17 +13,17 @@ int main(int argc, char** argv) {
     assert(input && "could not open production traits catalog");
 
     const auto milestones = tft::load_trait_milestones(input);
-    const auto shepherd = milestones.find("Shepherd");
-    assert(shepherd != milestones.end());
-    assert((shepherd->second == std::vector<int>{3, 5, 7}));
+    const auto brawler = milestones.find("DA_18_Brawler");
+    assert(brawler != milestones.end());
+    assert((brawler->second == std::vector<int>{2, 4, 6}));
 
-    const auto admin = milestones.find("Arbiter");
-    assert(admin != milestones.end());
-    assert(!admin->second.empty());
+    const auto blackthorn = milestones.find("DA_18_Blackthorn");
+    assert(blackthorn != milestones.end());
+    assert((blackthorn->second == std::vector<int>{2, 4, 6}));
 
     // Localized names are not used as canonical keys; API names remain usable.
-    assert(milestones.find("TFT17_SummonTrait") != milestones.end());
-    assert(milestones.find("Pastor") == milestones.end());
+    assert(milestones.find("DA_18_Summoner") != milestones.end());
+    assert(milestones.find("Lutador") == milestones.end());
 
     std::istringstream malformed("{not valid json");
     bool rejected = false;
@@ -44,6 +44,6 @@ int main(int argc, char** argv) {
     assert(rejected);
 
     std::cout << "Loaded " << milestones.size()
-              << " trait identifiers with real Set 17 milestones\n";
+              << " trait identifiers with real Set 18 milestones\n";
     return 0;
 }
