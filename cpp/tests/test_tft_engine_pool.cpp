@@ -695,11 +695,11 @@ int main(int argc, char** argv) {
         }
 
         // End-to-end regressions for the Viewer buy/sell loop. The same low-fit
-        // sequence is replayed with Teemo, Caitlyn, Ezreal and Twisted Fate.
+        // sequence is replayed with four champions present in the active Set 18 catalog.
         // Sell the newly bought UUID specifically so a pre-existing copy cannot
         // accidentally make the test pass without exercising RecentPurchase.
         for (const std::string target_name :
-             {"Teemo", "Caitlyn", "Ezreal", "Twisted Fate"}) {
+             {"Teemo", "Caitlyn", "Ezreal", "Akali"}) {
             tft::TFTEngine reversal_engine(24680, json_path);
             const auto target = std::find_if(
                 catalog.all().begin(), catalog.all().end(),
