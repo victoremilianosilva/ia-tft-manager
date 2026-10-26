@@ -70,6 +70,7 @@ struct RuntimeUnit {
     std::vector<float> power_gauntlet_stack_times;
     std::unordered_map<std::string, int> generic_effect_charges;
     std::unordered_set<std::string> generic_effects_applied;
+    std::unordered_set<std::string> generic_effects_active;
 };
 
 struct ScheduledEvent {
@@ -217,8 +218,7 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
         // as fractions (e.g. 0.15 = +15% attack speed / damage amplification).
         unit.attack_damage += item.attack_damage;
         unit.ability_power += item.ability_power;
-        if (item.api_name != "TFT17_Item_ResistTankEmblemItem")
-            unit.attack_speed += item.attack_speed;
+        unit.attack_speed += item.attack_speed;
         unit.critical_strike_chance += item.critical_strike_chance;
         unit.critical_strike_damage += item.critical_strike_damage;
         unit.max_hp += item.health;
@@ -226,8 +226,7 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
         unit.armor += item.armor;
         unit.magic_resist += item.magic_resist;
         unit.mana += item.mana;
-        if (item.api_name != "TFT17_Item_AssassinTraitEmblemItem")
-            unit.omnivamp += item.omnivamp;
+        unit.omnivamp += item.omnivamp;
         unit.damage_amplification += item.damage_amplification;
         unit.damage_reduction += item.damage_reduction;
 
@@ -435,6 +434,28 @@ void apply_delayed_effects(RuntimeUnit& runtime, float now) {
             std::to_string(effect.delay) + ":" + std::to_string(effect.value);
         if (runtime.generic_effects_applied.insert(key).second)
             apply_effect_stat(runtime.unit, effect);
+    });
+}
+
+void update_conditional_effects(RuntimeUnit& runtime) {
+    visit_generic_effects(runtime.unit, [&](const CombatEffectDefinition& effect,
+                                           const std::string& prefix) {
+        if (effect.trigger != "while_hp_below" || effect.operation != "add_stat" ||
+            effect.health_threshold <= 0.0f ||
+            !effect_condition_matches(runtime.unit, effect)) return;
+        const std::string key = prefix + "conditional:" + effect.stat + ":" +
+            std::to_string(effect.health_threshold) + ":" + std::to_string(effect.value);
+        const bool should_be_active = runtime.unit.hp / runtime.unit.max_hp <= effect.health_threshold;
+        const bool is_active = runtime.generic_effects_active.contains(key);
+        if (should_be_active && !is_active) {
+            apply_effect_stat(runtime.unit, effect);
+            runtime.generic_effects_active.insert(key);
+        } else if (!should_be_active && is_active) {
+            CombatEffectDefinition inverse = effect;
+            inverse.value = -inverse.value;
+            apply_effect_stat(runtime.unit, inverse);
+            runtime.generic_effects_active.erase(key);
+        }
     });
 }
 
@@ -797,7 +818,10 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
 
         now = event.time;
         ++result.events_processed;
-        for (auto& runtime : units) apply_delayed_effects(runtime, now);
+        for (auto& runtime : units) {
+            apply_delayed_effects(runtime, now);
+            update_conditional_effects(runtime);
+        }
 
         // Processa queimadura uma vez por segundo, independentemente da ordem
         // de ações da unidade que aplicou o efeito.
