@@ -43,7 +43,7 @@
 #include "items/CombatItemAdapter.hpp"
 
 #ifndef TFT_DEFAULT_ITEM_CATALOG_PATH
-#define TFT_DEFAULT_ITEM_CATALOG_PATH "data/item_catalog_set17.json"
+#define TFT_DEFAULT_ITEM_CATALOG_PATH "data/itens.json"
 #endif
 
 #ifndef TFT_COMP_DIRECTION_MIN_RELATIVE_ADVANTAGE
@@ -2804,9 +2804,17 @@ struct TFTEngine::Impl {
             const bool empty_a = input.player_a.units.empty();
             const bool empty_b = input.player_b.units.empty();
             if (empty_a && empty_b) {
-                // Igual ao Python: empate sem recompensa e sem alterar streak.
+                // Uma partida sem unidades dos dois lados não pode ficar em
+                // empate infinito. Não há vencedor nem bônus de streak, mas
+                // o dano de rodada ainda avança a partida até a classificação.
                 events.emplace_back("COMBAT_DRAW_EMPTY: jogadores " +
-                    std::to_string(a) + " e " + std::to_string(b));
+                    std::to_string(a) + " e " + std::to_string(b) +
+                    "; dano de rodada aplicado aos dois");
+                const auto draw_damage = stage_damage(stage);
+                apply_damage(a, draw_damage);
+                apply_damage(b, draw_damage);
+                sync_player_economy(a);
+                sync_player_economy(b);
                 continue;
             }
 
@@ -2843,12 +2851,22 @@ struct TFTEngine::Impl {
                     winner_survivors = combat.player_b_survivors;
                     loser_survivors = combat.player_a_survivors;
                 } else {
-                    // TFTLobby.resolve_combat() não altera streak em empate:
-                    // apply_combat_result() só roda quando há vencedor e perdedor.
+                    // Um empate do simulador (por exemplo, timeout simultâneo)
+                    // não pode bloquear a lobby indefinidamente. Sem vencedor
+                    // e sem bônus de streak, ambos recebem o dano de rodada
+                    // acrescido dos sobreviventes adversários.
+                    const auto damage_to_a = stage_damage(stage) +
+                        std::max(0, combat.player_b_survivors);
+                    const auto damage_to_b = stage_damage(stage) +
+                        std::max(0, combat.player_a_survivors);
+                    apply_damage(a, damage_to_a);
+                    apply_damage(b, damage_to_b);
                     sync_player_economy(a);
                     sync_player_economy(b);
-                    events.emplace_back("COMBAT_DRAW: jogadores " +
-                        std::to_string(a) + " e " + std::to_string(b));
+                    events.emplace_back("COMBAT_DRAW_DAMAGE: jogadores " +
+                        std::to_string(a) + " e " + std::to_string(b) +
+                        ", dano=" + std::to_string(damage_to_a) +
+                        "/" + std::to_string(damage_to_b));
                     continue;
                 }
             }
@@ -4442,6 +4460,34 @@ bool TFTEngine::set_next_shop_roll_for_testing(
     }
     auto& player = impl_->player_envs[static_cast<std::size_t>(player_id)];
     return player.shop->set_next_roll_for_testing(ids);
+}
+
+bool TFTEngine::set_player_hp_for_testing(
+    std::int32_t player_id,
+    float hp
+) {
+    if (!impl_) {
+        throw std::runtime_error("TFTEngine nao possui estado interno.");
+    }
+    impl_->ensure_open();
+    if (player_id < 0 ||
+        static_cast<std::size_t>(player_id) >= kPlayersPerLobby ||
+        !std::isfinite(hp) || hp <= 0.0f) {
+        return false;
+    }
+    auto& player = impl_->player_envs[static_cast<std::size_t>(player_id)].info;
+    player.hp = hp;
+    player.alive = true;
+    player.eliminated = false;
+    player.placement.reset();
+    impl_->alive_players = 0;
+    for (const auto& env : impl_->player_envs) {
+        if (env.info.alive) ++impl_->alive_players;
+    }
+    for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
+        impl_->refresh_masks(i);
+    }
+    return true;
 }
 
 bool TFTEngine::set_player_alive_for_testing(

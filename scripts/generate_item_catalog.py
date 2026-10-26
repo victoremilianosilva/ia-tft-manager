@@ -135,6 +135,25 @@ def _is_component(item: dict[str, Any] | None) -> bool:
     return item is not None and _has_tag(item, "component")
 
 
+def default_catalog_output_path(set_selector: str) -> Path:
+    """Use the generic active-set catalog name for Set 18."""
+    slug = re.sub(r"[^a-z0-9]+", "_", str(set_selector).strip().lower()).strip("_")
+    if slug in {"18", "set18"}:
+        return Path("data") / "itens.json"
+    return Path("data") / f"item_catalog_{slug}.json"
+
+
+def item_effects_candidates(set_selector: str) -> list[Path]:
+    """Resolve set-specific overrides, using the generic file for Set 18."""
+    slug = re.sub(r"[^a-z0-9]+", "_", str(set_selector).strip().lower()).strip("_")
+    if slug in {"18", "set18"}:
+        return [Path("data") / "item_effects.json"]
+    candidates = [Path("data") / f"item_effects_{slug}.json"]
+    if slug.isdigit():
+        candidates.append(Path("data") / f"item_effects_set{slug}.json")
+    return candidates
+
+
 def _selector_matches(selector: str, entry: dict[str, Any]) -> bool:
     name = str(entry.get("name", "")).strip()
     number = entry.get("number")
@@ -307,7 +326,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--set", dest="set_selector", required=True, help="Número ou nome do set, por exemplo: 16 ou Set16.")
     parser.add_argument("--input", default="itens.json", help="JSON original do CommunityDragon (padrão: itens.json).")
-    parser.add_argument("--output", help="Arquivo de saída. Padrão: data/item_catalog_<set>.json.")
+    parser.add_argument("--output", help="Arquivo de saída. Set 18 usa data/itens.json por padrão; outros sets usam data/item_catalog_<set>.json.")
     args = parser.parse_args(argv)
     source_path = Path(args.input)
     if not source_path.is_file():
@@ -316,9 +335,7 @@ def main(argv: list[str] | None = None) -> int:
         with source_path.open("r", encoding="utf-8") as handle:
             source = json.load(handle)
         set_slug = re.sub(r"[^a-z0-9]+", "_", args.set_selector.lower()).strip("_")
-        metadata_candidates = [Path("data") / f"item_effects_{set_slug}.json"]
-        if set_slug.isdigit():
-            metadata_candidates.append(Path("data") / f"item_effects_set{set_slug}.json")
+        metadata_candidates = item_effects_candidates(args.set_selector)
         trait_item_metadata: dict[str, dict[str, Any]] = {}
         metadata_path = next((path for path in metadata_candidates if path.is_file()), None)
         if metadata_path is not None:
@@ -331,7 +348,7 @@ def main(argv: list[str] | None = None) -> int:
                     if isinstance(item_id, str) and isinstance(metadata, dict)
                 }
         catalog = build_catalog(source, args.set_selector, trait_item_metadata)
-        output_path = Path(args.output) if args.output else Path("data") / f"item_catalog_{args.set_selector.lower().replace(' ', '_')}.json"
+        output_path = Path(args.output) if args.output else default_catalog_output_path(args.set_selector)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         with output_path.open("w", encoding="utf-8", newline="\n") as handle:
             json.dump(catalog, handle, ensure_ascii=False, indent=2, allow_nan=False)

@@ -84,7 +84,12 @@ def test_native_match_finishes_with_unique_ordered_placements_and_one_reward_eac
             result["placement_rewards"], dtype=np.float64
         )
 
-        for _ in range(500):
+        # The native trainer permits up to 10 simultaneous action batches per
+        # preparation round. A 500-step ceiling covers only 50 rounds, which
+        # can end exactly at the start of a late-game round before its combat
+        # is resolved. Keep a finite ceiling, but allow a complete long match.
+        max_transitions = 1000
+        for _ in range(max_transitions):
             if engine.is_done:
                 break
             # Never blindly submit PASS: forced anvil states must be resolved
@@ -103,7 +108,16 @@ def test_native_match_finishes_with_unique_ordered_placements_and_one_reward_eac
                 event.startswith("COMPLETED_ITEM_ANVIL_GRANTED:") for event in events
             )
         else:
-            pytest.fail("Native lobby did not finish within 500 mask-valid transitions")
+            diagnostic_state = engine.get_public_state()
+            diagnostic_players = diagnostic_state.get("players", [])
+            pytest.fail(
+                "Native lobby did not finish within 1000 mask-valid transitions; "
+                f"round={diagnostic_state.get('round', diagnostic_state.get('current_round'))!r}, "
+                f"finished={diagnostic_state.get('finished')!r}, "
+                f"alive={sum(not bool(p.get('eliminated', False)) for p in diagnostic_players)}, "
+                f"placements={[p.get('placement') for p in diagnostic_players]}, "
+                f"last_events={events[-12:] if 'events' in locals() else []}"
+            )
 
         state = engine.get_public_state()
         assert state["finished"] is True

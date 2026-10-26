@@ -45,7 +45,7 @@ class CppTFTLobbyWrapper:
         resolved_item_catalog = (
             Path(item_catalog_path).expanduser().resolve()
             if item_catalog_path
-            else _REPO_ROOT / "data" / "item_catalog_set17.json"
+            else _REPO_ROOT / "data" / "itens.json"
         )
         self._engine = _NativeTFTLobby(
             native_seed,

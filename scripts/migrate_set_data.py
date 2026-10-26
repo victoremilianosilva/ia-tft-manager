@@ -156,6 +156,27 @@ def build_traits(entries: list[dict[str, Any]], units: list[dict[str, Any]]) -> 
     return {"traits": sorted(traits.values(), key=lambda item: item["apiName"])}
 
 
+def load_item_effects_metadata(path: Path) -> dict[str, dict[str, Any]]:
+    """Load generic set-specific item mechanics metadata when the file exists."""
+    if not path.is_file():
+        return {}
+    with path.open("r", encoding="utf-8") as handle:
+        document = json.load(handle)
+    raw_items = document.get("items", {}) if isinstance(document, dict) else {}
+    if not isinstance(raw_items, dict):
+        return {}
+    return {
+        str(item_id): metadata
+        for item_id, metadata in raw_items.items()
+        if isinstance(item_id, str) and isinstance(metadata, dict)
+    }
+
+
+def item_catalog_filename(set_number: int) -> str:
+    """Use the generic active-set catalog filename for Set 18."""
+    return "itens.json" if int(set_number) == 18 else f"item_catalog_set{int(set_number)}.json"
+
+
 def write_json(path: Path, data: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="\n") as handle:
@@ -177,11 +198,13 @@ def main(argv: list[str] | None = None) -> int:
         # Reuse the project's canonical item normalizer so recipes, effects,
         # and schema match the engine's existing ItemCatalog contract.
         from scripts.generate_item_catalog import build_catalog
-        items = build_catalog(source, str(args.set))
         out = args.output_dir
+        effects_filename = "item_effects.json" if args.set == 18 else f"item_effects_set{args.set}.json"
+        item_metadata = load_item_effects_metadata(out / effects_filename)
+        items = build_catalog(source, str(args.set), item_metadata)
         write_json(out / "units_gerado.json", units)
         write_json(out / "traits.json", traits)
-        write_json(out / f"item_catalog_set{args.set}.json", items)
+        write_json(out / item_catalog_filename(args.set), items)
         manifest = {
             "set": args.set,
             "name": set_name,

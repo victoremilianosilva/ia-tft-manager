@@ -6,7 +6,11 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from scripts.generate_item_catalog import build_catalog  # noqa: E402
+from scripts.generate_item_catalog import (  # noqa: E402
+    build_catalog,
+    default_catalog_output_path,
+    item_effects_candidates,
+)
 
 
 def source_fixture():
@@ -220,3 +224,18 @@ def test_applies_set_specific_trait_item_metadata_without_overriding_source():
     assert item["combat_effects"][0]["operation"] == "bonus_damage"
     assert item["name"] == "Test Blade"
     assert item["stats"]["ability_power"] == 20
+
+
+
+def test_set18_uses_generic_catalog_and_effects_filenames():
+    assert str(default_catalog_output_path("18")).replace("\\", "/") == "data/itens.json"
+    assert str(default_catalog_output_path("Set18")).replace("\\", "/") == "data/itens.json"
+    assert [str(path).replace("\\", "/") for path in item_effects_candidates("18")] == ["data/item_effects.json"]
+    assert [str(path).replace("\\", "/") for path in item_effects_candidates("Set18")] == ["data/item_effects.json"]
+
+
+def test_other_sets_keep_set_specific_catalog_and_effects_filenames():
+    assert str(default_catalog_output_path("Set17")).replace("\\", "/") == "data/item_catalog_set17.json"
+    assert [str(path).replace("\\", "/") for path in item_effects_candidates("17")] == [
+        "data/item_effects_17.json", "data/item_effects_set17.json"
+    ]

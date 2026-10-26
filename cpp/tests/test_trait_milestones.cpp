@@ -1,11 +1,13 @@
 #include "lobby/TraitMilestones.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 int main(int argc, char** argv) {
     assert(argc == 2);
@@ -13,17 +15,19 @@ int main(int argc, char** argv) {
     assert(input && "could not open production traits catalog");
 
     const auto milestones = tft::load_trait_milestones(input);
-    const auto shepherd = milestones.find("Shepherd");
-    assert(shepherd != milestones.end());
-    assert((shepherd->second == std::vector<int>{3, 5, 7}));
+    assert(!milestones.empty());
 
-    const auto admin = milestones.find("Arbiter");
-    assert(admin != milestones.end());
-    assert(!admin->second.empty());
-
-    // Localized names are not used as canonical keys; API names remain usable.
-    assert(milestones.find("TFT17_SummonTrait") != milestones.end());
-    assert(milestones.find("Pastor") == milestones.end());
+    // Validate catalog invariants without binding the test to any set's trait names
+    // or milestone thresholds.
+    for (const auto& [trait_id, thresholds] : milestones) {
+        assert(!trait_id.empty());
+        assert(!thresholds.empty());
+        assert(std::all_of(thresholds.begin(), thresholds.end(),
+                           [](int threshold) { return threshold > 0; }));
+        assert(std::is_sorted(thresholds.begin(), thresholds.end()));
+        assert(std::adjacent_find(thresholds.begin(), thresholds.end()) ==
+               thresholds.end());
+    }
 
     std::istringstream malformed("{not valid json");
     bool rejected = false;
@@ -44,6 +48,6 @@ int main(int argc, char** argv) {
     assert(rejected);
 
     std::cout << "Loaded " << milestones.size()
-              << " trait identifiers with real Set 17 milestones\n";
+              << " trait identifiers and validated their milestone sequences\n";
     return 0;
 }
