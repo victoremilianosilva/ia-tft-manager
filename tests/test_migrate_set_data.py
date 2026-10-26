@@ -1,4 +1,12 @@
-from scripts.migrate_set_data import build_traits, build_units, item_catalog_filename, select_set
+import json
+
+from scripts.migrate_set_data import (
+    build_traits,
+    build_units,
+    item_catalog_filename,
+    load_item_effects_metadata,
+    select_set,
+)
 
 
 def source_data():
@@ -69,3 +77,35 @@ def test_build_traits_references_units_by_canonical_api_name():
 def test_set18_migration_uses_generic_item_catalog_filename():
     assert item_catalog_filename(18) == "itens.json"
     assert item_catalog_filename(17) == "item_catalog_set17.json"
+
+
+
+def test_load_item_effects_metadata_reads_set18_trait_overrides(tmp_path):
+    path = tmp_path / "item_effects.json"
+    path.write_text(
+        json.dumps({
+            "schema_version": 1,
+            "set_id": "Set18",
+            "items": {
+                "DA_18_EmblemBlackthorn": {
+                    "grants_trait": "DA_18_Blackthorn",
+                    "granted_trait_active_count": 1,
+                    "combat_effects": [],
+                },
+                "invalid": None,
+            },
+        }),
+        encoding="utf-8",
+    )
+    metadata = load_item_effects_metadata(path)
+    assert metadata == {
+        "DA_18_EmblemBlackthorn": {
+            "grants_trait": "DA_18_Blackthorn",
+            "granted_trait_active_count": 1,
+            "combat_effects": [],
+        }
+    }
+
+
+def test_load_item_effects_metadata_missing_file_returns_empty(tmp_path):
+    assert load_item_effects_metadata(tmp_path / "missing.json") == {}
