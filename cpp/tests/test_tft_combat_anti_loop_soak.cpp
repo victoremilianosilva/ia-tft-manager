@@ -29,6 +29,17 @@ tft::PlayerAction choose_action(
     tft::PlayerAction action{};
     action.values = {6, 0, 0, 0, 0, 0}; // PASS seguro.
 
+    // Se uma bigorna estiver aberta, resolver a escolha primeiro. O head 7
+    // também serve para equipar itens, mas com alvo sentinela 0 e opção válida
+    // a engine interpreta a ação como escolha da bigorna pendente.
+    if (masks.type_mask[7] == 1 &&
+        masks.item_inventory_mask[0] == 1 &&
+        masks.item_target_mask[0] == 1) {
+        action.values = {7, 0, 0, 0, 0, 0};
+        pending_reverse.active = false;
+        return action;
+    }
+
     // Tenta reverter um movimento de tabuleiro executado no passo anterior.
     // A tentativa é intencional: o AntiLoop deve bloqueá-la sem corromper estado.
     if (pending_reverse.active && masks.type_mask[4] == 1) {
