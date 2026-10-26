@@ -41,7 +41,7 @@
 #include "items/CombatItemAdapter.hpp"
 
 #ifndef TFT_DEFAULT_ITEM_CATALOG_PATH
-#define TFT_DEFAULT_ITEM_CATALOG_PATH ""
+#define TFT_DEFAULT_ITEM_CATALOG_PATH "data/item_catalog_set17.json"
 #endif
 
 #ifndef TFT_COMP_DIRECTION_MIN_RELATIVE_ADVANTAGE
@@ -55,7 +55,7 @@
 #endif
 
 #ifndef TFT_DEFAULT_CATALOG_PATH
-#define TFT_DEFAULT_CATALOG_PATH "units_gerado.json"
+#define TFT_DEFAULT_CATALOG_PATH "data/units_gerado.json"
 #endif
 
 namespace tft {
