@@ -36,7 +36,7 @@ def source_fixture():
                 "apiName": "DA_Item_TestBlade",
                 "name": "Test Blade",
                 "composition": ["DA_Component_Sword", "DA_Component_Bow"],
-                "effects": {"AS": 10, "AP": 20, "CritChance": 35, "AD": 0.3},
+                "effects": {"AS": 10, "AP": 20, "CritChance": 35, "AD": 0.3, "ManaRegen": 3},
                 "desc": "A test item",
                 "icon": "test.tex",
             },
@@ -182,8 +182,11 @@ def test_semantic_validation_accepts_active_repository_catalog():
 def test_source_mana_regen_becomes_generic_combat_effect():
     catalog = build_catalog(source_fixture(), "16")
     item = next(item for item in catalog["items"] if item["id"] == "DA_Item_TestBlade")
-    # The fixture has no mana regeneration, so it must not invent one.
-    assert all(effect["operation"] != "mana_regen" for effect in item["combat_effects"])
+    assert {
+        "trigger": "combat_start",
+        "operation": "mana_regen",
+        "value": 3.0,
+    } in item["combat_effects"]
 
 
 def test_semantic_validation_rejects_structurally_valid_but_inert_catalog():
