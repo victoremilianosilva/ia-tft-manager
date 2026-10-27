@@ -15,6 +15,7 @@ UnitPool::UnitPool(const ChampionCatalog& catalog)
     for (const auto& champion : catalog_.all()) {
         const auto id = champion.internal_id;
         const auto count = copies_for_cost(champion.cost);
+        ids_by_cost_[static_cast<std::size_t>(champion.cost - 1)].push_back(id);
 
         // IDs duplicados indicam um problema no catálogo.
         if (!initial_counts_.emplace(id, count).second) {
@@ -87,11 +88,16 @@ bool UnitPool::take(std::int32_t champion_internal_id) {
 std::optional<std::int32_t> UnitPool::draw_by_cost(
     std::int32_t cost, std::mt19937_64& rng
 ) {
+    if (cost < 1 || cost > static_cast<std::int32_t>(ids_by_cost_.size()))
+        return std::nullopt;
+
+    // Itera apenas campeões do custo sorteado, preservando a ordem original
+    // do catálogo e a distribuição uniforme sobre as cópias disponíveis.
     std::vector<std::int32_t> candidates;
-    candidates.reserve(catalog_.size());
-    for (const auto& champion : catalog_.all()) {
-        if (champion.cost == cost && has_available(champion.internal_id))
-            candidates.push_back(champion.internal_id);
+    const auto& cost_ids = ids_by_cost_[static_cast<std::size_t>(cost - 1)];
+    candidates.reserve(cost_ids.size());
+    for (const auto id : cost_ids) {
+        if (has_available(id)) candidates.push_back(id);
     }
     if (candidates.empty()) return std::nullopt;
     std::uniform_int_distribution<std::size_t> choose(0, candidates.size() - 1);
