@@ -2352,6 +2352,17 @@ struct TFTEngine::Impl {
             if (live_player.item_engine) {
                 for (const auto& item_id : live_player.item_engine->inventory())
                     live_context.inventory_item_ids.insert(item_id);
+                // Count a recommended item as feasible when the player already
+                // owns it or currently has both components for its active recipe.
+                if (item_catalog) {
+                    for (const auto& item : item_catalog->items) {
+                        const auto& first = item.recipe_components[0];
+                        const auto& second = item.recipe_components[1];
+                        if (!first.empty() && !second.empty() &&
+                            live_player.item_engine->can_craft(first, second))
+                            live_context.inventory_item_ids.insert(item.id);
+                    }
+                }
                 const auto collect_live_unit = [&](const UnitInstance& unit, int board_slot) {
                     auto& equipped = live_context.equipped_items_by_champion[unit.champion_internal_id];
                     for (const auto& item_id : live_player.item_engine->equipped(unit.uuid))
