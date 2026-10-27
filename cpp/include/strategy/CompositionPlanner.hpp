@@ -598,14 +598,14 @@ public:
                         "OPGG_META_CANDIDATE: " + best_meta_name +
                         " (score=" + std::to_string(best_meta_score) +
                         ", native_score=" + std::to_string(own_score) + ")");
-                }
-            } else {
-                // Record why the native planner remained in control.
-                if (!best_meta_ids.empty()) {
-                    meta_audit_status = "candidate_below_native_margin";
-                } else if (meta_audit_contextual_candidates == 0) {
-                    meta_audit_status = meta_audit_catalog_candidates == 0
-                        ? "no_mappable_candidates" : "no_contextual_candidate";
+                } else {
+                    // Record why the native planner remained in control.
+                    if (!best_meta_ids.empty()) {
+                        meta_audit_status = "candidate_below_native_margin";
+                    } else if (meta_audit_contextual_candidates == 0) {
+                        meta_audit_status = meta_audit_catalog_candidates == 0
+                            ? "no_mappable_candidates" : "no_contextual_candidate";
+                    }
                 }
             }
         } catch (const std::exception& error) {
