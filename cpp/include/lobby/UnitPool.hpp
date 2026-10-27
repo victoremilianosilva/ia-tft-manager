@@ -3,11 +3,13 @@
 
 #include "lobby/ChampionCatalog.hpp"
 
+#include <array>
 #include <cstdint>
 #include <optional>
 #include <random>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace tft {
 
@@ -46,6 +48,10 @@ public:
 
 private:
     const ChampionCatalog& catalog_;
+
+    // IDs agrupados por custo, na mesma ordem do catálogo. O estoque muda
+    // durante a partida, mas a lista de candidatos possíveis por custo não.
+    std::array<std::vector<std::int32_t>, 5> ids_by_cost_;
 
     // Estoque atual por ID interno do campeão.
     std::unordered_map<std::int32_t, std::int32_t> available_;
