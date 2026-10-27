@@ -743,10 +743,11 @@ struct TFTEngine::Impl {
             return;
         }
 
-        // Other stage-end PvE rewards remain ordinary loot: no Pengu/armory
-        // offer and no forced policy decision. The existing stage-2 drop is
-        // one randomly selected component; stage 3-7 grants none in this model.
-        const std::size_t component_count = current_stage == 2 ? 1U : 0U;
+        // Ordinary PvE loot goes directly to the component bag: no Pengu/armory
+        // offer and no forced policy action. Stages 2 and 3 each grant one
+        // component; stage 4+ uses the explicit anvil events above.
+        const std::size_t component_count =
+            (current_stage == 2 || current_stage == 3) ? 1U : 0U;
         if (component_count == 0 || item_catalog->components.empty()) return;
 
         std::vector<std::string> component_pool;
@@ -857,24 +858,8 @@ struct TFTEngine::Impl {
                 if (current.shop_mask[shop_slot] != 1 || !player.shop) continue;
                 const auto* offer = player.shop->get_unit(static_cast<std::int32_t>(shop_slot));
                 if (!offer) continue;
-                int matching_copies = 0;
-                bool matching_copy_has_items = false;
-                for (const auto& unit : player.board) {
-                    if (!unit || unit->champion_internal_id != offer->champion_internal_id ||
-                        unit->star != offer->star) continue;
-                    ++matching_copies;
-                    matching_copy_has_items = matching_copy_has_items ||
-                        !unit->items.empty() || !player.item_engine->equipped(unit->uuid).empty();
-                }
-                for (const auto& unit : player.bench) {
-                    if (!unit || unit->champion_internal_id != offer->champion_internal_id ||
-                        unit->star != offer->star) continue;
-                    ++matching_copies;
-                    matching_copy_has_items = matching_copy_has_items ||
-                        !unit->items.empty() || !player.item_engine->equipped(unit->uuid).empty();
-                }
-                if (matching_copies >= 2 && matching_copy_has_items)
-                    current.shop_mask[shop_slot] = 0;
+                // Keep upgrades legal even when matching copies carry items.
+                // Merge transfers equipment and returns overflow to inventory.
             }
             if (std::none_of(current.shop_mask.begin(), current.shop_mask.end(),
                 [](std::uint8_t value) { return value == 1; })) current.type_mask[0] = 0;
@@ -2362,10 +2347,41 @@ struct TFTEngine::Impl {
                         std::max(1, available_copies[offer->champion_internal_id]);
                 }
             }
+            strategy::CompositionPlanner::LiveUnitContext live_context;
+            const auto& live_player = player_envs[i];
+            if (live_player.item_engine) {
+                for (const auto& item_id : live_player.item_engine->inventory())
+                    live_context.inventory_item_ids.insert(item_id);
+                // Count a recommended item as feasible when the player already
+                // owns it or currently has both components for its active recipe.
+                if (item_catalog) {
+                    for (const auto& item : item_catalog->items) {
+                        const auto& first = item.recipe_components[0];
+                        const auto& second = item.recipe_components[1];
+                        if (!first.empty() && !second.empty() &&
+                            live_player.item_engine->can_craft(first, second))
+                            live_context.inventory_item_ids.insert(item.id);
+                    }
+                }
+                const auto collect_live_unit = [&](const UnitInstance& unit, int board_slot) {
+                    auto& equipped = live_context.equipped_items_by_champion[unit.champion_internal_id];
+                    for (const auto& item_id : live_player.item_engine->equipped(unit.uuid))
+                        equipped.push_back(item_id);
+                    for (const auto& item : unit.items)
+                        if (!item.api_name.empty()) equipped.push_back(item.api_name);
+                    if (board_slot >= 0)
+                        live_context.board_slot_by_champion[unit.champion_internal_id] = board_slot;
+                };
+                for (std::size_t slot = 0; slot < live_player.board.size(); ++slot)
+                    if (live_player.board[slot])
+                        collect_live_unit(*live_player.board[slot], static_cast<int>(slot));
+                for (const auto& unit : live_player.bench)
+                    if (unit) collect_live_unit(*unit, -1);
+            }
             const auto plan = strategy::CompositionPlanner::build(
                 catalog->all(), trait_milestones, info.composition_direction,
                 plan_focus, owned_copies, planning_slots, economy.level,
-                available_copies, currently_offered);
+                available_copies, currently_offered, &live_context);
             info.planned_units = plan.unit_names;
             info.planned_unit_ids = plan.unit_ids;
             info.planned_traits = plan.core_traits;
@@ -3120,11 +3136,18 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             std::size_t removed = 0;
                             for (const auto& [on_board, slot] : matches) {
                                 if (!on_board && slot == free_slot) continue;
+                                auto& consumed = on_board ? this->board[slot] : this->bench[slot];
+                                if (consumed && this->item_engine) {
+                                    (void)this->item_engine->transfer_equipped_on_merge(
+                                        consumed->uuid, bought_unit->uuid);
+                                }
                                 if (on_board) this->board[slot].reset();
                                 else this->bench[slot].reset();
                                 if (++removed == 2) break;
                             }
                             bought_unit->star = star + 1;
+                            if (this->item_engine)
+                                lobby.sync_unit_items_from_engine(player_id, bought_unit->uuid);
                         }
                         if (bought_unit && !bought_upgrade) {
                             this->recent_purchases.push_back(RecentPurchase{
@@ -3417,7 +3440,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             item_definition->critical_strike_damage,
                             item_definition->omnivamp,
                             item_definition->damage_amplification,
-                            item_definition->damage_reduction);
+                            item_definition->damage_reduction,
+                            item_definition->ability_power,
+                            item_definition->magic_resist,
+                            item_definition->mana);
                         item_assignment_reward = reward_model::item_assignment_quality(
                             immediate_strength, target_profile->composition_fit,
                             role_alignment, static_cast<int>(lobby.stage));
