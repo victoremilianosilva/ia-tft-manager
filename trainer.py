@@ -26,6 +26,7 @@ def refresh_opgg_meta_catalog() -> None:
     import sys
     from pathlib import Path
     project_root = Path(__file__).resolve().parent
+    os.environ.setdefault("TFT_OPGG_META_CATALOG", str(project_root / "data" / "opgg_tft_meta.json"))
     collector = project_root / "scripts" / "update_opgg_meta_catalog.py"
     if not collector.is_file():
         print("⚠️ Coletor OP.GG não encontrado; usando o planejador nativo.")
