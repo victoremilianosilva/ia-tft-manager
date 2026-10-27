@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <random>
 #include <stdexcept>
-#include <vector>
 
 namespace tft {
 
