@@ -53,7 +53,7 @@ def validate_catalog(
         raise ValueError("Catálogo OP.GG sem fetched_at ISO-8601 válido.") from exc
     now = now or datetime.now(timezone.utc)
     age_hours = (now - stamp.astimezone(timezone.utc)).total_seconds() / 3600.0
-    if age_hours < -1.0:
+    if age_hours < -6.0:
         raise ValueError("Catálogo OP.GG tem timestamp no futuro.")
     if age_hours > max_age_hours:
         raise ValueError(
