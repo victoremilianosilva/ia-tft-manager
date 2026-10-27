@@ -3105,11 +3105,18 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             std::size_t removed = 0;
                             for (const auto& [on_board, slot] : matches) {
                                 if (!on_board && slot == free_slot) continue;
+                                auto& consumed = on_board ? this->board[slot] : this->bench[slot];
+                                if (consumed && this->item_engine) {
+                                    (void)this->item_engine->transfer_equipped_on_merge(
+                                        consumed->uuid, bought_unit->uuid);
+                                }
                                 if (on_board) this->board[slot].reset();
                                 else this->bench[slot].reset();
                                 if (++removed == 2) break;
                             }
                             bought_unit->star = star + 1;
+                            if (this->item_engine)
+                                lobby.sync_unit_items_from_engine(player_id, bought_unit->uuid);
                         }
                         if (bought_unit && !bought_upgrade) {
                             this->recent_purchases.push_back(RecentPurchase{
