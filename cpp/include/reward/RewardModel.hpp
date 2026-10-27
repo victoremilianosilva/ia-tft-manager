@@ -254,13 +254,19 @@ inline double item_immediate_strength(
     double critical_strike_damage,
     double omnivamp,
     double damage_amplification,
-    double damage_reduction
+    double damage_reduction,
+    double ability_power = 0.0,
+    double magic_resist = 0.0,
+    double mana = 0.0
 ) noexcept {
     const double raw =
         std::max(0.0, attack_damage) / 100.0 +
         std::max(0.0, attack_speed) / 0.5 +
+        std::max(0.0, ability_power) / 100.0 +
         std::max(0.0, max_health) / 1000.0 +
         std::max(0.0, armor) / 100.0 +
+        std::max(0.0, magic_resist) / 100.0 +
+        std::max(0.0, mana) / 100.0 +
         std::max(0.0, critical_strike_chance) / 0.5 +
         std::max(0.0, critical_strike_damage) +
         std::max(0.0, omnivamp) / 0.5 +
