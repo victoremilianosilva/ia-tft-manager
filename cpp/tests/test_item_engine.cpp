@@ -67,6 +67,28 @@ int main() {
             loaded_catalog.items.front().recipe_components[0] == "sword",
             "versioned external item catalog should load without hard-coded recipes");
 
+    std::istringstream inert_catalog_json(R"json({
+        "schema_version": 1,
+        "set_id": "synthetic-inert-test",
+        "components": [
+            {"id": "sword", "name": "Test Sword"},
+            {"id": "bow", "name": "Test Bow"}
+        ],
+        "items": [{
+            "id": "inert_blade", "name": "Inert Blade",
+            "recipe_components": ["sword", "bow"],
+            "stats": {}, "weights": {}, "combat_effects": []
+        }]
+    })json");
+    bool inert_catalog_rejected = false;
+    try {
+        (void)load_item_catalog(inert_catalog_json);
+    } catch (const std::invalid_argument&) {
+        inert_catalog_rejected = true;
+    }
+    require(inert_catalog_rejected,
+            "runtime loader must reject a structurally valid but inert item catalog");
+
     const auto combat_damage = to_combat_item(damage);
     require(combat_damage.api_name == "damage_blade" &&
             std::abs(combat_damage.attack_damage - 10.0f) < 0.001f &&
