@@ -91,19 +91,28 @@ std::optional<std::int32_t> UnitPool::draw_by_cost(
     if (cost < 1 || cost > static_cast<std::int32_t>(ids_by_cost_.size()))
         return std::nullopt;
 
-    // Itera apenas campeões do custo sorteado, preservando a ordem original
-    // do catálogo e a distribuição uniforme sobre as cópias disponíveis.
-    std::vector<std::int32_t> candidates;
+    // Count and select from the same ordered candidate set without a
+    // per-draw heap allocation. The uniform distribution receives the same
+    // range as before, and the second pass preserves candidate ordering.
     const auto& cost_ids = ids_by_cost_[static_cast<std::size_t>(cost - 1)];
-    candidates.reserve(cost_ids.size());
+    std::size_t candidate_count = 0;
     for (const auto id : cost_ids) {
-        if (has_available(id)) candidates.push_back(id);
+        if (has_available(id)) ++candidate_count;
     }
-    if (candidates.empty()) return std::nullopt;
-    std::uniform_int_distribution<std::size_t> choose(0, candidates.size() - 1);
-    const auto id = candidates[choose(rng)];
-    if (!take(id)) return std::nullopt;
-    return id;
+    if (candidate_count == 0) return std::nullopt;
+
+    std::uniform_int_distribution<std::size_t> choose(0, candidate_count - 1);
+    const auto selected_index = choose(rng);
+    std::size_t current_index = 0;
+    for (const auto id : cost_ids) {
+        if (!has_available(id)) continue;
+        if (current_index == selected_index) {
+            if (!take(id)) return std::nullopt;
+            return id;
+        }
+        ++current_index;
+    }
+    return std::nullopt;
 }
 
 bool UnitPool::give_back(std::int32_t champion_internal_id) {
