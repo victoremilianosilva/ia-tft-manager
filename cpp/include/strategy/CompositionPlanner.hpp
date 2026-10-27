@@ -452,6 +452,37 @@ public:
                             if (found != by_key.end()) stage_ids.insert(found->second->internal_id);
                         }
                     }
+                    int owned_final_count = 0;
+                    int owned_core_count = 0;
+                    int offered_final_count = 0;
+                    for (const auto id : final_ids) {
+                        const auto owned = owned_copies.find(id);
+                        if (owned != owned_copies.end() && owned->second > 0) {
+                            ++owned_final_count;
+                            if (core_ids.count(id)) ++owned_core_count;
+                        }
+                        if (currently_offered.count(id)) ++offered_final_count;
+                    }
+                    int stage_owned_count = 0;
+                    double stage_snapshot_bonus = 0.0;
+                    for (const auto id : stage_ids) {
+                        const auto owned = owned_copies.find(id);
+                        if (owned != owned_copies.end() && owned->second > 0) {
+                            ++stage_owned_count;
+                            stage_snapshot_bonus += 2.0;
+                        } else if (currently_offered.count(id)) {
+                            stage_snapshot_bonus += 1.25;
+                        }
+                    }
+                    const bool direction_aligned = direction.empty() ||
+                        meta_trait_counts.count(direction) != 0;
+                    const bool has_contextual_evidence =
+                        owned_final_count >= 2 ||
+                        (owned_core_count >= 1 &&
+                         (owned_final_count >= 1 || offered_final_count >= 1)) ||
+                        stage_owned_count >= 2;
+                    if (!direction_aligned || !has_contextual_evidence) continue;
+
                     double stats_prior = 0.0;
                     if (composition.contains("statistics") && composition["statistics"].is_object()) {
                         const auto& stats = composition["statistics"];
@@ -462,7 +493,7 @@ public:
                         if (selected.is_object() && selected.value("totalCount", 0) >= 1000)
                             stats_prior = std::clamp(selected.value("top4Rate", 0.0), 0.0, 1.0) * 0.5;
                     }
-                    const double score = lineup_score(final_ids, core_ids, stage_ids, stats_prior);
+                    const double score = lineup_score(final_ids, core_ids, stage_ids, stats_prior) + stage_snapshot_bonus;
                     if (score > best_meta_score) {
                         best_meta_score = score;
                         best_meta_ids = std::move(final_ids);
