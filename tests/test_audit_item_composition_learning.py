@@ -10,6 +10,8 @@ def test_audit_aggregates_all_players_items_and_composition_evidence():
             "selected_action": [0, 0, 0, 0, 0, 0],
             "board_after": [{"occupied": True, "star": 2, "items": [{"api_name": "TFT_Item_Deathblade"}]}],
             "bench_after": [],
+            "item_inventory_after": ["TFT_Item_GargoyleStoneplate"],
+            "item_components_after": ["TFT_Item_Component_Sword"],
             "strategy_after": {
                 "composition_direction": "Invoker",
                 "core_units": ["Carry"],
@@ -28,6 +30,8 @@ def test_audit_aggregates_all_players_items_and_composition_evidence():
     assert report["action_counts"]["BUY"] == 8
     assert report["item_event_counts"]["COMPONENT_LOOT_GRANTED"] == 8
     assert report["players"]["0"]["board_item_instances"] == 1
+    assert report["players"]["0"]["bag_item_instances"] == 1
+    assert report["players"]["0"]["component_instances"] == 1
     assert report["players"]["0"]["directions"] == {"Invoker": 1}
     assert report["players"]["0"]["opgg_statuses"] == {"selected": 1}
 
