@@ -59,7 +59,7 @@ static bool configure_catalog(const std::filesystem::path& path, bool incompatib
         if (i) out << ",";
         out << "{\"key\":\"" << names[i]
             << "\",\"isCore\":true,\"priority\":" << (i + 1)
-            << ",\"items\":[\"DA_Deathblade\"],\"cell\":{\"x\":"
+            << ",\"traits\":[\"Invoker\"],\"items\":[\"DA_Deathblade\"],\"cell\":{\"x\":"
             << (i % 7) << ",\"y\":" << (i / 7) << "}}";
     }
     out << "],\"early_game\":{\"units\":[{\"key\":\"DA_18_Tank\"}]},"
