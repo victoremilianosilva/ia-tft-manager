@@ -471,9 +471,17 @@ class Trainer:
     # ================================================================
     # AUDITAR AÇÃO ESCOLHIDA CONTRA AS MÁSCARAS
     # ================================================================
-    def _audit_selected_action_masks(self, actions, masks):
-        """Conta ações incompatíveis com as máscaras usadas pela policy."""
-        action_np = actions.detach().cpu().numpy()
+    def _audit_selected_action_masks(self, actions, masks, action_array=None):
+        """Conta ações incompatíveis com as máscaras usadas pela policy.
+
+        action_array permite reutilizar a conversão CPU/NumPy já feita
+        pelo loop de rollout, mantendo a chamada antiga compatível.
+        """
+        action_np = (
+            action_array
+            if action_array is not None
+            else actions.detach().cpu().numpy()
+        )
         mask_np = {
             key: value.detach().cpu().numpy().astype(np.bool_, copy=False)
             for key, value in masks.items()
@@ -736,7 +744,8 @@ class Trainer:
 
     def _actions_to_lobby_format(
         self,
-        actions
+        actions,
+        action_array=None,
     ):
         """
         Converte ações da policy:
@@ -761,7 +770,11 @@ class Trainer:
         Formato exigido pelo TFTGymEnv.
         """
 
-        actions = actions.detach().cpu().numpy()
+        actions = (
+            action_array
+            if action_array is not None
+            else actions.detach().cpu().numpy()
+        )
 
         expected_shape = (
             self.num_agents,
@@ -1213,28 +1226,22 @@ class Trainer:
                     .numpy()
                 )
 
-                action_audit = self._audit_selected_action_masks(actions, masks)
+                action_audit = self._audit_selected_action_masks(
+                    actions, masks, action_array=action_np
+                )
                 for key, value in action_audit.items():
                     mask_audit_counts[key] += value
 
-                for agent_idx in range(
-                    self.num_agents
-                ):
-
-                    action_type = int(
-                        action_np[
-                            agent_idx,
-                            0
-                        ]
-                    )
-
-                    if (
-                        0 <= action_type < len(ActionType)
-                    ):
-
-                        action_type_counts[
-                            action_type
-                        ] += 1
+                # Vectorized equivalent of the per-agent histogram loop.
+                # Ignore out-of-range action IDs exactly as the old loop did.
+                action_types = action_np[:, 0].astype(np.int64, copy=False)
+                valid_action_types = action_types[
+                    (action_types >= 0) & (action_types < len(ActionType))
+                ]
+                action_type_counts += np.bincount(
+                    valid_action_types,
+                    minlength=len(ActionType),
+                ).astype(np.int32, copy=False)
 
                 # ====================================================
                 # 🎮 CONVERTER PARA LOBBIES
@@ -1242,7 +1249,7 @@ class Trainer:
 
                 lobby_actions = (
                     self._actions_to_lobby_format(
-                        actions
+                        actions, action_array=action_np
                     )
                 )
 
