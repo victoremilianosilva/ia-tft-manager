@@ -339,8 +339,14 @@ public:
             }
         }
         // Optional OP.GG catalog: use it as a candidate, not as a hard constraint.
-        // The final lineup remains the target; early/mid snapshots score how well
-        // the candidate matches the player's actual transition path.
+        // Emit audit notes through planned_acquisition_notes so existing Viewer logs
+        // can explain both selection and fallback.
+        std::string meta_audit_status = "not_evaluated";
+        std::string meta_audit_best_name;
+        double meta_audit_best_score = -std::numeric_limits<double>::infinity();
+        double meta_audit_native_score = 0.0;
+        std::size_t meta_audit_catalog_candidates = 0;
+        std::size_t meta_audit_contextual_candidates = 0;
         try {
             static const nlohmann::json meta_catalog = []() {
                 const char* configured = std::getenv("TFT_OPGG_META_CATALOG");
@@ -356,6 +362,9 @@ public:
                     return nlohmann::json::object();
                 return value;
             }();
+            meta_audit_status = meta_catalog.contains("compositions") &&
+                meta_catalog["compositions"].is_array()
+                ? "loaded" : "missing_or_invalid";
 
             if (meta_catalog.contains("compositions") &&
                 meta_catalog["compositions"].is_array() && !plan.unit_ids.empty()) {
@@ -414,6 +423,7 @@ public:
                 std::unordered_set<std::int32_t> no_core;
                 std::unordered_set<std::int32_t> no_stage_units;
                 const double own_score = lineup_score(plan.unit_ids, no_core, no_stage_units, 0.0);
+                meta_audit_native_score = own_score;
                 double best_meta_score = -std::numeric_limits<double>::infinity();
                 std::vector<std::int32_t> best_meta_ids;
                 std::vector<std::int32_t> best_meta_stage_ids;
@@ -443,6 +453,7 @@ public:
                         for (const auto& trait : found->second->traits) ++meta_trait_counts[trait];
                     }
                     if (final_ids.empty()) continue;
+                    ++meta_audit_catalog_candidates;
 
                     const char* snapshot_key = current_level <= 5 ? "early_game"
                         : (current_level <= 7 ? "mid_game" : "");
@@ -494,6 +505,7 @@ public:
                          (owned_final_count >= 1 || offered_final_count >= 1)) ||
                         stage_owned_count >= 2;
                     if (!direction_aligned || !has_contextual_evidence) continue;
+                    ++meta_audit_contextual_candidates;
 
                     double stats_prior = 0.0;
                     if (composition.contains("statistics") && composition["statistics"].is_object()) {
@@ -508,6 +520,8 @@ public:
                     const double score = lineup_score(final_ids, core_ids, stage_ids, stats_prior) + stage_snapshot_bonus;
                     if (score > best_meta_score) {
                         best_meta_score = score;
+                        meta_audit_best_score = score;
+                        meta_audit_best_name = composition.value("name", std::string{"OP.GG meta"});
                         best_meta_ids = std::move(final_ids);
                         best_meta_stage_ids = std::move(stage_order);
                         best_meta_core_ids = std::move(core_order);
@@ -584,10 +598,27 @@ public:
                         " (score=" + std::to_string(best_meta_score) +
                         ", native_score=" + std::to_string(own_score) + ")");
                 }
+            } else {
+                // Record why the native planner remained in control.
+                if (!best_meta_ids.empty()) {
+                    meta_audit_status = "candidate_below_native_margin";
+                } else if (meta_audit_contextual_candidates == 0) {
+                    meta_audit_status = meta_audit_catalog_candidates == 0
+                        ? "no_mappable_candidates" : "no_contextual_candidate";
+                }
             }
-        } catch (const std::exception&) {
+        } catch (const std::exception& error) {
             // A malformed/missing external catalog must never stop a game or training.
+            meta_audit_status = std::string("parse_or_evaluation_error:") + error.what();
         }
+        plan.acquisition_notes.push_back(
+            "OPGG_META_AUDIT: status=" + meta_audit_status +
+            "; catalog_candidates=" + std::to_string(meta_audit_catalog_candidates) +
+            "; context_candidates=" + std::to_string(meta_audit_contextual_candidates) +
+            "; best=" + (meta_audit_best_name.empty() ? std::string("none") : meta_audit_best_name) +
+            "; best_score=" + (std::isfinite(meta_audit_best_score) ? std::to_string(meta_audit_best_score) : std::string("n/a")) +
+            "; native_score=" + std::to_string(meta_audit_native_score) +
+            "; rule=meta must beat native score by >=1.0");
         return plan;
     }
 };
