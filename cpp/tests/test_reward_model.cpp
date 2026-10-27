@@ -189,10 +189,21 @@ int main() {
         10.0, 0.15, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
     const double defense_item_strength = item_immediate_strength(
         0.0, 0.0, 150.0, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    const double ability_item_strength = item_immediate_strength(
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 30.0, 0.0, 0.0);
+    const double resist_item_strength = item_immediate_strength(
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 30.0, 0.0);
+    const double mana_item_strength = item_immediate_strength(
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 30.0);
     require_close(weak_item_strength, 0.0, "no numeric combat effects have zero immediate strength");
     if (!(damage_item_strength > weak_item_strength &&
           defense_item_strength > weak_item_strength &&
-          damage_item_strength <= 1.0 && defense_item_strength <= 1.0)) {
+          ability_item_strength > weak_item_strength &&
+          resist_item_strength > weak_item_strength &&
+          mana_item_strength > weak_item_strength &&
+          damage_item_strength <= 1.0 && defense_item_strength <= 1.0 &&
+          ability_item_strength <= 1.0 && resist_item_strength <= 1.0 &&
+          mana_item_strength <= 1.0)) {
         throw std::runtime_error("item immediate strength must respond to supported combat stats and stay normalized");
     }
     const double early_comp_fit = item_assignment_quality(0.2, 0.9, 0.9, 1);
