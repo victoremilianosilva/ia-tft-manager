@@ -539,6 +539,12 @@ public:
                     if (current_level <= 7) {
                         preferred_ids.insert(preferred_ids.end(),
                             best_meta_stage_ids.begin(), best_meta_stage_ids.end());
+                        for (const auto id : best_meta_ids) {
+                            const auto def = std::find_if(pool.begin(), pool.end(),
+                                [id](const ChampionDefinition& item) { return item.internal_id == id; });
+                            if (def != pool.end() && role_of(*def) == 1)
+                                preferred_ids.push_back(id);
+                        }
                         preferred_ids.insert(preferred_ids.end(),
                             best_meta_core_ids.begin(), best_meta_core_ids.end());
                     }
