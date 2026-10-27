@@ -1335,7 +1335,7 @@ struct TFTEngine::Impl {
             // Precompute owned copies once per player. Candidate features below
             // query this table for every bench/shop slot; repeated board+bench
             // scans were doing the same work for each candidate.
-            std::unordered_map<std::string, int> owned_copies;
+            std::unordered_map<std::int32_t, int> owned_copies;
             owned_copies.reserve(kBoardSlots + kBenchSlots);
             const auto add_owned_copies = [&owned_copies](const UnitInstance& unit) {
                 const int copies = unit.star == 1 ? 1 : (unit.star == 2 ? 3 : 9);
