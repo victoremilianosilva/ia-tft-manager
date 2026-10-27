@@ -4,3 +4,4 @@ torch
 tensorboard
 pybind11
 PySide6>=6.7,<7
+mcp>=1.9,<2
