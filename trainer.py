@@ -714,79 +714,28 @@ class Trainer:
             "type_mask"
         ]
 
-        for agent_idx in range(
-            self.num_agents
-        ):
+        invalid_agents = ~type_mask.any(dim=1)
 
-            # Se não existe nenhuma ação válida,
-            # consideramos o jogador eliminado.
+        if bool(invalid_agents.any()):
+            # Apply the same PASS fallback to all invalid agents in one
+            # tensor operation instead of synchronizing/checking each row.
+            type_mask[invalid_agents] = False
+            type_mask[invalid_agents, int(ActionType.PASS)] = True
 
-            if not torch.any(
-                type_mask[agent_idx]
-            ):
+            flat_masks["shop_mask"][invalid_agents] = False
+            flat_masks["shop_mask"][invalid_agents, 0] = True
 
-                # ----------------------------------------------------
-                # Todas as ações inválidas
-                # ----------------------------------------------------
+            flat_masks["bench_source_mask"][invalid_agents] = False
+            flat_masks["bench_source_mask"][invalid_agents, 0] = True
 
-                type_mask[
-                    agent_idx
-                ].fill_(False)
+            flat_masks["board_target_mask"][invalid_agents] = False
+            flat_masks["board_target_mask"][invalid_agents, 0] = True
 
-                # ----------------------------------------------------
-                # PASS = 6
-                # ----------------------------------------------------
+            flat_masks["board_source_mask"][invalid_agents] = False
+            flat_masks["board_source_mask"][invalid_agents, 0] = True
 
-                type_mask[
-                    agent_idx,
-                    int(ActionType.PASS)
-                ] = True
-
-                # ----------------------------------------------------
-                # As outras cabeças não importam para PASS,
-                # mas precisamos fornecer uma categoria válida
-                # para evitar Categorical com logits inválidos.
-                # ----------------------------------------------------
-
-                flat_masks[
-                    "shop_mask"
-                ][agent_idx].fill_(False)
-
-                flat_masks[
-                    "shop_mask"
-                ][agent_idx, 0] = True
-
-                flat_masks[
-                    "bench_source_mask"
-                ][agent_idx].fill_(False)
-
-                flat_masks[
-                    "bench_source_mask"
-                ][agent_idx, 0] = True
-
-                flat_masks[
-                    "board_target_mask"
-                ][agent_idx].fill_(False)
-
-                flat_masks[
-                    "board_target_mask"
-                ][agent_idx, 0] = True
-
-                flat_masks[
-                    "board_source_mask"
-                ][agent_idx].fill_(False)
-
-                flat_masks[
-                    "board_source_mask"
-                ][agent_idx, 0] = True
-
-                flat_masks[
-                    "board_move_target_masks"
-                ][agent_idx].fill_(False)
-
-                flat_masks[
-                    "board_move_target_masks"
-                ][agent_idx, 0, 0] = True
+            flat_masks["board_move_target_masks"][invalid_agents] = False
+            flat_masks["board_move_target_masks"][invalid_agents, 0, 0] = True
 
         return flat_masks
 
