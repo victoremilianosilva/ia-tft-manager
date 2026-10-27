@@ -283,9 +283,12 @@ async def main() -> int:
         raw = await fetch_meta(args.url)
         normalized = normalize_payload(raw)
         units_path = ROOT / "data" / "units_gerado.json"
+        items_path = ROOT / "data" / "itens.json"
         units_doc = json.loads(units_path.read_text(encoding="utf-8"))
+        items_doc = json.loads(items_path.read_text(encoding="utf-8"))
         compatibility = validate_catalog(
-            normalized, units_doc, max_age_hours=168.0, min_coverage=0.90
+            normalized, units_doc, items_doc=items_doc,
+            max_age_hours=168.0, min_coverage=0.90
         )
         print(
             "Validação OP.GG: "
