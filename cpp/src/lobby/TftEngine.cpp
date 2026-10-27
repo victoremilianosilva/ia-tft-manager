@@ -2370,7 +2370,7 @@ struct TFTEngine::Impl {
             const auto plan = strategy::CompositionPlanner::build(
                 catalog->all(), trait_milestones, info.composition_direction,
                 plan_focus, owned_copies, planning_slots, economy.level,
-                available_copies, currently_offered, live_context);
+                available_copies, currently_offered, &live_context);
             info.planned_units = plan.unit_names;
             info.planned_unit_ids = plan.unit_ids;
             info.planned_traits = plan.core_traits;
