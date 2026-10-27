@@ -89,6 +89,22 @@ int main() {
     require(inert_catalog_rejected,
             "runtime loader must reject a structurally valid but inert item catalog");
 
+    std::istringstream mismatched_set_json(R"json({
+        "schema_version": 1,
+        "set_id": "Set17",
+        "source_set_number": 18,
+        "components": [],
+        "items": []
+    })json");
+    bool mismatched_set_rejected = false;
+    try {
+        (void)load_item_catalog(mismatched_set_json);
+    } catch (const std::invalid_argument&) {
+        mismatched_set_rejected = true;
+    }
+    require(mismatched_set_rejected,
+            "runtime loader must reject set_id/source_set_number mismatches");
+
     const auto combat_damage = to_combat_item(damage);
     require(combat_damage.api_name == "damage_blade" &&
             std::abs(combat_damage.attack_damage - 10.0f) < 0.001f &&
