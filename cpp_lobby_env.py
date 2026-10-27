@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import SimpleNamespace
+import os
 import sys
 
 import numpy as np
@@ -164,7 +165,24 @@ class CppTFTLobbyWrapper:
         return observations, rewards, bool(result.get("lobby_done", False)), info
 
     def get_action_masks(self):
-        return self._engine.get_action_masks()
+        masks = self._engine.get_action_masks()
+        if os.environ.get("TFT_ABLATE_ITEM_ACTIONS") != "1":
+            return masks
+
+        # Evaluation-only ablation: suppress item equip/transfer and craft actions.
+        # Keep type 7 when it is the sole legal type because that state represents
+        # a mandatory anvil choice, not optional item management.
+        result = dict(masks)
+        type_mask = np.asarray(result["type_mask"], dtype=np.bool_).copy()
+        legal_types = np.flatnonzero(type_mask)
+        mandatory_anvil_choice = len(legal_types) == 1 and int(legal_types[0]) == 7
+        if not mandatory_anvil_choice:
+            type_mask[7] = False
+            type_mask[8] = False
+        if not bool(type_mask.any()):
+            type_mask[6] = True
+        result["type_mask"] = type_mask
+        return result
 
     def get_strategy_snapshots(self):
         """Return complete native strategy/composition diagnostics for the viewer."""
