@@ -193,3 +193,22 @@ def test_boolean_masks_are_accepted_without_changing_values(trainer):
         # The dead-agent PASS fallback is intentionally applied only if the
         # action type mask is empty; these fixtures all have valid action types.
         assert np.array_equal(masks[key][player_idx].numpy(), raw_mask)
+
+
+def test_reused_action_array_matches_tensor_conversion_path(trainer):
+    actions = torch.tensor(
+        [[6, 0, 0, 0, 0, 0] for _ in range(Trainer.PLAYERS_PER_LOBBY)],
+        dtype=torch.long,
+    )
+    action_array = actions.numpy().copy()
+
+    assert trainer._actions_to_lobby_format(actions) == trainer._actions_to_lobby_format(
+        actions, action_array=action_array
+    )
+
+    masks = trainer._flatten_masks(create_valid_masks())
+    assert trainer._audit_selected_action_masks(
+        actions, masks
+    ) == trainer._audit_selected_action_masks(
+        actions, masks, action_array=action_array
+    )
