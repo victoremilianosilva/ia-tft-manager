@@ -40,6 +40,18 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
     if (catalog.set_id.empty()) {
         throw std::invalid_argument("Item catalog set_id cannot be empty");
     }
+    if (root.contains("source_set_number")) {
+        std::string source_number;
+        if (root["source_set_number"].is_number_integer())
+            source_number = std::to_string(root["source_set_number"].get<int>());
+        else if (root["source_set_number"].is_string())
+            source_number = root["source_set_number"].get<std::string>();
+        if (!source_number.empty() && catalog.set_id.rfind("Set", 0) == 0 &&
+            catalog.set_id != "Set" + source_number) {
+            throw std::invalid_argument(
+                "Item catalog set_id does not match source_set_number");
+        }
+    }
 
     std::set<std::string> component_ids;
     for (const auto& component : root["components"]) {
@@ -143,6 +155,8 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
 
     std::set<std::string> item_ids;
     std::set<std::string> recipes;
+    std::size_t ordinary_item_count = 0;
+    std::size_t effective_item_count = 0;
     const auto number = [](const Json& object, const char* key) {
         if (!object.contains(key)) return 0.0;
         if (!object[key].is_number()) {
@@ -160,8 +174,9 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             !entry["id"].is_string() || !entry.contains("name") ||
             !entry["name"].is_string() || !entry.contains("recipe_components") ||
             !entry["recipe_components"].is_array() ||
-            entry["recipe_components"].size() != 2) {
-            throw std::invalid_argument("Each finished item requires id, name and two recipe_components");
+            (entry["recipe_components"].size() != 2 &&
+             entry["recipe_components"].size() != 0)) {
+            throw std::invalid_argument("Each item requires id, name and either zero or two recipe_components");
         }
 
         ItemDefinition item;
@@ -172,7 +187,17 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             throw std::invalid_argument("Empty or duplicate finished item id/name");
         }
 
-        for (std::size_t i = 0; i < 2; ++i) {
+        if (entry.contains("grants_trait")) {
+            if (!entry["grants_trait"].is_string()) {
+                throw std::invalid_argument("grants_trait must be a string");
+            }
+            item.grants_trait = entry["grants_trait"].get<std::string>();
+        }
+        if (entry["recipe_components"].empty() && item.grants_trait.empty()) {
+            throw std::invalid_argument(
+                "An item without a recipe must grant a trait or be explicitly modeled");
+        }
+        for (std::size_t i = 0; i < entry["recipe_components"].size(); ++i) {
             if (!entry["recipe_components"][i].is_string()) {
                 throw std::invalid_argument("Recipe component IDs must be strings");
             }
@@ -183,11 +208,13 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             }
         }
 
-        const auto a = item.recipe_components[0];
-        const auto b = item.recipe_components[1];
-        const auto recipe_key = a < b ? a + "\x1f" + b : b + "\x1f" + a;
-        if (!recipes.insert(recipe_key).second) {
-            throw std::invalid_argument("Duplicate item recipe in catalog");
+        if (entry["recipe_components"].size() == 2) {
+            const auto a = item.recipe_components[0];
+            const auto b = item.recipe_components[1];
+            const auto recipe_key = a < b ? a + "\x1f" + b : b + "\x1f" + a;
+            if (!recipes.insert(recipe_key).second) {
+                throw std::invalid_argument("Duplicate item recipe in catalog");
+            }
         }
 
         const Json empty = Json::object();
@@ -240,7 +267,28 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 item.deferred_stats.push_back(stat.get<std::string>());
             }
         }
+        if (item.grants_trait.empty()) {
+            ++ordinary_item_count;
+            const bool has_numeric_effect =
+                item.attack_damage != 0.0 || item.attack_speed != 0.0 ||
+                item.ability_power != 0.0 || item.critical_strike_chance != 0.0 ||
+                item.critical_strike_damage != 0.0 || item.max_health != 0.0 ||
+                item.armor != 0.0 || item.magic_resist != 0.0 || item.mana != 0.0 ||
+                item.omnivamp != 0.0 || item.damage_amplification != 0.0 ||
+                item.damage_reduction != 0.0;
+            if (has_numeric_effect || !item.combat_effects.empty())
+                ++effective_item_count;
+        }
         catalog.items.push_back(std::move(item));
+    }
+
+    // A valid JSON shape is not enough: reject catalogs where ordinary finished
+    // items are almost all inert. Trait emblems are measured separately because
+    // their value is the granted trait rather than a numeric combat stat.
+    if (ordinary_item_count > 0 &&
+        effective_item_count * 2 < ordinary_item_count) {
+        throw std::invalid_argument(
+            "Item catalog has too few ordinary items with applied combat effects");
     }
 
     // Reuse the engine's validation for duplicate IDs/recipes as a final guard.
