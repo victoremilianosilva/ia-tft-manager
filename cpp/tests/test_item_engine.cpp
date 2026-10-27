@@ -80,6 +80,14 @@ int main() {
             emblem->recipe_components[0].empty() &&
             emblem->grants_trait == "TestTrait",
             "non-craftable trait item should load without a recipe");
+    ItemEngine loaded_engine(loaded_catalog.items, {"sword", "bow"});
+    require(loaded_engine.add_completed_item("catalog_emblem"),
+            "non-craftable emblem should be a valid inventory item");
+    UnitProfile emblem_target{"emblem-target", 1, 2, false, true,
+                              30.0, 0.8, 20.0, 900.0, 30.0, 30.0, 0.8};
+    require(loaded_engine.item_fit("catalog_emblem", emblem_target) > 0.0,
+            "trait emblem should have strategic value despite zero numeric stats");
+
     std::istringstream inert_catalog_json(R"json({
         "schema_version": 1,
         "set_id": "synthetic-inert-test",
