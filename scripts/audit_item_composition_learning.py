@@ -52,7 +52,15 @@ def audit_records(records: list[dict[str, Any]], expected_players: int = 8) -> d
                 "planned_unit_observations": 0,
                 "board_item_instances": 0,
                 "bench_item_instances": 0,
+                "bag_item_instances": 0,
+                "component_instances": 0,
+                "item_inventory_observations": 0,
+                "component_observations": 0,
+                "item_inventory_peak": 0,
+                "component_inventory_peak": 0,
                 "distinct_item_ids": set(),
+                "bag_item_ids": set(),
+                "component_ids": set(),
                 "item_evidence_rows": 0,
                 "board_two_star_peak": 0,
                 "buy_actions": 0,
@@ -119,6 +127,20 @@ def audit_records(records: list[dict[str, Any]], expected_players: int = 8) -> d
             observed_items += len(items)
             bucket["bench_item_instances"] += len(items)
             bucket["distinct_item_ids"].update(items)
+        inventory_after = row.get("item_inventory_after")
+        components_after = row.get("item_components_after")
+        if isinstance(inventory_after, list):
+            bucket["item_inventory_observations"] += 1
+            bucket["bag_item_instances"] += len(inventory_after)
+            bucket["item_inventory_peak"] = max(bucket["item_inventory_peak"], len(inventory_after))
+            bucket["bag_item_ids"].update(str(item) for item in inventory_after if isinstance(item, str))
+            all_item_evidence = True
+        if isinstance(components_after, list):
+            bucket["component_observations"] += 1
+            bucket["component_instances"] += len(components_after)
+            bucket["component_inventory_peak"] = max(bucket["component_inventory_peak"], len(components_after))
+            bucket["component_ids"].update(str(item) for item in components_after if isinstance(item, str))
+            all_item_evidence = True
         if observed_items or any("items" in unit or "equipped_items" in unit or "item_ids" in unit
                                  for unit in board + bench):
             bucket["item_evidence_rows"] += 1
@@ -149,9 +171,11 @@ def audit_records(records: list[dict[str, Any]], expected_players: int = 8) -> d
     for player_id, bucket in sorted(per_player.items()):
         summaries[str(player_id)] = {
             **{key: value for key, value in bucket.items()
-               if key not in ("directions", "distinct_item_ids", "opgg_statuses")},
+               if key not in ("directions", "distinct_item_ids", "bag_item_ids", "component_ids", "opgg_statuses")},
             "directions": dict(bucket["directions"]),
             "distinct_item_ids": sorted(bucket["distinct_item_ids"]),
+            "bag_item_ids": sorted(bucket["bag_item_ids"]),
+            "component_ids": sorted(bucket["component_ids"]),
             "opgg_statuses": dict(bucket["opgg_statuses"]),
         }
     return {
