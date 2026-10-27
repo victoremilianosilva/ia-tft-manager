@@ -303,7 +303,14 @@ def test_applies_set_specific_trait_item_metadata_without_overriding_source():
     catalog = build_catalog(source_fixture(), "16", metadata)
     item = next(item for item in catalog["items"] if item["id"] == "DA_Item_TestBlade")
     assert item["grants_trait"] == "TFT17_TestTrait"
-    assert item["combat_effects"][0]["operation"] == "bonus_damage"
+    assert any(
+        effect["operation"] == "bonus_damage" and effect["damage_type"] == "MAGIC"
+        for effect in item["combat_effects"]
+    )
+    assert any(
+        effect["operation"] == "add_stat" and effect["stat"] == "attack_damage"
+        for effect in item["combat_effects"]
+    )
     assert item["name"] == "Test Blade"
     assert item["stats"]["ability_power"] == 20
 
