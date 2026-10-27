@@ -19,11 +19,23 @@ def load_reports(paths: list[Path]) -> list[dict]:
         data = json.loads(path.read_text(encoding="utf-8"))
         if data.get("benchmark") != "native_ppo_inference_loop":
             raise ValueError(f"{path}: tipo de benchmark inesperado")
+        if data.get("benchmark_version") is None:
+            raise ValueError(
+                f"{path}: relatório sem benchmark_version; gere novamente com "
+                "scripts/benchmark_runtime.py atualizado."
+            )
         reports.append(data)
     return reports
 
 
 def compatible(reports: list[dict]) -> dict:
+    versions = {report.get("benchmark_version") for report in reports}
+    if len(versions) != 1:
+        raise ValueError(
+            "Versões do benchmark incompatíveis: "
+            + json.dumps([report.get("benchmark_version") for report in reports])
+            + ". Gere novamente baseline e candidate com o mesmo scripts/benchmark_runtime.py."
+        )
     keys = ("num_envs", "players_per_lobby", "warmup_iterations",
             "measured_iterations", "seed", "torch_threads", "device", "engine_backend")
     first = reports[0]["configuration"]
@@ -60,6 +72,7 @@ def main() -> int:
     result = {
         "schema_version": 1,
         "benchmark": "native_ppo_inference_loop_comparison",
+        "benchmark_version": base[0]["benchmark_version"],
         "configuration": config,
         "baseline_revisions": [r.get("revision") for r in base],
         "candidate_revisions": [r.get("revision") for r in cand],
