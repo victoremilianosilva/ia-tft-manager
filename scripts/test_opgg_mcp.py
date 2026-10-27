@@ -62,9 +62,12 @@ def required_arguments(schema: dict[str, Any]) -> list[str]:
 def print_nested_exception(exc: BaseException, indent: int = 0) -> None:
     """Print leaf causes from ExceptionGroup without hiding their tracebacks."""
     prefix = " " * indent
-    if isinstance(exc, BaseExceptionGroup):
+    # Avoid referring directly to BaseExceptionGroup so this remains importable
+    # on Python versions older than 3.11.
+    nested_exceptions = getattr(exc, "exceptions", None)
+    if nested_exceptions is not None:
         print(f"{prefix}{type(exc).__name__}: {exc}", file=sys.stderr)
-        for nested in exc.exceptions:
+        for nested in nested_exceptions:
             print_nested_exception(nested, indent + 2)
         return
     print(f"{prefix}{type(exc).__name__}: {exc}", file=sys.stderr)
