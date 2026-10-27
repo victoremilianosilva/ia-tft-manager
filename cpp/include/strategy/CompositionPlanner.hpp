@@ -161,17 +161,11 @@ public:
                 std::find(champion.traits.begin(), champion.traits.end(), trait)
                     != champion.traits.end();
         };
-        const auto count_role = [&](int role) {
-            return static_cast<int>(std::count_if(
-                plan.unit_ids.begin(), plan.unit_ids.end(),
-                [&](std::int32_t id) {
-                    const auto it = std::find_if(pool.begin(), pool.end(),
-                        [id](const ChampionDefinition& champion) {
-                            return champion.internal_id == id;
-                        });
-                    return it != pool.end() && role_of(*it) == role;
-                }));
-        };
+        // Role counts change only when a unit is selected. Keep them
+        // incrementally instead of repeatedly scanning the plan and pool for
+        // every candidate scored in every open slot.
+        std::unordered_map<int, int> selected_role_counts;
+        selected_role_counts.reserve(5);
 
         // Select a carry first. It may be outside the anchor trait if it shares
         // a bridge trait with a champion in that direction or with current focus.
@@ -203,6 +197,7 @@ public:
                 ? selected_carry->name : selected_carry->api_name);
             plan.main_carry_id = selected_carry->internal_id;
             plan.score += best_carry_score;
+            ++selected_role_counts[role_of(*selected_carry)];
         }
 
         std::unordered_map<std::string, int> selected_trait_counts;
@@ -261,11 +256,11 @@ public:
                     if (before > 0) score += std::min(0.45, before * 0.12);
                 }
 
-                if (role == 1 && count_role(1) == 0) score += 2.8;
-                if ((role == 0 || role == 3) && count_role(0) + count_role(3) == 0)
+                if (role == 1 && selected_role_counts[1] == 0) score += 2.8;
+                const int frontline_roles = selected_role_counts[0] + selected_role_counts[3];
+                if ((role == 0 || role == 3) && frontline_roles == 0)
                     score += 2.0;
-                else if ((role == 0 || role == 3) &&
-                         count_role(0) + count_role(3) == 1)
+                else if ((role == 0 || role == 3) && frontline_roles == 1)
                     score += 0.9;
                 if (role == 2) score += 0.25; // support has flexible utility
                 score += std::min(1.8, owned_copies.count(champion.internal_id)
@@ -283,6 +278,7 @@ public:
             plan.unit_ids.push_back(best->internal_id);
             plan.unit_names.push_back(best->api_name.empty() ? best->name : best->api_name);
             plan.score += best_score;
+            ++selected_role_counts[role_of(*best)];
             add_champion_traits(*best);
         }
 
