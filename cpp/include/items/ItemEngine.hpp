@@ -341,6 +341,10 @@ public:
         if (unit.role == 1 || unit.role == 4 || unit.backline) role_fit += item->carry_weight;
         if (unit.role == 2) role_fit += item->support_weight;
         if (unit.role == 3) role_fit += 0.5 * (item->tank_weight + item->carry_weight);
+        // A trait emblem has strategic value even when its numeric stats are
+        // zero; scale it by composition fit without forcing a particular trait.
+        if (!item->grants_trait.empty())
+            role_fit += 0.5 + std::clamp(unit.composition_fit, 0.0, 1.0);
         return damage_fit + durability_fit + role_fit +
             0.25 * std::clamp(unit.composition_fit, 0.0, 1.0);
     }
