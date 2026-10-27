@@ -12,7 +12,6 @@ import json
 import os
 import sys
 import tempfile
-import traceback
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -26,6 +25,11 @@ except ImportError:  # MCP SDK 1.x compatibility
     from mcp.client.streamable_http import streamablehttp_client as streamable_http_client
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.validate_opgg_meta_catalog import validate_catalog
+
 DEFAULT_OUTPUT = ROOT / "data" / "opgg_tft_meta.json"
 DEFAULT_RAW = ROOT / "data" / "opgg_tft_meta_raw.json"
 DEFAULT_URL = "https://mcp-api.op.gg/mcp"
@@ -278,16 +282,29 @@ async def main() -> int:
     try:
         raw = await fetch_meta(args.url)
         normalized = normalize_payload(raw)
-        # Save raw and normalized data only after the response passed validation.
+        units_path = ROOT / "data" / "units_gerado.json"
+        items_path = ROOT / "data" / "itens.json"
+        units_doc = json.loads(units_path.read_text(encoding="utf-8"))
+        items_doc = json.loads(items_path.read_text(encoding="utf-8"))
+        compatibility = validate_catalog(
+            normalized, units_doc, items_doc=items_doc,
+            max_age_hours=168.0, min_coverage=0.90
+        )
+        print(
+            "Validação OP.GG: "
+            f"set={compatibility['meta_set_ids'] or ['unknown']} "
+            f"coverage={compatibility['mapped_unit_keys']}/{compatibility['meta_unique_unit_keys']}"
+        )
+        # Save raw and normalized data only after schema, freshness, set and
+        # local unit-coverage checks pass; an incompatible refresh cannot replace
+        # the last known-good catalog.
         _atomic_json(args.raw_output, raw)
         _atomic_json(args.output, normalized)
         digest = hashlib.sha256(args.output.read_bytes()).hexdigest()
         print(f"Catálogo OP.GG atualizado: {len(normalized['compositions'])} comps | SHA-256 {digest[:16]} | {args.output}")
         return 0
     except Exception as exc:
-        print(f"Falha ao atualizar catálogo OP.GG: {exc!r}", file=sys.stderr)
-        print("Detalhes da exceção (incluindo subexceções de TaskGroup):", file=sys.stderr)
-        traceback.print_exception(type(exc), exc, exc.__traceback__, file=sys.stderr, chain=True)
+        print(f"Falha ao atualizar catálogo OP.GG: {exc}", file=sys.stderr)
         if args.output.is_file():
             try:
                 existing = json.loads(args.output.read_text(encoding="utf-8"))
