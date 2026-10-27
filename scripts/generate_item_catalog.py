@@ -117,15 +117,6 @@ def _normalise_combat_effects(effects: dict[str, Any]) -> list[dict[str, Any]]:
             "operation": "mana_regen",
             "value": mana_regen,
         })
-    damage_amp = _percent_fraction(effects, "DamageAmp", "DamageAmplification")
-    if damage_amp > 0.0:
-        generated.append({
-            "trigger": "combat_start",
-            "operation": "add_stat",
-            "stat": "damage_amplification",
-            "target": "self",
-            "value": damage_amp,
-        })
     return generated
 
 
