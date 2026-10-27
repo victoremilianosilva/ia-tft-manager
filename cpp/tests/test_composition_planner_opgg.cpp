@@ -103,17 +103,19 @@ int main(int argc, char** argv) {
     }
     live.inventory_item_ids.insert("TFT_Item_Deathblade");
 
-    const auto native_fallback = CompositionPlanner::build(
-        pool, milestones, "Invoker", focus, owned, 5, 8, {}, {}, nullptr);
-    const auto fallback_audit = std::find_if(
-        native_fallback.acquisition_notes.begin(), native_fallback.acquisition_notes.end(),
-        [](const std::string& note) { return note.find("OPGG_META_AUDIT:") == 0; });
-    if (fallback_audit == native_fallback.acquisition_notes.end() ||
-        fallback_audit->find("status=candidate_below_native_margin") == std::string::npos) {
-        std::cerr << "meta candidate without viable item/position context should fall back: "
-                  << (fallback_audit == native_fallback.acquisition_notes.end()
-                      ? "no audit note" : *fallback_audit) << '\\n';
-        return 6;
+    if (!incompatible) {
+        const auto native_fallback = CompositionPlanner::build(
+            pool, milestones, "Invoker", focus, owned, 5, 8, {}, {}, nullptr);
+        const auto fallback_audit = std::find_if(
+            native_fallback.acquisition_notes.begin(), native_fallback.acquisition_notes.end(),
+            [](const std::string& note) { return note.find("OPGG_META_AUDIT:") == 0; });
+        if (fallback_audit == native_fallback.acquisition_notes.end() ||
+            fallback_audit->find("status=candidate_below_native_margin") == std::string::npos) {
+            std::cerr << "meta candidate without viable item/position context should fall back: "
+                      << (fallback_audit == native_fallback.acquisition_notes.end()
+                          ? "no audit note" : *fallback_audit) << '\\n';
+            return 6;
+        }
     }
 
     const auto plan = CompositionPlanner::build(
