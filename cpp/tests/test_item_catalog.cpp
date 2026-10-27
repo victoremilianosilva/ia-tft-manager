@@ -45,8 +45,10 @@ int main(int argc, char** argv) {
                 std::cerr << "empty or duplicate item identifier\n";
                 return 7;
             }
-            if (!item.recipe_components.empty()) {
-                if (item.recipe_components.size() != 2) {
+            const bool has_first_component = !item.recipe_components[0].empty();
+            const bool has_second_component = !item.recipe_components[1].empty();
+            if (has_first_component || has_second_component) {
+                if (!has_first_component || !has_second_component) {
                     std::cerr << "craftable item must reference exactly two components: "
                               << item.id << '\n';
                     return 8;
