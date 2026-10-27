@@ -215,6 +215,19 @@ def test_semantic_validation_accepts_normalized_stats_or_explicit_effects():
     validate_catalog_semantics(catalog)
 
 
+def test_canonical_set_identity_uses_number_when_source_name_is_stale():
+    source = source_fixture()
+    source["setData"] = [{
+        "number": 18,
+        "name": "Set10",
+        "items": ["DA_Component_Sword", "DA_Component_Bow", "DA_Item_TestBlade", "DA_Item_TestBlade_Alt"],
+    }]
+    catalog = build_catalog(source, "18")
+    assert catalog["set_id"] == "Set18"
+    assert catalog["source_set_number"] == 18
+    assert catalog["source_set_name"] == "Set10"
+
+
 def test_rejects_unknown_set():
     with pytest.raises(ValueError, match="não encontrado"):
         build_catalog(source_fixture(), "99")
