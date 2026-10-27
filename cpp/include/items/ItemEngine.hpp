@@ -279,12 +279,13 @@ public:
         if (from_uuid.empty() || to_uuid.empty() || from_uuid == to_uuid) return false;
         const auto source = equipped_.find(from_uuid);
         if (source == equipped_.end()) return true;
+        const auto transferred = source->second;
+        equipped_.erase(source);
         auto& target = equipped_[to_uuid];
-        for (const auto& item_id : source->second) {
+        for (const auto& item_id : transferred) {
             if (target.size() < kMaxItemsPerUnit) target.push_back(item_id);
             else inventory_.push_back(item_id);
         }
-        equipped_.erase(source);
         return true;
     }
 
