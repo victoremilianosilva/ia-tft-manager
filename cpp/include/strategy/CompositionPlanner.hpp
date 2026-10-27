@@ -415,8 +415,47 @@ public:
                 meta_catalog["compositions"].is_array()
                 ? "loaded" : "missing_or_invalid";
 
+            std::unordered_set<std::string> local_set_ids;
+            const auto local_set_from_key = [](const std::string& key) {
+                if (key.rfind("DA_", 0) != 0) return std::string{};
+                const auto end = key.find('_', 3);
+                if (end == std::string::npos || end == 3) return std::string{};
+                const auto candidate = key.substr(3, end - 3);
+                return !candidate.empty() &&
+                    std::all_of(candidate.begin(), candidate.end(),
+                        [](unsigned char ch) { return std::isdigit(ch) != 0; })
+                    ? candidate : std::string{};
+            };
+            for (const auto& champion : pool) {
+                const auto api_set = local_set_from_key(champion.api_name);
+                const auto character_set = local_set_from_key(champion.character_name);
+                if (!api_set.empty()) local_set_ids.insert(api_set);
+                if (!character_set.empty()) local_set_ids.insert(character_set);
+            }
+            std::unordered_set<std::string> meta_set_ids;
+            if (meta_catalog.contains("compositions") && meta_catalog["compositions"].is_array()) {
+                for (const auto& composition : meta_catalog["compositions"]) {
+                    const auto team_code = composition.is_object()
+                        ? composition.value("team_code", std::string{}) : std::string{};
+                    const auto marker = team_code.find("TFTSet");
+                    if (marker == std::string::npos) continue;
+                    std::size_t end = marker + 6;
+                    while (end < team_code.size() &&
+                           std::isdigit(static_cast<unsigned char>(team_code[end])) != 0) ++end;
+                    if (end > marker + 6)
+                        meta_set_ids.insert(team_code.substr(marker + 6, end - marker - 6));
+                }
+            }
+            bool meta_set_compatible = true;
+            if (!local_set_ids.empty() && !meta_set_ids.empty()) {
+                meta_set_compatible = std::any_of(meta_set_ids.begin(), meta_set_ids.end(),
+                    [&](const std::string& set_id) { return local_set_ids.count(set_id) != 0; });
+                if (!meta_set_compatible) meta_audit_status = "incompatible_set";
+            }
+
             if (meta_catalog.contains("compositions") &&
-                meta_catalog["compositions"].is_array() && !plan.unit_ids.empty()) {
+                meta_catalog["compositions"].is_array() && !plan.unit_ids.empty() &&
+                meta_set_compatible) {
                 std::unordered_map<std::string, const ChampionDefinition*> by_key;
                 for (const auto& champion : pool) {
                     if (!champion.api_name.empty()) by_key[champion.api_name] = &champion;
