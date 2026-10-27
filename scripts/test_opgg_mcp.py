@@ -27,7 +27,6 @@ from typing import Any
 from mcp import ClientSession
 import mcp.client.session as mcp_client_session
 
-# MCP SDK 2.x renamed this function; keep compatibility with SDK 1.x.
 try:
     from mcp.client.streamable_http import streamable_http_client as streamablehttp_client
 except ImportError:  # pragma: no cover - exercised only with MCP SDK 1.x
@@ -36,14 +35,18 @@ except ImportError:  # pragma: no cover - exercised only with MCP SDK 1.x
 DEFAULT_URL = "https://mcp-api.op.gg/mcp"
 
 
-def install_opgg_schema_compatibility() -> bool:
-    """Work around OP.GG array output schemas rejected by older protocol validators.
+def field(obj: Any, *names: str, default: Any = None) -> Any:
+    """Read a model field across MCP SDK camelCase/snake_case versions."""
+    for name in names:
+        if isinstance(obj, dict) and name in obj:
+            return obj[name]
+        if hasattr(obj, name):
+            return getattr(obj, name)
+    return default
 
-    OP.GG currently advertises two tools with outputSchema.type='array'. Some
-    MCP SDK/protocol combinations require an object at the schema root and reject
-    the entire tools/list response. This client only consumes tool input schemas,
-    so drop incompatible outputSchema metadata locally; no server data is changed.
-    """
+
+def install_opgg_schema_compatibility() -> bool:
+    """Ignore only incompatible outputSchema metadata in OP.GG tools/list locally."""
     methods = getattr(mcp_client_session, "_methods", None)
     original = getattr(methods, "validate_server_result", None)
     if methods is None or original is None:
@@ -52,7 +55,10 @@ def install_opgg_schema_compatibility() -> bool:
         return True
 
     def validate_with_opgg_compat(method: Any, version: Any, raw: Any, *args: Any, **kwargs: Any) -> Any:
-        if method == "tools/list" and isinstance(raw, dict):
+        # The SDK passes decoded JSON here. Remove only non-object output schemas,
+        # which this script does not need; leave tool names and input schemas intact.
+        method_text = str(method).lower()
+        if "tools/list" in method_text and isinstance(raw, dict):
             tools = raw.get("tools")
             if isinstance(tools, list):
                 cleaned_tools = []
@@ -62,19 +68,18 @@ def install_opgg_schema_compatibility() -> bool:
                         cleaned_tools.append(entry)
                         continue
                     item = dict(entry)
-                    # Support both wire-format and snake_case spellings.
-                    for schema_key in ("outputSchema", "output_schema"):
-                        schema = item.get(schema_key)
+                    for key in ("outputSchema", "output_schema"):
+                        schema = item.get(key)
                         if isinstance(schema, dict) and schema.get("type") != "object":
-                            item.pop(schema_key, None)
+                            item.pop(key, None)
                             changed = True
                     cleaned_tools.append(item)
                 if changed:
                     raw = dict(raw)
                     raw["tools"] = cleaned_tools
                     print(
-                        "Compatibility note: ignored incompatible OP.GG outputSchema "
-                        "metadata for this client session; input schemas are unchanged.",
+                        "Compatibility note: ignored incompatible OP.GG output-schema "
+                        "metadata locally; tool input schemas were preserved.",
                         file=sys.stderr,
                     )
         return original(method, version, raw, *args, **kwargs)
@@ -86,20 +91,9 @@ def install_opgg_schema_compatibility() -> bool:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--url",
-        default=DEFAULT_URL,
-        help=f"MCP Streamable HTTP endpoint (default: {DEFAULT_URL})",
-    )
-    parser.add_argument(
-        "--call",
-        dest="tool_name",
-        help="Call a tool by name after connecting; omit to list available tools.",
-    )
-    parser.add_argument(
-        "--arguments",
-        help="Tool arguments as a JSON object. Check the tool schema first.",
-    )
+    parser.add_argument("--url", default=DEFAULT_URL, help=f"MCP endpoint (default: {DEFAULT_URL})")
+    parser.add_argument("--call", dest="tool_name", help="Call a tool by name; omit to list tools.")
+    parser.add_argument("--arguments", help="Tool arguments as a JSON object.")
     return parser.parse_args()
 
 
@@ -109,10 +103,7 @@ def required_arguments(schema: dict[str, Any]) -> list[str]:
 
 
 def print_nested_exception(exc: BaseException, indent: int = 0) -> None:
-    """Print leaf causes from ExceptionGroup without hiding their tracebacks."""
     prefix = " " * indent
-    # Avoid referring directly to BaseExceptionGroup so this remains importable
-    # on Python versions older than 3.11.
     nested_exceptions = getattr(exc, "exceptions", None)
     if nested_exceptions is not None:
         print(f"{prefix}{type(exc).__name__}: {exc}", file=sys.stderr)
@@ -126,7 +117,6 @@ def print_nested_exception(exc: BaseException, indent: int = 0) -> None:
 
 async def run() -> int:
     args = parse_args()
-
     if args.arguments is None:
         tool_arguments: dict[str, Any] = {}
     else:
@@ -141,98 +131,67 @@ async def run() -> int:
         tool_arguments = parsed
 
     if not install_opgg_schema_compatibility():
-        print(
-            "Warning: could not install OP.GG schema compatibility workaround; "
-            "the installed MCP SDK may have changed its internal API.",
-            file=sys.stderr,
-        )
+        print("Warning: MCP SDK validator compatibility hook unavailable.", file=sys.stderr)
 
     stage = "opening HTTP transport"
     try:
         async with streamablehttp_client(args.url) as streams:
-            # SDK 1.x yielded three values; SDK 2.x yields only read/write streams.
             read_stream, write_stream = streams[0], streams[1]
             stage = "initializing MCP session"
             async with ClientSession(read_stream, write_stream) as session:
                 init_result = await session.initialize()
                 print(f"Connected to MCP server: {args.url}")
-                if getattr(init_result, "serverInfo", None):
-                    info = init_result.serverInfo
-                    print(f"Server: {info.name} {info.version}")
+                info = field(init_result, "serverInfo", "server_info")
+                if info:
+                    print(f"Server: {field(info, 'name', default='unknown')} {field(info, 'version', default='')}")
 
                 stage = "requesting tools/list"
                 tools_result = await session.list_tools()
+                tools = field(tools_result, "tools", default=[])
                 if not args.tool_name:
-                    print(f"\nAvailable tools ({len(tools_result.tools)}):")
-                    for tool in tools_result.tools:
-                        print(f"\n- {tool.name}")
-                        if tool.description:
-                            print(f"  Description: {tool.description}")
-                        print(
-                            "  Input schema: "
-                            + json.dumps(tool.inputSchema, ensure_ascii=False)
-                        )
+                    print(f"\nAvailable tools ({len(tools)}):")
+                    for tool in tools:
+                        print(f"\n- {field(tool, 'name', default='(unnamed)')}")
+                        description = field(tool, "description")
+                        if description:
+                            print(f"  Description: {description}")
+                        schema = field(tool, "input_schema", "inputSchema", default={}) or {}
+                        print("  Input schema: " + json.dumps(schema, ensure_ascii=False))
                     return 0
 
-                tool = next(
-                    (item for item in tools_result.tools if item.name == args.tool_name),
-                    None,
-                )
+                tool = next((item for item in tools if field(item, "name") == args.tool_name), None)
                 if tool is None:
-                    available = ", ".join(item.name for item in tools_result.tools)
-                    print(
-                        f"Tool not found: {args.tool_name}\nAvailable tools: {available}",
-                        file=sys.stderr,
-                    )
+                    available = ", ".join(str(field(item, "name", default="?")) for item in tools)
+                    print(f"Tool not found: {args.tool_name}\nAvailable tools: {available}", file=sys.stderr)
                     return 2
 
-                required = required_arguments(tool.inputSchema or {})
-                missing = [name for name in required if name not in tool_arguments]
+                schema = field(tool, "input_schema", "inputSchema", default={}) or {}
+                missing = [name for name in required_arguments(schema) if name not in tool_arguments]
                 if missing:
-                    print(f"Tool: {tool.name}")
+                    print(f"Tool: {field(tool, 'name')}")
                     print(f"Required arguments missing: {', '.join(missing)}")
-                    print(
-                        "Input schema: "
-                        + json.dumps(tool.inputSchema, ensure_ascii=False, indent=2)
-                    )
-                    print(
-                        "\nRerun with --arguments and provide the required fields, "
-                        "for example: --arguments '{\"field\": \"value\"}'"
-                    )
+                    print("Input schema: " + json.dumps(schema, ensure_ascii=False, indent=2))
+                    print("\nRerun with --arguments and provide the required fields.")
                     return 2
 
-                print(f"\nCalling {tool.name} with:")
+                print(f"\nCalling {field(tool, 'name')} with:")
                 print(json.dumps(tool_arguments, ensure_ascii=False, indent=2))
-                stage = f"calling tool {tool.name}"
-                result = await session.call_tool(tool.name, arguments=tool_arguments)
+                stage = f"calling tool {field(tool, 'name')}"
+                result = await session.call_tool(field(tool, "name"), arguments=tool_arguments)
                 print("\nTool result:")
-                for item in result.content:
-                    if getattr(item, "text", None) is not None:
-                        print(item.text)
-                    else:
-                        print(repr(item))
-                if getattr(result, "structuredContent", None) is not None:
-                    print(
-                        "\nStructured content:"
-                        + json.dumps(
-                            result.structuredContent,
-                            ensure_ascii=False,
-                            indent=2,
-                            default=str,
-                        )
-                    )
-                if getattr(result, "isError", False):
+                for item in field(result, "content", default=[]) or []:
+                    item_text = field(item, "text")
+                    print(item_text if item_text is not None else repr(item))
+                structured = field(result, "structured_content", "structuredContent")
+                if structured is not None:
+                    print("\nStructured content:\n" + json.dumps(structured, ensure_ascii=False, indent=2, default=str))
+                if field(result, "is_error", "isError", default=False):
                     print("\nThe MCP tool reported an error.", file=sys.stderr)
                     return 1
                 return 0
     except Exception as exc:
         print(f"MCP request failed while {stage}:", file=sys.stderr)
         print_nested_exception(exc)
-        print(
-            "\nIf the traceback indicates an HTTP/protocol error, include that full output "
-            "when reporting the issue.",
-            file=sys.stderr,
-        )
         return 1
 
 
