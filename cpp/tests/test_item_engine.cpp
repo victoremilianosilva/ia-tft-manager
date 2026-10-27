@@ -58,14 +58,73 @@ int main() {
             "recipe_components": ["sword", "bow"],
             "stats": {"attack_damage": 12.0, "attack_speed": 0.15},
             "weights": {"carry": 1.0}
+        }, {
+            "id": "catalog_emblem", "name": "Catalog Emblem",
+            "recipe_components": [],
+            "stats": {}, "weights": {"utility": 1.0},
+            "grants_trait": "TestTrait",
+            "granted_trait_active_count": 1,
+            "combat_effects": []
         }]
     })json");
     const auto loaded_catalog = load_item_catalog(catalog_json);
     require(loaded_catalog.set_id == "synthetic-test-only" &&
             loaded_catalog.components.size() == 2 &&
-            loaded_catalog.items.size() == 1 &&
+            loaded_catalog.items.size() == 2 &&
             loaded_catalog.items.front().recipe_components[0] == "sword",
             "versioned external item catalog should load without hard-coded recipes");
+
+    const auto emblem = std::find_if(loaded_catalog.items.begin(), loaded_catalog.items.end(),
+        [](const ItemDefinition& item) { return item.id == "catalog_emblem"; });
+    require(emblem != loaded_catalog.items.end() &&
+            emblem->recipe_components[0].empty() &&
+            emblem->grants_trait == "TestTrait",
+            "non-craftable trait item should load without a recipe");
+    ItemEngine loaded_engine(loaded_catalog.items, {"sword", "bow"});
+    require(loaded_engine.add_completed_item("catalog_emblem"),
+            "non-craftable emblem should be a valid inventory item");
+    UnitProfile emblem_target{"emblem-target", 1, 2, false, true,
+                              30.0, 0.8, 20.0, 900.0, 30.0, 30.0, 0.8};
+    require(loaded_engine.item_fit("catalog_emblem", emblem_target) > 0.0,
+            "trait emblem should have strategic value despite zero numeric stats");
+
+    std::istringstream inert_catalog_json(R"json({
+        "schema_version": 1,
+        "set_id": "synthetic-inert-test",
+        "components": [
+            {"id": "sword", "name": "Test Sword"},
+            {"id": "bow", "name": "Test Bow"}
+        ],
+        "items": [{
+            "id": "inert_blade", "name": "Inert Blade",
+            "recipe_components": ["sword", "bow"],
+            "stats": {}, "weights": {}, "combat_effects": []
+        }]
+    })json");
+    bool inert_catalog_rejected = false;
+    try {
+        (void)load_item_catalog(inert_catalog_json);
+    } catch (const std::invalid_argument&) {
+        inert_catalog_rejected = true;
+    }
+    require(inert_catalog_rejected,
+            "runtime loader must reject a structurally valid but inert item catalog");
+
+    std::istringstream mismatched_set_json(R"json({
+        "schema_version": 1,
+        "set_id": "Set17",
+        "source_set_number": 18,
+        "components": [],
+        "items": []
+    })json");
+    bool mismatched_set_rejected = false;
+    try {
+        (void)load_item_catalog(mismatched_set_json);
+    } catch (const std::invalid_argument&) {
+        mismatched_set_rejected = true;
+    }
+    require(mismatched_set_rejected,
+            "runtime loader must reject set_id/source_set_number mismatches");
 
     const auto combat_damage = to_combat_item(damage);
     require(combat_damage.api_name == "damage_blade" &&
@@ -178,6 +237,32 @@ int main() {
 
     require(!engine.grant_component_anvil({"sword", "sword"}),
             "anvil must not present duplicate options");
+
+    // Auto-merge lifecycle: equipment moves to the upgraded unit; if the
+    // three-slot cap is reached, overflow returns to the bag instead of vanishing.
+    ItemEngine merge_engine({damage, guard});
+    UnitProfile merge_target{"merge-target", 2, 1, false, true, 80.0, 1.2, 0.0, 900.0, 30.0, 30.0, 0.9};
+    UnitProfile merge_source_a{"merge-source-a", 1, 0, true, false, 35.0, 0.7, 0.0, 1800.0, 70.0, 60.0, 0.8};
+    UnitProfile merge_source_b{"merge-source-b", 1, 0, true, false, 35.0, 0.7, 0.0, 1800.0, 70.0, 60.0, 0.8};
+    for (const auto* id : {"damage_blade", "damage_blade", "guard_plate", "damage_blade"}) {
+        require(merge_engine.add_completed_item(id), "merge fixture item enters inventory");
+    }
+    require(merge_engine.equip("damage_blade", merge_target), "equip first target item");
+    require(merge_engine.equip("damage_blade", merge_target), "equip second target item");
+    require(merge_engine.equip("guard_plate", merge_source_a), "equip first consumed copy");
+    require(merge_engine.equip("damage_blade", merge_source_b), "equip second consumed copy");
+    require(merge_engine.transfer_equipped_on_merge("merge-source-a", "merge-target"),
+            "first consumed unit transfers equipment");
+    require(merge_engine.transfer_equipped_on_merge("merge-source-b", "merge-target"),
+            "second consumed unit transfers equipment");
+    require(merge_engine.equipped("merge-target").size() == ItemEngine::kMaxItemsPerUnit,
+            "upgraded unit keeps at most three equipped items");
+    require(merge_engine.equipped("merge-source-a").empty() &&
+            merge_engine.equipped("merge-source-b").empty(),
+            "consumed unit UUIDs no longer own equipment");
+    require(merge_engine.inventory().size() == 1 &&
+            merge_engine.inventory().front() == "damage_blade",
+            "overflow item returns to inventory rather than being lost");
 
     // Phase 1 contract: repeated component IDs represent separate copies,
     // and equipment is keyed by unit-instance UUID rather than champion ID.
