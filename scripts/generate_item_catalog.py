@@ -334,6 +334,35 @@ def build_catalog(
                         output_item[key] = metadata[key]
         output_items.append(output_item)
 
+    # Trait emblems and other explicit metadata items may not have a
+    # component recipe in CommunityDragon. Keep them as non-craftable items so
+    # the runtime can equip them and apply their generic trait/effect contract.
+    existing_ids = {item["id"] for item in output_items}
+    for item_id, metadata in sorted((trait_item_metadata or {}).items()):
+        if item_id in existing_ids or not metadata.get("grants_trait"):
+            continue
+        output_items.append({
+            "id": item_id,
+            "name": str(metadata.get("name") or f"Emblema: {metadata['grants_trait']}"),
+            "recipe_components": [],
+            "stats": {key: 0.0 for key in (
+                "attack_damage", "attack_speed", "ability_power",
+                "critical_strike_chance", "critical_strike_damage", "health",
+                "armor", "magic_resist", "mana", "omnivamp",
+                "damage_amplification", "damage_reduction",
+            )},
+            "weights": {"carry": 0.0, "tank": 0.0, "support": 0.0, "utility": 1.0},
+            "source_api_name": item_id,
+            "source_description": "Set-specific non-craftable trait item",
+            "source_icon": "",
+            "source_effects": {},
+            "combat_effects": metadata.get("combat_effects", []),
+            "grants_trait": metadata["grants_trait"],
+            "granted_trait_active_count": metadata.get("granted_trait_active_count", 1),
+            "weight_basis": "explicit_set_item_metadata",
+        })
+        existing_ids.add(item_id)
+
     return {
         "schema_version": 1,
         # The source's human-readable name can be stale or localized
@@ -424,12 +453,22 @@ def main(argv: list[str] | None = None) -> int:
         if metadata_path is not None:
             with metadata_path.open("r", encoding="utf-8") as handle:
                 metadata_document = json.load(handle)
-            raw_metadata = metadata_document.get("items", {})
-            if isinstance(raw_metadata, dict):
-                trait_item_metadata = {
-                    str(item_id): metadata for item_id, metadata in raw_metadata.items()
-                    if isinstance(item_id, str) and isinstance(metadata, dict)
-                }
+            selected_number = re.sub(r"(?i)^set", "", args.set_selector).strip()
+            expected_set_id = f"Set{selected_number}" if selected_number.isdigit() else ""
+            metadata_set_id = metadata_document.get("set_id")
+            if expected_set_id and metadata_set_id == expected_set_id:
+                raw_metadata = metadata_document.get("items", {})
+                if isinstance(raw_metadata, dict):
+                    trait_item_metadata = {
+                        str(item_id): metadata for item_id, metadata in raw_metadata.items()
+                        if isinstance(item_id, str) and isinstance(metadata, dict)
+                    }
+            elif metadata_set_id:
+                print(
+                    f"Ignorando overrides de {metadata_set_id}; "
+                    f"o set selecionado é {expected_set_id or args.set_selector}.",
+                    file=sys.stderr,
+                )
         catalog = build_catalog(source, args.set_selector, trait_item_metadata)
         validate_catalog_semantics(catalog)
         output_path = Path(args.output) if args.output else default_catalog_output_path(args.set_selector)
