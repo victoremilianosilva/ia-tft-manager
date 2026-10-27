@@ -31,9 +31,12 @@ def refresh_opgg_meta_catalog() -> None:
         print("⚠️ Coletor OP.GG não encontrado; usando o planejador nativo.")
         return
     try:
+        command = [sys.executable, str(collector), "--if-stale"]
+        configured_catalog = os.environ.get("TFT_OPGG_META_CATALOG")
+        if configured_catalog:
+            command.extend(["--output", configured_catalog])
         result = subprocess.run(
-            [sys.executable, str(collector), "--if-stale"],
-            cwd=str(project_root), capture_output=True, text=True, timeout=90,
+            command, cwd=str(project_root), capture_output=True, text=True, timeout=90,
         )
         if result.stdout.strip():
             print(result.stdout.strip())
