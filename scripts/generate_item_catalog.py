@@ -352,7 +352,7 @@ def build_catalog(
             "Source AD is a percentage of base attack damage and is preserved in source_effects; it is not converted to flat attack_damage.",
             "Conditional/passive effects are preserved in source_effects and are not guessed as permanent combat stats.",
             "Role weights are heuristics inferred from effect keys, not official Riot role labels.",
-            "The catalog does not implement effects in CombatEngine; each effect must be supported separately.",
+            "Source AD percentages and ManaRegen are mapped to generic CombatEngine effects; unsupported passives remain in source_effects and are not guessed.",
         ],
     }
 
