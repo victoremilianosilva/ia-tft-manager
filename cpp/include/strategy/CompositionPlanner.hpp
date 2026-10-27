@@ -347,6 +347,8 @@ public:
         double meta_audit_native_score = 0.0;
         std::size_t meta_audit_catalog_candidates = 0;
         std::size_t meta_audit_contextual_candidates = 0;
+        std::size_t meta_audit_unmapped_units = 0;
+        std::size_t meta_audit_low_coverage_candidates = 0;
         try {
             static const nlohmann::json meta_catalog = []() {
                 const char* configured = std::getenv("TFT_OPGG_META_CATALOG");
@@ -438,11 +440,16 @@ public:
                     std::unordered_set<std::int32_t> core_ids;
                     std::vector<std::int32_t> core_order;
                     std::unordered_map<std::string, int> meta_trait_counts;
+                    std::size_t source_unit_count = 0;
                     for (const auto& unit : composition["units"]) {
                         if (!unit.is_object()) continue;
+                        ++source_unit_count;
                         const std::string key = unit.value("key", std::string{});
                         const auto found = by_key.find(key);
-                        if (found == by_key.end()) continue;
+                        if (found == by_key.end()) {
+                            ++meta_audit_unmapped_units;
+                            continue;
+                        }
                         const auto id = found->second->internal_id;
                         if (std::find(final_ids.begin(), final_ids.end(), id) != final_ids.end()) continue;
                         final_ids.push_back(id);
@@ -454,6 +461,16 @@ public:
                     }
                     if (final_ids.empty()) continue;
                     ++meta_audit_catalog_candidates;
+                    // A partially mapped deck can be misleadingly attractive if
+                    // its missing units are silently discarded. Keep native planning
+                    // in control unless at least 70% of its final lineup is known.
+                    const double mapping_coverage = source_unit_count == 0 ? 0.0
+                        : static_cast<double>(final_ids.size()) /
+                            static_cast<double>(source_unit_count);
+                    if (mapping_coverage < 0.70) {
+                        ++meta_audit_low_coverage_candidates;
+                        continue;
+                    }
 
                     const char* snapshot_key = current_level <= 5 ? "early_game"
                         : (current_level <= 7 ? "mid_game" : "");
@@ -517,7 +534,14 @@ public:
                         if (selected.is_object() && selected.value("totalCount", 0) >= 1000)
                             stats_prior = std::clamp(selected.value("top4Rate", 0.0), 0.0, 1.0) * 0.5;
                     }
-                    const double score = lineup_score(final_ids, core_ids, stage_ids, stats_prior) + stage_snapshot_bonus;
+                    // Compare meta and native lineups with the same base scorer.
+                    // Core/stage bonuses used to be added only to meta, making the
+                    // +1.0 margin incomparable and systematically favoring OP.GG.
+                    const double bounded_meta_prior = std::min(0.50,
+                        0.15 * static_cast<double>(owned_core_count) +
+                        0.10 * static_cast<double>(stage_owned_count));
+                    const double score = lineup_score(final_ids, no_core, no_stage_units, stats_prior)
+                        + bounded_meta_prior + std::min(0.25, stage_snapshot_bonus * 0.10);
                     if (score > best_meta_score) {
                         best_meta_score = score;
                         meta_audit_best_score = score;
@@ -616,6 +640,8 @@ public:
             "OPGG_META_AUDIT: status=" + meta_audit_status +
             "; catalog_candidates=" + std::to_string(meta_audit_catalog_candidates) +
             "; context_candidates=" + std::to_string(meta_audit_contextual_candidates) +
+            "; unmapped_units=" + std::to_string(meta_audit_unmapped_units) +
+            "; low_coverage_candidates=" + std::to_string(meta_audit_low_coverage_candidates) +
             "; best=" + (meta_audit_best_name.empty() ? std::string("none") : meta_audit_best_name) +
             "; best_score=" + (std::isfinite(meta_audit_best_score) ? std::to_string(meta_audit_best_score) : std::string("n/a")) +
             "; native_score=" + std::to_string(meta_audit_native_score) +
