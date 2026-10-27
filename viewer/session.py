@@ -139,9 +139,12 @@ class ViewerSession:
             collector = ROOT / "scripts" / "update_opgg_meta_catalog.py"
             if collector.is_file():
                 try:
+                    command = [sys.executable, str(collector), "--if-stale"]
+                    configured_catalog = __import__("os").environ.get("TFT_OPGG_META_CATALOG")
+                    if configured_catalog:
+                        command.extend(["--output", configured_catalog])
                     result = subprocess.run(
-                        [sys.executable, str(collector), "--if-stale"],
-                        cwd=str(ROOT), capture_output=True, text=True, timeout=90,
+                        command, cwd=str(ROOT), capture_output=True, text=True, timeout=90,
                     )
                     if result.stdout.strip():
                         print(result.stdout.strip())
