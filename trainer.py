@@ -664,32 +664,23 @@ class Trainer:
                             f"{raw_mask.dtype}"
                         )
 
-                    # 3. Impedir NaN, infinito e valores fora de {0, 1}
-                    if not np.all(np.isfinite(raw_mask)):
-                        raise ValueError(
-                            f"Máscara '{key}' contém NaN ou infinito."
-                        )
+                    # Boolean masks already satisfy both value checks:
+                    # they cannot contain NaN/Inf and every value is 0 or 1.
+                    # Keep the full validation path for numeric masks.
+                    if not np.issubdtype(raw_mask.dtype, np.bool_):
+                        if not np.all(np.isfinite(raw_mask)):
+                            raise ValueError(
+                                f"Máscara '{key}' contém NaN ou infinito."
+                            )
 
-                    if not np.all((raw_mask == 0) | (raw_mask == 1)):
-                        raise ValueError(
-                            f"Máscara '{key}' deve conter somente 0 e 1."
-                        )
+                        if not np.all((raw_mask == 0) | (raw_mask == 1)):
+                            raise ValueError(
+                                f"Máscara '{key}' deve conter somente 0 e 1."
+                            )
 
-                    # 4. Converter somente depois das validações
+                    # astype(copy=False) reuses bool arrays without copying.
+                    # Shape was checked before conversion; astype never changes it.
                     player_mask = raw_mask.astype(np.bool_, copy=False)
-
-
-                    expected_shape = shape
-
-                    if player_mask.shape != expected_shape:
-
-                        raise ValueError(
-                            f"Máscara '{key}' inválida "
-                            f"para lobby={lobby_idx}, "
-                            f"player={player_idx}: "
-                            f"{player_mask.shape} "
-                            f"!= {expected_shape}"
-                        )
 
                     values.append(
                         player_mask
