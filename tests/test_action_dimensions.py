@@ -3,11 +3,16 @@ import torch
 
 from policy import TFTPolicy
 from trainer import Trainer
+from scripts.evaluate_composition_ablation import ACTION_DIMS as ABLATION_ACTION_DIMS
 
 
 def test_action_dimensions_match_the_environment_contract():
     assert Trainer.ACTION_DIMS == [9, 5, 9, 28, 28, 28]
     assert Trainer.ACTION_DIM == len(Trainer.ACTION_DIMS)
+
+
+def test_ablation_evaluator_uses_nine_action_types_including_items():
+    assert ABLATION_ACTION_DIMS == Trainer.ACTION_DIMS
 
 
 def test_policy_heads_match_action_dimensions():

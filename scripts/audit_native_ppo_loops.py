@@ -27,7 +27,7 @@ if str(ROOT) not in sys.path:
 from cpp_lobby_env import CppTFTLobbyWrapper
 from policy import TFTPolicy
 
-ACTION_DIMS = [7, 5, 9, 28, 28, 28]
+ACTION_DIMS = [9, 5, 9, 28, 28, 28]
 PASS = [6, 0, 0, 0, 0, 0]
 MOVEMENT_TYPES = {3, 4}
 
@@ -92,11 +92,16 @@ def _signature(player):
     def slots(units):
         return tuple(
             (str(unit.get("champion_id", "")), str(unit.get("uuid", "")),
-             int(unit.get("star", 0)))
+             int(unit.get("star", 0)), tuple(unit.get("item_ids", [])))
             if unit.get("occupied") else None
             for unit in units
         )
-    return slots(player["board"]), slots(player["bench"])
+    return (
+        slots(player["board"]),
+        slots(player["bench"]),
+        tuple(player.get("item_components", [])),
+        tuple(player.get("item_inventory", [])),
+    )
 
 
 def _strategic_summary(lobby, player_id, player, strategy):
@@ -171,6 +176,8 @@ def _effect_for_action(action, before, after):
         return before.get("gold") != after.get("gold") or before.get("xp") != after.get("xp")
     if kind == 5:
         return before_sig != after_sig or before.get("gold") != after.get("gold")
+    if kind in (7, 8):
+        return before_sig != after_sig
     return False
 
 
@@ -294,6 +301,10 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
                     "board_after": after["board"],
                     "bench_after": after["bench"],
                     "shop_after": after["shop"],
+                    "item_components_before": list(before.get("item_components", [])),
+                    "item_components_after": list(after.get("item_components", [])),
+                    "item_inventory_before": list(before.get("item_inventory", [])),
+                    "item_inventory_after": list(after.get("item_inventory", [])),
                     "gold_after": int(after["gold"]),
                     "xp_after": int(after["xp"]),
                     "strategy_before": strategic_before,

@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <chrono>
+#include <cctype>
 #include <cstddef>
 #include <limits>
 #include <cstdlib>
@@ -45,6 +47,20 @@ public:
     using FocusWeights = std::vector<std::pair<std::string, double>>;
     using AvailableCopies = std::unordered_map<std::int32_t, int>;
 
+    struct LiveUnitContext {
+        std::unordered_map<std::int32_t, std::vector<std::string>> equipped_items_by_champion;
+        std::unordered_map<std::int32_t, int> board_slot_by_champion;
+        std::unordered_set<std::string> inventory_item_ids;
+    };
+
+    static std::string canonical_item_id(const std::string& source_id) {
+        if (source_id.rfind("DA_18_", 0) == 0)
+            return "TFT_Item_" + source_id.substr(6);
+        if (source_id.rfind("DA_", 0) == 0)
+            return "TFT_Item_" + source_id.substr(3);
+        return source_id;
+    }
+
     static CompositionPlan build(
         const std::vector<ChampionDefinition>& pool,
         const TraitMilestones& milestones,
@@ -54,9 +70,12 @@ public:
         std::size_t requested_slots,
         int current_level = 1,
         const AvailableCopies& available_copies = {},
-        const std::unordered_set<std::int32_t>& currently_offered = {}) {
+        const std::unordered_set<std::int32_t>& currently_offered = {},
+        const LiveUnitContext* live_context = nullptr) {
         CompositionPlan plan;
         if (pool.empty() || requested_slots == 0) return plan;
+        const LiveUnitContext empty_live_context{};
+        const auto& live_context_value = live_context ? *live_context : empty_live_context;
 
         const std::size_t slots = std::min<std::size_t>(requested_slots, 10);
         const int safe_level = std::clamp(current_level, 1, 10);
@@ -339,8 +358,17 @@ public:
             }
         }
         // Optional OP.GG catalog: use it as a candidate, not as a hard constraint.
-        // The final lineup remains the target; early/mid snapshots score how well
-        // the candidate matches the player's actual transition path.
+        // Emit audit notes through planned_acquisition_notes so existing Viewer logs
+        // can explain both selection and fallback.
+        std::string meta_audit_status = "not_evaluated";
+        std::string meta_audit_best_name;
+        double meta_audit_best_score = -std::numeric_limits<double>::infinity();
+        double meta_audit_best_item_position_bonus = 0.0;
+        double meta_audit_native_score = 0.0;
+        std::size_t meta_audit_catalog_candidates = 0;
+        std::size_t meta_audit_contextual_candidates = 0;
+        std::size_t meta_audit_unmapped_units = 0;
+        std::size_t meta_audit_low_coverage_candidates = 0;
         try {
             static const nlohmann::json meta_catalog = []() {
                 const char* configured = std::getenv("TFT_OPGG_META_CATALOG");
@@ -352,13 +380,93 @@ public:
                 input >> value;
                 if (!value.is_object() || !value.contains("compositions") ||
                     !value["compositions"].is_array() ||
-                    value.value("schema_version", 0) != 1)
+                    value.value("schema_version", 0) != 1 ||
+                    value.value("source", std::string{}) != "op.gg" ||
+                    !value.contains("fetched_at") || !value["fetched_at"].is_string())
+                    return nlohmann::json::object();
+
+                // Runtime must independently reject stale snapshots: viewer/trainer
+                // refresh is best-effort and a stale local file must not steer PPO.
+                const auto stamp = value["fetched_at"].get<std::string>();
+                if (stamp.size() < 19) return nlohmann::json::object();
+                const int year_value = std::stoi(stamp.substr(0, 4));
+                const unsigned month_value = static_cast<unsigned>(std::stoi(stamp.substr(5, 2)));
+                const unsigned day_value = static_cast<unsigned>(std::stoi(stamp.substr(8, 2)));
+                const int hour_value = std::stoi(stamp.substr(11, 2));
+                const int minute_value = std::stoi(stamp.substr(14, 2));
+                const int second_value = std::stoi(stamp.substr(17, 2));
+                const std::chrono::year_month_day date{
+                    std::chrono::year{year_value},
+                    std::chrono::month{month_value},
+                    std::chrono::day{day_value}};
+                if (!date.ok() || hour_value < 0 || hour_value > 23 ||
+                    minute_value < 0 || minute_value > 59 ||
+                    second_value < 0 || second_value > 60)
+                    return nlohmann::json::object();
+                const auto fetched_at = std::chrono::sys_days{date} +
+                    std::chrono::hours{hour_value} +
+                    std::chrono::minutes{minute_value} +
+                    std::chrono::seconds{second_value};
+                const auto age_hours = std::chrono::duration<double, std::ratio<3600>>(
+                    std::chrono::system_clock::now() - fetched_at).count();
+                if (age_hours < -6.0 || age_hours > 168.0)
                     return nlohmann::json::object();
                 return value;
             }();
+            meta_audit_status = meta_catalog.contains("compositions") &&
+                meta_catalog["compositions"].is_array()
+                ? "loaded" : "missing_or_invalid";
+
+            std::unordered_set<std::string> local_set_ids;
+            const auto local_set_from_key = [](const std::string& key) {
+                if (key.rfind("DA_", 0) != 0) return std::string{};
+                const auto end = key.find('_', 3);
+                if (end == std::string::npos || end == 3) return std::string{};
+                const auto candidate = key.substr(3, end - 3);
+                return !candidate.empty() &&
+                    std::all_of(candidate.begin(), candidate.end(),
+                        [](unsigned char ch) { return std::isdigit(ch) != 0; })
+                    ? candidate : std::string{};
+            };
+            for (const auto& champion : pool) {
+                const auto api_set = local_set_from_key(champion.api_name);
+                const auto character_set = local_set_from_key(champion.character_name);
+                if (!api_set.empty()) local_set_ids.insert(api_set);
+                if (!character_set.empty()) local_set_ids.insert(character_set);
+            }
+            std::unordered_set<std::string> meta_set_ids;
+            if (meta_catalog.contains("compositions") && meta_catalog["compositions"].is_array()) {
+                for (const auto& composition : meta_catalog["compositions"]) {
+                    const auto team_code = composition.is_object()
+                        ? composition.value("team_code", std::string{}) : std::string{};
+                    const auto marker = team_code.find("TFTSet");
+                    if (marker == std::string::npos) continue;
+                    std::size_t end = marker + 6;
+                    while (end < team_code.size() &&
+                           std::isdigit(static_cast<unsigned char>(team_code[end])) != 0) ++end;
+                    if (end > marker + 6)
+                        meta_set_ids.insert(team_code.substr(marker + 6, end - marker - 6));
+                }
+            }
+            bool meta_set_compatible = true;
+            if (!local_set_ids.empty() && !meta_set_ids.empty()) {
+                meta_set_compatible = std::any_of(meta_set_ids.begin(), meta_set_ids.end(),
+                    [&](const std::string& set_id) { return local_set_ids.count(set_id) != 0; });
+                if (!meta_set_compatible) meta_audit_status = "incompatible_set";
+            }
+            const auto env_enabled = [](const char* name) {
+                const char* value = std::getenv(name);
+                return value && std::string(value) == "1";
+            };
+            const bool disable_opgg_meta = env_enabled("TFT_DISABLE_OPGG_META");
+            const bool disable_opgg_item_bonus = env_enabled("TFT_DISABLE_OPGG_ITEM_BONUS");
+            const bool disable_opgg_position_bonus = env_enabled("TFT_DISABLE_OPGG_POSITION_BONUS");
+            if (disable_opgg_meta && meta_set_compatible)
+                meta_audit_status = "disabled_by_ablation";
 
             if (meta_catalog.contains("compositions") &&
-                meta_catalog["compositions"].is_array() && !plan.unit_ids.empty()) {
+                meta_catalog["compositions"].is_array() && !plan.unit_ids.empty() &&
+                meta_set_compatible && !disable_opgg_meta) {
                 std::unordered_map<std::string, const ChampionDefinition*> by_key;
                 for (const auto& champion : pool) {
                     if (!champion.api_name.empty()) by_key[champion.api_name] = &champion;
@@ -414,6 +522,7 @@ public:
                 std::unordered_set<std::int32_t> no_core;
                 std::unordered_set<std::int32_t> no_stage_units;
                 const double own_score = lineup_score(plan.unit_ids, no_core, no_stage_units, 0.0);
+                meta_audit_native_score = own_score;
                 double best_meta_score = -std::numeric_limits<double>::infinity();
                 std::vector<std::int32_t> best_meta_ids;
                 std::vector<std::int32_t> best_meta_stage_ids;
@@ -428,14 +537,60 @@ public:
                     std::unordered_set<std::int32_t> core_ids;
                     std::vector<std::int32_t> core_order;
                     std::unordered_map<std::string, int> meta_trait_counts;
+                    std::size_t source_unit_count = 0;
+                    double item_fit_bonus = 0.0;
+                    double position_fit_bonus = 0.0;
                     for (const auto& unit : composition["units"]) {
                         if (!unit.is_object()) continue;
+                        ++source_unit_count;
                         const std::string key = unit.value("key", std::string{});
                         const auto found = by_key.find(key);
-                        if (found == by_key.end()) continue;
+                        if (found == by_key.end()) {
+                            ++meta_audit_unmapped_units;
+                            continue;
+                        }
                         const auto id = found->second->internal_id;
                         if (std::find(final_ids.begin(), final_ids.end(), id) != final_ids.end()) continue;
                         final_ids.push_back(id);
+
+                        // OP.GG item recommendations are useful only when the
+                        // item is already equipped or can be used from inventory.
+                        // Normalize source IDs without hard-coding a set's recipes.
+                        if (!disable_opgg_item_bonus &&
+                            unit.contains("items") && unit["items"].is_array()) {
+                            const auto equipped = live_context_value.equipped_items_by_champion.find(id);
+                            for (const auto& raw_item : unit["items"]) {
+                                if (!raw_item.is_string()) continue;
+                                const auto item_id = raw_item.get<std::string>();
+                                const auto canonical = canonical_item_id(item_id);
+                                const bool equipped_match = equipped != live_context_value.equipped_items_by_champion.end() &&
+                                    std::any_of(equipped->second.begin(), equipped->second.end(),
+                                        [&](const std::string& owned_item) {
+                                            return owned_item == item_id || owned_item == canonical ||
+                                                canonical_item_id(owned_item) == canonical;
+                                        });
+                                const bool available_match =
+                                    live_context_value.inventory_item_ids.count(item_id) != 0 ||
+                                    live_context_value.inventory_item_ids.count(canonical) != 0;
+                                if (equipped_match) item_fit_bonus += 0.12;
+                                else if (available_match) item_fit_bonus += 0.06;
+                            }
+                        }
+                        // Reward an already-correct OP.GG cell, but do not penalize
+                        // alternative positions: the native positioning engine can
+                        // still react to current combat threats.
+                        if (!disable_opgg_position_bonus &&
+                            unit.contains("cell") && unit["cell"].is_object() &&
+                            unit["cell"].contains("x") && unit["cell"].contains("y") &&
+                            unit["cell"]["x"].is_number_integer() &&
+                            unit["cell"]["y"].is_number_integer()) {
+                            const int recommended_slot = unit["cell"]["y"].get<int>() * 7 +
+                                unit["cell"]["x"].get<int>();
+                            const auto current_slot = live_context_value.board_slot_by_champion.find(id);
+                            if (current_slot != live_context_value.board_slot_by_champion.end() &&
+                                current_slot->second == recommended_slot)
+                                position_fit_bonus += 0.10;
+                        }
                         if (unit.value("is_core", false)) {
                             core_ids.insert(id);
                             core_order.push_back(id);
@@ -443,6 +598,17 @@ public:
                         for (const auto& trait : found->second->traits) ++meta_trait_counts[trait];
                     }
                     if (final_ids.empty()) continue;
+                    ++meta_audit_catalog_candidates;
+                    // A partially mapped deck can be misleadingly attractive if
+                    // its missing units are silently discarded. Keep native planning
+                    // in control unless at least 70% of its final lineup is known.
+                    const double mapping_coverage = source_unit_count == 0 ? 0.0
+                        : static_cast<double>(final_ids.size()) /
+                            static_cast<double>(source_unit_count);
+                    if (mapping_coverage < 0.70) {
+                        ++meta_audit_low_coverage_candidates;
+                        continue;
+                    }
 
                     const char* snapshot_key = current_level <= 5 ? "early_game"
                         : (current_level <= 7 ? "mid_game" : "");
@@ -494,6 +660,7 @@ public:
                          (owned_final_count >= 1 || offered_final_count >= 1)) ||
                         stage_owned_count >= 2;
                     if (!direction_aligned || !has_contextual_evidence) continue;
+                    ++meta_audit_contextual_candidates;
 
                     double stats_prior = 0.0;
                     if (composition.contains("statistics") && composition["statistics"].is_object()) {
@@ -505,9 +672,22 @@ public:
                         if (selected.is_object() && selected.value("totalCount", 0) >= 1000)
                             stats_prior = std::clamp(selected.value("top4Rate", 0.0), 0.0, 1.0) * 0.5;
                     }
-                    const double score = lineup_score(final_ids, core_ids, stage_ids, stats_prior) + stage_snapshot_bonus;
+                    // Compare meta and native lineups with the same base scorer.
+                    // Core/stage bonuses used to be added only to meta, making the
+                    // +1.0 margin incomparable and systematically favoring OP.GG.
+                    const double bounded_meta_prior = std::min(0.50,
+                        0.15 * static_cast<double>(owned_core_count) +
+                        0.10 * static_cast<double>(stage_owned_count));
+                    const double score = lineup_score(final_ids, no_core, no_stage_units, stats_prior)
+                        + bounded_meta_prior + std::min(0.25, stage_snapshot_bonus * 0.10)
+                        + std::min(0.35, item_fit_bonus)
+                        + std::min(0.15, position_fit_bonus);
                     if (score > best_meta_score) {
                         best_meta_score = score;
+                        meta_audit_best_score = score;
+                        meta_audit_best_item_position_bonus =
+                            std::min(0.35, item_fit_bonus) + std::min(0.15, position_fit_bonus);
+                        meta_audit_best_name = composition.value("name", std::string{"OP.GG meta"});
                         best_meta_ids = std::move(final_ids);
                         best_meta_stage_ids = std::move(stage_order);
                         best_meta_core_ids = std::move(core_order);
@@ -528,6 +708,7 @@ public:
                 // Require a real contextual advantage over the native planner.
                 // This prevents popularity alone from overriding a good own plan.
                 if (!best_meta_ids.empty() && best_meta_score >= own_score + 1.0) {
+                    meta_audit_status = "selected";
                     const auto native_ids = plan.unit_ids;
                     plan.unit_ids.clear();
                     plan.unit_names.clear();
@@ -583,11 +764,30 @@ public:
                         "OPGG_META_CANDIDATE: " + best_meta_name +
                         " (score=" + std::to_string(best_meta_score) +
                         ", native_score=" + std::to_string(own_score) + ")");
+                } else {
+                    // Record why the native planner remained in control.
+                    if (!best_meta_ids.empty()) {
+                        meta_audit_status = "candidate_below_native_margin";
+                    } else if (meta_audit_contextual_candidates == 0) {
+                        meta_audit_status = meta_audit_catalog_candidates == 0
+                            ? "no_mappable_candidates" : "no_contextual_candidate";
+                    }
                 }
             }
-        } catch (const std::exception&) {
+        } catch (const std::exception& error) {
             // A malformed/missing external catalog must never stop a game or training.
+            meta_audit_status = std::string("parse_or_evaluation_error:") + error.what();
         }
+        plan.acquisition_notes.push_back(
+            "OPGG_META_AUDIT: status=" + meta_audit_status +
+            "; catalog_candidates=" + std::to_string(meta_audit_catalog_candidates) +
+            "; context_candidates=" + std::to_string(meta_audit_contextual_candidates) +
+            "; unmapped_units=" + std::to_string(meta_audit_unmapped_units) +
+            "; low_coverage_candidates=" + std::to_string(meta_audit_low_coverage_candidates) +
+            "; best=" + (meta_audit_best_name.empty() ? std::string("none") : meta_audit_best_name) +
+            "; best_score=" + (std::isfinite(meta_audit_best_score) ? std::to_string(meta_audit_best_score) : std::string("n/a")) +
+            "; native_score=" + std::to_string(meta_audit_native_score) +
+            "; rule=meta must beat native score by >=1.0");
         return plan;
     }
 };

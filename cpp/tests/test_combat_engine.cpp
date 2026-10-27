@@ -692,6 +692,37 @@ void test_data_driven_trait_emblem_effects() {
         "A trait-count-gated team aura should grant the generic true-damage effect.");
 }
 
+void test_generic_source_ad_effect_changes_combat() {
+    tft::CombatEngine engine;
+    auto baseline_input = make_input();
+    baseline_input.config.max_duration = 0.5f;
+    baseline_input.config.record_damage = true;
+    baseline_input.player_a.units[0].attack_damage = 10.0f;
+    baseline_input.player_a.units[0].attack_speed = 10.0f;
+    baseline_input.player_b.units[0].armor = 0.0f;
+    baseline_input.player_b.units[0].max_hp = baseline_input.player_b.units[0].hp = 5000.0f;
+
+    const auto baseline = engine.simulate(baseline_input);
+    auto item_input = baseline_input;
+    tft::CombatItem item;
+    item.api_name = "TFT_Item_GenericSourceAD";
+    tft::CombatEffectDefinition source_ad;
+    source_ad.trigger = "combat_start";
+    source_ad.operation = "add_stat";
+    source_ad.stat = "attack_damage";
+    source_ad.target = "self";
+    source_ad.value = 0.55f;
+    source_ad.percent_of_stat = true;
+    item.effects.push_back(source_ad);
+    item_input.player_a.units[0].items.push_back(item);
+
+    const auto with_item = engine.simulate(item_input);
+    require(baseline.success && with_item.success,
+            "Generic source-derived AD effect should simulate.");
+    require(with_item.units.front().damage_dealt > baseline.units.front().damage_dealt,
+            "Normalized percentage AD effect must change actual combat damage.");
+}
+
 } // namespace
 
 int main() {
@@ -710,6 +741,7 @@ int main() {
         test_set17_healing_and_defensive_items_change_survival();
         test_set17_ionic_spark_and_emblem_passives();
         test_data_driven_trait_emblem_effects();
+        test_generic_source_ad_effect_changes_combat();
     } catch (const std::exception& error) {
         std::cerr << "test_combat_engine: " << error.what() << '\n';
         return 1;

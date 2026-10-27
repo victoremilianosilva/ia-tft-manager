@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "set_id": "Set10",
+  "set_id": "Set18",
   "source": "CommunityDragon",
   "source_file_format": "cdragon/tft JSON",
   "source_set_number": 18,
@@ -20,7 +20,7 @@
       "name": "Cota de Malha",
       "source_api_name": "TFT_Item_ChainVest",
       "source_effects": {
-        "Armor": 20.0
+        "Armor": 20
       }
     },
     {
@@ -34,7 +34,7 @@
       "name": "Cinto do Gigante",
       "source_api_name": "TFT_Item_GiantsBelt",
       "source_effects": {
-        "Health": 150.0
+        "Health": 150
       }
     },
     {
@@ -42,7 +42,7 @@
       "name": "Bastão Desnecessariamente Grande",
       "source_api_name": "TFT_Item_NeedlesslyLargeRod",
       "source_effects": {
-        "AP": 10.0
+        "AP": 10
       }
     },
     {
@@ -50,7 +50,7 @@
       "name": "Capa Negatron",
       "source_api_name": "TFT_Item_NegatronCloak",
       "source_effects": {
-        "MagicResist": 20.0
+        "MagicResist": 20
       }
     },
     {
@@ -58,7 +58,7 @@
       "name": "Arco Recurvo",
       "source_api_name": "TFT_Item_RecurveBow",
       "source_effects": {
-        "AS": 10.0
+        "AS": 10
       }
     },
     {
@@ -66,7 +66,7 @@
       "name": "Luvas do Pugilista",
       "source_api_name": "TFT_Item_SparringGloves",
       "source_effects": {
-        "CritChance": 20.0
+        "CritChance": 20
       }
     },
     {
@@ -74,7 +74,7 @@
       "name": "Espátula",
       "source_api_name": "TFT_Item_Spatula",
       "source_effects": {
-        "{fe9818ef}": 5.0
+        "{fe9818ef}": 5
       }
     },
     {
@@ -82,7 +82,7 @@
       "name": "Lágrima da Deusa",
       "source_api_name": "TFT_Item_TearOfTheGoddess",
       "source_effects": {
-        "ManaRegen": 1.0
+        "ManaRegen": 1
       }
     }
   ],
@@ -95,36 +95,43 @@
         "TFT_Item_TearOfTheGoddess"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 20.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 20,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
-        "tank": 1.0,
+        "carry": 1,
+        "tank": 1,
         "support": 0.5,
-        "utility": 0.0
+        "utility": 0
       },
       "source_api_name": "TFT_Item_AdaptiveHelm",
       "source_description": "Recebe mais @ManaPercIncrease*100@% de Mana de todas as origens. O usuário recebe um efeito adicional com base na Função:<br><br>Tanques e Lutadores: recebem @FrontlineResists@ de Armadura e Resistência Mágica.<br><br>Outras Funções: recebem @BacklineADAP@% de Dano de Ataque e de Poder de Habilidade. ",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_adaptivehelm.tex",
       "source_effects": {
-        "BacklineADAP": 10.0,
-        "FrontlineResists": 30.0,
-        "MagicResist": 20.0,
+        "BacklineADAP": 10,
+        "FrontlineResists": 30,
+        "MagicResist": 20,
         "ManaPercIncrease": 0.15000000596046448,
-        "ManaRegen": 3.0
+        "ManaRegen": 3
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "mana_regen",
+          "value": 3
+        }
+      ]
     },
     {
       "id": "TFT_Item_ArchangelsStaff",
@@ -134,35 +141,42 @@
         "TFT_Item_TearOfTheGoddess"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 30.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 30,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 1,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "TFT_Item_ArchangelsStaff",
       "source_description": "Início do combate: recebe @APPerInterval@% de Poder de Habilidade a cada @IntervalSeconds@s em combate.",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_archangelsstaff.tex",
       "source_effects": {
-        "AP": 30.0,
-        "APPerInterval": 20.0,
-        "IntervalSeconds": 5.0,
-        "ManaRegen": 1.0
+        "AP": 30,
+        "APPerInterval": 20,
+        "IntervalSeconds": 5,
+        "ManaRegen": 1
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "mana_regen",
+          "value": 1
+        }
+      ]
     },
     {
       "id": "TFT_Item_Bloodthirster",
@@ -172,39 +186,49 @@
         "TFT_Item_NegatronCloak"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 15.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 20.0,
-        "mana": 0.0,
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 15,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 20,
+        "mana": 0,
         "omnivamp": 0.20000000298023224,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
-        "tank": 1.0,
+        "carry": 1,
+        "tank": 1,
         "support": 0.5,
-        "utility": 0.0
+        "utility": 0
       },
       "source_api_name": "TFT_Item_Bloodthirster",
       "source_description": "Uma vez por combate, ao ficar com @HealthThreshold@% de Vida, recebe um Escudo de @ShieldHealthPercent@% da Vida máxima que dura até @ShieldDuration@s.",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_bloodthirster.tex",
       "source_effects": {
         "AD": 0.15000000596046448,
-        "AP": 15.0,
-        "HealthThreshold": 40.0,
-        "LifeSteal": 20.0,
-        "MagicResist": 20.0,
-        "ShieldDuration": 5.0,
-        "ShieldHealthPercent": 25.0,
+        "AP": 15,
+        "HealthThreshold": 40,
+        "LifeSteal": 20,
+        "MagicResist": 20,
+        "ShieldDuration": 5,
+        "ShieldHealthPercent": 25,
         "StatOmnivamp": 0.20000000298023224
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_damage",
+          "target": "self",
+          "value": 0.15000000596046448,
+          "percent_of_stat": true
+        }
+      ]
     },
     {
       "id": "TFT_Item_BlueBuff",
@@ -214,35 +238,50 @@
         "TFT_Item_TearOfTheGoddess"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 15.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 15,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 1,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "TFT_Item_BlueBuff",
       "source_description": "Recebe mais @ModifiedADAP*100@% de Dano de Ataque e de Poder de Habilidade de todas as origens.",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_bluebuff.tex",
       "source_effects": {
         "AD": 0.15000000596046448,
-        "AP": 15.0,
-        "ManaRegen": 5.0,
+        "AP": 15,
+        "ManaRegen": 5,
         "ModifiedADAP": 0.10000000149011612
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_damage",
+          "target": "self",
+          "value": 0.15000000596046448,
+          "percent_of_stat": true
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "mana_regen",
+          "value": 5
+        }
+      ]
     },
     {
       "id": "TFT_Item_BrambleVest",
@@ -252,40 +291,41 @@
         "TFT_Item_ChainVest"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 50.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 50,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 1.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 1,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "TFT_Item_BrambleVest",
       "source_description": "Recebe @PercentMaxHP*100@% de Vida máxima.<br><br>Sofre @AutoDamageReduction*100@% de dano reduzido de ataques. Ao ser atingido por qualquer ataque, causa <magicDamage>@1StarAoEDamage@ de Dano Mágico</magicDamage> a todos os inimigos próximos.<br><br><tftitemrules>Tempo de Recarga: @ICD@s</tftitemrules>",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_bramblevest.tex",
       "source_effects": {
-        "1StarAoEDamage": 100.0,
-        "2StarAoEDamage": 100.0,
-        "3StarAoEDamage": 100.0,
-        "4StarAoEDamage": 100.0,
-        "Armor": 50.0,
+        "1StarAoEDamage": 100,
+        "2StarAoEDamage": 100,
+        "3StarAoEDamage": 100,
+        "4StarAoEDamage": 100,
+        "Armor": 50,
         "AutoDamageReduction": 0.05000000074505806,
-        "ICD": 2.0,
+        "ICD": 2,
         "PercentMaxHP": 0.05999999865889549,
-        "{6688a0d5}": 100.0
+        "{6688a0d5}": 100
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": []
     },
     {
       "id": "TFT_Item_Crownguard",
@@ -295,37 +335,38 @@
         "TFT_Item_ChainVest"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 20.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 100.0,
-        "armor": 20.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 20,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 100,
+        "armor": 20,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
         "carry": 0.333333,
-        "tank": 1.0,
+        "tank": 1,
         "support": 0.666667,
-        "utility": 0.0
+        "utility": 0
       },
       "source_api_name": "TFT_Item_Crownguard",
       "source_description": "Início do combate: recebe um Escudo equivalente a @ShieldSize@% da Vida máxima por @ShieldDuration@s.<br><br>Quando o Escudo expira, recebe @ShieldBonusAP@% de Poder de Habilidade.<br>",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_crownguard.tex",
       "source_effects": {
-        "AP": 20.0,
-        "Armor": 20.0,
-        "Health": 100.0,
-        "ShieldBonusAP": 25.0,
-        "ShieldDuration": 8.0,
-        "ShieldSize": 25.0
+        "AP": 20,
+        "Armor": 20,
+        "Health": 100,
+        "ShieldBonusAP": 25,
+        "ShieldDuration": 8,
+        "ShieldSize": 25
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": []
     },
     {
       "id": "TFT_Item_Deathblade",
@@ -335,24 +376,24 @@
         "TFT_Item_BFSword"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 1,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "TFT_Item_Deathblade",
       "source_description": "<tftitemrules>Paz e calma absolutas para o portador... e todos que o enfrentarem.</tftitemrules><br><br>@TFTUnitProperty.:TFT_Augment_TragicalBlade_TRAKey@",
@@ -362,7 +403,17 @@
         "BonusDamage": 0.10000000149011612,
         "{1543aa48}": 0.10000000149011612
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_damage",
+          "target": "self",
+          "value": 0.550000011920929,
+          "percent_of_stat": true
+        }
+      ]
     },
     {
       "id": "TFT_Item_DragonsClaw",
@@ -372,36 +423,37 @@
         "TFT_Item_NegatronCloak"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 60.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 60,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 1.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 1,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "TFT_Item_DragonsClaw",
       "source_description": "Recebe @PercentMaxHP*100@% de Vida máxima.<br><br>Cura @PercentHealthDamage@% da Vida máxima a cada @HealthRegenInterval@s.",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_dragonsclaw.tex",
       "source_effects": {
-        "HealthRegenInterval": 2.0,
+        "HealthRegenInterval": 2,
         "ICD": 0.5,
-        "MagicResist": 60.0,
+        "MagicResist": 60,
         "PercentHealthDamage": 2.5,
         "PercentMaxHP": 0.05999999865889549
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": []
     },
     {
       "id": "TFT_Item_ForceOfNature",
@@ -411,33 +463,34 @@
         "TFT_Item_Spatula"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 1.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "TFT_Item_ForceOfNature",
       "source_description": "Sua equipe recebe +@MaxArmySizeIncrease@ de tamanho máximo.<br><br>@PercentGoldChance@% de chance de conceder 1 de ouro ao vencer um combate.<br><br><tftitemrules>\"... o Coração de um herói...\"</tftitemrules>",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_forceofnature.tex",
       "source_effects": {
-        "MaxArmySizeIncrease": 1.0,
-        "PercentGoldChance": 10.0
+        "MaxArmySizeIncrease": 1,
+        "PercentGoldChance": 10
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": []
     },
     {
       "id": "TFT_Item_FrozenHeart",
@@ -447,39 +500,46 @@
         "TFT_Item_ChainVest"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 25.0,
-        "magic_resist": 25.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 25,
+        "magic_resist": 25,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
         "carry": 0.666667,
-        "tank": 1.0,
+        "tank": 1,
         "support": 0.333333,
-        "utility": 0.0
+        "utility": 0
       },
       "source_api_name": "TFT_Item_FrozenHeart",
       "source_description": "Início do combate: Recebe @CombatStartMana@ de Mana.<br><br>Com @HealthThreshold@% de Vida, recebe @TriggerMana@ de Mana e um Escudo igual a @ShieldHealthPercent@% da Vida máxima.",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_frozenheart.tex",
       "source_effects": {
-        "Armor": 25.0,
-        "CombatStartMana": 20.0,
-        "HealthThreshold": 40.0,
-        "MagicResist": 25.0,
-        "ManaRegen": 1.0,
-        "ShieldDuration": 60.0,
-        "ShieldHealthPercent": 20.0,
-        "TriggerMana": 15.0
+        "Armor": 25,
+        "CombatStartMana": 20,
+        "HealthThreshold": 40,
+        "MagicResist": 25,
+        "ManaRegen": 1,
+        "ShieldDuration": 60,
+        "ShieldHealthPercent": 20,
+        "TriggerMana": 15
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "mana_regen",
+          "value": 1
+        }
+      ]
     },
     {
       "id": "TFT_Item_GargoyleStoneplate",
@@ -489,38 +549,39 @@
         "TFT_Item_NegatronCloak"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 100.0,
-        "armor": 25.0,
-        "magic_resist": 25.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 100,
+        "armor": 25,
+        "magic_resist": 25,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 1.0,
-        "support": 0.0,
+        "carry": 0,
+        "tank": 1,
+        "support": 0,
         "utility": 0.2
       },
       "source_api_name": "TFT_Item_GargoyleStoneplate",
       "source_description": "Recebe @ArmorPerEnemy@ de Armadura e @MRPerEnemy@ de Resistência Mágica para cada inimigo que tiver o usuário como alvo.",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_gargoylestoneplate.tex",
       "source_effects": {
-        "Armor": 25.0,
-        "ArmorPerEnemy": 10.0,
-        "Health": 100.0,
-        "MRPerEnemy": 10.0,
-        "MagicResist": 25.0,
+        "Armor": 25,
+        "ArmorPerEnemy": 10,
+        "Health": 100,
+        "MRPerEnemy": 10,
+        "MagicResist": 25,
         "SizeIncrease": 0.07500000298023224,
-        "{4dc0582f}": 20.0
+        "{4dc0582f}": 20
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": []
     },
     {
       "id": "TFT_Item_GuardianAngel",
@@ -530,23 +591,23 @@
         "TFT_Item_ChainVest"
       ],
       "stats": {
-        "attack_damage": 0.0,
+        "attack_damage": 0,
         "attack_speed": 0.15,
-        "ability_power": 10.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 20.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "ability_power": 10,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 20,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
-        "tank": 1.0,
-        "support": 0.0,
+        "carry": 1,
+        "tank": 1,
+        "support": 0,
         "utility": 0.333333
       },
       "source_api_name": "TFT_Item_GuardianAngel",
@@ -554,15 +615,25 @@
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_guardianangel.tex",
       "source_effects": {
         "AD": 0.10000000149011612,
-        "AP": 10.0,
-        "AS": 15.0,
-        "Armor": 20.0,
-        "DamageReduction": 100.0,
-        "HealthThreshold": 60.0,
+        "AP": 10,
+        "AS": 15,
+        "Armor": 20,
+        "DamageReduction": 100,
+        "HealthThreshold": 60,
         "MissingHealthRestore": 0.20000000298023224,
-        "StealthDuration": 1.0
+        "StealthDuration": 1
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_damage",
+          "target": "self",
+          "value": 0.10000000149011612,
+          "percent_of_stat": true
+        }
+      ]
     },
     {
       "id": "TFT_Item_GuinsoosRageblade",
@@ -572,34 +643,35 @@
         "TFT_Item_NeedlesslyLargeRod"
       ],
       "stats": {
-        "attack_damage": 0.0,
+        "attack_damage": 0,
         "attack_speed": 0.1,
-        "ability_power": 10.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "ability_power": 10,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 1,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "TFT_Item_GuinsoosRageblade",
       "source_description": "Recebe @AttackSpeedPerStack@% de Velocidade de Ataque cumulativa por segundo.",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_guinsoosrageblade.tex",
       "source_effects": {
-        "AP": 10.0,
-        "AS": 10.0,
-        "AttackSpeedPerStack": 7.0
+        "AP": 10,
+        "AS": 10,
+        "AttackSpeedPerStack": 7
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": []
     },
     {
       "id": "TFT_Item_HextechGunblade",
@@ -609,37 +681,52 @@
         "TFT_Item_NeedlesslyLargeRod"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 20.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 20,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
         "omnivamp": 0.15000000596046448,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
-        "tank": 0.0,
+        "carry": 1,
+        "tank": 0,
         "support": 0.333333,
-        "utility": 0.0
+        "utility": 0
       },
       "source_api_name": "TFT_Item_HextechGunblade",
       "source_description": "Cura o aliado com a menor porcentagem de Vida em @AllyHealing*100@% do dano causado.<br><br><TFTTrackerLabel>Cura de aliado:</TFTTrackerLabel> <TFTHighlight>@TFTUnitProperty.item:TFT_Tracker_Value1@</TFTHighlight>",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_hextechgunblade.tex",
       "source_effects": {
         "AD": 0.20000000298023224,
-        "AP": 20.0,
+        "AP": 20,
         "AllyHealing": 0.20000000298023224,
-        "ManaRegen": 1.0,
-        "Omnivamp": 18.0,
+        "ManaRegen": 1,
+        "Omnivamp": 18,
         "StatOmnivamp": 0.15000000596046448
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_damage",
+          "target": "self",
+          "value": 0.20000000298023224,
+          "percent_of_stat": true
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "mana_regen",
+          "value": 1
+        }
+      ]
     },
     {
       "id": "TFT_Item_InfinityEdge",
@@ -649,34 +736,44 @@
         "TFT_Item_SparringGloves"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
         "critical_strike_chance": 0.35,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 1,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "TFT_Item_InfinityEdge",
       "source_description": "Recebe <TFTKeyword>Precisão</TFTKeyword>.<br><br>{{TFT_Keyword_Precision}}",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_infinityedge.tex",
       "source_effects": {
         "AD": 0.3499999940395355,
-        "CritChance": 35.0,
+        "CritChance": 35,
         "CritDamageToGive": null
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_damage",
+          "target": "self",
+          "value": 0.3499999940395355,
+          "percent_of_stat": true
+        }
+      ]
     },
     {
       "id": "TFT_Item_IonicSpark",
@@ -686,22 +783,22 @@
         "TFT_Item_NegatronCloak"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 15.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 250.0,
-        "armor": 0.0,
-        "magic_resist": 35.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 15,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 250,
+        "armor": 0,
+        "magic_resist": 35,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
-        "tank": 1.0,
+        "carry": 1,
+        "tank": 1,
         "support": 0.5,
         "utility": 0.5
       },
@@ -709,15 +806,16 @@
       "source_description": "Causa @MRShred@% de <TFTKeyword>Fragmentação</TFTKeyword> aos inimigos em até @HexRange@ casas adjacentes. Quando conjuram uma Habilidade, os inimigos sofrem Dano Mágico equivalente a @ManaRatio@% do Mana gasto.<br><br><tftitemrules><tftbold>Fragmentação:</tftbold> reduz a Resistência Mágica.</tftitemrules>",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_ionicspark.tex",
       "source_effects": {
-        "AP": 15.0,
-        "Damage": 250.0,
-        "Health": 250.0,
-        "HexRange": 2.0,
-        "MRShred": 30.0,
-        "MagicResist": 35.0,
-        "ManaRatio": 150.0
+        "AP": 15,
+        "Damage": 250,
+        "Health": 250,
+        "HexRange": 2,
+        "MRShred": 30,
+        "MagicResist": 35,
+        "ManaRatio": 150
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": []
     },
     {
       "id": "TFT_Item_JeweledGauntlet",
@@ -727,34 +825,35 @@
         "TFT_Item_SparringGloves"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 35.0,
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 35,
         "critical_strike_chance": 0.35,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 1,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "TFT_Item_JeweledGauntlet",
       "source_description": "Recebe <TFTKeyword>Precisão</TFTKeyword>.<br><br>{{TFT_Keyword_Precision}}",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_jeweledgauntlet.tex",
       "source_effects": {
-        "AP": 35.0,
-        "CritChance": 35.0,
+        "AP": 35,
+        "CritChance": 35,
         "CritDamageToGive": null
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": []
     },
     {
       "id": "TFT_Item_LastWhisper",
@@ -764,36 +863,46 @@
         "TFT_Item_SparringGloves"
       ],
       "stats": {
-        "attack_damage": 0.0,
+        "attack_damage": 0,
         "attack_speed": 0.2,
-        "ability_power": 0.0,
+        "ability_power": 0,
         "critical_strike_chance": 0.2,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
-        "tank": 0.0,
+        "carry": 1,
+        "tank": 0,
         "support": 0.666667,
-        "utility": 0.0
+        "utility": 0
       },
       "source_api_name": "TFT_Item_LastWhisper",
       "source_description": "O dano de ataques e habilidades causa @ArmorReductionPercent@% de <TFTKeyword>Fatiamento</TFTKeyword> ao alvo por @ArmorBreakDuration@s. Esse efeito não acumula.<br><br><tftitemrules><tftbold>Fatiamento:</tftbold> reduz a Armadura</tftitemrules>",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_lastwhisper.tex",
       "source_effects": {
         "AD": 0.15000000596046448,
-        "AS": 20.0,
-        "ArmorBreakDuration": 3.0,
-        "ArmorReductionPercent": 30.0,
-        "CritChance": 20.0
+        "AS": 20,
+        "ArmorBreakDuration": 3,
+        "ArmorReductionPercent": 30,
+        "CritChance": 20
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_damage",
+          "target": "self",
+          "value": 0.15000000596046448,
+          "percent_of_stat": true
+        }
+      ]
     },
     {
       "id": "TFT_Item_Leviathan",
@@ -803,37 +912,38 @@
         "TFT_Item_GiantsBelt"
       ],
       "stats": {
-        "attack_damage": 0.0,
+        "attack_damage": 0,
         "attack_speed": 0.1,
-        "ability_power": 15.0,
+        "ability_power": 15,
         "critical_strike_chance": 0.2,
-        "critical_strike_damage": 0.0,
-        "health": 150.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "critical_strike_damage": 0,
+        "health": 150,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
+        "carry": 1,
         "tank": 0.2,
-        "support": 0.0,
-        "utility": 0.0
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "TFT_Item_Leviathan",
       "source_description": "Ataques concedem @BaseManaOnHit@ de Mana adicional, aumentado para @ManaOnCrit@ em caso de Acerto Crítico.",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_leviathan.tex",
       "source_effects": {
-        "AP": 15.0,
-        "AS": 10.0,
+        "AP": 15,
+        "AS": 10,
         "BaseManaOnHit": 2,
-        "CritChance": 20.0,
-        "Health": 150.0,
-        "ManaOnCrit": 4.0
+        "CritChance": 20,
+        "Health": 150,
+        "ManaOnCrit": 4
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": []
     },
     {
       "id": "TFT_Item_MadredsBloodrazor",
@@ -843,37 +953,47 @@
         "TFT_Item_RecurveBow"
       ],
       "stats": {
-        "attack_damage": 0.0,
+        "attack_damage": 0,
         "attack_speed": 0.15,
-        "ability_power": 15.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
+        "ability_power": 15,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
         "damage_amplification": 0.15000000596046448,
-        "damage_reduction": 0.0
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 1,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "TFT_Item_MadredsBloodrazor",
       "source_description": "Recebe @DamageAmp*100@% de Amplificação de Dano adicional contra Tanques.",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_madredsbloodrazor.tex",
       "source_effects": {
         "AD": 0.15000000596046448,
-        "AP": 15.0,
-        "AS": 15.0,
+        "AP": 15,
+        "AS": 15,
         "DamageAmp": 0.15000000596046448,
         "{1543aa48}": 0.15000000596046448,
-        "{abb9f4ce}": 25.0
+        "{abb9f4ce}": 25
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_damage",
+          "target": "self",
+          "value": 0.15000000596046448,
+          "percent_of_stat": true
+        }
+      ]
     },
     {
       "id": "TFT_Item_Morellonomicon",
@@ -883,21 +1003,21 @@
         "TFT_Item_GiantsBelt"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 20.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 150.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 20,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 150,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
+        "carry": 1,
         "tank": 0.5,
         "support": 0.5,
         "utility": 0.5
@@ -906,16 +1026,23 @@
       "source_description": "Ataques e Habilidades causam @BurnPercent@% de <TFTKeyword>Queimadura</TFTKeyword> e @GrievousWoundsPercent@% de <TFTKeyword>Ferimento</TFTKeyword> aos inimigos por @BurnDuration@s.<br><br><tftitemrules><tftbold>Queimadura</tftbold>: causa uma porcentagem da Vida máxima do alvo como Dano Verdadeiro a cada segundo.<br><tftbold>Ferimento</tftbold>: reduz a cura recebida.</tftitemrules>",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_morellonomicon.tex",
       "source_effects": {
-        "AP": 20.0,
-        "BurnDuration": 10.0,
-        "BurnPercent": 1.0,
-        "GrievousWoundsPercent": 33.0,
-        "Health": 150.0,
-        "ManaRegen": 1.0,
-        "MonsterCap": 100.0,
-        "TicksPerSecond": 1.0
+        "AP": 20,
+        "BurnDuration": 10,
+        "BurnPercent": 1,
+        "GrievousWoundsPercent": 33,
+        "Health": 150,
+        "ManaRegen": 1,
+        "MonsterCap": 100,
+        "TicksPerSecond": 1
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "mana_regen",
+          "value": 1
+        }
+      ]
     },
     {
       "id": "TFT_Item_NightHarvester",
@@ -925,37 +1052,38 @@
         "TFT_Item_SparringGloves"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
         "critical_strike_chance": 0.2,
-        "critical_strike_damage": 0.0,
-        "health": 250.0,
-        "armor": 20.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "critical_strike_damage": 0,
+        "health": 250,
+        "armor": 20,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
         "carry": 0.25,
-        "tank": 1.0,
-        "support": 0.0,
-        "utility": 0.0
+        "tank": 1,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "TFT_Item_NightHarvester",
       "source_description": "Recebe @BaseDurability*100@% de Durabilidade. Enquanto estiver com mais de @ThresholdForEmpower*100@% de Vida, recebe @EmpoweredDurability*100@% de Durabilidade.<br><br>@TFTUnitProperty.:TFT_Augment_WarmogsBuckle_TRAKey@",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_nightharvester.tex",
       "source_effects": {
-        "Armor": 20.0,
+        "Armor": 20,
         "BaseDurability": 0.05000000074505806,
-        "CritChance": 20.0,
+        "CritChance": 20,
         "EmpoweredDurability": 0.15000000596046448,
-        "Health": 250.0,
+        "Health": 250,
         "ThresholdForEmpower": 0.5
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": []
     },
     {
       "id": "TFT_Item_PowerGauntlet",
@@ -965,38 +1093,39 @@
         "TFT_Item_SparringGloves"
       ],
       "stats": {
-        "attack_damage": 0.0,
+        "attack_damage": 0,
         "attack_speed": 0.1,
-        "ability_power": 0.0,
+        "ability_power": 0,
         "critical_strike_chance": 0.2,
-        "critical_strike_damage": 0.0,
-        "health": 150.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "critical_strike_damage": 0,
+        "health": 150,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
+        "carry": 1,
         "tank": 0.5,
         "support": 0.5,
-        "utility": 1.0
+        "utility": 1
       },
       "source_api_name": "TFT_Item_PowerGauntlet",
       "source_description": "Acertos Críticos concedem @BuffDamageAmp*100@% de Amplificação de Dano por @Duration@s, acumulando até @MaxStacks@x.",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_powergauntlet.tex",
       "source_effects": {
-        "AS": 10.0,
+        "AS": 10,
         "BuffDamageAmp": 0.05000000074505806,
-        "CritChance": 20.0,
-        "Duration": 5.0,
-        "Health": 150.0,
-        "MaxStacks": 4.0,
+        "CritChance": 20,
+        "Duration": 5,
+        "Health": 150,
+        "MaxStacks": 4,
         "{1543aa48}": 0.10000000149011612
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": []
     },
     {
       "id": "TFT_Item_Quicksilver",
@@ -1006,36 +1135,37 @@
         "TFT_Item_NegatronCloak"
       ],
       "stats": {
-        "attack_damage": 0.0,
+        "attack_damage": 0,
         "attack_speed": 0.15,
-        "ability_power": 0.0,
+        "ability_power": 0,
         "critical_strike_chance": 0.2,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 20.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 20,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
+        "carry": 1,
         "tank": 0.5,
-        "support": 0.0,
-        "utility": 0.0
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "TFT_Item_Quicksilver",
       "source_description": "Início do combate: Recebe imunidade a Controle de Grupo por @SpellShieldDuration@s.<br><br>Recebe @ProcAttackSpeed*100@% de Velocidade de Ataque cumulativa por segundo.",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_quicksilver.tex",
       "source_effects": {
-        "AS": 15.0,
-        "CritChance": 20.0,
-        "MagicResist": 20.0,
+        "AS": 15,
+        "CritChance": 20,
+        "MagicResist": 20,
         "ProcAttackSpeed": 0.029999999329447746,
-        "SpellShieldDuration": 18.0
+        "SpellShieldDuration": 18
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": []
     },
     {
       "id": "TFT_Item_RabadonsDeathcap",
@@ -1045,34 +1175,35 @@
         "TFT_Item_NeedlesslyLargeRod"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 55.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 55,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 1,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "TFT_Item_RabadonsDeathcap",
       "source_description": "<tftitemrules>Esse humilde chapéu pode te ajudar a fazer (ou desfazer) o próprio mundo.</tftitemrules><br><br>@TFTUnitProperty.:TFT_Augment_DeadlierCaps_TRAKey@",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_rabadonsdeathcap.tex",
       "source_effects": {
-        "AP": 55.0,
+        "AP": 55,
         "BonusDamage": 0.15000000596046448,
         "{1543aa48}": 0.15000000596046448
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": []
     },
     {
       "id": "TFT_Item_RapidFireCannon",
@@ -1082,39 +1213,40 @@
         "TFT_Item_RecurveBow"
       ],
       "stats": {
-        "attack_damage": 0.0,
+        "attack_damage": 0,
         "attack_speed": 0.45,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
-        "tank": 0.0,
+        "carry": 1,
+        "tank": 0,
         "support": 0.5,
-        "utility": 1.0
+        "utility": 1
       },
       "source_api_name": "TFT_Item_RapidFireCannon",
       "source_description": "Ataques e Habilidades causam @BurnPercent@% de <TFTKeyword>Queimadura</TFTKeyword> e @HealingReductionPct@% de <TFTKeyword>Ferimento</TFTKeyword> a inimigos por @Duration@s.<br><br><tftitemrules><tftbold>Queimadura</tftbold>: causa dano equivalente a uma porcentagem da Vida máxima do alvo como Dano Verdadeiro a cada segundo.<br><tftbold>Ferimento</tftbold>: reduz a cura recebida.</tftitemrules>",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_rapidfirecannon.tex",
       "source_effects": {
-        "AS": 45.0,
+        "AS": 45,
         "BonusDamage": 0.05999999865889549,
-        "BurnPercent": 1.0,
-        "Duration": 5.0,
-        "HealingReductionPct": 33.0,
-        "HexRangeIncrease": 1.0,
+        "BurnPercent": 1,
+        "Duration": 5,
+        "HealingReductionPct": 33,
+        "HexRangeIncrease": 1,
         "{1543aa48}": 0.029999999329447746,
-        "{9f5117db}": 100.0
+        "{9f5117db}": 100
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": []
     },
     {
       "id": "TFT_Item_RedBuff",
@@ -1124,22 +1256,22 @@
         "TFT_Item_GiantsBelt"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 150.0,
-        "armor": 20.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 150,
+        "armor": 20,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 1.0,
+        "carry": 0,
+        "tank": 1,
         "support": 0.333333,
         "utility": 0.666667
       },
@@ -1147,17 +1279,18 @@
       "source_description": "Recebe @BonusPercentHP*100@% de Vida máxima. <br><br>A cada @ICD@s, causa @BurnPercent@% de <TFTKeyword>Queimadura</TFTKeyword> e @GrievousWoundsPercent@% de <TFTKeyword>Ferimento</TFTKeyword> a um inimigo em um raio de @HexRange@ casas por @BurnDuration@s.<br><br><tftitemrules><tftbold>Queimadura</tftbold>: Causa uma porcentagem da Vida máxima do alvo como Dano Verdadeiro a cada segundo.<br><tftbold>Ferimento</tftbold>: Reduz a cura recebida.</tftitemrules>",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_redbuff.tex",
       "source_effects": {
-        "Armor": 20.0,
+        "Armor": 20,
         "BonusPercentHP": 0.07999999821186066,
-        "BurnDuration": 10.0,
-        "BurnPercent": 1.0,
-        "GrievousWoundsPercent": 33.0,
-        "Health": 150.0,
-        "HexRange": 2.0,
-        "ICD": 2.0,
-        "MonsterCap": 100.0
+        "BurnDuration": 10,
+        "BurnPercent": 1,
+        "GrievousWoundsPercent": 33,
+        "Health": 150,
+        "HexRange": 2,
+        "ICD": 2,
+        "MonsterCap": 100
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": []
     },
     {
       "id": "TFT_Item_Redemption",
@@ -1167,37 +1300,44 @@
         "TFT_Item_GiantsBelt"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 300.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 300,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
         "carry": 0.333333,
         "tank": 0.333333,
-        "support": 1.0,
-        "utility": 0.0
+        "support": 1,
+        "utility": 0
       },
       "source_api_name": "TFT_Item_Redemption",
       "source_description": "Regenera @MissingHealthHeal*100@% da Vida perdida a cada segundo.",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_spiritvisagerr.tex",
       "source_effects": {
-        "HealTickRate": 1.0,
-        "Health": 300.0,
-        "ManaRegen": 2.0,
-        "MaxHeal": 250.0,
+        "HealTickRate": 1,
+        "Health": 300,
+        "ManaRegen": 2,
+        "MaxHeal": 250,
         "MissingHealthHeal": 0.019999999552965164,
         "{cd951938}": 0.07999999821186066
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "mana_regen",
+          "value": 2
+        }
+      ]
     },
     {
       "id": "TFT_Item_RunaansHurricane",
@@ -1207,23 +1347,23 @@
         "TFT_Item_RecurveBow"
       ],
       "stats": {
-        "attack_damage": 0.0,
+        "attack_damage": 0,
         "attack_speed": 0.1,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 20.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 20,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
+        "carry": 1,
         "tank": 0.25,
-        "support": 0.0,
+        "support": 0,
         "utility": 0.25
       },
       "source_api_name": "TFT_Item_RunaansHurricane",
@@ -1232,12 +1372,22 @@
       "source_effects": {
         "AD": 0.10000000149011612,
         "ADOnAttack": 0.03500000014901161,
-        "AS": 10.0,
+        "AS": 10,
         "ASCapstone": 0.15000000596046448,
-        "MagicResist": 20.0,
-        "MaxStacks": 15.0
+        "MagicResist": 20,
+        "MaxStacks": 15
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_damage",
+          "target": "self",
+          "value": 0.10000000149011612,
+          "percent_of_stat": true
+        }
+      ]
     },
     {
       "id": "TFT_Item_SpearOfShojin",
@@ -1247,35 +1397,50 @@
         "TFT_Item_TearOfTheGoddess"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 15.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 15,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 1,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "TFT_Item_SpearOfShojin",
       "source_description": "Ataques concedem @FlatManaRestore@ de Mana adicional.",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_spearofshojin.tex",
       "source_effects": {
         "AD": 0.15000000596046448,
-        "AP": 15.0,
-        "FlatManaRestore": 5.0,
-        "ManaRegen": 1.0
+        "AP": 15,
+        "FlatManaRestore": 5,
+        "ManaRegen": 1
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_damage",
+          "target": "self",
+          "value": 0.15000000596046448,
+          "percent_of_stat": true
+        },
+        {
+          "trigger": "combat_start",
+          "operation": "mana_regen",
+          "value": 1
+        }
+      ]
     },
     {
       "id": "TFT_Item_SpectralGauntlet",
@@ -1285,37 +1450,38 @@
         "TFT_Item_GiantsBelt"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 250.0,
-        "armor": 0.0,
-        "magic_resist": 20.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 250,
+        "armor": 0,
+        "magic_resist": 20,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 1.0,
-        "support": 0.0,
+        "carry": 0,
+        "tank": 1,
+        "support": 0,
         "utility": 0.333333
       },
       "source_api_name": "TFT_Item_SpectralGauntlet",
       "source_description": "Causa @ARReductionAmount@% de <TFTKeyword>Fatiamento</TFTKeyword> aos inimigos em até @HexRange@ casas adjacentes. Recebe @BonusResists@ de Armadura e Resistência Mágica nos primeiros @BonusResistDuration@s de combate.<br><br><tftitemrules><tftbold>Fatiamento</tftbold>: reduz a Armadura.</tftitemrules>",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_spectralgauntlet.tex",
       "source_effects": {
-        "ARReductionAmount": 30.0,
-        "BonusResistDuration": 15.0,
-        "BonusResists": 15.0,
-        "Health": 250.0,
-        "HexRange": 2.0,
-        "MagicResist": 20.0
+        "ARReductionAmount": 30,
+        "BonusResistDuration": 15,
+        "BonusResists": 15,
+        "Health": 250,
+        "HexRange": 2,
+        "MagicResist": 20
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": []
     },
     {
       "id": "TFT_Item_StatikkShiv",
@@ -1325,36 +1491,43 @@
         "TFT_Item_TearOfTheGoddess"
       ],
       "stats": {
-        "attack_damage": 0.0,
+        "attack_damage": 0,
         "attack_speed": 0.15,
-        "ability_power": 35.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "ability_power": 35,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
-        "tank": 0.0,
+        "carry": 1,
+        "tank": 0,
         "support": 0.333333,
-        "utility": 0.0
+        "utility": 0
       },
       "source_api_name": "TFT_Item_StatikkShiv",
       "source_description": "O dano de ataques e habilidades causa @MRShred@% de <TFTKeyword>Fragmentação</TFTKeyword> ao alvo por @MRShredDuration@s. Esse efeito não acumula.<br><br><tftitemrules><tftbold>Fragmentação:</tftbold> reduz a Resistência Mágica</tftitemrules>",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_voidstaff.tex",
       "source_effects": {
-        "AP": 35.0,
-        "AS": 15.0,
-        "MRShred": 30.0,
-        "MRShredDuration": 5.0,
-        "ManaRegen": 1.0
+        "AP": 35,
+        "AS": 15,
+        "MRShred": 30,
+        "MRShredDuration": 5,
+        "ManaRegen": 1
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "mana_regen",
+          "value": 1
+        }
+      ]
     },
     {
       "id": "TFT_Item_SteraksGage",
@@ -1364,36 +1537,46 @@
         "TFT_Item_GiantsBelt"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 300.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 300,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
         "carry": 0.5,
-        "tank": 1.0,
+        "tank": 1,
         "support": 0.5,
-        "utility": 0.0
+        "utility": 0
       },
       "source_api_name": "TFT_Item_SteraksGage",
       "source_description": "Quando está com @HealthThreshold@% de Vida, o usuário recebe um escudo equivalente a @PercentHealthShield*100@% da própria Vida máxima que decai rapidamente por @ShieldDuration@s.",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_steraksgage.tex",
       "source_effects": {
         "AD": 0.44999998807907104,
-        "Health": 300.0,
-        "HealthThreshold": 60.0,
+        "Health": 300,
+        "HealthThreshold": 60,
         "PercentHealthShield": 0.4000000059604645,
-        "ShieldDuration": 4.0
+        "ShieldDuration": 4
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_damage",
+          "target": "self",
+          "value": 0.44999998807907104,
+          "percent_of_stat": true
+        }
+      ]
     },
     {
       "id": "TFT_Item_TacticiansRing",
@@ -1403,34 +1586,35 @@
         "TFT_Item_FryingPan"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 1.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "TFT_Item_TacticiansRing",
       "source_description": "Sua equipe recebe +@MaxArmySizeIncrease@ de tamanho máximo.<br><br>@PercentGoldChance@% de chance de conceder 1 de ouro após @Timer@s de combate.<br><br><tftitemrules>\"... e um pouquinho de Sorte.\"</tftitemrules>",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_tacticiansring.tex",
       "source_effects": {
-        "MaxArmySizeIncrease": 1.0,
-        "PercentGoldChance": 10.0,
-        "Timer": 10.0
+        "MaxArmySizeIncrease": 1,
+        "PercentGoldChance": 10,
+        "Timer": 10
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": []
     },
     {
       "id": "TFT_Item_TacticiansScepter",
@@ -1440,33 +1624,34 @@
         "TFT_Item_FryingPan"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 1.0
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "TFT_Item_TacticiansScepter",
       "source_description": "Sua equipe recebe +@MaxArmySizeIncrease@ de tamanho máximo.<br><br>@PercentGoldChance@% de chance de conceder 1 de ouro quando o usuário morrer.<br><br><tftitemrules>\"Imbuído da sabedoria de um filósofo...\"</tftitemrules>",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_tacticiansscepter.tex",
       "source_effects": {
-        "MaxArmySizeIncrease": 1.0,
-        "PercentGoldChance": 10.0
+        "MaxArmySizeIncrease": 1,
+        "PercentGoldChance": 10
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": []
     },
     {
       "id": "TFT_Item_ThiefsGloves",
@@ -1476,33 +1661,34 @@
         "TFT_Item_SparringGloves"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
         "critical_strike_chance": 0.2,
-        "critical_strike_damage": 0.0,
-        "health": 150.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "critical_strike_damage": 0,
+        "health": 150,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
         "carry": 0.5,
         "tank": 0.5,
-        "support": 0.0,
-        "utility": 1.0
+        "support": 0,
+        "utility": 1
       },
       "source_api_name": "TFT_Item_ThiefsGloves",
       "source_description": "A cada rodada: equipa 2 itens aleatórios.<br><br><tftitemrules>[Consome 3 espaços de item.]</tftitemrules><br>@TFTUnitProperty.:TFT_BindOnEquipTRA@",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_thiefsgloves.tex",
       "source_effects": {
-        "CritChance": 20.0,
-        "Health": 150.0
+        "CritChance": 20,
+        "Health": 150
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": []
     },
     {
       "id": "TFT_Item_TitansResolve",
@@ -1512,37 +1698,38 @@
         "TFT_Item_RecurveBow"
       ],
       "stats": {
-        "attack_damage": 0.0,
+        "attack_damage": 0,
         "attack_speed": 0.1,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 20.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 20,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
+        "carry": 1,
         "tank": 0.333333,
-        "support": 0.0,
-        "utility": 0.0
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "TFT_Item_TitansResolve",
       "source_description": "Recebe @StackingAD*100@% de Dano de Ataque e @StackingSP@% de Poder de Habilidade ao atacar ou sofrer dano, acumulando até @StackCap@ vezes. <br><br>Com o máximo de acúmulos, recebe @StackedAmp*100@% de Amplificação de Dano e imunidade a Controle de Grupo.",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_titansresolve.tex",
       "source_effects": {
-        "AS": 10.0,
-        "Armor": 20.0,
-        "StackCap": 25.0,
+        "AS": 10,
+        "Armor": 20,
+        "StackCap": 25,
         "StackedAmp": 0.10000000149011612,
         "StackingAD": 0.019999999552965164,
-        "StackingSP": 2.0
+        "StackingSP": 2
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": []
     },
     {
       "id": "TFT_Item_UnstableConcoction",
@@ -1552,38 +1739,45 @@
         "TFT_Item_SparringGloves"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
         "critical_strike_chance": 0.2,
-        "critical_strike_damage": 0.0,
-        "health": 0.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 1.0,
-        "tank": 0.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 1,
+        "tank": 0,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "TFT_Item_UnstableConcoction",
       "source_description": "Recebe 2 efeitos:<li>@AD_NotStatBar*100@% de Dano de Ataque e @AP_NotStatBar@% de Poder de Habilidade.<li>@StatOmnivamp_NotStatBar*100@% de Vampirismo Universal.<br><br>Enquanto estiver com mais de @HealthThreshold*100@% de Vida, terá o dobro de Dano de Ataque e Poder de Habilidade. Enquanto estiver com menos de @HealthThreshold*100@% de Vida, dobrará o Vampirismo Universal.",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_unstableconcoction.tex",
       "source_effects": {
         "AD_NotStatBar": 0.15000000596046448,
-        "AP_NotStatBar": 15.0,
-        "CritChance": 20.0,
+        "AP_NotStatBar": 15,
+        "CritChance": 20,
         "HealthThreshold": 0.5,
-        "ManaRegen": 1.0,
+        "ManaRegen": 1,
         "StatOmnivamp_NotStatBar": 0.11999999731779099,
-        "{f23e83fc}": 2.0
+        "{f23e83fc}": 2
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "mana_regen",
+          "value": 1
+        }
+      ]
     },
     {
       "id": "TFT_Item_WarmogsArmor",
@@ -1593,33 +1787,562 @@
         "TFT_Item_GiantsBelt"
       ],
       "stats": {
-        "attack_damage": 0.0,
-        "attack_speed": 0.0,
-        "ability_power": 0.0,
-        "critical_strike_chance": 0.0,
-        "critical_strike_damage": 0.0,
-        "health": 500.0,
-        "armor": 0.0,
-        "magic_resist": 0.0,
-        "mana": 0.0,
-        "omnivamp": 0.0,
-        "damage_amplification": 0.0,
-        "damage_reduction": 0.0
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 500,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
       },
       "weights": {
-        "carry": 0.0,
-        "tank": 1.0,
-        "support": 0.0,
-        "utility": 0.0
+        "carry": 0,
+        "tank": 1,
+        "support": 0,
+        "utility": 0
       },
       "source_api_name": "TFT_Item_WarmogsArmor",
       "source_description": "Recebe @BonusPercentHP*100@% de Vida máxima.<br>",
       "source_icon": "assets/maps/tft/icons/items/hexcore/tft_item_warmogsarmor.tex",
       "source_effects": {
         "BonusPercentHP": 0.18000000715255737,
-        "Health": 500.0
+        "Health": 500
       },
-      "weight_basis": "heuristic_from_CommunityDragon_effect_keys"
+      "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
+      "combat_effects": []
+    },
+    {
+      "id": "DA_18_EmblemBlackthorn",
+      "name": "Emblema: DA_18_Blackthorn",
+      "recipe_components": [],
+      "stats": {
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
+      },
+      "weights": {
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
+      },
+      "source_api_name": "DA_18_EmblemBlackthorn",
+      "source_description": "Set-specific non-craftable trait item",
+      "source_icon": "",
+      "source_effects": {},
+      "combat_effects": [],
+      "grants_trait": "DA_18_Blackthorn",
+      "granted_trait_active_count": 1,
+      "weight_basis": "explicit_set_item_metadata"
+    },
+    {
+      "id": "DA_18_EmblemBlossom",
+      "name": "Emblema: DA_18_Blossom",
+      "recipe_components": [],
+      "stats": {
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
+      },
+      "weights": {
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
+      },
+      "source_api_name": "DA_18_EmblemBlossom",
+      "source_description": "Set-specific non-craftable trait item",
+      "source_icon": "",
+      "source_effects": {},
+      "combat_effects": [],
+      "grants_trait": "DA_18_Blossom",
+      "granted_trait_active_count": 1,
+      "weight_basis": "explicit_set_item_metadata"
+    },
+    {
+      "id": "DA_18_EmblemBrawler",
+      "name": "Emblema: DA_18_Brawler",
+      "recipe_components": [],
+      "stats": {
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
+      },
+      "weights": {
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
+      },
+      "source_api_name": "DA_18_EmblemBrawler",
+      "source_description": "Set-specific non-craftable trait item",
+      "source_icon": "",
+      "source_effects": {},
+      "combat_effects": [],
+      "grants_trait": "DA_18_Brawler",
+      "granted_trait_active_count": 1,
+      "weight_basis": "explicit_set_item_metadata"
+    },
+    {
+      "id": "DA_18_EmblemElderwood",
+      "name": "Emblema: DA_18_Elderwood",
+      "recipe_components": [],
+      "stats": {
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
+      },
+      "weights": {
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
+      },
+      "source_api_name": "DA_18_EmblemElderwood",
+      "source_description": "Set-specific non-craftable trait item",
+      "source_icon": "",
+      "source_effects": {},
+      "combat_effects": [],
+      "grants_trait": "DA_18_Elderwood",
+      "granted_trait_active_count": 1,
+      "weight_basis": "explicit_set_item_metadata"
+    },
+    {
+      "id": "DA_18_EmblemExecutioner",
+      "name": "Emblema: DA_18_Executioner",
+      "recipe_components": [],
+      "stats": {
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
+      },
+      "weights": {
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
+      },
+      "source_api_name": "DA_18_EmblemExecutioner",
+      "source_description": "Set-specific non-craftable trait item",
+      "source_icon": "",
+      "source_effects": {},
+      "combat_effects": [],
+      "grants_trait": "DA_18_Executioner",
+      "granted_trait_active_count": 1,
+      "weight_basis": "explicit_set_item_metadata"
+    },
+    {
+      "id": "DA_18_EmblemFae",
+      "name": "Emblema: DA_18_Fae",
+      "recipe_components": [],
+      "stats": {
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
+      },
+      "weights": {
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
+      },
+      "source_api_name": "DA_18_EmblemFae",
+      "source_description": "Set-specific non-craftable trait item",
+      "source_icon": "",
+      "source_effects": {},
+      "combat_effects": [],
+      "grants_trait": "DA_18_Fae",
+      "granted_trait_active_count": 1,
+      "weight_basis": "explicit_set_item_metadata"
+    },
+    {
+      "id": "DA_18_EmblemHunter",
+      "name": "Emblema: DA_18_Hunter",
+      "recipe_components": [],
+      "stats": {
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
+      },
+      "weights": {
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
+      },
+      "source_api_name": "DA_18_EmblemHunter",
+      "source_description": "Set-specific non-craftable trait item",
+      "source_icon": "",
+      "source_effects": {},
+      "combat_effects": [],
+      "grants_trait": "DA_18_Hunter",
+      "granted_trait_active_count": 1,
+      "weight_basis": "explicit_set_item_metadata"
+    },
+    {
+      "id": "DA_18_EmblemInferno",
+      "name": "Emblema: DA_18_Inferno",
+      "recipe_components": [],
+      "stats": {
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
+      },
+      "weights": {
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
+      },
+      "source_api_name": "DA_18_EmblemInferno",
+      "source_description": "Set-specific non-craftable trait item",
+      "source_icon": "",
+      "source_effects": {},
+      "combat_effects": [],
+      "grants_trait": "DA_18_Inferno",
+      "granted_trait_active_count": 1,
+      "weight_basis": "explicit_set_item_metadata"
+    },
+    {
+      "id": "DA_18_EmblemInvoker",
+      "name": "Emblema: DA_18_Invoker",
+      "recipe_components": [],
+      "stats": {
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
+      },
+      "weights": {
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
+      },
+      "source_api_name": "DA_18_EmblemInvoker",
+      "source_description": "Set-specific non-craftable trait item",
+      "source_icon": "",
+      "source_effects": {},
+      "combat_effects": [],
+      "grants_trait": "DA_18_Invoker",
+      "granted_trait_active_count": 1,
+      "weight_basis": "explicit_set_item_metadata"
+    },
+    {
+      "id": "DA_18_EmblemLunar",
+      "name": "Emblema: DA_18_Lunar",
+      "recipe_components": [],
+      "stats": {
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
+      },
+      "weights": {
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
+      },
+      "source_api_name": "DA_18_EmblemLunar",
+      "source_description": "Set-specific non-craftable trait item",
+      "source_icon": "",
+      "source_effects": {},
+      "combat_effects": [],
+      "grants_trait": "DA_18_Lunar",
+      "granted_trait_active_count": 1,
+      "weight_basis": "explicit_set_item_metadata"
+    },
+    {
+      "id": "DA_18_EmblemPrimal",
+      "name": "Emblema: DA_Primal18",
+      "recipe_components": [],
+      "stats": {
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
+      },
+      "weights": {
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
+      },
+      "source_api_name": "DA_18_EmblemPrimal",
+      "source_description": "Set-specific non-craftable trait item",
+      "source_icon": "",
+      "source_effects": {},
+      "combat_effects": [],
+      "grants_trait": "DA_Primal18",
+      "granted_trait_active_count": 1,
+      "weight_basis": "explicit_set_item_metadata"
+    },
+    {
+      "id": "DA_18_EmblemRapidfire",
+      "name": "Emblema: DA_18_Rapidfire",
+      "recipe_components": [],
+      "stats": {
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
+      },
+      "weights": {
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
+      },
+      "source_api_name": "DA_18_EmblemRapidfire",
+      "source_description": "Set-specific non-craftable trait item",
+      "source_icon": "",
+      "source_effects": {},
+      "combat_effects": [],
+      "grants_trait": "DA_18_Rapidfire",
+      "granted_trait_active_count": 1,
+      "weight_basis": "explicit_set_item_metadata"
+    },
+    {
+      "id": "DA_18_EmblemSlayer",
+      "name": "Emblema: DA_18_Slayer",
+      "recipe_components": [],
+      "stats": {
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
+      },
+      "weights": {
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
+      },
+      "source_api_name": "DA_18_EmblemSlayer",
+      "source_description": "Set-specific non-craftable trait item",
+      "source_icon": "",
+      "source_effects": {},
+      "combat_effects": [],
+      "grants_trait": "DA_18_Slayer",
+      "granted_trait_active_count": 1,
+      "weight_basis": "explicit_set_item_metadata"
+    },
+    {
+      "id": "DA_18_EmblemSpellweaver",
+      "name": "Emblema: DA_18_Spellweaver",
+      "recipe_components": [],
+      "stats": {
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
+      },
+      "weights": {
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
+      },
+      "source_api_name": "DA_18_EmblemSpellweaver",
+      "source_description": "Set-specific non-craftable trait item",
+      "source_icon": "",
+      "source_effects": {},
+      "combat_effects": [],
+      "grants_trait": "DA_18_Spellweaver",
+      "granted_trait_active_count": 1,
+      "weight_basis": "explicit_set_item_metadata"
+    },
+    {
+      "id": "DA_18_EmblemSprykin",
+      "name": "Emblema: DA_18_Sprykin",
+      "recipe_components": [],
+      "stats": {
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
+      },
+      "weights": {
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
+      },
+      "source_api_name": "DA_18_EmblemSprykin",
+      "source_description": "Set-specific non-craftable trait item",
+      "source_icon": "",
+      "source_effects": {},
+      "combat_effects": [],
+      "grants_trait": "DA_18_Sprykin",
+      "granted_trait_active_count": 1,
+      "weight_basis": "explicit_set_item_metadata"
+    },
+    {
+      "id": "DA_18_EmblemVanguard",
+      "name": "Emblema: DA_18_Vanguard",
+      "recipe_components": [],
+      "stats": {
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "ability_power": 0,
+        "critical_strike_chance": 0,
+        "critical_strike_damage": 0,
+        "health": 0,
+        "armor": 0,
+        "magic_resist": 0,
+        "mana": 0,
+        "omnivamp": 0,
+        "damage_amplification": 0,
+        "damage_reduction": 0
+      },
+      "weights": {
+        "carry": 0,
+        "tank": 0,
+        "support": 0,
+        "utility": 1
+      },
+      "source_api_name": "DA_18_EmblemVanguard",
+      "source_description": "Set-specific non-craftable trait item",
+      "source_icon": "",
+      "source_effects": {},
+      "combat_effects": [],
+      "grants_trait": "DA_18_Vanguard",
+      "granted_trait_active_count": 1,
+      "weight_basis": "explicit_set_item_metadata"
     }
   ],
   "normalization_notes": [

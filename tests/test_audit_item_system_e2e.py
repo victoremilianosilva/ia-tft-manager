@@ -128,5 +128,27 @@ class ItemSystemE2EAuditTests(unittest.TestCase):
             self.assertFalse(persisted["complete_match"])
 
 
+def test_item_composition_audit_reports_all_players_and_inventory():
+    from scripts.audit_item_composition_learning import audit_records
+
+    rows = []
+    for player_id in range(8):
+        rows.append({
+            "player_id": player_id,
+            "selected_action": [0, 0, 0, 0, 0, 0],
+            "board_after": [{"occupied": True, "star": 2, "item_ids": ["TFT_Item_Deathblade"]}],
+            "bench_after": [],
+            "item_inventory_after": ["TFT_Item_GargoyleStoneplate"],
+            "item_components_after": ["TFT_Item_Component_Sword"],
+            "strategy_after": {"composition_direction": "Invoker", "core_units": ["Carry"]},
+        })
+    report = audit_records(rows)
+    assert report["all_players_present"]
+    assert report["item_evidence_available"]
+    assert report["players"]["0"]["board_item_instances"] == 1
+    assert report["players"]["0"]["bag_item_instances"] == 1
+    assert report["players"]["0"]["component_instances"] == 1
+
+
 if __name__ == "__main__":
     unittest.main()

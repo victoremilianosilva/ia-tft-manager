@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 from statistics import mean
 
@@ -22,7 +23,7 @@ import torch
 from policy import TFTPolicy
 
 
-ACTION_DIMS = [7, 5, 9, 28, 28, 28]
+ACTION_DIMS = [9, 5, 9, 28, 28, 28]
 MASK_KEYS = (
     "type_mask",
     "shop_mask",
@@ -33,7 +34,7 @@ MASK_KEYS = (
     "bench_move_source_mask",
     "bench_to_board_target_masks",
 )
-ACTION_NAMES = ("BUY", "REROLL", "BUY_XP", "MOVE_BENCH", "MOVE_BOARD", "SELL", "PASS")
+ACTION_NAMES = ("BUY", "REROLL", "BUY_XP", "MOVE_BENCH", "MOVE_BOARD", "SELL", "PASS", "ITEM", "CRAFT")
 CANDIDATE_FEATURE_DIM = 8
 
 
@@ -81,10 +82,29 @@ def _tensor_masks(raw_masks):
     }
 
 
-def _run_match(policy, seed: int, ablate: bool, max_steps: int):
+def _run_match(policy, seed: int, ablate_feature: str | None, max_steps: int):
     # Import lazily so pure helper tests do not require the compiled native module.
     from cpp_lobby_env import CppTFTLobbyWrapper
 
+    controlled_flags = (
+        "TFT_ABLATE_ITEM_ACTIONS",
+        "TFT_DISABLE_OPGG_META",
+        "TFT_DISABLE_OPGG_ITEM_BONUS",
+        "TFT_DISABLE_OPGG_POSITION_BONUS",
+    )
+    previous_flags = {key: os.environ.get(key) for key in controlled_flags}
+    for key in controlled_flags:
+        os.environ.pop(key, None)
+    feature_flags = {
+        "item_actions": ("TFT_ABLATE_ITEM_ACTIONS",),
+        "opgg_meta": ("TFT_DISABLE_OPGG_META",),
+        "opgg_item_bonus": ("TFT_DISABLE_OPGG_ITEM_BONUS",),
+        "opgg_position_bonus": ("TFT_DISABLE_OPGG_POSITION_BONUS",),
+        "opgg_all": controlled_flags,
+    }
+    for key in feature_flags.get(ablate_feature, ()):
+        os.environ[key] = "1"
+    ablate_composition = ablate_feature == "composition_controls"
     env = CppTFTLobbyWrapper(seed=seed)
     try:
         observations_np = env.reset(seed=seed)
@@ -120,9 +140,10 @@ def _run_match(policy, seed: int, ablate: bool, max_steps: int):
 
             baseline_np = baseline_actions.cpu().numpy()
             ablated_np = ablated_actions.cpu().numpy()
-            changed_action_rows += int(np.any(baseline_np != ablated_np, axis=1).sum())
-            compared_action_rows += int(obs.shape[0])
-            selected_actions = ablated_np if ablate else baseline_np
+            if ablate_composition:
+                changed_action_rows += int(np.any(baseline_np != ablated_np, axis=1).sum())
+                compared_action_rows += int(obs.shape[0])
+            selected_actions = ablated_np if ablate_composition else baseline_np
 
             # Candidate features remain in the observation tail: fit is feature 0
             # for each bench/shop candidate, aligned with action slots.
@@ -152,7 +173,8 @@ def _run_match(policy, seed: int, ablate: bool, max_steps: int):
 
         return {
             "seed": int(seed),
-            "ablation": bool(ablate),
+            "ablation": ablate_feature or "baseline",
+            "feature": ablate_feature,
             "steps": int(steps),
             "mean_return_per_player": float(totals.mean()),
             "total_return_all_players": float(totals.sum()),
@@ -169,11 +191,17 @@ def _run_match(policy, seed: int, ablate: bool, max_steps: int):
             ),
             "bench_deployment_count": int(deploy_fit_count),
             "same_state_action_change_rate": (
-                changed_action_rows / compared_action_rows if compared_action_rows else 0.0
+                changed_action_rows / compared_action_rows
+                if ablate_composition and compared_action_rows else None
             ),
         }
     finally:
         env.close()
+        for key, value in previous_flags.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
 
 
 def _aggregate(rows):

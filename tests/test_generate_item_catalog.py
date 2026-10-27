@@ -10,6 +10,7 @@ from scripts.generate_item_catalog import (  # noqa: E402
     build_catalog,
     default_catalog_output_path,
     item_effects_candidates,
+    validate_catalog_semantics,
 )
 
 
@@ -35,7 +36,7 @@ def source_fixture():
                 "apiName": "DA_Item_TestBlade",
                 "name": "Test Blade",
                 "composition": ["DA_Component_Sword", "DA_Component_Bow"],
-                "effects": {"AS": 10, "AP": 20, "CritChance": 35, "AD": 0.3},
+                "effects": {"AS": 10, "AP": 20, "CritChance": 35, "AD": 0.3, "ManaRegen": 3},
                 "desc": "A test item",
                 "icon": "test.tex",
             },
@@ -158,8 +159,108 @@ def test_normalizes_supported_stats_and_preserves_raw_effects():
     assert item["stats"]["critical_strike_chance"] == pytest.approx(0.35)
     assert item["stats"]["attack_damage"] == 0
     assert item["source_effects"]["AD"] == pytest.approx(0.3)
+    assert {
+        "trigger": "combat_start",
+        "operation": "add_stat",
+        "stat": "attack_damage",
+        "target": "self",
+        "value": pytest.approx(0.3),
+        "percent_of_stat": True,
+    } in item["combat_effects"]
     assert item["source_description"] == "A test item"
     assert item["weights"]["carry"] == 1
+
+
+def test_semantic_validation_accepts_active_repository_catalog():
+    import json
+
+    catalog_path = Path(__file__).resolve().parents[1] / "data" / "itens.json"
+    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    validate_catalog_semantics(catalog)
+
+
+def test_source_mana_regen_becomes_generic_combat_effect():
+    catalog = build_catalog(source_fixture(), "16")
+    item = next(item for item in catalog["items"] if item["id"] == "DA_Item_TestBlade")
+    assert {
+        "trigger": "combat_start",
+        "operation": "mana_regen",
+        "value": 3.0,
+    } in item["combat_effects"]
+
+
+def test_semantic_validation_rejects_structurally_valid_but_inert_catalog():
+    catalog = {
+        "items": [
+            {"id": "Item_A", "stats": {key: 0.0 for key in (
+                "attack_damage", "attack_speed", "ability_power",
+                "critical_strike_chance", "critical_strike_damage", "health",
+                "armor", "magic_resist", "mana", "omnivamp",
+                "damage_amplification", "damage_reduction",
+            )}, "combat_effects": [], "source_effects": {"PassiveDamage": 100}},
+            {"id": "Item_B", "stats": {}, "combat_effects": [], "source_effects": {}},
+        ]
+    }
+    with pytest.raises(ValueError, match="sem efeitos de combate aplicáveis"):
+        validate_catalog_semantics(catalog)
+
+
+def test_semantic_validation_accepts_normalized_stats_or_explicit_effects():
+    catalog = {
+        "items": [
+            {"id": "Item_A", "stats": {"attack_speed": 0.1}, "combat_effects": []},
+            {"id": "Item_B", "stats": {}, "combat_effects": [{"trigger": "COMBAT_START", "operation": "GRANT_SHIELD"}]},
+        ]
+    }
+    validate_catalog_semantics(catalog)
+
+
+def test_explicit_trait_metadata_can_add_non_craftable_items():
+    catalog = build_catalog(
+        source_fixture(),
+        "16",
+        {"DA_16_EmblemTest": {
+            "grants_trait": "TestTrait",
+            "granted_trait_active_count": 1,
+            "combat_effects": [],
+        }},
+    )
+    emblem = next(item for item in catalog["items"] if item["id"] == "DA_16_EmblemTest")
+    assert emblem["recipe_components"] == []
+    assert emblem["grants_trait"] == "TestTrait"
+    assert emblem["weights"]["utility"] == 1.0
+
+
+def test_canonical_set_identity_uses_number_when_source_name_is_stale():
+    source = source_fixture()
+    source["setData"] = [{
+        "number": 18,
+        "name": "Set10",
+        "items": ["DA_Component_Sword", "DA_Component_Bow", "DA_Item_TestBlade", "DA_Item_TestBlade_Alt"],
+    }]
+    catalog = build_catalog(source, "18")
+    assert catalog["set_id"] == "Set18"
+    assert catalog["source_set_number"] == 18
+    assert catalog["source_set_name"] == "Set10"
+
+
+def test_opgg_meta_validator_rejects_incompatible_item_set():
+    from datetime import datetime, timezone
+    from scripts.validate_opgg_meta_catalog import validate_catalog
+
+    now = datetime(2026, 10, 27, 12, tzinfo=timezone.utc)
+    units = [{"apiName": "DA_18_Carry", "name": "Carry"}]
+    meta = {
+        "schema_version": 1,
+        "source": "op.gg",
+        "fetched_at": now.isoformat(),
+        "compositions": [{
+            "team_code": "fixtureTFTSet18",
+            "units": [{"key": "DA_18_Carry"}],
+        }],
+    }
+    with pytest.raises(ValueError, match="catálogo de itens"):
+        validate_catalog(meta, units, items_doc={"set_id": "Set17"}, now=now)
 
 
 def test_rejects_unknown_set():
@@ -221,7 +322,14 @@ def test_applies_set_specific_trait_item_metadata_without_overriding_source():
     catalog = build_catalog(source_fixture(), "16", metadata)
     item = next(item for item in catalog["items"] if item["id"] == "DA_Item_TestBlade")
     assert item["grants_trait"] == "TFT17_TestTrait"
-    assert item["combat_effects"][0]["operation"] == "bonus_damage"
+    assert any(
+        effect["operation"] == "bonus_damage" and effect["damage_type"] == "MAGIC"
+        for effect in item["combat_effects"]
+    )
+    assert any(
+        effect["operation"] == "add_stat" and effect["stat"] == "attack_damage"
+        for effect in item["combat_effects"]
+    )
     assert item["name"] == "Test Blade"
     assert item["stats"]["ability_power"] == 20
 

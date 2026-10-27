@@ -271,6 +271,24 @@ public:
         return true;
     }
 
+    // Preserve equipment when three equal copies merge into a higher-star unit.
+    // Up to three items stay on the upgraded unit; overflow is returned to the
+    // shared inventory instead of being silently lost or blocking the purchase.
+    bool transfer_equipped_on_merge(const std::string& from_uuid,
+                                    const std::string& to_uuid) {
+        if (from_uuid.empty() || to_uuid.empty() || from_uuid == to_uuid) return false;
+        const auto source = equipped_.find(from_uuid);
+        if (source == equipped_.end()) return true;
+        const auto transferred = source->second;
+        equipped_.erase(source);
+        auto& target = equipped_[to_uuid];
+        for (const auto& item_id : transferred) {
+            if (target.size() < kMaxItemsPerUnit) target.push_back(item_id);
+            else inventory_.push_back(item_id);
+        }
+        return true;
+    }
+
     [[nodiscard]] const std::vector<std::string>& components() const noexcept {
         return components_;
     }
@@ -323,6 +341,10 @@ public:
         if (unit.role == 1 || unit.role == 4 || unit.backline) role_fit += item->carry_weight;
         if (unit.role == 2) role_fit += item->support_weight;
         if (unit.role == 3) role_fit += 0.5 * (item->tank_weight + item->carry_weight);
+        // A trait emblem has strategic value even when its numeric stats are
+        // zero; scale it by composition fit without forcing a particular trait.
+        if (!item->grants_trait.empty())
+            role_fit += 0.5 + std::clamp(unit.composition_fit, 0.0, 1.0);
         return damage_fit + durability_fit + role_fit +
             0.25 * std::clamp(unit.composition_fit, 0.0, 1.0);
     }

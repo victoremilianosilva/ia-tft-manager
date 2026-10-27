@@ -232,23 +232,30 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
         unit.damage_amplification += item.damage_amplification;
         unit.damage_reduction += item.damage_reduction;
 
-        // Percentuais que o normalizador do catálogo preserva em source_effects,
-        // mas que não aparecem como atributo aditivo no campo stats.
-        if (item.api_name == "TFT_Item_Deathblade")
+        // Prefer catalog-defined generic effects. The legacy item-name fallback
+        // remains only for old hand-built CombatItem fixtures without effects.
+        const bool has_generic_ad_effect = std::any_of(
+            item.effects.begin(), item.effects.end(),
+            [](const CombatEffectDefinition& effect) {
+                return effect.trigger == "combat_start" &&
+                    effect.operation == "add_stat" &&
+                    effect.stat == "attack_damage" && effect.percent_of_stat;
+            });
+        if (!has_generic_ad_effect && item.api_name == "TFT_Item_Deathblade")
             unit.attack_damage += base_attack_damage * 0.55f;
-        else if (item.api_name == "TFT_Item_Bloodthirster")
+        else if (!has_generic_ad_effect && item.api_name == "TFT_Item_Bloodthirster")
             unit.attack_damage += base_attack_damage * 0.15f;
-        else if (item.api_name == "TFT_Item_BlueBuff")
+        else if (!has_generic_ad_effect && item.api_name == "TFT_Item_BlueBuff")
             unit.attack_damage += base_attack_damage * 0.15f;
-        else if (item.api_name == "TFT_Item_LastWhisper")
+        else if (!has_generic_ad_effect && item.api_name == "TFT_Item_LastWhisper")
             unit.attack_damage += base_attack_damage * 0.15f;
-        else if (item.api_name == "TFT_Item_RunaansHurricane")
+        else if (!has_generic_ad_effect && item.api_name == "TFT_Item_RunaansHurricane")
             unit.attack_damage += base_attack_damage * 0.10f;
-        else if (item.api_name == "TFT_Item_SteraksGage")
+        else if (!has_generic_ad_effect && item.api_name == "TFT_Item_SteraksGage")
             unit.attack_damage += base_attack_damage * 0.45f;
-        else if (item.api_name == "TFT_Item_MadredsBloodrazor")
+        else if (!has_generic_ad_effect && item.api_name == "TFT_Item_MadredsBloodrazor")
             unit.attack_damage += base_attack_damage * 0.15f;
-        else if (item.api_name == "TFT_Item_InfinityEdge")
+        else if (!has_generic_ad_effect && item.api_name == "TFT_Item_InfinityEdge")
             unit.attack_damage += base_attack_damage * 0.35f;
         else if (item.api_name == "TFT_Item_WarmogsArmor")
             unit.max_hp += base_max_hp * 0.18f, unit.hp += base_max_hp * 0.18f;
@@ -259,7 +266,8 @@ bool apply_item_stats(CombatUnit& unit, std::string& error) {
         else if (item.api_name == "TFT_Item_RedBuff")
             unit.max_hp += base_max_hp * 0.08f, unit.hp += base_max_hp * 0.08f;
         else if (item.api_name == "TFT_Item_UnstableConcoction") {
-            unit.attack_damage += base_attack_damage * 0.15f;
+            if (!has_generic_ad_effect)
+                unit.attack_damage += base_attack_damage * 0.15f;
             unit.ability_power += 15.0f;
             unit.omnivamp = std::min(1.0f, unit.omnivamp + 0.12f);
         }
@@ -785,6 +793,14 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             if (has_item(loaded.unit, "TFT_Item_AdaptiveHelm"))
                 loaded.mana_gain_multiplier = 1.15f;
             for (const auto& item : loaded.unit.items) {
+                const bool has_generic_mana_regen = std::any_of(
+                    item.effects.begin(), item.effects.end(),
+                    [](const CombatEffectDefinition& effect) {
+                        return effect.operation == "mana_regen";
+                    });
+                if (has_generic_mana_regen) continue;
+                // Backward compatibility for old fixtures; generated catalogs
+                // carry ManaRegen as a generic effect and skip this ID fallback.
                 if (item.api_name == "TFT_Item_AdaptiveHelm") loaded.mana_regen_per_second += 3.0f;
                 else if (item.api_name == "TFT_Item_ArchangelsStaff" ||
                          item.api_name == "TFT_Item_HextechGunblade" ||
@@ -793,7 +809,6 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                          item.api_name == "TFT_Item_StatikkShiv") loaded.mana_regen_per_second += 1.0f;
                 else if (item.api_name == "TFT_Item_BlueBuff") loaded.mana_regen_per_second += 5.0f;
                 else if (item.api_name == "TFT_Item_Redemption") loaded.mana_regen_per_second += 2.0f;
-
             }
             loaded.mana_regen_per_second += effect_mana_regeneration(loaded.unit);
             if (has_item(loaded.unit, "TFT_Item_UnstableConcoction")) {

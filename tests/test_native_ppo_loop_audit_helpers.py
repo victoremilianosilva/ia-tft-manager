@@ -10,7 +10,7 @@ from scripts.audit_native_ppo_loops import (
 
 def _masks():
     return {
-        "type_mask": np.array([0, 0, 0, 0, 1, 0, 1], dtype=np.bool_),
+        "type_mask": np.array([0, 0, 0, 0, 1, 0, 1, 1, 1], dtype=np.bool_),
         "shop_mask": np.zeros(5, dtype=np.bool_),
         "bench_source_mask": np.zeros(9, dtype=np.bool_),
         "board_source_mask": np.array([False] * 3 + [True] + [False] * 24),
@@ -68,3 +68,14 @@ def test_native_audit_detects_movement_effect_but_not_a_blocked_move():
     assert _effect_for_action([4, 0, 0, 10, 3, 10], before, after)
     assert not _effect_for_action([4, 0, 0, 10, 3, 10], before, before)
     assert not _effect_for_action([6, 0, 0, 0, 0, 0], before, after)
+
+
+def test_native_audit_detects_item_and_craft_state_changes():
+    before = _player()
+    after = _player()
+    before["item_components"] = ["TFT_Item_Component_Sword", "TFT_Item_Component_Bow"]
+    before["item_inventory"] = []
+    after["item_components"] = ["TFT_Item_Component_Bow"]
+    after["item_inventory"] = ["TFT_Item_Deathblade"]
+    assert _effect_for_action([8, 0, 0, 0, 0, 0], before, after)
+    assert not _effect_for_action([8, 0, 0, 0, 0, 0], before, before)
