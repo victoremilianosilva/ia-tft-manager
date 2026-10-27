@@ -92,6 +92,43 @@ def _role_weights(item_id: str, effects: dict[str, Any]) -> dict[str, float]:
     return {role: round(score / peak, 6) for role, score in scores.items()}
 
 
+def _normalise_combat_effects(effects: dict[str, Any]) -> list[dict[str, Any]]:
+    """Translate source effect keys into the combat engine's generic contract.
+
+    This intentionally maps only source semantics the simulator supports.
+    Unmodeled passives remain in source_effects for diagnostics rather than
+    being guessed or silently treated as permanent stats.
+    """
+    generated: list[dict[str, Any]] = []
+    ad = _percent_fraction(effects, "AD", "BonusAD")
+    if ad > 0.0:
+        generated.append({
+            "trigger": "combat_start",
+            "operation": "add_stat",
+            "stat": "attack_damage",
+            "target": "self",
+            "value": ad,
+            "percent_of_stat": True,
+        })
+    mana_regen = _nonnegative_effect(effects, "ManaRegen")
+    if mana_regen > 0.0:
+        generated.append({
+            "trigger": "combat_start",
+            "operation": "mana_regen",
+            "value": mana_regen,
+        })
+    damage_amp = _percent_fraction(effects, "DamageAmp", "DamageAmplification")
+    if damage_amp > 0.0:
+        generated.append({
+            "trigger": "combat_start",
+            "operation": "add_stat",
+            "stat": "damage_amplification",
+            "target": "self",
+            "value": damage_amp,
+        })
+    return generated
+
+
 def _normalise_stats(effects: dict[str, Any]) -> dict[str, float]:
     # Source AD is a percentage of base attack damage. The engine contract
     # expects flat attack_damage, so AD is preserved raw but not converted.
@@ -288,6 +325,7 @@ def build_catalog(
             "source_description": source_item.get("desc") or "",
             "source_icon": source_item.get("icon") or "",
             "source_effects": effects,
+            "combat_effects": _normalise_combat_effects(effects),
             "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
         }
         # Special/trait mechanics are set data, not API-name branches in C++.
@@ -297,7 +335,12 @@ def build_catalog(
             # source identity, recipe, stats, or provenance.
             for key in ("grants_trait", "granted_trait_active_count", "combat_effects", "deferred_stats"):
                 if key in metadata:
-                    output_item[key] = metadata[key]
+                    if key == "combat_effects":
+                        # Preserve source-derived generic effects alongside
+                        # explicitly modeled set mechanics.
+                        output_item[key] = output_item["combat_effects"] + metadata[key]
+                    else:
+                        output_item[key] = metadata[key]
         output_items.append(output_item)
 
     return {
