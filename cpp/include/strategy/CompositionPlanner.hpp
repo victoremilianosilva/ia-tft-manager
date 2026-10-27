@@ -542,6 +542,7 @@ public:
                 // Require a real contextual advantage over the native planner.
                 // This prevents popularity alone from overriding a good own plan.
                 if (!best_meta_ids.empty() && best_meta_score >= own_score + 1.0) {
+                    meta_audit_status = "selected";
                     const auto native_ids = plan.unit_ids;
                     plan.unit_ids.clear();
                     plan.unit_names.clear();
