@@ -5,6 +5,9 @@
 #include <cmath>
 #include <cstddef>
 #include <limits>
+#include <cstdlib>
+#include <fstream>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -334,6 +337,184 @@ public:
                 plan.acquisition_notes.push_back(std::move(note));
                 ++rejected_carries;
             }
+        }
+        // Optional OP.GG catalog: use it as a candidate, not as a hard constraint.
+        // The final lineup remains the target; early/mid snapshots score how well
+        // the candidate matches the player's actual transition path.
+        try {
+            static const nlohmann::json meta_catalog = []() {
+                const char* configured = std::getenv("TFT_OPGG_META_CATALOG");
+                const std::string path = configured && *configured
+                    ? configured : "data/opgg_tft_meta.json";
+                std::ifstream input(path);
+                if (!input) return nlohmann::json::object();
+                nlohmann::json value;
+                input >> value;
+                if (!value.is_object() || !value.contains("compositions") ||
+                    !value["compositions"].is_array() ||
+                    value.value("schema_version", 0) != 1)
+                    return nlohmann::json::object();
+                return value;
+            }();
+
+            if (meta_catalog.contains("compositions") &&
+                meta_catalog["compositions"].is_array() && !plan.unit_ids.empty()) {
+                std::unordered_map<std::string, const ChampionDefinition*> by_key;
+                for (const auto& champion : pool) {
+                    if (!champion.api_name.empty()) by_key[champion.api_name] = &champion;
+                    if (!champion.character_name.empty()) by_key[champion.character_name] = &champion;
+                    if (!champion.name.empty()) by_key[champion.name] = &champion;
+                }
+                std::unordered_set<std::string> owned_traits;
+                for (const auto& [id, count] : owned_copies) {
+                    if (count <= 0) continue;
+                    const auto found = std::find_if(pool.begin(), pool.end(),
+                        [id](const ChampionDefinition& item) { return item.internal_id == id; });
+                    if (found != pool.end())
+                        for (const auto& trait : found->traits) owned_traits.insert(trait);
+                }
+                const auto lineup_score = [&](const std::vector<std::int32_t>& ids,
+                                              const std::unordered_set<std::int32_t>& core,
+                                              const std::unordered_set<std::int32_t>& stage_units,
+                                              double stats_prior) {
+                    double value = 0.0;
+                    int carry_count = 0;
+                    int frontline_count = 0;
+                    std::unordered_set<std::string> lineup_traits;
+                    for (const auto id : ids) {
+                        const auto def = std::find_if(pool.begin(), pool.end(),
+                            [id](const ChampionDefinition& item) { return item.internal_id == id; });
+                        if (def == pool.end()) continue;
+                        const auto owned = owned_copies.find(id);
+                        const int copies = owned == owned_copies.end() ? 0 : owned->second;
+                        if (copies > 0) value += 2.8 + std::min(1.2, (copies - 1) * 0.25);
+                        if (currently_offered.count(id)) value += 2.2;
+                        if (core.count(id)) value += 0.8;
+                        if (stage_units.count(id)) {
+                            value += copies > 0 ? 1.8 : (currently_offered.count(id) ? 1.2 : 0.0);
+                        }
+                        value -= def->cost * 0.13;
+                        const auto [probability, penalty] = acquisition(*def);
+                        (void)probability;
+                        value -= penalty * 0.65;
+                        for (const auto& trait : def->traits) {
+                            if (owned_traits.count(trait)) value += 0.22;
+                            if (lineup_traits.count(trait)) value += 0.32;
+                            lineup_traits.insert(trait);
+                        }
+                        const int role = role_of(*def);
+                        if (role == 1) ++carry_count;
+                        if (role == 0 || role == 3) ++frontline_count;
+                    }
+                    if (carry_count > 0) value += 1.2;
+                    if (frontline_count > 0) value += 1.0;
+                    return value + stats_prior;
+                };
+
+                std::unordered_set<std::int32_t> no_core;
+                std::unordered_set<std::int32_t> no_stage_units;
+                const double own_score = lineup_score(plan.unit_ids, no_core, no_stage_units, 0.0);
+                double best_meta_score = -std::numeric_limits<double>::infinity();
+                std::vector<std::int32_t> best_meta_ids;
+                std::vector<std::string> best_meta_traits;
+                std::string best_meta_name;
+
+                for (const auto& composition : meta_catalog["compositions"]) {
+                    if (!composition.is_object() || !composition.contains("units") ||
+                        !composition["units"].is_array()) continue;
+                    std::vector<std::int32_t> final_ids;
+                    std::unordered_set<std::int32_t> core_ids;
+                    std::unordered_map<std::string, int> meta_trait_counts;
+                    for (const auto& unit : composition["units"]) {
+                        if (!unit.is_object()) continue;
+                        const std::string key = unit.value("key", std::string{});
+                        const auto found = by_key.find(key);
+                        if (found == by_key.end()) continue;
+                        const auto id = found->second->internal_id;
+                        if (std::find(final_ids.begin(), final_ids.end(), id) != final_ids.end()) continue;
+                        final_ids.push_back(id);
+                        if (unit.value("is_core", false)) core_ids.insert(id);
+                        for (const auto& trait : found->second->traits) ++meta_trait_counts[trait];
+                    }
+                    if (final_ids.empty()) continue;
+
+                    const char* snapshot_key = current_level <= 5 ? "early_game"
+                        : (current_level <= 7 ? "mid_game" : "");
+                    std::unordered_set<std::int32_t> stage_ids;
+                    if (*snapshot_key && composition.contains(snapshot_key) &&
+                        composition[snapshot_key].is_object() &&
+                        composition[snapshot_key].contains("units") &&
+                        composition[snapshot_key]["units"].is_array()) {
+                        for (const auto& unit : composition[snapshot_key]["units"]) {
+                            if (!unit.is_object()) continue;
+                            const auto key = unit.value("key", std::string{});
+                            const auto found = by_key.find(key);
+                            if (found != by_key.end()) stage_ids.insert(found->second->internal_id);
+                        }
+                    }
+                    double stats_prior = 0.0;
+                    if (composition.contains("statistics") && composition["statistics"].is_object()) {
+                        const auto& stats = composition["statistics"];
+                        const auto deck = stats.value("deck", nlohmann::json::object());
+                        const auto label = stats.value("label", nlohmann::json::object());
+                        const auto& selected = deck.is_object() && deck.value("totalCount", 0) >= 1000
+                            ? deck : label;
+                        if (selected.is_object() && selected.value("totalCount", 0) >= 1000)
+                            stats_prior = std::clamp(selected.value("top4Rate", 0.0), 0.0, 1.0) * 0.5;
+                    }
+                    const double score = lineup_score(final_ids, core_ids, stage_ids, stats_prior);
+                    if (score > best_meta_score) {
+                        best_meta_score = score;
+                        best_meta_ids = std::move(final_ids);
+                        best_meta_name = composition.value("name", std::string{"OP.GG meta"});
+                        best_meta_traits.clear();
+                        std::vector<std::pair<std::string, int>> ordered_traits(
+                            meta_trait_counts.begin(), meta_trait_counts.end());
+                        std::stable_sort(ordered_traits.begin(), ordered_traits.end(),
+                            [](const auto& lhs, const auto& rhs) { return lhs.second > rhs.second; });
+                        for (const auto& [trait, count] : ordered_traits) {
+                            if (count < 2) continue;
+                            best_meta_traits.push_back(trait);
+                            if (best_meta_traits.size() >= 3) break;
+                        }
+                    }
+                }
+
+                // Require a real contextual advantage over the native planner.
+                // This prevents popularity alone from overriding a good own plan.
+                if (!best_meta_ids.empty() && best_meta_score >= own_score + 1.0) {
+                    const auto native_ids = plan.unit_ids;
+                    plan.unit_ids.clear();
+                    plan.unit_names.clear();
+                    for (const auto id : best_meta_ids) {
+                        if (plan.unit_ids.size() >= slots) break;
+                        const auto def = std::find_if(pool.begin(), pool.end(),
+                            [id](const ChampionDefinition& item) { return item.internal_id == id; });
+                        if (def == pool.end()) continue;
+                        plan.unit_ids.push_back(id);
+                        plan.unit_names.push_back(def->api_name.empty() ? def->name : def->api_name);
+                        if (role_of(*def) == 1 && plan.main_carry_id < 0) plan.main_carry_id = id;
+                    }
+                    // At levels 9/10, keep the extra flexible slots from the native planner.
+                    for (const auto id : native_ids) {
+                        if (plan.unit_ids.size() >= slots) break;
+                        if (std::find(plan.unit_ids.begin(), plan.unit_ids.end(), id) != plan.unit_ids.end()) continue;
+                        const auto def = std::find_if(pool.begin(), pool.end(),
+                            [id](const ChampionDefinition& item) { return item.internal_id == id; });
+                        if (def == pool.end()) continue;
+                        plan.unit_ids.push_back(id);
+                        plan.unit_names.push_back(def->api_name.empty() ? def->name : def->api_name);
+                    }
+                    if (!best_meta_traits.empty()) plan.core_traits = best_meta_traits;
+                    plan.score = best_meta_score;
+                    plan.acquisition_notes.insert(plan.acquisition_notes.begin(),
+                        "OPGG_META_CANDIDATE: " + best_meta_name +
+                        " (score=" + std::to_string(best_meta_score) +
+                        ", native_score=" + std::to_string(own_score) + ")");
+                }
+            }
+        } catch (const std::exception&) {
+            // A malformed/missing external catalog must never stop a game or training.
         }
         return plan;
     }
