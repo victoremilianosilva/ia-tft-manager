@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <random>
 #include <stdexcept>
-#include <vector>
 
 namespace tft {
 
@@ -15,6 +14,7 @@ UnitPool::UnitPool(const ChampionCatalog& catalog)
     for (const auto& champion : catalog_.all()) {
         const auto id = champion.internal_id;
         const auto count = copies_for_cost(champion.cost);
+        ids_by_cost_[static_cast<std::size_t>(champion.cost - 1)].push_back(id);
 
         // IDs duplicados indicam um problema no catálogo.
         if (!initial_counts_.emplace(id, count).second) {
@@ -87,17 +87,31 @@ bool UnitPool::take(std::int32_t champion_internal_id) {
 std::optional<std::int32_t> UnitPool::draw_by_cost(
     std::int32_t cost, std::mt19937_64& rng
 ) {
-    std::vector<std::int32_t> candidates;
-    candidates.reserve(catalog_.size());
-    for (const auto& champion : catalog_.all()) {
-        if (champion.cost == cost && has_available(champion.internal_id))
-            candidates.push_back(champion.internal_id);
+    if (cost < 1 || cost > static_cast<std::int32_t>(ids_by_cost_.size()))
+        return std::nullopt;
+
+    // Count and select from the same ordered candidate set without a
+    // per-draw heap allocation. The uniform distribution receives the same
+    // range as before, and the second pass preserves candidate ordering.
+    const auto& cost_ids = ids_by_cost_[static_cast<std::size_t>(cost - 1)];
+    std::size_t candidate_count = 0;
+    for (const auto id : cost_ids) {
+        if (has_available(id)) ++candidate_count;
     }
-    if (candidates.empty()) return std::nullopt;
-    std::uniform_int_distribution<std::size_t> choose(0, candidates.size() - 1);
-    const auto id = candidates[choose(rng)];
-    if (!take(id)) return std::nullopt;
-    return id;
+    if (candidate_count == 0) return std::nullopt;
+
+    std::uniform_int_distribution<std::size_t> choose(0, candidate_count - 1);
+    const auto selected_index = choose(rng);
+    std::size_t current_index = 0;
+    for (const auto id : cost_ids) {
+        if (!has_available(id)) continue;
+        if (current_index == selected_index) {
+            if (!take(id)) return std::nullopt;
+            return id;
+        }
+        ++current_index;
+    }
+    return std::nullopt;
 }
 
 bool UnitPool::give_back(std::int32_t champion_internal_id) {

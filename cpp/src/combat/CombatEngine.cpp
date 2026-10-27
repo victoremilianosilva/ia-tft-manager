@@ -662,10 +662,19 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
         return result;
     }
 
+    // The roster size is known before simulation starts. Reserve once so
+    // loading teams does not repeatedly reallocate vectors or rehash ID/slot
+    // sets; this changes storage only, not validation order or combat logic.
+    const std::size_t expected_units =
+        input.player_a.units.size() + input.player_b.units.size();
     std::unordered_set<int> ids;
+    ids.reserve(expected_units);
     std::unordered_set<int> occupied_a;
+    occupied_a.reserve(input.player_a.units.size());
     std::unordered_set<int> occupied_b;
+    occupied_b.reserve(input.player_b.units.size());
     std::vector<RuntimeUnit> units;
+    units.reserve(expected_units);
 
     auto load_team = [&](const CombatTeam& team,
                          UnitTeam expected,
@@ -838,6 +847,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
     apply_start_combat_team_effects(units);
 
     std::unordered_map<int, std::size_t> index_by_id;
+    index_by_id.reserve(units.size());
     for (std::size_t i = 0; i < units.size(); ++i) {
         index_by_id[units[i].unit.id] = i;
         auto& runtime = units[i];
@@ -921,11 +931,15 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
     );
     std::uniform_real_distribution<float> roll(0.0f, 1.0f);
 
+    // Start with enough backing storage for the initial event per unit.
+    // The priority queue keeps the same comparator and push/pop order.
+    std::vector<ScheduledEvent> scheduled_events;
+    scheduled_events.reserve(units.size());
     std::priority_queue<
         ScheduledEvent,
         std::vector<ScheduledEvent>,
         LaterEvent
-    > queue;
+    > queue(LaterEvent{}, std::move(scheduled_events));
 
     std::uint64_t sequence = 0;
     auto schedule = [&](std::size_t index, float time) {

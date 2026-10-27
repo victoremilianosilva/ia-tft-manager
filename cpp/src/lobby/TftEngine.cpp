@@ -1044,19 +1044,21 @@ struct TFTEngine::Impl {
             std::array<bool, kBenchSlots> bench_occupied{};
             std::vector<std::pair<std::string, int>> trait_counts;
             std::unordered_map<std::string, std::size_t> trait_count_index;
+            // Bound the common case to one allocation/rehash-free accumulation
+            // pass while retaining trait_counts insertion order for observations.
+            trait_counts.reserve(observation_trait_names.size());
+            trait_count_index.reserve(observation_trait_names.size());
             int board_count = 0, bench_count = 0, frontline = 0, backline = 0;
-            std::set<int> unique_roles;
+            std::array<bool, 5> seen_roles{};
+            std::size_t unique_role_count = 0;
 
             const auto count_traits = [&](const UnitInstance& unit) {
                 const auto* def = catalog->find_by_id(unit.champion_internal_id);
                 if (!def) return;
                 for (const auto& trait : def->traits) {
-                    auto it = trait_count_index.find(trait);
-                    if (it == trait_count_index.end()) {
-                        trait_count_index[trait] = trait_counts.size();
-                        trait_counts.emplace_back(trait, 0);
-                        it = trait_count_index.find(trait);
-                    }
+                    const auto [it, inserted] =
+                        trait_count_index.try_emplace(trait, trait_counts.size());
+                    if (inserted) trait_counts.emplace_back(trait, 0);
                     ++trait_counts[it->second].second;
                 }
             };
@@ -1070,7 +1072,11 @@ struct TFTEngine::Impl {
                 if (!def) continue;
                 const int role = std::clamp(def->combat_profile.role, 0, 4);
                 board_roles[slot] = role;
-                unique_roles.insert(role);
+                const auto role_index = static_cast<std::size_t>(role);
+                if (!seen_roles[role_index]) {
+                    seen_roles[role_index] = true;
+                    ++unique_role_count;
+                }
                 const int row = static_cast<int>(slot / 7);
                 if (row <= 1) ++frontline;
                 if (row >= 2) ++backline;
@@ -1161,15 +1167,16 @@ struct TFTEngine::Impl {
             out[offset++] = static_cast<float>(positioning_score);
             out[offset++] = board_count ? static_cast<float>(frontline) / board_count : 0.0f;
             out[offset++] = board_count ? static_cast<float>(backline) / board_count : 0.0f;
-            out[offset++] = std::min(1.0f, static_cast<float>(unique_roles.size()) / 5.0f);
+            out[offset++] = std::min(1.0f, static_cast<float>(unique_role_count) / 5.0f);
 
             // 8) TRAITS: fixed catalog order shared across all players.
-            std::unordered_map<std::string, int> all_trait_counts;
-            for (const auto& entry : trait_counts) all_trait_counts[entry.first] = entry.second;
+            // trait_count_index already maps each observed trait to its
+            // insertion-ordered count; avoid building a second hash table.
             for (const auto& trait : observation_trait_names) {
-                const auto it = all_trait_counts.find(trait);
-                const float value = it == all_trait_counts.end()
-                    ? 0.0f : static_cast<float>(it->second) / 5.0f;
+                const auto it = trait_count_index.find(trait);
+                const float value = it == trait_count_index.end()
+                    ? 0.0f
+                    : static_cast<float>(trait_counts[it->second].second) / 5.0f;
                 out[offset++] = std::min(1.0f, value);
             }
 
@@ -1325,17 +1332,23 @@ struct TFTEngine::Impl {
             // 16) PER-CANDIDATE DECISION FEATURES. These are explicit slot-local
             // features so the policy can compare offers/sale candidates rather than
             // infer which global features correspond to each output index.
-            const auto count_same_champion = [&](const UnitInstance& candidate) {
-                int copies = 0;
-                for (const auto& unit : player_envs[i].board) {
-                    if (unit && unit->champion_internal_id == candidate.champion_internal_id)
-                        copies += unit->star == 1 ? 1 : (unit->star == 2 ? 3 : 9);
-                }
-                for (const auto& unit : player_envs[i].bench) {
-                    if (unit && unit->champion_internal_id == candidate.champion_internal_id)
-                        copies += unit->star == 1 ? 1 : (unit->star == 2 ? 3 : 9);
-                }
-                return copies;
+            // Precompute owned copies once per player. Candidate features below
+            // query this table for every bench/shop slot; repeated board+bench
+            // scans were doing the same work for each candidate.
+            std::unordered_map<std::int32_t, int> owned_copies;
+            owned_copies.reserve(kBoardSlots + kBenchSlots);
+            const auto add_owned_copies = [&owned_copies](const UnitInstance& unit) {
+                const int copies = unit.star == 1 ? 1 : (unit.star == 2 ? 3 : 9);
+                owned_copies[unit.champion_internal_id] += copies;
+            };
+            for (const auto& unit : player_envs[i].board)
+                if (unit) add_owned_copies(*unit);
+            for (const auto& unit : player_envs[i].bench)
+                if (unit) add_owned_copies(*unit);
+
+            const auto count_same_champion = [&owned_copies](const UnitInstance& candidate) {
+                const auto it = owned_copies.find(candidate.champion_internal_id);
+                return it == owned_copies.end() ? 0 : it->second;
             };
             const auto append_candidate_features = [&](const UnitInstance* unit, bool sale_candidate) {
                 if (!unit) {

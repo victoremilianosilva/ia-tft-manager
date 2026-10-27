@@ -98,41 +98,52 @@ public:
             const double per_slot = tier_odds * copies / tier_total;
             return 1.0 - std::pow(1.0 - std::clamp(per_slot, 0.0, 1.0), 5.0);
         };
+        // Acquisition probability is constant for a champion during one
+        // planner build. Cache it because candidates are rescored across slots
+        // and the diagnostics later need the same estimate.
+        std::unordered_map<std::int32_t, std::pair<double, double>> acquisition_cache;
+        acquisition_cache.reserve(pool.size());
         const auto acquisition = [&](const ChampionDefinition& champion) {
-            if (currently_offered.count(champion.internal_id) != 0)
-                return std::pair<double, double>{1.0, 0.0};
-            const auto owned = owned_copies.find(champion.internal_id);
-            if (owned != owned_copies.end() && owned->second > 0)
-                return std::pair<double, double>{1.0, 0.0};
-            if (available_copies.empty() || champion.cost < 1 || champion.cost > 5)
-                return std::pair<double, double>{1.0, 0.0};
-            const auto available = available_copies.find(champion.internal_id);
-            const double copies = available == available_copies.end()
-                ? 0.0 : static_cast<double>(std::max(0, available->second));
-            const double tier_total = available_by_cost[static_cast<std::size_t>(champion.cost - 1)];
-            if (copies <= 0.0 || tier_total <= 0.0)
-                return std::pair<double, double>{0.0, 4.5};
+            const auto cached = acquisition_cache.find(champion.internal_id);
+            if (cached != acquisition_cache.end()) return cached->second;
 
-            // A composition is a forward-looking plan, not a demand to buy every
-            // unit at the current level. Blend current and near-future shop odds
-            // so a unit that becomes easier after leveling is not over-penalized.
-            const int horizon_end = std::min(10, safe_level + 2);
-            const int future_levels = horizon_end - safe_level;
-            double horizon_probability = 0.5 * chance_per_shop_at_level(champion, safe_level);
-
-            // Give the current level and the future outlook equal influence.
-            // Split the future half across the next two levels when both exist;
-            // near level 10, renormalize over the future levels that remain.
-            if (future_levels > 0) {
-                const double future_weight = 0.5 / static_cast<double>(future_levels);
-                for (int level = safe_level + 1; level <= horizon_end; ++level)
-                    horizon_probability += future_weight * chance_per_shop_at_level(champion, level);
+            std::pair<double, double> result{1.0, 0.0};
+            if (currently_offered.count(champion.internal_id) != 0) {
+                result = {1.0, 0.0};
             } else {
-                // At max level there is no future-level estimate to blend in.
-                horizon_probability = chance_per_shop_at_level(champion, safe_level);
+                const auto owned = owned_copies.find(champion.internal_id);
+                if (owned != owned_copies.end() && owned->second > 0) {
+                    result = {1.0, 0.0};
+                } else if (!available_copies.empty() &&
+                           champion.cost >= 1 && champion.cost <= 5) {
+                    const auto available = available_copies.find(champion.internal_id);
+                    const double copies = available == available_copies.end()
+                        ? 0.0 : static_cast<double>(std::max(0, available->second));
+                    const double tier_total = available_by_cost[static_cast<std::size_t>(champion.cost - 1)];
+                    if (copies <= 0.0 || tier_total <= 0.0) {
+                        result = {0.0, 4.5};
+                    } else {
+                        // Blend current and near-future shop odds exactly as before.
+                        const int horizon_end = std::min(10, safe_level + 2);
+                        const int future_levels = horizon_end - safe_level;
+                        double horizon_probability =
+                            0.5 * chance_per_shop_at_level(champion, safe_level);
+                        if (future_levels > 0) {
+                            const double future_weight = 0.5 / static_cast<double>(future_levels);
+                            for (int level = safe_level + 1; level <= horizon_end; ++level)
+                                horizon_probability += future_weight *
+                                    chance_per_shop_at_level(champion, level);
+                        } else {
+                            horizon_probability = chance_per_shop_at_level(champion, safe_level);
+                        }
+                        const double penalty = 3.5 * (1.0 -
+                            std::clamp(horizon_probability / 0.20, 0.0, 1.0));
+                        result = {horizon_probability, penalty};
+                    }
+                }
             }
-            const double penalty = 3.5 * (1.0 - std::clamp(horizon_probability / 0.20, 0.0, 1.0));
-            return std::pair<double, double>{horizon_probability, penalty};
+            acquisition_cache.emplace(champion.internal_id, result);
+            return result;
         };
         std::unordered_map<std::string, double> focus;
         for (const auto& [trait, weight] : focus_weights)
@@ -161,17 +172,11 @@ public:
                 std::find(champion.traits.begin(), champion.traits.end(), trait)
                     != champion.traits.end();
         };
-        const auto count_role = [&](int role) {
-            return static_cast<int>(std::count_if(
-                plan.unit_ids.begin(), plan.unit_ids.end(),
-                [&](std::int32_t id) {
-                    const auto it = std::find_if(pool.begin(), pool.end(),
-                        [id](const ChampionDefinition& champion) {
-                            return champion.internal_id == id;
-                        });
-                    return it != pool.end() && role_of(*it) == role;
-                }));
-        };
+        // Role counts change only when a unit is selected. Keep them
+        // incrementally instead of repeatedly scanning the plan and pool for
+        // every candidate scored in every open slot.
+        std::unordered_map<int, int> selected_role_counts;
+        selected_role_counts.reserve(5);
 
         // Select a carry first. It may be outside the anchor trait if it shares
         // a bridge trait with a champion in that direction or with current focus.
@@ -203,6 +208,7 @@ public:
                 ? selected_carry->name : selected_carry->api_name);
             plan.main_carry_id = selected_carry->internal_id;
             plan.score += best_carry_score;
+            ++selected_role_counts[role_of(*selected_carry)];
         }
 
         std::unordered_map<std::string, int> selected_trait_counts;
@@ -261,11 +267,11 @@ public:
                     if (before > 0) score += std::min(0.45, before * 0.12);
                 }
 
-                if (role == 1 && count_role(1) == 0) score += 2.8;
-                if ((role == 0 || role == 3) && count_role(0) + count_role(3) == 0)
+                if (role == 1 && selected_role_counts[1] == 0) score += 2.8;
+                const int frontline_roles = selected_role_counts[0] + selected_role_counts[3];
+                if ((role == 0 || role == 3) && frontline_roles == 0)
                     score += 2.0;
-                else if ((role == 0 || role == 3) &&
-                         count_role(0) + count_role(3) == 1)
+                else if ((role == 0 || role == 3) && frontline_roles == 1)
                     score += 0.9;
                 if (role == 2) score += 0.25; // support has flexible utility
                 score += std::min(1.8, owned_copies.count(champion.internal_id)
@@ -283,6 +289,7 @@ public:
             plan.unit_ids.push_back(best->internal_id);
             plan.unit_names.push_back(best->api_name.empty() ? best->name : best->api_name);
             plan.score += best_score;
+            ++selected_role_counts[role_of(*best)];
             add_champion_traits(*best);
         }
 

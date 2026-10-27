@@ -471,9 +471,17 @@ class Trainer:
     # ================================================================
     # AUDITAR AÇÃO ESCOLHIDA CONTRA AS MÁSCARAS
     # ================================================================
-    def _audit_selected_action_masks(self, actions, masks):
-        """Conta ações incompatíveis com as máscaras usadas pela policy."""
-        action_np = actions.detach().cpu().numpy()
+    def _audit_selected_action_masks(self, actions, masks, action_array=None):
+        """Conta ações incompatíveis com as máscaras usadas pela policy.
+
+        action_array permite reutilizar a conversão CPU/NumPy já feita
+        pelo loop de rollout, mantendo a chamada antiga compatível.
+        """
+        action_np = (
+            action_array
+            if action_array is not None
+            else actions.detach().cpu().numpy()
+        )
         mask_np = {
             key: value.detach().cpu().numpy().astype(np.bool_, copy=False)
             for key, value in masks.items()
@@ -664,32 +672,23 @@ class Trainer:
                             f"{raw_mask.dtype}"
                         )
 
-                    # 3. Impedir NaN, infinito e valores fora de {0, 1}
-                    if not np.all(np.isfinite(raw_mask)):
-                        raise ValueError(
-                            f"Máscara '{key}' contém NaN ou infinito."
-                        )
+                    # Boolean masks already satisfy both value checks:
+                    # they cannot contain NaN/Inf and every value is 0 or 1.
+                    # Keep the full validation path for numeric masks.
+                    if not np.issubdtype(raw_mask.dtype, np.bool_):
+                        if not np.all(np.isfinite(raw_mask)):
+                            raise ValueError(
+                                f"Máscara '{key}' contém NaN ou infinito."
+                            )
 
-                    if not np.all((raw_mask == 0) | (raw_mask == 1)):
-                        raise ValueError(
-                            f"Máscara '{key}' deve conter somente 0 e 1."
-                        )
+                        if not np.all((raw_mask == 0) | (raw_mask == 1)):
+                            raise ValueError(
+                                f"Máscara '{key}' deve conter somente 0 e 1."
+                            )
 
-                    # 4. Converter somente depois das validações
+                    # astype(copy=False) reuses bool arrays without copying.
+                    # Shape was checked before conversion; astype never changes it.
                     player_mask = raw_mask.astype(np.bool_, copy=False)
-
-
-                    expected_shape = shape
-
-                    if player_mask.shape != expected_shape:
-
-                        raise ValueError(
-                            f"Máscara '{key}' inválida "
-                            f"para lobby={lobby_idx}, "
-                            f"player={player_idx}: "
-                            f"{player_mask.shape} "
-                            f"!= {expected_shape}"
-                        )
 
                     values.append(
                         player_mask
@@ -714,79 +713,28 @@ class Trainer:
             "type_mask"
         ]
 
-        for agent_idx in range(
-            self.num_agents
-        ):
+        invalid_agents = ~type_mask.any(dim=1)
 
-            # Se não existe nenhuma ação válida,
-            # consideramos o jogador eliminado.
+        if bool(invalid_agents.any()):
+            # Apply the same PASS fallback to all invalid agents in one
+            # tensor operation instead of synchronizing/checking each row.
+            type_mask[invalid_agents] = False
+            type_mask[invalid_agents, int(ActionType.PASS)] = True
 
-            if not torch.any(
-                type_mask[agent_idx]
-            ):
+            flat_masks["shop_mask"][invalid_agents] = False
+            flat_masks["shop_mask"][invalid_agents, 0] = True
 
-                # ----------------------------------------------------
-                # Todas as ações inválidas
-                # ----------------------------------------------------
+            flat_masks["bench_source_mask"][invalid_agents] = False
+            flat_masks["bench_source_mask"][invalid_agents, 0] = True
 
-                type_mask[
-                    agent_idx
-                ].fill_(False)
+            flat_masks["board_target_mask"][invalid_agents] = False
+            flat_masks["board_target_mask"][invalid_agents, 0] = True
 
-                # ----------------------------------------------------
-                # PASS = 6
-                # ----------------------------------------------------
+            flat_masks["board_source_mask"][invalid_agents] = False
+            flat_masks["board_source_mask"][invalid_agents, 0] = True
 
-                type_mask[
-                    agent_idx,
-                    int(ActionType.PASS)
-                ] = True
-
-                # ----------------------------------------------------
-                # As outras cabeças não importam para PASS,
-                # mas precisamos fornecer uma categoria válida
-                # para evitar Categorical com logits inválidos.
-                # ----------------------------------------------------
-
-                flat_masks[
-                    "shop_mask"
-                ][agent_idx].fill_(False)
-
-                flat_masks[
-                    "shop_mask"
-                ][agent_idx, 0] = True
-
-                flat_masks[
-                    "bench_source_mask"
-                ][agent_idx].fill_(False)
-
-                flat_masks[
-                    "bench_source_mask"
-                ][agent_idx, 0] = True
-
-                flat_masks[
-                    "board_target_mask"
-                ][agent_idx].fill_(False)
-
-                flat_masks[
-                    "board_target_mask"
-                ][agent_idx, 0] = True
-
-                flat_masks[
-                    "board_source_mask"
-                ][agent_idx].fill_(False)
-
-                flat_masks[
-                    "board_source_mask"
-                ][agent_idx, 0] = True
-
-                flat_masks[
-                    "board_move_target_masks"
-                ][agent_idx].fill_(False)
-
-                flat_masks[
-                    "board_move_target_masks"
-                ][agent_idx, 0, 0] = True
+            flat_masks["board_move_target_masks"][invalid_agents] = False
+            flat_masks["board_move_target_masks"][invalid_agents, 0, 0] = True
 
         return flat_masks
 
@@ -796,7 +744,8 @@ class Trainer:
 
     def _actions_to_lobby_format(
         self,
-        actions
+        actions,
+        action_array=None,
     ):
         """
         Converte ações da policy:
@@ -821,7 +770,11 @@ class Trainer:
         Formato exigido pelo TFTGymEnv.
         """
 
-        actions = actions.detach().cpu().numpy()
+        actions = (
+            action_array
+            if action_array is not None
+            else actions.detach().cpu().numpy()
+        )
 
         expected_shape = (
             self.num_agents,
@@ -1168,33 +1121,40 @@ class Trainer:
                 )
 
                 # 📊 Quantas opções permaneceram válidas após as máscaras?
-                mask_valid_type_sum += (
-                    masks["type_mask"]
-                    .sum(dim=1)
-                    .float()
-                    .mean()
-                    .item()
+                valid_type_mean = (
+                    masks["type_mask"].sum(dim=1).float().mean()
                 )
 
                 # Conta somente pares reais origem/destino; fallbacks técnicos
                 # não contam quando o tipo de movimento está desabilitado.
                 board_move_enabled = (
-                    masks["type_mask"][:, 4].bool().view(-1, 1, 1)
-                    & masks["board_source_mask"].bool().unsqueeze(-1)
-                    & masks["board_move_target_masks"].bool()
+                    masks["type_mask"][:, 4].view(-1, 1, 1)
+                    & masks["board_source_mask"].unsqueeze(-1)
+                    & masks["board_move_target_masks"]
                 )
                 bench_move_enabled = (
-                    masks["type_mask"][:, 3].bool().view(-1, 1, 1)
-                    & masks["bench_move_source_mask"].bool().unsqueeze(-1)
-                    & masks["bench_to_board_target_masks"].bool()
+                    masks["type_mask"][:, 3].view(-1, 1, 1)
+                    & masks["bench_move_source_mask"].unsqueeze(-1)
+                    & masks["bench_to_board_target_masks"]
                 )
 
-                mask_valid_board_move_sum += (
-                    board_move_enabled.sum(dim=(1, 2)).float().mean().item()
+                valid_board_move_mean = (
+                    board_move_enabled.sum(dim=(1, 2)).float().mean()
                 )
-                mask_valid_bench_move_sum += (
-                    bench_move_enabled.sum(dim=(1, 2)).float().mean().item()
+                valid_bench_move_mean = (
+                    bench_move_enabled.sum(dim=(1, 2)).float().mean()
                 )
+
+                # Transfer the three scalar diagnostics to the host together,
+                # avoiding three separate device synchronizations per step.
+                mask_metric_values = torch.stack((
+                    valid_type_mean,
+                    valid_board_move_mean,
+                    valid_bench_move_mean,
+                )).detach().cpu().tolist()
+                mask_valid_type_sum += mask_metric_values[0]
+                mask_valid_board_move_sum += mask_metric_values[1]
+                mask_valid_bench_move_sum += mask_metric_values[2]
 
                 mask_samples += 1
 
@@ -1273,28 +1233,22 @@ class Trainer:
                     .numpy()
                 )
 
-                action_audit = self._audit_selected_action_masks(actions, masks)
+                action_audit = self._audit_selected_action_masks(
+                    actions, masks, action_array=action_np
+                )
                 for key, value in action_audit.items():
                     mask_audit_counts[key] += value
 
-                for agent_idx in range(
-                    self.num_agents
-                ):
-
-                    action_type = int(
-                        action_np[
-                            agent_idx,
-                            0
-                        ]
-                    )
-
-                    if (
-                        0 <= action_type < len(ActionType)
-                    ):
-
-                        action_type_counts[
-                            action_type
-                        ] += 1
+                # Vectorized equivalent of the per-agent histogram loop.
+                # Ignore out-of-range action IDs exactly as the old loop did.
+                action_types = action_np[:, 0].astype(np.int64, copy=False)
+                valid_action_types = action_types[
+                    (action_types >= 0) & (action_types < len(ActionType))
+                ]
+                action_type_counts += np.bincount(
+                    valid_action_types,
+                    minlength=len(ActionType),
+                ).astype(np.int32, copy=False)
 
                 # ====================================================
                 # 🎮 CONVERTER PARA LOBBIES
@@ -1302,7 +1256,7 @@ class Trainer:
 
                 lobby_actions = (
                     self._actions_to_lobby_format(
-                        actions
+                        actions, action_array=action_np
                     )
                 )
 
