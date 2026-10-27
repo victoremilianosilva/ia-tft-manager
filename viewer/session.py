@@ -133,6 +133,7 @@ class ViewerSession:
             obs_dim = int(weight.shape[1]) + 140
         # Refresh on viewer load only when the local snapshot is stale (12h by default).
         # A failed network request must not prevent offline inspection or replay.
+        __import__("os").environ.setdefault("TFT_OPGG_META_CATALOG", str(ROOT / "data" / "opgg_tft_meta.json"))
         if __import__("os").environ.get("TFT_OPGG_DISABLE_REFRESH", "").strip().lower() not in {"1", "true", "yes"}:
             import subprocess
             import sys
