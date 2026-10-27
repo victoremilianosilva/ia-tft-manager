@@ -92,6 +92,34 @@ def _role_weights(item_id: str, effects: dict[str, Any]) -> dict[str, float]:
     return {role: round(score / peak, 6) for role, score in scores.items()}
 
 
+def _normalise_combat_effects(effects: dict[str, Any]) -> list[dict[str, Any]]:
+    """Translate source effect keys into the combat engine's generic contract.
+
+    This intentionally maps only source semantics the simulator supports.
+    Unmodeled passives remain in source_effects for diagnostics rather than
+    being guessed or silently treated as permanent stats.
+    """
+    generated: list[dict[str, Any]] = []
+    ad = _percent_fraction(effects, "AD", "BonusAD")
+    if ad > 0.0:
+        generated.append({
+            "trigger": "combat_start",
+            "operation": "add_stat",
+            "stat": "attack_damage",
+            "target": "self",
+            "value": ad,
+            "percent_of_stat": True,
+        })
+    mana_regen = _nonnegative_effect(effects, "ManaRegen")
+    if mana_regen > 0.0:
+        generated.append({
+            "trigger": "combat_start",
+            "operation": "mana_regen",
+            "value": mana_regen,
+        })
+    return generated
+
+
 def _normalise_stats(effects: dict[str, Any]) -> dict[str, float]:
     # Source AD is a percentage of base attack damage. The engine contract
     # expects flat attack_damage, so AD is preserved raw but not converted.
@@ -220,7 +248,7 @@ def build_catalog(
         # This engine catalog intentionally uses the DA_ item family only.
         # TFT_Item_* records are aliases/parallel records and must not create
         # duplicate component dimensions or recipes in the action space.
-        if not item_id.startswith("TFT_"):
+        if not item_id.startswith("DA_"):
             continue
         recipe = item.get("composition")
         if item.get("isAugment") is True or not isinstance(recipe, list) or len(recipe) != 2:
@@ -229,9 +257,8 @@ def build_catalog(
             raise ValueError(f"Receita inválida em {item_id or '<sem ID>'}: {recipe!r}")
         # A completed DA_ item is craftable only when both ingredients are
         # actual DA_Component_* records tagged as components.
-        print(item)
         if any(
-            not component_id.startswith("TFT_Item_")
+            not component_id.startswith("DA_Component_")
             or not _is_component(item_by_id.get(component_id))
             for component_id in recipe
         ):
@@ -289,6 +316,7 @@ def build_catalog(
             "source_description": source_item.get("desc") or "",
             "source_icon": source_item.get("icon") or "",
             "source_effects": effects,
+            "combat_effects": _normalise_combat_effects(effects),
             "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
         }
         # Special/trait mechanics are set data, not API-name branches in C++.
@@ -298,12 +326,49 @@ def build_catalog(
             # source identity, recipe, stats, or provenance.
             for key in ("grants_trait", "granted_trait_active_count", "combat_effects", "deferred_stats"):
                 if key in metadata:
-                    output_item[key] = metadata[key]
+                    if key == "combat_effects":
+                        # Preserve source-derived generic effects alongside
+                        # explicitly modeled set mechanics.
+                        output_item[key] = output_item["combat_effects"] + metadata[key]
+                    else:
+                        output_item[key] = metadata[key]
         output_items.append(output_item)
+
+    # Trait emblems and other explicit metadata items may not have a
+    # component recipe in CommunityDragon. Keep them as non-craftable items so
+    # the runtime can equip them and apply their generic trait/effect contract.
+    existing_ids = {item["id"] for item in output_items}
+    for item_id, metadata in sorted((trait_item_metadata or {}).items()):
+        if item_id in existing_ids or not metadata.get("grants_trait"):
+            continue
+        output_items.append({
+            "id": item_id,
+            "name": str(metadata.get("name") or f"Emblema: {metadata['grants_trait']}"),
+            "recipe_components": [],
+            "stats": {key: 0.0 for key in (
+                "attack_damage", "attack_speed", "ability_power",
+                "critical_strike_chance", "critical_strike_damage", "health",
+                "armor", "magic_resist", "mana", "omnivamp",
+                "damage_amplification", "damage_reduction",
+            )},
+            "weights": {"carry": 0.0, "tank": 0.0, "support": 0.0, "utility": 1.0},
+            "source_api_name": item_id,
+            "source_description": "Set-specific non-craftable trait item",
+            "source_icon": "",
+            "source_effects": {},
+            "combat_effects": metadata.get("combat_effects", []),
+            "grants_trait": metadata["grants_trait"],
+            "granted_trait_active_count": metadata.get("granted_trait_active_count", 1),
+            "weight_basis": "explicit_set_item_metadata",
+        })
+        existing_ids.add(item_id)
 
     return {
         "schema_version": 1,
-        "set_id": set_name,
+        # The source's human-readable name can be stale or localized
+        # (for example number=18 with name=Set10). Use the numeric identity
+        # for compatibility checks; preserve the original name as provenance.
+        "set_id": f"Set{set_number}" if set_number.isdigit() else set_name,
         "source": "CommunityDragon",
         "source_file_format": "cdragon/tft JSON",
         "source_set_number": int(set_number) if set_number.isdigit() else set_number,
@@ -316,9 +381,55 @@ def build_catalog(
             "Source AD is a percentage of base attack damage and is preserved in source_effects; it is not converted to flat attack_damage.",
             "Conditional/passive effects are preserved in source_effects and are not guessed as permanent combat stats.",
             "Role weights are heuristics inferred from effect keys, not official Riot role labels.",
-            "The catalog does not implement effects in CombatEngine; each effect must be supported separately.",
+            "Source AD percentages and ManaRegen are mapped to generic CombatEngine effects; unsupported passives remain in source_effects and are not guessed.",
         ],
     }
+
+
+def validate_catalog_semantics(catalog: dict[str, Any]) -> None:
+    """Reject structurally valid catalogs that would make finished items inert.
+
+    Emblems are excluded from the numeric/effect coverage denominator because
+    their value is the granted trait. Raw source_effects alone do not count as
+    implemented effects: the combat simulator must receive normalized stats or
+    an explicit combat_effects operation.
+    """
+    items = catalog.get("items")
+    if not isinstance(items, list) or not items:
+        raise ValueError("Catálogo sem itens craftáveis.")
+
+    ordinary = [
+        item for item in items
+        if isinstance(item, dict) and not item.get("grants_trait")
+    ]
+    if not ordinary:
+        raise ValueError("Catálogo não contém itens craftáveis comuns para validar.")
+
+    stat_keys = (
+        "attack_damage", "attack_speed", "ability_power",
+        "critical_strike_chance", "critical_strike_damage", "health",
+        "armor", "magic_resist", "mana", "omnivamp",
+        "damage_amplification", "damage_reduction",
+    )
+
+    def has_applied_value(item: dict[str, Any]) -> bool:
+        stats = item.get("stats") if isinstance(item.get("stats"), dict) else {}
+        has_stats = any(
+            _finite_number(stats.get(key)) and float(stats[key]) != 0.0
+            for key in stat_keys
+        )
+        effects = item.get("combat_effects")
+        has_effects = isinstance(effects, list) and bool(effects)
+        return has_stats or has_effects
+
+    usable = sum(1 for item in ordinary if has_applied_value(item))
+    minimum = max(1, math.ceil(len(ordinary) * 0.5))
+    if usable < minimum:
+        raise ValueError(
+            "Catálogo aparentemente válido, mas sem efeitos de combate aplicáveis: "
+            f"{usable}/{len(ordinary)} itens comuns têm atributos/effects suportados; "
+            f"mínimo esperado={minimum}. Verifique a normalização da fonte."
+        )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -342,13 +453,24 @@ def main(argv: list[str] | None = None) -> int:
         if metadata_path is not None:
             with metadata_path.open("r", encoding="utf-8") as handle:
                 metadata_document = json.load(handle)
-            raw_metadata = metadata_document.get("items", {})
-            if isinstance(raw_metadata, dict):
-                trait_item_metadata = {
-                    str(item_id): metadata for item_id, metadata in raw_metadata.items()
-                    if isinstance(item_id, str) and isinstance(metadata, dict)
-                }
+            selected_number = re.sub(r"(?i)^set", "", args.set_selector).strip()
+            expected_set_id = f"Set{selected_number}" if selected_number.isdigit() else ""
+            metadata_set_id = metadata_document.get("set_id")
+            if expected_set_id and metadata_set_id == expected_set_id:
+                raw_metadata = metadata_document.get("items", {})
+                if isinstance(raw_metadata, dict):
+                    trait_item_metadata = {
+                        str(item_id): metadata for item_id, metadata in raw_metadata.items()
+                        if isinstance(item_id, str) and isinstance(metadata, dict)
+                    }
+            elif metadata_set_id:
+                print(
+                    f"Ignorando overrides de {metadata_set_id}; "
+                    f"o set selecionado é {expected_set_id or args.set_selector}.",
+                    file=sys.stderr,
+                )
         catalog = build_catalog(source, args.set_selector, trait_item_metadata)
+        validate_catalog_semantics(catalog)
         output_path = Path(args.output) if args.output else default_catalog_output_path(args.set_selector)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         with output_path.open("w", encoding="utf-8", newline="\n") as handle:
