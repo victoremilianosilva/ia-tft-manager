@@ -80,7 +80,7 @@ def benchmark(args) -> dict:
     trainer.policy.eval()
     samples = {key: [] for key in (
         "mask_retrieval", "mask_flatten", "policy_and_action_conversion",
-        "environment_step", "end_to_end",
+        "environment_step", "observation_conversion", "end_to_end",
     )}
     agent_steps = 0
     completed_iterations = 0
@@ -102,24 +102,23 @@ def benchmark(args) -> dict:
         lobby_actions = trainer._actions_to_lobby_format(actions)
         t3 = time.perf_counter()
 
-        next_obs, _, dones, _ = trainer.vec_env.step(lobby_actions)
+        next_obs, _, _dones, _infos = trainer.vec_env.step(lobby_actions)
+        # LobbyVectorEnv.step() already resets a lobby when the whole match ends.
+        # Individual player dones are expected; resetting every lobby when any
+        # player is eliminated changes the workload and biases the benchmark.
         t4 = time.perf_counter()
 
         observations = trainer._flatten_observations(next_obs)
         obs = torch.as_tensor(observations, dtype=torch.float32)
-        # Vec envs may signal done per lobby; reset only finished environments if
-        # supported, otherwise reset the vector environment as a whole.
-        if np.asarray(dones).any():
-            reset_obs = trainer.vec_env.reset()
-            observations = trainer._flatten_observations(reset_obs)
-            obs = torch.as_tensor(observations, dtype=torch.float32)
+        t5 = time.perf_counter()
 
         if record:
             samples["mask_retrieval"].append(t1 - t0)
             samples["mask_flatten"].append(t2 - t1)
             samples["policy_and_action_conversion"].append(t3 - t2)
             samples["environment_step"].append(t4 - t3)
-            samples["end_to_end"].append(t4 - tick)
+            samples["observation_conversion"].append(t5 - t4)
+            samples["end_to_end"].append(t5 - tick)
             agent_steps += args.num_envs * 8
             completed_iterations += 1
 
@@ -143,6 +142,8 @@ def benchmark(args) -> dict:
     return {
         "schema_version": 1,
         "benchmark": "native_ppo_inference_loop",
+        "benchmark_version": 2,
+        "end_to_end_definition": "mask retrieval + mask flattening + policy/action conversion + vector environment step (including lobby reset on terminal) + observation flattening/tensor conversion; excludes initialization and warmup",
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "revision": git_revision(),
         "configuration": {
@@ -182,6 +183,7 @@ def benchmark(args) -> dict:
             "CPU scheduling, thermal state, and background load affect results.",
             "Run multiple independent processes per revision; compare medians and confidence intervals.",
             "A faster runtime does not imply a stronger policy; use evaluate_checkpoints.py for policy quality.",
+            "Version 2 fixes benchmark-side resets triggered by individual player dones and includes observation flattening/tensor conversion in end-to-end timing; do not compare version 1 and version 2 reports directly.",
         ],
     }
 
