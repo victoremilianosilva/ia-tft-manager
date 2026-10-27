@@ -551,7 +551,7 @@ public:
                                 if (!raw_item.is_string()) continue;
                                 const auto item_id = raw_item.get<std::string>();
                                 const auto canonical = canonical_item_id(item_id);
-                                const bool equipped_match = equipped != live_context.equipped_items_by_champion.end() &&
+                                const bool equipped_match = equipped != live_context_value.equipped_items_by_champion.end() &&
                                     std::any_of(equipped->second.begin(), equipped->second.end(),
                                         [&](const std::string& owned_item) {
                                             return owned_item == item_id || owned_item == canonical ||
@@ -559,7 +559,7 @@ public:
                                         });
                                 const bool available_match =
                                     live_context_value.inventory_item_ids.count(item_id) != 0 ||
-                                    live_context.inventory_item_ids.count(canonical) != 0;
+                                    live_context_value.inventory_item_ids.count(canonical) != 0;
                                 if (equipped_match) item_position_bonus += 0.12;
                                 else if (available_match) item_position_bonus += 0.06;
                             }
@@ -574,7 +574,7 @@ public:
                             const int recommended_slot = unit["cell"]["y"].get<int>() * 7 +
                                 unit["cell"]["x"].get<int>();
                             const auto current_slot = live_context_value.board_slot_by_champion.find(id);
-                            if (current_slot != live_context.board_slot_by_champion.end() &&
+                            if (current_slot != live_context_value.board_slot_by_champion.end() &&
                                 current_slot->second == recommended_slot)
                                 item_position_bonus += 0.10;
                         }
