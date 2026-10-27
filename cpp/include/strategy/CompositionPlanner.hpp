@@ -454,10 +454,19 @@ public:
                     [&](const std::string& set_id) { return local_set_ids.count(set_id) != 0; });
                 if (!meta_set_compatible) meta_audit_status = "incompatible_set";
             }
+            const auto env_enabled = [](const char* name) {
+                const char* value = std::getenv(name);
+                return value && std::string(value) == "1";
+            };
+            const bool disable_opgg_meta = env_enabled("TFT_DISABLE_OPGG_META");
+            const bool disable_opgg_item_bonus = env_enabled("TFT_DISABLE_OPGG_ITEM_BONUS");
+            const bool disable_opgg_position_bonus = env_enabled("TFT_DISABLE_OPGG_POSITION_BONUS");
+            if (disable_opgg_meta && meta_set_compatible)
+                meta_audit_status = "disabled_by_ablation";
 
             if (meta_catalog.contains("compositions") &&
                 meta_catalog["compositions"].is_array() && !plan.unit_ids.empty() &&
-                meta_set_compatible) {
+                meta_set_compatible && !disable_opgg_meta) {
                 std::unordered_map<std::string, const ChampionDefinition*> by_key;
                 for (const auto& champion : pool) {
                     if (!champion.api_name.empty()) by_key[champion.api_name] = &champion;
