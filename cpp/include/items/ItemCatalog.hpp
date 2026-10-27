@@ -40,6 +40,18 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
     if (catalog.set_id.empty()) {
         throw std::invalid_argument("Item catalog set_id cannot be empty");
     }
+    if (root.contains("source_set_number")) {
+        std::string source_number;
+        if (root["source_set_number"].is_number_integer())
+            source_number = std::to_string(root["source_set_number"].get<int>());
+        else if (root["source_set_number"].is_string())
+            source_number = root["source_set_number"].get<std::string>();
+        if (!source_number.empty() && catalog.set_id.rfind("Set", 0) == 0 &&
+            catalog.set_id != "Set" + source_number) {
+            throw std::invalid_argument(
+                "Item catalog set_id does not match source_set_number");
+        }
+    }
 
     std::set<std::string> component_ids;
     for (const auto& component : root["components"]) {
