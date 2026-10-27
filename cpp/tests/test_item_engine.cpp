@@ -179,6 +179,32 @@ int main() {
     require(!engine.grant_component_anvil({"sword", "sword"}),
             "anvil must not present duplicate options");
 
+    // Auto-merge lifecycle: equipment moves to the upgraded unit; if the
+    // three-slot cap is reached, overflow returns to the bag instead of vanishing.
+    ItemEngine merge_engine({damage, guard});
+    UnitProfile merge_target{"merge-target", 2, 1, false, true, 80.0, 1.2, 0.0, 900.0, 30.0, 30.0, 0.9};
+    UnitProfile merge_source_a{"merge-source-a", 1, 0, true, false, 35.0, 0.7, 0.0, 1800.0, 70.0, 60.0, 0.8};
+    UnitProfile merge_source_b{"merge-source-b", 1, 0, true, false, 35.0, 0.7, 0.0, 1800.0, 70.0, 60.0, 0.8};
+    for (const auto* id : {"damage_blade", "damage_blade", "guard_plate", "damage_blade"}) {
+        require(merge_engine.add_completed_item(id), "merge fixture item enters inventory");
+    }
+    require(merge_engine.equip("damage_blade", merge_target), "equip first target item");
+    require(merge_engine.equip("damage_blade", merge_target), "equip second target item");
+    require(merge_engine.equip("guard_plate", merge_source_a), "equip first consumed copy");
+    require(merge_engine.equip("damage_blade", merge_source_b), "equip second consumed copy");
+    require(merge_engine.transfer_equipped_on_merge("merge-source-a", "merge-target"),
+            "first consumed unit transfers equipment");
+    require(merge_engine.transfer_equipped_on_merge("merge-source-b", "merge-target"),
+            "second consumed unit transfers equipment");
+    require(merge_engine.equipped("merge-target").size() == ItemEngine::kMaxItemsPerUnit,
+            "upgraded unit keeps at most three equipped items");
+    require(merge_engine.equipped("merge-source-a").empty() &&
+            merge_engine.equipped("merge-source-b").empty(),
+            "consumed unit UUIDs no longer own equipment");
+    require(merge_engine.inventory().size() == 1 &&
+            merge_engine.inventory().front() == "damage_blade",
+            "overflow item returns to inventory rather than being lost");
+
     // Phase 1 contract: repeated component IDs represent separate copies,
     // and equipment is keyed by unit-instance UUID rather than champion ID.
     tft::items::ItemPlayerState item_state;
