@@ -363,6 +363,7 @@ public:
         std::string meta_audit_status = "not_evaluated";
         std::string meta_audit_best_name;
         double meta_audit_best_score = -std::numeric_limits<double>::infinity();
+        double meta_audit_best_item_position_bonus = 0.0;
         double meta_audit_native_score = 0.0;
         std::size_t meta_audit_catalog_candidates = 0;
         std::size_t meta_audit_contextual_candidates = 0;
@@ -671,6 +672,7 @@ public:
                     if (score > best_meta_score) {
                         best_meta_score = score;
                         meta_audit_best_score = score;
+                        meta_audit_best_item_position_bonus = std::min(0.50, item_position_bonus);
                         meta_audit_best_name = composition.value("name", std::string{"OP.GG meta"});
                         best_meta_ids = std::move(final_ids);
                         best_meta_stage_ids = std::move(stage_order);
