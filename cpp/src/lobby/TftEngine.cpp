@@ -3440,7 +3440,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             item_definition->critical_strike_damage,
                             item_definition->omnivamp,
                             item_definition->damage_amplification,
-                            item_definition->damage_reduction);
+                            item_definition->damage_reduction,
+                            item_definition->ability_power,
+                            item_definition->magic_resist,
+                            item_definition->mana);
                         item_assignment_reward = reward_model::item_assignment_quality(
                             immediate_strength, target_profile->composition_fit,
                             role_alignment, static_cast<int>(lobby.stage));
