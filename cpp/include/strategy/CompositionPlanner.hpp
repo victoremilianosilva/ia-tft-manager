@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <chrono>
 #include <cstddef>
 #include <limits>
 #include <cstdlib>
@@ -377,7 +378,36 @@ public:
                 input >> value;
                 if (!value.is_object() || !value.contains("compositions") ||
                     !value["compositions"].is_array() ||
-                    value.value("schema_version", 0) != 1)
+                    value.value("schema_version", 0) != 1 ||
+                    value.value("source", std::string{}) != "op.gg" ||
+                    !value.contains("fetched_at") || !value["fetched_at"].is_string())
+                    return nlohmann::json::object();
+
+                // Runtime must independently reject stale snapshots: viewer/trainer
+                // refresh is best-effort and a stale local file must not steer PPO.
+                const auto stamp = value["fetched_at"].get<std::string>();
+                if (stamp.size() < 19) return nlohmann::json::object();
+                const int year_value = std::stoi(stamp.substr(0, 4));
+                const unsigned month_value = static_cast<unsigned>(std::stoi(stamp.substr(5, 2)));
+                const unsigned day_value = static_cast<unsigned>(std::stoi(stamp.substr(8, 2)));
+                const int hour_value = std::stoi(stamp.substr(11, 2));
+                const int minute_value = std::stoi(stamp.substr(14, 2));
+                const int second_value = std::stoi(stamp.substr(17, 2));
+                const std::chrono::year_month_day date{
+                    std::chrono::year{year_value},
+                    std::chrono::month{month_value},
+                    std::chrono::day{day_value}};
+                if (!date.ok() || hour_value < 0 || hour_value > 23 ||
+                    minute_value < 0 || minute_value > 59 ||
+                    second_value < 0 || second_value > 60)
+                    return nlohmann::json::object();
+                const auto fetched_at = std::chrono::sys_days{date} +
+                    std::chrono::hours{hour_value} +
+                    std::chrono::minutes{minute_value} +
+                    std::chrono::seconds{second_value};
+                const auto age_hours = std::chrono::duration<double, std::ratio<3600>>(
+                    std::chrono::system_clock::now() - fetched_at).count();
+                if (age_hours < -1.0 || age_hours > 168.0)
                     return nlohmann::json::object();
                 return value;
             }();
