@@ -12,6 +12,7 @@ import json
 import os
 import sys
 import tempfile
+import traceback
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -284,7 +285,9 @@ async def main() -> int:
         print(f"Catálogo OP.GG atualizado: {len(normalized['compositions'])} comps | SHA-256 {digest[:16]} | {args.output}")
         return 0
     except Exception as exc:
-        print(f"Falha ao atualizar catálogo OP.GG: {exc}", file=sys.stderr)
+        print(f"Falha ao atualizar catálogo OP.GG: {exc!r}", file=sys.stderr)
+        print("Detalhes da exceção (incluindo subexceções de TaskGroup):", file=sys.stderr)
+        traceback.print_exception(type(exc), exc, exc.__traceback__, file=sys.stderr, chain=True)
         if args.output.is_file():
             try:
                 existing = json.loads(args.output.read_text(encoding="utf-8"))
