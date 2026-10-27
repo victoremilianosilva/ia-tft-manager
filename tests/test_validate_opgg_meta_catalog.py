@@ -45,6 +45,12 @@ def test_rejects_catalog_from_another_set():
         validate_catalog(meta, units, now=now)
 
 
+def test_rejects_meta_when_item_catalog_set_id_differs():
+    meta, units, now = fixture()
+    with pytest.raises(ValueError, match="catálogo de itens"):
+        validate_catalog(meta, units, items_doc={"set_id": "Set17"}, now=now)
+
+
 def test_rejects_stale_catalog():
     meta, units, now = fixture()
     meta["fetched_at"] = (now - timedelta(days=10)).isoformat()
