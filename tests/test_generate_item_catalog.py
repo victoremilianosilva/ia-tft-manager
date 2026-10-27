@@ -215,6 +215,22 @@ def test_semantic_validation_accepts_normalized_stats_or_explicit_effects():
     validate_catalog_semantics(catalog)
 
 
+def test_explicit_trait_metadata_can_add_non_craftable_items():
+    catalog = build_catalog(
+        source_fixture(),
+        "16",
+        {"DA_16_EmblemTest": {
+            "grants_trait": "TestTrait",
+            "granted_trait_active_count": 1,
+            "combat_effects": [],
+        }},
+    )
+    emblem = next(item for item in catalog["items"] if item["id"] == "DA_16_EmblemTest")
+    assert emblem["recipe_components"] == []
+    assert emblem["grants_trait"] == "TestTrait"
+    assert emblem["weights"]["utility"] == 1.0
+
+
 def test_canonical_set_identity_uses_number_when_source_name_is_stale():
     source = source_fixture()
     source["setData"] = [{
