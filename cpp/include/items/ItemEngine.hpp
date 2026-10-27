@@ -96,6 +96,9 @@ public:
     explicit ItemEngine(std::vector<ItemDefinition> catalog,
                         std::vector<std::string> component_ids = {})
         : catalog_(std::move(catalog)) {
+        index_.reserve(catalog_.size());
+        recipes_.reserve(catalog_.size());
+        component_ids_.reserve(component_ids.size() + catalog_.size() * 2U);
         for (const auto& component_id : component_ids) {
             if (component_id.empty() || !component_ids_.insert(component_id).second) {
                 throw std::invalid_argument("Item catalog has an empty or duplicate component id");
@@ -151,7 +154,9 @@ public:
             ++metrics_.invalid_actions;
             return false;
         }
-        const auto anvil = anvils_.front();
+        // The grant methods do not mutate the anvil queue, so avoid copying
+        // the complete options vector for every policy choice.
+        const auto& anvil = anvils_.front();
         const auto& selected = anvil.options[option_index];
         const bool granted = anvil.kind == ItemAnvilKind::COMPONENT
             ? add_component(selected)
@@ -444,6 +449,7 @@ private:
             return false;
         }
         std::unordered_set<std::string> seen;
+        seen.reserve(options.size());
         for (const auto& option : options) {
             const bool known = kind == ItemAnvilKind::COMPONENT
                 ? component_ids_.contains(option)
