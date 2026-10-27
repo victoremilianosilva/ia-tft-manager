@@ -32,6 +32,7 @@ def validate_catalog(
     meta: dict[str, Any],
     units_doc: Any,
     *,
+    items_doc: dict[str, Any] | None = None,
     max_age_hours: float = 168.0,
     min_coverage: float = 0.90,
     now: datetime | None = None,
@@ -98,6 +99,14 @@ def validate_catalog(
             f"Conjunto OP.GG {sorted(set_ids)} incompatível com unidades locais "
             f"{sorted(local_set_ids)}."
         )
+    if set_ids and items_doc is not None:
+        expected_item_set = "Set" + next(iter(set_ids)) if len(set_ids) == 1 else ""
+        item_set = items_doc.get("set_id") if isinstance(items_doc, dict) else None
+        if expected_item_set and item_set != expected_item_set:
+            raise ValueError(
+                f"Conjunto OP.GG {sorted(set_ids)} incompatível com catálogo de itens "
+                f"{item_set!r}; esperado {expected_item_set!r}."
+            )
 
     mapped = meta_keys & local_keys
     coverage = len(mapped) / len(meta_keys) if meta_keys else 0.0
@@ -129,7 +138,10 @@ def main(argv: list[str] | None = None) -> int:
     try:
         meta = json.loads(args.meta.read_text(encoding="utf-8"))
         units = json.loads(args.units.read_text(encoding="utf-8"))
-        print(json.dumps(validate_catalog(meta, units, max_age_hours=args.max_age_hours,
+        items_path = ROOT / "data" / "itens.json"
+        items = json.loads(items_path.read_text(encoding="utf-8")) if items_path.is_file() else None
+        print(json.dumps(validate_catalog(meta, units, items_doc=items,
+                                          max_age_hours=args.max_age_hours,
                                           min_coverage=args.min_coverage),
                          ensure_ascii=False, indent=2))
         return 0
