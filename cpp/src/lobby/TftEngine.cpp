@@ -743,10 +743,11 @@ struct TFTEngine::Impl {
             return;
         }
 
-        // Other stage-end PvE rewards remain ordinary loot: no Pengu/armory
-        // offer and no forced policy decision. The existing stage-2 drop is
-        // one randomly selected component; stage 3-7 grants none in this model.
-        const std::size_t component_count = current_stage == 2 ? 1U : 0U;
+        // Ordinary PvE loot goes directly to the component bag: no Pengu/armory
+        // offer and no forced policy action. Stages 2 and 3 each grant one
+        // component; stage 4+ uses the explicit anvil events above.
+        const std::size_t component_count =
+            (current_stage == 2 || current_stage == 3) ? 1U : 0U;
         if (component_count == 0 || item_catalog->components.empty()) return;
 
         std::vector<std::string> component_pool;
@@ -857,24 +858,8 @@ struct TFTEngine::Impl {
                 if (current.shop_mask[shop_slot] != 1 || !player.shop) continue;
                 const auto* offer = player.shop->get_unit(static_cast<std::int32_t>(shop_slot));
                 if (!offer) continue;
-                int matching_copies = 0;
-                bool matching_copy_has_items = false;
-                for (const auto& unit : player.board) {
-                    if (!unit || unit->champion_internal_id != offer->champion_internal_id ||
-                        unit->star != offer->star) continue;
-                    ++matching_copies;
-                    matching_copy_has_items = matching_copy_has_items ||
-                        !unit->items.empty() || !player.item_engine->equipped(unit->uuid).empty();
-                }
-                for (const auto& unit : player.bench) {
-                    if (!unit || unit->champion_internal_id != offer->champion_internal_id ||
-                        unit->star != offer->star) continue;
-                    ++matching_copies;
-                    matching_copy_has_items = matching_copy_has_items ||
-                        !unit->items.empty() || !player.item_engine->equipped(unit->uuid).empty();
-                }
-                if (matching_copies >= 2 && matching_copy_has_items)
-                    current.shop_mask[shop_slot] = 0;
+                // Keep upgrades legal even when matching copies carry items.
+                // Merge transfers equipment and returns overflow to inventory.
             }
             if (std::none_of(current.shop_mask.begin(), current.shop_mask.end(),
                 [](std::uint8_t value) { return value == 1; })) current.type_mask[0] = 0;
