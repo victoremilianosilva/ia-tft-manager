@@ -176,3 +176,20 @@ def test_empty_action_types_receive_same_pass_fallback_for_multiple_agents(train
         masks["type_mask"][1],
         torch.tensor(gym_masks[0][1]["type_mask"], dtype=torch.bool),
     )
+
+
+def test_boolean_masks_are_accepted_without_changing_values(trainer):
+    gym_masks = create_valid_masks()
+    expected = {}
+
+    for player_idx, player in enumerate(gym_masks[0]):
+        for key, raw_mask in player.items():
+            player[key] = raw_mask.astype(np.bool_)
+            expected[(player_idx, key)] = player[key].copy()
+
+    masks = trainer._flatten_masks(gym_masks)
+
+    for (player_idx, key), raw_mask in expected.items():
+        # The dead-agent PASS fallback is intentionally applied only if the
+        # action type mask is empty; these fixtures all have valid action types.
+        assert np.array_equal(masks[key][player_idx].numpy(), raw_mask)
