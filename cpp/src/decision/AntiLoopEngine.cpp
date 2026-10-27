@@ -1,6 +1,7 @@
 #include "decision/AntiLoopEngine.hpp"
 
 #include <algorithm>
+#include <array>
 #include <functional>
 #include <iterator>
 #include <utility>
@@ -549,57 +550,63 @@ bool AntiLoopEngine::is_cycle_move(
         return false;
     }
 
-    // Filter by stable unit identity before applying the history window:
-    // movements by other units must not hide this unit's trajectory.
-    std::vector<std::pair<std::int32_t, std::int32_t>> recent;
+    // The history is short and bounded. Use stack storage for the last eight
+    // matching moves to avoid allocating two temporary vectors for every
+    // candidate checked during action-mask generation.
+    constexpr std::size_t kRecentMoves = 8;
+    std::array<std::pair<std::int32_t, std::int32_t>, kRecentMoves> recent{};
+    std::size_t recent_count = 0;
     for (const auto& move : history_.move_history) {
         if (
             (move.move_type == "board_move"
                 || move.move_type == "board_swap")
             && move.unit == unit
         ) {
-            recent.emplace_back(move.source, move.target);
-        }
-    }
-
-    constexpr std::size_t kRecentMoves = 8;
-    if (recent.size() > kRecentMoves) {
-        recent.erase(recent.begin(), recent.end() - kRecentMoves);
-    }
-    if (recent.empty()) return false;
-
-    // Build the current continuous trajectory. If this unit was moved by
-    // another mechanism and the recorded endpoints no longer connect, start
-    // a new segment rather than inventing a cycle across a discontinuity.
-    std::vector<std::int32_t> positions;
-    for (const auto& [src, dst] : recent) {
-        if (positions.empty() || positions.back() != src) {
-            positions = {src, dst};
-        } else {
-            positions.push_back(dst);
-        }
-    }
-
-    // The candidate must continue the unit's latest trajectory and return to
-    // a position it has already occupied. To avoid rejecting a legitimate
-    // first cycle closure, require evidence of a prior revisit in the history
-    // (an existing loop/oscillation), not merely a path that would close once.
-    if (positions.size() < 4 || positions.back() != source) return false;
-
-    const auto repeated_position = [&positions]() {
-        for (std::size_t i = 0; i + 1 < positions.size(); ++i) {
-            for (std::size_t j = i + 1; j < positions.size(); ++j) {
-                if (positions[i] == positions[j]) return true;
+            if (recent_count < kRecentMoves) {
+                recent[recent_count++] = {move.source, move.target};
+            } else {
+                for (std::size_t i = 1; i < kRecentMoves; ++i)
+                    recent[i - 1] = recent[i];
+                recent[kRecentMoves - 1] = {move.source, move.target};
             }
         }
+    }
+    if (recent_count == 0) return false;
+
+    // At most eight edges produce at most nine positions. Discontinuities
+    // restart the active segment exactly as the previous vector algorithm.
+    std::array<std::int32_t, kRecentMoves + 1> positions{};
+    std::size_t position_count = 0;
+    for (std::size_t i = 0; i < recent_count; ++i) {
+        const auto [src, dst] = recent[i];
+        if (position_count == 0 || positions[position_count - 1] != src) {
+            positions[0] = src;
+            positions[1] = dst;
+            position_count = 2;
+        } else {
+            positions[position_count++] = dst;
+        }
+    }
+
+    // Keep the same cycle rule: require an existing repeated position, then
+    // block only if the candidate returns to a position in this trajectory.
+    if (position_count < 4 || positions[position_count - 1] != source)
         return false;
-    };
 
-    if (!repeated_position()) return false;
+    for (std::size_t i = 0; i + 1 < position_count; ++i) {
+        for (std::size_t j = i + 1; j < position_count; ++j) {
+            if (positions[i] == positions[j]) {
+                return std::find(
+                    positions.begin(),
+                    positions.begin() + static_cast<std::ptrdiff_t>(position_count),
+                    target
+                ) != positions.begin() + static_cast<std::ptrdiff_t>(position_count);
+            }
+        }
+    }
 
-    return std::find(positions.begin(), positions.end(), target) != positions.end();
+    return false;
 }
-
 std::optional<std::string> AntiLoopEngine::get_block_reason(
     const std::string& move_type,
     std::int32_t source,
