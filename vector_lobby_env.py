@@ -22,7 +22,7 @@ class LobbyVectorEnv:
 
     def reset(self):
         observations = [env.reset() for env in self.envs]
-        return np.stack(observations).astype(np.float32)
+        return np.stack(observations).astype(np.float32, copy=False)
 
     def env_method(self, method_name, *args, **kwargs):
         """Mantém compatibilidade com as chamadas do Trainer."""
@@ -104,9 +104,9 @@ class LobbyVectorEnv:
             all_infos.append(info)
 
         return (
-            np.stack(all_obs).astype(np.float32),
-            np.stack(all_rewards).astype(np.float32),
-            np.stack(all_dones).astype(np.bool_),
+            np.stack(all_obs).astype(np.float32, copy=False),
+            np.stack(all_rewards).astype(np.float32, copy=False),
+            np.stack(all_dones).astype(np.bool_, copy=False),
             all_infos,
         )
 
