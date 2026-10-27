@@ -58,15 +58,28 @@ int main() {
             "recipe_components": ["sword", "bow"],
             "stats": {"attack_damage": 12.0, "attack_speed": 0.15},
             "weights": {"carry": 1.0}
+        }, {
+            "id": "catalog_emblem", "name": "Catalog Emblem",
+            "recipe_components": [],
+            "stats": {}, "weights": {"utility": 1.0},
+            "grants_trait": "TestTrait",
+            "granted_trait_active_count": 1,
+            "combat_effects": []
         }]
     })json");
     const auto loaded_catalog = load_item_catalog(catalog_json);
     require(loaded_catalog.set_id == "synthetic-test-only" &&
             loaded_catalog.components.size() == 2 &&
-            loaded_catalog.items.size() == 1 &&
+            loaded_catalog.items.size() == 2 &&
             loaded_catalog.items.front().recipe_components[0] == "sword",
             "versioned external item catalog should load without hard-coded recipes");
 
+    const auto emblem = std::find_if(loaded_catalog.items.begin(), loaded_catalog.items.end(),
+        [](const ItemDefinition& item) { return item.id == "catalog_emblem"; });
+    require(emblem != loaded_catalog.items.end() &&
+            emblem->recipe_components[0].empty() &&
+            emblem->grants_trait == "TestTrait",
+            "non-craftable trait item should load without a recipe");
     std::istringstream inert_catalog_json(R"json({
         "schema_version": 1,
         "set_id": "synthetic-inert-test",
