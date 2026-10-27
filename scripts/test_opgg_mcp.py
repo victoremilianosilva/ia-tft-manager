@@ -24,7 +24,12 @@ import sys
 from typing import Any
 
 from mcp import ClientSession
-from mcp.client.streamable_http import streamablehttp_client
+
+# MCP SDK 2.x renamed this function; keep compatibility with SDK 1.x.
+try:
+    from mcp.client.streamable_http import streamable_http_client as streamablehttp_client
+except ImportError:  # pragma: no cover - exercised only with MCP SDK 1.x
+    from mcp.client.streamable_http import streamablehttp_client
 
 DEFAULT_URL = "https://mcp-api.op.gg/mcp"
 
@@ -70,7 +75,9 @@ async def run() -> int:
         tool_arguments = parsed
 
     try:
-        async with streamablehttp_client(args.url) as (read_stream, write_stream, _):
+        async with streamablehttp_client(args.url) as streams:
+            # SDK 1.x yielded three values; SDK 2.x yields only read/write streams.
+            read_stream, write_stream = streams[0], streams[1]
             async with ClientSession(read_stream, write_stream) as session:
                 init_result = await session.initialize()
                 print(f"Connected to MCP server: {args.url}")
