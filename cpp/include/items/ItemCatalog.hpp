@@ -143,6 +143,8 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
 
     std::set<std::string> item_ids;
     std::set<std::string> recipes;
+    std::size_t ordinary_item_count = 0;
+    std::size_t effective_item_count = 0;
     const auto number = [](const Json& object, const char* key) {
         if (!object.contains(key)) return 0.0;
         if (!object[key].is_number()) {
@@ -240,7 +242,28 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 item.deferred_stats.push_back(stat.get<std::string>());
             }
         }
+        if (item.grants_trait.empty()) {
+            ++ordinary_item_count;
+            const bool has_numeric_effect =
+                item.attack_damage != 0.0 || item.attack_speed != 0.0 ||
+                item.ability_power != 0.0 || item.critical_strike_chance != 0.0 ||
+                item.critical_strike_damage != 0.0 || item.max_health != 0.0 ||
+                item.armor != 0.0 || item.magic_resist != 0.0 || item.mana != 0.0 ||
+                item.omnivamp != 0.0 || item.damage_amplification != 0.0 ||
+                item.damage_reduction != 0.0;
+            if (has_numeric_effect || !item.combat_effects.empty())
+                ++effective_item_count;
+        }
         catalog.items.push_back(std::move(item));
+    }
+
+    // A valid JSON shape is not enough: reject catalogs where ordinary finished
+    // items are almost all inert. Trait emblems are measured separately because
+    // their value is the granted trait rather than a numeric combat stat.
+    if (ordinary_item_count > 0 &&
+        effective_item_count * 2 < ordinary_item_count) {
+        throw std::invalid_argument(
+            "Item catalog has too few ordinary items with applied combat effects");
     }
 
     // Reuse the engine's validation for duplicate IDs/recipes as a final guard.
