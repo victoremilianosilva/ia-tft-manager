@@ -25,6 +25,7 @@ import traceback
 from typing import Any
 
 from mcp import ClientSession
+import mcp.client.session as mcp_client_session
 
 # MCP SDK 2.x renamed this function; keep compatibility with SDK 1.x.
 try:
@@ -33,6 +34,54 @@ except ImportError:  # pragma: no cover - exercised only with MCP SDK 1.x
     from mcp.client.streamable_http import streamablehttp_client
 
 DEFAULT_URL = "https://mcp-api.op.gg/mcp"
+
+
+def install_opgg_schema_compatibility() -> bool:
+    """Work around OP.GG array output schemas rejected by older protocol validators.
+
+    OP.GG currently advertises two tools with outputSchema.type='array'. Some
+    MCP SDK/protocol combinations require an object at the schema root and reject
+    the entire tools/list response. This client only consumes tool input schemas,
+    so drop incompatible outputSchema metadata locally; no server data is changed.
+    """
+    methods = getattr(mcp_client_session, "_methods", None)
+    original = getattr(methods, "validate_server_result", None)
+    if methods is None or original is None:
+        return False
+    if getattr(original, "_opgg_compat_wrapper", False):
+        return True
+
+    def validate_with_opgg_compat(method: Any, version: Any, raw: Any, *args: Any, **kwargs: Any) -> Any:
+        if method == "tools/list" and isinstance(raw, dict):
+            tools = raw.get("tools")
+            if isinstance(tools, list):
+                cleaned_tools = []
+                changed = False
+                for entry in tools:
+                    if not isinstance(entry, dict):
+                        cleaned_tools.append(entry)
+                        continue
+                    item = dict(entry)
+                    # Support both wire-format and snake_case spellings.
+                    for schema_key in ("outputSchema", "output_schema"):
+                        schema = item.get(schema_key)
+                        if isinstance(schema, dict) and schema.get("type") != "object":
+                            item.pop(schema_key, None)
+                            changed = True
+                    cleaned_tools.append(item)
+                if changed:
+                    raw = dict(raw)
+                    raw["tools"] = cleaned_tools
+                    print(
+                        "Compatibility note: ignored incompatible OP.GG outputSchema "
+                        "metadata for this client session; input schemas are unchanged.",
+                        file=sys.stderr,
+                    )
+        return original(method, version, raw, *args, **kwargs)
+
+    validate_with_opgg_compat._opgg_compat_wrapper = True  # type: ignore[attr-defined]
+    methods.validate_server_result = validate_with_opgg_compat
+    return True
 
 
 def parse_args() -> argparse.Namespace:
@@ -90,6 +139,13 @@ async def run() -> int:
             print("--arguments must be a JSON object.", file=sys.stderr)
             return 2
         tool_arguments = parsed
+
+    if not install_opgg_schema_compatibility():
+        print(
+            "Warning: could not install OP.GG schema compatibility workaround; "
+            "the installed MCP SDK may have changed its internal API.",
+            file=sys.stderr,
+        )
 
     stage = "opening HTTP transport"
     try:
