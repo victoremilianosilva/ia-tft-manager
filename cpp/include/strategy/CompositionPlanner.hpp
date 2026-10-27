@@ -538,7 +538,8 @@ public:
                     std::vector<std::int32_t> core_order;
                     std::unordered_map<std::string, int> meta_trait_counts;
                     std::size_t source_unit_count = 0;
-                    double item_position_bonus = 0.0;
+                    double item_fit_bonus = 0.0;
+                    double position_fit_bonus = 0.0;
                     for (const auto& unit : composition["units"]) {
                         if (!unit.is_object()) continue;
                         ++source_unit_count;
@@ -555,7 +556,8 @@ public:
                         // OP.GG item recommendations are useful only when the
                         // item is already equipped or can be used from inventory.
                         // Normalize source IDs without hard-coding a set's recipes.
-                        if (unit.contains("items") && unit["items"].is_array()) {
+                        if (!disable_opgg_item_bonus &&
+                            unit.contains("items") && unit["items"].is_array()) {
                             const auto equipped = live_context_value.equipped_items_by_champion.find(id);
                             for (const auto& raw_item : unit["items"]) {
                                 if (!raw_item.is_string()) continue;
@@ -570,14 +572,15 @@ public:
                                 const bool available_match =
                                     live_context_value.inventory_item_ids.count(item_id) != 0 ||
                                     live_context_value.inventory_item_ids.count(canonical) != 0;
-                                if (equipped_match) item_position_bonus += 0.12;
-                                else if (available_match) item_position_bonus += 0.06;
+                                if (equipped_match) item_fit_bonus += 0.12;
+                                else if (available_match) item_fit_bonus += 0.06;
                             }
                         }
                         // Reward an already-correct OP.GG cell, but do not penalize
                         // alternative positions: the native positioning engine can
                         // still react to current combat threats.
-                        if (unit.contains("cell") && unit["cell"].is_object() &&
+                        if (!disable_opgg_position_bonus &&
+                            unit.contains("cell") && unit["cell"].is_object() &&
                             unit["cell"].contains("x") && unit["cell"].contains("y") &&
                             unit["cell"]["x"].is_number_integer() &&
                             unit["cell"]["y"].is_number_integer()) {
@@ -586,7 +589,7 @@ public:
                             const auto current_slot = live_context_value.board_slot_by_champion.find(id);
                             if (current_slot != live_context_value.board_slot_by_champion.end() &&
                                 current_slot->second == recommended_slot)
-                                item_position_bonus += 0.10;
+                                position_fit_bonus += 0.10;
                         }
                         if (unit.value("is_core", false)) {
                             core_ids.insert(id);
@@ -677,11 +680,13 @@ public:
                         0.10 * static_cast<double>(stage_owned_count));
                     const double score = lineup_score(final_ids, no_core, no_stage_units, stats_prior)
                         + bounded_meta_prior + std::min(0.25, stage_snapshot_bonus * 0.10)
-                        + std::min(0.50, item_position_bonus);
+                        + std::min(0.35, item_fit_bonus)
+                        + std::min(0.15, position_fit_bonus);
                     if (score > best_meta_score) {
                         best_meta_score = score;
                         meta_audit_best_score = score;
-                        meta_audit_best_item_position_bonus = std::min(0.50, item_position_bonus);
+                        meta_audit_best_item_position_bonus =
+                            std::min(0.35, item_fit_bonus) + std::min(0.15, position_fit_bonus);
                         meta_audit_best_name = composition.value("name", std::string{"OP.GG meta"});
                         best_meta_ids = std::move(final_ids);
                         best_meta_stage_ids = std::move(stage_order);
