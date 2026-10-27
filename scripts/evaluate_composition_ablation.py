@@ -22,7 +22,7 @@ import torch
 from policy import TFTPolicy
 
 
-ACTION_DIMS = [7, 5, 9, 28, 28, 28]
+ACTION_DIMS = [9, 5, 9, 28, 28, 28]
 MASK_KEYS = (
     "type_mask",
     "shop_mask",
@@ -33,7 +33,7 @@ MASK_KEYS = (
     "bench_move_source_mask",
     "bench_to_board_target_masks",
 )
-ACTION_NAMES = ("BUY", "REROLL", "BUY_XP", "MOVE_BENCH", "MOVE_BOARD", "SELL", "PASS")
+ACTION_NAMES = ("BUY", "REROLL", "BUY_XP", "MOVE_BENCH", "MOVE_BOARD", "SELL", "PASS", "ITEM", "CRAFT")
 CANDIDATE_FEATURE_DIM = 8
 
 
