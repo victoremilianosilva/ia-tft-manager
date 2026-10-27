@@ -24,6 +24,12 @@ static ChampionDefinition champion(int id, const char* name, int role,
 }
 
 int main() {
+    assert(CompositionPlanner::canonical_item_id("DA_GargoyleStoneplate") ==
+           "TFT_Item_GargoyleStoneplate");
+    assert(CompositionPlanner::canonical_item_id("DA_18_EmblemBlackthorn") ==
+           "TFT_Item_EmblemBlackthorn");
+    assert(CompositionPlanner::canonical_item_id("TFT_Item_Deathblade") ==
+           "TFT_Item_Deathblade");
     // The planner should know the full level-8 core before the player reaches
     // level 8, then add flexible slots at levels 9 and 10.
     for (int level = 1; level <= 8; ++level)
