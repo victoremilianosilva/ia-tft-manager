@@ -416,6 +416,8 @@ public:
                 const double own_score = lineup_score(plan.unit_ids, no_core, no_stage_units, 0.0);
                 double best_meta_score = -std::numeric_limits<double>::infinity();
                 std::vector<std::int32_t> best_meta_ids;
+                std::vector<std::int32_t> best_meta_stage_ids;
+                std::vector<std::int32_t> best_meta_core_ids;
                 std::vector<std::string> best_meta_traits;
                 std::string best_meta_name;
 
@@ -424,6 +426,7 @@ public:
                         !composition["units"].is_array()) continue;
                     std::vector<std::int32_t> final_ids;
                     std::unordered_set<std::int32_t> core_ids;
+                    std::vector<std::int32_t> core_order;
                     std::unordered_map<std::string, int> meta_trait_counts;
                     for (const auto& unit : composition["units"]) {
                         if (!unit.is_object()) continue;
@@ -433,7 +436,10 @@ public:
                         const auto id = found->second->internal_id;
                         if (std::find(final_ids.begin(), final_ids.end(), id) != final_ids.end()) continue;
                         final_ids.push_back(id);
-                        if (unit.value("is_core", false)) core_ids.insert(id);
+                        if (unit.value("is_core", false)) {
+                            core_ids.insert(id);
+                            core_order.push_back(id);
+                        }
                         for (const auto& trait : found->second->traits) ++meta_trait_counts[trait];
                     }
                     if (final_ids.empty()) continue;
@@ -441,6 +447,7 @@ public:
                     const char* snapshot_key = current_level <= 5 ? "early_game"
                         : (current_level <= 7 ? "mid_game" : "");
                     std::unordered_set<std::int32_t> stage_ids;
+                    std::vector<std::int32_t> stage_order;
                     if (*snapshot_key && composition.contains(snapshot_key) &&
                         composition[snapshot_key].is_object() &&
                         composition[snapshot_key].contains("units") &&
@@ -449,7 +456,12 @@ public:
                             if (!unit.is_object()) continue;
                             const auto key = unit.value("key", std::string{});
                             const auto found = by_key.find(key);
-                            if (found != by_key.end()) stage_ids.insert(found->second->internal_id);
+                            if (found != by_key.end()) {
+                                const auto id = found->second->internal_id;
+                                stage_ids.insert(id);
+                                if (std::find(stage_order.begin(), stage_order.end(), id) == stage_order.end())
+                                    stage_order.push_back(id);
+                            }
                         }
                     }
                     int owned_final_count = 0;
@@ -497,6 +509,8 @@ public:
                     if (score > best_meta_score) {
                         best_meta_score = score;
                         best_meta_ids = std::move(final_ids);
+                        best_meta_stage_ids = std::move(stage_order);
+                        best_meta_core_ids = std::move(core_order);
                         best_meta_name = composition.value("name", std::string{"OP.GG meta"});
                         best_meta_traits.clear();
                         std::vector<std::pair<std::string, int>> ordered_traits(
@@ -517,14 +531,35 @@ public:
                     const auto native_ids = plan.unit_ids;
                     plan.unit_ids.clear();
                     plan.unit_names.clear();
-                    for (const auto id : best_meta_ids) {
+                    plan.main_carry_id = -1;
+                    std::vector<std::int32_t> preferred_ids;
+                    // During levels 1-7, keep the observed transition units in the
+                    // strategic target, then reserve slots for final core units.
+                    // At level 8+, the final lineup becomes the primary target.
+                    if (current_level <= 7) {
+                        preferred_ids.insert(preferred_ids.end(),
+                            best_meta_stage_ids.begin(), best_meta_stage_ids.end());
+                        preferred_ids.insert(preferred_ids.end(),
+                            best_meta_core_ids.begin(), best_meta_core_ids.end());
+                    }
+                    preferred_ids.insert(preferred_ids.end(), best_meta_ids.begin(), best_meta_ids.end());
+                    for (const auto id : preferred_ids) {
                         if (plan.unit_ids.size() >= slots) break;
+                        if (std::find(plan.unit_ids.begin(), plan.unit_ids.end(), id) != plan.unit_ids.end()) continue;
                         const auto def = std::find_if(pool.begin(), pool.end(),
                             [id](const ChampionDefinition& item) { return item.internal_id == id; });
                         if (def == pool.end()) continue;
                         plan.unit_ids.push_back(id);
                         plan.unit_names.push_back(def->api_name.empty() ? def->name : def->api_name);
-                        if (role_of(*def) == 1 && plan.main_carry_id < 0) plan.main_carry_id = id;
+                    }
+                    // Main carry is always selected from the final comp, not a temporary early-game unit.
+                    for (const auto id : best_meta_ids) {
+                        const auto def = std::find_if(pool.begin(), pool.end(),
+                            [id](const ChampionDefinition& item) { return item.internal_id == id; });
+                        if (def != pool.end() && role_of(*def) == 1) {
+                            plan.main_carry_id = id;
+                            break;
+                        }
                     }
                     // At levels 9/10, keep the extra flexible slots from the native planner.
                     for (const auto id : native_ids) {
