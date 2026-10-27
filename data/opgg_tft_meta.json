@@ -1,0 +1,4927 @@
+{
+  "schema_version": 1,
+  "source": "op.gg",
+  "tool": "tft_list_meta_decks",
+  "fetched_at": "2026-10-27T11:10:13.679Z",
+  "metadata": {
+    "gameStatCounts": 2539776,
+    "gameStatDateTime": "2026-10-27T00:59:33.000Z"
+  },
+  "compositions": [
+    {
+      "id": "25e6c08cee3fb517b00a8c3cb27179a7",
+      "name": "Fera do Rift Brambleback",
+      "cost": 87,
+      "team_code": "0242941940f3f34283fc401430000000TFTSet18",
+      "units": [
+        {
+          "key": "DA_18_Sentry",
+          "items": [],
+          "tier": 3,
+          "cell": {
+            "x": 1,
+            "y": 1
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_Murkwolf18",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 4,
+            "y": 2
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_Krug18",
+          "items": [
+            "DA_GargoyleStoneplate",
+            "DA_SpiritVisage",
+            "DA_WarmogsArmor"
+          ],
+          "tier": 3,
+          "cell": {
+            "x": 4,
+            "y": 4
+          },
+          "is_core": true,
+          "priority": 3
+        },
+        {
+          "key": "DA_Brambleback18",
+          "items": [
+            "DA_EdgeOfNight",
+            "DA_GuinsoosRageblade",
+            "DA_HandOfJustice"
+          ],
+          "tier": 2,
+          "cell": {
+            "x": 3,
+            "y": 2
+          },
+          "is_core": true,
+          "priority": 1
+        },
+        {
+          "key": "DA_Sentinel18",
+          "items": [
+            "DA_AdaptiveHelm",
+            "DA_ProtectorsVow",
+            "DA_ProtectorsVow"
+          ],
+          "tier": 2,
+          "cell": {
+            "x": 5,
+            "y": 2
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_ElderDragon",
+          "items": [
+            "DA_InfinityEdge",
+            "DA_LastWhisper",
+            "DA_StrikersFlail"
+          ],
+          "tier": 2,
+          "cell": {
+            "x": 3,
+            "y": 3
+          },
+          "is_core": true,
+          "priority": 2
+        },
+        {
+          "key": "DA_18_GnarSmall",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 4,
+            "y": 3
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_Taric18",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 2,
+            "y": 2
+          },
+          "is_core": false,
+          "priority": 0
+        }
+      ],
+      "traits": [
+        {
+          "key": "DA_18_ApexPredator",
+          "style": 4,
+          "num_units": 1
+        },
+        {
+          "key": "DA_Emerald18",
+          "style": 4,
+          "num_units": 1
+        },
+        {
+          "key": "DA_Riftbeast18",
+          "style": 4,
+          "num_units": 7
+        },
+        {
+          "key": "DA_18_Brawler",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Invoker",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Slayer",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Vanguard",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Elderwood",
+          "style": 0,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Sprykin",
+          "style": 0,
+          "num_units": 1
+        }
+      ],
+      "badge": [
+        {
+          "key": "difficulty",
+          "value": 3
+        },
+        {
+          "key": "tempo",
+          "value": null
+        },
+        {
+          "key": "reroll",
+          "value": 8
+        },
+        {
+          "key": "honey",
+          "value": false
+        },
+        {
+          "key": "ppm",
+          "value": "high"
+        }
+      ],
+      "statistics": {
+        "deck": {
+          "totalCount": 1777967,
+          "compsCount": 52218,
+          "avgPlacement": 2.37,
+          "winCount": 20340,
+          "top4Count": 46698,
+          "winRate": 0.3895,
+          "top4Rate": 0.8943,
+          "pickRate": 0.029369498983951896
+        },
+        "label": {
+          "totalCount": 1777967,
+          "compsCount": 112419,
+          "avgPlacement": 3.08,
+          "winCount": 31857,
+          "top4Count": 85868,
+          "winRate": 0.2834,
+          "top4Rate": 0.7638,
+          "pickRate": 0.06322895756782887
+        }
+      },
+      "early_game": {
+        "level": 5,
+        "units": [
+          {
+            "key": "DA_18_Sentry",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 1,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Cinderling18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 2,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Murkwolf18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Scuttlecrab18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 5,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Krug18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          }
+        ],
+        "traits": [
+          {
+            "key": "DA_Riftbeast18",
+            "style": 3,
+            "num_units": 5
+          },
+          {
+            "key": "DA_18_Invoker",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Hunter",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Slayer",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_Juggernaut18",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Brawler",
+            "style": 0,
+            "num_units": 1
+          }
+        ],
+        "play": 2802,
+        "win": 1149,
+        "lose": 1567
+      },
+      "mid_game": {
+        "level": 7,
+        "units": [
+          {
+            "key": "DA_18_Sentry",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 1,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Cinderling18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Gromp18_AP",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 2,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Murkwolf18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Scuttlecrab18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_CrimsonRaptor18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Krug18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          }
+        ],
+        "traits": [
+          {
+            "key": "DA_Riftbeast18",
+            "style": 4,
+            "num_units": 7
+          },
+          {
+            "key": "DA_18_Invoker",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Hunter",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Adaptor",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Slayer",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_Juggernaut18",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Rapidfire",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Summoner",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Brawler",
+            "style": 0,
+            "num_units": 1
+          }
+        ],
+        "play": 3342,
+        "win": 2039,
+        "lose": 1211
+      }
+    },
+    {
+      "id": "c5a44db118188c9565578d30c786b078",
+      "name": "Sabugueiro Draven",
+      "cost": 120,
+      "team_code": "023eb3ff3ed40140440b4153fb430000TFTSet18",
+      "units": [
+        {
+          "key": "DA_18_Alistar",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 5,
+            "y": 4
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Ezreal",
+          "items": [
+            "DA_Deathblade",
+            "DA_LastWhisper",
+            "DA_SpearOfShojin"
+          ],
+          "tier": 2,
+          "cell": {
+            "x": 7,
+            "y": 1
+          },
+          "is_core": true,
+          "priority": 2
+        },
+        {
+          "key": "DA_Amumu18",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 4,
+            "y": 4
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_GnarSmall",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 5,
+            "y": 3
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Ivern",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 1,
+            "y": 1
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Kennen",
+          "items": [
+            "DA_EdgeOfNight",
+            "DA_HandOfJustice",
+            "DA_RabadonsDeathcap"
+          ],
+          "tier": 2,
+          "cell": {
+            "x": 4,
+            "y": 3
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Maokai",
+          "items": [
+            "DA_GargoyleStoneplate",
+            "DA_SpiritVisage",
+            "DA_WarmogsArmor"
+          ],
+          "tier": 2,
+          "cell": {
+            "x": 6,
+            "y": 4
+          },
+          "is_core": true,
+          "priority": 3
+        },
+        {
+          "key": "DA_Draven18",
+          "items": [
+            "DA_Deathblade",
+            "DA_GuinsoosRageblade",
+            "DA_KrakensFury"
+          ],
+          "tier": 2,
+          "cell": {
+            "x": 7,
+            "y": 2
+          },
+          "is_core": true,
+          "priority": 1
+        },
+        {
+          "key": "DA_Taric18",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 3,
+            "y": 4
+          },
+          "is_core": false,
+          "priority": 0
+        }
+      ],
+      "traits": [
+        {
+          "key": "DA_18_Greenfather",
+          "style": 4,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Maokai_UniqueTrait",
+          "style": 4,
+          "num_units": 1
+        },
+        {
+          "key": "DA_DravenUniqueTrait18",
+          "style": 4,
+          "num_units": 1
+        },
+        {
+          "key": "DA_Emerald18",
+          "style": 4,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Brawler",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Executioner",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Inferno",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_Juggernaut18",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Elderwood",
+          "style": 1,
+          "num_units": 3
+        },
+        {
+          "key": "DA_18_Sprykin",
+          "style": 0,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Vanguard",
+          "style": 0,
+          "num_units": 1
+        }
+      ],
+      "badge": [
+        {
+          "key": "difficulty",
+          "value": 3
+        },
+        {
+          "key": "tempo",
+          "value": null
+        },
+        {
+          "key": "reroll",
+          "value": 9
+        },
+        {
+          "key": "honey",
+          "value": false
+        },
+        {
+          "key": "ppm",
+          "value": "high"
+        }
+      ],
+      "statistics": {
+        "deck": {
+          "totalCount": 1777967,
+          "compsCount": 27495,
+          "avgPlacement": 3.28,
+          "winCount": 7971,
+          "top4Count": 19496,
+          "winRate": 0.2899,
+          "top4Rate": 0.7091,
+          "pickRate": 0.015464291519471396
+        },
+        "label": {
+          "totalCount": 1777967,
+          "compsCount": 44356,
+          "avgPlacement": 2.96,
+          "winCount": 16349,
+          "top4Count": 33472,
+          "winRate": 0.3686,
+          "top4Rate": 0.7546,
+          "pickRate": 0.024947594640395462
+        }
+      },
+      "early_game": {
+        "level": 5,
+        "units": [
+          {
+            "key": "DA_18_Yorick",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Karma18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_LeBlanc",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 2,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Sejuani",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Yunara",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 1,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          }
+        ],
+        "traits": [
+          {
+            "key": "DA_Juggernaut18",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Spellweaver",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Blossom",
+            "style": 1,
+            "num_units": 3
+          },
+          {
+            "key": "DA_18_Summoner",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Elderwood",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Solar",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Executioner",
+            "style": 0,
+            "num_units": 1
+          }
+        ],
+        "play": 5360,
+        "win": 3052,
+        "lose": 2140
+      },
+      "mid_game": {
+        "level": 7,
+        "units": [
+          {
+            "key": "DA_18_Sentry",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 1,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Cinderling18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Gromp18_AP",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 2,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Murkwolf18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Scuttlecrab18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_CrimsonRaptor18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Krug18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          }
+        ],
+        "traits": [
+          {
+            "key": "DA_Riftbeast18",
+            "style": 4,
+            "num_units": 7
+          },
+          {
+            "key": "DA_18_Invoker",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Hunter",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Adaptor",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Slayer",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_Juggernaut18",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Rapidfire",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Summoner",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Brawler",
+            "style": 0,
+            "num_units": 1
+          }
+        ],
+        "play": 3342,
+        "win": 2039,
+        "lose": 1211
+      }
+    },
+    {
+      "id": "e79e0b44fb8b780e395642c6c706fc35",
+      "name": "Solar Yunara",
+      "cost": 42,
+      "team_code": "0241143a40740a41042743b3f1000000TFTSet18",
+      "units": [
+        {
+          "key": "DA_18_Leona",
+          "items": [],
+          "tier": 3,
+          "cell": {
+            "x": 4,
+            "y": 2
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Yorick",
+          "items": [],
+          "tier": 3,
+          "cell": {
+            "x": 3,
+            "y": 2
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_Karma18",
+          "items": [
+            "DA_BlueBuff",
+            "DA_JeweledGauntlet",
+            "DA_RabadonsDeathcap"
+          ],
+          "tier": 3,
+          "cell": {
+            "x": 3,
+            "y": 1
+          },
+          "is_core": true,
+          "priority": 2
+        },
+        {
+          "key": "DA_18_Kayle",
+          "items": [],
+          "tier": 3,
+          "cell": {
+            "x": 4,
+            "y": 1
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_LeBlanc",
+          "items": [
+            "DA_Morellonomicon",
+            "DA_VoidStaff"
+          ],
+          "tier": 3,
+          "cell": {
+            "x": 2,
+            "y": 1
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Sejuani",
+          "items": [
+            "DA_GargoyleStoneplate",
+            "DA_SpiritVisage",
+            "DA_WarmogsArmor"
+          ],
+          "tier": 3,
+          "cell": {
+            "x": 4,
+            "y": 4
+          },
+          "is_core": true,
+          "priority": 3
+        },
+        {
+          "key": "DA_18_Yunara",
+          "items": [
+            "DA_Deathblade",
+            "DA_LastWhisper",
+            "DA_SpearOfShojin"
+          ],
+          "tier": 3,
+          "cell": {
+            "x": 1,
+            "y": 1
+          },
+          "is_core": true,
+          "priority": 1
+        },
+        {
+          "key": "DA_18_Azir",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 7,
+            "y": 1
+          },
+          "is_core": false,
+          "priority": 0
+        }
+      ],
+      "traits": [
+        {
+          "key": "DA_18_Solar",
+          "style": 4,
+          "num_units": 3
+        },
+        {
+          "key": "DA_18_Executioner",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Summoner",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Spellweaver",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_Juggernaut18",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Blossom",
+          "style": 1,
+          "num_units": 3
+        },
+        {
+          "key": "DA_18_Blackthorn",
+          "style": 0,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Rapidfire",
+          "style": 0,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Elderwood",
+          "style": 0,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Defender",
+          "style": 0,
+          "num_units": 1
+        }
+      ],
+      "badge": [
+        {
+          "key": "difficulty",
+          "value": 1
+        },
+        {
+          "key": "tempo",
+          "value": null
+        },
+        {
+          "key": "reroll",
+          "value": 6
+        },
+        {
+          "key": "honey",
+          "value": false
+        },
+        {
+          "key": "ppm",
+          "value": "high"
+        }
+      ],
+      "statistics": {
+        "deck": {
+          "totalCount": 1777967,
+          "compsCount": 22850,
+          "avgPlacement": 3.16,
+          "winCount": 5129,
+          "top4Count": 17553,
+          "winRate": 0.2245,
+          "top4Rate": 0.7682,
+          "pickRate": 0.012851757091104615
+        },
+        "label": {
+          "totalCount": 1777967,
+          "compsCount": 30804,
+          "avgPlacement": 2.95,
+          "winCount": 7892,
+          "top4Count": 24766,
+          "winRate": 0.2562,
+          "top4Rate": 0.804,
+          "pickRate": 0.017325405927106633
+        }
+      },
+      "early_game": {
+        "level": 5,
+        "units": [
+          {
+            "key": "DA_18_Yorick",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Karma18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_LeBlanc",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 2,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Sejuani",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Yunara",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 1,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          }
+        ],
+        "traits": [
+          {
+            "key": "DA_Juggernaut18",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Spellweaver",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Blossom",
+            "style": 1,
+            "num_units": 3
+          },
+          {
+            "key": "DA_18_Summoner",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Elderwood",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Solar",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Executioner",
+            "style": 0,
+            "num_units": 1
+          }
+        ],
+        "play": 5620,
+        "win": 3181,
+        "lose": 2264
+      },
+      "mid_game": {
+        "level": 7,
+        "units": [
+          {
+            "key": "DA_18_Leona",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Yorick",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Karma18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Kayle",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_LeBlanc",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 2,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Sejuani",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Yunara",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 1,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          }
+        ],
+        "traits": [
+          {
+            "key": "DA_18_Solar",
+            "style": 4,
+            "num_units": 3
+          },
+          {
+            "key": "DA_Juggernaut18",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Spellweaver",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Blossom",
+            "style": 1,
+            "num_units": 3
+          },
+          {
+            "key": "DA_18_Defender",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Summoner",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Rapidfire",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Elderwood",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Executioner",
+            "style": 0,
+            "num_units": 1
+          }
+        ],
+        "play": 13024,
+        "win": 7509,
+        "lose": 4996
+      }
+    },
+    {
+      "id": "96aeda6509f73e075c028fbbfc984091",
+      "name": "Fera do Rift Maokai",
+      "cost": 114,
+      "team_code": "023ed4283fc40440b4153fb430000000TFTSet18",
+      "units": [
+        {
+          "key": "DA_Amumu18",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 3,
+            "y": 4
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_Sentinel18",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 4,
+            "y": 4
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_ElderDragon",
+          "items": [
+            "DA_InfinityEdge",
+            "DA_LastWhisper",
+            "DA_StrikersFlail"
+          ],
+          "tier": 2,
+          "cell": {
+            "x": 5,
+            "y": 3
+          },
+          "is_core": true,
+          "priority": 2
+        },
+        {
+          "key": "DA_18_Ivern",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 1,
+            "y": 1
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Kennen",
+          "items": [
+            "DA_EdgeOfNight",
+            "DA_HandOfJustice",
+            "DA_JeweledGauntlet"
+          ],
+          "tier": 2,
+          "cell": {
+            "x": 4,
+            "y": 3
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Maokai",
+          "items": [
+            "DA_GargoyleStoneplate",
+            "DA_SpiritVisage",
+            "DA_WarmogsArmor"
+          ],
+          "tier": 2,
+          "cell": {
+            "x": 5,
+            "y": 4
+          },
+          "is_core": true,
+          "priority": 1
+        },
+        {
+          "key": "DA_Draven18",
+          "items": [
+            "DA_Deathblade",
+            "DA_GuinsoosRageblade",
+            "DA_KrakensFury"
+          ],
+          "tier": 2,
+          "cell": {
+            "x": 7,
+            "y": 1
+          },
+          "is_core": true,
+          "priority": 3
+        },
+        {
+          "key": "DA_Taric18",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 2,
+            "y": 4
+          },
+          "is_core": false,
+          "priority": 0
+        }
+      ],
+      "traits": [
+        {
+          "key": "DA_18_ApexPredator",
+          "style": 4,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Greenfather",
+          "style": 4,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Maokai_UniqueTrait",
+          "style": 4,
+          "num_units": 1
+        },
+        {
+          "key": "DA_DravenUniqueTrait18",
+          "style": 4,
+          "num_units": 1
+        },
+        {
+          "key": "DA_Emerald18",
+          "style": 4,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Inferno",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_Juggernaut18",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Vanguard",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_Riftbeast18",
+          "style": 1,
+          "num_units": 3
+        },
+        {
+          "key": "DA_18_Executioner",
+          "style": 0,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Invoker",
+          "style": 0,
+          "num_units": 1
+        }
+      ],
+      "badge": [
+        {
+          "key": "difficulty",
+          "value": 3
+        },
+        {
+          "key": "tempo",
+          "value": null
+        },
+        {
+          "key": "reroll",
+          "value": 9
+        },
+        {
+          "key": "honey",
+          "value": false
+        },
+        {
+          "key": "ppm",
+          "value": "high"
+        }
+      ],
+      "statistics": {
+        "deck": {
+          "totalCount": 1777967,
+          "compsCount": 21600,
+          "avgPlacement": 3.39,
+          "winCount": 6436,
+          "top4Count": 14706,
+          "winRate": 0.298,
+          "top4Rate": 0.6808,
+          "pickRate": 0.012148706922006989
+        },
+        "label": {
+          "totalCount": 1777967,
+          "compsCount": 29181,
+          "avgPlacement": 3.13,
+          "winCount": 10367,
+          "top4Count": 21093,
+          "winRate": 0.3553,
+          "top4Rate": 0.7228,
+          "pickRate": 0.016412565587550276
+        }
+      },
+      "early_game": {
+        "level": 5,
+        "units": [
+          {
+            "key": "DA_18_Sentry",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 1,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Cinderling18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 2,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Murkwolf18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Scuttlecrab18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 5,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Krug18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          }
+        ],
+        "traits": [
+          {
+            "key": "DA_Riftbeast18",
+            "style": 3,
+            "num_units": 5
+          },
+          {
+            "key": "DA_18_Invoker",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Hunter",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Slayer",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_Juggernaut18",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Brawler",
+            "style": 0,
+            "num_units": 1
+          }
+        ],
+        "play": 2802,
+        "win": 1149,
+        "lose": 1567
+      },
+      "mid_game": {
+        "level": 7,
+        "units": [
+          {
+            "key": "DA_18_Sentry",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 1,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Cinderling18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Gromp18_AP",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 2,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Murkwolf18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Scuttlecrab18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_CrimsonRaptor18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Krug18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          }
+        ],
+        "traits": [
+          {
+            "key": "DA_Riftbeast18",
+            "style": 4,
+            "num_units": 7
+          },
+          {
+            "key": "DA_18_Invoker",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Hunter",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Adaptor",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Slayer",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_Juggernaut18",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Rapidfire",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Summoner",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Brawler",
+            "style": 0,
+            "num_units": 1
+          }
+        ],
+        "play": 3342,
+        "win": 2039,
+        "lose": 1211
+      }
+    },
+    {
+      "id": "91fa8a5b041869b676179aa7841c6780",
+      "name": "Lunar Kayle",
+      "cost": 57,
+      "team_code": "0241143540a42742b3fa3ef3ed000000TFTSet18",
+      "units": [
+        {
+          "key": "DA_18_Leona",
+          "items": [],
+          "tier": 3,
+          "cell": {
+            "x": 3,
+            "y": 3
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Varus",
+          "items": [
+            "DA_18_EmblemLunar",
+            "DA_InfinityEdge",
+            "DA_SpearOfShojin"
+          ],
+          "tier": 3,
+          "cell": {
+            "x": 1,
+            "y": 1
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Kayle",
+          "items": [
+            "DA_GuinsoosRageblade",
+            "DA_JeweledGauntlet",
+            "DA_RabadonsDeathcap"
+          ],
+          "tier": 3,
+          "cell": {
+            "x": 7,
+            "y": 1
+          },
+          "is_core": true,
+          "priority": 1
+        },
+        {
+          "key": "DA_18_Sejuani",
+          "items": [
+            "DA_GargoyleStoneplate",
+            "DA_SpiritVisage",
+            "DA_WarmogsArmor"
+          ],
+          "tier": 3,
+          "cell": {
+            "x": 5,
+            "y": 4
+          },
+          "is_core": true,
+          "priority": 2
+        },
+        {
+          "key": "DA_18_Shen",
+          "items": [],
+          "tier": 3,
+          "cell": {
+            "x": 4,
+            "y": 2
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Diana",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 4,
+            "y": 3
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Aphelios",
+          "items": [
+            "DA_Deathblade",
+            "DA_KrakensFury",
+            "DA_RedBuff"
+          ],
+          "tier": 2,
+          "cell": {
+            "x": 6,
+            "y": 1
+          },
+          "is_core": true,
+          "priority": 3
+        },
+        {
+          "key": "DA_Amumu18",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 5,
+            "y": 2
+          },
+          "is_core": false,
+          "priority": 0
+        }
+      ],
+      "traits": [
+        {
+          "key": "DA_18_Solar",
+          "style": 4,
+          "num_units": 3
+        },
+        {
+          "key": "DA_18_Lunar",
+          "style": 3,
+          "num_units": 3
+        },
+        {
+          "key": "DA_18_Rapidfire",
+          "style": 3,
+          "num_units": 3
+        },
+        {
+          "key": "DA_18_Inferno",
+          "style": 3,
+          "num_units": 3
+        },
+        {
+          "key": "DA_18_Defender",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_Juggernaut18",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Slayer",
+          "style": 0,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Vanguard",
+          "style": 0,
+          "num_units": 1
+        }
+      ],
+      "badge": [
+        {
+          "key": "difficulty",
+          "value": 1
+        },
+        {
+          "key": "tempo",
+          "value": null
+        },
+        {
+          "key": "reroll",
+          "value": 6
+        },
+        {
+          "key": "honey",
+          "value": false
+        },
+        {
+          "key": "ppm",
+          "value": "high"
+        }
+      ],
+      "statistics": {
+        "deck": {
+          "totalCount": 1777967,
+          "compsCount": 10042,
+          "avgPlacement": 3.06,
+          "winCount": 2290,
+          "top4Count": 7913,
+          "winRate": 0.228,
+          "top4Rate": 0.788,
+          "pickRate": 0.005648023838462694
+        },
+        "label": {
+          "totalCount": 1777967,
+          "compsCount": 25093,
+          "avgPlacement": 2.85,
+          "winCount": 6932,
+          "top4Count": 20509,
+          "winRate": 0.2763,
+          "top4Rate": 0.8173,
+          "pickRate": 0.014113310314533396
+        }
+      },
+      "early_game": {
+        "level": 5,
+        "units": [
+          {
+            "key": "DA_18_Leona",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Varus",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 2,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Kayle",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 1,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Sejuani",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Shen",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 5,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          }
+        ],
+        "traits": [
+          {
+            "key": "DA_18_Solar",
+            "style": 4,
+            "num_units": 3
+          },
+          {
+            "key": "DA_18_Defender",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Inferno",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Rapidfire",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_Juggernaut18",
+            "style": 0,
+            "num_units": 1
+          }
+        ],
+        "play": 2533,
+        "win": 1467,
+        "lose": 976
+      },
+      "mid_game": {
+        "level": 7,
+        "units": [
+          {
+            "key": "DA_18_Leona",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 3
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Varus",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 1,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Kayle",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 7,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Sejuani",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 5,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Shen",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Diana",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 3
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Aphelios",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 6,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          }
+        ],
+        "traits": [
+          {
+            "key": "DA_18_Solar",
+            "style": 4,
+            "num_units": 3
+          },
+          {
+            "key": "DA_18_Rapidfire",
+            "style": 3,
+            "num_units": 3
+          },
+          {
+            "key": "DA_18_Defender",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Inferno",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Lunar",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_Juggernaut18",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Slayer",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Vanguard",
+            "style": 0,
+            "num_units": 1
+          }
+        ],
+        "play": 2258,
+        "win": 1317,
+        "lose": 869
+      }
+    },
+    {
+      "id": "80c87fc58f8286ad9209df87d89d3d91",
+      "name": "Vanguarda Alune",
+      "cost": 93,
+      "team_code": "023fd3f63fa4184283ec3fc430000000TFTSet18",
+      "units": [
+        {
+          "key": "DA_18_Elise",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 2,
+            "y": 4
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Cassiopeia",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 7,
+            "y": 1
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Diana",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 5,
+            "y": 4
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Morgana",
+          "items": [
+            "DA_Morellonomicon",
+            "DA_RabadonsDeathcap",
+            "DA_VoidStaff"
+          ],
+          "tier": 2,
+          "cell": {
+            "x": 3,
+            "y": 3
+          },
+          "is_core": true,
+          "priority": 2
+        },
+        {
+          "key": "DA_Sentinel18",
+          "items": [
+            "DA_GargoyleStoneplate",
+            "DA_ProtectorsVow",
+            "DA_WarmogsArmor"
+          ],
+          "tier": 2,
+          "cell": {
+            "x": 4,
+            "y": 4
+          },
+          "is_core": true,
+          "priority": 3
+        },
+        {
+          "key": "DA_18_Alune",
+          "items": [
+            "DA_JeweledGauntlet",
+            "DA_NashorsTooth",
+            "DA_SpearOfShojin"
+          ],
+          "tier": 2,
+          "cell": {
+            "x": 1,
+            "y": 1
+          },
+          "is_core": true,
+          "priority": 1
+        },
+        {
+          "key": "DA_18_ElderDragon",
+          "items": [
+            "DA_InfinityEdge",
+            "DA_LastWhisper",
+            "DA_StrikersFlail"
+          ],
+          "tier": 2,
+          "cell": {
+            "x": 4,
+            "y": 3
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_Taric18",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 3,
+            "y": 4
+          },
+          "is_core": false,
+          "priority": 0
+        }
+      ],
+      "traits": [
+        {
+          "key": "DA_AluneUniqueTrait18",
+          "style": 4,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_ApexPredator",
+          "style": 4,
+          "num_units": 1
+        },
+        {
+          "key": "DA_Emerald18",
+          "style": 4,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Vanguard",
+          "style": 3,
+          "num_units": 4
+        },
+        {
+          "key": "DA_18_Lunar",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Spellweaver",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Invoker",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Coven",
+          "style": 1,
+          "num_units": 3
+        },
+        {
+          "key": "DA_Riftbeast18",
+          "style": 1,
+          "num_units": 3
+        },
+        {
+          "key": "DA_18_Slayer",
+          "style": 0,
+          "num_units": 1
+        }
+      ],
+      "badge": [
+        {
+          "key": "difficulty",
+          "value": 3
+        },
+        {
+          "key": "tempo",
+          "value": null
+        },
+        {
+          "key": "reroll",
+          "value": 8
+        },
+        {
+          "key": "honey",
+          "value": false
+        },
+        {
+          "key": "ppm",
+          "value": "high"
+        }
+      ],
+      "statistics": {
+        "deck": {
+          "totalCount": 1777967,
+          "compsCount": 11063,
+          "avgPlacement": 3.2,
+          "winCount": 3302,
+          "top4Count": 8030,
+          "winRate": 0.2985,
+          "top4Rate": 0.7258,
+          "pickRate": 0.006222275216581635
+        },
+        "label": {
+          "totalCount": 1777967,
+          "compsCount": 22852,
+          "avgPlacement": 3.27,
+          "winCount": 7191,
+          "top4Count": 16172,
+          "winRate": 0.3147,
+          "top4Rate": 0.7077,
+          "pickRate": 0.012852881971375171
+        }
+      },
+      "early_game": {
+        "level": 5,
+        "units": [
+          {
+            "key": "DA_18_Camille",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Caitlyn",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 2,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Elise",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Cassiopeia",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 1,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Diana",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 5,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          }
+        ],
+        "traits": [
+          {
+            "key": "DA_18_Coven",
+            "style": 3,
+            "num_units": 4
+          },
+          {
+            "key": "DA_18_Slayer",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Vanguard",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Hunter",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Spellweaver",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Lunar",
+            "style": 0,
+            "num_units": 1
+          }
+        ],
+        "play": 604,
+        "win": 267,
+        "lose": 320
+      },
+      "mid_game": {
+        "level": 7,
+        "units": [
+          {
+            "key": "DA_18_Camille",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 5,
+              "y": 3
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Caitlyn",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 6,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Elise",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 5,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Cassiopeia",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 7,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Diana",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 3
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Hecarim",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 3
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Morgana",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 5,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          }
+        ],
+        "traits": [
+          {
+            "key": "DA_18_Coven",
+            "style": 3,
+            "num_units": 5
+          },
+          {
+            "key": "DA_18_Slayer",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Vanguard",
+            "style": 1,
+            "num_units": 3
+          },
+          {
+            "key": "DA_18_Hunter",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Spellweaver",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Lunar",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Elderwood",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Invoker",
+            "style": 0,
+            "num_units": 1
+          }
+        ],
+        "play": 447,
+        "win": 180,
+        "lose": 247
+      }
+    },
+    {
+      "id": "458b25ae58ad7c7e8924d03816fe41b8",
+      "name": "Sabugueiro Diana",
+      "cost": 75,
+      "team_code": "0241f3fa40340c4003ef3ff42e000000TFTSet18",
+      "units": [
+        {
+          "key": "DA_18_Ornn",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 4,
+            "y": 2
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Diana",
+          "items": [
+            "DA_HandOfJustice",
+            "DA_IonicSpark",
+            "DA_JeweledGauntlet"
+          ],
+          "tier": 3,
+          "cell": {
+            "x": 2,
+            "y": 3
+          },
+          "is_core": true,
+          "priority": 1
+        },
+        {
+          "key": "DA_18_Hecarim",
+          "items": [
+            "DA_GargoyleStoneplate",
+            "DA_SpiritVisage",
+            "DA_WarmogsArmor"
+          ],
+          "tier": 3,
+          "cell": {
+            "x": 3,
+            "y": 4
+          },
+          "is_core": true,
+          "priority": 2
+        },
+        {
+          "key": "DA_18_KhaZix",
+          "items": [
+            "DA_HandOfJustice",
+            "DA_NashorsTooth",
+            "DA_RabadonsDeathcap"
+          ],
+          "tier": 3,
+          "cell": {
+            "x": 2,
+            "y": 4
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_Fiddlesticks18",
+          "items": [],
+          "tier": 3,
+          "cell": {
+            "x": 3,
+            "y": 2
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Aphelios",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 2,
+            "y": 1
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Ezreal",
+          "items": [
+            "DA_Deathblade",
+            "DA_RedBuff",
+            "DA_SpearOfShojin"
+          ],
+          "tier": 2,
+          "cell": {
+            "x": 1,
+            "y": 1
+          },
+          "is_core": true,
+          "priority": 3
+        },
+        {
+          "key": "DA_18_Soraka",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 3,
+            "y": 1
+          },
+          "is_core": false,
+          "priority": 0
+        }
+      ],
+      "traits": [
+        {
+          "key": "DA_18_Rival",
+          "style": 4,
+          "num_units": 1
+        },
+        {
+          "key": "DA_FloraFatalis18",
+          "style": 4,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Lunar",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Vanguard",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Executioner",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Defender",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Elderwood",
+          "style": 1,
+          "num_units": 3
+        },
+        {
+          "key": "DA_18_Rapidfire",
+          "style": 0,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Slayer",
+          "style": 0,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Spellweaver",
+          "style": 0,
+          "num_units": 1
+        }
+      ],
+      "badge": [
+        {
+          "key": "difficulty",
+          "value": 2
+        },
+        {
+          "key": "tempo",
+          "value": null
+        },
+        {
+          "key": "reroll",
+          "value": 7
+        },
+        {
+          "key": "honey",
+          "value": false
+        },
+        {
+          "key": "ppm",
+          "value": "high"
+        }
+      ],
+      "statistics": {
+        "deck": {
+          "totalCount": 1777967,
+          "compsCount": 9398,
+          "avgPlacement": 3.16,
+          "winCount": 2175,
+          "top4Count": 7167,
+          "winRate": 0.2314,
+          "top4Rate": 0.7626,
+          "pickRate": 0.005285812391343596
+        },
+        "label": {
+          "totalCount": 1777967,
+          "compsCount": 23433,
+          "avgPlacement": 3.06,
+          "winCount": 5507,
+          "top4Count": 18391,
+          "winRate": 0.235,
+          "top4Rate": 0.7848,
+          "pickRate": 0.013179659689971748
+        }
+      },
+      "early_game": {
+        "level": 5,
+        "units": [
+          {
+            "key": "DA_18_Ornn",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_LeBlanc",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 1,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Diana",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 1,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Hecarim",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_KhaZix",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 2,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Elderwood18_Lifeblossom",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Elderwood18_StonebarkTree",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 7,
+              "y": 3
+            },
+            "is_core": false,
+            "priority": 0
+          }
+        ],
+        "traits": [
+          {
+            "key": "DA_18_Rival",
+            "style": 4,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Vanguard",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Elderwood",
+            "style": 1,
+            "num_units": 3
+          },
+          {
+            "key": "DA_18_Defender",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Spellweaver",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Lunar",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Slayer",
+            "style": 0,
+            "num_units": 1
+          }
+        ],
+        "play": 106,
+        "win": 56,
+        "lose": 47
+      },
+      "mid_game": {
+        "level": 7,
+        "units": [
+          {
+            "key": "DA_18_Ornn",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Diana",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 2,
+              "y": 3
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Hecarim",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_KhaZix",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 2,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Fiddlesticks18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Ezreal",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 1,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Soraka",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Elderwood18_Lifeblossom",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Elderwood18_StonebarkTree",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 7,
+              "y": 3
+            },
+            "is_core": false,
+            "priority": 0
+          }
+        ],
+        "traits": [
+          {
+            "key": "DA_18_Rival",
+            "style": 4,
+            "num_units": 1
+          },
+          {
+            "key": "DA_FloraFatalis18",
+            "style": 4,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Defender",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Vanguard",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Executioner",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Elderwood",
+            "style": 1,
+            "num_units": 3
+          },
+          {
+            "key": "DA_18_Lunar",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Slayer",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Spellweaver",
+            "style": 0,
+            "num_units": 1
+          }
+        ],
+        "play": 2690,
+        "win": 1221,
+        "lose": 1354
+      }
+    },
+    {
+      "id": "31f55aeac2d48af5d44aa1e99f0b0c39",
+      "name": "Carrasco Azir",
+      "cost": 75,
+      "team_code": "024364313f142140042e43c40b000000TFTSet18",
+      "units": [
+        {
+          "key": "DA_18_Veigar",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 7,
+            "y": 1
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Teemo",
+          "items": [],
+          "tier": 3,
+          "cell": {
+            "x": 4,
+            "y": 2
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Azir",
+          "items": [
+            "DA_GuinsoosRageblade",
+            "DA_HextechGunblade",
+            "DA_RabadonsDeathcap"
+          ],
+          "tier": 3,
+          "cell": {
+            "x": 1,
+            "y": 1
+          },
+          "is_core": true,
+          "priority": 1
+        },
+        {
+          "key": "DA_18_Rammus",
+          "items": [
+            "DA_Crownguard",
+            "DA_GargoyleStoneplate",
+            "DA_GargoyleStoneplate"
+          ],
+          "tier": 3,
+          "cell": {
+            "x": 4,
+            "y": 4
+          },
+          "is_core": true,
+          "priority": 2
+        },
+        {
+          "key": "DA_Fiddlesticks18",
+          "items": [
+            "DA_IonicSpark",
+            "DA_SunfireCape",
+            "DA_WarmogsArmor"
+          ],
+          "tier": 3,
+          "cell": {
+            "x": 3,
+            "y": 2
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Soraka",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 5,
+            "y": 1
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Zyra",
+          "items": [
+            "DA_Morellonomicon",
+            "DA_SpearOfShojin",
+            "DA_VoidStaff"
+          ],
+          "tier": 2,
+          "cell": {
+            "x": 3,
+            "y": 1
+          },
+          "is_core": true,
+          "priority": 3
+        },
+        {
+          "key": "DA_18_Kennen",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 5,
+            "y": 2
+          },
+          "is_core": false,
+          "priority": 0
+        }
+      ],
+      "traits": [
+        {
+          "key": "DA_18_ZyraUniqueTrait",
+          "style": 4,
+          "num_units": 1
+        },
+        {
+          "key": "DA_FloraFatalis18",
+          "style": 4,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Executioner",
+          "style": 3,
+          "num_units": 3
+        },
+        {
+          "key": "DA_18_Blackthorn",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Summoner",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Defender",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Spellweaver",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Sprykin",
+          "style": 1,
+          "num_units": 3
+        },
+        {
+          "key": "DA_18_Inferno",
+          "style": 0,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Invoker",
+          "style": 0,
+          "num_units": 1
+        }
+      ],
+      "badge": [
+        {
+          "key": "difficulty",
+          "value": 2
+        },
+        {
+          "key": "tempo",
+          "value": null
+        },
+        {
+          "key": "reroll",
+          "value": 7
+        },
+        {
+          "key": "honey",
+          "value": false
+        },
+        {
+          "key": "ppm",
+          "value": "high"
+        }
+      ],
+      "statistics": {
+        "deck": {
+          "totalCount": 1777967,
+          "compsCount": 6776,
+          "avgPlacement": 2.82,
+          "winCount": 1823,
+          "top4Count": 5586,
+          "winRate": 0.269,
+          "top4Rate": 0.8244,
+          "pickRate": 0.0038110943566444146
+        },
+        "label": {
+          "totalCount": 1777967,
+          "compsCount": 23770,
+          "avgPlacement": 2.86,
+          "winCount": 6240,
+          "top4Count": 19547,
+          "winRate": 0.2625,
+          "top4Rate": 0.8223,
+          "pickRate": 0.013369202015560468
+        }
+      },
+      "early_game": {
+        "level": 5,
+        "units": [
+          {
+            "key": "DA_18_Kobuko",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_RekSai",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Veigar",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 1,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Teemo",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 2,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Fiddlesticks18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          }
+        ],
+        "traits": [
+          {
+            "key": "DA_FloraFatalis18",
+            "style": 1,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Brawler",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Blackthorn",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Spellweaver",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Sprykin",
+            "style": 1,
+            "num_units": 3
+          },
+          {
+            "key": "DA_18_Invoker",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Defender",
+            "style": 0,
+            "num_units": 1
+          }
+        ],
+        "play": 445,
+        "win": 253,
+        "lose": 174
+      },
+      "mid_game": {
+        "level": 7,
+        "units": [
+          {
+            "key": "DA_18_Veigar",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 7,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Teemo",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Azir",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 1,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Rammus",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Fiddlesticks18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Soraka",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 5,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Zyra",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          }
+        ],
+        "traits": [
+          {
+            "key": "DA_18_ZyraUniqueTrait",
+            "style": 4,
+            "num_units": 1
+          },
+          {
+            "key": "DA_FloraFatalis18",
+            "style": 4,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Blackthorn",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Spellweaver",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Executioner",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Summoner",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Defender",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Sprykin",
+            "style": 1,
+            "num_units": 3
+          },
+          {
+            "key": "DA_18_Invoker",
+            "style": 0,
+            "num_units": 1
+          }
+        ],
+        "play": 6478,
+        "win": 3701,
+        "lose": 2512
+      }
+    },
+    {
+      "id": "744234e84d716f4b87a69a7d85888ea3",
+      "name": "Defendente Rammus",
+      "cost": 63,
+      "team_code": "0241141f42b3f642140041242e000000TFTSet18",
+      "units": [
+        {
+          "key": "DA_18_Leona",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 1,
+            "y": 4
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Ornn",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 2,
+            "y": 4
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Shen",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 3,
+            "y": 4
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Cassiopeia",
+          "items": [
+            "DA_ArchangelsStaff",
+            "DA_BlueBuff",
+            "DA_HextechGunblade"
+          ],
+          "tier": 3,
+          "cell": {
+            "x": 7,
+            "y": 1
+          },
+          "is_core": true,
+          "priority": 2
+        },
+        {
+          "key": "DA_18_Rammus",
+          "items": [
+            "DA_GargoyleStoneplate",
+            "DA_SteadfastHeart",
+            "DA_WarmogsArmor"
+          ],
+          "tier": 3,
+          "cell": {
+            "x": 6,
+            "y": 4
+          },
+          "is_core": true,
+          "priority": 1
+        },
+        {
+          "key": "DA_Fiddlesticks18",
+          "items": [
+            "DA_IonicSpark",
+            "DA_SpiritVisage",
+            "DA_SunfireCape"
+          ],
+          "tier": 3,
+          "cell": {
+            "x": 5,
+            "y": 4
+          },
+          "is_core": true,
+          "priority": 3
+        },
+        {
+          "key": "DA_18_Lillia",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 4,
+            "y": 4
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Soraka",
+          "items": [
+            "DA_JeweledGauntlet",
+            "DA_NashorsTooth"
+          ],
+          "tier": 2,
+          "cell": {
+            "x": 6,
+            "y": 1
+          },
+          "is_core": false,
+          "priority": 0
+        }
+      ],
+      "traits": [
+        {
+          "key": "DA_FloraFatalis18",
+          "style": 4,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Defender",
+          "style": 4,
+          "num_units": 6
+        },
+        {
+          "key": "DA_18_Spellweaver",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Coven",
+          "style": 0,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Solar",
+          "style": 0,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Fae",
+          "style": 0,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Elderwood",
+          "style": 0,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Sprykin",
+          "style": 0,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Inferno",
+          "style": 0,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Executioner",
+          "style": 0,
+          "num_units": 1
+        }
+      ],
+      "badge": [
+        {
+          "key": "difficulty",
+          "value": 2
+        },
+        {
+          "key": "tempo",
+          "value": null
+        },
+        {
+          "key": "reroll",
+          "value": 7
+        },
+        {
+          "key": "honey",
+          "value": false
+        },
+        {
+          "key": "ppm",
+          "value": "high"
+        }
+      ],
+      "statistics": {
+        "deck": {
+          "totalCount": 1777967,
+          "compsCount": 7111,
+          "avgPlacement": 3.64,
+          "winCount": 839,
+          "top4Count": 4904,
+          "winRate": 0.118,
+          "top4Rate": 0.6896,
+          "pickRate": 0.003999511801962579
+        },
+        "label": {
+          "totalCount": 1777967,
+          "compsCount": 12265,
+          "avgPlacement": 3.5,
+          "winCount": 1696,
+          "top4Count": 8791,
+          "winRate": 0.1383,
+          "top4Rate": 0.7168,
+          "pickRate": 0.006898328259185913
+        }
+      },
+      "early_game": {
+        "level": 5,
+        "units": [
+          {
+            "key": "DA_18_Leona",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 6,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Ornn",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Shen",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Cassiopeia",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 7,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Fiddlesticks18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 5,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          }
+        ],
+        "traits": [
+          {
+            "key": "DA_18_Defender",
+            "style": 3,
+            "num_units": 4
+          },
+          {
+            "key": "DA_FloraFatalis18",
+            "style": 1,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Spellweaver",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Solar",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Elderwood",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Inferno",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Coven",
+            "style": 0,
+            "num_units": 1
+          }
+        ],
+        "play": 64,
+        "win": 31,
+        "lose": 32
+      },
+      "mid_game": {
+        "level": 7,
+        "units": [
+          {
+            "key": "DA_18_Leona",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 1,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Ornn",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 2,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Shen",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Cassiopeia",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 7,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Rammus",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 6,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Fiddlesticks18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 5,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Lillia",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          }
+        ],
+        "traits": [
+          {
+            "key": "DA_18_Defender",
+            "style": 4,
+            "num_units": 6
+          },
+          {
+            "key": "DA_FloraFatalis18",
+            "style": 1,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Spellweaver",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Solar",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Elderwood",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Inferno",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Coven",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Sprykin",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Fae",
+            "style": 0,
+            "num_units": 1
+          }
+        ],
+        "play": 733,
+        "win": 323,
+        "lose": 381
+      }
+    },
+    {
+      "id": "ec4c737b5836635daa916e4510e45196",
+      "name": "Fera do Rift Brambleback",
+      "cost": 66,
+      "team_code": "024293f740241942642240f3f3428000TFTSet18",
+      "units": [
+        {
+          "key": "DA_18_Sentry",
+          "items": [
+            "DA_BlueBuff",
+            "DA_JeweledGauntlet",
+            "DA_RabadonsDeathcap"
+          ],
+          "tier": 3,
+          "cell": {
+            "x": 1,
+            "y": 1
+          },
+          "is_core": true,
+          "priority": 2
+        },
+        {
+          "key": "DA_Cinderling18",
+          "items": [],
+          "tier": 3,
+          "cell": {
+            "x": 3,
+            "y": 1
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_Gromp18_AP",
+          "items": [],
+          "tier": 3,
+          "cell": {
+            "x": 2,
+            "y": 1
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_Murkwolf18",
+          "items": [],
+          "tier": 3,
+          "cell": {
+            "x": 4,
+            "y": 2
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_Scuttlecrab18",
+          "items": [],
+          "tier": 3,
+          "cell": {
+            "x": 4,
+            "y": 3
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_CrimsonRaptor18",
+          "items": [],
+          "tier": 3,
+          "cell": {
+            "x": 4,
+            "y": 1
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_Krug18",
+          "items": [
+            "DA_GargoyleStoneplate",
+            "DA_SpiritVisage",
+            "DA_WarmogsArmor"
+          ],
+          "tier": 3,
+          "cell": {
+            "x": 4,
+            "y": 4
+          },
+          "is_core": true,
+          "priority": 3
+        },
+        {
+          "key": "DA_Brambleback18",
+          "items": [
+            "DA_Bloodthirster",
+            "DA_SteraksGage",
+            "DA_TitansResolve"
+          ],
+          "tier": 2,
+          "cell": {
+            "x": 3,
+            "y": 2
+          },
+          "is_core": true,
+          "priority": 1
+        },
+        {
+          "key": "DA_Sentinel18",
+          "items": [
+            "DA_GargoyleStoneplate",
+            "DA_SpiritVisage",
+            "DA_WarmogsArmor"
+          ],
+          "tier": 2,
+          "cell": {
+            "x": 5,
+            "y": 2
+          },
+          "is_core": false,
+          "priority": 0
+        }
+      ],
+      "traits": [
+        {
+          "key": "DA_Riftbeast18",
+          "style": 4,
+          "num_units": 9
+        },
+        {
+          "key": "DA_18_Invoker",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Slayer",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Hunter",
+          "style": 0,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Rapidfire",
+          "style": 0,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Summoner",
+          "style": 0,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Adaptor",
+          "style": 0,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Brawler",
+          "style": 0,
+          "num_units": 1
+        },
+        {
+          "key": "DA_Juggernaut18",
+          "style": 0,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Vanguard",
+          "style": 0,
+          "num_units": 1
+        }
+      ],
+      "badge": [
+        {
+          "key": "difficulty",
+          "value": 3
+        },
+        {
+          "key": "tempo",
+          "value": null
+        },
+        {
+          "key": "reroll",
+          "value": 9
+        },
+        {
+          "key": "honey",
+          "value": false
+        },
+        {
+          "key": "ppm",
+          "value": null
+        }
+      ],
+      "statistics": {
+        "deck": {
+          "totalCount": 1777967,
+          "compsCount": 6351,
+          "avgPlacement": 3.6,
+          "winCount": 698,
+          "top4Count": 4517,
+          "winRate": 0.1099,
+          "top4Rate": 0.7112,
+          "pickRate": 0.0035720572991512216
+        },
+        "label": {
+          "totalCount": 1777967,
+          "compsCount": 52742,
+          "avgPlacement": 4.51,
+          "winCount": 3425,
+          "top4Count": 26543,
+          "winRate": 0.0649,
+          "top4Rate": 0.5033,
+          "pickRate": 0.02966421761483762
+        }
+      },
+      "early_game": {
+        "level": 5,
+        "units": [
+          {
+            "key": "DA_18_Sentry",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 1,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Cinderling18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 2,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Murkwolf18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Scuttlecrab18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 5,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Krug18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          }
+        ],
+        "traits": [
+          {
+            "key": "DA_Riftbeast18",
+            "style": 3,
+            "num_units": 5
+          },
+          {
+            "key": "DA_18_Invoker",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Hunter",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Slayer",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_Juggernaut18",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Brawler",
+            "style": 0,
+            "num_units": 1
+          }
+        ],
+        "play": 2802,
+        "win": 1149,
+        "lose": 1567
+      },
+      "mid_game": {
+        "level": 7,
+        "units": [
+          {
+            "key": "DA_18_Sentry",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 1,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Cinderling18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Gromp18_AP",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 2,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Murkwolf18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Scuttlecrab18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_CrimsonRaptor18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Krug18",
+            "items": [
+              "null",
+              "null",
+              "null"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          }
+        ],
+        "traits": [
+          {
+            "key": "DA_Riftbeast18",
+            "style": 4,
+            "num_units": 7
+          },
+          {
+            "key": "DA_18_Invoker",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Hunter",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Adaptor",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Slayer",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_Juggernaut18",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Rapidfire",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Summoner",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Brawler",
+            "style": 0,
+            "num_units": 1
+          }
+        ],
+        "play": 3342,
+        "win": 2039,
+        "lose": 1211
+      }
+    }
+  ]
+}
