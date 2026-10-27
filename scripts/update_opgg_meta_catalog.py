@@ -131,7 +131,7 @@ def _number(value: Any, default: float = 0.0) -> float:
 def _normalize_unit(unit: Any) -> dict[str, Any] | None:
     if not isinstance(unit, dict):
         return None
-    key = str(unit.get("key") or unit.get("apiName") or unit.get("api_name") or unit.get("name") or "").strip()
+    key = str(unit.get("key") or unit.get("characterId") or unit.get("character_id") or unit.get("apiName") or unit.get("api_name") or unit.get("name") or "").strip()
     if not key:
         return None
     cell = unit.get("cell") if isinstance(unit.get("cell"), dict) else {}
