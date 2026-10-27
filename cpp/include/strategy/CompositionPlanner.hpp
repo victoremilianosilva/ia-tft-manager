@@ -408,7 +408,7 @@ public:
                     std::chrono::seconds{second_value};
                 const auto age_hours = std::chrono::duration<double, std::ratio<3600>>(
                     std::chrono::system_clock::now() - fetched_at).count();
-                if (age_hours < -1.0 || age_hours > 168.0)
+                if (age_hours < -6.0 || age_hours > 168.0)
                     return nlohmann::json::object();
                 return value;
             }();
