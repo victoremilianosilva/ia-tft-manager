@@ -17,8 +17,35 @@ from ppo import PPOTrainer, exponential_schedule_value
 from engine_contracts import Strategy
 from engine_contracts import ActionType
 
-class Trainer:
+def refresh_opgg_meta_catalog() -> None:
+    """Refresh at the training entrypoint, never when Trainer is imported or constructed in tests."""
+    if os.environ.get("TFT_OPGG_DISABLE_REFRESH", "").strip().lower() in {"1", "true", "yes"}:
+        print("OP.GG refresh desabilitado por TFT_OPGG_DISABLE_REFRESH.")
+        return
+    import subprocess
+    import sys
+    from pathlib import Path
+    project_root = Path(__file__).resolve().parent
+    collector = project_root / "scripts" / "update_opgg_meta_catalog.py"
+    if not collector.is_file():
+        print("⚠️ Coletor OP.GG não encontrado; usando o planejador nativo.")
+        return
+    try:
+        result = subprocess.run(
+            [sys.executable, str(collector), "--if-stale"],
+            cwd=str(project_root), capture_output=True, text=True, timeout=90,
+        )
+        if result.stdout.strip():
+            print(result.stdout.strip())
+        if result.stderr.strip():
+            print(result.stderr.strip())
+        if result.returncode != 0:
+            print("⚠️ Catálogo OP.GG indisponível; a engine continuará com o planejador nativo.")
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        print(f"⚠️ Não foi possível atualizar OP.GG antes do treino: {exc}")
 
+
+class Trainer:
     # ================================================================
     # 🏟️ CONFIGURAÇÃO DA LOBBY
     # ================================================================
@@ -65,31 +92,6 @@ class Trainer:
         use_subprocess=True,
         item_catalog_path=None,
     ):
-
-        # Refresh the local OP.GG meta snapshot once before creating any environments.
-        # The C++ engine consumes only JSON; no MCP request happens inside training steps.
-        if os.environ.get("TFT_OPGG_DISABLE_REFRESH", "").strip().lower() not in {"1", "true", "yes"}:
-            import subprocess
-            import sys
-            from pathlib import Path
-            project_root = Path(__file__).resolve().parent
-            collector = project_root / "scripts" / "update_opgg_meta_catalog.py"
-            if collector.is_file():
-                try:
-                    result = subprocess.run(
-                        [sys.executable, str(collector), "--if-stale"],
-                        cwd=str(project_root), capture_output=True, text=True, timeout=90,
-                    )
-                    if result.stdout.strip():
-                        print(result.stdout.strip())
-                    if result.stderr.strip():
-                        print(result.stderr.strip())
-                    if result.returncode != 0:
-                        print("⚠️ Catálogo OP.GG indisponível; a engine continuará com o planejador nativo.")
-                except (OSError, subprocess.TimeoutExpired) as exc:
-                    print(f"⚠️ Não foi possível atualizar OP.GG antes do treino: {exc}")
-            else:
-                print("⚠️ Coletor OP.GG não encontrado; usando o planejador nativo.")
 
         # ============================================================
         # 🖥️ DEVICE
@@ -2001,6 +2003,8 @@ class Trainer:
 # ====================================================================
 
 if __name__ == "__main__":
+
+    refresh_opgg_meta_catalog()
 
     # ================================================================
     # 🏟️ IMPORTANTE
