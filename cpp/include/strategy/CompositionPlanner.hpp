@@ -69,9 +69,11 @@ public:
         int current_level = 1,
         const AvailableCopies& available_copies = {},
         const std::unordered_set<std::int32_t>& currently_offered = {},
-        const LiveUnitContext& live_context = LiveUnitContext{}) {
+        const LiveUnitContext* live_context = nullptr) {
         CompositionPlan plan;
         if (pool.empty() || requested_slots == 0) return plan;
+        const LiveUnitContext empty_live_context{};
+        const auto& live_context_value = live_context ? *live_context : empty_live_context;
 
         const std::size_t slots = std::min<std::size_t>(requested_slots, 10);
         const int safe_level = std::clamp(current_level, 1, 10);
@@ -474,7 +476,7 @@ public:
                         // item is already equipped or can be used from inventory.
                         // Normalize source IDs without hard-coding a set's recipes.
                         if (unit.contains("items") && unit["items"].is_array()) {
-                            const auto equipped = live_context.equipped_items_by_champion.find(id);
+                            const auto equipped = live_context_value.equipped_items_by_champion.find(id);
                             for (const auto& raw_item : unit["items"]) {
                                 if (!raw_item.is_string()) continue;
                                 const auto item_id = raw_item.get<std::string>();
@@ -486,7 +488,7 @@ public:
                                                 canonical_item_id(owned_item) == canonical;
                                         });
                                 const bool available_match =
-                                    live_context.inventory_item_ids.count(item_id) != 0 ||
+                                    live_context_value.inventory_item_ids.count(item_id) != 0 ||
                                     live_context.inventory_item_ids.count(canonical) != 0;
                                 if (equipped_match) item_position_bonus += 0.12;
                                 else if (available_match) item_position_bonus += 0.06;
@@ -501,7 +503,7 @@ public:
                             unit["cell"]["y"].is_number_integer()) {
                             const int recommended_slot = unit["cell"]["y"].get<int>() * 7 +
                                 unit["cell"]["x"].get<int>();
-                            const auto current_slot = live_context.board_slot_by_champion.find(id);
+                            const auto current_slot = live_context_value.board_slot_by_champion.find(id);
                             if (current_slot != live_context.board_slot_by_champion.end() &&
                                 current_slot->second == recommended_slot)
                                 item_position_bonus += 0.10;
