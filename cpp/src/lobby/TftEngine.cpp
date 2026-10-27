@@ -2347,10 +2347,30 @@ struct TFTEngine::Impl {
                         std::max(1, available_copies[offer->champion_internal_id]);
                 }
             }
+            strategy::CompositionPlanner::LiveUnitContext live_context;
+            const auto& live_player = player_envs[i];
+            if (live_player.item_engine) {
+                for (const auto& item_id : live_player.item_engine->inventory())
+                    live_context.inventory_item_ids.insert(item_id);
+                const auto collect_live_unit = [&](const UnitInstance& unit, int board_slot) {
+                    auto& equipped = live_context.equipped_items_by_champion[unit.champion_internal_id];
+                    for (const auto& item_id : live_player.item_engine->equipped(unit.uuid))
+                        equipped.push_back(item_id);
+                    for (const auto& item : unit.items)
+                        if (!item.api_name.empty()) equipped.push_back(item.api_name);
+                    if (board_slot >= 0)
+                        live_context.board_slot_by_champion[unit.champion_internal_id] = board_slot;
+                };
+                for (std::size_t slot = 0; slot < live_player.board.size(); ++slot)
+                    if (live_player.board[slot])
+                        collect_live_unit(*live_player.board[slot], static_cast<int>(slot));
+                for (const auto& unit : live_player.bench)
+                    if (unit) collect_live_unit(*unit, -1);
+            }
             const auto plan = strategy::CompositionPlanner::build(
                 catalog->all(), trait_milestones, info.composition_direction,
                 plan_focus, owned_copies, planning_slots, economy.level,
-                available_copies, currently_offered);
+                available_copies, currently_offered, live_context);
             info.planned_units = plan.unit_names;
             info.planned_unit_ids = plan.unit_ids;
             info.planned_traits = plan.core_traits;
