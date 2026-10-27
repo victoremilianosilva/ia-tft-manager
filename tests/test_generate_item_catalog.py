@@ -244,6 +244,25 @@ def test_canonical_set_identity_uses_number_when_source_name_is_stale():
     assert catalog["source_set_name"] == "Set10"
 
 
+def test_opgg_meta_validator_rejects_incompatible_item_set():
+    from datetime import datetime, timezone
+    from scripts.validate_opgg_meta_catalog import validate_catalog
+
+    now = datetime(2026, 10, 27, 12, tzinfo=timezone.utc)
+    units = [{"apiName": "DA_18_Carry", "name": "Carry"}]
+    meta = {
+        "schema_version": 1,
+        "source": "op.gg",
+        "fetched_at": now.isoformat(),
+        "compositions": [{
+            "team_code": "fixtureTFTSet18",
+            "units": [{"key": "DA_18_Carry"}],
+        }],
+    }
+    with pytest.raises(ValueError, match="catálogo de itens"):
+        validate_catalog(meta, units, items_doc={"set_id": "Set17"}, now=now)
+
+
 def test_rejects_unknown_set():
     with pytest.raises(ValueError, match="não encontrado"):
         build_catalog(source_fixture(), "99")
