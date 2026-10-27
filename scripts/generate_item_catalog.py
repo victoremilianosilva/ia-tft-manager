@@ -336,7 +336,10 @@ def build_catalog(
 
     return {
         "schema_version": 1,
-        "set_id": set_name,
+        # The source's human-readable name can be stale or localized
+        # (for example number=18 with name=Set10). Use the numeric identity
+        # for compatibility checks; preserve the original name as provenance.
+        "set_id": f"Set{set_number}" if set_number.isdigit() else set_name,
         "source": "CommunityDragon",
         "source_file_format": "cdragon/tft JSON",
         "source_set_number": int(set_number) if set_number.isdigit() else set_number,
