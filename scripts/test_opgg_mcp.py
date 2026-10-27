@@ -21,6 +21,7 @@ import argparse
 import asyncio
 import json
 import sys
+import traceback
 from typing import Any
 
 from mcp import ClientSession
@@ -58,6 +59,19 @@ def required_arguments(schema: dict[str, Any]) -> list[str]:
     return [name for name in required if isinstance(name, str)]
 
 
+def print_nested_exception(exc: BaseException, indent: int = 0) -> None:
+    """Print leaf causes from ExceptionGroup without hiding their tracebacks."""
+    prefix = " " * indent
+    if isinstance(exc, BaseExceptionGroup):
+        print(f"{prefix}{type(exc).__name__}: {exc}", file=sys.stderr)
+        for nested in exc.exceptions:
+            print_nested_exception(nested, indent + 2)
+        return
+    print(f"{prefix}{type(exc).__name__}: {exc}", file=sys.stderr)
+    if exc.__traceback__ is not None:
+        traceback.print_exception(type(exc), exc, exc.__traceback__, file=sys.stderr)
+
+
 async def run() -> int:
     args = parse_args()
 
@@ -74,10 +88,12 @@ async def run() -> int:
             return 2
         tool_arguments = parsed
 
+    stage = "opening HTTP transport"
     try:
         async with streamablehttp_client(args.url) as streams:
             # SDK 1.x yielded three values; SDK 2.x yields only read/write streams.
             read_stream, write_stream = streams[0], streams[1]
+            stage = "initializing MCP session"
             async with ClientSession(read_stream, write_stream) as session:
                 init_result = await session.initialize()
                 print(f"Connected to MCP server: {args.url}")
@@ -85,6 +101,7 @@ async def run() -> int:
                     info = init_result.serverInfo
                     print(f"Server: {info.name} {info.version}")
 
+                stage = "requesting tools/list"
                 tools_result = await session.list_tools()
                 if not args.tool_name:
                     print(f"\nAvailable tools ({len(tools_result.tools)}):")
@@ -127,6 +144,7 @@ async def run() -> int:
 
                 print(f"\nCalling {tool.name} with:")
                 print(json.dumps(tool_arguments, ensure_ascii=False, indent=2))
+                stage = f"calling tool {tool.name}"
                 result = await session.call_tool(tool.name, arguments=tool_arguments)
                 print("\nTool result:")
                 for item in result.content:
@@ -149,9 +167,11 @@ async def run() -> int:
                     return 1
                 return 0
     except Exception as exc:
-        print(f"MCP request failed: {type(exc).__name__}: {exc}", file=sys.stderr)
+        print(f"MCP request failed while {stage}:", file=sys.stderr)
+        print_nested_exception(exc)
         print(
-            "Check network access, the endpoint, and the installed 'mcp' package.",
+            "\nIf the traceback indicates an HTTP/protocol error, include that full output "
+            "when reporting the issue.",
             file=sys.stderr,
         )
         return 1
