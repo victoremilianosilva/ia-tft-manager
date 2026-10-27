@@ -320,6 +320,52 @@ def build_catalog(
     }
 
 
+def validate_catalog_semantics(catalog: dict[str, Any]) -> None:
+    """Reject structurally valid catalogs that would make finished items inert.
+
+    Emblems are excluded from the numeric/effect coverage denominator because
+    their value is the granted trait. Raw source_effects alone do not count as
+    implemented effects: the combat simulator must receive normalized stats or
+    an explicit combat_effects operation.
+    """
+    items = catalog.get("items")
+    if not isinstance(items, list) or not items:
+        raise ValueError("Catálogo sem itens craftáveis.")
+
+    ordinary = [
+        item for item in items
+        if isinstance(item, dict) and not item.get("grants_trait")
+    ]
+    if not ordinary:
+        raise ValueError("Catálogo não contém itens craftáveis comuns para validar.")
+
+    stat_keys = (
+        "attack_damage", "attack_speed", "ability_power",
+        "critical_strike_chance", "critical_strike_damage", "health",
+        "armor", "magic_resist", "mana", "omnivamp",
+        "damage_amplification", "damage_reduction",
+    )
+
+    def has_applied_value(item: dict[str, Any]) -> bool:
+        stats = item.get("stats") if isinstance(item.get("stats"), dict) else {}
+        has_stats = any(
+            _finite_number(stats.get(key)) and float(stats[key]) != 0.0
+            for key in stat_keys
+        )
+        effects = item.get("combat_effects")
+        has_effects = isinstance(effects, list) and bool(effects)
+        return has_stats or has_effects
+
+    usable = sum(1 for item in ordinary if has_applied_value(item))
+    minimum = max(1, math.ceil(len(ordinary) * 0.5))
+    if usable < minimum:
+        raise ValueError(
+            "Catálogo aparentemente válido, mas sem efeitos de combate aplicáveis: "
+            f"{usable}/{len(ordinary)} itens comuns têm atributos/effects suportados; "
+            f"mínimo esperado={minimum}. Verifique a normalização da fonte."
+        )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Gera um catálogo JSON de itens craftáveis de um set a partir de itens.json (CommunityDragon)."
@@ -348,6 +394,7 @@ def main(argv: list[str] | None = None) -> int:
                     if isinstance(item_id, str) and isinstance(metadata, dict)
                 }
         catalog = build_catalog(source, args.set_selector, trait_item_metadata)
+        validate_catalog_semantics(catalog)
         output_path = Path(args.output) if args.output else default_catalog_output_path(args.set_selector)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         with output_path.open("w", encoding="utf-8", newline="\n") as handle:
