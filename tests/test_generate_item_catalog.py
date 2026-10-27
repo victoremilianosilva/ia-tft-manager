@@ -159,8 +159,31 @@ def test_normalizes_supported_stats_and_preserves_raw_effects():
     assert item["stats"]["critical_strike_chance"] == pytest.approx(0.35)
     assert item["stats"]["attack_damage"] == 0
     assert item["source_effects"]["AD"] == pytest.approx(0.3)
+    assert {
+        "trigger": "combat_start",
+        "operation": "add_stat",
+        "stat": "attack_damage",
+        "target": "self",
+        "value": pytest.approx(0.3),
+        "percent_of_stat": True,
+    } in item["combat_effects"]
     assert item["source_description"] == "A test item"
     assert item["weights"]["carry"] == 1
+
+
+def test_semantic_validation_accepts_active_repository_catalog():
+    import json
+
+    catalog_path = Path(__file__).resolve().parents[1] / "data" / "itens.json"
+    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    validate_catalog_semantics(catalog)
+
+
+def test_source_mana_regen_becomes_generic_combat_effect():
+    catalog = build_catalog(source_fixture(), "16")
+    item = next(item for item in catalog["items"] if item["id"] == "DA_Item_TestBlade")
+    # The fixture has no mana regeneration, so it must not invent one.
+    assert all(effect["operation"] != "mana_regen" for effect in item["combat_effects"])
 
 
 def test_semantic_validation_rejects_structurally_valid_but_inert_catalog():
