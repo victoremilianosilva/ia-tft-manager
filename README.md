@@ -39,6 +39,10 @@ adicione `--baseline checkpoints/base.pt --candidate checkpoints/candidato.pt --
 Para incluir a ablação dos controles de composição, acrescente `--ablation`.
 Essas avaliações opcionais podem executar partidas adicionais e demorar mais.
 
+## Catálogo de composições OP.GG
+
+O treino atualiza o snapshot local de meta antes de iniciar; o Viewer reutiliza o mesmo catálogo e só consulta novamente quando ele está vencido. O C++ compara composições conhecidas com o plano nativo, usando snapshots de early/mid game como informação de transição, sem tornar unidades obrigatórias. Veja [docs/opgg-meta-catalog.md](docs/opgg-meta-catalog.md).
+
 ## Componentes principais
 
 - cpp/: engine C++, bindings e testes nativos.
