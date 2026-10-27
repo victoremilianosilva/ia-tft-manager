@@ -131,6 +131,28 @@ class ViewerSession:
             if weight is None:
                 raise ValueError("Checkpoint sem obs_dim e sem global_mlp.0.weight para inferir a arquitetura.")
             obs_dim = int(weight.shape[1]) + 140
+        # Refresh on viewer load only when the local snapshot is stale (12h by default).
+        # A failed network request must not prevent offline inspection or replay.
+        __import__("os").environ.setdefault("TFT_OPGG_META_CATALOG", str(ROOT / "data" / "opgg_tft_meta.json"))
+        if __import__("os").environ.get("TFT_OPGG_DISABLE_REFRESH", "").strip().lower() not in {"1", "true", "yes"}:
+            import subprocess
+            import sys
+            collector = ROOT / "scripts" / "update_opgg_meta_catalog.py"
+            if collector.is_file():
+                try:
+                    command = [sys.executable, str(collector), "--if-stale"]
+                    configured_catalog = __import__("os").environ.get("TFT_OPGG_META_CATALOG")
+                    if configured_catalog:
+                        command.extend(["--output", configured_catalog])
+                    result = subprocess.run(
+                        command, cwd=str(ROOT), capture_output=True, text=True, timeout=90,
+                    )
+                    if result.stdout.strip():
+                        print(result.stdout.strip())
+                    if result.stderr.strip():
+                        print(result.stderr.strip())
+                except (OSError, subprocess.TimeoutExpired) as exc:
+                    print(f"OP.GG meta refresh skipped: {exc}")
         self.lobby = CppTFTLobbyWrapper(seed=int(seed), catalog_path=str(CATALOG))
         self.obs = self.lobby.reset(seed=int(seed))
         current_obs_dim = int(self.obs.shape[-1])

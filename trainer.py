@@ -17,8 +17,39 @@ from ppo import PPOTrainer, exponential_schedule_value
 from engine_contracts import Strategy
 from engine_contracts import ActionType
 
-class Trainer:
+def refresh_opgg_meta_catalog() -> None:
+    """Refresh at the training entrypoint, never when Trainer is imported or constructed in tests."""
+    from pathlib import Path
+    project_root = Path(__file__).resolve().parent
+    os.environ.setdefault("TFT_OPGG_META_CATALOG", str(project_root / "data" / "opgg_tft_meta.json"))
+    if os.environ.get("TFT_OPGG_DISABLE_REFRESH", "").strip().lower() in {"1", "true", "yes"}:
+        print("OP.GG refresh desabilitado por TFT_OPGG_DISABLE_REFRESH.")
+        return
+    import subprocess
+    import sys
+    collector = project_root / "scripts" / "update_opgg_meta_catalog.py"
+    if not collector.is_file():
+        print("⚠️ Coletor OP.GG não encontrado; usando o planejador nativo.")
+        return
+    try:
+        command = [sys.executable, str(collector), "--if-stale"]
+        configured_catalog = os.environ.get("TFT_OPGG_META_CATALOG")
+        if configured_catalog:
+            command.extend(["--output", configured_catalog])
+        result = subprocess.run(
+            command, cwd=str(project_root), capture_output=True, text=True, timeout=90,
+        )
+        if result.stdout.strip():
+            print(result.stdout.strip())
+        if result.stderr.strip():
+            print(result.stderr.strip())
+        if result.returncode != 0:
+            print("⚠️ Catálogo OP.GG indisponível; a engine continuará com o planejador nativo.")
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        print(f"⚠️ Não foi possível atualizar OP.GG antes do treino: {exc}")
 
+
+class Trainer:
     # ================================================================
     # 🏟️ CONFIGURAÇÃO DA LOBBY
     # ================================================================
@@ -1976,6 +2007,8 @@ class Trainer:
 # ====================================================================
 
 if __name__ == "__main__":
+
+    refresh_opgg_meta_catalog()
 
     # ================================================================
     # 🏟️ IMPORTANTE
