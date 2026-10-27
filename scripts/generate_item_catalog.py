@@ -220,7 +220,7 @@ def build_catalog(
         # This engine catalog intentionally uses the DA_ item family only.
         # TFT_Item_* records are aliases/parallel records and must not create
         # duplicate component dimensions or recipes in the action space.
-        if not item_id.startswith("DA_"):
+        if not item_id.startswith("TFT_"):
             continue
         recipe = item.get("composition")
         if item.get("isAugment") is True or not isinstance(recipe, list) or len(recipe) != 2:
@@ -229,8 +229,9 @@ def build_catalog(
             raise ValueError(f"Receita inválida em {item_id or '<sem ID>'}: {recipe!r}")
         # A completed DA_ item is craftable only when both ingredients are
         # actual DA_Component_* records tagged as components.
+        print(item)
         if any(
-            not component_id.startswith("DA_Component_")
+            not component_id.startswith("TFT_Item_")
             or not _is_component(item_by_id.get(component_id))
             for component_id in recipe
         ):
