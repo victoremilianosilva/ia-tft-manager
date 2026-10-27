@@ -149,3 +149,30 @@ def test_rejects_wrong_number_of_players(trainer):
 
     with pytest.raises(ValueError, match="jogadores"):
         trainer._flatten_masks(gym_masks)
+
+def test_empty_action_types_receive_same_pass_fallback_for_multiple_agents(trainer):
+    gym_masks = create_valid_masks()
+    for player_idx in (0, 3, 7):
+        gym_masks[0][player_idx]["type_mask"] = np.zeros(9, dtype=np.float32)
+
+    masks = trainer._flatten_masks(gym_masks)
+
+    for player_idx in (0, 3, 7):
+        expected_types = torch.zeros(9, dtype=torch.bool)
+        expected_types[6] = True
+        assert torch.equal(masks["type_mask"][player_idx], expected_types)
+
+        for key in ("shop_mask", "bench_source_mask", "board_target_mask", "board_source_mask"):
+            expected = torch.zeros_like(masks[key][player_idx])
+            expected[0] = True
+            assert torch.equal(masks[key][player_idx], expected)
+
+        expected_moves = torch.zeros_like(masks["board_move_target_masks"][player_idx])
+        expected_moves[0, 0] = True
+        assert torch.equal(masks["board_move_target_masks"][player_idx], expected_moves)
+
+    # Agents with legal action types must remain unchanged.
+    assert torch.equal(
+        masks["type_mask"][1],
+        torch.tensor(gym_masks[0][1]["type_mask"], dtype=torch.bool),
+    )
