@@ -1121,33 +1121,40 @@ class Trainer:
                 )
 
                 # 📊 Quantas opções permaneceram válidas após as máscaras?
-                mask_valid_type_sum += (
-                    masks["type_mask"]
-                    .sum(dim=1)
-                    .float()
-                    .mean()
-                    .item()
+                valid_type_mean = (
+                    masks["type_mask"].sum(dim=1).float().mean()
                 )
 
                 # Conta somente pares reais origem/destino; fallbacks técnicos
                 # não contam quando o tipo de movimento está desabilitado.
                 board_move_enabled = (
-                    masks["type_mask"][:, 4].bool().view(-1, 1, 1)
-                    & masks["board_source_mask"].bool().unsqueeze(-1)
-                    & masks["board_move_target_masks"].bool()
+                    masks["type_mask"][:, 4].view(-1, 1, 1)
+                    & masks["board_source_mask"].unsqueeze(-1)
+                    & masks["board_move_target_masks"]
                 )
                 bench_move_enabled = (
-                    masks["type_mask"][:, 3].bool().view(-1, 1, 1)
-                    & masks["bench_move_source_mask"].bool().unsqueeze(-1)
-                    & masks["bench_to_board_target_masks"].bool()
+                    masks["type_mask"][:, 3].view(-1, 1, 1)
+                    & masks["bench_move_source_mask"].unsqueeze(-1)
+                    & masks["bench_to_board_target_masks"]
                 )
 
-                mask_valid_board_move_sum += (
-                    board_move_enabled.sum(dim=(1, 2)).float().mean().item()
+                valid_board_move_mean = (
+                    board_move_enabled.sum(dim=(1, 2)).float().mean()
                 )
-                mask_valid_bench_move_sum += (
-                    bench_move_enabled.sum(dim=(1, 2)).float().mean().item()
+                valid_bench_move_mean = (
+                    bench_move_enabled.sum(dim=(1, 2)).float().mean()
                 )
+
+                # Transfer the three scalar diagnostics to the host together,
+                # avoiding three separate device synchronizations per step.
+                mask_metric_values = torch.stack((
+                    valid_type_mean,
+                    valid_board_move_mean,
+                    valid_bench_move_mean,
+                )).detach().cpu().tolist()
+                mask_valid_type_sum += mask_metric_values[0]
+                mask_valid_board_move_sum += mask_metric_values[1]
+                mask_valid_bench_move_sum += mask_metric_values[2]
 
                 mask_samples += 1
 
