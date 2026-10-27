@@ -58,7 +58,7 @@ static bool configure_catalog(const std::filesystem::path& path, bool incompatib
     for (std::size_t i = 0; i < names.size(); ++i) {
         if (i) out << ",";
         out << "{\"key\":\"" << names[i]
-            << "\",\"isCore\":true,\"priority\":" << (i + 1)
+            << "\",\"is_core\":true,\"priority\":" << (i + 1)
             << ",\"traits\":[\"Invoker\"],\"items\":[\"DA_Deathblade\"],\"cell\":{\"x\":"
             << (i % 7) << ",\"y\":" << (i / 7) << "}}";
     }
