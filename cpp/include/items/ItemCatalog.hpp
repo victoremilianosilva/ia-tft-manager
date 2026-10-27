@@ -174,8 +174,9 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             !entry["id"].is_string() || !entry.contains("name") ||
             !entry["name"].is_string() || !entry.contains("recipe_components") ||
             !entry["recipe_components"].is_array() ||
-            entry["recipe_components"].size() != 2) {
-            throw std::invalid_argument("Each finished item requires id, name and two recipe_components");
+            (entry["recipe_components"].size() != 2 &&
+             entry["recipe_components"].size() != 0)) {
+            throw std::invalid_argument("Each item requires id, name and either zero or two recipe_components");
         }
 
         ItemDefinition item;
@@ -186,7 +187,17 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             throw std::invalid_argument("Empty or duplicate finished item id/name");
         }
 
-        for (std::size_t i = 0; i < 2; ++i) {
+        if (entry.contains("grants_trait")) {
+            if (!entry["grants_trait"].is_string()) {
+                throw std::invalid_argument("grants_trait must be a string");
+            }
+            item.grants_trait = entry["grants_trait"].get<std::string>();
+        }
+        if (entry["recipe_components"].empty() && item.grants_trait.empty()) {
+            throw std::invalid_argument(
+                "An item without a recipe must grant a trait or be explicitly modeled");
+        }
+        for (std::size_t i = 0; i < entry["recipe_components"].size(); ++i) {
             if (!entry["recipe_components"][i].is_string()) {
                 throw std::invalid_argument("Recipe component IDs must be strings");
             }
@@ -197,11 +208,13 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             }
         }
 
-        const auto a = item.recipe_components[0];
-        const auto b = item.recipe_components[1];
-        const auto recipe_key = a < b ? a + "\x1f" + b : b + "\x1f" + a;
-        if (!recipes.insert(recipe_key).second) {
-            throw std::invalid_argument("Duplicate item recipe in catalog");
+        if (entry["recipe_components"].size() == 2) {
+            const auto a = item.recipe_components[0];
+            const auto b = item.recipe_components[1];
+            const auto recipe_key = a < b ? a + "\x1f" + b : b + "\x1f" + a;
+            if (!recipes.insert(recipe_key).second) {
+                throw std::invalid_argument("Duplicate item recipe in catalog");
+            }
         }
 
         const Json empty = Json::object();
