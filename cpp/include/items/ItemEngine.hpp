@@ -271,6 +271,23 @@ public:
         return true;
     }
 
+    // Preserve equipment when three equal copies merge into a higher-star unit.
+    // Up to three items stay on the upgraded unit; overflow is returned to the
+    // shared inventory instead of being silently lost or blocking the purchase.
+    bool transfer_equipped_on_merge(const std::string& from_uuid,
+                                    const std::string& to_uuid) {
+        if (from_uuid.empty() || to_uuid.empty() || from_uuid == to_uuid) return false;
+        const auto source = equipped_.find(from_uuid);
+        if (source == equipped_.end()) return true;
+        auto& target = equipped_[to_uuid];
+        for (const auto& item_id : source->second) {
+            if (target.size() < kMaxItemsPerUnit) target.push_back(item_id);
+            else inventory_.push_back(item_id);
+        }
+        equipped_.erase(source);
+        return true;
+    }
+
     [[nodiscard]] const std::vector<std::string>& components() const noexcept {
         return components_;
     }
