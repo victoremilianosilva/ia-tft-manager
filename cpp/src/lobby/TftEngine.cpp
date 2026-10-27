@@ -1049,7 +1049,8 @@ struct TFTEngine::Impl {
             trait_counts.reserve(observation_trait_names.size());
             trait_count_index.reserve(observation_trait_names.size());
             int board_count = 0, bench_count = 0, frontline = 0, backline = 0;
-            std::set<int> unique_roles;
+            std::array<bool, 5> seen_roles{};
+            std::size_t unique_role_count = 0;
 
             const auto count_traits = [&](const UnitInstance& unit) {
                 const auto* def = catalog->find_by_id(unit.champion_internal_id);
@@ -1071,7 +1072,11 @@ struct TFTEngine::Impl {
                 if (!def) continue;
                 const int role = std::clamp(def->combat_profile.role, 0, 4);
                 board_roles[slot] = role;
-                unique_roles.insert(role);
+                const auto role_index = static_cast<std::size_t>(role);
+                if (!seen_roles[role_index]) {
+                    seen_roles[role_index] = true;
+                    ++unique_role_count;
+                }
                 const int row = static_cast<int>(slot / 7);
                 if (row <= 1) ++frontline;
                 if (row >= 2) ++backline;
@@ -1162,7 +1167,7 @@ struct TFTEngine::Impl {
             out[offset++] = static_cast<float>(positioning_score);
             out[offset++] = board_count ? static_cast<float>(frontline) / board_count : 0.0f;
             out[offset++] = board_count ? static_cast<float>(backline) / board_count : 0.0f;
-            out[offset++] = std::min(1.0f, static_cast<float>(unique_roles.size()) / 5.0f);
+            out[offset++] = std::min(1.0f, static_cast<float>(unique_role_count) / 5.0f);
 
             // 8) TRAITS: fixed catalog order shared across all players.
             // trait_count_index already maps each observed trait to its
