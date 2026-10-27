@@ -19,14 +19,14 @@ from engine_contracts import ActionType
 
 def refresh_opgg_meta_catalog() -> None:
     """Refresh at the training entrypoint, never when Trainer is imported or constructed in tests."""
+    from pathlib import Path
+    project_root = Path(__file__).resolve().parent
+    os.environ.setdefault("TFT_OPGG_META_CATALOG", str(project_root / "data" / "opgg_tft_meta.json"))
     if os.environ.get("TFT_OPGG_DISABLE_REFRESH", "").strip().lower() in {"1", "true", "yes"}:
         print("OP.GG refresh desabilitado por TFT_OPGG_DISABLE_REFRESH.")
         return
     import subprocess
     import sys
-    from pathlib import Path
-    project_root = Path(__file__).resolve().parent
-    os.environ.setdefault("TFT_OPGG_META_CATALOG", str(project_root / "data" / "opgg_tft_meta.json"))
     collector = project_root / "scripts" / "update_opgg_meta_catalog.py"
     if not collector.is_file():
         print("⚠️ Coletor OP.GG não encontrado; usando o planejador nativo.")
