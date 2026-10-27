@@ -13,7 +13,6 @@ median end-to-end ms/iteration and agents/sec. Avoid running other CPU-heavy wor
 from __future__ import annotations
 
 import argparse
-import csv
 import json
 import os
 import platform
@@ -196,7 +195,6 @@ def main() -> int:
     parser.add_argument("--torch-threads", type=int, default=1)
     parser.add_argument("--bootstrap-samples", type=int, default=2000)
     parser.add_argument("--output", type=Path, default=Path("reports/runtime_benchmark.json"))
-    parser.add_argument("--csv-output", type=Path, default=None, help="Optional per-iteration timing CSV.")
     args = parser.parse_args()
     if args.num_envs < 1 or args.warmup < 0 or args.iterations < 2:
         parser.error("--num-envs must be >= 1, --warmup >= 0, --iterations >= 2")
@@ -210,16 +208,6 @@ def main() -> int:
     for key, value in report["metrics"].items():
         print(f"{key}: median={value['median_ms']:.3f} ms, p95={value['p95_ms']:.3f} ms, mean={value['mean_ms']:.3f} ms")
     print("Throughput: " + json.dumps(report["throughput"], ensure_ascii=False))
-    if args.csv_output:
-        args.csv_output.parent.mkdir(parents=True, exist_ok=True)
-        with args.csv_output.open("w", newline="", encoding="utf-8") as handle:
-            writer = csv.writer(handle)
-            writer.writerow(["iteration", *report["metrics"].keys()])
-            for idx in range(args.iterations):
-                writer.writerow([idx + 1, *[
-                    report["metrics"][key]["median_ms"] for key in report["metrics"]
-                ]])
-        print(f"CSV agregado: {args.csv_output} (medianas; use JSON para estatísticas por amostra)")
     return 0
 
 
