@@ -25,6 +25,11 @@ except ImportError:  # MCP SDK 1.x compatibility
     from mcp.client.streamable_http import streamablehttp_client as streamable_http_client
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.validate_opgg_meta_catalog import validate_catalog
+
 DEFAULT_OUTPUT = ROOT / "data" / "opgg_tft_meta.json"
 DEFAULT_RAW = ROOT / "data" / "opgg_tft_meta_raw.json"
 DEFAULT_URL = "https://mcp-api.op.gg/mcp"
@@ -277,7 +282,19 @@ async def main() -> int:
     try:
         raw = await fetch_meta(args.url)
         normalized = normalize_payload(raw)
-        # Save raw and normalized data only after the response passed validation.
+        units_path = ROOT / "data" / "units_gerado.json"
+        units_doc = json.loads(units_path.read_text(encoding="utf-8"))
+        compatibility = validate_catalog(
+            normalized, units_doc, max_age_hours=168.0, min_coverage=0.90
+        )
+        print(
+            "Validação OP.GG: "
+            f"set={compatibility['meta_set_ids'] or ['unknown']} "
+            f"coverage={compatibility['mapped_unit_keys']}/{compatibility['meta_unique_unit_keys']}"
+        )
+        # Save raw and normalized data only after schema, freshness, set and
+        # local unit-coverage checks pass; an incompatible refresh cannot replace
+        # the last known-good catalog.
         _atomic_json(args.raw_output, raw)
         _atomic_json(args.output, normalized)
         digest = hashlib.sha256(args.output.read_bytes()).hexdigest()
