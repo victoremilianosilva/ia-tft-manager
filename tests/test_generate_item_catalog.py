@@ -10,6 +10,7 @@ from scripts.generate_item_catalog import (  # noqa: E402
     build_catalog,
     default_catalog_output_path,
     item_effects_candidates,
+    validate_catalog_semantics,
 )
 
 
@@ -160,6 +161,32 @@ def test_normalizes_supported_stats_and_preserves_raw_effects():
     assert item["source_effects"]["AD"] == pytest.approx(0.3)
     assert item["source_description"] == "A test item"
     assert item["weights"]["carry"] == 1
+
+
+def test_semantic_validation_rejects_structurally_valid_but_inert_catalog():
+    catalog = {
+        "items": [
+            {"id": "Item_A", "stats": {key: 0.0 for key in (
+                "attack_damage", "attack_speed", "ability_power",
+                "critical_strike_chance", "critical_strike_damage", "health",
+                "armor", "magic_resist", "mana", "omnivamp",
+                "damage_amplification", "damage_reduction",
+            )}, "combat_effects": [], "source_effects": {"PassiveDamage": 100}},
+            {"id": "Item_B", "stats": {}, "combat_effects": [], "source_effects": {}},
+        ]
+    }
+    with pytest.raises(ValueError, match="sem efeitos de combate aplicáveis"):
+        validate_catalog_semantics(catalog)
+
+
+def test_semantic_validation_accepts_normalized_stats_or_explicit_effects():
+    catalog = {
+        "items": [
+            {"id": "Item_A", "stats": {"attack_speed": 0.1}, "combat_effects": []},
+            {"id": "Item_B", "stats": {}, "combat_effects": [{"trigger": "COMBAT_START", "operation": "GRANT_SHIELD"}]},
+        ]
+    }
+    validate_catalog_semantics(catalog)
 
 
 def test_rejects_unknown_set():
