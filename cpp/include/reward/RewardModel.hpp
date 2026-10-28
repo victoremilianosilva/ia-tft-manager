@@ -171,24 +171,24 @@ inline double buy_xp_timing_reward(
     int stage,
     bool leveled_up
 ) noexcept {
-    // XP is not a generic reward for spending. Below 40 gold, only reward it
-    // when health pressure is severe or the action actually levels up.
+    // XP is not a generic reward for spending. Non-leveling XP gets only a
+    // tiny signal while the player is at the 50-gold cap; once spending drops
+    // below that cap, stop rewarding consecutive XP buys. Actual level-ups can
+    // still be rewarded with less gold when they are strategically urgent.
     if (stage <= 2 && hp >= 60.0) return 0.0;
-    if (gold_before < 30 && hp >= 35.0) return 0.0;
-    if (gold_before < 40 && hp >= 45.0 && !leveled_up) return 0.0;
-    if (gold_before < 50 && stage <= 3 && hp >= 50.0 && !leveled_up) return 0.0;
+    if (!leveled_up && gold_before < 50) return 0.0;
+    if (leveled_up && gold_before < 30 && hp >= 35.0) return 0.0;
 
     const double liquidity = gold_before >= 50 ? 1.0
         : (gold_before >= 40 ? 0.70 : (gold_before >= 30 ? 0.40 : 0.20));
     const double health_urgency = std::clamp((55.0 - hp) / 55.0, 0.0, 1.0);
     const double stage_urgency = std::clamp((static_cast<double>(stage) - 3.0) / 4.0,
                                             0.0, 1.0);
-    const double hoarding_urgency = gold_before >= 50 ? 0.45
-        : (gold_before >= 40 ? 0.20 : 0.0);
+    const double hoarding_urgency = gold_before >= 50 ? 0.45 : 0.0;
     const double urgency = std::max({health_urgency, stage_urgency, hoarding_urgency});
     if (urgency <= 0.0) return 0.0;
-    const double quality = leveled_up ? 1.0 : 0.45;
-    // Hard cap: buying units/pairs should remain more attractive than repeated XP.
+    const double quality = leveled_up ? 1.0 : 0.20;
+    // Level-up reward is capped; intermediate XP buys cannot farm large returns.
     return std::min(0.10, 0.10 * liquidity * urgency * quality);
 }
 
