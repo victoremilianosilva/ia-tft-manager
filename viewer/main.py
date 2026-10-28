@@ -451,9 +451,18 @@ class PlayerCard(QFrame):
         placement_text = f"#{placement}" if placement is not None else "—"
         wins_text = wins if wins is not None else "—"
         losses_text = losses if losses is not None else "—"
+        board_units = list(audit.get("board", []) or [])
+        bench_units = list(audit.get("bench", []) or [])
+        equipped_count = sum(
+            len(unit.get("items") or [])
+            for unit in board_units + bench_units
+            if isinstance(unit, dict) and unit.get("occupied", True)
+        )
+        bag_count = len(audit.get("item_components", []) or []) + len(audit.get("item_inventory", []) or [])
         self.metrics.setText(
             f"HP {hp}   OURO {gold}   NV {level}   XP {xp}\n"
-            f"COLOCAÇÃO {placement_text}   VITÓRIAS {wins_text}   DERROTAS {losses_text}"
+            f"COLOCAÇÃO {placement_text}   VITÓRIAS {wins_text}   DERROTAS {losses_text}\n"
+            f"ITENS EQUIPADOS {equipped_count}   COMPONENTES/ITENS NA BAG {bag_count}"
         )
         strategy = audit.get("strategy_info") or {}
         strategy_name = strategy.get("strategy_name") or "ECON"
