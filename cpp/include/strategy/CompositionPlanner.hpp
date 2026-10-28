@@ -24,6 +24,42 @@ namespace tft::strategy {
 // A flexible target lineup derived from the current direction and the full
 // champion pool. The direction is an anchor, not a requirement that every slot
 // belong to the same trait.
+
+
+// Composition plans should not oscillate on tiny score changes. A lineup with
+// substantial overlap is a refinement; a materially different lineup must
+// beat the previous plan by a larger margin, especially while the direction is
+// locked. Scores are compared only within this planner's own scoring scale.
+inline bool should_replace_composition_plan(
+    const std::vector<std::int32_t>& previous_ids,
+    const std::vector<std::int32_t>& candidate_ids,
+    double previous_score,
+    double candidate_score,
+    bool composition_locked
+) noexcept {
+    if (candidate_ids.empty()) return false;
+    if (previous_ids.empty()) return true;
+    if (!std::isfinite(previous_score) || !std::isfinite(candidate_score)) return false;
+
+    std::unordered_set<std::int32_t> previous(previous_ids.begin(), previous_ids.end());
+    std::unordered_set<std::int32_t> candidate(candidate_ids.begin(), candidate_ids.end());
+    std::size_t intersection = 0;
+    for (const auto id : previous)
+        if (candidate.count(id) != 0) ++intersection;
+    const std::size_t union_size = previous.size() + candidate.size() - intersection;
+    const double overlap = union_size == 0 ? 1.0
+        : static_cast<double>(intersection) / static_cast<double>(union_size);
+
+    // Small lineup changes are normal as the level or available units change.
+    if (overlap >= 0.65) return true;
+
+    const double relative_margin = std::abs(previous_score) *
+        (composition_locked ? 0.20 : 0.12);
+    const double required_margin = std::max(
+        composition_locked ? 1.0 : 0.50, relative_margin);
+    return candidate_score >= previous_score + required_margin;
+}
+
 struct CompositionPlan {
     std::vector<std::int32_t> unit_ids;
     std::vector<std::string> unit_names;
