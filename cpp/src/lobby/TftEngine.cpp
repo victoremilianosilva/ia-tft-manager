@@ -3631,7 +3631,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             }
             if (success && economy.gold < old_gold) {
                 const double normalized_fit = has_candidate_comp_score
-                    ? std::clamp(candidate_comp_score / 32.5, 0.0, 1.0)
+                    ? std::clamp((lobby.stage <= 2
+                        ? std::max(candidate_comp_score, 2.0)
+                        : candidate_comp_score) / 32.5, 0.0, 1.0)
                     : 0.0;
                 action_reward += reward_model::spending_timing_reward(
                     old_gold, this->info.hp, lobby.stage, normalized_fit,
