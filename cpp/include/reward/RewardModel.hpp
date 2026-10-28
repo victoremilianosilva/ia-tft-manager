@@ -112,7 +112,7 @@ inline double gold_change_reward(int old_gold, int new_gold) noexcept {
 inline double purchase_quality(double fit_delta, bool completes_upgrade) noexcept {
     // Give a useful acquisition a learnable immediate signal. The board-fit
     // delta alone can be near zero when the team is still being assembled.
-    return 0.18 * std::tanh(fit_delta / 5.0) +
+    return 0.22 * std::tanh(fit_delta / 5.0) +
         (completes_upgrade ? 0.20 : 0.0);
 }
 
@@ -123,7 +123,7 @@ inline double purchase_quality(double fit_delta, bool completes_upgrade) noexcep
 inline double purchase_pair_quality(double fit_score) noexcept {
     // A pair is real upgrade progress even before the third copy appears.
     // Keep the baseline meaningful, while favoring units that fit the plan.
-    return 0.28 + 0.12 * std::tanh(std::max(0.0, fit_score) / 5.0);
+    return 0.32 + 0.14 * std::tanh(std::max(0.0, fit_score) / 5.0);
 }
 
 // Reward timely, high-value spending when liquidity is already healthy and
@@ -171,21 +171,58 @@ inline double buy_xp_timing_reward(
     int stage,
     bool leveled_up
 ) noexcept {
+    // XP is not a generic reward for spending. Below 40 gold, only reward it
+    // when health pressure is severe or the action actually levels up.
     if (stage <= 2 && hp >= 60.0) return 0.0;
-    if (gold_before < 20 && hp >= 45.0) return 0.0;
+    if (gold_before < 30 && hp >= 35.0) return 0.0;
+    if (gold_before < 40 && hp >= 45.0 && !leveled_up) return 0.0;
+    if (gold_before < 50 && stage <= 3 && hp >= 50.0 && !leveled_up) return 0.0;
 
     const double liquidity = gold_before >= 50 ? 1.0
-        : (gold_before >= 40 ? 0.75
-        : (gold_before >= 30 ? 0.50 : 0.25));
-    const double health_urgency = std::clamp((60.0 - hp) / 60.0, 0.0, 1.0);
-    const double stage_urgency = std::clamp((static_cast<double>(stage) - 2.0) / 4.0,
+        : (gold_before >= 40 ? 0.70 : (gold_before >= 30 ? 0.40 : 0.20));
+    const double health_urgency = std::clamp((55.0 - hp) / 55.0, 0.0, 1.0);
+    const double stage_urgency = std::clamp((static_cast<double>(stage) - 3.0) / 4.0,
                                             0.0, 1.0);
-    const double hoarding_urgency = gold_before >= 50 ? 0.65
-        : (gold_before >= 40 ? 0.35 : 0.0);
+    const double hoarding_urgency = gold_before >= 50 ? 0.45
+        : (gold_before >= 40 ? 0.20 : 0.0);
     const double urgency = std::max({health_urgency, stage_urgency, hoarding_urgency});
     if (urgency <= 0.0) return 0.0;
-    const double quality = leveled_up ? 1.0 : 0.55;
-    return 0.22 * liquidity * urgency * quality;
+    const double quality = leveled_up ? 1.0 : 0.45;
+    // Hard cap: buying units/pairs should remain more attractive than repeated XP.
+    return std::min(0.10, 0.10 * liquidity * urgency * quality);
+}
+
+// Small additional signal for useful unit acquisitions beyond the early game.
+// Requires real composition fit or upgrade progress, available bench space and
+// enough remaining gold, so this cannot reward arbitrary shop-clearing.
+inline double unit_purchase_timing_reward(
+    int stage,
+    int gold_before,
+    int cost,
+    int bench_count,
+    double normalized_fit,
+    double hp,
+    bool completes_upgrade,
+    bool builds_pair
+) noexcept {
+    if (stage < 3 || cost <= 0 || gold_before < cost ||
+        bench_count >= 7 || gold_before - cost < 15) return 0.0;
+
+    const double fit = std::clamp(normalized_fit, 0.0, 1.0);
+    if (!completes_upgrade && !builds_pair && fit < 0.35) return 0.0;
+
+    const double liquidity = gold_before >= 50 ? 1.0
+        : (gold_before >= 40 ? 0.70 : (gold_before >= 30 ? 0.35 : 0.0));
+    const double urgency = std::max(
+        gold_before >= 50 ? 0.65 : (gold_before >= 40 ? 0.30 : 0.0),
+        std::clamp((50.0 - hp) / 50.0, 0.0, 1.0));
+    if (liquidity <= 0.0 || urgency <= 0.0) return 0.0;
+
+    const double quality = (completes_upgrade || builds_pair)
+        ? 1.0 : fit;
+    const double bench_capacity = bench_count <= 3 ? 1.0
+        : (bench_count <= 5 ? 0.75 : 0.40);
+    return std::min(0.08, 0.08 * liquidity * urgency * quality * bench_capacity);
 }
 
 // Early-game acquisition shaping: prefer filling useful pairs and building a
