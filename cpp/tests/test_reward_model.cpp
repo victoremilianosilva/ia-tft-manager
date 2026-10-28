@@ -169,6 +169,11 @@ int main() {
     }
     require_close(buy_xp_timing_reward(25, 80.0, 5, false), 0.0,
                   "do not reward XP spending with low gold and safe health");
+    require_close(buy_xp_timing_reward(40, 30.0, 5, false), 0.0,
+                  "non-leveling XP below the interest cap must not receive a reward");
+    if (!(buy_xp_timing_reward(25, 30.0, 5, true) > 0.0)) {
+        throw std::runtime_error("an urgent level-up may be rewarded even below the interest cap");
+    }
     require_close(buy_xp_timing_reward(10, 100.0, 2, false), 0.0,
                   "do not encourage early XP spending when economy and health are safe");
     if (!(buy_xp_timing_reward(50, 20.0, 5, true) <= 0.10)) {
