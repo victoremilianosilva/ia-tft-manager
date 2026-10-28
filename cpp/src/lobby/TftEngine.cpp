@@ -304,9 +304,19 @@ bool should_buy_unit(
     double impact, double upgrade_value, bool in_top_trait,
     int bench_count, int stage, int cost
 ) {
-    if (impact < -0.8 && upgrade_value == 0.0) return false;
+    // Early composition direction is still provisional. Avoid letting a
+    // conservative comp-fit estimate suppress cheap pieces and pair progress.
+    if (impact < (stage <= 2 ? -1.8 : -0.8) && upgrade_value == 0.0 &&
+        !(stage <= 2 && bench_count <= 5 && cost <= 2)) return false;
+    if (stage <= 2) {
+        if (bench_count <= 5)
+            return impact >= -1.0 || upgrade_value > 0.0 || in_top_trait || cost <= 2;
+        if (bench_count <= 7)
+            return upgrade_value > 0.0 || impact > -0.1 ||
+                (cost <= 2 && impact > -1.0);
+        return upgrade_value >= 0.6 || (upgrade_value >= 0.2 && in_top_trait);
+    }
     if (bench_count <= 4) {
-        if (stage <= 2) return impact >= 0.0 || upgrade_value > 0.0 || in_top_trait;
         return upgrade_value > 0.0 || impact > 0.3 || in_top_trait;
     }
     if (bench_count <= 6) {
@@ -3602,7 +3612,13 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 // Bench acquisitions are valuable even if their raw score is below
                 // the current board average. Blend absolute plan fit with marginal
                 // board fit instead of making board-relative delta the only signal.
-                const double acquisition_value = 0.65 * candidate_comp_score +
+                // Early comp plans can be incomplete or overconfident. Keep
+                // a modest positive floor for an affordable bench acquisition
+                // instead of letting the current direction erase its value.
+                const double effective_candidate_score = lobby.stage <= 2
+                    ? std::max(candidate_comp_score, 2.0)
+                    : candidate_comp_score;
+                const double acquisition_value = 0.65 * effective_candidate_score +
                     0.35 * composition_quality_delta;
                 action_reward += reward_model::purchase_quality(
                     acquisition_value, false);
@@ -3620,6 +3636,13 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 action_reward += reward_model::spending_timing_reward(
                     old_gold, this->info.hp, lobby.stage, normalized_fit,
                     buy_completes_upgrade, false);
+                const auto* bought_definition = offer
+                    ? lobby.catalog->find_by_id(offer->champion_internal_id) : nullptr;
+                const int purchase_cost = bought_definition
+                    ? bought_definition->cost : (old_gold - economy.gold);
+                action_reward += reward_model::early_purchase_reward(
+                    lobby.stage, old_gold, purchase_cost, old_bench_count,
+                    normalized_fit, buy_completes_upgrade, buy_builds_pair);
             }
         } else if (type == 1) {
             success = economy.gold == old_gold - EconomyEngine::REROLL_COST;
@@ -3636,16 +3659,23 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             }
         } else if (type == 2) {
             success = economy.gold == old_gold - EconomyEngine::BUY_XP_COST;
-            action_reward = success ? 0.02 : -0.10;
+            // Do not give a positive reward merely for spending on XP. Early
+            // levels are less valuable than building a playable board and pairs.
+            action_reward = success ? (lobby.stage <= 2 ? -0.03 : 0.0) : -0.10;
             // RewardManager tracks the last rewarded level, initialized to 1,
             // not merely the level at the start of this action.
             if (success && economy.level > old_level &&
                 economy.level > this->previous_reward_level) {
-                action_reward += reward_model::level(
+                const double level_scale = lobby.stage <= 2 ? 0.25 : 0.65;
+                action_reward += level_scale * reward_model::level(
                     economy.level, this->previous_reward_level);
                 this->previous_reward_level = economy.level;
-                action_reward += reward_model::spending_timing_reward(
-                    old_gold, this->info.hp, lobby.stage, 0.0, false, true);
+                // Early XP should not receive the rich-spending bonus unless
+                // the player is already under meaningful health pressure.
+                if (lobby.stage > 2 || this->info.hp < 60.0) {
+                    action_reward += reward_model::spending_timing_reward(
+                        old_gold, this->info.hp, lobby.stage, 0.0, false, true);
+                }
             }
             (void)old_level;
             (void)old_xp;
