@@ -3764,7 +3764,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         if (unit && unit->champion_internal_id == offer->champion_internal_id)
                             copies += star_copies(unit->star);
                     const bool completes_upgrade = copies == 2 && offer->star == 1;
-                    if (completes_upgrade || normalized_fit >= 0.45) {
+                    const bool builds_pair = copies == 1 && offer->star == 1;
+                    // Passing should recognize pair progress and moderately
+                    // compatible acquisitions, not only near-perfect comp fits.
+                    if (completes_upgrade || builds_pair || normalized_fit >= 0.30) {
                         useful_purchase_available = true;
                         break;
                     }
