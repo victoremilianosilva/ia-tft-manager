@@ -3052,8 +3052,19 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             return std::find(strategy_before.core_traits.begin(),
                                 strategy_before.core_traits.end(), trait) != strategy_before.core_traits.end();
                         });
+                    // A unit explicitly selected by the current plan (including
+                    // an OP.GG-derived plan) is strategically relevant even when
+                    // it does not share the single anchor trait.
+                    const bool in_planned_comp =
+                        std::find(strategy_before.core_unit_ids.begin(),
+                            strategy_before.core_unit_ids.end(), def->internal_id) !=
+                                strategy_before.core_unit_ids.end() ||
+                        std::find(strategy_before.planned_unit_ids.begin(),
+                            strategy_before.planned_unit_ids.end(), def->internal_id) !=
+                                strategy_before.planned_unit_ids.end();
                     buy_strategy_approved = should_buy_unit(candidate_board_impact, upgrade_value,
-                        in_top_trait, old_bench_count, static_cast<int>(stage_for_round(lobby.round + 1)), def->cost);
+                        in_top_trait || in_planned_comp, old_bench_count,
+                        static_cast<int>(stage_for_round(lobby.round + 1)), def->cost);
                     // A second matching copy is valuable future upgrade potential,
                     // but only reward it when it also fits the current comp.
                     const bool composition_fit =
@@ -3625,8 +3636,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     lobby.stage <= 2 && early_purchase_has_progress
                         ? std::max(candidate_comp_score, 2.0)
                         : candidate_comp_score;
-                const double acquisition_value = 0.65 * effective_candidate_score +
-                    0.35 * composition_quality_delta;
+                const double acquisition_value = 0.75 * effective_candidate_score +
+                    0.25 * composition_quality_delta;
                 action_reward += reward_model::purchase_quality(
                     acquisition_value, false);
             }
