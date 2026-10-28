@@ -3058,7 +3058,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     // but only reward it when it also fits the current comp.
                     const bool composition_fit =
                         candidate_comp_score > 0.0 ||
-                        strategy_before.composition_direction.empty();
+                        strategy_before.composition_direction.empty() ||
+                        lobby.stage <= 2;
                     // A pair has future upgrade value even when the current
                     // board-impact heuristic is conservative. Do not gate this
                     // learning signal on buy_strategy_approved.
