@@ -422,9 +422,10 @@ struct TFTEngine::Impl {
     bool done{false};
     bool closed{false};
 
-    // No treinamento, cada jogador recebe 10 ações por rodada; PASS também conta como ação.
+    // No treinamento, cada jogador recebe 15 ações por rodada; PASS também conta como ação.
+    // São cinco ações adicionais para permitir mais compras, XP, rerolls e gestão de itens.
     // O viewer usa o temporizador de parede e não aplica este limite de ações.
-    static constexpr std::uint32_t kMaxActionsPerRound = 10;
+    static constexpr std::uint32_t kMaxActionsPerRound = 15;
     std::array<std::uint32_t, kPlayersPerLobby> round_actions{};
     std::array<bool, kPlayersPerLobby> round_finished{};
 
