@@ -425,13 +425,36 @@ class PlayerCard(QFrame):
         self.style().unpolish(self)
         self.style().polish(self)
 
-    def update_player(self, player, audit, action, icon_loader, finished=False):
-        self.status.setText("ELIMINADO" if player.get("eliminated") or not player.get("alive", True) else ("FINALIZADO" if finished else "VIVO"))
+    def update_player(self, player, audit, action, icon_loader, finished=False, winner_id=None):
+        placement = player.get("placement")
+        try:
+            is_winner = winner_id is not None and int(winner_id) == self.player_id
+        except (TypeError, ValueError):
+            is_winner = False
+        if is_winner or (placement is not None and str(placement) == "1"):
+            status_text = "VENCEU"
+        elif placement is not None:
+            status_text = f"#{placement}"
+        elif player.get("eliminated") or not player.get("alive", True):
+            status_text = "ELIMINADO"
+        elif finished:
+            status_text = "FINALIZADO · RESULTADO NÃO INFORMADO"
+        else:
+            status_text = "VIVO"
+        self.status.setText(status_text)
         hp = _value(player, "hp", default="?")
         gold = _value(player, "gold", default="?")
         level = _value(player, "level", default="?")
         xp = _value(player, "xp", default="?")
-        self.metrics.setText(f"HP {hp}   OURO {gold}   NV {level}   XP {xp}")
+        wins = player.get("wins")
+        losses = player.get("losses")
+        placement_text = f"#{placement}" if placement is not None else "—"
+        wins_text = wins if wins is not None else "—"
+        losses_text = losses if losses is not None else "—"
+        self.metrics.setText(
+            f"HP {hp}   OURO {gold}   NV {level}   XP {xp}\n"
+            f"COLOCAÇÃO {placement_text}   VITÓRIAS {wins_text}   DERROTAS {losses_text}"
+        )
         strategy = audit.get("strategy_info") or {}
         strategy_name = strategy.get("strategy_name") or "ECON"
         self.strategy_line.setText(
@@ -1294,7 +1317,8 @@ class ViewerWindow(QMainWindow):
         for i, card in enumerate(self.cards):
             card.update_player(
                 by_id.get(i, {}), audit_by_id.get(i, {}), self.session.last_actions[i],
-                self.icon_loader, self.session.finished
+                self.icon_loader, self.session.finished,
+                self.session.public_state.get("winner_id")
             )
             card.set_selected(i == self.selected_player)
         self.round_label.setText(
