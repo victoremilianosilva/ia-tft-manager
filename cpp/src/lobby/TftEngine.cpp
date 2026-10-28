@@ -3639,10 +3639,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 action_reward += reward_model::spending_timing_reward(
                     old_gold, this->info.hp, lobby.stage, normalized_fit,
                     buy_completes_upgrade, false);
-                const auto* bought_definition = offer
-                    ? lobby.catalog->find_by_id(offer->champion_internal_id) : nullptr;
-                const int purchase_cost = bought_definition
-                    ? bought_definition->cost : (old_gold - economy.gold);
+                // The offer is scoped to the execution branch above; the
+                // actual gold delta is the authoritative purchase cost here.
+                const int purchase_cost = old_gold - economy.gold;
                 action_reward += reward_model::early_purchase_reward(
                     lobby.stage, old_gold, purchase_cost, old_bench_count,
                     normalized_fit, buy_completes_upgrade, buy_builds_pair);
