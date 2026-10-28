@@ -677,16 +677,26 @@ public:
                         const auto& selected = deck.is_object() && deck.value("totalCount", 0) >= 1000
                             ? deck : label;
                         if (selected.is_object() && selected.value("totalCount", 0) >= 1000)
-                            stats_prior = std::clamp(selected.value("top4Rate", 0.0), 0.0, 1.0) * 0.5;
+                            // Meta performance is a meaningful prior, not a
+                            // hard override. The former 0.5 multiplier was too
+                            // weak to distinguish a strong published comp.
+                            stats_prior = std::clamp(selected.value("top4Rate", 0.0), 0.0, 1.0) * 1.0;
                     }
                     // Compare meta and native lineups with the same base scorer.
                     // Core/stage bonuses used to be added only to meta, making the
                     // +1.0 margin incomparable and systematically favoring OP.GG.
-                    const double bounded_meta_prior = std::min(0.50,
-                        0.15 * static_cast<double>(owned_core_count) +
-                        0.10 * static_cast<double>(stage_owned_count));
+                    // A meta comp is a forward plan, so units not yet owned
+                    // still have target value. Add a bounded future-acquisition
+                    // prior while giving extra weight to owned core/stage units.
+                    const double future_target_bonus = std::min(3.5,
+                        0.45 * static_cast<double>(final_ids.size() -
+                            static_cast<std::size_t>(owned_final_count)));
+                    const double bounded_meta_prior = std::min(1.75,
+                        0.55 * static_cast<double>(owned_core_count) +
+                        0.25 * static_cast<double>(stage_owned_count));
                     const double score = lineup_score(final_ids, no_core, no_stage_units, stats_prior)
-                        + bounded_meta_prior + std::min(0.25, stage_snapshot_bonus * 0.10)
+                        + future_target_bonus + bounded_meta_prior
+                        + std::min(0.75, stage_snapshot_bonus * 0.20)
                         + std::min(0.35, item_fit_bonus)
                         + std::min(0.15, position_fit_bonus);
                     if (score > best_meta_score) {
@@ -714,7 +724,14 @@ public:
 
                 // Require a real contextual advantage over the native planner.
                 // This prevents popularity alone from overriding a good own plan.
-                if (!best_meta_ids.empty() && best_meta_score >= own_score + 1.0) {
+                // Without live item/position evidence, demand a larger
+                // score gap. Otherwise the new future-target prior can override
+                // the native plan even when the meta lineup has no actionable
+                // item or positioning advantage.
+                const double required_meta_margin =
+                    meta_audit_best_item_position_bonus > 0.0 ? 0.50 : 3.0;
+                if (!best_meta_ids.empty() &&
+                    best_meta_score >= own_score + required_meta_margin) {
                     meta_audit_status = "selected";
                     const auto native_ids = plan.unit_ids;
                     plan.unit_ids.clear();
