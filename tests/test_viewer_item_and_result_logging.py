@@ -13,6 +13,7 @@ def test_final_report_marks_winner_from_engine_winner_id():
         2, {"winner_id": 2}, {"placement": 1, "hp": 15, "gold": 3, "level": 8, "wins": 4, "losses": 2}
     )
     assert "VITÓRIA" in text
+    assert "VENCEDOR DA PARTIDA: JOGADOR 3" in text
     assert "HP final: 15" in text
 
 
