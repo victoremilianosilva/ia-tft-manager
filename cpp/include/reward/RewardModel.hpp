@@ -110,8 +110,10 @@ inline double gold_change_reward(int old_gold, int new_gold) noexcept {
 // the fact that a shop action succeeded. Completing an upgrade is a separate
 // strategic signal because its value is not fully represented by cost/role.
 inline double purchase_quality(double fit_delta, bool completes_upgrade) noexcept {
-    return 0.10 * std::tanh(fit_delta / 5.0) +
-        (completes_upgrade ? 0.12 : 0.0);
+    // Give a useful acquisition a learnable immediate signal. The board-fit
+    // delta alone can be near zero when the team is still being assembled.
+    return 0.18 * std::tanh(fit_delta / 5.0) +
+        (completes_upgrade ? 0.20 : 0.0);
 }
 
 // Composition-aware value for acquiring the second matching 1-star copy.
@@ -119,9 +121,9 @@ inline double purchase_quality(double fit_delta, bool completes_upgrade) noexcep
 // produce a 2-star unit. Keep fit as a multiplier, not a gate, so useful pairs
 // are not ignored just because the current board is temporarily weak.
 inline double purchase_pair_quality(double fit_score) noexcept {
-    // A pair is meaningful progress, but not enough to justify buying every
-    // duplicate regardless of composition. The fit multiplier remains bounded.
-    return 0.22 + 0.08 * std::tanh(std::max(0.0, fit_score) / 5.0);
+    // A pair is real upgrade progress even before the third copy appears.
+    // Keep the baseline meaningful, while favoring units that fit the plan.
+    return 0.28 + 0.12 * std::tanh(std::max(0.0, fit_score) / 5.0);
 }
 
 // Reward timely, high-value spending when liquidity is already healthy and
@@ -136,22 +138,26 @@ inline double spending_timing_reward(
     bool completes_upgrade,
     bool leveled_up
 ) noexcept {
-    if (gold_before < 30 || (!completes_upgrade && !leveled_up &&
-        normalized_fit < 0.45)) {
+    if (gold_before < 20 || (!completes_upgrade && !leveled_up &&
+        normalized_fit < 0.35)) {
         return 0.0;
     }
 
+    // Spending becomes increasingly attractive once the 50-gold interest cap
+    // is reached, but there is still a small signal for good early purchases.
     const double liquidity = gold_before >= 50 ? 1.0
-        : (gold_before >= 40 ? 0.5 : 0.0);
-    const double health_urgency = std::clamp((45.0 - hp) / 45.0, 0.0, 1.0);
-    const double stage_urgency = std::clamp((static_cast<double>(stage) - 3.0) / 5.0,
+        : (gold_before >= 40 ? 0.75
+        : (gold_before >= 30 ? 0.50 : 0.25));
+    const double health_urgency = std::clamp((55.0 - hp) / 55.0, 0.0, 1.0);
+    const double stage_urgency = std::clamp((static_cast<double>(stage) - 2.0) / 4.0,
                                             0.0, 1.0);
-    const double urgency = std::max(health_urgency, stage_urgency);
+    const double baseline_urgency = gold_before >= 50 ? 0.25 : 0.0;
+    const double urgency = std::max({health_urgency, stage_urgency, baseline_urgency});
     if (liquidity <= 0.0 || urgency <= 0.0) return 0.0;
 
     const double quality = (completes_upgrade || leveled_up)
         ? 1.0 : std::clamp(normalized_fit, 0.0, 1.0);
-    return 0.18 * liquidity * urgency * quality;
+    return 0.24 * liquidity * urgency * quality;
 }
 
 // Small opportunity-cost signal for passing while rich and under pressure,
@@ -170,15 +176,17 @@ inline double pass_opportunity_penalty(
     int stage,
     bool useful_purchase_available
 ) noexcept {
-    if (!useful_purchase_available || gold < 30 ||
-        (hp > 35.0 && stage < 5)) {
-        return 0.0;
-    }
-    const double liquidity = gold >= 50 ? 1.0 : 0.5;
-    const double urgency = std::max(
-        std::clamp((35.0 - hp) / 35.0, 0.0, 1.0),
-        std::clamp((static_cast<double>(stage) - 4.0) / 4.0, 0.0, 1.0));
-    return -0.12 * liquidity * urgency;
+    if (!useful_purchase_available || gold < 20) return 0.0;
+    const double liquidity = gold >= 50 ? 1.0
+        : (gold >= 40 ? 0.75 : (gold >= 30 ? 0.50 : 0.25));
+    const double health_urgency = std::clamp((50.0 - hp) / 50.0, 0.0, 1.0);
+    const double stage_urgency = std::clamp((static_cast<double>(stage) - 2.0) / 4.0,
+                                            0.0, 1.0);
+    // A rich player should not pass indefinitely in early rounds when a useful
+    // unit is available; preserve saving only when there is no good opportunity.
+    const double baseline_urgency = gold >= 50 ? 0.25 : 0.0;
+    const double urgency = std::max({health_urgency, stage_urgency, baseline_urgency});
+    return -0.20 * liquidity * urgency;
 }
 
 // A low-fit purchase sold almost immediately is usually a wasted buy.
@@ -293,9 +301,18 @@ inline double item_assignment_quality(
     const double immediate_weight = 1.0 - composition_weight;
     const double long_term_value = 0.70 * fit + 0.30 * role;
     return std::clamp(
-        0.20 * (immediate_weight * immediate +
-                composition_weight * long_term_value - 0.25),
-        -0.05, 0.15);
+        0.28 * (immediate_weight * immediate +
+                composition_weight * long_term_value - 0.15),
+        -0.03, 0.20);
+}
+
+// Crafting consumes two components and produces a completed item. Add only a
+// small bonus when the resulting item has positive value for its recipient;
+// the policy must still learn which item/target is best.
+inline double item_crafting_bonus(double assignment_quality) noexcept {
+    return assignment_quality > 0.0
+        ? std::min(0.08, assignment_quality * 0.40)
+        : 0.0;
 }
 
 inline double clamp_total(double total) noexcept {
