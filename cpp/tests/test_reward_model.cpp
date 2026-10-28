@@ -63,7 +63,7 @@ int main() {
     require_close(gold_potential(10), 0.10, "interest breakpoint potential");
     require_close(gold_change_reward(10, 9), -0.082, "spending below interest breakpoint");
     require_close(gold_change_reward(9, 10), 0.082, "saving to interest breakpoint");
-    require_close(movement_no_progress_penalty(0.0, 0.0, 0.0), -0.05,
+    require_close(movement_no_progress_penalty(0.0, 0.0, 0.0), -0.10,
                   "no-progress movement baseline penalty");
     if (!(movement_no_progress_penalty(0.0, -2.0, -1.0) <
           movement_no_progress_penalty(0.0, 0.0, 0.0))) {
@@ -150,6 +150,15 @@ int main() {
     if (!(spending_timing_reward(20, 10.0, 7, 1.0, true, false) > 0.0)) {
         throw std::runtime_error("an urgent upgrade should still be rewarded with low liquidity");
     }
+    if (!(buy_xp_timing_reward(125, 80.0, 5, false) > 0.0)) {
+        throw std::runtime_error("buying XP with a large gold reserve in mid-game should be rewarded even without an immediate level-up");
+    }
+    if (!(buy_xp_timing_reward(50, 35.0, 5, false) >
+          buy_xp_timing_reward(20, 80.0, 2, false))) {
+        throw std::runtime_error("timely XP spending under pressure should outweigh saving with no urgency");
+    }
+    require_close(buy_xp_timing_reward(10, 100.0, 2, false), 0.0,
+                  "do not encourage early XP spending when economy and health are safe");
     if (!(pass_opportunity_penalty(50, 100.0, 2, true) < 0.0)) {
         throw std::runtime_error("passing indefinitely at the interest cap with a useful offer should be discouraged");
     }
