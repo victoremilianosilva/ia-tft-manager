@@ -60,9 +60,17 @@ def _composition_status_text(strategy):
     direction = strategy.get("composition_direction") or "—"
     focus = strategy.get("composition_focus") or "—"
     weights = _composition_focus_weights_text(strategy)
+    notes = strategy.get("planned_acquisition_notes") or []
+    opgg_note = next(
+        (str(note).split("OPGG_META_CANDIDATE:", 1)[1].split(" (score=", 1)[0].strip()
+         for note in notes if str(note).startswith("OPGG_META_CANDIDATE:")),
+        "",
+    )
+    composition_source = f"OP.GG — {opgg_note}" if opgg_note else "Nativa (não selecionada do OP.GG)"
     return (
         f"Comp direction: {direction} | Lock: {lock_text} | "
-        f"Strength: {strength:.2f} | Focus: {focus} | Focus weights: {weights}"
+        f"Strength: {strength:.2f} | Focus: {focus} | Focus weights: {weights} | "
+        f"Fonte da composição: {composition_source}"
     )
 
 
