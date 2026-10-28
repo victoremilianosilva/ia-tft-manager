@@ -990,8 +990,11 @@ class PlayerJsonLogWriter:
                 "after": item_after,
                 "changed": item_before != item_after,
             }
-            was_alive = before_state.get("alive") is True and not before_state.get("eliminated")
-            is_eliminated = after_state.get("eliminated") is True or after_state.get("alive") is False
+            was_alive = bool(before_state.get("alive")) and not bool(before_state.get("eliminated"))
+            after_alive = after_state.get("alive")
+            is_eliminated = bool(after_state.get("eliminated")) or (
+                after_alive is not None and not bool(after_alive)
+            )
             if was_alive and is_eliminated:
                 placement = after_state.get("placement")
                 placement_text = (
