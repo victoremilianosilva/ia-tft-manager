@@ -1005,7 +1005,7 @@ class PlayerJsonLogWriter:
                     player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
                     round_number=round_number, stage=stage, round_in_stage=round_in_stage,
                     event_type="player_eliminated",
-                    text=f"[{timestamp}] ELIMINADO · {placement_text} · HP {after_state.get('hp', '?')}\\n",
+                    text=f"[{timestamp}] ELIMINADO · {placement_text} · HP {after_state.get('hp', '?')}\n",
                     tag="round_msg",
                     data={"placement": placement, "hp": after_state.get("hp"),
                           "alive_before": before_state.get("alive"), "alive_after": after_state.get("alive"),
@@ -1164,7 +1164,7 @@ class PlayerJsonLogWriter:
                         "    ITEM AUDIT: "
                         f"componentes {item_before['components']} -> {item_after['components']} | "
                         f"bag {item_before['inventory']} -> {item_after['inventory']} | "
-                        f"equipados {item_before['equipped']} -> {item_after['equipped']}\\n"
+                        f"equipados {item_before['equipped']} -> {item_after['equipped']}\n"
                     )
                 self._append_entry(
                     player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
@@ -1243,8 +1243,8 @@ class PlayerJsonLogWriter:
             except (TypeError, ValueError):
                 winner_label = str(winner_id)
         return (
-            f"  VENCEDOR DA PARTIDA: {winner_label}\\n"
-            f"  {result}\\n"
+            f"  VENCEDOR DA PARTIDA: {winner_label}\n"
+            f"  {result}\n"
             f"  HP final: {player_state.get('hp', '?')} | Ouro final: {player_state.get('gold', '?')} | "
             f"Nível: {player_state.get('level', '?')}\n"
             f"  Vitórias: {wins if wins is not None else '?'} | Derrotas: {losses if losses is not None else '?'}\n"
