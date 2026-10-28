@@ -3616,9 +3616,15 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 // Early comp plans can be incomplete or overconfident. Keep
                 // a modest positive floor for an affordable bench acquisition
                 // instead of letting the current direction erase its value.
-                const double effective_candidate_score = lobby.stage <= 2
-                    ? std::max(candidate_comp_score, 2.0)
-                    : candidate_comp_score;
+                // The early-game floor is for actual upgrade/pair progress.
+                // Do not manufacture fit for arbitrary cheap units: that made
+                // buy-then-sell loops more rewarding than the reversal penalty.
+                const bool early_purchase_has_progress =
+                    buy_completes_upgrade || buy_builds_pair;
+                const double effective_candidate_score =
+                    lobby.stage <= 2 && early_purchase_has_progress
+                        ? std::max(candidate_comp_score, 2.0)
+                        : candidate_comp_score;
                 const double acquisition_value = 0.65 * effective_candidate_score +
                     0.35 * composition_quality_delta;
                 action_reward += reward_model::purchase_quality(
@@ -3632,9 +3638,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             }
             if (success && economy.gold < old_gold) {
                 const double normalized_fit = has_candidate_comp_score
-                    ? std::clamp((lobby.stage <= 2
-                        ? std::max(candidate_comp_score, 2.0)
-                        : candidate_comp_score) / 32.5, 0.0, 1.0)
+                    ? std::clamp((lobby.stage <= 2 &&
+                        (buy_completes_upgrade || buy_builds_pair)
+                            ? std::max(candidate_comp_score, 2.0)
+                            : candidate_comp_score) / 32.5, 0.0, 1.0)
                     : 0.0;
                 action_reward += reward_model::spending_timing_reward(
                     old_gold, this->info.hp, lobby.stage, normalized_fit,
