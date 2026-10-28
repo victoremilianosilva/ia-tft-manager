@@ -529,7 +529,11 @@ public:
                 std::unordered_set<std::int32_t> no_core;
                 std::unordered_set<std::int32_t> no_stage_units;
                 const double own_score = lineup_score(plan.unit_ids, no_core, no_stage_units, 0.0);
-                meta_audit_native_score = own_score;
+                // The native lineup is a useful fallback, but it was systematically
+                // winning because its score was compared at full scale while meta
+                // candidates also paid the cost of being a future target.
+                const double native_comparison_score = own_score * 0.80;
+                meta_audit_native_score = native_comparison_score;
                 double best_meta_score = -std::numeric_limits<double>::infinity();
                 std::vector<std::int32_t> best_meta_ids;
                 std::vector<std::int32_t> best_meta_stage_ids;
@@ -680,7 +684,7 @@ public:
                             // Meta performance is a meaningful prior, not a
                             // hard override. The former 0.5 multiplier was too
                             // weak to distinguish a strong published comp.
-                            stats_prior = std::clamp(selected.value("top4Rate", 0.0), 0.0, 1.0) * 1.0;
+                            stats_prior = std::clamp(selected.value("top4Rate", 0.0), 0.0, 1.0) * 2.0;
                     }
                     // Compare meta and native lineups with the same base scorer.
                     // Core/stage bonuses used to be added only to meta, making the
@@ -694,7 +698,7 @@ public:
                     const double bounded_meta_prior = std::min(1.75,
                         0.55 * static_cast<double>(owned_core_count) +
                         0.25 * static_cast<double>(stage_owned_count));
-                    const double score = lineup_score(final_ids, no_core, no_stage_units, stats_prior)
+                    const double score = 1.20 * lineup_score(final_ids, no_core, no_stage_units, stats_prior)
                         + future_target_bonus + bounded_meta_prior
                         + std::min(0.75, stage_snapshot_bonus * 0.20)
                         + std::min(0.35, item_fit_bonus)
@@ -723,15 +727,15 @@ public:
                 }
 
                 // Require a real contextual advantage over the native planner.
-                // This prevents popularity alone from overriding a good own plan.
-                // Without live item/position evidence, demand a larger
-                // score gap. Otherwise the new future-target prior can override
-                // the native plan even when the meta lineup has no actionable
-                // item or positioning advantage.
+                // Meta performance is an explicit strategic prior. Require a mapped,
+                // set-compatible lineup and contextual evidence (checked above),
+                // but don't let the native score's scale make OP.GG irrelevant.
+                // Item/position evidence improves the score; it is not required
+                // when the catalog and current game already support the comp.
                 const double required_meta_margin =
-                    meta_audit_best_item_position_bonus > 0.0 ? 0.50 : 3.0;
+                    meta_audit_best_item_position_bonus > 0.0 ? 0.25 : 0.50;
                 if (!best_meta_ids.empty() &&
-                    best_meta_score >= own_score + required_meta_margin) {
+                    best_meta_score >= native_comparison_score + required_meta_margin) {
                     meta_audit_status = "selected";
                     const auto native_ids = plan.unit_ids;
                     plan.unit_ids.clear();
@@ -811,7 +815,7 @@ public:
             "; best=" + (meta_audit_best_name.empty() ? std::string("none") : meta_audit_best_name) +
             "; best_score=" + (std::isfinite(meta_audit_best_score) ? std::to_string(meta_audit_best_score) : std::string("n/a")) +
             "; native_score=" + std::to_string(meta_audit_native_score) +
-            "; rule=meta must beat native score by >=1.0");
+            "; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50");
         return plan;
     }
 };

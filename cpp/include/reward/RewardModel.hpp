@@ -112,7 +112,7 @@ inline double gold_change_reward(int old_gold, int new_gold) noexcept {
 inline double purchase_quality(double fit_delta, bool completes_upgrade) noexcept {
     // Give a useful acquisition a learnable immediate signal. The board-fit
     // delta alone can be near zero when the team is still being assembled.
-    return 0.18 * std::tanh(fit_delta / 5.0) +
+    return 0.22 * std::tanh(fit_delta / 5.0) +
         (completes_upgrade ? 0.20 : 0.0);
 }
 
@@ -123,7 +123,7 @@ inline double purchase_quality(double fit_delta, bool completes_upgrade) noexcep
 inline double purchase_pair_quality(double fit_score) noexcept {
     // A pair is real upgrade progress even before the third copy appears.
     // Keep the baseline meaningful, while favoring units that fit the plan.
-    return 0.28 + 0.12 * std::tanh(std::max(0.0, fit_score) / 5.0);
+    return 0.32 + 0.14 * std::tanh(std::max(0.0, fit_score) / 5.0);
 }
 
 // Reward timely, high-value spending when liquidity is already healthy and
@@ -158,6 +158,71 @@ inline double spending_timing_reward(
     const double quality = (completes_upgrade || leveled_up)
         ? 1.0 : std::clamp(normalized_fit, 0.0, 1.0);
     return 0.24 * liquidity * urgency * quality;
+}
+
+// Reward buying XP when it is strategically timely, including purchases that
+// do not immediately cross a level boundary. This prevents the agent from
+// hoarding a large bank until the end of the match. Early XP remains discouraged
+// unless the player is under pressure; the strongest signal requires high gold
+// or a level-up.
+inline double buy_xp_timing_reward(
+    int gold_before,
+    double hp,
+    int stage,
+    bool leveled_up
+) noexcept {
+    // XP is not a generic reward for spending. Non-leveling XP gets only a
+    // tiny signal while the player is at the 50-gold cap; once spending drops
+    // below that cap, stop rewarding consecutive XP buys. Actual level-ups can
+    // still be rewarded with less gold when they are strategically urgent.
+    if (stage <= 2 && hp >= 60.0) return 0.0;
+    if (!leveled_up && gold_before < 50) return 0.0;
+    if (leveled_up && gold_before < 30 && hp >= 35.0) return 0.0;
+
+    const double liquidity = gold_before >= 50 ? 1.0
+        : (gold_before >= 40 ? 0.70 : (gold_before >= 30 ? 0.40 : 0.20));
+    const double health_urgency = std::clamp((55.0 - hp) / 55.0, 0.0, 1.0);
+    const double stage_urgency = std::clamp((static_cast<double>(stage) - 3.0) / 4.0,
+                                            0.0, 1.0);
+    const double hoarding_urgency = gold_before >= 50 ? 0.45 : 0.0;
+    const double urgency = std::max({health_urgency, stage_urgency, hoarding_urgency});
+    if (urgency <= 0.0) return 0.0;
+    const double quality = leveled_up ? 1.0 : 0.20;
+    // Level-up reward is capped; intermediate XP buys cannot farm large returns.
+    return std::min(0.10, 0.10 * liquidity * urgency * quality);
+}
+
+// Small additional signal for useful unit acquisitions beyond the early game.
+// Requires real composition fit or upgrade progress, available bench space and
+// enough remaining gold, so this cannot reward arbitrary shop-clearing.
+inline double unit_purchase_timing_reward(
+    int stage,
+    int gold_before,
+    int cost,
+    int bench_count,
+    double normalized_fit,
+    double hp,
+    bool completes_upgrade,
+    bool builds_pair
+) noexcept {
+    if (stage < 3 || cost <= 0 || gold_before < cost ||
+        bench_count >= 7 || gold_before - cost < 15) return 0.0;
+
+    const double fit = std::clamp(normalized_fit, 0.0, 1.0);
+    if (!completes_upgrade && !builds_pair && fit < 0.35) return 0.0;
+
+    const double liquidity = gold_before >= 50 ? 1.0
+        : (gold_before >= 40 ? 0.70 : (gold_before >= 30 ? 0.35 : 0.0));
+    const double urgency = std::max(
+        gold_before >= 50 ? 0.65 : (gold_before >= 40 ? 0.30 : 0.0),
+        std::clamp((50.0 - hp) / 50.0, 0.0, 1.0));
+    if (liquidity <= 0.0 || urgency <= 0.0) return 0.0;
+
+    const double quality = (completes_upgrade || builds_pair)
+        ? 1.0 : fit;
+    const double bench_capacity = bench_count <= 3 ? 1.0
+        : (bench_count <= 5 ? 0.75 : 0.40);
+    return std::min(0.08, 0.08 * liquidity * urgency * quality * bench_capacity);
 }
 
 // Early-game acquisition shaping: prefer filling useful pairs and building a
@@ -269,10 +334,14 @@ inline double movement_no_progress_penalty(
     double synergy_delta,
     double positioning_delta
 ) noexcept {
-    return -0.05
-        - 0.10 * std::tanh(std::max(0.0, -composition_delta) / 5.0)
-        - 0.10 * std::tanh(std::max(0.0, -synergy_delta))
-        - 0.05 * std::tanh(std::max(0.0, -positioning_delta));
+    // A move that changes the slot but does not improve any strategic metric
+    // should be less attractive than buying/deploying a useful unit. The larger
+    // baseline specifically discourages the repeated empty-slot shuffling seen
+    // in Viewer logs, while degradations add further cost.
+    return -0.10
+        - 0.14 * std::tanh(std::max(0.0, -composition_delta) / 5.0)
+        - 0.14 * std::tanh(std::max(0.0, -synergy_delta))
+        - 0.08 * std::tanh(std::max(0.0, -positioning_delta));
 }
 
 

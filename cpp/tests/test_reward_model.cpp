@@ -63,7 +63,7 @@ int main() {
     require_close(gold_potential(10), 0.10, "interest breakpoint potential");
     require_close(gold_change_reward(10, 9), -0.082, "spending below interest breakpoint");
     require_close(gold_change_reward(9, 10), 0.082, "saving to interest breakpoint");
-    require_close(movement_no_progress_penalty(0.0, 0.0, 0.0), -0.05,
+    require_close(movement_no_progress_penalty(0.0, 0.0, 0.0), -0.10,
                   "no-progress movement baseline penalty");
     if (!(movement_no_progress_penalty(0.0, -2.0, -1.0) <
           movement_no_progress_penalty(0.0, 0.0, 0.0))) {
@@ -73,10 +73,20 @@ int main() {
           movement_no_progress_penalty(0.0, 0.0, 0.0))) {
         throw std::runtime_error("composition degradation must increase penalty");
     }
-    require_close(purchase_quality(5.0, false), 0.18 * std::tanh(1.0),
+    require_close(purchase_quality(5.0, false), 0.22 * std::tanh(1.0),
                   "composition-aware purchase reward");
     require_close(purchase_quality(0.0, true), 0.20,
                   "purchase completing an upgrade");
+    if (!(purchase_pair_quality(0.0) > 0.30)) {
+        throw std::runtime_error("pair completion should have a clear but bounded acquisition signal");
+    }
+    if (!(unit_purchase_timing_reward(5, 50, 2, 1, 0.7, 80.0, false, false) > 0.0)) {
+        throw std::runtime_error("useful unit purchase with excess gold should be rewarded in mid-game");
+    }
+    require_close(unit_purchase_timing_reward(5, 25, 2, 1, 0.7, 80.0, false, false),
+                  0.0, "do not encourage unit purchases that leave too little gold");
+    require_close(unit_purchase_timing_reward(5, 50, 1, 7, 0.7, 30.0, false, false),
+                  0.0, "do not reward purchases when the bench is nearly full");
     require_close(early_purchase_reward(2, 10, 1, 2, 0.5, false, false),
                   0.20, "early useful unit purchase bonus");
     require_close(early_purchase_reward(2, 10, 1, 2, 0.0, false, true),
@@ -130,7 +140,7 @@ int main() {
     }
     require_close(reversed_sequence_adjustment(-0.10, -0.20), 0.0,
                   "already-negative reversal sequence needs no extra adjustment");
-    require_close(purchase_pair_quality(0.0), 0.28,
+    require_close(purchase_pair_quality(0.0), 0.32,
                   "pair-building baseline bonus");
     if (!(purchase_pair_quality(10.0) > purchase_pair_quality(0.0))) {
         throw std::runtime_error("pair reward must increase with composition fit");
@@ -149,6 +159,25 @@ int main() {
     }
     if (!(spending_timing_reward(20, 10.0, 7, 1.0, true, false) > 0.0)) {
         throw std::runtime_error("an urgent upgrade should still be rewarded with low liquidity");
+    }
+    if (!(buy_xp_timing_reward(125, 80.0, 5, false) > 0.0)) {
+        throw std::runtime_error("buying XP with a large gold reserve in mid-game should be rewarded even without an immediate level-up");
+    }
+    if (!(buy_xp_timing_reward(50, 35.0, 5, false) >
+          buy_xp_timing_reward(20, 80.0, 2, false))) {
+        throw std::runtime_error("timely XP spending under pressure should outweigh saving with no urgency");
+    }
+    require_close(buy_xp_timing_reward(25, 80.0, 5, false), 0.0,
+                  "do not reward XP spending with low gold and safe health");
+    require_close(buy_xp_timing_reward(40, 30.0, 5, false), 0.0,
+                  "non-leveling XP below the interest cap must not receive a reward");
+    if (!(buy_xp_timing_reward(25, 30.0, 5, true) > 0.0)) {
+        throw std::runtime_error("an urgent level-up may be rewarded even below the interest cap");
+    }
+    require_close(buy_xp_timing_reward(10, 100.0, 2, false), 0.0,
+                  "do not encourage early XP spending when economy and health are safe");
+    if (!(buy_xp_timing_reward(50, 20.0, 5, true) <= 0.10)) {
+        throw std::runtime_error("XP spending reward must remain capped to avoid repeated XP spam");
     }
     if (!(pass_opportunity_penalty(50, 100.0, 2, true) < 0.0)) {
         throw std::runtime_error("passing indefinitely at the interest cap with a useful offer should be discouraged");
