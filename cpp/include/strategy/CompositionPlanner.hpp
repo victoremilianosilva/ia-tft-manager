@@ -724,7 +724,14 @@ public:
 
                 // Require a real contextual advantage over the native planner.
                 // This prevents popularity alone from overriding a good own plan.
-                if (!best_meta_ids.empty() && best_meta_score >= own_score + 0.50) {
+                // Without live item/position evidence, demand a larger
+                // score gap. Otherwise the new future-target prior can override
+                // the native plan even when the meta lineup has no actionable
+                // item or positioning advantage.
+                const double required_meta_margin =
+                    meta_audit_best_item_position_bonus > 0.0 ? 0.50 : 3.0;
+                if (!best_meta_ids.empty() &&
+                    best_meta_score >= own_score + required_meta_margin) {
                     meta_audit_status = "selected";
                     const auto native_ids = plan.unit_ids;
                     plan.unit_ids.clear();
