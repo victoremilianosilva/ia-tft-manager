@@ -3671,6 +3671,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             // Do not give a positive reward merely for spending on XP. Early
             // levels are less valuable than building a playable board and pairs.
             action_reward = success ? (lobby.stage <= 2 ? -0.03 : 0.0) : -0.10;
+            if (success) {
+                action_reward += reward_model::buy_xp_timing_reward(
+                    old_gold, this->info.hp, lobby.stage, economy.level > old_level);
+            }
             // RewardManager tracks the last rewarded level, initialized to 1,
             // not merely the level at the start of this action.
             if (success && economy.level > old_level &&
