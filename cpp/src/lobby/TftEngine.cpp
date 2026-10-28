@@ -3509,12 +3509,15 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         // A changed direction label alone is not proof that the
                         // purchase was strategically useful. Only concrete exceptions
                         // (upgrade, deployment, or a previously full bench) exempt it.
-                        if (reward_model::should_penalize_reversed_purchase(
-                                recent->fit_score,
-                                recent->completed_upgrade,
-                                recent->was_deployed,
-                                old_bench_count >= static_cast<int>(kBenchSlots),
-                                false)) {
+                        // A high estimated fit is not proof that an immediate
+                        // buy-then-sell was useful. If the purchased copy was never
+                        // deployed, did not complete an upgrade, and the bench was
+                        // not full, treat the sale as a reversal regardless of the
+                        // planner's raw fit score. Otherwise the early-game score
+                        // floor can exempt the exact loop this penalty is meant to stop.
+                        if (!recent->completed_upgrade &&
+                            !recent->was_deployed &&
+                            old_bench_count < static_cast<int>(kBenchSlots)) {
                             purchase_was_recently_reversed = true;
                             reversed_purchase_prior_reward = recent->reward;
                         }
