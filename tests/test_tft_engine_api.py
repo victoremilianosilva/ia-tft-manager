@@ -44,7 +44,7 @@ def test_lobby_step_contract():
 
         # Cada rodada de treinamento exige 15 ações por jogador; PASS conta como ação.
         result = None
-        for _ in range(10):
+        for _ in range(15):
             result = engine.step(actions)
 
         assert result["observations"].shape == (
@@ -56,7 +56,7 @@ def test_lobby_step_contract():
         assert len(result["action_masks"]) == 8
         assert isinstance(result["lobby_done"], bool)
 
-                # O estado público deve refletir o resultado do step.
+        # O estado público deve refletir o resultado do step.
         state = engine.get_public_state()
 
         assert state["round"] == 2
