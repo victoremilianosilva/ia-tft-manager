@@ -286,9 +286,9 @@ inline double pass_opportunity_penalty(
                                             0.0, 1.0);
     // A rich player should not pass indefinitely in early rounds when a useful
     // unit is available; preserve saving only when there is no good opportunity.
-    const double baseline_urgency = gold >= 50 ? 0.25 : 0.0;
+    const double baseline_urgency = gold >= 50 ? 0.35 : 0.0;
     const double urgency = std::max({health_urgency, stage_urgency, baseline_urgency});
-    return -0.20 * liquidity * urgency;
+    return -0.24 * liquidity * urgency;
 }
 
 // A low-fit purchase sold almost immediately is usually a wasted buy.
