@@ -12,8 +12,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-ACTION_NAMES = {0: "BUY", 1: "REROLL", 2: "BUY_XP", 3: "MOVE_BENCH",
-                4: "MOVE_BOARD", 5: "SELL", 6: "PASS"}
+ACTION_NAMES = {
+    0: "BUY", 1: "REROLL", 2: "BUY_XP", 3: "MOVE_BENCH",
+    4: "MOVE_BOARD", 5: "SELL", 6: "PASS",
+    7: "EQUIP_FROM_INVENTORY", 8: "CRAFT_AND_EQUIP",
+}
 ROLE_ABBREVIATIONS = {0: "T", 1: "C", 2: "S", 3: "F", 4: "A"}
 ROLE_NAMES = {0: "tank", 1: "carry", 2: "support", 3: "fighter", 4: "assassin"}
 
@@ -177,6 +180,27 @@ class PlayerJsonLogWriter:
             "traits": list(definition.get("traits", []) or []), "impact": impact,
             "impact_method": "cost * star * 2.0 (native board_power contribution)",
             "items": list(unit.get("items", []) or []),
+        }
+
+    @staticmethod
+    def _item_state(audit: dict) -> dict:
+        audit = audit or {}
+        equipped = []
+        for location in ("board", "bench"):
+            for slot, unit in enumerate(audit.get(location, []) or []):
+                if not isinstance(unit, dict) or not unit.get("occupied", True):
+                    continue
+                items = list(unit.get("items", unit.get("item_ids", [])) or [])
+                if items:
+                    equipped.append({
+                        "location": location, "slot": int(unit.get("slot", slot)),
+                        "champion_id": unit.get("champion_id") or unit.get("apiName") or "?",
+                        "uuid": unit.get("uuid"), "items": items,
+                    })
+        return {
+            "components": list(audit.get("item_components", []) or []),
+            "inventory": list(audit.get("item_inventory", []) or []),
+            "equipped": equipped,
         }
 
     def _player_snapshot(self, audit: dict, public: dict) -> dict:
@@ -661,7 +685,11 @@ class PlayerJsonLogWriter:
                 info = self._unit_info(unit, slot, "bench")
                 return f"VENDEU: {info['name']} (i:{info['impact']:.1f})"
             return "VENDEU Vazio"
-        return "PASSOU TURNO"
+        if action_type == 7:
+            return f"EQUIP_FROM_INVENTORY (ação={action})"
+        if action_type == 8:
+            return f"CRAFT_AND_EQUIP (ação={action})"
+        return f"AÇÃO DESCONHECIDA (ação={action})" if action_type != 6 else "PASSOU TURNO"
 
     def _board_snapshot_keyed(self, audit: dict) -> dict[str, dict]:
         result = {}
@@ -844,6 +872,33 @@ class PlayerJsonLogWriter:
             event_type="bench_view", text="".join(bench_rows) + "----------------------------------\n",
             tag="board_view", data={"rows": [row.rstrip("\n") for row in bench_rows]},
         )
+        # Item state is explicit in the text log so equipped items cannot be
+        # mistaken for missing actions when inspecting a .tft file.
+        item_lines = ["--- ITENS ---"]
+        components = list(after_state.get("item_components") or [])
+        inventory = list(after_state.get("item_inventory") or [])
+        item_lines.append("  Componentes: " + (", ".join(map(str, components)) if components else "nenhum"))
+        item_lines.append("  Itens na bag: " + (", ".join(map(str, inventory)) if inventory else "nenhum"))
+        equipped_lines = []
+        for location in ("board", "bench"):
+            for unit in after_state.get(location, []) or []:
+                if not isinstance(unit, dict) or not unit.get("occupied", True):
+                    continue
+                equipped = list(unit.get("items") or [])
+                if equipped:
+                    equipped_lines.append(
+                        f"  {location.upper()} slot {unit.get('slot', '?')} · "
+                        f"{unit.get('name') or unit.get('champion_id') or '?'}: "
+                        + ", ".join(map(str, equipped))
+                    )
+        item_lines.extend(equipped_lines or ["  Itens equipados: nenhum"])
+        self._append_entry(
+            player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
+            round_number=round_number, stage=stage, round_in_stage=round_in_stage,
+            event_type="item_state", text="\n".join(item_lines) + "\n",
+            tag="item_state",
+            data={"components": components, "inventory": inventory, "equipped": equipped_lines},
+        )
         self._append_shop(
             player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
             round_number=round_number, stage=stage, round_in_stage=round_in_stage, audit=audit,
@@ -926,6 +981,36 @@ class PlayerJsonLogWriter:
             is_round_end = round_resolved or finished
             before_state = self._player_snapshot(before_audit, before_public)
             after_state = self._player_snapshot(after_audit, after_public)
+            item_before = self._item_state(before_audit)
+            item_after = self._item_state(after_audit)
+            item_audit = {
+                "action_type": action_type,
+                "action_name": ACTION_NAMES.get(action_type, "UNKNOWN"),
+                "before": item_before,
+                "after": item_after,
+                "changed": item_before != item_after,
+            }
+            was_alive = bool(before_state.get("alive")) and not bool(before_state.get("eliminated"))
+            after_alive = after_state.get("alive")
+            is_eliminated = bool(after_state.get("eliminated")) or (
+                after_alive is not None and not bool(after_alive)
+            )
+            if was_alive and is_eliminated:
+                placement = after_state.get("placement")
+                placement_text = (
+                    f"colocação final #{placement}" if placement is not None
+                    else "colocação final não informada pela engine"
+                )
+                self._append_entry(
+                    player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
+                    round_number=round_number, stage=stage, round_in_stage=round_in_stage,
+                    event_type="player_eliminated",
+                    text=f"[{timestamp}] ELIMINADO · {placement_text} · HP {after_state.get('hp', '?')}\n",
+                    tag="round_msg",
+                    data={"placement": placement, "hp": after_state.get("hp"),
+                          "alive_before": before_state.get("alive"), "alive_after": after_state.get("alive"),
+                          "eliminated": after_state.get("eliminated")},
+                )
             economic_diagnostics = self._economic_diagnostics(
                 action, before_state, after_state, before_audit, after_audit
             )
@@ -960,6 +1045,7 @@ class PlayerJsonLogWriter:
                     "returned_reward": reward,
                 },
                 "state_changed": before_state != after_state,
+                "item_audit": item_audit,
                 "economic_diagnostics": economic_diagnostics,
                 "state_before": before_state, "state_after": after_state,
                 "composition_diagnostics": {
@@ -1073,6 +1159,13 @@ class PlayerJsonLogWriter:
                     f"+{after_state.get('round_win_gold', 0)}\n"
                     + self._unit_composition_fit_text(primary_data["composition_diagnostics"]["unit_fit"])
                 )
+                if action_type in (7, 8) or item_audit["changed"]:
+                    line += (
+                        "    ITEM AUDIT: "
+                        f"componentes {item_before['components']} -> {item_after['components']} | "
+                        f"bag {item_before['inventory']} -> {item_after['inventory']} | "
+                        f"equipados {item_before['equipped']} -> {item_after['equipped']}\n"
+                    )
                 self._append_entry(
                     player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
                     round_number=round_number, stage=stage, round_in_stage=round_in_stage,
@@ -1112,7 +1205,10 @@ class PlayerJsonLogWriter:
                     player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
                     round_number=round_number, stage=stage, round_in_stage=round_in_stage,
                     event_type="match_finished",
-                    text="\n" + "=" * 40 + "\n GAME OVER - RELATÓRIO FINAL\n" + "=" * 40 + "\n",
+                    text=(
+                        "\n" + "=" * 40 + "\n GAME OVER - RELATÓRIO FINAL\n" + "=" * 40 + "\n"
+                        + self._final_result_text(player_id, after, after_state)
+                    ),
                     tag="round_msg",
                     data={"ranking": after.get("ranking", []), "player_final_state": after_state,
                           "winner_id": after.get("winner_id")},
@@ -1120,6 +1216,39 @@ class PlayerJsonLogWriter:
 
         if round_resolved or finished or step % self.flush_interval_steps == 0:
             self.flush(force=True)
+
+
+    @staticmethod
+    def _final_result_text(player_id: int, snapshot: dict, player_state: dict) -> str:
+        """Render the result fields supplied by the engine without guessing placements."""
+        winner_id = snapshot.get("winner_id")
+        try:
+            is_winner = winner_id is not None and int(winner_id) == int(player_id)
+        except (TypeError, ValueError):
+            is_winner = False
+        placement = player_state.get("placement")
+        if is_winner:
+            result = "RESULTADO: VITÓRIA (1º lugar)"
+        elif placement is not None:
+            result = f"COLOCAÇÃO FINAL: #{placement}"
+        else:
+            status = "ELIMINADO" if player_state.get("eliminated") or player_state.get("alive") is False else "não informado"
+            result = f"RESULTADO: {status}; colocação não fornecida pela engine"
+        wins = player_state.get("wins")
+        losses = player_state.get("losses")
+        winner_label = "não informado"
+        if winner_id is not None:
+            try:
+                winner_label = f"JOGADOR {int(winner_id) + 1}"
+            except (TypeError, ValueError):
+                winner_label = str(winner_id)
+        return (
+            f"  VENCEDOR DA PARTIDA: {winner_label}\n"
+            f"  {result}\n"
+            f"  HP final: {player_state.get('hp', '?')} | Ouro final: {player_state.get('gold', '?')} | "
+            f"Nível: {player_state.get('level', '?')}\n"
+            f"  Vitórias: {wins if wins is not None else '?'} | Derrotas: {losses if losses is not None else '?'}\n"
+        )
 
     def _render_legacy_log(self, player_id: int) -> str:
         """Render the in-memory timeline as the legacy observer's plain-text log."""

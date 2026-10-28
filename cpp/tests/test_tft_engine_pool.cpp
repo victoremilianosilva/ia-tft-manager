@@ -297,11 +297,11 @@ int main(int argc, char** argv) {
         // Valida renda, máscara e compra a partir da loja inicial.
         std::array<tft::PlayerAction, tft::kPlayersPerLobby> actions{};
         for (auto& action : actions) action.values = {6, 0, 0, 0, 0, 0};
-        // O treinamento só resolve a preparação depois de 10 ações de cada
+        // O treinamento só resolve a preparação depois de 15 ações de cada
         // jogador; PASS conta como ação, mas não encerra a rodada sozinho.
-        for (int action = 0; action < 20; ++action) {
+        for (int action = 0; action < 30; ++action) {
             (void)step_with_pending_anvils(engine, actions);
-        } // duas rodadas completas de 10 ações
+        } // duas rodadas completas de 15 ações
 
         // Uma ação inválida do jogador 0 não pode permitir que uma compra
         // válida do jogador 1 seja executada parcialmente no mesmo lote.
@@ -426,7 +426,7 @@ int main(int argc, char** argv) {
         require(
             sale_gold_delta == 1 || sale_gold_delta == 2,
             "Venda deveria creditar somente o valor do campeão; "
-            "a renda da rodada ainda não deve ser aplicada antes da décima ação."
+            "a renda da rodada ainda não deve ser aplicada antes da décima quinta ação."
         );
         require(
             engine.round() == 2,
@@ -512,13 +512,13 @@ int main(int argc, char** argv) {
         require(metrics[0].execution_blocks == 1 && metrics[0].blocked_reverse == 1,
                 "AntiLoop não bloqueou/contabilizou o movimento reverso.");
 
-        // Mesmo quando todos enviam PASS, o treinamento aguarda 10 ações.
+        // Mesmo quando todos enviam PASS, o treinamento aguarda 15 ações.
         const auto round_before_pass = engine.round();
         actions[0].values = {6, 0, 0, 0, 0, 0};
         const auto after_pass = step_with_pending_anvils(engine, actions);
         require(
             engine.round() == round_before_pass,
-            "PASS encerrou a rodada antes de completar 10 ações."
+            "PASS encerrou a rodada antes de completar 15 ações."
         );
         bool resolved_too_early = false;
         for (const auto& event : after_pass.events) {
@@ -528,7 +528,7 @@ int main(int argc, char** argv) {
             }
         }
         require(!resolved_too_early,
-                "A engine resolveu a rodada antes da décima ação.");
+                "A engine resolveu a rodada antes da décima quinta ação.");
 
         // A agenda oficial tem abertura/PvE até 1-4; o primeiro PvP ocorre em 2-1.
         // Como só o jogador 0 possui unidade no tabuleiro, a primeira rodada PvP
@@ -578,7 +578,7 @@ int main(int argc, char** argv) {
         const auto round_before_economic_actions = engine.round();
 
         // Validação integrada de REROLL: custo 2, nova oferta e rodada
-        // continua aberta até todos os jogadores completarem 10 ações.
+        // continua aberta até todos os jogadores completarem 15 ações.
         const auto gold_before_reroll = engine.get_public_state().players[0].gold;
         require(gold_before_reroll >= 2,
                 "Pré-condição econômica inesperada para testar reroll.");
@@ -593,11 +593,11 @@ int main(int argc, char** argv) {
                 "REROLL encerrou a rodada sem PASS.");
         actions[0].values = {6, 0, 0, 0, 0, 0};
         auto next_round = step_with_pending_anvils(engine, actions);
-        for (int action = 2; action < 10; ++action) {
+        for (int action = 2; action < 15; ++action) {
             next_round = step_with_pending_anvils(engine, actions);
         }
         require(engine.round() == round_before_economic_actions + 1,
-                "A rodada não avançou após 10 ações por jogador.");
+                "A rodada não avançou após 15 ações por jogador.");
 
         // Com renda da rodada e bônus de vitória, deve haver ouro suficiente
         // para comprar XP. O nível/XP são verificados no estado público.
@@ -660,7 +660,7 @@ int main(int argc, char** argv) {
         for (int completed_rounds = 0;
              completed_rounds < 14 && comp_engine.stage() < 3;
              ++completed_rounds) {
-            for (int action = 0; action < 10; ++action)
+            for (int action = 0; action < 15; ++action)
                 (void)step_with_pending_anvils(comp_engine, pass_actions);
         }
         require(comp_engine.stage() >= 3,
@@ -896,7 +896,7 @@ int main(int argc, char** argv) {
             for (auto& action : pass_actions) action.values = {6, 0, 0, 0, 0, 0};
             const auto finish_round = [&]() {
                 tft::StepResult result;
-                for (int action = 0; action < 10; ++action)
+                for (int action = 0; action < 15; ++action)
                     result = step_with_pending_anvils(anvil_engine, pass_actions);
                 return result;
             };
@@ -929,7 +929,7 @@ int main(int argc, char** argv) {
                 }
                 (void)anvil_engine.step(choices);
                 tft::StepResult result;
-                for (int action = 1; action < 10; ++action)
+                for (int action = 1; action < 15; ++action)
                     result = step_with_pending_anvils(anvil_engine, pass_actions);
                 require(anvil_engine.round() > 0,
                         "Resolucao da bigorna impediu o avanco normal da rodada.");

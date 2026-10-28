@@ -42,9 +42,9 @@ def test_lobby_step_contract():
         # neutra definido pela implementacao C++.
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
 
-        # Cada rodada de treinamento exige 10 ações por jogador; PASS conta como ação.
+        # Cada rodada de treinamento exige 15 ações por jogador; PASS conta como ação.
         result = None
-        for _ in range(10):
+        for _ in range(15):
             result = engine.step(actions)
 
         assert result["observations"].shape == (
@@ -56,7 +56,7 @@ def test_lobby_step_contract():
         assert len(result["action_masks"]) == 8
         assert isinstance(result["lobby_done"], bool)
 
-                # O estado público deve refletir o resultado do step.
+        # O estado público deve refletir o resultado do step.
         state = engine.get_public_state()
 
         assert state["round"] == 2
@@ -124,8 +124,8 @@ def test_public_round_and_stage_remain_consistent():
         engine.reset()
         actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
 
-        # Sete rodadas completas (10 ações por jogador) levam à rodada pública 8.
-        for _ in range(7 * 10):
+        # Sete rodadas completas (15 ações por jogador) levam à rodada pública 8.
+        for _ in range(7 * 15):
             engine.step(actions)
 
         state = engine.get_public_state()

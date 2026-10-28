@@ -245,11 +245,18 @@ class ChampionCell(QFrame):
             "background:rgba(3,7,18,190);color:#fde047;font-size:6pt;font-weight:700;"
             "padding:0 1px;border:0;"
         )
+        self.items_badge = QLabel("", self)
+        self.items_badge.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        self.items_badge.setStyleSheet(
+            "background:rgba(3,7,18,220);color:#67e8f9;font-size:7pt;font-weight:700;"
+            "padding:0 2px;border:0;border-radius:3px;"
+        )
         layout = QGridLayout(self)
         layout.setContentsMargins(1, 1, 1, 1)
         layout.setSpacing(0)
         layout.addWidget(self.image, 0, 0)
         layout.addWidget(self.stars, 0, 0, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignRight)
+        layout.addWidget(self.items_badge, 0, 0, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         self._set_empty_style()
 
     def set_square_size(self, size: int):
@@ -294,6 +301,8 @@ class ChampionCell(QFrame):
         self.image.setText("·")
         self.image.setStyleSheet("background:transparent;border:0;color:#94a3b8;font-size:8pt;")
         self.stars.setText("")
+        self.items_badge.setText("")
+        self.items_badge.setToolTip("")
 
     def set_unit(self, unit: dict | None, icon_loader: ChampionIconLoader,
                  position_warning: bool = False):
@@ -315,7 +324,14 @@ class ChampionCell(QFrame):
         self._apply_cell_style(border)
         role = icon_loader.profile_for(champion_id).get("role_name") or "papel desconhecido"
         warning_text = " · POSICIONAMENTO SUSPEITO (linha frontal/traseira)" if self._position_warning else ""
-        self.setToolTip(f"{champion_id} · {role} · {'★' * star} · custo {cost or '?'}{warning_text}")
+        equipped_items = list(unit.get("items", unit.get("item_ids", [])) or [])
+        item_names = ", ".join(map(str, equipped_items)) if equipped_items else "nenhum"
+        self.items_badge.setText(f"◆{len(equipped_items)}" if equipped_items else "")
+        self.items_badge.setToolTip(f"Itens equipados: {item_names}")
+        self.setToolTip(
+            f"{champion_id} · {role} · {'★' * star} · custo {cost or '?'}"
+            f" · Itens: {item_names}{warning_text}"
+        )
         pixmap = icon_loader.pixmap_for(champion_id)
         if pixmap is not None and not pixmap.isNull():
             size = max(16, min(self.width(), self.height()) - 4)
@@ -375,6 +391,11 @@ class PlayerCard(QFrame):
         self.metrics = QLabel("HP —   OURO —   NV —   XP —")
         self.metrics.setObjectName("muted")
         root.addWidget(self.metrics)
+        self.items_line = QLabel("BAG: aguardando estado dos itens")
+        self.items_line.setObjectName("muted")
+        self.items_line.setWordWrap(True)
+        self.items_line.setMaximumHeight(34)
+        root.addWidget(self.items_line)
         strategy_row = QHBoxLayout()
         self.strategy_line = QLabel("Strategy: — | Comp direction: —")
         self.strategy_line.setWordWrap(True)
@@ -425,13 +446,53 @@ class PlayerCard(QFrame):
         self.style().unpolish(self)
         self.style().polish(self)
 
-    def update_player(self, player, audit, action, icon_loader, finished=False):
-        self.status.setText("ELIMINADO" if player.get("eliminated") or not player.get("alive", True) else ("FINALIZADO" if finished else "VIVO"))
+    def update_player(self, player, audit, action, icon_loader, finished=False, winner_id=None):
+        placement = player.get("placement")
+        try:
+            is_winner = winner_id is not None and int(winner_id) == self.player_id
+        except (TypeError, ValueError):
+            is_winner = False
+        if is_winner or (placement is not None and str(placement) == "1"):
+            status_text = "VENCEU"
+        elif placement is not None:
+            status_text = f"#{placement}"
+        elif player.get("eliminated") or not player.get("alive", True):
+            status_text = "ELIMINADO"
+        elif finished:
+            status_text = "FINALIZADO · RESULTADO NÃO INFORMADO"
+        else:
+            status_text = "VIVO"
+        self.status.setText(status_text)
         hp = _value(player, "hp", default="?")
         gold = _value(player, "gold", default="?")
         level = _value(player, "level", default="?")
         xp = _value(player, "xp", default="?")
-        self.metrics.setText(f"HP {hp}   OURO {gold}   NV {level}   XP {xp}")
+        wins = player.get("wins")
+        losses = player.get("losses")
+        placement_text = f"#{placement}" if placement is not None else "—"
+        wins_text = wins if wins is not None else "—"
+        losses_text = losses if losses is not None else "—"
+        board_units = list(audit.get("board", []) or [])
+        bench_units = list(audit.get("bench", []) or [])
+        equipped_count = sum(
+            len(unit.get("items") or [])
+            for unit in board_units + bench_units
+            if isinstance(unit, dict) and unit.get("occupied", True)
+        )
+        bag_count = len(audit.get("item_components", []) or []) + len(audit.get("item_inventory", []) or [])
+        self.metrics.setText(
+            f"HP {hp}   OURO {gold}   NV {level}   XP {xp}\n"
+            f"COLOCAÇÃO {placement_text}   VITÓRIAS {wins_text}   DERROTAS {losses_text}\n"
+            f"ITENS EQUIPADOS {equipped_count}   COMPONENTES/ITENS NA BAG {bag_count}"
+        )
+        components = list(audit.get("item_components", []) or [])
+        inventory = list(audit.get("item_inventory", []) or [])
+        bag_text = (
+            "Componentes: " + (", ".join(map(str, components)) if components else "nenhum")
+            + " | Itens completos: " + (", ".join(map(str, inventory)) if inventory else "nenhum")
+        )
+        self.items_line.setText("BAG · " + bag_text)
+        self.items_line.setToolTip(bag_text)
         strategy = audit.get("strategy_info") or {}
         strategy_name = strategy.get("strategy_name") or "ECON"
         self.strategy_line.setText(
@@ -1294,7 +1355,8 @@ class ViewerWindow(QMainWindow):
         for i, card in enumerate(self.cards):
             card.update_player(
                 by_id.get(i, {}), audit_by_id.get(i, {}), self.session.last_actions[i],
-                self.icon_loader, self.session.finished
+                self.icon_loader, self.session.finished,
+                self.session.public_state.get("winner_id")
             )
             card.set_selected(i == self.selected_player)
         self.round_label.setText(
