@@ -267,6 +267,17 @@ class PlayerJsonLogWriter:
             ),
             "planned_composition_score": float((audit.get("strategy_info") or {}).get("planned_composition_score", 0.0) or 0.0),
             "planned_acquisition_notes": list((audit.get("strategy_info") or {}).get("planned_acquisition_notes", []) or []),
+            "composition_source": (
+                "OP.GG" if any(
+                    str(note).startswith("OPGG_META_CANDIDATE:")
+                    for note in ((audit.get("strategy_info") or {}).get("planned_acquisition_notes", []) or [])
+                ) else "NATIVE"
+            ),
+            "composition_source_name": next((
+                str(note).split("OPGG_META_CANDIDATE:", 1)[1].split(" (score=", 1)[0].strip()
+                for note in ((audit.get("strategy_info") or {}).get("planned_acquisition_notes", []) or [])
+                if str(note).startswith("OPGG_META_CANDIDATE:")
+            ), ""),
             "planner_target_slots": (
                 8 if int(public.get("level", audit.get("level", 1)) or 1) <= 8
                 else min(10, int(public.get("level", audit.get("level", 1)) or 1))
@@ -764,7 +775,9 @@ class PlayerJsonLogWriter:
                 f"COMP DIRECTION: {after_state.get('comp_direction') or '—'} | "
                 f"FOCUS: {after_state.get('comp_focus') or '—'} | "
                 f"LOCK: {'LOCKED' if after_state.get('composition_locked') else 'OPEN'} | "
-                f"STRENGTH: {float(after_state.get('composition_strength', 0.0) or 0.0):.2f}\n"
+                f"STRENGTH: {float(after_state.get('composition_strength', 0.0) or 0.0):.2f} | "
+                f"FONTE COMP: {after_state.get('composition_source', 'NATIVE')}"
+                f"{' — ' + after_state.get('composition_source_name', '') if after_state.get('composition_source_name') else ''}\n"
                 f"FOCUS WEIGHTS: {', '.join(f'{name} {float(weight):.2f}' for name, weight in sorted((after_state.get('composition_focus_weights') or {}).items(), key=lambda item: float(item[1]), reverse=True)[:5]) or '—'}\n"
                 f"    RENDA PRÓXIMO ROUND: +{after_state.get('round_base_gold', 0)} base, "
                 f"+{after_state.get('round_interest', 0)} juros, "

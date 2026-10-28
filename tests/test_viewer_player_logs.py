@@ -364,3 +364,31 @@ def test_player_snapshot_preserves_board_quality_diagnostics():
     assert state["board_frontline_count"] == 2
     assert state["board_isolated_frontline_count"] == 1
     assert state["board_important_bench_units_unplayed"] == 2
+
+
+
+def test_player_snapshot_marks_opgg_composition_source():
+    writer = object.__new__(PlayerJsonLogWriter)
+    writer._unit_info = lambda unit, slot, location: unit
+    audit = {
+        "strategy_info": {
+            "composition_direction": "Colosso",
+            "planned_acquisition_notes": [
+                "OPGG_META_CANDIDATE: Colosso flex (score=18.2, native_score=16.9)",
+                "OPGG_META_AUDIT: status=selected",
+            ],
+        },
+        "board": [],
+        "bench": [],
+        "shop": [],
+    }
+    snapshot = writer._player_snapshot(audit, {"player_id": 0, "level": 6})
+    assert snapshot["composition_source"] == "OP.GG"
+    assert snapshot["composition_source_name"] == "Colosso flex"
+
+    audit["strategy_info"]["planned_acquisition_notes"] = [
+        "OPGG_META_AUDIT: status=candidate_below_native_margin"
+    ]
+    native_snapshot = writer._player_snapshot(audit, {"player_id": 0, "level": 6})
+    assert native_snapshot["composition_source"] == "NATIVE"
+    assert native_snapshot["composition_source_name"] == ""

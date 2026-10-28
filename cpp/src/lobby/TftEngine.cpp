@@ -3049,8 +3049,11 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     const bool composition_fit =
                         candidate_comp_score > 0.0 ||
                         strategy_before.composition_direction.empty();
+                    // A pair has future upgrade value even when the current
+                    // board-impact heuristic is conservative. Do not gate this
+                    // learning signal on buy_strategy_approved.
                     buy_builds_pair = same_star_copies == 1 &&
-                        offer->star == 1 && composition_fit && buy_strategy_approved;
+                        offer->star == 1 && composition_fit;
                 }
             }
         } else if (type == 3) {
@@ -3461,6 +3464,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         item_assignment_reward = reward_model::item_assignment_quality(
                             immediate_strength, target_profile->composition_fit,
                             role_alignment, static_cast<int>(lobby.stage));
+                        if (type == 8) {
+                            item_assignment_reward +=
+                                reward_model::item_crafting_bonus(item_assignment_reward);
+                        }
                     }
                 }
                 lobby.sync_unit_items_from_engine(player_id, target_unit->uuid);
@@ -3584,17 +3591,21 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             // No unconditional bonus for a normal purchase; +0.30 for a completed upgrade.
             success = bought_unit_successfully;
             action_reward = !success ? -0.10 : (bought_upgrade ? 0.30 : 0.0);
-            if (success && !buy_strategy_approved) {
-                // Soft rejection signal: prefer PASS over filling the bench with
-                // low-impact units when the composition/upgrade value is weak.
-                action_reward -= 0.15;
+            if (success && !buy_strategy_approved &&
+                !buy_completes_upgrade && !buy_builds_pair) {
+                // Keep the rejection signal for genuinely low-value clutter, but
+                // don't punish pair progress or a merge because a board heuristic
+                // undervalued a unit that is not deployed yet.
+                action_reward -= 0.10;
             }
             if (success && has_candidate_comp_score) {
-                // Also guide early purchases before the board has a stable comp.
-                // composition_quality_delta is candidate-vs-board when a board
-                // exists, or the candidate's strategic score when it is empty.
+                // Bench acquisitions are valuable even if their raw score is below
+                // the current board average. Blend absolute plan fit with marginal
+                // board fit instead of making board-relative delta the only signal.
+                const double acquisition_value = 0.65 * candidate_comp_score +
+                    0.35 * composition_quality_delta;
                 action_reward += reward_model::purchase_quality(
-                    composition_quality_delta, false);
+                    acquisition_value, false);
             }
             if (success && buy_completes_upgrade) {
                 action_reward += 0.25;
@@ -3753,7 +3764,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         if (unit && unit->champion_internal_id == offer->champion_internal_id)
                             copies += star_copies(unit->star);
                     const bool completes_upgrade = copies == 2 && offer->star == 1;
-                    if (completes_upgrade || normalized_fit >= 0.45) {
+                    const bool builds_pair = copies == 1 && offer->star == 1;
+                    // Passing should recognize pair progress and moderately
+                    // compatible acquisitions, not only near-perfect comp fits.
+                    if (completes_upgrade || builds_pair || normalized_fit >= 0.30) {
                         useful_purchase_available = true;
                         break;
                     }
