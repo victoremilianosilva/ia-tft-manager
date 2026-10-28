@@ -160,6 +160,34 @@ inline double spending_timing_reward(
     return 0.24 * liquidity * urgency * quality;
 }
 
+// Reward buying XP when it is strategically timely, including purchases that
+// do not immediately cross a level boundary. This prevents the agent from
+// hoarding a large bank until the end of the match. Early XP remains discouraged
+// unless the player is under pressure; the strongest signal requires high gold
+// or a level-up.
+inline double buy_xp_timing_reward(
+    int gold_before,
+    double hp,
+    int stage,
+    bool leveled_up
+) noexcept {
+    if (stage <= 2 && hp >= 60.0) return 0.0;
+    if (gold_before < 20 && hp >= 45.0) return 0.0;
+
+    const double liquidity = gold_before >= 50 ? 1.0
+        : (gold_before >= 40 ? 0.75
+        : (gold_before >= 30 ? 0.50 : 0.25));
+    const double health_urgency = std::clamp((60.0 - hp) / 60.0, 0.0, 1.0);
+    const double stage_urgency = std::clamp((static_cast<double>(stage) - 2.0) / 4.0,
+                                            0.0, 1.0);
+    const double hoarding_urgency = gold_before >= 50 ? 0.65
+        : (gold_before >= 40 ? 0.35 : 0.0);
+    const double urgency = std::max({health_urgency, stage_urgency, hoarding_urgency});
+    if (urgency <= 0.0) return 0.0;
+    const double quality = leveled_up ? 1.0 : 0.55;
+    return 0.22 * liquidity * urgency * quality;
+}
+
 // Early-game acquisition shaping: prefer filling useful pairs and building a
 // playable bench before spending actions on XP. This is deliberately bounded
 // and only applies when there is room and the purchase is affordable.
@@ -269,10 +297,14 @@ inline double movement_no_progress_penalty(
     double synergy_delta,
     double positioning_delta
 ) noexcept {
-    return -0.05
-        - 0.10 * std::tanh(std::max(0.0, -composition_delta) / 5.0)
-        - 0.10 * std::tanh(std::max(0.0, -synergy_delta))
-        - 0.05 * std::tanh(std::max(0.0, -positioning_delta));
+    // A move that changes the slot but does not improve any strategic metric
+    // should be less attractive than buying/deploying a useful unit. The larger
+    // baseline specifically discourages the repeated empty-slot shuffling seen
+    // in Viewer logs, while degradations add further cost.
+    return -0.10
+        - 0.14 * std::tanh(std::max(0.0, -composition_delta) / 5.0)
+        - 0.14 * std::tanh(std::max(0.0, -synergy_delta))
+        - 0.08 * std::tanh(std::max(0.0, -positioning_delta));
 }
 
 
