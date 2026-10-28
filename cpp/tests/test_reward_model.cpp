@@ -77,6 +77,14 @@ int main() {
                   "composition-aware purchase reward");
     require_close(purchase_quality(0.0, true), 0.20,
                   "purchase completing an upgrade");
+    require_close(early_purchase_reward(2, 10, 1, 2, 0.5, false, false),
+                  0.20, "early useful unit purchase bonus");
+    require_close(early_purchase_reward(2, 10, 1, 2, 0.0, false, true),
+                  0.224, "early pair purchase bonus");
+    require_close(early_purchase_reward(2, 10, 1, 8, 0.0, false, false),
+                  0.0, "early low-fit purchase rejected with crowded bench");
+    require_close(early_purchase_reward(3, 10, 1, 2, 0.5, false, false),
+                  0.0, "early purchase bonus does not persist into later stages");
     require_close(reversed_purchase_penalty(), -0.18,
                   "targeted reversed-purchase penalty");
     // Regressions from the Viewer match: Teemo/Caitlyn were bought and sold
