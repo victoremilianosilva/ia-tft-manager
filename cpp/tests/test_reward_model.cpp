@@ -73,9 +73,9 @@ int main() {
           movement_no_progress_penalty(0.0, 0.0, 0.0))) {
         throw std::runtime_error("composition degradation must increase penalty");
     }
-    require_close(purchase_quality(5.0, false), 0.10 * std::tanh(1.0),
+    require_close(purchase_quality(5.0, false), 0.18 * std::tanh(1.0),
                   "composition-aware purchase reward");
-    require_close(purchase_quality(0.0, true), 0.12,
+    require_close(purchase_quality(0.0, true), 0.20,
                   "purchase completing an upgrade");
     require_close(reversed_purchase_penalty(), -0.18,
                   "targeted reversed-purchase penalty");
@@ -122,7 +122,7 @@ int main() {
     }
     require_close(reversed_sequence_adjustment(-0.10, -0.20), 0.0,
                   "already-negative reversal sequence needs no extra adjustment");
-    require_close(purchase_pair_quality(0.0), 0.22,
+    require_close(purchase_pair_quality(0.0), 0.28,
                   "pair-building baseline bonus");
     if (!(purchase_pair_quality(10.0) > purchase_pair_quality(0.0))) {
         throw std::runtime_error("pair reward must increase with composition fit");
@@ -130,23 +130,31 @@ int main() {
     if (!(purchase_pair_quality(10.0) > purchase_quality(0.0, true))) {
         throw std::runtime_error("forming a pair must be valued above a generic upgrade signal");
     }
-    require_close(spending_timing_reward(50, 100.0, 2, 1.0, false, false),
-                  0.0, "no spending bonus for a healthy early-game board");
+    if (!(spending_timing_reward(50, 100.0, 2, 1.0, false, false) > 0.0)) {
+        throw std::runtime_error("a capped gold balance with a useful early purchase should have a small spending signal");
+    }
     if (!(spending_timing_reward(50, 20.0, 5, 0.0, true, false) > 0.0)) {
         throw std::runtime_error("completing an upgrade with high gold must be rewarded under pressure");
     }
     if (!(spending_timing_reward(50, 20.0, 5, 0.9, false, false) > 0.0)) {
         throw std::runtime_error("high-fit purchase with excess gold must be rewarded under pressure");
     }
-    require_close(spending_timing_reward(20, 10.0, 7, 1.0, true, false),
-                  0.0, "low liquidity must not receive an artificial spending bonus");
-    require_close(pass_opportunity_penalty(50, 100.0, 2, true),
-                  0.0, "passing is valid when the board is healthy early");
+    if (!(spending_timing_reward(20, 10.0, 7, 1.0, true, false) > 0.0)) {
+        throw std::runtime_error("an urgent upgrade should still be rewarded with low liquidity");
+    }
+    if (!(pass_opportunity_penalty(50, 100.0, 2, true) < 0.0)) {
+        throw std::runtime_error("passing indefinitely at the interest cap with a useful offer should be discouraged");
+    }
     if (!(pass_opportunity_penalty(50, 20.0, 6, true) < 0.0)) {
         throw std::runtime_error("passing with a useful offer, high gold and low HP must be discouraged");
     }
     require_close(pass_opportunity_penalty(50, 20.0, 6, false),
                   0.0, "must not force spending when the shop has no useful offer");
+    require_close(item_crafting_bonus(-0.02), 0.0,
+                  "poor item craft should not receive a crafting bonus");
+    if (!(item_crafting_bonus(0.15) > 0.0 && item_crafting_bonus(0.15) <= 0.08)) {
+        throw std::runtime_error("useful crafted items should receive a small bounded bonus");
+    }
     require_close(reroll_quality_reward(8.0, 8.0), 0.0,
                   "reroll with no quality improvement receives no reward");
     if (!(reroll_quality_reward(2.0, 10.0) > 0.0)) {
