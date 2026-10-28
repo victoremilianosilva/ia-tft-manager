@@ -4,13 +4,17 @@ import torch.nn.functional as F
 from torch.distributions import Categorical
 
 
+ACTION_DIMS = [9, 5, 9, 28, 28, 28]
+LEGACY_ACTION_DIMS = [7, 5, 9, 28, 28, 28]
+
+
 class TFTPolicy(nn.Module):
   
     def __init__(self, obs_dim, action_dims, hidden_size=512):
         super().__init__()
 
         # 🛡️ Valida o contrato das seis dimensões antes de criar as camadas.
-        expected_dims = [9, 5, 9, 28, 28, 28]
+        expected_dims = ACTION_DIMS
 
         if list(action_dims) != expected_dims:
             raise ValueError(
