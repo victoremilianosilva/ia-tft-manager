@@ -763,14 +763,10 @@ int main(int argc, char** argv) {
             require(sell_reward < 0.0f,
                     ("Venda imediata de " + target_name +
                      " recebeu recompensa nao negativa; RecentPurchase foi ignorado.").c_str());
-            // Early-game purchase scoring may intentionally give a positive
-            // reward for buying a useful piece. The regression contract here is
-            // that immediately selling that never-deployed copy is penalized;
-            // the combined sum is not required to be negative because it also
-            // includes the legitimate purchase reward.
-            require(sell_reward < 0.0f,
-                    ("Reversao imediata de " + target_name +
-                     " nao recebeu penalidade de venda.").c_str());
+            // Do not require buy_reward + sell_reward to be negative:
+            // early-game purchase scoring may legitimately reward acquiring
+            // a useful piece. The negative sell_reward assertion above checks
+            // the reversal penalty without cancelling the purchase incentive.
         }
 
         // Regression: selling one copy from a pair must be worse than selling
