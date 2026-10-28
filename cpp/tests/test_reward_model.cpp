@@ -84,7 +84,10 @@ int main() {
         throw std::runtime_error("useful unit purchase with excess gold should be rewarded in mid-game");
     }
     require_close(unit_purchase_timing_reward(5, 25, 2, 1, 0.7, 80.0, false, false),
-                  0.0, "do not encourage unit purchases that leave too little gold");
+                  0.0, "healthy mid-game should preserve a modest gold reserve");
+    if (!(unit_purchase_timing_reward(6, 25, 2, 1, 0.7, 25.0, false, false) > 0.0)) {
+        throw std::runtime_error("useful unit purchase should be rewarded under low-health pressure");
+    }
     require_close(unit_purchase_timing_reward(5, 50, 1, 7, 0.7, 30.0, false, false),
                   0.0, "do not reward purchases when the bench is nearly full");
     require_close(early_purchase_reward(2, 10, 1, 2, 0.5, false, false),
@@ -160,12 +163,13 @@ int main() {
     if (!(spending_timing_reward(20, 10.0, 7, 1.0, true, false) > 0.0)) {
         throw std::runtime_error("an urgent upgrade should still be rewarded with low liquidity");
     }
-    if (!(buy_xp_timing_reward(125, 80.0, 5, false) > 0.0)) {
-        throw std::runtime_error("buying XP with a large gold reserve in mid-game should be rewarded even without an immediate level-up");
-    }
-    if (!(buy_xp_timing_reward(50, 35.0, 5, false) >
-          buy_xp_timing_reward(20, 80.0, 2, false))) {
-        throw std::runtime_error("timely XP spending under pressure should outweigh saving with no urgency");
+    require_close(buy_xp_timing_reward(125, 80.0, 5, false), 0.0,
+                  "non-leveling XP must not be a generic excess-gold sink");
+    require_close(buy_xp_timing_reward(50, 35.0, 5, false), 0.0,
+                  "non-leveling XP must not compete with useful unit purchases");
+    if (!(buy_xp_timing_reward(50, 35.0, 5, true) >
+          buy_xp_timing_reward(20, 80.0, 2, true))) {
+        throw std::runtime_error("urgent level-up should be rewarded above safe early leveling");
     }
     require_close(buy_xp_timing_reward(25, 80.0, 5, false), 0.0,
                   "do not reward XP spending with low gold and safe health");

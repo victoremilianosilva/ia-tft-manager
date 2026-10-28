@@ -1795,6 +1795,16 @@ struct TFTEngine::Impl {
     void update_strategy(std::size_t i) {
         auto& list = player_envs[i].strategy;
         StrategyInfo info = list.empty() ? StrategyInfo{} : list.back();
+        // Keep the last confirmed lineup so small score fluctuations do not
+        // repeatedly replace the strategic plan on every refresh.
+        const auto previous_planned_units = info.planned_units;
+        const auto previous_planned_unit_ids = info.planned_unit_ids;
+        const auto previous_planned_traits = info.planned_traits;
+        const auto previous_planned_main_carry_id = info.planned_main_carry_id;
+        const double previous_planned_score = info.planned_composition_score;
+        const auto previous_planned_notes = info.planned_acquisition_notes;
+        const bool previous_composition_locked = info.composition_locked;
+        const std::string previous_direction = info.composition_direction;
         const auto& player = player_envs[i].info;
         const auto& economy = player_envs[i].economy;
         const double power = board_power(i);
@@ -2406,12 +2416,43 @@ struct TFTEngine::Impl {
                 catalog->all(), trait_milestones, info.composition_direction,
                 plan_focus, owned_copies, planning_slots, economy.level,
                 available_copies, currently_offered, &live_context);
-            info.planned_units = plan.unit_names;
-            info.planned_unit_ids = plan.unit_ids;
-            info.planned_traits = plan.core_traits;
-            info.planned_main_carry_id = plan.main_carry_id;
-            info.planned_composition_score = plan.score;
-            info.planned_acquisition_notes = plan.acquisition_notes;
+            const bool direction_transitioned =
+                info.composition_direction != previous_direction;
+            const bool keep_previous_plan = !direction_transitioned &&
+                !previous_planned_unit_ids.empty() &&
+                !strategy::should_replace_composition_plan(
+                    previous_planned_unit_ids, plan.unit_ids,
+                    previous_planned_score, plan.score,
+                    previous_composition_locked);
+            if (keep_previous_plan) {
+                info.planned_units = previous_planned_units;
+                info.planned_unit_ids = previous_planned_unit_ids;
+                info.planned_traits = previous_planned_traits;
+                info.planned_main_carry_id = previous_planned_main_carry_id;
+                info.planned_composition_score = previous_planned_score;
+                info.planned_acquisition_notes.clear();
+                for (const auto& note : previous_planned_notes) {
+                    if (note.rfind("OPGG_META_CANDIDATE:", 0) == 0)
+                        info.planned_acquisition_notes.push_back(note);
+                }
+                for (const auto& note : plan.acquisition_notes) {
+                    if (note.rfind("OPGG_META_AUDIT:", 0) == 0 ||
+                        note.rfind("OPGG_META_CANDIDATE:", 0) == 0)
+                        info.planned_acquisition_notes.push_back(note);
+                }
+                info.planned_acquisition_notes.push_back(
+                    "COMPOSITION_HYSTERESIS: kept_previous_plan (previous_score=" +
+                    std::to_string(previous_planned_score) + ", candidate_score=" +
+                    std::to_string(plan.score) + ", direction_locked=" +
+                    std::string(previous_composition_locked ? "true" : "false") + ")");
+            } else {
+                info.planned_units = plan.unit_names;
+                info.planned_unit_ids = plan.unit_ids;
+                info.planned_traits = plan.core_traits;
+                info.planned_main_carry_id = plan.main_carry_id;
+                info.planned_composition_score = plan.score;
+                info.planned_acquisition_notes = plan.acquisition_notes;
+            }
         }
 
         // Paridade com StrategyManager.compute_strategy_confidence().
@@ -3052,8 +3093,19 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             return std::find(strategy_before.core_traits.begin(),
                                 strategy_before.core_traits.end(), trait) != strategy_before.core_traits.end();
                         });
+                    // A unit explicitly selected by the current plan (including
+                    // an OP.GG-derived plan) is strategically relevant even when
+                    // it does not share the single anchor trait.
+                    const bool in_planned_comp =
+                        std::find(strategy_before.core_unit_ids.begin(),
+                            strategy_before.core_unit_ids.end(), def->internal_id) !=
+                                strategy_before.core_unit_ids.end() ||
+                        std::find(strategy_before.planned_unit_ids.begin(),
+                            strategy_before.planned_unit_ids.end(), def->internal_id) !=
+                                strategy_before.planned_unit_ids.end();
                     buy_strategy_approved = should_buy_unit(candidate_board_impact, upgrade_value,
-                        in_top_trait, old_bench_count, static_cast<int>(stage_for_round(lobby.round + 1)), def->cost);
+                        in_top_trait || in_planned_comp, old_bench_count,
+                        static_cast<int>(stage_for_round(lobby.round + 1)), def->cost);
                     // A second matching copy is valuable future upgrade potential,
                     // but only reward it when it also fits the current comp.
                     const bool composition_fit =
@@ -3625,8 +3677,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     lobby.stage <= 2 && early_purchase_has_progress
                         ? std::max(candidate_comp_score, 2.0)
                         : candidate_comp_score;
-                const double acquisition_value = 0.65 * effective_candidate_score +
-                    0.35 * composition_quality_delta;
+                const double acquisition_value = 0.75 * effective_candidate_score +
+                    0.25 * composition_quality_delta;
                 action_reward += reward_model::purchase_quality(
                     acquisition_value, false);
             }

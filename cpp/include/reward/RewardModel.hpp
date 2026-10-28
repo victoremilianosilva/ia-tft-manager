@@ -171,25 +171,21 @@ inline double buy_xp_timing_reward(
     int stage,
     bool leveled_up
 ) noexcept {
-    // XP is not a generic reward for spending. Non-leveling XP gets only a
-    // tiny signal while the player is at the 50-gold cap; once spending drops
-    // below that cap, stop rewarding consecutive XP buys. Actual level-ups can
-    // still be rewarded with less gold when they are strategically urgent.
+    // XP purchases that do not reach a new level have no immediate strategic
+    // value by themselves. Do not use XP as a generic sink for excess gold.
+    if (!leveled_up) return 0.0;
     if (stage <= 2 && hp >= 60.0) return 0.0;
-    if (!leveled_up && gold_before < 50) return 0.0;
-    if (leveled_up && gold_before < 30 && hp >= 35.0) return 0.0;
+    if (gold_before < 20 && hp >= 35.0) return 0.0;
 
     const double liquidity = gold_before >= 50 ? 1.0
-        : (gold_before >= 40 ? 0.70 : (gold_before >= 30 ? 0.40 : 0.20));
-    const double health_urgency = std::clamp((55.0 - hp) / 55.0, 0.0, 1.0);
+        : (gold_before >= 40 ? 0.70 : (gold_before >= 30 ? 0.45 : 0.25));
+    const double health_urgency = std::clamp((50.0 - hp) / 50.0, 0.0, 1.0);
     const double stage_urgency = std::clamp((static_cast<double>(stage) - 3.0) / 4.0,
                                             0.0, 1.0);
-    const double hoarding_urgency = gold_before >= 50 ? 0.45 : 0.0;
-    const double urgency = std::max({health_urgency, stage_urgency, hoarding_urgency});
+    const double urgency = std::max(health_urgency, stage_urgency);
     if (urgency <= 0.0) return 0.0;
-    const double quality = leveled_up ? 1.0 : 0.20;
-    // Level-up reward is capped; intermediate XP buys cannot farm large returns.
-    return std::min(0.10, 0.10 * liquidity * urgency * quality);
+    // Only an actual level transition is rewarded, with a strict cap.
+    return std::min(0.10, 0.10 * liquidity * urgency);
 }
 
 // Small additional signal for useful unit acquisitions beyond the early game.
@@ -206,23 +202,38 @@ inline double unit_purchase_timing_reward(
     bool builds_pair
 ) noexcept {
     if (stage < 3 || cost <= 0 || gold_before < cost ||
-        bench_count >= 7 || gold_before - cost < 15) return 0.0;
+        bench_count >= 7) return 0.0;
 
     const double fit = std::clamp(normalized_fit, 0.0, 1.0);
     if (!completes_upgrade && !builds_pair && fit < 0.35) return 0.0;
 
+    // Keep interest in a healthy early game, but permit good acquisitions when
+    // low HP or a late stage makes immediate board strength more valuable.
+    const int gold_after = gold_before - cost;
+    const int reserve = (hp <= 35.0 || stage >= 6) ? 5
+        : (stage >= 4 || hp <= 50.0 ? 10 : 20);
+    if (gold_after < reserve) return 0.0;
+
     const double liquidity = gold_before >= 50 ? 1.0
-        : (gold_before >= 40 ? 0.70 : (gold_before >= 30 ? 0.35 : 0.0));
-    const double urgency = std::max(
-        gold_before >= 50 ? 0.65 : (gold_before >= 40 ? 0.30 : 0.0),
-        std::clamp((50.0 - hp) / 50.0, 0.0, 1.0));
+        : (gold_before >= 40 ? 0.75
+        : (gold_before >= 30 ? 0.50 : (gold_before >= 20 ? 0.25 : 0.0)));
+    const double gold_urgency = gold_before >= 50 ? 0.65
+        : (gold_before >= 40 ? 0.35 : (gold_before >= 30 ? 0.15 : 0.0));
+    const double health_urgency = std::clamp((50.0 - hp) / 50.0, 0.0, 1.0);
+    const double raw_stage_urgency = std::clamp(
+        (static_cast<double>(stage) - 3.0) / 4.0, 0.0, 1.0);
+    // Stage alone must not encourage spending below 30 gold when health is safe.
+    const double stage_urgency =
+        (gold_before >= 30 || hp <= 50.0) ? raw_stage_urgency : 0.0;
+    const double urgency = std::max({gold_urgency, health_urgency, stage_urgency});
     if (liquidity <= 0.0 || urgency <= 0.0) return 0.0;
 
+    // Pair/upgrade progress is useful even when current comp fit is imperfect.
     const double quality = (completes_upgrade || builds_pair)
-        ? 1.0 : fit;
+        ? 1.0 : (0.55 + 0.45 * fit);
     const double bench_capacity = bench_count <= 3 ? 1.0
         : (bench_count <= 5 ? 0.75 : 0.40);
-    return std::min(0.08, 0.08 * liquidity * urgency * quality * bench_capacity);
+    return std::min(0.12, 0.12 * liquidity * urgency * quality * bench_capacity);
 }
 
 // Early-game acquisition shaping: prefer filling useful pairs and building a
@@ -275,9 +286,9 @@ inline double pass_opportunity_penalty(
                                             0.0, 1.0);
     // A rich player should not pass indefinitely in early rounds when a useful
     // unit is available; preserve saving only when there is no good opportunity.
-    const double baseline_urgency = gold >= 50 ? 0.25 : 0.0;
+    const double baseline_urgency = gold >= 50 ? 0.35 : 0.0;
     const double urgency = std::max({health_urgency, stage_urgency, baseline_urgency});
-    return -0.20 * liquidity * urgency;
+    return -0.24 * liquidity * urgency;
 }
 
 // A low-fit purchase sold almost immediately is usually a wasted buy.

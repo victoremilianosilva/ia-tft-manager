@@ -75,6 +75,35 @@ static bool configure_catalog(const std::filesystem::path& path, bool incompatib
 }
 
 int main(int argc, char** argv) {
+    const std::vector<std::int32_t> previous_lineup{1, 2, 3, 4, 5, 6, 7, 8};
+    const std::vector<std::int32_t> small_refinement{1, 2, 3, 4, 5, 6, 7, 9};
+    const std::vector<std::int32_t> different_lineup{11, 12, 13, 14, 15, 16, 17, 18};
+    if (!tft::strategy::should_replace_composition_plan(
+            previous_lineup, small_refinement, 10.0, 9.0, true)) {
+        std::cerr << "small lineup refinements should not trigger strategic lock-in\\n";
+        return 7;
+    }
+    if (tft::strategy::should_replace_composition_plan(
+            previous_lineup, different_lineup, 10.0, 11.0, false)) {
+        std::cerr << "material plan change without enough score margin should be rejected\\n";
+        return 8;
+    }
+    if (!tft::strategy::should_replace_composition_plan(
+            previous_lineup, different_lineup, 10.0, 11.5, false)) {
+        std::cerr << "material plan change with sufficient score margin should be accepted\\n";
+        return 9;
+    }
+    if (tft::strategy::should_replace_composition_plan(
+            previous_lineup, different_lineup, 10.0, 11.5, true)) {
+        std::cerr << "locked composition should require a larger switch margin\\n";
+        return 10;
+    }
+    if (!tft::strategy::should_replace_composition_plan(
+            previous_lineup, different_lineup, 10.0, 12.1, true)) {
+        std::cerr << "strong alternative should be able to replace a locked composition\\n";
+        return 11;
+    }
+
     const bool incompatible = argc > 1 && std::string(argv[1]) == "incompatible";
     const auto path = std::filesystem::temp_directory_path() /
         (incompatible ? "tft_opgg_incompatible_fixture.json" : "tft_opgg_selection_fixture.json");
