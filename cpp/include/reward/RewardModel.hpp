@@ -220,8 +220,11 @@ inline double unit_purchase_timing_reward(
     const double gold_urgency = gold_before >= 50 ? 0.65
         : (gold_before >= 40 ? 0.35 : (gold_before >= 30 ? 0.15 : 0.0));
     const double health_urgency = std::clamp((50.0 - hp) / 50.0, 0.0, 1.0);
-    const double stage_urgency = std::clamp((static_cast<double>(stage) - 3.0) / 4.0,
-                                            0.0, 1.0);
+    const double raw_stage_urgency = std::clamp(
+        (static_cast<double>(stage) - 3.0) / 4.0, 0.0, 1.0);
+    // Stage alone must not encourage spending below 30 gold when health is safe.
+    const double stage_urgency =
+        (gold_before >= 30 || hp <= 50.0) ? raw_stage_urgency : 0.0;
     const double urgency = std::max({gold_urgency, health_urgency, stage_urgency});
     if (liquidity <= 0.0 || urgency <= 0.0) return 0.0;
 
