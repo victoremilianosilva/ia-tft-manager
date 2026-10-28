@@ -13,7 +13,7 @@ from typing import Any
 import numpy as np
 import torch
 
-from policy import TFTPolicy
+from policy import TFTPolicy, ACTION_DIMS, LEGACY_ACTION_DIMS
 from cpp_lobby_env import CppTFTLobbyWrapper
 from viewer.player_logs import PlayerJsonLogWriter
 
@@ -22,7 +22,27 @@ CATALOG = ROOT / "data" / "units_gerado.json"
 ACTION_NAMES = {
     0: "BUY", 1: "REROLL", 2: "BUY_XP", 3: "MOVE_BENCH",
     4: "MOVE_BOARD", 5: "SELL", 6: "PASS",
+    7: "EQUIP_FROM_INVENTORY", 8: "CRAFT_AND_EQUIP",
 }
+
+
+def _resolve_action_dims(payload: dict) -> list[int]:
+    """Use the current policy contract when loading legacy/missing checkpoint metadata.
+
+    Older viewer code defaulted to seven action types. The current policy has nine
+    (including item actions); old seven-type weights are migrated by
+    TFTPolicy.load_compatible_state_dict.
+    """
+    action_dims = payload.get("action_dims")
+    if action_dims is None:
+        return list(ACTION_DIMS)
+    try:
+        normalized = [int(value) for value in action_dims]
+    except (TypeError, ValueError):
+        raise ValueError(f"Metadados action_dims inválidos no checkpoint: {action_dims!r}")
+    if normalized == LEGACY_ACTION_DIMS:
+        return list(ACTION_DIMS)
+    return normalized
 
 
 def _jsonable(value: Any):
@@ -118,7 +138,7 @@ class ViewerSession:
         if isinstance(payload, dict):
             state_dict = payload.get("policy_state_dict", payload.get("model_state_dict", payload.get("state_dict", payload.get("policy", payload))))
             obs_dim = payload.get("obs_dim")
-            action_dims = payload.get("action_dims", [7, 5, 9, 28, 28, 28])
+            action_dims = _resolve_action_dims(payload)
             hidden_size = payload.get("hidden_size", 512)
         else:
             raise ValueError("Formato de checkpoint não reconhecido: esperado um dicionário de pesos/metadata.")
