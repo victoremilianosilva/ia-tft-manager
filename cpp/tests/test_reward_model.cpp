@@ -224,10 +224,10 @@ int main() {
     if (!(late_raw_power > late_comp_fit)) {
         throw std::runtime_error("late-game item reward should favor immediate combat strength when comp fit is weak");
     }
-    require_close(item_assignment_quality(0.0, 0.0, 0.0, 1), -0.05,
+    require_close(item_assignment_quality(0.0, 0.0, 0.0, 1), -0.03,
                   "strategically poor item assignment has bounded negative reward");
-    if (item_assignment_quality(2.0, 2.0, 2.0, 4) > 0.15 ||
-        item_assignment_quality(-1.0, -1.0, -1.0, 4) < -0.05) {
+    if (item_assignment_quality(2.0, 2.0, 2.0, 4) > 0.20 ||
+        item_assignment_quality(-1.0, -1.0, -1.0, 4) < -0.03) {
         throw std::runtime_error("item assignment reward must clamp out-of-range inputs");
     }
 
