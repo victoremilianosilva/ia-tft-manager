@@ -21,3 +21,20 @@ def test_final_report_does_not_invent_missing_placement():
         0, {}, {"alive": True, "hp": 10, "gold": 40, "level": 6}
     )
     assert "colocação não fornecida pela engine" in text
+
+
+def test_item_state_captures_bag_and_equipped_units():
+    audit = {
+        "item_components": ["BFSword"],
+        "item_inventory": ["Deathblade"],
+        "board": [{
+            "occupied": True, "slot": 3, "champion_id": "TFT_TestCarry",
+            "uuid": "unit-1", "items": ["Deathblade"],
+        }],
+        "bench": [],
+    }
+    state = PlayerJsonLogWriter._item_state(audit)
+    assert state["components"] == ["BFSword"]
+    assert state["inventory"] == ["Deathblade"]
+    assert state["equipped"][0]["champion_id"] == "TFT_TestCarry"
+    assert state["equipped"][0]["items"] == ["Deathblade"]
