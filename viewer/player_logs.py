@@ -182,6 +182,27 @@ class PlayerJsonLogWriter:
             "items": list(unit.get("items", []) or []),
         }
 
+    @staticmethod
+    def _item_state(audit: dict) -> dict:
+        audit = audit or {}
+        equipped = []
+        for location in ("board", "bench"):
+            for slot, unit in enumerate(audit.get(location, []) or []):
+                if not isinstance(unit, dict) or not unit.get("occupied", True):
+                    continue
+                items = list(unit.get("items", unit.get("item_ids", [])) or [])
+                if items:
+                    equipped.append({
+                        "location": location, "slot": int(unit.get("slot", slot)),
+                        "champion_id": unit.get("champion_id") or unit.get("apiName") or "?",
+                        "uuid": unit.get("uuid"), "items": items,
+                    })
+        return {
+            "components": list(audit.get("item_components", []) or []),
+            "inventory": list(audit.get("item_inventory", []) or []),
+            "equipped": equipped,
+        }
+
     def _player_snapshot(self, audit: dict, public: dict) -> dict:
         audit, public = audit or {}, public or {}
         return {
@@ -960,6 +981,33 @@ class PlayerJsonLogWriter:
             is_round_end = round_resolved or finished
             before_state = self._player_snapshot(before_audit, before_public)
             after_state = self._player_snapshot(after_audit, after_public)
+            item_before = self._item_state(before_audit)
+            item_after = self._item_state(after_audit)
+            item_audit = {
+                "action_type": action_type,
+                "action_name": ACTION_NAMES.get(action_type, "UNKNOWN"),
+                "before": item_before,
+                "after": item_after,
+                "changed": item_before != item_after,
+            }
+            was_alive = before_state.get("alive") is True and not before_state.get("eliminated")
+            is_eliminated = after_state.get("eliminated") is True or after_state.get("alive") is False
+            if was_alive and is_eliminated:
+                placement = after_state.get("placement")
+                placement_text = (
+                    f"colocação final #{placement}" if placement is not None
+                    else "colocação final não informada pela engine"
+                )
+                self._append_entry(
+                    player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
+                    round_number=round_number, stage=stage, round_in_stage=round_in_stage,
+                    event_type="player_eliminated",
+                    text=f"[{timestamp}] ELIMINADO · {placement_text} · HP {after_state.get('hp', '?')}\\n",
+                    tag="round_msg",
+                    data={"placement": placement, "hp": after_state.get("hp"),
+                          "alive_before": before_state.get("alive"), "alive_after": after_state.get("alive"),
+                          "eliminated": after_state.get("eliminated")},
+                )
             economic_diagnostics = self._economic_diagnostics(
                 action, before_state, after_state, before_audit, after_audit
             )
@@ -994,6 +1042,7 @@ class PlayerJsonLogWriter:
                     "returned_reward": reward,
                 },
                 "state_changed": before_state != after_state,
+                "item_audit": item_audit,
                 "economic_diagnostics": economic_diagnostics,
                 "state_before": before_state, "state_after": after_state,
                 "composition_diagnostics": {
@@ -1107,6 +1156,13 @@ class PlayerJsonLogWriter:
                     f"+{after_state.get('round_win_gold', 0)}\n"
                     + self._unit_composition_fit_text(primary_data["composition_diagnostics"]["unit_fit"])
                 )
+                if action_type in (7, 8) or item_audit["changed"]:
+                    line += (
+                        "    ITEM AUDIT: "
+                        f"componentes {item_before['components']} -> {item_after['components']} | "
+                        f"bag {item_before['inventory']} -> {item_after['inventory']} | "
+                        f"equipados {item_before['equipped']} -> {item_after['equipped']}\\n"
+                    )
                 self._append_entry(
                     player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
                     round_number=round_number, stage=stage, round_in_stage=round_in_stage,
@@ -1177,8 +1233,15 @@ class PlayerJsonLogWriter:
             result = f"RESULTADO: {status}; colocação não fornecida pela engine"
         wins = player_state.get("wins")
         losses = player_state.get("losses")
+        winner_label = "não informado"
+        if winner_id is not None:
+            try:
+                winner_label = f"JOGADOR {int(winner_id) + 1}"
+            except (TypeError, ValueError):
+                winner_label = str(winner_id)
         return (
-            f"  {result}\n"
+            f"  VENCEDOR DA PARTIDA: {winner_label}\\n"
+            f"  {result}\\n"
             f"  HP final: {player_state.get('hp', '?')} | Ouro final: {player_state.get('gold', '?')} | "
             f"Nível: {player_state.get('level', '?')}\n"
             f"  Vitórias: {wins if wins is not None else '?'} | Derrotas: {losses if losses is not None else '?'}\n"
