@@ -160,6 +160,32 @@ inline double spending_timing_reward(
     return 0.24 * liquidity * urgency * quality;
 }
 
+// Early-game acquisition shaping: prefer filling useful pairs and building a
+// playable bench before spending actions on XP. This is deliberately bounded
+// and only applies when there is room and the purchase is affordable.
+inline double early_purchase_reward(
+    int stage,
+    int gold_before,
+    int cost,
+    int bench_count,
+    double normalized_fit,
+    bool completes_upgrade,
+    bool builds_pair
+) noexcept {
+    if (stage > 2 || bench_count >= 9 || cost <= 0 || gold_before < cost)
+        return 0.0;
+
+    const double fit = std::clamp(normalized_fit, 0.0, 1.0);
+    if (!completes_upgrade && !builds_pair && fit < 0.15)
+        return 0.0;
+
+    const double capacity = bench_count <= 3 ? 1.0
+        : (bench_count <= 5 ? 0.75 : 0.40);
+    const double quality = completes_upgrade ? 1.0
+        : (builds_pair ? std::max(0.65, fit) : fit);
+    return capacity * (0.12 + 0.16 * quality);
+}
+
 // Small opportunity-cost signal for passing while rich and under pressure,
 // but only when a genuinely useful shop purchase or upgrade is available.
 // The caller must establish that opportunity; an empty/weak shop is not a
