@@ -36,7 +36,7 @@ inline bool should_replace_composition_plan(
     double previous_score,
     double candidate_score,
     bool composition_locked
-) noexcept {
+) {
     if (candidate_ids.empty()) return false;
     if (previous_ids.empty()) return true;
     if (!std::isfinite(previous_score) || !std::isfinite(candidate_score)) return false;
