@@ -245,11 +245,18 @@ class ChampionCell(QFrame):
             "background:rgba(3,7,18,190);color:#fde047;font-size:6pt;font-weight:700;"
             "padding:0 1px;border:0;"
         )
+        self.items_badge = QLabel("", self)
+        self.items_badge.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        self.items_badge.setStyleSheet(
+            "background:rgba(3,7,18,220);color:#67e8f9;font-size:7pt;font-weight:700;"
+            "padding:0 2px;border:0;border-radius:3px;"
+        )
         layout = QGridLayout(self)
         layout.setContentsMargins(1, 1, 1, 1)
         layout.setSpacing(0)
         layout.addWidget(self.image, 0, 0)
         layout.addWidget(self.stars, 0, 0, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignRight)
+        layout.addWidget(self.items_badge, 0, 0, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         self._set_empty_style()
 
     def set_square_size(self, size: int):
@@ -294,6 +301,8 @@ class ChampionCell(QFrame):
         self.image.setText("·")
         self.image.setStyleSheet("background:transparent;border:0;color:#94a3b8;font-size:8pt;")
         self.stars.setText("")
+        self.items_badge.setText("")
+        self.items_badge.setToolTip("")
 
     def set_unit(self, unit: dict | None, icon_loader: ChampionIconLoader,
                  position_warning: bool = False):
@@ -315,7 +324,14 @@ class ChampionCell(QFrame):
         self._apply_cell_style(border)
         role = icon_loader.profile_for(champion_id).get("role_name") or "papel desconhecido"
         warning_text = " · POSICIONAMENTO SUSPEITO (linha frontal/traseira)" if self._position_warning else ""
-        self.setToolTip(f"{champion_id} · {role} · {'★' * star} · custo {cost or '?'}{warning_text}")
+        equipped_items = list(unit.get("items", unit.get("item_ids", [])) or [])
+        item_names = ", ".join(map(str, equipped_items)) if equipped_items else "nenhum"
+        self.items_badge.setText(f"◆{len(equipped_items)}" if equipped_items else "")
+        self.items_badge.setToolTip(f"Itens equipados: {item_names}")
+        self.setToolTip(
+            f"{champion_id} · {role} · {'★' * star} · custo {cost or '?'}"
+            f" · Itens: {item_names}{warning_text}"
+        )
         pixmap = icon_loader.pixmap_for(champion_id)
         if pixmap is not None and not pixmap.isNull():
             size = max(16, min(self.width(), self.height()) - 4)
@@ -375,6 +391,11 @@ class PlayerCard(QFrame):
         self.metrics = QLabel("HP —   OURO —   NV —   XP —")
         self.metrics.setObjectName("muted")
         root.addWidget(self.metrics)
+        self.items_line = QLabel("BAG: aguardando estado dos itens")
+        self.items_line.setObjectName("muted")
+        self.items_line.setWordWrap(True)
+        self.items_line.setMaximumHeight(34)
+        root.addWidget(self.items_line)
         strategy_row = QHBoxLayout()
         self.strategy_line = QLabel("Strategy: — | Comp direction: —")
         self.strategy_line.setWordWrap(True)
@@ -464,6 +485,14 @@ class PlayerCard(QFrame):
             f"COLOCAÇÃO {placement_text}   VITÓRIAS {wins_text}   DERROTAS {losses_text}\n"
             f"ITENS EQUIPADOS {equipped_count}   COMPONENTES/ITENS NA BAG {bag_count}"
         )
+        components = list(audit.get("item_components", []) or [])
+        inventory = list(audit.get("item_inventory", []) or [])
+        bag_text = (
+            "Componentes: " + (", ".join(map(str, components)) if components else "nenhum")
+            + " | Itens completos: " + (", ".join(map(str, inventory)) if inventory else "nenhum")
+        )
+        self.items_line.setText("BAG · " + bag_text)
+        self.items_line.setToolTip(bag_text)
         strategy = audit.get("strategy_info") or {}
         strategy_name = strategy.get("strategy_name") or "ECON"
         self.strategy_line.setText(
