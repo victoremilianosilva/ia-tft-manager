@@ -3949,6 +3949,21 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             success && reroll_new_best_fit > reroll_old_best_fit,
             success && economy.level > old_level,
             active_strategy_id == 2 || active_strategy_id == 3);
+
+        // A policy-specific bonus must not erase the shared economic objective:
+        // preserve the path to 50 gold, except when the board is already full
+        // and leveling unlocks a real slot, or health pressure is critical.
+        if (type == 2 && success && old_gold < 50 &&
+            this->info.hp > 30.0 && old_board_count < old_level) {
+            action_reward -= 0.12;
+        }
+        // Even a better shop is usually not worth sacrificing interest below
+        // 50. Critical health is the explicit exception; at/above 50 the
+        // liquidity-scaled reroll quality signal decides whether to spend.
+        if (type == 1 && success && old_gold < 50 && this->info.hp > 40.0) {
+            action_reward -= 0.06;
+        }
+
         const double action_gold_reward =
             reward_model::gold_change_reward(old_gold, economy.gold);
         action_reward += action_gold_reward;
