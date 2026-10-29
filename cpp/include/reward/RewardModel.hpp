@@ -116,27 +116,36 @@ inline double strategy_action_reward(
     bool has_composition_target) noexcept {
     double reward = 0.0;
     switch (strategy_id) {
-        case 0: // ECON: protect interest up to 50, but permit useful surplus spend.
+        case 0: // ECON: preserve interest; never treat XP as the default use of gold.
             if (new_gold >= 50 && old_gold < 50) reward += 0.04;
             if (old_gold >= 50 && new_gold >= 50 &&
                 action_type == 0 && useful_purchase) reward += 0.03;
-            if (old_gold < 50 && new_gold < old_gold && hp > 40.0 &&
-                !has_composition_target &&
-                ((action_type == 1 || action_type == 2) ||
-                 (action_type == 0 && !useful_purchase))) reward -= 0.04;
+            if (new_gold < 50 && new_gold < old_gold && hp > 40.0 &&
+                !has_composition_target) {
+                // Keep the 50-gold interest floor even when the action starts
+                // above it. Useful unit purchases remain exempt.
+                if (action_type == 2) reward -= 0.09;
+                else if (action_type == 1)
+                    reward -= reroll_improved ? 0.0 : 0.025;
+                else if (action_type == 0 && !useful_purchase) reward -= 0.06;
+            }
             break;
-        case 1: // STABILIZE: spend only when it builds a playable board.
-            if ((action_type == 0 && useful_purchase) ||
-                (action_type == 2 && leveled)) reward += 0.07;
+        case 1: // STABILIZE: favor playable-board upgrades over routine leveling.
+            if (action_type == 0 && useful_purchase) reward += 0.07;
+            if (action_type == 2 && leveled)
+                reward += hp <= 30.0 ? 0.07 : (old_gold >= 50 ? 0.05 : 0.015);
             if (hp <= 35.0 && action_type == 6 && !useful_purchase)
                 reward -= 0.04;
             break;
-        case 2: // FAST8: value level progress; discourage replacing it with rolls.
-            if (action_type == 2 && leveled) reward += 0.12;
-            if (action_type == 1) reward -= 0.05;
+        case 2: // FAST8 is a plan, not permission to ignore early-game economy.
+            if (action_type == 2 && leveled)
+                reward += hp <= 30.0 ? 0.10 : (old_gold >= 50 ? 0.07 : 0.025);
+            // A good reroll remains a valid tactical choice; do not penalize it
+            // simply because the active composition aims for level eight.
+            if (action_type == 1 && !reroll_improved) reward -= 0.015;
             break;
-        case 3: // SLOWROLL: only rolls that improve the offered target have value.
-            if (action_type == 1) reward += reroll_improved ? 0.12 : -0.04;
+        case 3: // SLOWROLL: reward improved rolls, but keep the signal bounded.
+            if (action_type == 1) reward += reroll_improved ? 0.10 : -0.025;
             if (action_type == 2 && !leveled) reward -= 0.07;
             break;
         case 4: // ALL_IN: useful immediate strength over passive saving.
@@ -353,10 +362,28 @@ inline double early_purchase_reward(
 // but only when a genuinely useful shop purchase or upgrade is available.
 // The caller must establish that opportunity; an empty/weak shop is not a
 // reason to force spending.
-inline double reroll_quality_reward(double old_best_fit, double new_best_fit) noexcept {
-    // Reward only a real increase in the best available offer; rerolling itself
-    // is not progress and repeatedly rerolling a weak shop cannot farm reward.
-    return 0.16 * std::tanh((new_best_fit - old_best_fit) / 5.0);
+inline double reroll_quality_reward(
+    double old_best_fit,
+    double new_best_fit,
+    int gold_before = 50,
+    double hp = 100.0,
+    int stage = 1
+) noexcept {
+    // Reroll only has value when the shop gains a genuinely better strategic
+    // option. Keep it weaker than the interest opportunity cost while poor,
+    // but allow a strong roll to be worthwhile with surplus gold or under
+    // meaningful health pressure.
+    const double improvement = std::tanh((new_best_fit - old_best_fit) / 5.0);
+    const double liquidity = gold_before >= 50 ? 1.0
+        : (gold_before >= 40 ? 0.45
+        : (gold_before >= 30 ? 0.25
+        : (gold_before >= 20 ? 0.12 : 0.05)));
+    const double urgency = std::clamp((45.0 - hp) / 45.0, 0.0, 1.0);
+    const double stage_factor = stage <= 2 && hp > 50.0 ? 0.65 : 1.0;
+    const double pressure_factor = 1.0 + 0.75 * urgency;
+    // Below the interest cap a roll should usually lose to saving; under
+    // critical HP, pressure can justify that opportunity cost.
+    return 0.14 * improvement * liquidity * stage_factor * pressure_factor;
 }
 
 inline double pass_opportunity_penalty(
@@ -416,17 +443,28 @@ inline double reversed_sequence_adjustment(
 inline double sale_quality(double fit_score, bool core_unit,
                            bool protects_upgrade, bool frees_bench_space) noexcept {
     const double fit = std::clamp(fit_score, 0.0, 1.0);
-    // Selling a copy that completes a pair destroys accumulated upgrade
-    // progress; this must outweigh the small convenience of freeing a slot.
-    return 0.06 - 0.12 * fit -
-        (core_unit ? 0.12 : 0.0) -
-        (protects_upgrade ? 0.20 : 0.0) +
-        (frees_bench_space ? 0.04 : 0.0);
+    // Sale proceeds are already represented by gold_change_reward. This signal
+    // must therefore protect strategic units and copies rather than rewarding
+    // selling merely because it produces gold.
+    return 0.015 - 0.20 * fit -
+        (core_unit ? 0.28 : 0.0) -
+        (protects_upgrade ? 0.30 : 0.0) +
+        (frees_bench_space ? 0.035 : 0.0);
 }
 
 // Shared no-progress penalty for both board repositioning and bench-to-board
 // replacement. Negative deltas add proportional cost instead of being flattened
 // by a fixed assignment in the action executor.
+// Penalize replacing a planned/core board unit with an equivalent or
+// weaker bench unit. Clear composition upgrades remain allowed.
+inline double core_displacement_penalty(
+    bool displaced_core_unit,
+    double composition_quality_delta
+) noexcept {
+    return displaced_core_unit && composition_quality_delta < 2.0
+        ? -0.30 : 0.0;
+}
+
 inline double movement_no_progress_penalty(
     double composition_delta,
     double synergy_delta,
