@@ -118,6 +118,33 @@ inline EconomicStrategyDecision select_economic_strategy(
             out.scores[static_cast<std::size_t>(best)]) best = i;
 
     out.selected = static_cast<EconomicStrategy>(best);
+    switch (out.selected) {
+        case EconomicStrategy::Econ:
+            out.reason = s.gold < 50
+                ? "ECON: acumular até o limite de juros de 50"
+                : "ECON: manter reserva de 50 e gastar excedente útil";
+            break;
+        case EconomicStrategy::Stabilize:
+            out.reason = s.hp <= 38.0
+                ? "STABILIZE: pressão de vida"
+                : "STABILIZE: tabuleiro fraco sob pressão";
+            break;
+        case EconomicStrategy::Fast8:
+            out.reason = "FAST8: composição planejada exige nível 8";
+            break;
+        case EconomicStrategy::Slowroll:
+            out.reason = "SLOWROLL: composição tem alvo de 3 estrelas";
+            break;
+        case EconomicStrategy::AllIn:
+            out.reason = "HP crítico: gastar para sobreviver";
+            break;
+        case EconomicStrategy::WinStreak:
+            out.reason = "WINSTREAK: preservar vantagem atual";
+            break;
+        case EconomicStrategy::LossStreak:
+            out.reason = "LOSS_STREAK: converter derrota em economia sem risco crítico";
+            break;
+    }
     double second = kIneligible;
     for (int i = 0; i < 7; ++i)
         if (i != best) second = std::max(second, out.scores[static_cast<std::size_t>(i)]);
