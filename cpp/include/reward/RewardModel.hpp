@@ -120,8 +120,10 @@ inline double strategy_action_reward(
             if (new_gold >= 50 && old_gold < 50) reward += 0.04;
             if (old_gold >= 50 && new_gold >= 50 &&
                 action_type == 0 && useful_purchase) reward += 0.03;
-            if (old_gold < 50 && new_gold < old_gold && hp > 40.0 &&
+            if (new_gold < 50 && new_gold < old_gold && hp > 40.0 &&
                 !has_composition_target) {
+                // Keep the 50-gold interest floor even when the action starts
+                // above it. Useful unit purchases remain exempt.
                 if (action_type == 2) reward -= 0.09;
                 else if (action_type == 1)
                     reward -= reroll_improved ? 0.0 : 0.025;
