@@ -70,6 +70,12 @@ int main() {
     require_close(gold_potential(10), 0.10, "interest breakpoint potential");
     require_close(gold_change_reward(10, 9), -0.082, "spending below interest breakpoint");
     require_close(gold_change_reward(9, 10), 0.082, "saving to interest breakpoint");
+    require_close(core_displacement_penalty(true, 0.0), -0.30,
+                  "replacing a core unit without clear improvement is penalized");
+    require_close(core_displacement_penalty(true, 2.0), 0.0,
+                  "clear composition improvement can replace a core unit");
+    require_close(core_displacement_penalty(false, -1.0), 0.0,
+                  "non-core displacement does not receive the core-specific penalty");
     require_close(movement_no_progress_penalty(0.0, 0.0, 0.0), -0.10,
                   "no-progress movement baseline penalty");
     if (!(movement_no_progress_penalty(0.0, -2.0, -1.0) <
