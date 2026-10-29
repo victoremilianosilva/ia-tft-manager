@@ -50,6 +50,13 @@ int main() {
     require(d.selected != EconomicStrategy::Slowroll,
             "low level and gold alone must not select SLOWROLL");
 
+    s.hp = 30; s.gold = 50; s.board_power = 45;
+    s.composition_requests_fast8 = true;
+    d = select_economic_strategy(s);
+    require(d.selected == EconomicStrategy::Stabilize,
+            "low health should stabilize before a non-emergency FAST8 plan");
+    s.composition_requests_fast8 = false;
+
     s.hp = 12;
     d = select_economic_strategy(s);
     require(d.selected == EconomicStrategy::AllIn,
