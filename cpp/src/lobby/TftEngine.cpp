@@ -3736,12 +3736,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 action_reward += reward_model::reroll_quality_reward(
                     reroll_old_best_fit, reroll_new_best_fit,
                     old_gold, this->info.hp, static_cast<int>(lobby.stage));
-                if (reroll_new_best_fit > reroll_old_best_fit) {
-                    action_reward += reward_model::spending_timing_reward(
-                        old_gold, this->info.hp, lobby.stage,
-                        std::clamp(reroll_new_best_fit / 32.5, 0.0, 1.0),
-                        false, false);
-                }
+                // Reroll quality already includes liquidity and urgency. Do not
+                // add the generic spending-timing bonus here, which could make
+                // rolling below 50 more profitable than preserving interest.
             }
         } else if (type == 2) {
             success = economy.gold == old_gold - EconomyEngine::BUY_XP_COST;
