@@ -32,6 +32,24 @@ PASS = [6, 0, 0, 0, 0, 0]
 MOVEMENT_TYPES = {3, 4}
 
 
+def _reward_component_snapshot(info, player_id, total_reward):
+    """Expose reward channels separately when the native adapter provides them."""
+    result = {"total_reward": total_reward}
+    for key in ("action_rewards", "combat_rewards", "placement_rewards"):
+        values = info.get(key)
+        if isinstance(values, (list, tuple, np.ndarray)) and player_id < len(values):
+            try:
+                result[key.removesuffix("_rewards")] = float(values[player_id])
+            except (TypeError, ValueError):
+                result[key.removesuffix("_rewards")] = None
+        else:
+            result[key.removesuffix("_rewards")] = None
+    result["all_native_channels_available"] = all(
+        result.get(key) is not None for key in ("action", "combat", "placement")
+    )
+    return result
+
+
 def _mask_batch(masks, player_ids, device):
     keys = masks[player_ids[0]].keys()
     return {
@@ -433,12 +451,10 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
                         _legal_alternatives(action, masks[player_id], before),
                         int(before_snapshot["round"]), action
                     ),
-                    "reward_components": info.get("reward_components", [None] * 8)[player_id]
-                        if isinstance(info.get("reward_components"), (list, tuple))
-                        and player_id < len(info.get("reward_components")) else None,
-                    "reward_components_available": isinstance(info.get("reward_components"), (list, tuple))
-                        and player_id < len(info.get("reward_components"))
-                        and info.get("reward_components")[player_id] is not None,
+                    "reward_components": _reward_component_snapshot(
+                        info, player_id,
+                        float(total_rewards[player_id]) if player_id < len(total_rewards) else None
+                    ),
                     "native_mask": _json_masks(masks[player_id]),
                     "board_bench_signature_before": repr(before_sig),
                     "board_bench_signature_after": repr(after_sig),
