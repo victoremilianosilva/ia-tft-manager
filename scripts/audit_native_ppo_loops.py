@@ -107,6 +107,27 @@ def _legal_alternatives(action, masks, player):
                  "champion_id": (offers[slot].get("champion_id") if slot < len(offers) and isinstance(offers[slot], dict) else None)}
                 for slot, allowed_slot in enumerate(shop_mask) if allowed_slot
             ]
+        elif kind == 3:
+            source_mask = np.asarray(masks.get("bench_move_source_mask", []), dtype=bool).reshape(-1)
+            target_masks = np.asarray(masks.get("bench_to_board_target_masks", []), dtype=bool)
+            entry["moves"] = [
+                {"source_bench_slot": int(src), "legal_board_targets":
+                 np.flatnonzero(target_masks[src]).astype(int).tolist()}
+                for src, allowed_src in enumerate(source_mask)
+                if allowed_src and src < len(target_masks)
+            ]
+        elif kind == 4:
+            source_mask = np.asarray(masks.get("board_source_mask", []), dtype=bool).reshape(-1)
+            target_masks = np.asarray(masks.get("board_move_target_masks", []), dtype=bool)
+            entry["moves"] = [
+                {"source_board_slot": int(src), "legal_board_targets":
+                 np.flatnonzero(target_masks[src]).astype(int).tolist()}
+                for src, allowed_src in enumerate(source_mask)
+                if allowed_src and src < len(target_masks)
+            ]
+        elif kind == 5:
+            sell_mask = np.asarray(masks.get("bench_source_mask", []), dtype=bool).reshape(-1)
+            entry["sellable_bench_slots"] = np.flatnonzero(sell_mask).astype(int).tolist()
         alternatives.append(entry)
     return alternatives
 
@@ -136,7 +157,8 @@ def _economy_diagnostic(player, strategy, legal_alternatives, round_index, selec
     action_type = int(selected_action[0]) if selected_action else -1
     action_reason = strategy.get("reason") or strategy.get("strategy_reason")
     risk_economy = risk and gold > 50 and level < expected_level
-    missed_candidate = bool(risk_economy and action_type == 6 and useful_offer)
+    progression_candidate = useful_offer or (has_xp and level < expected_level and gold > 50)
+    missed_candidate = bool(risk_economy and action_type == 6 and progression_candidate)
     return {
         "risk_state": risk,
         "high_gold": gold > 50,
@@ -146,11 +168,12 @@ def _economy_diagnostic(player, strategy, legal_alternatives, round_index, selec
         "legal_xp_available": has_xp,
         "legal_reroll_available": has_reroll,
         "useful_pair_or_upgrade_offer_detected": useful_offer,
+        "level_progression_option_detected": bool(has_xp and level < expected_level and gold > 50),
         "selected_action_type": action_type,
         "selected_strategy_reason": action_reason,
         "potential_missed_progress": missed_candidate,
         "interpretation": (
-            "PASS while at risk, above 50 gold, below the heuristic level target, and a matching copy is in shop; review whether buying is actually correct."
+            "PASS while at risk, above 50 gold and below the level target, with a matching copy or an XP progression option; review board strength and actual marginal value."
             if missed_candidate else
             "No strong missed-progress signal. A legal offer alone is not evidence that spending was correct."
         ),
