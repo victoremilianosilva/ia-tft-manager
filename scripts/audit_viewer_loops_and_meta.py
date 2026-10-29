@@ -25,6 +25,8 @@ CANDIDATE_RE = re.compile(r"OPGG_META_CANDIDATE: (?P<name>.*?) \(score=(?P<score
 DIRECTION_RE = re.compile(r"COMP DIRECTION: (?P<direction>[^|]+)\| FOCUS: (?P<focus>[^|]+)\| LOCK: (?P<lock>[^|]+)\| STRENGTH: (?P<strength>[\d.]+)(?: \| FONTE COMP: (?P<source>[^\r\n]+))?", re.I)
 BUY_RE = re.compile(r"\] COMPROU: (?P<unit>.*?) \(Custo (?P<cost>\d+)", re.I)
 ROUND_RE = re.compile(r"FIM DO ROUND (?P<stage>\d+)-(?P<round>\d+) \| GOLD: (?P<gold>\d+)", re.I)
+SYNERGY_RE = re.compile(r"[⬆⬇] SINERGIA: (?P<name>.*?) nível (?P<level>\\d+)", re.I)
+PLACEMENT_RE = re.compile(r"(?:ELIMINADO · colocação final|COLOCAÇÃO FINAL:)\\s*#(?P<place>\\d+)", re.I)
 UNIT_RE = re.compile(r"\[([^\[\]]+\|[^\[\]]+)\]")
 
 
