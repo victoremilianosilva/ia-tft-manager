@@ -3774,16 +3774,22 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 // Scale its progress signal by liquidity and urgency so the
                 // early policy builds pairs and protects interest before routine XP.
                 const double level_scale = this->info.hp <= 30.0 ? 0.65
-                    : (old_gold >= 50 ? 0.55
-                    : (old_gold >= 40 ? 0.35
-                    : (old_gold >= 30 ? 0.22
-                    : (old_gold >= 20 ? 0.12 : 0.06))));
+                    : (old_gold >= 54 ? 0.30
+                    : (old_gold >= 50 ? 0.12
+                    : (old_gold >= 40 ? 0.10
+                    : (old_gold >= 30 ? 0.08
+                    : (old_gold >= 20 ? 0.04 : 0.02)))));
                 action_reward += level_scale * reward_model::level(
                     economy.level, this->previous_reward_level);
                 this->previous_reward_level = economy.level;
                 // Early XP should not receive the rich-spending bonus unless
                 // the player is already under meaningful health pressure.
-                if (lobby.stage > 2 || this->info.hp < 60.0) {
+                // Do not stack a generic spending bonus onto an XP action
+                // that breaks the interest floor. Preserve the exception for
+                // critical HP and for spending surplus while staying at 50+.
+                if (this->info.hp <= 30.0 ||
+                    (old_gold >= EconomyEngine::BUY_XP_COST + 50 &&
+                     economy.gold >= 50)) {
                     action_reward += reward_model::spending_timing_reward(
                         old_gold, this->info.hp, lobby.stage, 0.0, false, true);
                 }
