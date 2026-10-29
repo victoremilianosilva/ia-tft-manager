@@ -133,7 +133,21 @@ def parse_log(path: Path) -> dict:
                 "status": "executed_source_observed" if executed_meta else
                           ("selected_but_execution_not_proven" if selected_events else "not_selected"),
                 "last_opgg_source": latest_opgg_source,
+                "final_strategy": latest,
                 "selected_names": selected_names,
+                "trace": {
+                    "selection_lines": [e["line"] for e in selected_events],
+                    "purchases_after_first_selection": [
+                        purchase for purchase in purchases
+                        if selected_events and purchase["line"] >= selected_events[0]["line"]
+                    ],
+                    "final_deployed_units": final_board,
+                    "synergy_events": synergies,
+                    "final_strength": latest.get("strength"),
+                    "final_direction": latest.get("direction"),
+                    "final_source": latest.get("source"),
+                    "final_placement": int(placement_match.group("place")) if placement_match else None,
+                },
             },
             "candidate_to_selection": [
                 {"composition": e.get("best"), "line": e["line"],
