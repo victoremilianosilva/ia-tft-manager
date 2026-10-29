@@ -103,7 +103,7 @@ def main():
         final_player = {
             "gold": final.get("gold_after"),
             "level": (final.get("cycle_context_after") or {}).get("level", final.get("level_after")),
-            "hp": (final.get("cycle_context_after") or {}).get("hp"),
+            "hp": final.get("hp_after"),
             "board_composition_score": (final.get("strategy_after") or {}).get("board_composition_score"),
             "board_unit_count": (final.get("strategy_after") or {}).get("board_unit_count"),
             "board_two_star_count": (final.get("strategy_after") or {}).get("board_two_star_count"),
