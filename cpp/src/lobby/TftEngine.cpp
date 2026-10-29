@@ -3710,9 +3710,25 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             // levels are less valuable than building a playable board and pairs.
             action_reward = success ? (lobby.stage <= 2 ? -0.03 : 0.0) : -0.10;
             if (success) {
+                double unlocked_board_power = 0.0;
+                // A level-up can unlock a board slot. Credit only a plausible
+                // immediate strength gain when the old board was full and a
+                // deployable bench unit is already available.
+                if (economy.level > old_level && old_board_count >= old_level) {
+                    for (const auto& unit : this->bench) {
+                        if (!unit) continue;
+                        const auto* definition = lobby.catalog->find_by_id(
+                            unit->champion_internal_id);
+                        if (!definition) continue;
+                        unlocked_board_power = std::max(
+                            unlocked_board_power,
+                            static_cast<double>(definition->cost) *
+                                static_cast<double>(unit->star) * 2.0);
+                    }
+                }
                 action_reward += reward_model::xp_level_transition_value(
                     old_gold, economy.gold, this->info.hp, lobby.stage,
-                    old_level, economy.level);
+                    old_level, economy.level, unlocked_board_power);
             }
             // RewardManager tracks the last rewarded level, initialized to 1,
             // not merely the level at the start of this action.
