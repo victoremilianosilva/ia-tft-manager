@@ -101,6 +101,12 @@ int main() {
     if (!(unit_purchase_timing_reward(6, 25, 2, 1, 0.7, 25.0, false, false) > 0.0)) {
         throw std::runtime_error("useful unit purchase should be rewarded under low-health pressure");
     }
+    const double buy_50 = unit_purchase_timing_reward(4, 50, 2, 2, 0.8, 80.0, false, true);
+    const double buy_100 = unit_purchase_timing_reward(4, 100, 2, 2, 0.8, 80.0, false, true);
+    if (!(buy_100 > buy_50))
+        throw std::runtime_error("useful unit acquisition should gain value from surplus gold");
+    require_close(unit_purchase_timing_reward(4, 100, 2, 7, 0.8, 80.0, false, true),
+                  0.0, "surplus must not fill an overcrowded bench");
     require_close(unit_purchase_timing_reward(5, 50, 1, 7, 0.7, 30.0, false, false),
                   0.0, "do not reward purchases when the bench is nearly full");
     require_close(early_purchase_reward(2, 10, 1, 2, 0.5, false, false),
@@ -197,8 +203,17 @@ int main() {
         throw std::runtime_error("XP spending reward must remain capped to avoid repeated XP spam");
     }
     if (!(pass_opportunity_penalty(50, 100.0, 2, true) < 0.0)) {
-        throw std::runtime_error("passing indefinitely at the interest cap with a useful offer should be discouraged");
+        throw std::runtime_error("passing at the interest cap with a useful offer should be discouraged");
     }
+    const double pass_50 = pass_opportunity_penalty(50, 100.0, 2, false);
+    const double pass_75 = pass_opportunity_penalty(75, 100.0, 2, false);
+    const double pass_125 = pass_opportunity_penalty(125, 100.0, 2, false);
+    const double pass_200 = pass_opportunity_penalty(200, 100.0, 2, false);
+    if (!(pass_50 > pass_75 && pass_75 > pass_125 && pass_125 > pass_200))
+        throw std::runtime_error("PASS penalty must grow with gold above 50");
+    if (!(pass_opportunity_penalty(125, 100.0, 2, true) <
+          pass_opportunity_penalty(125, 100.0, 2, false)))
+        throw std::runtime_error("PASS with a useful unit offer must be penalized more");
     if (!(pass_opportunity_penalty(50, 20.0, 6, true) < 0.0)) {
         throw std::runtime_error("passing with a useful offer, high gold and low HP must be discouraged");
     }
@@ -211,6 +226,9 @@ int main() {
     }
     require_close(reroll_quality_reward(8.0, 8.0), 0.0,
                   "reroll with no quality improvement receives no reward");
+    require_close(strategy_action_reward(0, 1, 60, 58, 80.0, 4,
+                                         false, true, false, false),
+                  0.0, "non-reroll strategy gets no reroll improvement bonus");
     if (!(reroll_quality_reward(2.0, 10.0) > 0.0)) {
         throw std::runtime_error("reroll that reveals a much better offer should be rewarded");
     }
