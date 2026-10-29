@@ -267,7 +267,8 @@ inline double xp_level_transition_value(
     double value = milestone_value + 0.045 * urgency * surplus +
         0.025 * marginal_strength;
     int lost_breakpoints = 0;
-    for (const int threshold : {10, 20, 30, 40, 50}) {
+    constexpr int interest_thresholds[] = {10, 20, 30, 40, 50};
+    for (const int threshold : interest_thresholds) {
         if (gold_before >= threshold && gold_after < threshold) ++lost_breakpoints;
     }
     value -= 0.025 * static_cast<double>(lost_breakpoints);
