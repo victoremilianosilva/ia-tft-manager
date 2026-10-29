@@ -372,7 +372,6 @@ inline double reroll_quality_reward(
     // but allow a strong roll to be worthwhile with surplus gold or under
     // meaningful health pressure.
     const double improvement = std::tanh((new_best_fit - old_best_fit) / 5.0);
-    if (improvement <= 0.0) return 0.0;
     const double liquidity = gold_before >= 50 ? 1.0
         : (gold_before >= 40 ? 0.80
         : (gold_before >= 30 ? 0.60
