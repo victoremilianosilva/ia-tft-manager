@@ -1157,7 +1157,13 @@ def main() -> int:
             if doc:
                 audit_json(path, doc, report, args.loop_window, args.comp_window)
         elif path.suffix.lower() == ".tft":
-            audit_text(path, report)
+            # Current PlayerJsonLogWriter stores structured JSON documents in .tft
+            # files. Prefer structured analysis; fall back to legacy text parsing.
+            doc = read_json(path)
+            if doc:
+                audit_json(path, doc, report, args.loop_window, args.comp_window)
+            else:
+                audit_text(path, report)
     unique, seen = [], set()
     for item in report["issues"]:
         key = (item["severity"], item["code"], item["player"], item["round"], item["step"], item["message"])
