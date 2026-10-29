@@ -88,6 +88,64 @@ def _mask_allows(action, masks):
     return True
 
 
+def _legal_alternatives(action, masks, player):
+    """Compact, human-readable legal alternatives from the exact PPO mask."""
+    alternatives = []
+    type_mask = np.asarray(masks.get("type_mask", []), dtype=bool).reshape(-1)
+    labels = {0: "BUY", 1: "BUY_XP", 2: "REROLL", 3: "MOVE_BENCH_TO_BOARD",
+              4: "MOVE_BOARD", 5: "SELL", 6: "PASS", 7: "ITEM_COMPONENT",
+              8: "ITEM_EQUIP"}
+    for kind, allowed in enumerate(type_mask):
+        if not allowed:
+            continue
+        entry = {"type": int(kind), "label": labels.get(int(kind), f"TYPE_{kind}")}
+        if kind == 0:
+            shop_mask = np.asarray(masks.get("shop_mask", []), dtype=bool).reshape(-1)
+            offers = player.get("shop", [])
+            entry["slots"] = [
+                {"slot": int(slot),
+                 "champion_id": (offers[slot].get("champion_id") if slot < len(offers) and isinstance(offers[slot], dict) else None)}
+                for slot, allowed_slot in enumerate(shop_mask) if allowed_slot
+            ]
+        alternatives.append(entry)
+    return alternatives
+
+
+def _economy_diagnostic(player, strategy, legal_alternatives, round_index):
+    """Flag plausible missed progress, not a blanket rule to spend gold."""
+    gold = int(player.get("gold", 0))
+    hp = float(player.get("hp", 100.0))
+    level = int(player.get("level", 1))
+    # Conservative round-to-level expectation; this is a diagnostic heuristic,
+    # not a hard-coded policy constraint.
+    expected_level = (4 if round_index <= 4 else 5 if round_index <= 8 else
+                      6 if round_index <= 12 else 7 if round_index <= 16 else 8)
+    risk = hp <= 35.0
+    has_buy = any(x["type"] == 0 and x.get("slots") for x in legal_alternatives)
+    has_xp = any(x["type"] == 1 for x in legal_alternatives)
+    has_reroll = any(x["type"] == 2 for x in legal_alternatives)
+    action_reason = strategy.get("reason") or strategy.get("strategy_reason")
+    return {
+        "risk_state": risk,
+        "high_gold": gold > 50,
+        "expected_level": expected_level,
+        "below_expected_level": level < expected_level,
+        "legal_buy_available": has_buy,
+        "legal_xp_available": has_xp,
+        "legal_reroll_available": has_reroll,
+        "selected_strategy_reason": action_reason,
+        "potential_missed_progress": bool(
+            risk and gold > 50 and level < expected_level and
+            not (has_buy or has_xp or has_reroll)
+        ),
+        "interpretation": (
+            "No legal buy/XP/reroll was available; inspect other legal improvements."
+            if risk and gold > 50 and level < expected_level and not (has_buy or has_xp or has_reroll)
+            else "Candidate opportunity only; judge board/shop quality before calling PASS a mistake."
+        ),
+    }
+
+
 def _signature(player):
     def slots(units):
         return tuple(
@@ -332,6 +390,18 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
                     "action_reward": action_reward,
                     "total_reward": float(total_rewards[player_id]) if player_id < len(total_rewards) else None,
                     "action_diagnostics": diagnostics[player_id],
+                    "legal_alternatives": _legal_alternatives(action, masks[player_id], before),
+                    "economy_diagnostic": _economy_diagnostic(
+                        before, strategies_before[player_id],
+                        _legal_alternatives(action, masks[player_id], before),
+                        int(before_snapshot["round"])
+                    ),
+                    "reward_components": info.get("reward_components", [None] * 8)[player_id]
+                        if isinstance(info.get("reward_components"), (list, tuple))
+                        and player_id < len(info.get("reward_components")) else None,
+                    "reward_components_available": isinstance(info.get("reward_components"), (list, tuple))
+                        and player_id < len(info.get("reward_components"))
+                        and info.get("reward_components")[player_id] is not None,
                     "native_mask": _json_masks(masks[player_id]),
                     "board_bench_signature_before": repr(before_sig),
                     "board_bench_signature_after": repr(after_sig),
