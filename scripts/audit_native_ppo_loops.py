@@ -111,20 +111,32 @@ def _legal_alternatives(action, masks, player):
     return alternatives
 
 
-def _economy_diagnostic(player, strategy, legal_alternatives, round_index):
-    """Flag plausible missed progress, not a blanket rule to spend gold."""
+def _economy_diagnostic(player, strategy, legal_alternatives, round_index, selected_action):
+    """Flag only evidence-backed candidates; legal offers are not automatically useful."""
     gold = int(player.get("gold", 0))
     hp = float(player.get("hp", 100.0))
     level = int(player.get("level", 1))
-    # Conservative round-to-level expectation; this is a diagnostic heuristic,
-    # not a hard-coded policy constraint.
     expected_level = (4 if round_index <= 4 else 5 if round_index <= 8 else
                       6 if round_index <= 12 else 7 if round_index <= 16 else 8)
     risk = hp <= 35.0
     has_buy = any(x["type"] == 0 and x.get("slots") for x in legal_alternatives)
     has_xp = any(x["type"] == 1 for x in legal_alternatives)
     has_reroll = any(x["type"] == 2 for x in legal_alternatives)
+    shop = player.get("shop", [])
+    inventory = [u for u in list(player.get("board", [])) + list(player.get("bench", []))
+                 if isinstance(u, dict) and u.get("occupied")]
+    owned_ids = {str(u.get("champion_id")) for u in inventory}
+    useful_offer = any(
+        isinstance(shop[slot].get("champion_id"), (str, int)) and
+        str(shop[slot].get("champion_id")) in owned_ids
+        for option in legal_alternatives if option["type"] == 0
+        for slot in [item.get("slot") for item in option.get("slots", [])]
+        if slot is not None and slot < len(shop) and isinstance(shop[slot], dict)
+    )
+    action_type = int(selected_action[0]) if selected_action else -1
     action_reason = strategy.get("reason") or strategy.get("strategy_reason")
+    risk_economy = risk and gold > 50 and level < expected_level
+    missed_candidate = bool(risk_economy and action_type == 6 and useful_offer)
     return {
         "risk_state": risk,
         "high_gold": gold > 50,
@@ -133,15 +145,14 @@ def _economy_diagnostic(player, strategy, legal_alternatives, round_index):
         "legal_buy_available": has_buy,
         "legal_xp_available": has_xp,
         "legal_reroll_available": has_reroll,
+        "useful_pair_or_upgrade_offer_detected": useful_offer,
+        "selected_action_type": action_type,
         "selected_strategy_reason": action_reason,
-        "potential_missed_progress": bool(
-            risk and gold > 50 and level < expected_level and
-            not (has_buy or has_xp or has_reroll)
-        ),
+        "potential_missed_progress": missed_candidate,
         "interpretation": (
-            "No legal buy/XP/reroll was available; inspect other legal improvements."
-            if risk and gold > 50 and level < expected_level and not (has_buy or has_xp or has_reroll)
-            else "Candidate opportunity only; judge board/shop quality before calling PASS a mistake."
+            "PASS while at risk, above 50 gold, below the heuristic level target, and a matching copy is in shop; review whether buying is actually correct."
+            if missed_candidate else
+            "No strong missed-progress signal. A legal offer alone is not evidence that spending was correct."
         ),
     }
 
@@ -394,7 +405,7 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
                     "economy_diagnostic": _economy_diagnostic(
                         before, strategies_before[player_id],
                         _legal_alternatives(action, masks[player_id], before),
-                        int(before_snapshot["round"])
+                        int(before_snapshot["round"]), action
                     ),
                     "reward_components": info.get("reward_components", [None] * 8)[player_id]
                         if isinstance(info.get("reward_components"), (list, tuple))
