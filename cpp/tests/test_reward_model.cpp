@@ -277,7 +277,7 @@ int main() {
                                          false, false, false, false),
                   -0.04, "ECON discourages premature XP below interest cap");
     require_close(strategy_action_reward(0, 0, 55, 50, 80.0, 4,
-                                         true, false, false, true),
+                                         true, false, false, false),
                   0.03, "ECON allows useful spending from surplus above 50");
     require_close(strategy_action_reward(2, 2, 40, 35, 80.0, 4,
                                          false, false, true, true),
