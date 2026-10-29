@@ -1,0 +1,1825 @@
+==========================================================
+TFT AI LOG · JOGADOR 5
+Partida: 3e16a7a2-599f-4c41-b966-47173f7e6b9a
+Seed: 20261016 | Política: determinística
+Checkpoint SHA-256: f6f691ae1ac6c7d0652df878b3e9acab8820137ff624617d45560a5c9ac4ef65
+Impacto (i): custo × estrelas × 2 (contribuição nativa da engine)
+==========================================================
+--- INÍCIO DA PARTIDA · JOGADOR 5 ---
+[18:47:44] VENDEU: Yorick (i:2.0)       | Rew: -0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: — | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: —
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: — | CORE TRAITS: —
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=— -> — | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Yorick | core=não | fit=0.00 | nenhum trait de foco
+[18:47:45] COMPROU: Akali (Custo 1 | i:2.0) | Rew: +0.40
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 3.33, Devastador 3.33, Inferno 3.33
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD | CORE TRAITS: —
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=— -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=não | fit=0.00 | nenhum trait de foco
+[18:47:46] MOVE Bench -> Board: Akali (i:2.0) <-> Vazio | Rew: +0.61
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 3.33, Devastador 3.33, Inferno 3.33
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD | CORE TRAITS: —
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=10.00 | Inferno=3.33, Adaptador=3.33, Devastador=3.33
+[18:47:46] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 3.33, Devastador 3.33, Inferno 3.33
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD | CORE TRAITS: —
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[18:47:51] --- FIM DO ROUND 1-1 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 3.33, Devastador 3.33, Inferno 3.33
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:2.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:47:51] 🛒 LOJA: Rek'Sai(i:2.0), Kobuko(i:2.0), Elise(i:4.0), Ornn(i:2.0), Veigar(i:2.0)
+[18:47:51] COMPROU: Elise (Custo 2 | i:4.0) | Rew: -0.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Elise | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 3.29, Devastador 3.29, Inferno 3.29, Congregação das Bruxas 0.07, Vanguarda 0.07
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_18_Akali_AD | CORE TRAITS: —
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Elise | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Elise | core=não | fit=0.00 | nenhum trait de foco
+[18:47:52] MOVE Bench -> Board: Elise (i:4.0) <-> Vazio | Rew: +0.30
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Elise | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 3.26, Devastador 3.26, Inferno 3.26, Congregação das Bruxas 0.10, Vanguarda 0.10
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_18_Akali_AD | CORE TRAITS: —
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Elise -> DA_18_Elise | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Elise | core=SIM | fit=0.14 | Congregação das Bruxas=0.07, Vanguarda=0.07
+[18:47:53] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Elise | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 3.24, Devastador 3.24, Inferno 3.24, Congregação das Bruxas 0.14, Vanguarda 0.14
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_18_Akali_AD | CORE TRAITS: —
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Elise -> DA_18_Elise | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+
+[18:47:58] --- FIM DO ROUND 1-2 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Elise | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 3.09, Devastador 3.09, Inferno 3.09, Congregação das Bruxas 0.37, Vanguarda 0.37
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Eli|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:2.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:47:58] 🛒 LOJA: Yunara(i:4.0), Rubrivirim(i:2.0), Lobo Trevoguari(i:4.0), Kobuko(i:2.0), Leona(i:2.0)
+[18:47:58] COMPROU: Lobo Trevoguari (Custo 2 | i:4.0) | Rew: +0.31
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Elise | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 3.12, Adaptador 3.05, Inferno 3.05, Congregação das Bruxas 0.40, Vanguarda 0.40
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_Murkwolf18, DA_18_Akali_AD | CORE TRAITS: Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Elise -> DA_18_Elise | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Lobo Trevoguari | core=não | fit=3.09 | Devastador=3.09
+[18:47:59] MOVE Bench -> Board: Lobo Trevoguari (i:4.0) <-> Akali (i:2.0) | Rew: -0.82
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Elise | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 3.12, Adaptador 3.02, Inferno 3.02, Congregação das Bruxas 0.42, Vanguarda 0.42
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_Murkwolf18, DA_18_Akali_AD | CORE TRAITS: Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Elise -> DA_18_Elise | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Lobo Trevoguari | core=SIM | fit=3.12 | Devastador=3.12
+[18:48:00] MOVE Bench -> Board: Akali (i:2.0) <-> Vazio | Rew: +0.70
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Elise | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 3.23, Adaptador 2.95, Inferno 2.95, Congregação das Bruxas 0.44, Vanguarda 0.44
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_Murkwolf18, DA_18_Akali_AD | CORE TRAITS: Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Elise -> DA_18_Elise | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=9.17 | Inferno=3.02, Adaptador=3.02, Devastador=3.12
+[18:48:00] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Elise | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 3.33, Adaptador 2.88, Inferno 2.88, Congregação das Bruxas 0.45, Vanguarda 0.45
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_Murkwolf18, DA_18_Akali_AD | CORE TRAITS: Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Elise -> DA_18_Elise | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+
+[18:48:05] --- FIM DO ROUND 1-3 | GOLD: 3 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Elise | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Devastador 3.96, Adaptador 2.46, Inferno 2.46, Congregação das Bruxas 0.56, Vanguarda 0.56
+    RENDA PRÓXIMO ROUND: +3 base, +0 juros, +0 sequência, +0 vitória (total: +3)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Eli|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]        [Lob|F|1*|i:4.0] 
+      [ . ]        [Aka|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:48:05] 🛒 LOJA: Rakan(i:2.0), Kayle(i:4.0), Sejuani(i:4.0), Camille(i:2.0), Cascalho(i:2.0)
+[18:48:05] COMPROU: Kayle (Custo 2 | i:4.0) | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Elise | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.03, Adaptador 2.41, Inferno 2.41, Congregação das Bruxas 0.58, Vanguarda 0.58
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_Murkwolf18, DA_18_Kayle | CORE TRAITS: Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Elise -> DA_18_Elise | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Kayle | core=não | fit=0.00 | nenhum trait de foco
+[18:48:06] MOVE Bench -> Board: Kayle (i:4.0) <-> Elise (i:4.0) | Rew: -0.81
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Kayle | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.08, Adaptador 2.34, Inferno 2.34, Congregação das Bruxas 0.62, Vanguarda 0.62
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Kayle, DA_Murkwolf18, DA_18_Elise | CORE TRAITS: Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Elise -> DA_18_Kayle | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Kayle | core=SIM | fit=0.00 | nenhum trait de foco
+[18:48:07] COMPROU: Camille (Custo 1 | i:2.0) | Rew: +0.33
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Kayle | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.15, Adaptador 2.26, Inferno 2.26, Congregação das Bruxas 0.67, Vanguarda 0.66
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Kayle, DA_Murkwolf18, DA_18_Elise | CORE TRAITS: Devastador, Congregação das Bruxas
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Kayle -> DA_18_Kayle | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Camille | core=não | fit=4.70 | Congregação das Bruxas=0.62, Devastador=4.08
+[18:48:07]  ⬆️ SINERGIA: DEVASTADOR nível 1
+[18:48:07] MOVE Bench -> Board: Camille (i:2.0) <-> Akali (i:2.0) | Rew: -0.51
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Kayle | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.19, Adaptador 2.19, Inferno 2.19, Congregação das Bruxas 0.73, Vanguarda 0.69
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Kayle, DA_Murkwolf18, DA_18_Elise | CORE TRAITS: Devastador, Congregação das Bruxas
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Kayle -> DA_18_Kayle | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Camille | core=não | fit=4.83 | Congregação das Bruxas=0.67, Devastador=4.15
+[18:48:08] MOVE Bench -> Board: Akali (i:2.0) <-> Lobo Trevoguari (i:4.0) | Rew: -0.25
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Kayle | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.25, Adaptador 2.11, Inferno 2.11, Congregação das Bruxas 0.80, Vanguarda 0.72
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Kayle, DA_18_Elise, DA_Murkwolf18 | CORE TRAITS: Devastador, Congregação das Bruxas
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Kayle -> DA_18_Kayle | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=não | fit=8.57 | Inferno=2.19, Adaptador=2.19, Devastador=4.19
+[18:48:09] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Kayle | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.31, Adaptador 2.04, Inferno 2.04, Congregação das Bruxas 0.86, Vanguarda 0.76
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Kayle, DA_18_Elise, DA_Murkwolf18 | CORE TRAITS: Devastador, Congregação das Bruxas
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Kayle -> DA_18_Kayle | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +3 | juros +0 | sequência +0 | vitória +0
+
+[18:48:12] --- FIM DO ROUND 1-4 | GOLD: 4 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Kayle | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Devastador 4.57, Adaptador 1.71, Inferno 1.71, Congregação das Bruxas 1.12, Vanguarda 0.89
+    RENDA PRÓXIMO ROUND: +4 base, +0 juros, +0 sequência, +0 vitória (total: +4)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Kay|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:2.0] 
+      [ . ]        [Cam|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+[Eli|1*|i:4.0][Lob|1*|i:4.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:48:12] 🛒 LOJA: Xayah(i:2.0), Veigar(i:2.0), LeBlanc(i:4.0), Rek'Sai(i:2.0), Cassiopeia(i:6.0)
+[18:48:12] COMPROU: Cassiopeia (Custo 3 | i:6.0) | Rew: +0.35
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Cassiopeia | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.61, Adaptador 1.65, Inferno 1.65, Congregação das Bruxas 1.17, Vanguarda 0.92
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Cassiopeia, DA_18_Kayle, DA_18_Elise | CORE TRAITS: Devastador, Congregação das Bruxas
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Kayle -> DA_18_Cassiopeia | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Cassiopeia | core=não | fit=1.12 | Congregação das Bruxas=1.12
+[18:48:12]  ⬆️ SINERGIA: CONGREGAÇÃO DAS BRUXAS nível 1
+[18:48:13] COMPROU: Xayah (Custo 1 | i:2.0) | Rew: +0.36
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Cassiopeia | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.64, Adaptador 1.60, Inferno 1.60, Congregação das Bruxas 1.23, Vanguarda 0.94
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Cassiopeia, DA_18_Kayle, DA_18_Elise | CORE TRAITS: Devastador, Congregação das Bruxas, Fumegante
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Cassiopeia -> DA_18_Cassiopeia | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Xayah | core=não | fit=0.00 | nenhum trait de foco
+[18:48:14] MOVE Bench -> Board: Lobo Trevoguari (i:4.0) <-> Vazio | Rew: -0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Cassiopeia | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.66, Adaptador 1.55, Inferno 1.55, Congregação das Bruxas 1.28, Vanguarda 0.96
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Cassiopeia, DA_18_Kayle, DA_Murkwolf18 | CORE TRAITS: Devastador, Congregação das Bruxas, Fumegante
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Cassiopeia -> DA_18_Cassiopeia | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Lobo Trevoguari | core=não | fit=4.64 | Devastador=4.64
+[18:48:15] VENDEU: Xayah (i:2.0)        | Rew: -0.41
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Cassiopeia | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.67, Adaptador 1.51, Inferno 1.51, Congregação das Bruxas 1.33, Vanguarda 0.98
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Cassiopeia, DA_18_Kayle, DA_Murkwolf18 | CORE TRAITS: Devastador, Congregação das Bruxas
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Cassiopeia -> DA_18_Cassiopeia | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Xayah | core=não | fit=0.00 | nenhum trait de foco
+[18:48:15] COMPROU: Veigar (Custo 1 | i:2.0) | Rew: +0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Cassiopeia | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.69, Adaptador 1.46, Inferno 1.46, Congregação das Bruxas 1.38, Vanguarda 1.00
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Cassiopeia, DA_18_Kayle, DA_Murkwolf18 | CORE TRAITS: Devastador, Congregação das Bruxas, Enfeitiçador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Cassiopeia -> DA_18_Cassiopeia | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=não | fit=0.00 | nenhum trait de foco
+[18:48:16] VENDEU: Veigar (i:2.0)       | Rew: -0.20
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Cassiopeia | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.70, Congregação das Bruxas 1.43, Adaptador 1.42, Inferno 1.42, Vanguarda 1.02
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Cassiopeia, DA_18_Kayle, DA_Murkwolf18 | CORE TRAITS: Devastador, Congregação das Bruxas
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Cassiopeia -> DA_18_Cassiopeia | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Veigar | core=não | fit=0.00 | nenhum trait de foco
+[18:48:17] MOVE Bench -> Board: Elise (i:4.0) <-> Kayle (i:4.0) | Rew: -0.15
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Cassiopeia | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.72, Congregação das Bruxas 1.50, Adaptador 1.39, Inferno 1.39, Vanguarda 1.01
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Cassiopeia, DA_18_Elise, DA_Murkwolf18 | CORE TRAITS: Congregação das Bruxas, Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Cassiopeia -> DA_18_Cassiopeia | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Elise | core=não | fit=2.45 | Congregação das Bruxas=1.43, Vanguarda=1.02
+[18:48:17] VENDEU: Kayle (i:4.0)        | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Cassiopeia | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.74, Congregação das Bruxas 1.56, Adaptador 1.35, Inferno 1.35, Vanguarda 0.99
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Cassiopeia, DA_18_Elise, DA_Murkwolf18 | CORE TRAITS: Congregação das Bruxas, Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Cassiopeia -> DA_18_Cassiopeia | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Kayle | core=não | fit=0.00 | nenhum trait de foco
+[18:48:18] MOVE Bench -> Board: Cassiopeia (i:6.0) <-> Akali (i:2.0) | Rew: -0.49
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Cassiopeia | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.69, Congregação das Bruxas 1.69, Adaptador 1.33, Inferno 1.33, Vanguarda 0.96
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Cassiopeia, DA_18_Elise, DA_Murkwolf18 | CORE TRAITS: Congregação das Bruxas, Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Cassiopeia -> DA_18_Cassiopeia | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Cassiopeia | core=SIM | fit=1.56 | Congregação das Bruxas=1.56
+
+[18:48:19] --- FIM DO ROUND 2-1 | GOLD: 9 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Cassiopeia | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Devastador 4.60, Congregação das Bruxas 1.93, Adaptador 1.29, Inferno 1.29, Vanguarda 0.89
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Eli|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]        [Cas|F|1*|i:6.0] 
+      [ . ]        [Cam|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Lob|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]    [Aka|1*|i:2.0]
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:48:19] 🛒 LOJA: Rakan(i:2.0), Rubrivirim(i:2.0), Tristana(i:6.0), Rammus(i:6.0), Master Yi(i:6.0)
+[18:48:19] COMPROU: Master Yi (Custo 3 | i:6.0) | Rew: +0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Cassiopeia | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.56, Congregação das Bruxas 2.03, Adaptador 1.28, Inferno 1.27, Vanguarda 0.86
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Cassiopeia, DA_18_MasterYi_AD, DA_18_Elise | CORE TRAITS: Congregação das Bruxas, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Cassiopeia -> DA_18_Cassiopeia | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 6 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Master Yi | core=não | fit=1.29 | Adaptador=1.29
+[18:48:20] COMPROU: Tristana (Custo 3 | i:6.0) | Rew: +0.27
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.52, Congregação das Bruxas 2.13, Adaptador 1.27, Inferno 1.25, Vanguarda 0.83
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_Cassiopeia, DA_18_MasterYi_AD | CORE TRAITS: Congregação das Bruxas, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Cassiopeia -> DA_18_Tristana | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Tristana | core=não | fit=0.00 | nenhum trait de foco
+[18:48:21] COMPROU: Rammus (Custo 3 | i:6.0) | Rew: +0.06
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.48, Congregação das Bruxas 2.22, Adaptador 1.26, Inferno 1.23, Vanguarda 0.81
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_Cassiopeia, DA_18_MasterYi_AD | CORE TRAITS: Congregação das Bruxas, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Tristana -> DA_18_Tristana | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Rammus | core=não | fit=0.00 | nenhum trait de foco
+[18:48:22] MOVE Board -> Board: Lobo Trevoguari (i:4.0) <-> Vazio | Rew: +0.11
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.44, Congregação das Bruxas 2.31, Adaptador 1.26, Inferno 1.21, Vanguarda 0.78
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_Cassiopeia, DA_18_MasterYi_AD | CORE TRAITS: Congregação das Bruxas, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Tristana -> DA_18_Tristana | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Lobo Trevoguari | core=não | fit=4.48 | Devastador=4.48
+[18:48:22] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.41, Congregação das Bruxas 2.38, Adaptador 1.25, Inferno 1.20, Vanguarda 0.76
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_Cassiopeia, DA_18_MasterYi_AD | CORE TRAITS: Congregação das Bruxas, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Tristana -> DA_18_Tristana | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +1
+
+[18:48:26] --- FIM DO ROUND 2-2 | GOLD: 5 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Devastador 4.25, Congregação das Bruxas 2.75, Adaptador 1.22, Inferno 1.12, Vanguarda 0.65
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Eli|F|1*|i:4.0]       [ . ]        [Lob|F|1*|i:4.0]       [ . ]             [ . ]        [Cas|F|1*|i:6.0] 
+      [ . ]        [Cam|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+[Mas|1*|i:6.0][Tri|1*|i:6.0][Aka|1*|i:2.0]
+[Ram|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:48:26] 🛒 LOJA: Camille(i:2.0), Rubrivirim(i:2.0), Kobuko(i:2.0), Rubrivirim(i:2.0), Rakan(i:2.0)
+[18:48:27] MOVE Bench -> Board: Tristana (i:6.0) <-> Cassiopeia (i:6.0) | Rew: -0.62
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.28, Congregação das Bruxas 2.72, Adaptador 1.23, Inferno 1.12, Vanguarda 0.65
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_MasterYi_AD, DA_18_Cassiopeia | CORE TRAITS: Congregação das Bruxas, Devastador, Vivaz
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Tristana -> DA_18_Tristana | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 5 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Tristana | core=SIM | fit=0.00 | nenhum trait de foco
+[18:48:27] COMPROU: Camille (Custo 1 | i:2.0) | Rew: +0.91
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.30, Congregação das Bruxas 2.70, Adaptador 1.24, Inferno 1.12, Vanguarda 0.64
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_MasterYi_AD, DA_18_Cassiopeia | CORE TRAITS: Congregação das Bruxas, Devastador, Vivaz
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Tristana -> DA_18_Tristana | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Camille | core=não | fit=7.00 | Congregação das Bruxas=2.72, Devastador=4.28
+[18:48:28] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.33, Congregação das Bruxas 2.68, Adaptador 1.24, Inferno 1.12, Vanguarda 0.63
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_MasterYi_AD, DA_18_Cassiopeia | CORE TRAITS: Congregação das Bruxas, Devastador, Vivaz
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Tristana -> DA_18_Tristana | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[18:48:33] --- FIM DO ROUND 2-3 | GOLD: 10 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Devastador 4.47, Congregação das Bruxas 2.55, Adaptador 1.27, Inferno 1.12, Vanguarda 0.59
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Eli|F|1*|i:4.0]       [ . ]        [Lob|F|1*|i:4.0]       [ . ]             [ . ]        [Tri|F|1*|i:6.0] 
+      [ . ]        [Cam|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+[Mas|1*|i:6.0][Cas|1*|i:6.0][Aka|1*|i:2.0]
+[Ram|1*|i:6.0][Cam|1*|i:2.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:48:33] 🛒 LOJA: Kha'Zix(i:6.0), Veigar(i:2.0), Karma(i:2.0), LeBlanc(i:4.0), Ornn(i:2.0)
+[18:48:34] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.48, Congregação das Bruxas 2.54, Adaptador 1.28, Inferno 1.12, Vanguarda 0.58
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_MasterYi_AD, DA_18_Cassiopeia | CORE TRAITS: Congregação das Bruxas, Devastador, Vivaz
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Tristana -> DA_18_Tristana | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 10 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[18:48:40] --- FIM DO ROUND 2-4 | GOLD: 17 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Devastador 4.58, Congregação das Bruxas 2.45, Adaptador 1.30, Inferno 1.12, Vanguarda 0.55
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +1 sequência, +0 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Eli|F|1*|i:4.0]       [ . ]        [Lob|F|1*|i:4.0]       [ . ]             [ . ]        [Tri|F|1*|i:6.0] 
+      [ . ]        [Cam|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+[Mas|1*|i:6.0][Cas|1*|i:6.0][Aka|1*|i:2.0]
+[Ram|1*|i:6.0][Cam|1*|i:2.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:48:40] 🛒 LOJA: Rammus(i:6.0), Karma(i:2.0), Camille(i:2.0), Akali(i:2.0), Leona(i:2.0)
+[18:48:41] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.59, Congregação das Bruxas 2.45, Adaptador 1.30, Inferno 1.12, Vanguarda 0.55
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_MasterYi_AD, DA_18_Cassiopeia | CORE TRAITS: Congregação das Bruxas, Devastador, Vivaz
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Tristana -> DA_18_Tristana | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 17 | renda base +5 | juros +1 | sequência +1 | vitória +0
+
+[18:48:47] --- FIM DO ROUND 2-5 | GOLD: 24 ---
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Devastador 4.64, Congregação das Bruxas 2.40, Adaptador 1.31, Inferno 1.12, Vanguarda 0.54
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +1 sequência, +0 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Eli|F|1*|i:4.0]       [ . ]        [Lob|F|1*|i:4.0]       [ . ]             [ . ]        [Tri|F|1*|i:6.0] 
+      [ . ]        [Cam|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+[Mas|1*|i:6.0][Cas|1*|i:6.0][Aka|1*|i:2.0]
+[Ram|1*|i:6.0][Cam|1*|i:2.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:48:47] 🛒 LOJA: Elise(i:4.0), Rakan(i:2.0), Rubrivirim(i:2.0), Camille(i:2.0), Rakan(i:2.0)
+[18:48:48] COMPROU: Elise (Custo 2 | i:4.0) | Rew: +0.83
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.60, Congregação das Bruxas 2.40, Adaptador 1.30, Inferno 1.11, Vanguarda 0.60
+    STRATEGY REASON: LOSS_STREAK: converter derrota em economia sem risco crítico | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_MasterYi_AD, DA_18_Cassiopeia | CORE TRAITS: Congregação das Bruxas, Devastador, Vanguarda
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Tristana -> DA_18_Tristana | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 22 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Elise | core=não | fit=2.94 | Congregação das Bruxas=2.40, Vanguarda=0.54
+[18:48:48] COMPROU: Camille (Custo 1 | i:2.0) | Rew: +0.88
+    STRATEGY: LOSS_STREAK | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.49, Congregação das Bruxas 2.40, Adaptador 1.32, Inferno 1.12, Vanguarda 0.67
+    STRATEGY REASON: LOSS_STREAK: converter derrota em economia sem risco crítico | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_Camille, DA_18_MasterYi_AD | CORE TRAITS: Congregação das Bruxas, Devastador, Vanguarda
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Tristana -> DA_18_Tristana | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 21 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Camille | core=não | fit=7.00 | Congregação das Bruxas=2.40, Devastador=4.60
+[18:48:49] COMPROU: Rakan (Custo 1 | i:2.0) | Rew: +0.28
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.37, Congregação das Bruxas 2.41, Adaptador 1.33, Inferno 1.13, Vanguarda 0.75
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_Camille, DA_18_MasterYi_AD | CORE TRAITS: Congregação das Bruxas, Vanguarda, Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Tristana -> DA_18_Tristana | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 20 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Rakan | core=não | fit=0.67 | Vanguarda=0.67
+[18:48:49]  ⬆️ SINERGIA: VANGUARDA nível 1
+[18:48:50] COMPROU: Rakan (Custo 1 | i:2.0) | Rew: +0.75
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.26, Congregação das Bruxas 2.41, Adaptador 1.35, Inferno 1.14, Vanguarda 0.84
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_Camille, DA_18_MasterYi_AD | CORE TRAITS: Congregação das Bruxas, Vanguarda, Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Tristana -> DA_18_Tristana | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 19 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Rakan | core=não | fit=0.75 | Vanguarda=0.75
+[18:48:50]  ⬆️ SINERGIA: FEÉRICO nível 1
+[18:48:50] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 4.15, Congregação das Bruxas 2.41, Adaptador 1.36, Inferno 1.15, Vanguarda 0.92
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_Camille, DA_18_MasterYi_AD | CORE TRAITS: Congregação das Bruxas, Vanguarda, Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Tristana -> DA_18_Tristana | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 19 | renda base +5 | juros +1 | sequência +1 | vitória +0
+[18:48:53] MOVE Bench -> Board: Master Yi (i:6.0) <-> Vazio | Rew: +0.13
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 3.77, Congregação das Bruxas 2.41, Adaptador 1.42, Vanguarda 1.21, Inferno 1.19
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_Camille, DA_18_MasterYi_AD | CORE TRAITS: Congregação das Bruxas, Vanguarda, Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Tristana -> DA_18_Tristana | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 19 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Master Yi | core=SIM | fit=1.39 | Adaptador=1.39
+
+[18:48:54] --- FIM DO ROUND 2-6 | GOLD: 26 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Devastador 3.59, Congregação das Bruxas 2.41, Adaptador 1.47, Vanguarda 1.33, Inferno 1.20
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +1 sequência, +0 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Eli|F|1*|i:4.0]       [ . ]        [Lob|F|1*|i:4.0]       [ . ]             [ . ]        [Tri|F|1*|i:6.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Mas|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [Cas|1*|i:6.0][Aka|1*|i:2.0]
+[Ram|1*|i:6.0][Rak|1*|i:2.0][Eli|1*|i:4.0]
+[Cam|2*|i:4.0][Rak|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:48:54] 🛒 LOJA: Yunara(i:4.0), Cascalho(i:2.0), Cascalho(i:2.0), Yorick(i:2.0), Rakan(i:2.0)
+[18:48:55] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 3.52, Congregação das Bruxas 2.41, Adaptador 1.49, Vanguarda 1.39, Inferno 1.20
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_Camille, DA_18_MasterYi_AD | CORE TRAITS: Congregação das Bruxas, Vanguarda, Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Tristana -> DA_18_Tristana | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 26 | renda base +5 | juros +1 | sequência +1 | vitória +0
+[18:49:00] MOVE Bench -> Board: Cassiopeia (i:6.0) <-> Vazio | Rew: +0.52
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 3.01, Congregação das Bruxas 2.40, Vanguarda 1.73, Adaptador 1.63, Inferno 1.23
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_Camille, DA_18_MasterYi_AD | CORE TRAITS: Congregação das Bruxas, Vanguarda, Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Tristana -> DA_18_Tristana | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 26 | renda base +5 | juros +1 | sequência +1 | vitória +0
+    FIT UNIDADE: Cassiopeia | core=não | fit=2.39 | Congregação das Bruxas=2.39
+
+[18:49:01] --- FIM DO ROUND 2-7 | GOLD: 34 ---
+    STRATEGY: SLOWROLL | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Devastador 2.90, Congregação das Bruxas 2.43, Vanguarda 1.79, Adaptador 1.65, Inferno 1.23
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +1 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Eli|F|1*|i:4.0]       [ . ]        [Lob|F|1*|i:4.0]       [ . ]             [ . ]        [Tri|F|1*|i:6.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Mas|F|1*|i:6.0]  [Cas|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]    [Aka|1*|i:2.0]
+[Ram|1*|i:6.0][Rak|1*|i:2.0][Eli|1*|i:4.0]
+[Cam|2*|i:4.0][Rak|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:49:01] 🛒 LOJA: Grompe(i:4.0), Ornn(i:2.0), Warwick(i:4.0), Veigar(i:2.0), Yunara(i:4.0)
+[18:49:02] PASSOU TURNO                 | Rew: -0.03
+    STRATEGY: SLOWROLL | COMP DIRECTION: — | FOCUS: DA_18_Tristana | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 2.85, Congregação das Bruxas 2.45, Vanguarda 1.82, Adaptador 1.66, Inferno 1.22
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_Camille, DA_18_MasterYi_AD | CORE TRAITS: Congregação das Bruxas, Vanguarda, Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Tristana -> DA_18_Tristana | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 34 | renda base +5 | juros +2 | sequência +1 | vitória +0
+
+[18:49:09] --- FIM DO ROUND 3-1 | GOLD: 43 ---
+    STRATEGY: SLOWROLL | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Tristana | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 9.43, Vanguarda 0.18, Devastador 0.17, Adaptador 0.14, Inferno 0.08
+    RENDA PRÓXIMO ROUND: +5 base, +3 juros, +0 sequência, +1 vitória (total: +9)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Eli|F|1*|i:4.0]       [ . ]        [Lob|F|1*|i:4.0]       [ . ]             [ . ]        [Tri|F|1*|i:6.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Mas|F|1*|i:6.0]  [Cas|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]    [Aka|1*|i:2.0]
+[Ram|1*|i:6.0][Rak|1*|i:2.0][Eli|1*|i:4.0]
+[Cam|2*|i:4.0][Rak|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:49:09] 🛒 LOJA: Shen(i:4.0), Cascalho(i:2.0), Warwick(i:4.0), Elise(i:4.0), Yorick(i:2.0)
+[18:49:10] PASSOU TURNO                 | Rew: -0.05
+    STRATEGY: SLOWROLL | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Tristana | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.28, Vanguarda 0.22, Devastador 0.21, Adaptador 0.18, Inferno 0.10
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_Camille, DA_18_MasterYi_AD | CORE TRAITS: Congregação das Bruxas, Vanguarda, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD, DA_18_Lux_Coven | traits=Congregação das Bruxas, Vanguarda, Devastador | carry_id=28 | score=43.00
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~14%, chance_horizon~14%, low_odds), DA_18_Lux_Coven (cost=5, chance_now~0%, chance_horizon~0%, hard_to_find), NOT_SELECTED_CARRY: DA_Gromp18_AP (cost=2, chance_now~11%, chance_horizon~11%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Azir (cost=3, chance_now~8%, chance_horizon~10%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_KogMaw18_AD (cost=3, chance_now~7%, chance_horizon~10%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=5.592128; native_score=18.732823; native_ids=28,1,17,16,7,39,0,63; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,1,17,16,7,39,0,63; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=5.592128; native_score=18.732823; native_ids=28,1,17,16,7,39,0,63; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,1,17,16,7,39,0,63; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Tristana -> DA_18_Tristana | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 43 | renda base +5 | juros +3 | sequência +0 | vitória +1
+
+[18:49:16] --- FIM DO ROUND 3-2 | GOLD: 54 ---
+    STRATEGY: SLOWROLL | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Tristana | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 9.30, Vanguarda 0.22, Devastador 0.20, Adaptador 0.18, Inferno 0.10
+    RENDA PRÓXIMO ROUND: +5 base, +4 juros, +1 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Eli|F|1*|i:4.0]       [ . ]        [Lob|F|1*|i:4.0]       [ . ]             [ . ]        [Tri|F|1*|i:6.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Mas|F|1*|i:6.0]  [Cas|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]    [Aka|1*|i:2.0]
+[Ram|1*|i:6.0][Rak|1*|i:2.0][Eli|1*|i:4.0]
+[Cam|2*|i:4.0][Rak|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:49:16] 🛒 LOJA: Rammus(i:6.0), Yunara(i:4.0), Azir(i:6.0), Warwick(i:4.0), Ahri(i:8.0)
+[18:49:18] PASSOU TURNO                 | Rew: -0.08
+    STRATEGY: SLOWROLL | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Tristana | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.45, Vanguarda 0.17, Devastador 0.16, Adaptador 0.14, Inferno 0.08
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_Camille, DA_18_MasterYi_AD | CORE TRAITS: Congregação das Bruxas, Vanguarda, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD, DA_18_Lux_Coven | traits=Congregação das Bruxas, Vanguarda, Devastador | carry_id=28 | score=42.89
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~13%, chance_horizon~13%, low_odds), DA_18_Lux_Coven (cost=5, chance_now~0%, chance_horizon~0%, hard_to_find), NOT_SELECTED_CARRY: DA_Gromp18_AP (cost=2, chance_now~10%, chance_horizon~10%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_KogMaw18_AD (cost=3, chance_now~8%, chance_horizon~11%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_CrimsonRaptor18 (cost=3, chance_now~8%, chance_horizon~11%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=2.991094; native_score=16.935728; native_ids=28,1,17,16,7,39,0,63; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,1,17,16,7,39,0,63; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=2.991094; native_score=16.935728; native_ids=28,1,17,16,7,39,0,63; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,1,17,16,7,39,0,63; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Tristana -> DA_18_Tristana | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 54 | renda base +5 | juros +4 | sequência +1 | vitória +1
+
+[18:49:24] --- FIM DO ROUND 3-3 | GOLD: 64 ---
+    STRATEGY: SLOWROLL | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Tristana | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 9.45, Vanguarda 0.17, Devastador 0.16, Adaptador 0.14, Inferno 0.08
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Eli|F|1*|i:4.0]       [ . ]        [Lob|F|1*|i:4.0]       [ . ]             [ . ]        [Tri|F|1*|i:6.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Mas|F|1*|i:6.0]  [Cas|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]    [Aka|1*|i:2.0]
+[Ram|1*|i:6.0][Rak|1*|i:2.0][Eli|1*|i:4.0]
+[Cam|2*|i:4.0][Rak|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:49:24] 🛒 LOJA: Grompe(i:4.0), Alistar(i:4.0), Warwick(i:4.0), Karma(i:2.0), Kobuko(i:2.0)
+[18:49:26] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: SLOWROLL | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Tristana | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.30, Vanguarda 0.22, Devastador 0.20, Adaptador 0.18, Inferno 0.10
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_Camille, DA_18_MasterYi_AD | CORE TRAITS: Congregação das Bruxas, Vanguarda, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD, DA_18_Lux_Coven | traits=Congregação das Bruxas, Vanguarda, Devastador | carry_id=28 | score=42.82
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~13%, chance_horizon~13%, low_odds), DA_18_Lux_Coven (cost=5, chance_now~0%, chance_horizon~0%, hard_to_find), NOT_SELECTED_CARRY: DA_18_Yunara (cost=2, chance_now~11%, chance_horizon~11%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Azir (cost=3, chance_now~8%, chance_horizon~11%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_KogMaw18_AD (cost=3, chance_now~7%, chance_horizon~9%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=2.828382; native_score=16.881339; native_ids=28,1,17,16,7,39,0,63; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,1,17,16,7,39,0,63; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=2.828382; native_score=16.881339; native_ids=28,1,17,16,7,39,0,63; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,1,17,16,7,39,0,63; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Tristana -> DA_18_Tristana | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 64 | renda base +5 | juros +5 | sequência +0 | vitória +0
+
+[18:49:32] --- FIM DO ROUND 3-4 | GOLD: 74 ---
+    STRATEGY: SLOWROLL | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Tristana | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 9.30, Vanguarda 0.22, Devastador 0.20, Adaptador 0.18, Inferno 0.10
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Eli|F|1*|i:4.0]       [ . ]        [Lob|F|1*|i:4.0]       [ . ]             [ . ]        [Tri|F|1*|i:6.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Mas|F|1*|i:6.0]  [Cas|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]    [Aka|1*|i:2.0]
+[Ram|1*|i:6.0][Rak|1*|i:2.0][Eli|1*|i:4.0]
+[Cam|2*|i:4.0][Rak|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:49:32] 🛒 LOJA: Krugue(i:6.0), Lobo Trevoguari(i:4.0), Rek'Sai(i:2.0), Akali(i:2.0), Lobo Trevoguari(i:4.0)
+[18:49:33] PASSOU TURNO                 | Rew: -0.08
+    STRATEGY: SLOWROLL | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Tristana | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.45, Vanguarda 0.17, Devastador 0.16, Adaptador 0.14, Inferno 0.08
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_Camille, DA_18_MasterYi_AD | CORE TRAITS: Congregação das Bruxas, Vanguarda, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD, DA_18_Lux_Coven | traits=Congregação das Bruxas, Vanguarda, Devastador | carry_id=28 | score=43.00
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~14%, chance_horizon~14%, low_odds), DA_18_Lux_Coven (cost=5, chance_now~0%, chance_horizon~0%, hard_to_find), NOT_SELECTED_CARRY: DA_18_Veigar (cost=1, chance_now~15%, chance_horizon~11%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Gromp18_AP (cost=2, chance_now~10%, chance_horizon~11%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Azir (cost=3, chance_now~8%, chance_horizon~11%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=2.925962; native_score=18.754630; native_ids=28,1,17,16,7,39,0,63; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,1,17,16,7,39,0,63; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=2.925962; native_score=18.754630; native_ids=28,1,17,16,7,39,0,63; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,1,17,16,7,39,0,63; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Tristana -> DA_18_Tristana | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 74 | renda base +5 | juros +5 | sequência +0 | vitória +0
+
+[18:49:40] --- FIM DO ROUND 3-5 | GOLD: 85 ---
+    STRATEGY: SLOWROLL | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Tristana | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 9.45, Vanguarda 0.17, Devastador 0.16, Adaptador 0.14, Inferno 0.08
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Eli|F|1*|i:4.0]       [ . ]        [Lob|F|1*|i:4.0]       [ . ]             [ . ]        [Tri|F|1*|i:6.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Mas|F|1*|i:6.0]  [Cas|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]    [Aka|1*|i:2.0]
+[Ram|1*|i:6.0][Rak|1*|i:2.0][Eli|1*|i:4.0]
+[Cam|2*|i:4.0][Rak|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:49:40] 🛒 LOJA: Yorick(i:2.0), Teemo(i:4.0), Varus(i:2.0), Lobo Trevoguari(i:4.0), Rakan(i:2.0)
+[18:49:41] PASSOU TURNO                 | Rew: -0.08
+    STRATEGY: SLOWROLL | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Tristana | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.30, Vanguarda 0.22, Devastador 0.20, Adaptador 0.18, Inferno 0.10
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_Camille, DA_18_MasterYi_AD | CORE TRAITS: Congregação das Bruxas, Vanguarda, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD, DA_18_Lux_Coven | traits=Congregação das Bruxas, Vanguarda, Devastador | carry_id=28 | score=42.83
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~13%, chance_horizon~13%, low_odds), DA_18_Lux_Coven (cost=5, chance_now~0%, chance_horizon~0%, hard_to_find), NOT_SELECTED_CARRY: DA_18_Veigar (cost=1, chance_now~15%, chance_horizon~11%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Xayah (cost=1, chance_now~15%, chance_horizon~11%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Gromp18_AP (cost=2, chance_now~10%, chance_horizon~11%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=2.945612; native_score=18.645379; native_ids=28,1,17,16,7,39,0,63; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,1,17,16,7,39,0,63; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=2.945612; native_score=18.645379; native_ids=28,1,17,16,7,39,0,63; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,1,17,16,7,39,0,63; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Tristana -> DA_18_Tristana | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 85 | renda base +5 | juros +5 | sequência +1 | vitória +0
+
+[18:49:47] --- FIM DO ROUND 3-6 | GOLD: 96 ---
+    STRATEGY: SLOWROLL | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Tristana | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 9.30, Vanguarda 0.22, Devastador 0.20, Adaptador 0.18, Inferno 0.10
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Eli|F|1*|i:4.0]       [ . ]        [Lob|F|1*|i:4.0]       [ . ]             [ . ]        [Tri|F|1*|i:6.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Mas|F|1*|i:6.0]  [Cas|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]    [Aka|1*|i:2.0]
+[Ram|1*|i:6.0][Rak|1*|i:2.0][Eli|1*|i:4.0]
+[Cam|2*|i:4.0][Rak|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:49:47] 🛒 LOJA: Aronguejo(i:4.0), Vi(i:6.0), Rakan(i:2.0), Rubrivirim(i:2.0), Warwick(i:4.0)
+[18:49:49] PASSOU TURNO                 | Rew: -0.08
+    STRATEGY: SLOWROLL | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Tristana | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.45, Vanguarda 0.17, Devastador 0.16, Adaptador 0.14, Inferno 0.08
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_18_Camille, DA_18_MasterYi_AD | CORE TRAITS: Congregação das Bruxas, Vanguarda, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD, DA_18_Lux_Coven | traits=Congregação das Bruxas, Vanguarda, Devastador | carry_id=28 | score=42.97
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~14%, chance_horizon~14%, low_odds), DA_18_Lux_Coven (cost=5, chance_now~0%, chance_horizon~0%, hard_to_find), NOT_SELECTED_CARRY: DA_18_Veigar (cost=1, chance_now~14%, chance_horizon~11%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Gromp18_AP (cost=2, chance_now~10%, chance_horizon~10%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Yunara (cost=2, chance_now~10%, chance_horizon~10%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=2.959389; native_score=18.737160; native_ids=28,1,17,16,7,39,0,63; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,1,17,16,7,39,0,63; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=2.959389; native_score=18.737160; native_ids=28,1,17,16,7,39,0,63; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,1,17,16,7,39,0,63; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Tristana -> DA_18_Tristana | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 96 | renda base +5 | juros +5 | sequência +1 | vitória +0
+
+[18:49:55] --- FIM DO ROUND 3-7 | GOLD: 107 ---
+    STRATEGY: SLOWROLL | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Tristana | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 9.45, Vanguarda 0.17, Devastador 0.16, Adaptador 0.14, Inferno 0.08
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Eli|F|1*|i:4.0]       [ . ]        [Lob|F|1*|i:4.0]       [ . ]             [ . ]        [Tri|F|1*|i:6.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Mas|F|1*|i:6.0]  [Cas|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]    [Aka|1*|i:2.0]
+[Ram|1*|i:6.0][Rak|1*|i:2.0][Eli|1*|i:4.0]
+[Cam|2*|i:4.0][Rak|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest, TFT_Item_FryingPan
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:49:55] 🛒 LOJA: Kha'Zix(i:6.0), Camille(i:2.0), Fiddlesticks(i:6.0), Rakan(i:2.0), LeBlanc(i:4.0)
+[18:49:57] COMPROU: Fiddlesticks (Custo 3 | i:6.0) | Rew: +0.30
+    STRATEGY: SLOWROLL | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Tristana | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.30, Vanguarda 0.22, Devastador 0.20, Adaptador 0.18, Inferno 0.10
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_18_Tristana, DA_Fiddlesticks18, DA_18_Camille | CORE TRAITS: Congregação das Bruxas, Vanguarda, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Vanguarda, Devastador | carry_id=28 | score=44.85
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~13%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Veigar (cost=1, chance_now~15%, chance_horizon~11%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Gromp18_AP (cost=2, chance_now~10%, chance_horizon~11%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Teemo (cost=2, chance_now~11%, chance_horizon~11%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=3.326368; native_score=25.065546; native_ids=28,30,1,17,16,7,39,0; candidate_ids=7,29,30,46,48,44,55,60,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=3.326368; native_score=25.065546; native_ids=28,30,1,17,16,7,39,0; candidate_ids=7,29,30,46,48,44,55,60,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Tristana -> DA_18_Tristana | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 104 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Fiddlesticks | core=não | fit=0.00 | nenhum trait de foco
+[18:49:57] COMPROU: Camille (Custo 1 | i:2.0) | Rew: +0.34
+    STRATEGY: SLOWROLL | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Camille | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.46, Vanguarda 0.17, Devastador 0.16, Adaptador 0.14, Inferno 0.08
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_18_Camille, DA_18_Tristana, DA_Fiddlesticks18 | CORE TRAITS: Congregação das Bruxas, Vanguarda, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Vanguarda, Devastador | carry_id=28 | score=45.17
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~13%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Veigar (cost=1, chance_now~15%, chance_horizon~11%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Gromp18_AP (cost=2, chance_now~10%, chance_horizon~11%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Teemo (cost=2, chance_now~11%, chance_horizon~11%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=3.326368; native_score=23.505546; native_ids=28,30,1,17,16,7,39,0; candidate_ids=7,29,30,46,48,44,55,60,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=3.326368; native_score=23.505546; native_ids=28,30,1,17,16,7,39,0; candidate_ids=7,29,30,46,48,44,55,60,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Tristana -> DA_18_Camille | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 103 | renda base +5 | juros +5 | sequência +1 | vitória +0
+    FIT UNIDADE: Camille | core=SIM | fit=9.50 | Congregação das Bruxas=9.30, Devastador=0.20
+[18:49:58] PASSOU TURNO                 | Rew: -0.12
+    STRATEGY: SLOWROLL | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Camille | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.31, Vanguarda 0.21, Devastador 0.21, Adaptador 0.18, Inferno 0.10
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_18_Camille, DA_18_Tristana, DA_Fiddlesticks18 | CORE TRAITS: Congregação das Bruxas, Vanguarda, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Vanguarda, Devastador | carry_id=28 | score=45.20
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~13%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Veigar (cost=1, chance_now~15%, chance_horizon~11%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Gromp18_AP (cost=2, chance_now~10%, chance_horizon~11%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Teemo (cost=2, chance_now~11%, chance_horizon~11%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=3.326368; native_score=23.505546; native_ids=28,30,1,17,16,7,39,0; candidate_ids=7,29,30,46,48,44,55,60,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=3.326368; native_score=23.505546; native_ids=28,30,1,17,16,7,39,0; candidate_ids=7,29,30,46,48,44,55,60,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Camille -> DA_18_Camille | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 103 | renda base +5 | juros +5 | sequência +1 | vitória +0
+
+[18:50:03] --- FIM DO ROUND 4-1 | GOLD: 114 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Camille | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 9.31, Vanguarda 0.21, Devastador 0.21, Adaptador 0.17, Inferno 0.10
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Eli|F|1*|i:4.0]       [ . ]        [Lob|F|1*|i:4.0]       [ . ]             [ . ]        [Tri|F|1*|i:6.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Mas|F|1*|i:6.0]  [Cas|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Fid|1*|i:6.0][Cam|1*|i:2.0][Aka|1*|i:2.0]
+[Ram|1*|i:6.0][Rak|1*|i:2.0][Eli|1*|i:4.0]
+[Cam|2*|i:4.0][Rak|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest, TFT_Item_FryingPan
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:50:03] 🛒 LOJA: Soraka(i:8.0), Shen(i:4.0), Shen(i:4.0), Rek'Sai(i:2.0), Shen(i:4.0)
+[18:50:04] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Camille | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.46, Vanguarda 0.16, Devastador 0.16, Adaptador 0.14, Inferno 0.08
+    STRATEGY REASON: STABILIZE: pressão de vida | CONF: 0.99
+    CORE UNITS: DA_18_Camille, DA_18_Tristana, DA_Fiddlesticks18 | CORE TRAITS: Congregação das Bruxas, Vanguarda, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Vanguarda, Devastador | carry_id=28 | score=45.22
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~17%, chance_horizon~14%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~10%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=3.960277; native_score=21.773145; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=3.960277; native_score=21.773145; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Camille -> DA_18_Camille | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 114 | renda base +5 | juros +5 | sequência +1 | vitória +0
+
+[18:50:11] --- FIM DO ROUND 4-2 | GOLD: 126 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Camille | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 9.19, Enfeitiçador 0.26, Flora Fatalis 0.22, Vanguarda 0.16, Devastador 0.16
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +2 sequência, +0 vitória (total: +12)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Eli|F|1*|i:4.0]       [ . ]        [Lob|F|1*|i:4.0]       [ . ]             [ . ]        [Tri|F|1*|i:6.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Mas|F|1*|i:6.0]  [Cas|F|1*|i:6.0]  [Fid|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [Cam|1*|i:2.0][Aka|1*|i:2.0]
+[Ram|1*|i:6.0][Rak|1*|i:2.0][Eli|1*|i:4.0]
+[Cam|2*|i:4.0][Rak|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest, TFT_Item_FryingPan
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:50:11] 🛒 LOJA: Rubrivirim(i:2.0), Azir(i:6.0), Shen(i:4.0), Rek'Sai(i:2.0), Kog'Maw(i:6.0)
+[18:50:12] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Camille | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 8.88, Enfeitiçador 0.39, Flora Fatalis 0.33, Vanguarda 0.20, Devastador 0.20
+    STRATEGY REASON: STABILIZE: pressão de vida | CONF: 0.99
+    CORE UNITS: DA_18_Camille, DA_18_Tristana, DA_Fiddlesticks18 | CORE TRAITS: Congregação das Bruxas, Vanguarda, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Enfeitiçador, Vanguarda | carry_id=28 | score=45.36
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~16%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=3.976376; native_score=21.751581; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=3.976376; native_score=21.751581; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Camille -> DA_18_Camille | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 126 | renda base +5 | juros +5 | sequência +2 | vitória +0
+
+[18:50:18] --- FIM DO ROUND 4-3 | GOLD: 137 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Camille | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 8.78, Enfeitiçador 0.45, Flora Fatalis 0.38, Vanguarda 0.19, Devastador 0.19
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Eli|F|1*|i:4.0]       [ . ]        [Lob|F|1*|i:4.0]       [ . ]             [ . ]        [Tri|F|1*|i:6.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Mas|F|1*|i:6.0]  [Cas|F|1*|i:6.0]  [Fid|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [Cam|1*|i:2.0][Aka|1*|i:2.0]
+[Ram|1*|i:6.0][Rak|1*|i:2.0][Eli|1*|i:4.0]
+[Cam|2*|i:4.0][Rak|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest, TFT_Item_FryingPan
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:50:18] 🛒 LOJA: Shen(i:4.0), Grompe(i:4.0), Rek'Sai(i:2.0), Teemo(i:4.0), Veigar(i:2.0)
+[18:50:23] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Camille | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.02, Enfeitiçador 0.36, Flora Fatalis 0.31, Vanguarda 0.16, Devastador 0.16
+    STRATEGY REASON: STABILIZE: pressão de vida | CONF: 0.99
+    CORE UNITS: DA_18_Camille, DA_18_Tristana, DA_Fiddlesticks18 | CORE TRAITS: Congregação das Bruxas, Vanguarda, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Enfeitiçador, Vanguarda | carry_id=28 | score=45.25
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~16%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=3.975547; native_score=21.714583; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=3.975547; native_score=21.714583; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Camille -> DA_18_Camille | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 137 | renda base +5 | juros +5 | sequência +0 | vitória +1
+
+[18:50:29] --- FIM DO ROUND 4-4 | GOLD: 147 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Camille | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 8.78, Enfeitiçador 0.45, Flora Fatalis 0.38, Vanguarda 0.19, Devastador 0.19
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Eli|F|1*|i:4.0]       [ . ]        [Lob|F|1*|i:4.0]       [ . ]             [ . ]        [Tri|F|1*|i:6.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Mas|F|1*|i:6.0]  [Cas|F|1*|i:6.0]  [Fid|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [Cam|1*|i:2.0][Aka|1*|i:2.0]
+[Ram|1*|i:6.0][Rak|1*|i:2.0][Eli|1*|i:4.0]
+[Cam|2*|i:4.0][Rak|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest, TFT_Item_FryingPan
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:50:29] 🛒 LOJA: Kobuko(i:2.0), Akali(i:2.0), Ornn(i:2.0), Sejuani(i:4.0), Leona(i:2.0)
+[18:50:31] PASSOU TURNO                 | Rew: -0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Camille | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.02, Enfeitiçador 0.36, Flora Fatalis 0.31, Vanguarda 0.16, Devastador 0.16
+    STRATEGY REASON: STABILIZE: pressão de vida | CONF: 0.99
+    CORE UNITS: DA_18_Camille, DA_18_Tristana, DA_Fiddlesticks18 | CORE TRAITS: Congregação das Bruxas, Vanguarda, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Enfeitiçador, Vanguarda | carry_id=28 | score=45.28
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~16%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=3.969337; native_score=23.490748; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=3.969337; native_score=23.490748; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Camille -> DA_18_Camille | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 147 | renda base +5 | juros +5 | sequência +0 | vitória +0
+
+[18:50:37] --- FIM DO ROUND 4-5 | GOLD: 159 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Camille | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 8.78, Enfeitiçador 0.45, Flora Fatalis 0.38, Vanguarda 0.19, Devastador 0.19
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +1 sequência, +1 vitória (total: +12)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Eli|F|1*|i:4.0]       [ . ]        [Lob|F|1*|i:4.0]       [ . ]             [ . ]        [Tri|F|1*|i:6.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Mas|F|1*|i:6.0]  [Cas|F|1*|i:6.0]  [Fid|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [Cam|1*|i:2.0][Aka|1*|i:2.0]
+[Ram|1*|i:6.0][Rak|1*|i:2.0][Eli|1*|i:4.0]
+[Cam|2*|i:4.0][Rak|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest, TFT_Item_FryingPan
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:50:37] 🛒 LOJA: Akali(i:2.0), Mamãe Bicuda(i:6.0), Fiddlesticks(i:6.0), Cascalho(i:2.0), Xayah(i:2.0)
+[18:50:39] PASSOU TURNO                 | Rew: -0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Camille | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.02, Enfeitiçador 0.36, Flora Fatalis 0.31, Vanguarda 0.16, Devastador 0.16
+    STRATEGY REASON: STABILIZE: pressão de vida | CONF: 0.99
+    CORE UNITS: DA_18_Camille, DA_18_Tristana, DA_Fiddlesticks18 | CORE TRAITS: Congregação das Bruxas, Vanguarda, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Enfeitiçador, Vanguarda | carry_id=28 | score=45.13
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~15%, chance_horizon~12%, low_odds), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.880807; native_score=25.172623; native_ids=28,30,1,17,16,7,39,0; candidate_ids=7,29,30,46,48,44,55,60,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.880807; native_score=25.172623; native_ids=28,30,1,17,16,7,39,0; candidate_ids=7,29,30,46,48,44,55,60,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Camille -> DA_18_Camille | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 159 | renda base +5 | juros +5 | sequência +1 | vitória +1
+
+[18:50:46] --- FIM DO ROUND 4-6 | GOLD: 169 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Camille | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 8.78, Enfeitiçador 0.45, Flora Fatalis 0.38, Devastador 0.19, Vanguarda 0.19
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Eli|F|1*|i:4.0]       [ . ]        [Lob|F|1*|i:4.0]       [ . ]             [ . ]        [Tri|F|1*|i:6.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Mas|F|1*|i:6.0]  [Cas|F|1*|i:6.0]  [Fid|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [Cam|1*|i:2.0][Aka|1*|i:2.0]
+[Ram|1*|i:6.0][Rak|1*|i:2.0][Eli|1*|i:4.0]
+[Cam|2*|i:4.0][Rak|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest, TFT_Item_FryingPan
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:50:46] 🛒 LOJA: Aphelios(i:8.0), Rek'Sai(i:2.0), Caitlyn(i:4.0), Elise(i:4.0), Rubrivirim(i:2.0)
+[18:50:48] COMPROU: Elise (Custo 2 | i:4.0) | Rew: +1.04
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.14
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_18_Camille, DA_18_Tristana | CORE TRAITS: Devastador, Congregação das Bruxas, Feérico
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Enfeitiçador, Devastador | carry_id=28 | score=46.81
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (currently_in_shop; immediate acquisition available), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.079432; native_score=24.304000; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.079432; native_score=24.304000; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Camille -> DA_18_Elise | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 167 | renda base +5 | juros +5 | sequência +0 | vitória +0
+    FIT UNIDADE: Elise | core=não | fit=8.97 | Congregação das Bruxas=8.78, Vanguarda=0.19
+[18:50:49] PASSOU TURNO                 | Rew: -0.26
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 8.73, Enfeitiçador 0.49, Flora Fatalis 0.42, Devastador 0.21, Vanguarda 0.16
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_18_Camille, DA_18_Tristana | CORE TRAITS: Devastador, Congregação das Bruxas, Feérico
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Enfeitiçador, Devastador | carry_id=28 | score=46.89
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (currently_in_shop; immediate acquisition available), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.079432; native_score=24.304000; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.079432; native_score=24.304000; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Elise -> DA_18_Elise | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 167 | renda base +5 | juros +5 | sequência +0 | vitória +0
+[18:50:54] MOVE Bench -> Board: Elise (i:8.0) <-> Vazio | Rew: +0.71
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 8.97, Enfeitiçador 0.40, Flora Fatalis 0.34, Devastador 0.17, Vanguarda 0.13
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_18_Camille, DA_18_Tristana | CORE TRAITS: Devastador, Congregação das Bruxas, Feérico
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Enfeitiçador, Devastador | carry_id=28 | score=46.82
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (currently_in_shop; immediate acquisition available), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.079432; native_score=24.304000; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.079432; native_score=24.304000; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Elise -> DA_18_Elise | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 167 | renda base +5 | juros +5 | sequência +0 | vitória +0
+    FIT UNIDADE: Elise | core=SIM | fit=8.84 | Congregação das Bruxas=8.70, Vanguarda=0.14
+
+[18:50:55] --- FIM DO ROUND 4-7 | GOLD: 177 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 8.99, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.14
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]        [Lob|F|1*|i:4.0]       [ . ]             [ . ]        [Tri|F|1*|i:6.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+ [Mas|F|1*|i:6.0]  [Cas|F|1*|i:6.0]  [Fid|F|1*|i:6.0]  [Eli|F|2*|i:8.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [Cam|1*|i:2.0][Aka|1*|i:2.0]
+[Ram|1*|i:6.0][Rak|1*|i:2.0]   [VAZIO]    
+[Cam|2*|i:4.0][Rak|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest, TFT_Item_FryingPan
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:50:55] 🛒 LOJA: Master Yi(i:6.0), Mamãe Bicuda(i:6.0), Kayle(i:4.0), Warwick(i:4.0), Veigar(i:2.0)
+[18:50:57] EQUIP_FROM_INVENTORY (ação=[7, 0, 0, 0, 0, 0]) | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 8.76, Enfeitiçador 0.47, Flora Fatalis 0.40, Devastador 0.20, Vanguarda 0.18
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_18_Camille, DA_18_Tristana | CORE TRAITS: Devastador, Congregação das Bruxas, Feérico
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Enfeitiçador, Devastador | carry_id=28 | score=45.62
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~16%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Elise -> DA_18_Elise | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 177 | renda base +5 | juros +5 | sequência +0 | vitória +0
+    ITEM AUDIT: componentes ['TFT_Item_ChainVest', 'TFT_Item_FryingPan'] -> ['TFT_Item_ChainVest', 'TFT_Item_FryingPan', 'TFT_Item_RecurveBow'] | bag [] -> [] | equipados [] -> []
+[18:50:58] PASSOU TURNO                 | Rew: -0.26
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.14
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_18_Camille, DA_18_Tristana | CORE TRAITS: Devastador, Congregação das Bruxas, Feérico
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Enfeitiçador, Devastador | carry_id=28 | score=45.56
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~16%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Elise -> DA_18_Elise | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 177 | renda base +5 | juros +5 | sequência +0 | vitória +0
+[18:51:05] ELIMINADO · colocação final #5 · HP 0.0
+
+[18:51:05] --- FIM DO ROUND 5-1 | GOLD: 177 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest, TFT_Item_FryingPan, TFT_Item_RecurveBow
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:51:05] 🛒 LOJA: None, None, None, None, None
+[18:51:05]  ⬇️ SINERGIA: CONGREGAÇÃO DAS BRUXAS nível 0
+[18:51:05]  ⬇️ SINERGIA: DEVASTADOR nível 0
+[18:51:05]  ⬇️ SINERGIA: FEÉRICO nível 0
+[18:51:05]  ⬇️ SINERGIA: VANGUARDA nível 0
+[18:51:07] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_18_Camille, DA_18_Tristana | CORE TRAITS: Devastador, Congregação das Bruxas, Feérico
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Enfeitiçador, Devastador | carry_id=28 | score=45.56
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~16%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Elise -> DA_18_Elise | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 177 | renda base +5 | juros +5 | sequência +0 | vitória +0
+
+[18:51:15] --- FIM DO ROUND 5-2 | GOLD: 177 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest, TFT_Item_FryingPan, TFT_Item_RecurveBow
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:51:15] 🛒 LOJA: None, None, None, None, None
+[18:51:17] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_18_Camille, DA_18_Tristana | CORE TRAITS: Devastador, Congregação das Bruxas, Feérico
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Enfeitiçador, Devastador | carry_id=28 | score=45.56
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~16%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Elise -> DA_18_Elise | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 177 | renda base +5 | juros +5 | sequência +0 | vitória +0
+
+[18:51:25] --- FIM DO ROUND 5-3 | GOLD: 177 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest, TFT_Item_FryingPan, TFT_Item_RecurveBow
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:51:25] 🛒 LOJA: None, None, None, None, None
+[18:51:27] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_18_Camille, DA_18_Tristana | CORE TRAITS: Devastador, Congregação das Bruxas, Feérico
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Enfeitiçador, Devastador | carry_id=28 | score=45.56
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~16%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Elise -> DA_18_Elise | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 177 | renda base +5 | juros +5 | sequência +0 | vitória +0
+
+[18:51:34] --- FIM DO ROUND 5-4 | GOLD: 177 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest, TFT_Item_FryingPan, TFT_Item_RecurveBow
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:51:34] 🛒 LOJA: None, None, None, None, None
+[18:51:36] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_18_Camille, DA_18_Tristana | CORE TRAITS: Devastador, Congregação das Bruxas, Feérico
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Enfeitiçador, Devastador | carry_id=28 | score=45.56
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~16%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Elise -> DA_18_Elise | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 177 | renda base +5 | juros +5 | sequência +0 | vitória +0
+
+[18:51:44] --- FIM DO ROUND 5-5 | GOLD: 177 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest, TFT_Item_FryingPan, TFT_Item_RecurveBow
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:51:44] 🛒 LOJA: None, None, None, None, None
+[18:51:46] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_18_Camille, DA_18_Tristana | CORE TRAITS: Devastador, Congregação das Bruxas, Feérico
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Enfeitiçador, Devastador | carry_id=28 | score=45.56
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~16%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Elise -> DA_18_Elise | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 177 | renda base +5 | juros +5 | sequência +0 | vitória +0
+
+[18:51:54] --- FIM DO ROUND 5-6 | GOLD: 177 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest, TFT_Item_FryingPan, TFT_Item_RecurveBow
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:51:54] 🛒 LOJA: None, None, None, None, None
+[18:51:56] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_18_Camille, DA_18_Tristana | CORE TRAITS: Devastador, Congregação das Bruxas, Feérico
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Enfeitiçador, Devastador | carry_id=28 | score=45.56
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~16%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Elise -> DA_18_Elise | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 177 | renda base +5 | juros +5 | sequência +0 | vitória +0
+
+[18:52:03] --- FIM DO ROUND 5-7 | GOLD: 177 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest, TFT_Item_FryingPan, TFT_Item_RecurveBow
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:52:03] 🛒 LOJA: None, None, None, None, None
+[18:52:05] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_18_Camille, DA_18_Tristana | CORE TRAITS: Devastador, Congregação das Bruxas, Feérico
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Enfeitiçador, Devastador | carry_id=28 | score=45.56
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~16%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Elise -> DA_18_Elise | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 177 | renda base +5 | juros +5 | sequência +0 | vitória +0
+
+[18:52:13] --- FIM DO ROUND 6-1 | GOLD: 177 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest, TFT_Item_FryingPan, TFT_Item_RecurveBow
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:52:13] 🛒 LOJA: None, None, None, None, None
+[18:52:15] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_18_Camille, DA_18_Tristana | CORE TRAITS: Devastador, Congregação das Bruxas, Feérico
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Enfeitiçador, Devastador | carry_id=28 | score=45.56
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~16%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Elise -> DA_18_Elise | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 177 | renda base +5 | juros +5 | sequência +0 | vitória +0
+
+[18:52:22] --- FIM DO ROUND 6-2 | GOLD: 177 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest, TFT_Item_FryingPan, TFT_Item_RecurveBow
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:52:22] 🛒 LOJA: None, None, None, None, None
+[18:52:24] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_18_Camille, DA_18_Tristana | CORE TRAITS: Devastador, Congregação das Bruxas, Feérico
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Enfeitiçador, Devastador | carry_id=28 | score=45.56
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~16%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Elise -> DA_18_Elise | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 177 | renda base +5 | juros +5 | sequência +0 | vitória +0
+
+[18:52:32] --- FIM DO ROUND 6-3 | GOLD: 177 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest, TFT_Item_FryingPan, TFT_Item_RecurveBow
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:52:32] 🛒 LOJA: None, None, None, None, None
+[18:52:34] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_18_Camille, DA_18_Tristana | CORE TRAITS: Devastador, Congregação das Bruxas, Feérico
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Enfeitiçador, Devastador | carry_id=28 | score=45.56
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~16%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Elise -> DA_18_Elise | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 177 | renda base +5 | juros +5 | sequência +0 | vitória +0
+
+[18:52:42] --- FIM DO ROUND 6-4 | GOLD: 177 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest, TFT_Item_FryingPan, TFT_Item_RecurveBow
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:52:42] 🛒 LOJA: None, None, None, None, None
+[18:52:44] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_18_Camille, DA_18_Tristana | CORE TRAITS: Devastador, Congregação das Bruxas, Feérico
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Enfeitiçador, Devastador | carry_id=28 | score=45.56
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~16%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Elise -> DA_18_Elise | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 177 | renda base +5 | juros +5 | sequência +0 | vitória +0
+
+[18:52:52] --- FIM DO ROUND 6-5 | GOLD: 177 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest, TFT_Item_FryingPan, TFT_Item_RecurveBow
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:52:52] 🛒 LOJA: None, None, None, None, None
+[18:52:54] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_18_Elise, DA_18_Camille, DA_18_Tristana | CORE TRAITS: Devastador, Congregação das Bruxas, Feérico
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Cassiopeia, DA_Fiddlesticks18, DA_18_Camille, DA_18_Elise, DA_18_Caitlyn, DA_18_Rakan, DA_18_Tristana, DA_18_Akali_AD | traits=Congregação das Bruxas, Enfeitiçador, Devastador | carry_id=28 | score=45.56
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_18_Caitlyn (cost=2, chance_now~16%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=2; unmapped_units=0; low_coverage_candidates=0; best=Vanguarda Alune; best_score=4.052635; native_score=21.891130; native_ids=28,30,1,17,16,7,39,0; candidate_ids=17,28,29,48,44,55,57,73; confirmed_ids=28,30,1,17,16,7,39,0; confirmed_carry_id=28; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Congregação das Bruxas -> Congregação das Bruxas | foco=DA_18_Elise -> DA_18_Elise | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 177 | renda base +5 | juros +5 | sequência +0 | vitória +0
+
+[18:53:02] --- FIM DO ROUND 6-6 | GOLD: 177 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Congregação das Bruxas | FOCUS: DA_18_Elise | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Congregação das Bruxas 9.00, Enfeitiçador 0.38, Flora Fatalis 0.32, Devastador 0.16, Vanguarda 0.15
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_ChainVest, TFT_Item_FryingPan, TFT_Item_RecurveBow
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:53:02] 🛒 LOJA: None, None, None, None, None
+
+========================================
+ GAME OVER - RELATÓRIO FINAL
+========================================
+  VENCEDOR DA PARTIDA: JOGADOR 7
+  COLOCAÇÃO FINAL: #5
+  HP final: 0.0 | Ouro final: 177 | Nível: 6
+  Vitórias: 5 | Derrotas: 11

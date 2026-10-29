@@ -1,0 +1,2065 @@
+==========================================================
+TFT AI LOG · JOGADOR 4
+Partida: 3e16a7a2-599f-4c41-b966-47173f7e6b9a
+Seed: 20261016 | Política: determinística
+Checkpoint SHA-256: f6f691ae1ac6c7d0652df878b3e9acab8820137ff624617d45560a5c9ac4ef65
+Impacto (i): custo × estrelas × 2 (contribuição nativa da engine)
+==========================================================
+--- INÍCIO DA PARTIDA · JOGADOR 4 ---
+[18:47:44] VENDEU: Rakan (i:2.0)        | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: — | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: —
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: — | CORE TRAITS: —
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=— -> — | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Rakan | core=não | fit=0.00 | nenhum trait de foco
+[18:47:45] COMPROU: Akali (Custo 1 | i:2.0) | Rew: +0.40
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 3.33, Devastador 3.33, Inferno 3.33
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD | CORE TRAITS: —
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=— -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=não | fit=0.00 | nenhum trait de foco
+[18:47:46] MOVE Bench -> Board: Akali (i:2.0) <-> Vazio | Rew: +0.61
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 3.33, Devastador 3.33, Inferno 3.33
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD | CORE TRAITS: —
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=10.00 | Inferno=3.33, Adaptador=3.33, Devastador=3.33
+[18:47:46] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 3.33, Devastador 3.33, Inferno 3.33
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD | CORE TRAITS: —
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[18:47:51] --- FIM DO ROUND 1-1 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 3.33, Devastador 3.33, Inferno 3.33
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]        [Aka|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:47:51] 🛒 LOJA: Yorick(i:2.0), Camille(i:2.0), Ornn(i:2.0), Leona(i:2.0), Kobuko(i:2.0)
+[18:47:51] COMPROU: Camille (Custo 1 | i:2.0) | Rew: +0.25
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 3.36, Adaptador 3.29, Inferno 3.29, Congregação das Bruxas 0.07
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Camille | CORE TRAITS: Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Camille | core=não | fit=3.33 | Devastador=3.33
+[18:47:52] COMPROU: Yorick (Custo 1 | i:2.0) | Rew: -0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 3.36, Adaptador 3.22, Inferno 3.22, Congregação das Bruxas 0.14, Colosso 0.07
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Yorick, DA_18_Camille | CORE TRAITS: Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Yorick | core=não | fit=0.00 | nenhum trait de foco
+[18:47:53] MOVE Bench -> Board: Camille (i:2.0) <-> Vazio | Rew: +0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 3.44, Adaptador 3.13, Inferno 3.13, Congregação das Bruxas 0.17, Colosso 0.14
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Yorick, DA_18_Camille | CORE TRAITS: Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Camille | core=SIM | fit=3.50 | Congregação das Bruxas=0.14, Devastador=3.36
+[18:47:53] MOVE Bench -> Board: Yorick (i:2.0) <-> Camille (i:2.0) | Rew: -0.30
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 3.45, Adaptador 3.07, Inferno 3.07, Congregação das Bruxas 0.23, Colosso 0.17
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Yorick, DA_18_Camille | CORE TRAITS: Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Yorick | core=SIM | fit=0.14 | Colosso=0.14
+[18:47:54] MOVE Bench -> Board: Camille (i:2.0) <-> Akali (i:2.0) | Rew: -0.82
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Yorick | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 3.45, Adaptador 3.05, Inferno 3.05, Congregação das Bruxas 0.26, Colosso 0.20
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Yorick, DA_18_Akali_AD, DA_18_Camille | CORE TRAITS: Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Yorick | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Camille | core=SIM | fit=3.69 | Congregação das Bruxas=0.23, Devastador=3.45
+[18:47:55] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Yorick | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 3.44, Adaptador 3.02, Inferno 3.02, Congregação das Bruxas 0.29, Colosso 0.22
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Yorick, DA_18_Akali_AD, DA_18_Camille | CORE TRAITS: Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Yorick -> DA_18_Yorick | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+[18:47:57] MOVE Bench -> Board: Akali (i:2.0) <-> Vazio | Rew: +0.58
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Yorick | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 3.53, Adaptador 2.91, Inferno 2.91, Congregação das Bruxas 0.35, Colosso 0.30
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Yorick, DA_18_Akali_AD, DA_18_Camille | CORE TRAITS: Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Yorick -> DA_18_Yorick | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=9.39 | Inferno=2.98, Adaptador=2.98, Devastador=3.44
+
+[18:47:58] --- FIM DO ROUND 1-2 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Yorick | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Devastador 3.71, Adaptador 2.78, Inferno 2.78, Congregação das Bruxas 0.39, Colosso 0.34
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]        [Cam|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Yor|F|1*|i:2.0]       [ . ]       
+ [Aka|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:47:58] 🛒 LOJA: Karma(i:2.0), Ornn(i:2.0), Grompe(i:4.0), Kobuko(i:2.0), Alistar(i:4.0)
+[18:47:58] COMPROU: Grompe (Custo 2 | i:4.0) | Rew: +0.31
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 3.77, Adaptador 2.76, Inferno 2.69, Congregação das Bruxas 0.41, Colosso 0.36
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Yorick -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Grompe | core=não | fit=2.78 | Adaptador=2.78
+[18:47:59] MOVE Bench -> Board: Grompe (i:4.0) <-> Yorick (i:2.0) | Rew: -0.79
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 3.77, Adaptador 2.82, Inferno 2.58, Congregação das Bruxas 0.42, Colosso 0.41
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Grompe | core=SIM | fit=2.76 | Adaptador=2.76
+[18:48:00] MOVE Bench -> Board: Yorick (i:2.0) <-> Camille (i:2.0) | Rew: +0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 3.71, Adaptador 2.91, Inferno 2.49, Congregação das Bruxas 0.47, Colosso 0.42
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Adaptador, Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Yorick | core=SIM | fit=0.41 | Colosso=0.41
+[18:48:00] VENDEU: Camille (i:2.0)      | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 3.62, Adaptador 3.03, Inferno 2.45, Congregação das Bruxas 0.46, Colosso 0.44
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Camille | core=não | fit=4.18 | Congregação das Bruxas=0.47, Devastador=3.71
+[18:48:01] COMPROU: Karma (Custo 1 | i:2.0) | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 3.54, Adaptador 3.15, Inferno 2.40, Colosso 0.46, Congregação das Bruxas 0.44
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Florescer, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Karma | core=não | fit=0.00 | nenhum trait de foco
+[18:48:02] VENDEU: Karma (i:2.0)        | Rew: -0.20
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 3.46, Adaptador 3.26, Inferno 2.36, Colosso 0.48, Congregação das Bruxas 0.43
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Karma | core=não | fit=0.00 | nenhum trait de foco
+[18:48:03] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Devastador 3.39, Adaptador 3.38, Inferno 2.32, Colosso 0.50, Congregação das Bruxas 0.42
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+
+[18:48:05] --- FIM DO ROUND 1-3 | GOLD: 4 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 3.79, Devastador 3.11, Inferno 2.17, Colosso 0.57, Congregação das Bruxas 0.37
+    RENDA PRÓXIMO ROUND: +3 base, +0 juros, +0 sequência, +0 vitória (total: +3)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]        [Yor|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Gro|F|1*|i:4.0]       [ . ]       
+ [Aka|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:48:05] 🛒 LOJA: Akali(i:2.0), Yorick(i:2.0), Teemo(i:4.0), Camille(i:2.0), Akali(i:2.0)
+[18:48:05] COMPROU: Akali (Custo 1 | i:2.0) | Rew: +0.99
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 3.88, Devastador 3.05, Inferno 2.16, Colosso 0.57, Congregação das Bruxas 0.35
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Adaptador, Devastador, Inferno
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=9.07 | Inferno=2.17, Adaptador=3.79, Devastador=3.11
+[18:48:05]  ⬆️ SINERGIA: ADAPTADOR nível 1
+[18:48:06] COMPROU: Akali (Custo 1 | i:2.0) | Rew: +1.12
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 3.87, Devastador 3.04, Inferno 2.17, Colosso 0.59, Congregação das Bruxas 0.34
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_Gromp18_AP, DA_18_Yorick | CORE TRAITS: Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=9.08 | Inferno=2.16, Adaptador=3.88, Devastador=3.05
+[18:48:06]  ⬇️ SINERGIA: ADAPTADOR nível 0
+[18:48:07] COMPROU: Yorick (Custo 1 | i:2.0) | Rew: +0.97
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 3.84, Devastador 3.00, Inferno 2.17, Colosso 0.67, Congregação das Bruxas 0.33
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Yorick, DA_Gromp18_AP | CORE TRAITS: Florescer, Colosso, Invocador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Yorick | core=SIM | fit=0.59 | Colosso=0.59
+[18:48:07] MOVE Bench -> Board: Akali (i:4.0) <-> Vazio | Rew: +0.74
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 3.91, Devastador 2.92, Inferno 2.12, Colosso 0.75, Congregação das Bruxas 0.31
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Yorick, DA_Gromp18_AP | CORE TRAITS: Adaptador, Florescer, Colosso
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=9.01 | Inferno=2.17, Adaptador=3.84, Devastador=3.00
+[18:48:08] MOVE Bench -> Board: Yorick (i:2.0) <-> Yorick (i:2.0) | Rew: -0.40
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 3.97, Devastador 2.84, Inferno 2.07, Colosso 0.82, Congregação das Bruxas 0.30
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Yorick, DA_Gromp18_AP | CORE TRAITS: Adaptador, Florescer, Colosso
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Yorick | core=SIM | fit=0.75 | Colosso=0.75
+[18:48:09] MOVE Bench -> Board: Yorick (i:2.0) <-> Grompe (i:4.0) | Rew: +0.18
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 3.92, Devastador 2.76, Inferno 2.02, Colosso 1.00, Congregação das Bruxas 0.29
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Yorick, DA_Gromp18_AP | CORE TRAITS: Adaptador, Florescer, Colosso
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Yorick | core=SIM | fit=0.82 | Colosso=0.82
+[18:48:10] MOVE Bench -> Board: Grompe (i:4.0) <-> Yorick (i:2.0) | Rew: -0.39
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 3.99, Devastador 2.69, Inferno 1.98, Colosso 1.07, Congregação das Bruxas 0.28
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_Gromp18_AP, DA_18_Yorick | CORE TRAITS: Adaptador, Florescer, Colosso
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +3 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Grompe | core=SIM | fit=3.92 | Adaptador=3.92
+[18:48:10] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.05, Devastador 2.62, Inferno 1.93, Colosso 1.13, Congregação das Bruxas 0.27
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_Gromp18_AP, DA_18_Yorick | CORE TRAITS: Adaptador, Florescer, Colosso
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +3 | juros +0 | sequência +0 | vitória +0
+
+[18:48:12] --- FIM DO ROUND 1-4 | GOLD: 5 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 4.22, Devastador 2.43, Inferno 1.82, Colosso 1.30, Congregação das Bruxas 0.24
+    RENDA PRÓXIMO ROUND: +4 base, +0 juros, +0 sequência, +0 vitória (total: +4)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Aka|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]        [Gro|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Yor|F|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Yor|1*|i:2.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:48:12] 🛒 LOJA: Leona(i:2.0), Yorick(i:2.0), Grompe(i:4.0), Veigar(i:2.0), Grompe(i:4.0)
+[18:48:12] COMPROU: Yorick (Custo 1 | i:2.0) | Rew: +1.12
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.28, Devastador 2.38, Inferno 1.78, Colosso 1.33, Congregação das Bruxas 0.23
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Yorick, DA_Gromp18_AP | CORE TRAITS: Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Yorick | core=SIM | fit=1.30 | Colosso=1.30
+[18:48:13] COMPROU: Grompe (Custo 2 | i:4.0) | Rew: +0.96
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.38, Devastador 2.31, Inferno 1.74, Colosso 1.34, Congregação das Bruxas 0.22
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Yorick, DA_Gromp18_AP | CORE TRAITS: Adaptador, Fera do Rift
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Grompe | core=SIM | fit=4.28 | Adaptador=4.28
+[18:48:13]  ⬆️ SINERGIA: ADAPTADOR nível 1
+[18:48:14] COMPROU: Grompe (Custo 2 | i:4.0) | Rew: +1.11
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.38, Devastador 2.29, Inferno 1.73, Colosso 1.38, Congregação das Bruxas 0.21
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Grompe | core=SIM | fit=4.38 | Adaptador=4.38
+[18:48:14]  ⬇️ SINERGIA: ADAPTADOR nível 0
+[18:48:15] MOVE Bench -> Board: Yorick (i:4.0) <-> Akali (i:4.0) | Rew: -0.75
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.35, Devastador 2.30, Inferno 1.76, Colosso 1.38, Congregação das Bruxas 0.21
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Yorick | core=SIM | fit=1.38 | Colosso=1.38
+[18:48:15] MOVE Bench -> Board: Akali (i:4.0) <-> Vazio | Rew: +0.33
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.37, Devastador 2.28, Inferno 1.76, Colosso 1.39, Congregação das Bruxas 0.20
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=8.41 | Inferno=1.76, Adaptador=4.35, Devastador=2.30
+[18:48:16] MOVE Bench -> Board: Grompe (i:8.0) <-> Akali (i:4.0) | Rew: -1.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.35, Devastador 2.29, Inferno 1.78, Colosso 1.38, Congregação das Bruxas 0.20
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Grompe | core=SIM | fit=4.37 | Adaptador=4.37
+[18:48:17] MOVE Bench -> Board: Akali (i:4.0) <-> Vazio | Rew: +0.43
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.43, Devastador 2.25, Inferno 1.76, Colosso 1.37, Congregação das Bruxas 0.19
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=8.42 | Inferno=1.78, Adaptador=4.35, Devastador=2.29
+[18:48:17] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.51, Devastador 2.21, Inferno 1.73, Colosso 1.36, Congregação das Bruxas 0.19
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +4 | juros +0 | sequência +0 | vitória +0
+
+[18:48:19] --- FIM DO ROUND 2-1 | GOLD: 5 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 4.72, Devastador 2.11, Inferno 1.67, Colosso 1.33, Congregação das Bruxas 0.17
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Yor|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]        [Gro|F|2*|i:8.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Aka|F|2*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:48:19] 🛒 LOJA: Krugue(i:6.0), Kobuko(i:2.0), Elise(i:4.0), Karma(i:2.0), Leona(i:2.0)
+[18:48:19] COMPROU: Krugue (Custo 3 | i:6.0) | Rew: -0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.78, Devastador 2.08, Inferno 1.65, Colosso 1.32, Congregação das Bruxas 0.16
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Fera do Rift, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Krugue | core=não | fit=0.00 | nenhum trait de foco
+[18:48:20] COMPROU: Elise (Custo 2 | i:4.0) | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.82, Devastador 2.03, Inferno 1.62, Colosso 1.30, Congregação das Bruxas 0.23
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Fera do Rift, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Elise | core=não | fit=0.16 | Congregação das Bruxas=0.16
+[18:48:21] MOVE Bench -> Board: Elise (i:4.0) <-> Akali (i:4.0) | Rew: -0.45
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.77, Devastador 2.04, Inferno 1.64, Colosso 1.30, Congregação das Bruxas 0.25
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Fera do Rift, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Elise | core=não | fit=0.23 | Congregação das Bruxas=0.23
+[18:48:22] MOVE Bench -> Board: Akali (i:4.0) <-> Grompe (i:8.0) | Rew: -0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.76, Devastador 2.02, Inferno 1.64, Colosso 1.30, Congregação das Bruxas 0.28
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Adaptador, Fera do Rift
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=8.45 | Inferno=1.64, Adaptador=4.77, Devastador=2.04
+[18:48:22] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.75, Devastador 2.01, Inferno 1.63, Colosso 1.30, Congregação das Bruxas 0.31
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Adaptador, Fera do Rift
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[18:48:25] MOVE Bench -> Board: Krugue (i:6.0) <-> Vazio | Rew: +0.37
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.72, Devastador 1.95, Inferno 1.61, Colosso 1.31, Congregação das Bruxas 0.41
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Adaptador, Fera do Rift
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Krugue | core=não | fit=0.00 | nenhum trait de foco
+
+[18:48:26] --- FIM DO ROUND 2-2 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 4.71, Devastador 1.92, Inferno 1.60, Colosso 1.31, Congregação das Bruxas 0.46
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Yor|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]        [Aka|F|2*|i:4.0] 
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Eli|F|1*|i:4.0]       [ . ]       
+ [Kru|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [Gro|2*|i:8.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:48:26] 🛒 LOJA: Akali(i:2.0), Veigar(i:2.0), Camille(i:2.0), LeBlanc(i:4.0), Kobuko(i:2.0)
+[18:48:27] COMPROU: Akali (Custo 1 | i:2.0) | Rew: +0.54
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.64, Devastador 1.95, Inferno 1.64, Colosso 1.30, Congregação das Bruxas 0.47
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_Gromp18_AP, DA_18_Yorick | CORE TRAITS: Adaptador, Devastador, Inferno
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 5 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=8.23 | Inferno=1.60, Adaptador=4.71, Devastador=1.92
+[18:48:27]  ⬆️ SINERGIA: ADAPTADOR nível 1
+[18:48:27] BUY XP                       | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.58, Devastador 1.98, Inferno 1.68, Colosso 1.28, Congregação das Bruxas 0.48
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_Gromp18_AP, DA_18_Yorick | CORE TRAITS: Adaptador, Devastador, Inferno
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:48:28] VENDEU: Akali (i:2.0)        | Rew: -0.63
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.57, Devastador 1.97, Inferno 1.67, Colosso 1.28, Congregação das Bruxas 0.51
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Adaptador, Fera do Rift
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=8.24 | Inferno=1.68, Adaptador=4.58, Devastador=1.98
+[18:48:28]  ⬇️ SINERGIA: ADAPTADOR nível 0
+[18:48:29] MOVE Board -> Board: Akali (i:4.0) <-> Vazio | Rew: +0.03
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.57, Devastador 1.95, Inferno 1.67, Colosso 1.28, Congregação das Bruxas 0.53
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Adaptador, Fera do Rift
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=8.21 | Inferno=1.67, Adaptador=4.57, Devastador=1.97
+[18:48:29] MOVE Bench -> Board: Grompe (i:8.0) <-> Elise (i:4.0) | Rew: -0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.61, Devastador 1.91, Inferno 1.64, Colosso 1.27, Congregação das Bruxas 0.58
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Adaptador, Fera do Rift
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Grompe | core=SIM | fit=4.57 | Adaptador=4.57
+[18:48:30] MOVE Board -> Board: Grompe (i:8.0) <-> Akali (i:4.0) | Rew: -0.32
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.64, Devastador 1.87, Inferno 1.61, Colosso 1.25, Congregação das Bruxas 0.63
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Fera do Rift, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Grompe | core=SIM | fit=4.61 | Adaptador=4.61
+[18:48:31] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.68, Devastador 1.83, Inferno 1.58, Colosso 1.24, Congregação das Bruxas 0.67
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Fera do Rift, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[18:48:33] --- FIM DO ROUND 2-3 | GOLD: 8 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 4.81, Devastador 1.69, Inferno 1.47, Colosso 1.18, Congregação das Bruxas 0.84
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Yor|F|2*|i:4.0]       [ . ]        [Gro|F|2*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Aka|F|2*|i:4.0]       [ . ]       
+ [Kru|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [Eli|1*|i:4.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:48:33] 🛒 LOJA: Xayah(i:2.0), Grompe(i:4.0), Rubrivirim(i:2.0), Aphelios(i:8.0), Xayah(i:2.0)
+[18:48:34] COMPROU: Grompe (Custo 2 | i:4.0) | Rew: +0.52
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.87, Devastador 1.65, Inferno 1.44, Colosso 1.16, Congregação das Bruxas 0.87
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Fera do Rift, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 6 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Grompe | core=SIM | fit=4.81 | Adaptador=4.81
+[18:48:34]  ⬆️ SINERGIA: ADAPTADOR nível 1
+[18:48:34]  ⬆️ SINERGIA: FERA DO RIFT nível 1
+[18:48:34] COMPROU: Aphelios (Custo 4 | i:8.0) | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 4.94, Devastador 1.61, Inferno 1.41, Colosso 1.14, Congregação das Bruxas 0.91
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Fera do Rift, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Aphelios | core=não | fit=0.00 | nenhum trait de foco
+[18:48:35] COMPROU: Rubrivirim (Custo 1 | i:2.0) | Rew: +0.33
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 5.00, Devastador 1.57, Inferno 1.38, Colosso 1.12, Congregação das Bruxas 0.93
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Fera do Rift, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Rubrivirim | core=não | fit=0.00 | nenhum trait de foco
+[18:48:36] MOVE Board -> Board: Akali (i:4.0) <-> Vazio | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 5.05, Devastador 1.53, Inferno 1.35, Colosso 1.11, Congregação das Bruxas 0.96
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Fera do Rift, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=7.94 | Inferno=1.38, Adaptador=5.00, Devastador=1.57
+[18:48:36] COMPROU: Xayah (Custo 1 | i:2.0) | Rew: +0.02
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 5.11, Devastador 1.49, Inferno 1.32, Colosso 1.09, Congregação das Bruxas 0.99
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Fera do Rift, Adaptador, Fumegante
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Xayah | core=não | fit=0.00 | nenhum trait de foco
+[18:48:37] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 5.16, Devastador 1.46, Inferno 1.29, Colosso 1.07, Congregação das Bruxas 1.01
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Fera do Rift, Adaptador, Fumegante
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:48:39] MOVE Bench -> Board: Grompe (i:4.0) <-> Vazio | Rew: +0.53
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 5.35, Devastador 1.35, Inferno 1.21, Congregação das Bruxas 1.07, Colosso 1.02
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Fera do Rift, Adaptador, Fumegante
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Grompe | core=SIM | fit=5.26 | Adaptador=5.26
+
+[18:48:40] --- FIM DO ROUND 2-4 | GOLD: 6 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 5.53, Devastador 1.27, Inferno 1.14, Congregação das Bruxas 1.09, Colosso 0.97
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Yor|F|2*|i:4.0]       [ . ]        [Gro|F|2*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aka|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Kru|F|1*|i:6.0]  [Gro|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [Eli|1*|i:4.0][Aph|1*|i:8.0]
+[Rub|1*|i:2.0][Xay|1*|i:2.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:48:40] 🛒 LOJA: Varus(i:2.0), Krugue(i:6.0), Yunara(i:4.0), Fiddlesticks(i:6.0), Xayah(i:2.0)
+[18:48:41] COMPROU: Krugue (Custo 3 | i:6.0) | Rew: +0.81
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 5.61, Devastador 1.23, Inferno 1.11, Congregação das Bruxas 1.10, Colosso 0.95
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Yorick, DA_18_Akali_AD | CORE TRAITS: Fera do Rift, Adaptador, Lutador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Krugue | core=não | fit=0.00 | nenhum trait de foco
+[18:48:41] MOVE Board -> Board: Yorick (i:4.0) <-> Akali (i:4.0) | Rew: -0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 5.69, Devastador 1.19, Congregação das Bruxas 1.11, Inferno 1.08, Colosso 0.93
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Lutador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Yorick | core=SIM | fit=0.95 | Colosso=0.95
+[18:48:42] MOVE Board -> Board: Akali (i:4.0) <-> Grompe (i:8.0) | Rew: -0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 5.76, Devastador 1.16, Congregação das Bruxas 1.12, Inferno 1.05, Colosso 0.91
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Lutador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=7.96 | Inferno=1.08, Adaptador=5.69, Devastador=1.19
+[18:48:43] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 5.83, Devastador 1.13, Congregação das Bruxas 1.13, Inferno 1.03, Colosso 0.89
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Lutador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[18:48:47] --- FIM DO ROUND 2-5 | GOLD: 9 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 6.21, Congregação das Bruxas 1.17, Devastador 0.95, Inferno 0.88, Colosso 0.79
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Gro|F|2*|i:8.0]       [ . ]        [Aka|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Yor|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Kru|F|1*|i:6.0]  [Gro|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Kru|1*|i:6.0][Eli|1*|i:4.0][Aph|1*|i:8.0]
+[Rub|1*|i:2.0][Xay|1*|i:2.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:48:47] 🛒 LOJA: Veigar(i:2.0), Ornn(i:2.0), Shen(i:4.0), Rakan(i:2.0), Mamãe Bicuda(i:6.0)
+[18:48:48] REROLL                       | Rew: -0.07
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 6.26, Congregação das Bruxas 1.17, Devastador 0.93, Inferno 0.86, Colosso 0.78
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Lutador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[18:48:48] 🛒 LOJA: Master Yi(i:6.0), Rakan(i:2.0), Camille(i:2.0), Akali(i:2.0), Xayah(i:2.0)
+[18:48:48] COMPROU: Akali (Custo 1 | i:2.0) | Rew: +0.48
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 6.24, Congregação das Bruxas 1.15, Devastador 0.96, Inferno 0.90, Colosso 0.75
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 6 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=8.05 | Inferno=0.86, Adaptador=6.26, Devastador=0.93
+[18:48:49] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 6.22, Congregação das Bruxas 1.13, Devastador 0.99, Inferno 0.93, Colosso 0.73
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 6 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[18:48:54] --- FIM DO ROUND 2-6 | GOLD: 13 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 6.12, Devastador 1.15, Inferno 1.12, Congregação das Bruxas 1.03, Colosso 0.59
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +2 sequência, +0 vitória (total: +7)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Gro|F|2*|i:8.0]       [ . ]        [Aka|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Yor|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Kru|F|1*|i:6.0]  [Gro|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Kru|1*|i:6.0][Eli|1*|i:4.0][Aph|1*|i:8.0]
+[Rub|1*|i:2.0][Xay|1*|i:2.0][Aka|1*|i:2.0]
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:48:54] 🛒 LOJA: Rakan(i:2.0), Grompe(i:4.0), Kha'Zix(i:6.0), Alistar(i:4.0), Xayah(i:2.0)
+[18:48:55] COMPROU: Grompe (Custo 2 | i:4.0) | Rew: +0.84
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 6.11, Devastador 1.16, Inferno 1.13, Congregação das Bruxas 1.02, Colosso 0.57
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 11 | renda base +5 | juros +0 | sequência +2 | vitória +0
+    FIT UNIDADE: Grompe | core=SIM | fit=6.12 | Adaptador=6.12
+[18:48:55]  ⬆️ SINERGIA: FERA DO RIFT nível 2
+[18:48:55] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 6.11, Devastador 1.17, Inferno 1.15, Congregação das Bruxas 1.01, Colosso 0.56
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 11 | renda base +5 | juros +0 | sequência +2 | vitória +0
+
+[18:49:01] --- FIM DO ROUND 2-7 | GOLD: 19 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 6.08, Devastador 1.24, Inferno 1.23, Congregação das Bruxas 0.95, Colosso 0.49
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +2 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Gro|F|2*|i:8.0]       [ . ]        [Aka|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Yor|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Kru|F|1*|i:6.0]  [Gro|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Kru|1*|i:6.0][Eli|1*|i:4.0][Aph|1*|i:8.0]
+[Rub|1*|i:2.0][Xay|1*|i:2.0][Aka|1*|i:2.0]
+[Gro|1*|i:4.0]   [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:49:01] 🛒 LOJA: Fiddlesticks(i:6.0), Rubrivirim(i:2.0), Camille(i:2.0), Yorick(i:2.0), Yorick(i:2.0)
+[18:49:02] COMPROU: Yorick (Custo 1 | i:2.0) | Rew: +0.29
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_Gromp18_AP | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 6.10, Devastador 1.22, Inferno 1.21, Congregação das Bruxas 0.91, Colosso 0.55
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Devastador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 18 | renda base +5 | juros +1 | sequência +2 | vitória +0
+    FIT UNIDADE: Yorick | core=SIM | fit=0.49 | Colosso=0.49
+[18:49:03] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 8.26
+FOCUS WEIGHTS: Adaptador 8.00, Fera do Rift 0.79, Devastador 0.45, Inferno 0.44, Congregação das Bruxas 0.33
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Camille, DA_Fiddlesticks18, DA_18_Shen, DA_18_Yorick, DA_18_MasterYi_AD | traits=Adaptador, Devastador, Inferno | carry_id=18 | score=41.93
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_KogMaw18_AD (cost=3, chance_now~8%, chance_horizon~10%, low_odds), DA_18_Camille (currently_in_shop; immediate acquisition available), DA_Fiddlesticks18 (currently_in_shop; immediate acquisition available), DA_18_Shen (cost=2, chance_now~14%, chance_horizon~14%, low_odds), DA_18_MasterYi_AD (cost=3, chance_now~6%, chance_horizon~8%, hard_to_find), NOT_SELECTED_CARRY: DA_18_Veigar (cost=1, chance_now~15%, chance_horizon~11%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Azir (cost=3, chance_now~8%, chance_horizon~10%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Cassiopeia (cost=3, chance_now~7%, chance_horizon~9%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=10.147169; native_score=15.818683; native_ids=18,0,33,1,30,23,13,36; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,1,30,23,13,36; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=10.147169; native_score=15.818683; native_ids=18,0,33,1,30,23,13,36; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,1,30,23,13,36; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=— -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=False -> True | strength=0.00 -> 8.26
+    GOLD: 18 | renda base +5 | juros +1 | sequência +2 | vitória +0
+
+[18:49:09] --- FIM DO ROUND 3-1 | GOLD: 27 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.43 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 9.33, Fera do Rift 0.48, Devastador 0.06, Inferno 0.06, Colosso 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +3 sequência, +0 vitória (total: +9)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Gro|F|2*|i:8.0]       [ . ]        [Aka|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Yor|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Kru|F|1*|i:6.0]  [Gro|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Kru|1*|i:6.0][Eli|1*|i:4.0][Aph|1*|i:8.0]
+[Rub|1*|i:2.0][Xay|1*|i:2.0][Aka|1*|i:2.0]
+[Gro|1*|i:4.0][Yor|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:49:09] 🛒 LOJA: Kayle(i:4.0), Akali(i:2.0), Yunara(i:4.0), Vi(i:6.0), Rakan(i:2.0)
+[18:49:10] PASSOU TURNO                 | Rew: -0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.43
+FOCUS WEIGHTS: Adaptador 8.80, Fera do Rift 0.98, Devastador 0.07, Inferno 0.07, Colosso 0.07
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_Fiddlesticks18, DA_18_Shen, DA_18_Yorick, DA_18_Camille, DA_18_MasterYi_AD | traits=Adaptador, Devastador, Inferno | carry_id=18 | score=41.68
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=11.564726; native_score=20.568324; native_ids=18,0,33,13,7,29,12,43; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,13,7,29,12,43; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50, COMPOSITION_HYSTERESIS: kept_previous_plan (previous_score=41.675756, candidate_score=43.063019, direction_locked=true)
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=11.564726; native_score=20.568324; native_ids=18,0,33,13,7,29,12,43; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,13,7,29,12,43; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.43 -> 6.43
+    GOLD: 27 | renda base +5 | juros +1 | sequência +3 | vitória +0
+
+[18:49:16] --- FIM DO ROUND 3-2 | GOLD: 37 ---
+    STRATEGY: SLOWROLL | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.43 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 8.80, Fera do Rift 0.98, Devastador 0.07, Inferno 0.07, Colosso 0.07
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +3 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Gro|F|2*|i:8.0]       [ . ]        [Aka|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Yor|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Kru|F|1*|i:6.0]  [Gro|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Kru|1*|i:6.0][Eli|1*|i:4.0][Aph|1*|i:8.0]
+[Rub|1*|i:2.0][Xay|1*|i:2.0][Aka|1*|i:2.0]
+[Gro|1*|i:4.0][Yor|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:49:16] 🛒 LOJA: Ornn(i:2.0), Yunara(i:4.0), Shen(i:4.0), Karma(i:2.0), Akali(i:2.0)
+[18:49:18] REROLL                       | Rew: -0.10
+    STRATEGY: SLOWROLL | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.43
+FOCUS WEIGHTS: Adaptador 9.33, Fera do Rift 0.48, Devastador 0.06, Inferno 0.06, Colosso 0.06
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_18_Yorick, DA_Fiddlesticks18, DA_Karma18, DA_18_MasterYi_AD | traits=Adaptador, Florescer, Inferno | carry_id=18 | score=42.80
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=7.438167; native_score=16.285428; native_ids=18,0,33,13,15,2,24,36; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,13,15,2,24,36; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50, COMPOSITION_HYSTERESIS: kept_previous_plan (previous_score=42.795872, candidate_score=42.014685, direction_locked=true)
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=7.438167; native_score=16.285428; native_ids=18,0,33,13,15,2,24,36; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,13,15,2,24,36; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.43 -> 6.43
+    GOLD: 35 | renda base +5 | juros +2 | sequência +3 | vitória +0
+[18:49:18] 🛒 LOJA: Akali(i:2.0), Yunara(i:4.0), Aronguejo(i:4.0), Sejuani(i:4.0), Teemo(i:4.0)
+[18:49:19] PASSOU TURNO                 | Rew: -0.03
+    STRATEGY: SLOWROLL | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.43
+FOCUS WEIGHTS: Adaptador 8.80, Fera do Rift 0.98, Devastador 0.07, Inferno 0.07, Colosso 0.07
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_18_Yorick, DA_Fiddlesticks18, DA_Karma18, DA_18_MasterYi_AD | traits=Adaptador, Florescer, Inferno | carry_id=18 | score=42.80
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=7.438167; native_score=16.285428; native_ids=18,0,33,13,15,2,24,36; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,13,15,2,24,36; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50, COMPOSITION_HYSTERESIS: kept_previous_plan (previous_score=42.795872, candidate_score=42.281645, direction_locked=true)
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=7.438167; native_score=16.285428; native_ids=18,0,33,13,15,2,24,36; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,13,15,2,24,36; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.43 -> 6.43
+    GOLD: 35 | renda base +5 | juros +2 | sequência +3 | vitória +0
+
+[18:49:24] --- FIM DO ROUND 3-3 | GOLD: 46 ---
+    STRATEGY: SLOWROLL | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.43 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 9.33, Fera do Rift 0.48, Devastador 0.06, Inferno 0.06, Colosso 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +3 juros, +3 sequência, +0 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Gro|F|2*|i:8.0]       [ . ]        [Aka|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Yor|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Kru|F|1*|i:6.0]  [Gro|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Kru|1*|i:6.0][Eli|1*|i:4.0][Aph|1*|i:8.0]
+[Rub|1*|i:2.0][Xay|1*|i:2.0][Aka|1*|i:2.0]
+[Gro|1*|i:4.0][Yor|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:49:24] 🛒 LOJA: Camille(i:2.0), Aronguejo(i:4.0), Elise(i:4.0), Yorick(i:2.0), Rakan(i:2.0)
+[18:49:26] PASSOU TURNO                 | Rew: -0.05
+    STRATEGY: SLOWROLL | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.43
+FOCUS WEIGHTS: Adaptador 8.80, Fera do Rift 0.98, Devastador 0.07, Inferno 0.07, Colosso 0.07
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_18_Yorick, DA_Fiddlesticks18, DA_Karma18, DA_18_MasterYi_AD | traits=Adaptador, Florescer, Inferno | carry_id=18 | score=42.80
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.891588; native_score=16.633923; native_ids=18,0,33,13,15,2,1,36; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,13,15,2,1,36; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50, COMPOSITION_HYSTERESIS: kept_previous_plan (previous_score=42.795872, candidate_score=42.019920, direction_locked=true)
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.891588; native_score=16.633923; native_ids=18,0,33,13,15,2,1,36; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,13,15,2,1,36; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.43 -> 6.43
+    GOLD: 46 | renda base +5 | juros +3 | sequência +3 | vitória +0
+
+[18:49:32] --- FIM DO ROUND 3-4 | GOLD: 58 ---
+    STRATEGY: SLOWROLL | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.43 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 8.80, Fera do Rift 0.98, Colosso 0.07, Devastador 0.07, Inferno 0.07
+    RENDA PRÓXIMO ROUND: +5 base, +4 juros, +3 sequência, +0 vitória (total: +12)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Gro|F|2*|i:8.0]       [ . ]        [Aka|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Yor|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Kru|F|1*|i:6.0]  [Gro|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Kru|1*|i:6.0][Eli|1*|i:4.0][Aph|1*|i:8.0]
+[Rub|1*|i:2.0][Xay|1*|i:2.0][Aka|1*|i:2.0]
+[Gro|1*|i:4.0][Yor|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:49:32] 🛒 LOJA: Warwick(i:4.0), Aronguejo(i:4.0), Sejuani(i:4.0), Rakan(i:2.0), Camille(i:2.0)
+[18:49:33] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: SLOWROLL | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.43
+FOCUS WEIGHTS: Adaptador 9.33, Fera do Rift 0.48, Colosso 0.06, Devastador 0.06, Inferno 0.06
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_18_Yorick, DA_Fiddlesticks18, DA_Karma18, DA_18_MasterYi_AD | traits=Adaptador, Florescer, Inferno | carry_id=18 | score=42.80
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=7.338487; native_score=16.416735; native_ids=18,0,33,13,7,12,10,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,13,7,12,10,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50, COMPOSITION_HYSTERESIS: kept_previous_plan (previous_score=42.795872, candidate_score=42.415035, direction_locked=true)
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=7.338487; native_score=16.416735; native_ids=18,0,33,13,7,12,10,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,13,7,12,10,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.43 -> 6.43
+    GOLD: 58 | renda base +5 | juros +4 | sequência +3 | vitória +0
+
+[18:49:40] --- FIM DO ROUND 3-5 | GOLD: 71 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.43 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 9.33, Fera do Rift 0.48, Colosso 0.06, Devastador 0.06, Inferno 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +3 sequência, +0 vitória (total: +13)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Gro|F|2*|i:8.0]       [ . ]        [Aka|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Yor|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Kru|F|1*|i:6.0]  [Gro|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Kru|1*|i:6.0][Eli|1*|i:4.0][Aph|1*|i:8.0]
+[Rub|1*|i:2.0][Xay|1*|i:2.0][Aka|1*|i:2.0]
+[Gro|1*|i:4.0][Yor|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:49:40] 🛒 LOJA: Rakan(i:2.0), Caitlyn(i:4.0), Warwick(i:4.0), Akali(i:2.0), Rengar(i:6.0)
+[18:49:41] PASSOU TURNO                 | Rew: -0.10
+    STRATEGY: STABILIZE | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.43
+FOCUS WEIGHTS: Adaptador 8.80, Fera do Rift 0.98, Colosso 0.07, Devastador 0.07, Inferno 0.07
+    STRATEGY REASON: STABILIZE: pressão de vida | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_18_Yorick, DA_Fiddlesticks18, DA_Karma18, DA_18_MasterYi_AD | traits=Adaptador, Florescer, Inferno | carry_id=18 | score=42.80
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=11.674824; native_score=20.607941; native_ids=18,0,33,13,7,29,12,43; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,13,7,29,12,43; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50, COMPOSITION_HYSTERESIS: kept_previous_plan (previous_score=42.795872, candidate_score=43.139213, direction_locked=true)
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=11.674824; native_score=20.607941; native_ids=18,0,33,13,7,29,12,43; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,13,7,29,12,43; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.43 -> 6.43
+    GOLD: 71 | renda base +5 | juros +5 | sequência +3 | vitória +0
+
+[18:49:47] --- FIM DO ROUND 3-6 | GOLD: 84 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.43 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 8.80, Fera do Rift 0.98, Colosso 0.07, Devastador 0.07, Inferno 0.07
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +3 sequência, +0 vitória (total: +13)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Gro|F|2*|i:8.0]       [ . ]        [Aka|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Yor|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Kru|F|1*|i:6.0]  [Gro|F|1*|i:4.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Kru|1*|i:6.0][Eli|1*|i:4.0][Aph|1*|i:8.0]
+[Rub|1*|i:2.0][Xay|1*|i:2.0][Aka|1*|i:2.0]
+[Gro|1*|i:4.0][Yor|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:49:47] 🛒 LOJA: Leona(i:2.0), Xayah(i:2.0), Leona(i:2.0), Mamãe Bicuda(i:6.0), Yunara(i:4.0)
+[18:49:49] PASSOU TURNO                 | Rew: -0.14
+    STRATEGY: STABILIZE | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.43
+FOCUS WEIGHTS: Adaptador 9.33, Fera do Rift 0.48, Colosso 0.06, Devastador 0.06, Inferno 0.06
+    STRATEGY REASON: STABILIZE: pressão de vida | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_18_Yorick, DA_Fiddlesticks18, DA_Karma18, DA_18_MasterYi_AD | traits=Adaptador, Florescer, Inferno | carry_id=18 | score=42.80
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=8.749334; native_score=20.635439; native_ids=18,0,33,13,35,34,12,10; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,13,35,34,12,10; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50, COMPOSITION_HYSTERESIS: kept_previous_plan (previous_score=42.795872, candidate_score=42.604707, direction_locked=true)
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=8.749334; native_score=20.635439; native_ids=18,0,33,13,35,34,12,10; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,13,35,34,12,10; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.43 -> 6.43
+    GOLD: 84 | renda base +5 | juros +5 | sequência +3 | vitória +0
+[18:49:54] MOVE Bench -> Board: Krugue (i:6.0) <-> Vazio | Rew: +0.44
+    STRATEGY: STABILIZE | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.43
+FOCUS WEIGHTS: Adaptador 9.27, Fera do Rift 0.49, Lutador 0.12, Colosso 0.06, Devastador 0.06
+    STRATEGY REASON: STABILIZE: pressão de vida | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_18_Yorick, DA_Fiddlesticks18, DA_Karma18, DA_18_MasterYi_AD | traits=Adaptador, Florescer, Inferno | carry_id=18 | score=42.80
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=8.749334; native_score=20.635439; native_ids=18,0,33,13,35,34,12,10; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,13,35,34,12,10; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50, COMPOSITION_HYSTERESIS: kept_previous_plan (previous_score=42.795872, candidate_score=42.608007, direction_locked=true)
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=8.749334; native_score=20.635439; native_ids=18,0,33,13,35,34,12,10; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,13,35,34,12,10; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.43 -> 6.43
+    GOLD: 84 | renda base +5 | juros +5 | sequência +3 | vitória +0
+    FIT UNIDADE: Krugue | core=não | fit=0.98 | Fera do Rift=0.98
+
+[18:49:55] --- FIM DO ROUND 3-7 | GOLD: 97 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.46 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 9.20, Fera do Rift 0.50, Lutador 0.17, Colosso 0.06, Devastador 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +3 sequência, +0 vitória (total: +13)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Gro|F|2*|i:8.0]       [ . ]        [Aka|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Yor|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Kru|F|1*|i:6.0]  [Gro|F|1*|i:4.0]  [Kru|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]    [Eli|1*|i:4.0][Aph|1*|i:8.0]
+[Rub|1*|i:2.0][Xay|1*|i:2.0][Aka|1*|i:2.0]
+[Gro|1*|i:4.0][Yor|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt, TFT_Item_TearOfTheGoddess
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:49:55] 🛒 LOJA: Tristana(i:6.0), Hecarim(i:6.0), Yunara(i:4.0), Mamãe Bicuda(i:6.0), Azir(i:6.0)
+[18:49:57] COMPROU: Mamãe Bicuda (Custo 3 | i:6.0) | Rew: +0.21
+    STRATEGY: STABILIZE | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64
+FOCUS WEIGHTS: Adaptador 8.61, Fera do Rift 1.05, Lutador 0.20, Colosso 0.07, Devastador 0.07
+    STRATEGY REASON: STABILIZE: pressão de vida | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Invocador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_18_Yorick, DA_Fiddlesticks18, DA_Karma18, DA_18_MasterYi_AD | traits=Adaptador, Florescer, Inferno | carry_id=18 | score=42.80
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.156114; native_score=16.577494; native_ids=18,0,33,36,13,35,21,12; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,36,13,35,21,12; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50, COMPOSITION_HYSTERESIS: kept_previous_plan (previous_score=42.795872, candidate_score=43.786639, direction_locked=true)
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.156114; native_score=16.577494; native_ids=18,0,33,36,13,35,21,12; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,36,13,35,21,12; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.46 -> 6.64
+    GOLD: 94 | renda base +5 | juros +5 | sequência +3 | vitória +0
+    FIT UNIDADE: Mamãe Bicuda | core=não | fit=0.50 | Fera do Rift=0.50
+[18:49:57]  ⬆️ SINERGIA: FUMEGANTE nível 1
+[18:49:57]  ⬆️ SINERGIA: INVOCADOR nível 1
+[18:49:57] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    STRATEGY REASON: STABILIZE: pressão de vida | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Invocador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_18_Yorick, DA_Fiddlesticks18, DA_Karma18, DA_18_MasterYi_AD | traits=Adaptador, Florescer, Inferno | carry_id=18 | score=42.80
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.156114; native_score=16.577494; native_ids=18,0,33,36,13,35,21,12; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,36,13,35,21,12; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50, COMPOSITION_HYSTERESIS: kept_previous_plan (previous_score=42.795872, candidate_score=43.508348, direction_locked=true)
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.156114; native_score=16.577494; native_ids=18,0,33,36,13,35,21,12; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,36,13,35,21,12; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.64 -> 6.64
+    GOLD: 94 | renda base +5 | juros +5 | sequência +3 | vitória +0
+
+[18:50:03] --- FIM DO ROUND 4-1 | GOLD: 107 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 8.61, Fera do Rift 1.05, Lutador 0.20, Colosso 0.07, Devastador 0.07
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +3 sequência, +0 vitória (total: +13)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Gro|F|2*|i:8.0]       [ . ]        [Aka|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Yor|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Kru|F|1*|i:6.0]  [Gro|F|1*|i:4.0]  [Kru|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Mam|1*|i:6.0][Eli|1*|i:4.0][Aph|1*|i:8.0]
+[Rub|1*|i:2.0][Xay|1*|i:2.0][Aka|1*|i:2.0]
+[Gro|1*|i:4.0][Yor|1*|i:2.0]   [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt, TFT_Item_TearOfTheGoddess
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:50:03] 🛒 LOJA: Yunara(i:4.0), Teemo(i:4.0), Warwick(i:4.0), Yunara(i:4.0), Shen(i:4.0)
+[18:50:04] COMPROU: Shen (Custo 2 | i:4.0) | Rew: +0.33
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Inferno
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_Fiddlesticks18, DA_18_MasterYi_AD, DA_18_Yorick, DA_CrimsonRaptor18 | traits=Adaptador, Fera do Rift, Florescer | carry_id=18 | score=42.76
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_KogMaw18_AD (cost=3, chance_now~10%, chance_horizon~12%, low_odds), DA_Fiddlesticks18 (cost=3, chance_now~8%, chance_horizon~10%, low_odds), DA_18_MasterYi_AD (cost=3, chance_now~8%, chance_horizon~10%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.122065; native_score=15.596998; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.122065; native_score=15.596998; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.64 -> 6.64
+    GOLD: 105 | renda base +5 | juros +5 | sequência +3 | vitória +0
+    FIT UNIDADE: Shen | core=não | fit=0.00 | nenhum trait de foco
+[18:50:04]  ⬆️ SINERGIA: INFERNO nível 1
+[18:50:05] PASSOU TURNO                 | Rew: -0.05
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64
+FOCUS WEIGHTS: Adaptador 8.61, Fera do Rift 1.05, Lutador 0.20, Colosso 0.07, Devastador 0.07
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Inferno
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_Fiddlesticks18, DA_18_MasterYi_AD, DA_18_Yorick, DA_CrimsonRaptor18 | traits=Adaptador, Fera do Rift, Florescer | carry_id=18 | score=42.95
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_KogMaw18_AD (cost=3, chance_now~10%, chance_horizon~12%, low_odds), DA_Fiddlesticks18 (cost=3, chance_now~8%, chance_horizon~10%, low_odds), DA_18_MasterYi_AD (cost=3, chance_now~8%, chance_horizon~10%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.122065; native_score=15.596998; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.122065; native_score=15.596998; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.64 -> 6.64
+    GOLD: 105 | renda base +5 | juros +5 | sequência +3 | vitória +0
+
+[18:50:11] --- FIM DO ROUND 4-2 | GOLD: 116 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]        [Gro|F|2*|i:8.0]       [ . ]        [Aka|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Yor|F|2*|i:4.0]       [ . ]             [ . ]             [ . ]       
+ [Kru|F|1*|i:6.0]  [Gro|F|1*|i:4.0]  [Kru|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Mam|1*|i:6.0][Eli|1*|i:4.0][Aph|1*|i:8.0]
+[Rub|1*|i:2.0][Xay|1*|i:2.0][Aka|1*|i:2.0]
+[Gro|1*|i:4.0][Yor|1*|i:2.0][She|1*|i:4.0]
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt, TFT_Item_TearOfTheGoddess
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:50:11] 🛒 LOJA: Tristana(i:6.0), Yunara(i:4.0), Grompe(i:4.0), Kayle(i:4.0), Kha'Zix(i:6.0)
+[18:50:12] PASSOU TURNO                 | Rew: -0.05
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64
+FOCUS WEIGHTS: Adaptador 8.61, Fera do Rift 1.05, Lutador 0.20, Colosso 0.07, Devastador 0.07
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Inferno
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_Fiddlesticks18, DA_18_MasterYi_AD, DA_18_Yorick, DA_CrimsonRaptor18 | traits=Adaptador, Fera do Rift, Florescer | carry_id=18 | score=42.73
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_KogMaw18_AD (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_18_MasterYi_AD (cost=3, chance_now~8%, chance_horizon~10%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.64 -> 6.64
+    GOLD: 116 | renda base +5 | juros +5 | sequência +0 | vitória +1
+[18:50:18] ELIMINADO · colocação final #8 · HP 0.0
+
+[18:50:18] --- FIM DO ROUND 4-3 | GOLD: 116 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt, TFT_Item_TearOfTheGoddess
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:50:18] 🛒 LOJA: None, None, None, None, None
+[18:50:18]  ⬇️ SINERGIA: ADAPTADOR nível 0
+[18:50:18]  ⬇️ SINERGIA: FERA DO RIFT nível 0
+[18:50:18]  ⬇️ SINERGIA: FUMEGANTE nível 0
+[18:50:18]  ⬇️ SINERGIA: INFERNO nível 0
+[18:50:18]  ⬇️ SINERGIA: INVOCADOR nível 0
+[18:50:23] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Inferno
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_Fiddlesticks18, DA_18_MasterYi_AD, DA_18_Yorick, DA_CrimsonRaptor18 | traits=Adaptador, Fera do Rift, Florescer | carry_id=18 | score=42.53
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_KogMaw18_AD (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_18_MasterYi_AD (cost=3, chance_now~8%, chance_horizon~10%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.64 -> 6.64
+    GOLD: 116 | renda base +5 | juros +5 | sequência +0 | vitória +1
+
+[18:50:29] --- FIM DO ROUND 4-4 | GOLD: 116 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt, TFT_Item_TearOfTheGoddess
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:50:29] 🛒 LOJA: None, None, None, None, None
+[18:50:31] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Inferno
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_Fiddlesticks18, DA_18_MasterYi_AD, DA_18_Yorick, DA_CrimsonRaptor18 | traits=Adaptador, Fera do Rift, Florescer | carry_id=18 | score=42.53
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_KogMaw18_AD (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_18_MasterYi_AD (cost=3, chance_now~8%, chance_horizon~10%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.64 -> 6.64
+    GOLD: 116 | renda base +5 | juros +5 | sequência +0 | vitória +1
+
+[18:50:37] --- FIM DO ROUND 4-5 | GOLD: 116 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt, TFT_Item_TearOfTheGoddess
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:50:37] 🛒 LOJA: None, None, None, None, None
+[18:50:39] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Inferno
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_Fiddlesticks18, DA_18_MasterYi_AD, DA_18_Yorick, DA_CrimsonRaptor18 | traits=Adaptador, Fera do Rift, Florescer | carry_id=18 | score=42.53
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_KogMaw18_AD (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_18_MasterYi_AD (cost=3, chance_now~8%, chance_horizon~10%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.64 -> 6.64
+    GOLD: 116 | renda base +5 | juros +5 | sequência +0 | vitória +1
+
+[18:50:46] --- FIM DO ROUND 4-6 | GOLD: 116 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt, TFT_Item_TearOfTheGoddess
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:50:46] 🛒 LOJA: None, None, None, None, None
+[18:50:48] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Inferno
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_Fiddlesticks18, DA_18_MasterYi_AD, DA_18_Yorick, DA_CrimsonRaptor18 | traits=Adaptador, Fera do Rift, Florescer | carry_id=18 | score=42.53
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_KogMaw18_AD (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_18_MasterYi_AD (cost=3, chance_now~8%, chance_horizon~10%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.64 -> 6.64
+    GOLD: 116 | renda base +5 | juros +5 | sequência +0 | vitória +1
+
+[18:50:55] --- FIM DO ROUND 4-7 | GOLD: 116 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt, TFT_Item_TearOfTheGoddess
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:50:55] 🛒 LOJA: None, None, None, None, None
+[18:50:57] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Inferno
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_Fiddlesticks18, DA_18_MasterYi_AD, DA_18_Yorick, DA_CrimsonRaptor18 | traits=Adaptador, Fera do Rift, Florescer | carry_id=18 | score=42.53
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_KogMaw18_AD (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_18_MasterYi_AD (cost=3, chance_now~8%, chance_horizon~10%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.64 -> 6.64
+    GOLD: 116 | renda base +5 | juros +5 | sequência +0 | vitória +1
+
+[18:51:05] --- FIM DO ROUND 5-1 | GOLD: 116 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt, TFT_Item_TearOfTheGoddess
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:51:05] 🛒 LOJA: None, None, None, None, None
+[18:51:07] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Inferno
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_Fiddlesticks18, DA_18_MasterYi_AD, DA_18_Yorick, DA_CrimsonRaptor18 | traits=Adaptador, Fera do Rift, Florescer | carry_id=18 | score=42.53
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_KogMaw18_AD (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_18_MasterYi_AD (cost=3, chance_now~8%, chance_horizon~10%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.64 -> 6.64
+    GOLD: 116 | renda base +5 | juros +5 | sequência +0 | vitória +1
+
+[18:51:15] --- FIM DO ROUND 5-2 | GOLD: 116 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt, TFT_Item_TearOfTheGoddess
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:51:15] 🛒 LOJA: None, None, None, None, None
+[18:51:17] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Inferno
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_Fiddlesticks18, DA_18_MasterYi_AD, DA_18_Yorick, DA_CrimsonRaptor18 | traits=Adaptador, Fera do Rift, Florescer | carry_id=18 | score=42.53
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_KogMaw18_AD (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_18_MasterYi_AD (cost=3, chance_now~8%, chance_horizon~10%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.64 -> 6.64
+    GOLD: 116 | renda base +5 | juros +5 | sequência +0 | vitória +1
+
+[18:51:25] --- FIM DO ROUND 5-3 | GOLD: 116 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt, TFT_Item_TearOfTheGoddess
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:51:25] 🛒 LOJA: None, None, None, None, None
+[18:51:27] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Inferno
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_Fiddlesticks18, DA_18_MasterYi_AD, DA_18_Yorick, DA_CrimsonRaptor18 | traits=Adaptador, Fera do Rift, Florescer | carry_id=18 | score=42.53
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_KogMaw18_AD (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_18_MasterYi_AD (cost=3, chance_now~8%, chance_horizon~10%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.64 -> 6.64
+    GOLD: 116 | renda base +5 | juros +5 | sequência +0 | vitória +1
+
+[18:51:34] --- FIM DO ROUND 5-4 | GOLD: 116 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt, TFT_Item_TearOfTheGoddess
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:51:34] 🛒 LOJA: None, None, None, None, None
+[18:51:36] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Inferno
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_Fiddlesticks18, DA_18_MasterYi_AD, DA_18_Yorick, DA_CrimsonRaptor18 | traits=Adaptador, Fera do Rift, Florescer | carry_id=18 | score=42.53
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_KogMaw18_AD (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_18_MasterYi_AD (cost=3, chance_now~8%, chance_horizon~10%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.64 -> 6.64
+    GOLD: 116 | renda base +5 | juros +5 | sequência +0 | vitória +1
+
+[18:51:44] --- FIM DO ROUND 5-5 | GOLD: 116 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt, TFT_Item_TearOfTheGoddess
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:51:44] 🛒 LOJA: None, None, None, None, None
+[18:51:46] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Inferno
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_Fiddlesticks18, DA_18_MasterYi_AD, DA_18_Yorick, DA_CrimsonRaptor18 | traits=Adaptador, Fera do Rift, Florescer | carry_id=18 | score=42.53
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_KogMaw18_AD (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_18_MasterYi_AD (cost=3, chance_now~8%, chance_horizon~10%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.64 -> 6.64
+    GOLD: 116 | renda base +5 | juros +5 | sequência +0 | vitória +1
+
+[18:51:54] --- FIM DO ROUND 5-6 | GOLD: 116 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt, TFT_Item_TearOfTheGoddess
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:51:54] 🛒 LOJA: None, None, None, None, None
+[18:51:56] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Inferno
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_Fiddlesticks18, DA_18_MasterYi_AD, DA_18_Yorick, DA_CrimsonRaptor18 | traits=Adaptador, Fera do Rift, Florescer | carry_id=18 | score=42.53
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_KogMaw18_AD (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_18_MasterYi_AD (cost=3, chance_now~8%, chance_horizon~10%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.64 -> 6.64
+    GOLD: 116 | renda base +5 | juros +5 | sequência +0 | vitória +1
+
+[18:52:03] --- FIM DO ROUND 5-7 | GOLD: 116 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt, TFT_Item_TearOfTheGoddess
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:52:03] 🛒 LOJA: None, None, None, None, None
+[18:52:05] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Inferno
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_Fiddlesticks18, DA_18_MasterYi_AD, DA_18_Yorick, DA_CrimsonRaptor18 | traits=Adaptador, Fera do Rift, Florescer | carry_id=18 | score=42.53
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_KogMaw18_AD (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_18_MasterYi_AD (cost=3, chance_now~8%, chance_horizon~10%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.64 -> 6.64
+    GOLD: 116 | renda base +5 | juros +5 | sequência +0 | vitória +1
+
+[18:52:13] --- FIM DO ROUND 6-1 | GOLD: 116 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt, TFT_Item_TearOfTheGoddess
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:52:13] 🛒 LOJA: None, None, None, None, None
+[18:52:15] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Inferno
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_Fiddlesticks18, DA_18_MasterYi_AD, DA_18_Yorick, DA_CrimsonRaptor18 | traits=Adaptador, Fera do Rift, Florescer | carry_id=18 | score=42.53
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_KogMaw18_AD (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_18_MasterYi_AD (cost=3, chance_now~8%, chance_horizon~10%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.64 -> 6.64
+    GOLD: 116 | renda base +5 | juros +5 | sequência +0 | vitória +1
+
+[18:52:22] --- FIM DO ROUND 6-2 | GOLD: 116 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt, TFT_Item_TearOfTheGoddess
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:52:22] 🛒 LOJA: None, None, None, None, None
+[18:52:24] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Inferno
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_Fiddlesticks18, DA_18_MasterYi_AD, DA_18_Yorick, DA_CrimsonRaptor18 | traits=Adaptador, Fera do Rift, Florescer | carry_id=18 | score=42.53
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_KogMaw18_AD (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_18_MasterYi_AD (cost=3, chance_now~8%, chance_horizon~10%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.64 -> 6.64
+    GOLD: 116 | renda base +5 | juros +5 | sequência +0 | vitória +1
+
+[18:52:32] --- FIM DO ROUND 6-3 | GOLD: 116 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt, TFT_Item_TearOfTheGoddess
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:52:32] 🛒 LOJA: None, None, None, None, None
+[18:52:34] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Inferno
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_Fiddlesticks18, DA_18_MasterYi_AD, DA_18_Yorick, DA_CrimsonRaptor18 | traits=Adaptador, Fera do Rift, Florescer | carry_id=18 | score=42.53
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_KogMaw18_AD (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_18_MasterYi_AD (cost=3, chance_now~8%, chance_horizon~10%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.64 -> 6.64
+    GOLD: 116 | renda base +5 | juros +5 | sequência +0 | vitória +1
+
+[18:52:42] --- FIM DO ROUND 6-4 | GOLD: 116 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt, TFT_Item_TearOfTheGoddess
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:52:42] 🛒 LOJA: None, None, None, None, None
+[18:52:44] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Inferno
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_Fiddlesticks18, DA_18_MasterYi_AD, DA_18_Yorick, DA_CrimsonRaptor18 | traits=Adaptador, Fera do Rift, Florescer | carry_id=18 | score=42.53
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_KogMaw18_AD (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_18_MasterYi_AD (cost=3, chance_now~8%, chance_horizon~10%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.64 -> 6.64
+    GOLD: 116 | renda base +5 | juros +5 | sequência +0 | vitória +1
+
+[18:52:52] --- FIM DO ROUND 6-5 | GOLD: 116 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt, TFT_Item_TearOfTheGoddess
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:52:52] 🛒 LOJA: None, None, None, None, None
+[18:52:54] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Gromp18_AP, DA_18_Akali_AD, DA_18_Yorick | CORE TRAITS: Fera do Rift, Adaptador, Inferno
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_Gromp18_AP, DA_18_Akali_AD, DA_KogMaw18_AD, DA_18_Shen, DA_Fiddlesticks18, DA_18_MasterYi_AD, DA_18_Yorick, DA_CrimsonRaptor18 | traits=Adaptador, Fera do Rift, Florescer | carry_id=18 | score=42.53
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_KogMaw18_AD (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_18_MasterYi_AD (cost=3, chance_now~8%, chance_horizon~10%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Varus (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Adaptador Rengar; best_score=9.159486; native_score=17.241255; native_ids=18,0,33,23,30,36,13,35; candidate_ids=13,36,38,33,34,40,51,49; confirmed_ids=18,0,33,23,30,36,13,35; confirmed_carry_id=18; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Adaptador -> Adaptador | foco=DA_Gromp18_AP -> DA_Gromp18_AP | lock=True -> True | strength=6.64 -> 6.64
+    GOLD: 116 | renda base +5 | juros +5 | sequência +0 | vitória +1
+
+[18:53:02] --- FIM DO ROUND 6-6 | GOLD: 116 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Adaptador | FOCUS: DA_Gromp18_AP | LOCK: LOCKED | STRENGTH: 6.64 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 9.18, Fera do Rift 0.52, Lutador 0.18, Colosso 0.06, Devastador 0.06
+    RENDA PRÓXIMO ROUND: +5 base, +5 juros, +0 sequência, +1 vitória (total: +11)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_GiantsBelt, TFT_Item_TearOfTheGoddess
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[18:53:02] 🛒 LOJA: None, None, None, None, None
+
+========================================
+ GAME OVER - RELATÓRIO FINAL
+========================================
+  VENCEDOR DA PARTIDA: JOGADOR 7
+  COLOCAÇÃO FINAL: #8
+  HP final: 0.0 | Ouro final: 116 | Nível: 6
+  Vitórias: 1 | Derrotas: 12
