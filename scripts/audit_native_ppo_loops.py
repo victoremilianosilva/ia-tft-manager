@@ -316,6 +316,8 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
                 strategic_after = _strategic_summary(
                     lobby, player_id, after, strategies_after[player_id]
                 )
+                if loop is not None and loop.get("sequence"):
+                    loop["sequence"][-1]["strategy_after"] = strategic_after
                 record = {
                     "seed": int(seed),
                     "step": int(step_index),
