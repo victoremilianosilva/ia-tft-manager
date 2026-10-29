@@ -269,19 +269,19 @@ inline double xp_level_transition_value(
         std::clamp((45.0 - hp) / 45.0, 0.0, 1.0),
         std::clamp((static_cast<double>(stage) - 3.0) / 4.0, 0.0, 1.0));
     const bool key_milestone = new_level >= 4 && new_level <= 10;
-    const double milestone_value = key_milestone ? 0.035 : 0.015;
+    const double milestone_value = key_milestone ? 0.045 : 0.020;
     const double surplus = gold_before >= 50 ? 1.0
         : (gold_before >= 40 ? 0.75 : (gold_before >= 30 ? 0.50 : 0.25));
     const double marginal_strength = std::clamp(board_power_delta / 20.0, 0.0, 1.0);
-    double value = milestone_value + 0.045 * urgency * surplus +
-        0.025 * marginal_strength;
+    double value = milestone_value + 0.055 * urgency * surplus +
+        0.030 * marginal_strength;
     int lost_breakpoints = 0;
     constexpr int interest_thresholds[] = {10, 20, 30, 40, 50};
     for (const int threshold : interest_thresholds) {
         if (gold_before >= threshold && gold_after < threshold) ++lost_breakpoints;
     }
     value -= 0.025 * static_cast<double>(lost_breakpoints);
-    return std::clamp(value, -0.05, 0.10);
+    return std::clamp(value, -0.05, 0.12);
 }
 
 // Small additional signal for useful unit acquisitions beyond the early game.
@@ -306,14 +306,18 @@ inline double unit_purchase_timing_reward(
     // Keep interest in a healthy early game, but permit good acquisitions when
     // low HP or a late stage makes immediate board strength more valuable.
     const int gold_after = gold_before - cost;
-    const int reserve = (hp <= 35.0 || stage >= 6) ? 5
+    const int normal_reserve = (hp <= 35.0 || stage >= 6) ? 5
         : (stage >= 4 || hp <= 50.0 ? 10 : 20);
+    // Above the interest cap, surplus can be converted into useful units.
+    const int reserve = gold_before > 50 ? 50 : normal_reserve;
     if (gold_after < reserve) return 0.0;
 
     const double liquidity = gold_before >= 50 ? 1.0
         : (gold_before >= 40 ? 0.75
         : (gold_before >= 30 ? 0.50 : (gold_before >= 20 ? 0.25 : 0.0)));
-    const double gold_urgency = gold_before >= 50 ? 0.65
+    const double gold_urgency = gold_before >= 50
+        ? std::clamp(0.65 + (static_cast<double>(gold_before) - 50.0) / 100.0,
+                     0.65, 1.0)
         : (gold_before >= 40 ? 0.35 : (gold_before >= 30 ? 0.15 : 0.0));
     const double health_urgency = std::clamp((50.0 - hp) / 50.0, 0.0, 1.0);
     const double raw_stage_urgency = std::clamp(
@@ -329,7 +333,11 @@ inline double unit_purchase_timing_reward(
         ? 1.0 : (0.55 + 0.45 * fit);
     const double bench_capacity = bench_count <= 3 ? 1.0
         : (bench_count <= 5 ? 0.75 : 0.40);
-    return std::min(0.12, 0.12 * liquidity * urgency * quality * bench_capacity);
+    const double surplus_spending = std::clamp(
+        (static_cast<double>(gold_before) - 50.0) / 100.0, 0.0, 1.0);
+    return std::min(0.20,
+        (0.12 * liquidity * urgency + 0.08 * surplus_spending) *
+        quality * bench_capacity);
 }
 
 // Early-game acquisition shaping: prefer filling useful pairs and building a
@@ -392,17 +400,21 @@ inline double pass_opportunity_penalty(
     int stage,
     bool useful_purchase_available
 ) noexcept {
-    if (!useful_purchase_available || gold < 20) return 0.0;
-    const double liquidity = gold >= 50 ? 1.0
-        : (gold >= 40 ? 0.75 : (gold >= 30 ? 0.50 : 0.25));
+    if (gold < 20) return 0.0;
     const double health_urgency = std::clamp((50.0 - hp) / 50.0, 0.0, 1.0);
-    const double stage_urgency = std::clamp((static_cast<double>(stage) - 2.0) / 4.0,
-                                            0.0, 1.0);
-    // A rich player should not pass indefinitely in early rounds when a useful
-    // unit is available; preserve saving only when there is no good opportunity.
+    const double stage_urgency = std::clamp(
+        (static_cast<double>(stage) - 2.0) / 4.0, 0.0, 1.0);
     const double baseline_urgency = gold >= 50 ? 0.35 : 0.0;
     const double urgency = std::max({health_urgency, stage_urgency, baseline_urgency});
-    return -0.24 * liquidity * urgency;
+    const double opportunity_factor = useful_purchase_available ? 1.0 : 0.35;
+    const double liquidity = gold >= 50 ? 1.0
+        : (gold >= 40 ? 0.75 : (gold >= 30 ? 0.50 : 0.25));
+    const double surplus = std::clamp(
+        (static_cast<double>(gold) - 50.0) / 150.0, 0.0, 1.0);
+    const double progressive_penalty = 0.30 * std::pow(surplus, 1.20);
+    const double useful_offer_penalty = useful_purchase_available
+        ? 0.12 * liquidity * urgency : 0.0;
+    return -opportunity_factor * (progressive_penalty + useful_offer_penalty);
 }
 
 // A low-fit purchase sold almost immediately is usually a wasted buy.

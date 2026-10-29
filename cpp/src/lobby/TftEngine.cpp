@@ -3733,9 +3733,12 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             success = economy.gold == old_gold - EconomyEngine::REROLL_COST;
             action_reward = success ? -0.01 : -0.10;
             if (success) {
-                action_reward += reward_model::reroll_quality_reward(
-                    reroll_old_best_fit, reroll_new_best_fit,
-                    old_gold, this->info.hp, static_cast<int>(lobby.stage));
+                // The shop-improvement signal belongs only to SLOWROLL (id 3).
+                if (!this->strategy.empty() && this->strategy.back().strategy == 3) {
+                    action_reward += reward_model::reroll_quality_reward(
+                        reroll_old_best_fit, reroll_new_best_fit,
+                        old_gold, this->info.hp, static_cast<int>(lobby.stage));
+                }
                 // Reroll quality already includes liquidity and urgency. Do not
                 // add the generic spending-timing bonus here, which could make
                 // rolling below 50 more profitable than preserving interest.
