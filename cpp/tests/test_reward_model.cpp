@@ -211,12 +211,20 @@ int main() {
     if (!(reroll_quality_reward(10.0, 2.0) < 0.0)) {
         throw std::runtime_error("reroll that destroys a strong shop option should be discouraged");
     }
+    if (!(reroll_quality_reward(2.0, 10.0, 50, 80.0, 4) >
+          reroll_quality_reward(2.0, 10.0, 15, 80.0, 1))) {
+        throw std::runtime_error("reroll improvement must be more valuable with surplus gold than in the safe early game");
+    }
+    if (!(reroll_quality_reward(10.0, 2.0, 50, 80.0, 4) < 0.0)) {
+        throw std::runtime_error("reroll that destroys a stronger shop must receive a negative quality signal");
+    }
+
     if (!(sale_quality(0.0, false, true, true) < 0.0)) {
         throw std::runtime_error("selling a pair copy must remain unattractive even when it frees bench space");
     }
-    require_close(sale_quality(0.0, false, false, true), 0.10,
+    require_close(sale_quality(0.0, false, false, true), 0.05,
                   "sale of low-fit non-core unit frees space");
-    require_close(sale_quality(1.0, true, true, false), -0.38,
+    require_close(sale_quality(1.0, true, true, false), -0.765,
                   "sale protects core unit and upgrade copies");
     if (!(sale_quality(0.0, false, false, false) >
           sale_quality(0.5, false, false, false) &&
@@ -282,19 +290,25 @@ int main() {
     // Strategy-specific shaping stays small and rewards the plan's actual goal.
     require_close(strategy_action_reward(0, 2, 40, 35, 80.0, 3,
                                          false, false, false, false),
-                  -0.04, "ECON discourages premature XP below interest cap");
+                  -0.09, "ECON strongly discourages premature XP below interest cap");
+    require_close(strategy_action_reward(0, 1, 40, 38, 80.0, 3,
+                                         false, true, false, false),
+                  0.0, "ECON permits an improved reroll without preferring it to saving");
+    require_close(strategy_action_reward(0, 1, 40, 38, 80.0, 3,
+                                         false, false, false, false),
+                  -0.025, "ECON discourages an unproductive reroll");
     require_close(strategy_action_reward(0, 0, 55, 50, 80.0, 4,
                                          true, false, false, false),
                   0.03, "ECON allows useful spending from surplus above 50");
     require_close(strategy_action_reward(2, 2, 40, 35, 80.0, 4,
                                          false, false, true, true),
-                  0.12, "FAST8 rewards actual level progress");
+                  0.025, "FAST8 keeps level progress modest below the interest cap");
     require_close(strategy_action_reward(3, 1, 40, 38, 80.0, 3,
                                          false, true, false, true),
-                  0.12, "SLOWROLL rewards a useful reroll");
+                  0.10, "SLOWROLL rewards a useful reroll");
     require_close(strategy_action_reward(3, 1, 40, 38, 80.0, 3,
                                          false, false, false, true),
-                  -0.04, "SLOWROLL penalizes a reroll without improvement");
+                  -0.025, "SLOWROLL penalizes a reroll without improvement");
     require_close(strategy_action_reward(1, 0, 25, 22, 30.0, 3,
                                          true, false, false, false),
                   0.07, "STABILIZE rewards a useful purchase");
