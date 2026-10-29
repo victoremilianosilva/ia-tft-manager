@@ -221,6 +221,7 @@ def load_policy(checkpoint_path, obs_dim, device):
 def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
     lobby = CppTFTLobbyWrapper(seed=seed)
     visited = [dict() for _ in range(8)]
+    history = [[] for _ in range(8)]
     try:
         observations = np.asarray(lobby.reset(seed=seed), dtype=np.float32)
         if observations.ndim != 2 or observations.shape[0] != 8:
@@ -292,6 +293,17 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
                         "previous_step": int(prior["step"]),
                         "previous_action": prior["action"],
                         "cycle_length": int(step_index - prior["step"]),
+                        "sequence": [
+                            entry for entry in history[player_id]
+                            if int(prior["step"]) <= int(entry["step"]) <= step_index
+                        ] + [{
+                            "step": int(step_index), "action": action,
+                            "cycle_signature_before": repr(before_cycle_sig),
+                            "cycle_signature_after": repr(after_cycle_sig),
+                            "action_reward": action_reward,
+                            "strategy_before": strategic_before_all[player_id],
+                            "strategy_after": None,
+                        }],
                     }
                     loops.append({"player_id": player_id, **loop})
                 # Record every post-action state, not just movement states: a move can
@@ -355,6 +367,15 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
                     "loop_detected": loop,
                 }
                 output.write(json.dumps(record, ensure_ascii=False) + "\n")
+                history[player_id].append({
+                    "step": int(step_index),
+                    "action": action,
+                    "cycle_signature_before": repr(before_cycle_sig),
+                    "cycle_signature_after": repr(after_cycle_sig),
+                    "action_reward": action_reward,
+                    "strategy_before": strategic_before,
+                    "strategy_after": strategic_after,
+                })
 
             if loops and fail_on_loop:
                 raise RuntimeError(
