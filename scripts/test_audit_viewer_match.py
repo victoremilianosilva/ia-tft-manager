@@ -25,6 +25,25 @@ class UnifiedAuditRegressionTests(unittest.TestCase):
         state = {"board": [[unit("A"), None], [None, unit("B")]], "bench": []}
         self.assertEqual([audit.unit_name(u) for _, _, u in audit.iter_units(state)], ["A", "B"])
 
+    def test_legacy_text_log_reconstructs_strategy_action_and_gold(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "player_1_log.tft"
+            path.write_text(
+                "[10:00:00] REROLL LOJA | Rew: -0.04\n"
+                "    STRATEGY: FAST8 | COMP DIRECTION: Invoker | FOCUS: Support\n"
+                "    STRATEGY REASON: FAST8 target | CONF: 0.90\n"
+                "    GOLD: 34 | renda base +5 | juros +3 | sequência +0 | vitória +0\n",
+                encoding="utf-8",
+            )
+            report = {"issues": [], "players_seen": set(), "log_files": []}
+            audit.audit_text(path, report)
+            metrics = report["text_log_metrics"]["Jogador 1"]
+            self.assertEqual(metrics["action_counts"]["REROLL"], 1)
+            self.assertEqual(metrics["timeline"][0]["strategy"], "FAST8")
+            self.assertEqual(metrics["timeline"][0]["gold_after"], 34)
+            self.assertEqual(metrics["timeline"][0]["income"]["interest"], 3)
+            self.assertEqual(metrics["timeline"][0]["conformity_candidate"], "FAST8_REROLL_REVIEW")
+
     def test_uuid_signature_distinguishes_duplicate_champions(self):
         state = {"board": [], "bench": [unit("A", uuid="unit-1"), unit("A", uuid="unit-2")]}
         sig = audit.signature(state)
