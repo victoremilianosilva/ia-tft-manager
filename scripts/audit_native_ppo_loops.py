@@ -104,6 +104,28 @@ def _signature(player):
     )
 
 
+def _cycle_signature(player, strategy):
+    """Deterministic loop key: unit UUIDs, board/bench slots, items, economy and strategy."""
+    strategic_fields = (
+        "composition_direction", "composition_locked", "composition_focus",
+        "composition_strength", "core_units", "core_unit_ids", "core_traits",
+        "planned_units", "planned_unit_ids", "planned_traits",
+        "composition_focus_weights", "active_traits",
+    )
+    context = {
+        key: strategy.get(key)
+        for key in strategic_fields
+        if key in strategy
+    }
+    return (
+        _signature(player),
+        int(player.get("gold", 0)),
+        int(player.get("xp", 0)),
+        int(player.get("level", 0)),
+        json.dumps(context, sort_keys=True, separators=(",", ":"), default=str),
+    )
+
+
 def _strategic_summary(lobby, player_id, player, strategy):
     board_units = [u for u in player["board"] if u.get("occupied")]
     bench_units = [u for u in player["bench"] if u.get("occupied")]
@@ -204,8 +226,11 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
         if observations.ndim != 2 or observations.shape[0] != 8:
             raise ValueError(f"Observações nativas inesperadas: {observations.shape}")
         initial = lobby.get_audit_snapshot()
+        initial_strategies = lobby.get_strategy_snapshots()
         for player_id, player in enumerate(initial["players"]):
-            visited[player_id][_signature(player)] = {"step": -1, "action": None}
+            visited[player_id][_cycle_signature(player, initial_strategies[player_id])] = {
+                "step": -1, "action": None, "signature": repr(_cycle_signature(player, initial_strategies[player_id]))
+            }
 
         for step_index in range(max_steps):
             before_snapshot = lobby.get_audit_snapshot()
@@ -248,6 +273,8 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
                 before, after = before_players[player_id], after_players[player_id]
                 action = actions[player_id]
                 before_sig, after_sig = _signature(before), _signature(after)
+                before_cycle_sig = _cycle_signature(before, strategies_before[player_id])
+                after_cycle_sig = _cycle_signature(after, strategies_after[player_id])
                 executed = _effect_for_action(action, before, after)
                 action_reward = float(action_rewards[player_id]) if player_id < len(action_rewards) else None
                 if executed:
@@ -259,18 +286,19 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
                 else:
                     execution_status = "no_state_change_observed"
                 loop = None
-                if int(action[0]) in MOVEMENT_TYPES and executed and after_sig in visited[player_id]:
-                    prior = visited[player_id][after_sig]
+                if int(action[0]) in MOVEMENT_TYPES and executed and after_cycle_sig in visited[player_id] and before_cycle_sig != after_cycle_sig:
+                    prior = visited[player_id][after_cycle_sig]
                     loop = {
                         "previous_step": int(prior["step"]),
                         "previous_action": prior["action"],
                         "cycle_length": int(step_index - prior["step"]),
                     }
                     loops.append({"player_id": player_id, **loop})
-                if int(action[0]) in MOVEMENT_TYPES and executed:
-                    visited[player_id][after_sig] = {
-                        "step": step_index, "action": action,
-                    }
+                # Record every post-action state, not just movement states: a move can
+                # return to a state visited before a buy/sell/XP action.
+                visited[player_id].setdefault(after_cycle_sig, {
+                    "step": step_index, "action": action, "signature": repr(after_cycle_sig),
+                })
 
                 strategic_before = strategic_before_all[player_id]
                 strategic_after = _strategic_summary(
@@ -293,6 +321,18 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
                     "native_mask": _json_masks(masks[player_id]),
                     "board_bench_signature_before": repr(before_sig),
                     "board_bench_signature_after": repr(after_sig),
+                    "cycle_signature_before": repr(before_cycle_sig),
+                    "cycle_signature_after": repr(after_cycle_sig),
+                    "cycle_context_before": {
+                        "gold": int(before.get("gold", 0)), "xp": int(before.get("xp", 0)),
+                        "level": int(before.get("level", 0)),
+                        "strategy": strategic_before,
+                    },
+                    "cycle_context_after": {
+                        "gold": int(after.get("gold", 0)), "xp": int(after.get("xp", 0)),
+                        "level": int(after.get("level", 0)),
+                        "strategy": strategic_after,
+                    },
                     "board_before": before["board"],
                     "bench_before": before["bench"],
                     "shop_before": before["shop"],
