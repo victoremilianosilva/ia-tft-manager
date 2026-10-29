@@ -1986,6 +1986,6 @@ if __name__ == "__main__":
     )
 
     trainer.train(
-        total_updates=140,
+        total_updates=160,
         rollout_steps=128
     )
