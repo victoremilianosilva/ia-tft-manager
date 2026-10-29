@@ -272,6 +272,29 @@ int main() {
         throw std::runtime_error("item assignment reward must clamp out-of-range inputs");
     }
 
+    // Strategy-specific shaping stays small and rewards the plan's actual goal.
+    require_close(strategy_action_reward(0, 2, 40, 35, 80.0, 3,
+                                         false, false, false, false),
+                  -0.04, "ECON discourages premature XP below interest cap");
+    require_close(strategy_action_reward(0, 0, 55, 50, 80.0, 4,
+                                         true, false, false, false),
+                  0.03, "ECON allows useful spending from surplus above 50");
+    require_close(strategy_action_reward(2, 2, 40, 35, 80.0, 4,
+                                         false, false, true, true),
+                  0.12, "FAST8 rewards actual level progress");
+    require_close(strategy_action_reward(3, 1, 40, 38, 80.0, 3,
+                                         false, true, false, true),
+                  0.12, "SLOWROLL rewards a useful reroll");
+    require_close(strategy_action_reward(3, 1, 40, 38, 80.0, 3,
+                                         false, false, false, true),
+                  -0.04, "SLOWROLL penalizes a reroll without improvement");
+    require_close(strategy_action_reward(1, 0, 25, 22, 30.0, 3,
+                                         true, false, false, false),
+                  0.07, "STABILIZE rewards a useful purchase");
+    require_close(strategy_action_reward(6, 0, 40, 37, 70.0, 3,
+                                         false, false, false, false),
+                  -0.04, "LOSS_STREAK discourages wasteful spending");
+
     std::cout << "[PASS] C++ reward formulas and deterministic action sequence.\n";
     return EXIT_SUCCESS;
 }

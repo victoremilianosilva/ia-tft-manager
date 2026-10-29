@@ -31,6 +31,7 @@
 #include "strategy/BoardEvaluation.hpp"
 #include "reward/RewardModel.hpp"
 #include "strategy/CompositionDirectionPolicy.hpp"
+#include "strategy/StrategyPolicy.hpp"
 #include "strategy/CompositionPlanner.hpp"
 
 #include "decision/ActionMaskEngine.hpp"
@@ -1814,28 +1815,50 @@ struct TFTEngine::Impl {
             const auto* def = catalog->find_by_id(unit->champion_internal_id);
             if (def) bench_strength += static_cast<double>(def->cost) * unit->star;
         }
-        std::int32_t chosen = 0;
-        float confidence = 0.50f;
-        std::string reason = "Estado econômico neutro";
+        // A estratégia econômica é selecionada por uma única política.
+        // FAST8 e SLOWROLL só ficam elegíveis quando a composição os solicita.
+        const auto composition_has_unit = [&](std::int32_t id) {
+            return std::find(info.planned_unit_ids.begin(), info.planned_unit_ids.end(), id)
+                    != info.planned_unit_ids.end() ||
+                std::find(info.core_unit_ids.begin(), info.core_unit_ids.end(), id)
+                    != info.core_unit_ids.end();
+        };
+        std::unordered_map<std::int32_t, int> owned_copies;
+        const auto count_owned_copy = [&](const UnitInstance& unit) {
+            owned_copies[unit.champion_internal_id] += star_copies(unit.star);
+        };
+        for (const auto& unit : player_envs[i].board) if (unit) count_owned_copy(*unit);
+        for (const auto& unit : player_envs[i].bench) if (unit) count_owned_copy(*unit);
 
-        // Mesma ordem de prioridade de StrategyManager.decide_strategy().
-        if (player.hp <= 15.0f) {
-            chosen = 4; confidence = 0.95f; reason = "HP crítico";
-        } else if (player.hp <= 30.0f) {
-            chosen = 1; confidence = 0.85f; reason = "HP baixo";
-        } else if (economy.loss_streak >= 5) {
-            chosen = 6; confidence = 0.80f; reason = "Loss streak prolongada";
-        } else if (economy.win_streak >= 4 && player.hp >= 60.0f) {
-            chosen = 5; confidence = 0.80f; reason = "Win streak + HP saudável";
-        } else if (economy.gold >= 40 && economy.level <= 7 && player.hp >= 50.0f) {
-            chosen = 0; confidence = 0.85f; reason = "Economia forte";
-        } else if (economy.level >= 7 && economy.gold >= 30 && player.hp >= 50.0f) {
-            chosen = 2; confidence = 0.75f; reason = "Economia suficiente para acelerar nível";
-        } else if (economy.level <= 6 && economy.gold >= 30 && power >= 40.0) {
-            chosen = 3; confidence = 0.70f; reason = "Board estável + economia para rolagem";
-        } else if (power < 25.0) {
-            chosen = 1; confidence = 0.70f; reason = "Board abaixo do esperado";
+        bool composition_requests_three_star = false;
+        for (const auto& [unit_id, copies] : owned_copies) {
+            if (copies < 2 || copies >= 9 || !composition_has_unit(unit_id)) continue;
+            const auto* definition = catalog->find_by_id(unit_id);
+            if (definition && definition->cost <= 3 &&
+                economy.level >= 5 && economy.level <= 6) {
+                composition_requests_three_star = true;
+                break;
+            }
         }
+        const bool composition_requests_fast8 =
+            !info.composition_direction.empty() &&
+            info.planned_unit_ids.size() >= 8 &&
+            economy.level < 8;
+        const strategy::EconomicStrategyContext strategy_context{
+            economy.gold,
+            static_cast<double>(player.hp),
+            economy.level,
+            economy.win_streak,
+            economy.loss_streak,
+            power,
+            composition_requests_fast8,
+            composition_requests_three_star
+        };
+        const auto strategy_decision =
+            strategy::select_economic_strategy(strategy_context);
+        const std::int32_t chosen = static_cast<std::int32_t>(strategy_decision.selected);
+        const float confidence = static_cast<float>(strategy_decision.confidence);
+        const std::string reason = strategy_decision.reason;
 
         const bool changed = chosen != info.strategy;
         if (changed) {
@@ -2468,56 +2491,15 @@ struct TFTEngine::Impl {
         if (economy.level >= 8) state_confidence += 0.10;
         info.state_confidence = static_cast<float>(std::clamp(state_confidence, 0.0, 1.0));
 
-        // Paridade com get_strategy_score()/choose_best_strategy().
-        // O desempate mantém a primeira estratégia na ordem do enum Python.
+        // O diagnóstico usa exatamente os scores que escolheram o modo ativo.
+        // Não existe mais um segundo seletor divergente do modo executado.
         info.strategy_scores.clear();
-        double best_score = -std::numeric_limits<double>::infinity();
-        std::int32_t best_strategy = 0;
-        for (std::int32_t strategy = 0; strategy < 7; ++strategy) {
-            double score = 0.0;
-            switch (strategy) {
-                case 0: // ECON
-                    score += std::min(economy.gold / 50.0, 1.0) * 5.0;
-                    if (player.hp >= 60.0f) score += 2.0;
-                    if (economy.loss_streak >= 3) score += 1.0;
-                    break;
-                case 1: // STABILIZE
-                    if (player.hp < 50.0f) score += 4.0;
-                    if (power < 40.0) score += 4.0;
-                    if (economy.loss_streak >= 2) score += 2.0;
-                    break;
-                case 2: // FAST8
-                    if (economy.level >= 6) score += 2.0;
-                    if (economy.gold >= 30) score += 3.0;
-                    if (player.hp >= 50.0f) score += 2.0;
-                    break;
-                case 3: // SLOWROLL
-                    if (economy.level <= 6) score += 3.0;
-                    if (economy.gold >= 30) score += 3.0;
-                    if (power >= 30.0) score += 2.0;
-                    break;
-                case 4: // ALL_IN
-                    if (player.hp <= 25.0f) score += 6.0;
-                    if (economy.loss_streak >= 5) score += 2.0;
-                    if (power < 30.0) score += 2.0;
-                    break;
-                case 5: // WINSTREAK
-                    if (economy.win_streak >= 3) score += 5.0;
-                    if (player.hp >= 60.0f) score += 2.0;
-                    if (power >= 40.0) score += 2.0;
-                    break;
-                case 6: // LOSS_STREAK
-                    if (economy.loss_streak >= 3) score += 5.0;
-                    if (player.hp >= 40.0f) score += 1.0;
-                    break;
-            }
-            info.strategy_scores.emplace_back(strategy, score);
-            if (score > best_score) {
-                best_score = score;
-                best_strategy = strategy;
-            }
+        for (std::int32_t strategy_id = 0; strategy_id < 7; ++strategy_id) {
+            info.strategy_scores.emplace_back(
+                strategy_id,
+                strategy_decision.scores[static_cast<std::size_t>(strategy_id)]);
         }
-        info.best_scored_strategy = best_strategy;
+        info.best_scored_strategy = chosen;
         info.active_traits_count = static_cast<std::int32_t>(info.active_traits.size());
 
         if (list.empty()) list.push_back(info);
@@ -3879,6 +3861,21 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         // Give spending decisions immediate feedback for the opportunity cost
         // of liquid gold and the interest breakpoints. This is a potential delta,
         // not a per-step bonus, so repeatedly PASSing cannot farm reward.
+        // Small, bounded strategy shaping: rewards the intended action, not
+        // merely the mode label. The active mode is the one used to choose this action.
+        const std::int32_t active_strategy_id =
+            this->strategy.empty() ? 0 : this->strategy.back().strategy;
+        action_reward += reward_model::strategy_action_reward(
+            active_strategy_id,
+            type,
+            old_gold,
+            economy.gold,
+            static_cast<double>(this->info.hp),
+            static_cast<int>(lobby.stage),
+            success && (buy_strategy_approved || buy_completes_upgrade || buy_builds_pair),
+            success && reroll_new_best_fit > reroll_old_best_fit,
+            success && economy.level > old_level,
+            active_strategy_id == 2 || active_strategy_id == 3);
         const double action_gold_reward =
             reward_model::gold_change_reward(old_gold, economy.gold);
         action_reward += action_gold_reward;

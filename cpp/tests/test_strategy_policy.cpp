@@ -1,0 +1,84 @@
+#include "strategy/StrategyPolicy.hpp"
+
+#include <cstdlib>
+#include <iostream>
+#include <string>
+
+namespace {
+void require(bool value, const std::string& message) {
+    if (!value) {
+        std::cerr << "[FAIL] " << message << '\n';
+        std::exit(EXIT_FAILURE);
+    }
+}
+}
+
+int main() {
+    using tft::strategy::EconomicStrategy;
+    using tft::strategy::EconomicStrategyContext;
+    using tft::strategy::select_economic_strategy;
+
+    EconomicStrategyContext s;
+    s.gold = 42; s.hp = 85; s.level = 6; s.board_power = 45;
+    auto d = select_economic_strategy(s);
+    require(d.selected == EconomicStrategy::Econ,
+            "healthy state without a comp goal should choose ECON");
+
+    s.gold = 50;
+    d = select_economic_strategy(s);
+    require(d.selected == EconomicStrategy::Econ &&
+            std::string(d.reason).find("excedente") != std::string::npos,
+            "ECON at 50 should explicitly permit spending surplus");
+
+    s.composition_requests_fast8 = true;
+    d = select_economic_strategy(s);
+    require(d.selected == EconomicStrategy::Fast8,
+            "FAST8 must be selected when the composition requires level 8");
+    s.gold = 20;
+    d = select_economic_strategy(s);
+    require(d.selected != EconomicStrategy::Fast8,
+            "FAST8 must not be selected without enough economy");
+
+    s.composition_requests_fast8 = false;
+    s.composition_requests_three_star = true;
+    s.gold = 40; s.level = 6;
+    d = select_economic_strategy(s);
+    require(d.selected == EconomicStrategy::Slowroll,
+            "SLOWROLL must be composition-driven by a 3-star target");
+    s.composition_requests_three_star = false;
+    d = select_economic_strategy(s);
+    require(d.selected != EconomicStrategy::Slowroll,
+            "low level and gold alone must not select SLOWROLL");
+
+    s.hp = 30; s.gold = 50; s.board_power = 45;
+    s.composition_requests_fast8 = true;
+    d = select_economic_strategy(s);
+    require(d.selected == EconomicStrategy::Stabilize,
+            "low health should stabilize before a non-emergency FAST8 plan");
+    s.composition_requests_fast8 = false;
+
+    s.hp = 12;
+    d = select_economic_strategy(s);
+    require(d.selected == EconomicStrategy::AllIn,
+            "critical HP must override economic greed");
+
+    s.hp = 30; s.board_power = 20; s.composition_requests_fast8 = false;
+    d = select_economic_strategy(s);
+    require(d.selected == EconomicStrategy::Stabilize,
+            "weak board under health pressure should stabilize");
+
+    s.hp = 80; s.board_power = 38; s.gold = 40;
+    s.composition_requests_three_star = false;
+    s.loss_streak = 4; s.win_streak = 0;
+    d = select_economic_strategy(s);
+    require(d.selected == EconomicStrategy::LossStreak,
+            "loss streak is eligible only in a healthy, low-power economy state");
+
+    s.loss_streak = 0; s.win_streak = 4; s.board_power = 45;
+    d = select_economic_strategy(s);
+    require(d.selected == EconomicStrategy::WinStreak,
+            "strong win streak should be preserved");
+
+    std::cout << "[OK] strategy policy\n";
+    return 0;
+}

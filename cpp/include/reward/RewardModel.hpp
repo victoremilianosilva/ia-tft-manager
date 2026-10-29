@@ -100,6 +100,66 @@ inline double gold_potential(int gold) noexcept {
         static_cast<double>(bounded / 10) * 0.08;
 }
 
+// Bounded action shaping for the active economic strategy. The base action
+// rewards remain authoritative; these small deltas only align behavior with the
+// selected plan and cannot dominate combat/terminal outcomes.
+inline double strategy_action_reward(
+    int strategy_id,
+    int action_type,
+    int old_gold,
+    int new_gold,
+    double hp,
+    int stage,
+    bool useful_purchase,
+    bool reroll_improved,
+    bool leveled,
+    bool has_composition_target) noexcept {
+    double reward = 0.0;
+    switch (strategy_id) {
+        case 0: // ECON: protect interest up to 50, but permit useful surplus spend.
+            if (new_gold >= 50 && old_gold < 50) reward += 0.04;
+            if (old_gold >= 50 && new_gold >= 50 &&
+                action_type == 0 && useful_purchase) reward += 0.03;
+            if (old_gold < 50 && new_gold < old_gold && hp > 40.0 &&
+                !has_composition_target &&
+                ((action_type == 1 || action_type == 2) ||
+                 (action_type == 0 && !useful_purchase))) reward -= 0.04;
+            break;
+        case 1: // STABILIZE: spend only when it builds a playable board.
+            if ((action_type == 0 && useful_purchase) ||
+                (action_type == 2 && leveled)) reward += 0.07;
+            if (hp <= 35.0 && action_type == 6 && !useful_purchase)
+                reward -= 0.04;
+            break;
+        case 2: // FAST8: value level progress; discourage replacing it with rolls.
+            if (action_type == 2 && leveled) reward += 0.12;
+            if (action_type == 1) reward -= 0.05;
+            break;
+        case 3: // SLOWROLL: only rolls that improve the offered target have value.
+            if (action_type == 1) reward += reroll_improved ? 0.12 : -0.04;
+            if (action_type == 2 && !leveled) reward -= 0.07;
+            break;
+        case 4: // ALL_IN: useful immediate strength over passive saving.
+            if (action_type == 0 && useful_purchase) reward += 0.06;
+            if (hp <= 15.0 && action_type == 6) reward -= 0.05;
+            break;
+        case 5: // WINSTREAK: preserve strength, avoid wasteful economy actions.
+            if (action_type == 0 && useful_purchase) reward += 0.05;
+            if (action_type == 2 && leveled) reward += 0.04;
+            break;
+        case 6: // LOSS_STREAK: preserve the streak only while purchases are not useful.
+            if (hp >= 50.0 && !useful_purchase &&
+                (action_type == 0 || action_type == 1 || action_type == 2))
+                reward -= 0.04;
+            break;
+        default:
+            break;
+    }
+    (void)stage;
+    (void)old_gold;
+    return std::clamp(reward, -0.15, 0.15);
+}
+
 inline double gold_change_reward(int old_gold, int new_gold) noexcept {
     return std::clamp(
         gold_potential(new_gold) - gold_potential(old_gold),
