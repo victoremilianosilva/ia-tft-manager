@@ -1,4 +1,4 @@
-"""Regression tests for per-player TFT text logs without JSON sidecar files."""
+"""Regression tests for per-player TFT logs and structured JSON sidecars."""
 import json
 
 from viewer.player_logs import PlayerJsonLogWriter
@@ -166,15 +166,20 @@ def test_writes_only_tft_logs_per_player_and_keeps_structured_diagnostics_in_mem
     output_dir = tmp_path / "match-test"
     paths = sorted(output_dir.glob("player_*_log.tft"))
     assert len(paths) == 8
-    assert not list(output_dir.glob("player_*_log.json"))
+    json_paths = sorted(output_dir.glob("player_*_log.json"))
+    assert len(json_paths) == 8
+    player1_json = json.loads((output_dir / "player_1_log.json").read_text(encoding="utf-8"))
+    assert player1_json["schema_version"] == 2
+    assert player1_json["player_id"] == 0
+    assert any(entry["event_type"] == "action" for entry in player1_json["entries"])
     assert not (output_dir / "events.jsonl").exists()
 
     player1_log_text = (output_dir / "player_1_log.tft").read_text(encoding="utf-8")
     assert "--- INÍCIO DA PARTIDA" in player1_log_text
     assert "MOVE Bench -> Board" in player1_log_text
 
-    # Structured diagnostics are still used in memory by the writer/tests,
-    # but are no longer serialized into per-player JSON files.
+    # The same structured diagnostics are persisted in the JSON sidecar and
+    # remain available in memory for compatibility with existing consumers.
     player1 = writer.documents[0]
     assert player1["log_format"] == "tft_player_log"
     assert player1["player_id"] == 0
