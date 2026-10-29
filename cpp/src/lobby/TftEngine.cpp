@@ -3004,6 +3004,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         bool sold_core_unit = false;
         bool sold_unit_protects_upgrade = false;
         double sold_unit_fit_score = 0.0;
+        bool displaced_core_unit = false;
         bool buy_completes_upgrade = false;
         bool buy_builds_pair = false;
         bool buy_strategy_approved = true;
@@ -3118,6 +3119,13 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 if (def) {
                     displaced_comp_score = unit_composition_score(strategy_before, *def, this->board[target]->star, lobby.trait_milestones);
                     has_displaced_comp_score = true;
+                    displaced_core_unit =
+                        std::find(strategy_before.core_unit_ids.begin(),
+                            strategy_before.core_unit_ids.end(), def->internal_id) !=
+                                strategy_before.core_unit_ids.end() ||
+                        std::find(strategy_before.planned_unit_ids.begin(),
+                            strategy_before.planned_unit_ids.end(), def->internal_id) !=
+                                strategy_before.planned_unit_ids.end();
                 }
             }
         }
@@ -3238,23 +3246,40 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         } else if (type == 1) {
             // REROLL: compare the best composition-fit offer before and after.
             // The spend is justified by improved options, not by rerolling itself.
-            const auto best_shop_fit = [&]() {
+            const auto best_shop_fit = [&](int available_gold) {
                 double best = 0.0;
                 for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
                     const auto* offer = shop.get_unit(static_cast<std::int32_t>(slot));
                     if (!offer) continue;
                     const auto* def = lobby.catalog->find_by_id(offer->champion_internal_id);
-                    if (!def || economy.gold < def->cost) continue;
-                    best = std::max(best, unit_composition_score(
-                        strategy_before, *def, offer->star, lobby.trait_milestones));
+                    if (!def || available_gold < def->cost) continue;
+                    double value = unit_composition_score(
+                        strategy_before, *def, offer->star, lobby.trait_milestones);
+                    int owned_same_star = 0;
+                    for (const auto& unit : this->board)
+                        if (unit && unit->champion_internal_id == offer->champion_internal_id &&
+                            unit->star == offer->star) ++owned_same_star;
+                    for (const auto& unit : this->bench)
+                        if (unit && unit->champion_internal_id == offer->champion_internal_id &&
+                            unit->star == offer->star) ++owned_same_star;
+                    // A reroll must recognize upgrade progress, not only the
+                    // highest single-unit fit. The third matching copy is much
+                    // more valuable than an isolated offer with a similar score.
+                    if (offer->star == 1 && owned_same_star == 1) value += 3.0;
+                    else if (offer->star == 1 && owned_same_star == 2) value += 7.0;
+                    best = std::max(best, value);
                 }
                 return best;
             };
             if (economy.gold >= EconomyEngine::REROLL_COST) {
-                reroll_old_best_fit = best_shop_fit();
+                // Compare both shops with the same post-reroll cash balance.
+                // Otherwise the new shop is unfairly downgraded just because
+                // the reroll itself removed two gold before its score is computed.
+                const int comparison_gold = old_gold - EconomyEngine::REROLL_COST;
+                reroll_old_best_fit = best_shop_fit(comparison_gold);
                 if (lobby.economy_engine.spend_gold(economy, EconomyEngine::REROLL_COST)) {
                     shop.reroll(economy.level);
-                    reroll_new_best_fit = best_shop_fit();
+                    reroll_new_best_fit = best_shop_fit(comparison_gold);
                 }
             }
         } else if (type == 2) {
@@ -3543,11 +3568,24 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         // A changed direction label alone is not proof that the
                         // purchase was strategically useful. Only concrete exceptions
                         // (upgrade, deployment, or a previously full bench) exempt it.
-                        if (reward_model::should_penalize_reversed_purchase(
+                        const bool bench_was_full =
+                            old_bench_count >= static_cast<int>(kBenchSlots);
+                        // A fresh purchase sold within the action window is a
+                        // reversal unless it was deployed, merged, or required
+                        // to resolve a full bench. Do not limit this to low-fit
+                        // purchases: the buy/sell loop itself wastes liquidity.
+                        const bool immediate_reversal =
+                            this->action_serial - recent->action_serial <=
+                                reward_model::kRecentPurchaseHistoryActions &&
+                            !recent->completed_upgrade &&
+                            !recent->was_deployed &&
+                            !bench_was_full;
+                        if (immediate_reversal ||
+                            reward_model::should_penalize_reversed_purchase(
                                 recent->fit_score,
                                 recent->completed_upgrade,
                                 recent->was_deployed,
-                                old_bench_count >= static_cast<int>(kBenchSlots),
+                                bench_was_full,
                                 false)) {
                             purchase_was_recently_reversed = true;
                             reversed_purchase_prior_reward = recent->reward;
@@ -3696,7 +3734,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             action_reward = success ? -0.01 : -0.10;
             if (success) {
                 action_reward += reward_model::reroll_quality_reward(
-                    reroll_old_best_fit, reroll_new_best_fit);
+                    reroll_old_best_fit, reroll_new_best_fit,
+                    old_gold, this->info.hp, static_cast<int>(lobby.stage));
                 if (reroll_new_best_fit > reroll_old_best_fit) {
                     action_reward += reward_model::spending_timing_reward(
                         old_gold, this->info.hp, lobby.stage,
@@ -3734,7 +3773,14 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             // not merely the level at the start of this action.
             if (success && economy.level > old_level &&
                 economy.level > this->previous_reward_level) {
-                const double level_scale = lobby.stage <= 2 ? 0.25 : 0.65;
+                // A level-up is not automatically worth more than economy.
+                // Scale its progress signal by liquidity and urgency so the
+                // early policy builds pairs and protects interest before routine XP.
+                const double level_scale = this->info.hp <= 30.0 ? 0.65
+                    : (old_gold >= 50 ? 0.55
+                    : (old_gold >= 40 ? 0.35
+                    : (old_gold >= 30 ? 0.22
+                    : (old_gold >= 20 ? 0.12 : 0.06))));
                 action_reward += level_scale * reward_model::level(
                     economy.level, this->previous_reward_level);
                 this->previous_reward_level = economy.level;
@@ -3806,6 +3852,13 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         // fit/synergy/positioning must not be a free action.
                         action_reward += reward_model::movement_no_progress_penalty(
                             composition_quality_delta, synergy_delta, positioning_delta);
+                    }
+                    // Do not casually bench a planned/core unit to make room for
+                    // a weaker or merely equivalent candidate. Allow replacement
+                    // when the new unit has a clear composition-fit advantage.
+                    if (displaced_core_unit && has_displaced_comp_score &&
+                        composition_quality_delta < 2.0) {
+                        action_reward -= 0.30;
                     }
                 } else if (
                     positioning_delta <= 1e-6 &&
