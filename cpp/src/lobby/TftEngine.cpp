@@ -3856,9 +3856,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     // Do not casually bench a planned/core unit to make room for
                     // a weaker or merely equivalent candidate. Allow replacement
                     // when the new unit has a clear composition-fit advantage.
-                    if (displaced_core_unit && has_displaced_comp_score &&
-                        composition_quality_delta < 2.0) {
-                        action_reward -= 0.30;
+                    if (has_displaced_comp_score) {
+                        action_reward += reward_model::core_displacement_penalty(
+                            displaced_core_unit, composition_quality_delta);
                     }
                 } else if (
                     positioning_delta <= 1e-6 &&
