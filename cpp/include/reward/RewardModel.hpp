@@ -451,6 +451,16 @@ inline double sale_quality(double fit_score, bool core_unit,
 // Shared no-progress penalty for both board repositioning and bench-to-board
 // replacement. Negative deltas add proportional cost instead of being flattened
 // by a fixed assignment in the action executor.
+// Penalize replacing a planned/core board unit with an equivalent or
+// weaker bench unit. Clear composition upgrades remain allowed.
+inline double core_displacement_penalty(
+    bool displaced_core_unit,
+    double composition_quality_delta
+) noexcept {
+    return displaced_core_unit && composition_quality_delta < 2.0
+        ? -0.30 : 0.0;
+}
+
 inline double movement_no_progress_penalty(
     double composition_delta,
     double synergy_delta,
