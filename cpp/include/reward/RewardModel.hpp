@@ -373,13 +373,15 @@ inline double reroll_quality_reward(
     // meaningful health pressure.
     const double improvement = std::tanh((new_best_fit - old_best_fit) / 5.0);
     const double liquidity = gold_before >= 50 ? 1.0
-        : (gold_before >= 40 ? 0.80
-        : (gold_before >= 30 ? 0.60
-        : (gold_before >= 20 ? 0.42 : 0.25)));
+        : (gold_before >= 40 ? 0.45
+        : (gold_before >= 30 ? 0.25
+        : (gold_before >= 20 ? 0.12 : 0.05)));
     const double urgency = std::clamp((45.0 - hp) / 45.0, 0.0, 1.0);
     const double stage_factor = stage <= 2 && hp > 50.0 ? 0.65 : 1.0;
     const double pressure_factor = 1.0 + 0.75 * urgency;
-    return 0.22 * improvement * liquidity * stage_factor * pressure_factor;
+    // Below the interest cap a roll should usually lose to saving; under
+    // critical HP, pressure can justify that opportunity cost.
+    return 0.14 * improvement * liquidity * stage_factor * pressure_factor;
 }
 
 inline double pass_opportunity_penalty(
