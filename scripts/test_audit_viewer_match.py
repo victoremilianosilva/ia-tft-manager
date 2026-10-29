@@ -1,51 +1,94 @@
+import json
+import tempfile
 import unittest
-import importlib.util
 from pathlib import Path
 
-SCRIPT = Path(__file__).with_name("audit_viewer_match.py")
-spec = importlib.util.spec_from_file_location("audit_viewer_match", SCRIPT)
-audit = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(audit)
+from scripts import audit_viewer_match as audit
+from viewer.player_logs import PlayerJsonLogWriter, _mask_audit
 
 
 def unit(name, **extra):
     return {"champion_id": name, "occupied": True, **extra}
 
 
-class UnifiedAuditTests(unittest.TestCase):
-    def test_nested_board_is_supported(self):
+class UnifiedAuditRegressionTests(unittest.TestCase):
+    def test_structured_json_inside_tft_extension_is_detected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            doc = {"entries": [{"event_type": "match_started", "payload": {"state": {"board": [], "bench": []}}}]}
+            path = root / "player_1_log.tft"
+            path.write_text(json.dumps(doc), encoding="utf-8")
+            parsed = audit.read_json(path)
+            self.assertIsInstance(parsed, dict)
+            self.assertEqual(len(parsed["entries"]), 1)
+
+    def test_nested_board_supported(self):
         state = {"board": [[unit("A"), None], [None, unit("B")]], "bench": []}
         self.assertEqual([audit.unit_name(u) for _, _, u in audit.iter_units(state)], ["A", "B"])
 
-    def test_carry_frontline_and_tank_backline_are_reported(self):
-        board = [None] * 28
-        board[0] = unit("Veigar", role="carry")
-        board[21] = unit("Braum", role="tank")
-        entries = [{"event_type": "action", "step": 1, "stage": 2, "round_in_stage": 1,
-                    "payload": {"state_after": {"board": board, "bench": []}}}]
-        report = {"issues": []}
-        audit.audit_positioning_and_composition(entries, "Jogador 1", report)
-        codes = {issue["code"] for issue in report["issues"]}
-        self.assertIn("CARRY_IN_FRONTLINE", codes)
-        self.assertIn("TANK_IN_BACKLINE", codes)
+    def test_legacy_text_log_reconstructs_strategy_action_and_gold(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "player_1_log.tft"
+            path.write_text(
+                "[10:00:00] REROLL LOJA | Rew: -0.04\n"
+                "    STRATEGY: FAST8 | COMP DIRECTION: Invoker | FOCUS: Support\n"
+                "    STRATEGY REASON: FAST8 target | CONF: 0.90\n"
+                "    GOLD: 34 | renda base +5 | juros +3 | sequência +0 | vitória +0\n",
+                encoding="utf-8",
+            )
+            report = {"issues": [], "players_seen": set(), "log_files": []}
+            audit.audit_text(path, report)
+            metrics = report["text_log_metrics"]["Jogador 1"]
+            self.assertEqual(metrics["action_counts"]["REROLL"], 1)
+            self.assertEqual(metrics["timeline"][0]["strategy"], "FAST8")
+            self.assertEqual(metrics["timeline"][0]["gold_after"], 34)
+            self.assertEqual(metrics["timeline"][0]["income"]["interest"], 3)
+            self.assertEqual(metrics["timeline"][0]["conformity_candidate"], "FAST8_REROLL_REVIEW")
 
-    def test_missing_core_requires_repeated_snapshots(self):
-        entries = [{"event_type": "action", "step": i, "stage": 2, "round_in_stage": 1,
-                    "payload": {"state_after": {"board": [], "bench": [], "core_units": ["Nasus"]}}}
-                   for i in range(1, 4)]
-        report = {"issues": []}
-        audit.audit_positioning_and_composition(entries, "Jogador 1", report)
-        self.assertIn("CORE_UNIT_MISSING_REPEATEDLY", {issue["code"] for issue in report["issues"]})
+    def test_mask_audit_preserves_legal_alternatives(self):
+        mask = {"type_mask": [1, 1, 1, 0, 0, 1, 1, 0, 0], "shop_mask": [1, 0, 1, 0, 0],
+                "bench_source_mask": [1] + [0] * 8, "board_target_mask": [0] * 28,
+                "board_source_mask": [0] * 28, "bench_to_board_target_masks": [[0] * 28 for _ in range(9)],
+                "board_move_target_masks": [[0] * 28 for _ in range(28)]}
+        result = _mask_audit([0, 2, 0, 0, 0, 0], mask)
+        self.assertTrue(result["chosen_type_enabled"])
+        self.assertTrue(result["chosen_action_fully_validated"])
+        self.assertEqual(result["legal_shop_slots"], [0, 2])
+        self.assertIn({"id": 1, "name": "REROLL"}, result["legal_action_types"])
 
-    def test_selling_a_pair_copy_is_reported(self):
-        before = {"board": [], "bench": [unit("Briar"), unit("Briar")], "gold": 6}
-        after = {"board": [], "bench": [unit("Briar")], "gold": 7}
-        entries = [{"event_type": "action", "sequence_id": 1, "step": 2, "stage": 2,
-                    "round_in_stage": 1, "payload": {"action": [5, 0, 1], "action_name": "SELL",
-                    "state_before": before, "state_after": after}}]
+    def test_writer_persists_structured_json_sidecars(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            writer = PlayerJsonLogWriter(root, match_id="test-match", checkpoint_sha256="abc",
+                seed=7, deterministic=True, catalog_path=root / "missing-catalog.json")
+            writer.close()
+            doc = json.loads((root / "player_1_log.json").read_text(encoding="utf-8"))
+            self.assertEqual(doc["schema_version"], 2)
+            self.assertEqual(doc["match_id"], "test-match")
+            self.assertTrue((root / "player_1_log.tft").is_file())
+
+    def test_decision_audit_crosses_mask_reward_and_uuid(self):
+        entry = {"event_type": "action", "sequence_id": 1, "step": 10, "round": 4, "payload": {
+            "action": [0, 0, 0, 0, 0, 0], "action_name": "BUY",
+            "decision_context": {"hp": 72, "level": 5, "gold": 22, "xp": 4, "board_power": 40, "strategy": "STABILIZE"},
+            "legal_action_audit": {"chosen_type_enabled": True, "chosen_action_fully_validated": True,
+                                   "legal_action_types": [{"id": 0, "name": "BUY"}]},
+            "action_mask_before": {"type_mask": [1]},
+            "reward_components": {"action": 0.1, "combat": 0.0, "placement": 0.0, "returned_reward": 0.1},
+            "state_before": {"board": [], "bench": []},
+            "state_after": {"board": [], "bench": [unit("A", uuid="unit-uuid")]}}}
         report = {"issues": []}
-        audit.audit_purchase_sequences(entries, "Jogador 1", report)
-        self.assertIn("SOLD_UPGRADE_PAIR_COPY", {issue["code"] for issue in report["issues"]})
+        audit.audit_decision_context([entry], "Jogador 1", report)
+        metrics = report["decision_audit_metrics"]["Jogador 1"]
+        self.assertEqual(metrics["mask_snapshots"], 1)
+        self.assertEqual(metrics["reward_channels_complete"], 1)
+        self.assertEqual(report["decision_timeline"][0]["unit_changes"]["added"][0]["uuid"], "unit-uuid")
+
+    def test_uuid_signature_distinguishes_duplicate_champions(self):
+        state = {"board": [], "bench": [unit("A", uuid="unit-1"), unit("A", uuid="unit-2")]}
+        sig = audit.signature(state)
+        self.assertEqual(len(sig), 2)
+        self.assertNotEqual(sig[0][2], sig[1][2])
 
 
 if __name__ == "__main__":

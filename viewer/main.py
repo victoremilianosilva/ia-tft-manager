@@ -599,6 +599,10 @@ class ViewerWindow(QMainWindow):
         top.addWidget(title)
         top.addWidget(self.viewer_subtitle)
         top.addStretch()
+        self.audit_button = QPushButton("Auditoria completa…")
+        self.audit_button.setToolTip("Selecionar uma pasta de partida, cruzar logs e abrir as abas de auditoria")
+        self.audit_button.clicked.connect(self._open_audit_window)
+        top.addWidget(self.audit_button)
         self.round_label = QLabel("SEM PARTIDA")
         self.round_label.setStyleSheet("font-weight:700;color:#fbbf24;")
         top.addWidget(self.round_label)
@@ -951,6 +955,13 @@ class ViewerWindow(QMainWindow):
             if compact else "font-size:20pt;font-weight:800;color:#60a5fa;"
         )
         QTimer.singleShot(0, self._sync_all_board_cells)
+
+    def _open_audit_window(self):
+        from viewer.audit_window import AuditWindow
+        self._audit_window = AuditWindow(self)
+        self._audit_window.show()
+        self._audit_window.raise_()
+        self._audit_window.activateWindow()
 
     def _choose_checkpoint(self):
         path, _ = QFileDialog.getOpenFileName(self, "Selecionar checkpoint PPO", str(ROOT), "Checkpoints (*.pth *.pt *.ckpt);;Todos os arquivos (*)")

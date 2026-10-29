@@ -803,6 +803,91 @@ def audit_positioning_and_composition(entries: list[dict], player: str, report: 
             missing_counts.clear()
             missing_reported.clear()
 
+def _decision_units(state: dict) -> dict[str, dict]:
+    result = {}
+    for location, slot, unit in iter_units(state):
+        uid = str(unit.get("uuid") or "").strip()
+        if uid:
+            result[uid] = {"uuid": uid, "champion_id": unit_name(unit), "location": location,
+                           "slot": slot, "star": int(unit.get("star", 1) or 1),
+                           "items": list(unit.get("items") or unit.get("item_ids") or [])}
+    return result
+
+
+def audit_decision_context(entries: list[dict], player: str, report: dict) -> None:
+    timeline = report.setdefault("decision_timeline", [])
+    stats = report.setdefault("decision_audit_metrics", {}).setdefault(player, {
+        "actions": 0, "mask_snapshots": 0, "mask_missing": 0, "chosen_type_enabled": 0,
+        "chosen_type_disabled": 0, "full_action_validation_available": 0,
+        "full_action_validation_failed": 0, "decision_state_complete": 0,
+        "decision_state_missing": 0, "reward_channels_complete": 0,
+        "reward_channels_partial": 0, "by_strategy_action": {}, "by_action": {},
+        "by_strategy": {}, "unit_identity_observations": 0, "unit_additions": 0, "unit_removals": 0})
+    for entry in sorted(entries, key=lambda e: (e.get("sequence_id", 0), e.get("step", 0))):
+        if not isinstance(entry, dict) or entry.get("event_type") != "action":
+            continue
+        p = entry.get("payload") or {}
+        before, after = p.get("state_before") or {}, p.get("state_after") or {}
+        ctx, mask, rewards = p.get("decision_context") or {}, p.get("legal_action_audit") or {}, p.get("reward_components") or {}
+        action_name = str(p.get("action_name") or mask.get("chosen_action_name") or "UNKNOWN")
+        strategy = str(ctx.get("strategy") or before.get("strategy_name") or "UNKNOWN")
+        stats["actions"] += 1
+        for bucket, key in (("by_action", action_name), ("by_strategy", strategy), ("by_strategy_action", f"{strategy}::{action_name}")):
+            stats[bucket][key] = stats[bucket].get(key, 0) + 1
+        if isinstance(p.get("action_mask_before"), dict) and p["action_mask_before"]:
+            stats["mask_snapshots"] += 1
+        else:
+            stats["mask_missing"] += 1
+        if mask.get("chosen_type_enabled") is True:
+            stats["chosen_type_enabled"] += 1
+        elif mask.get("chosen_type_enabled") is False:
+            stats["chosen_type_disabled"] += 1
+            add_issue(report, "HIGH", "ACTION_TYPE_MASK_MISMATCH", player, get_round(entry), entry.get("step"),
+                      "Ação com tipo desabilitado na máscara capturada antes da decisão.",
+                      {"action": p.get("action"), "action_name": action_name, "strategy": strategy,
+                       "legal_action_types": mask.get("legal_action_types")})
+        full = mask.get("chosen_action_fully_validated")
+        if full is not None:
+            stats["full_action_validation_available"] += 1
+            if full is False:
+                stats["full_action_validation_failed"] += 1
+                add_issue(report, "HIGH", "ACTION_PARAMETER_MASK_MISMATCH", player, get_round(entry), entry.get("step"),
+                          "Parâmetros da ação não correspondem à máscara condicional capturada.",
+                          {"action": p.get("action"), "action_name": action_name,
+                           "legal_action_audit": {k: v for k, v in mask.items() if k != "raw_mask"}})
+        if all(ctx.get(k) is not None for k in ("hp", "level", "gold", "xp", "board_power")):
+            stats["decision_state_complete"] += 1
+        else:
+            stats["decision_state_missing"] += 1
+        if all(rewards.get(k) is not None for k in ("action", "combat", "placement", "returned_reward")):
+            stats["reward_channels_complete"] += 1
+        else:
+            stats["reward_channels_partial"] += 1
+        ub, ua = _decision_units(before), _decision_units(after)
+        added = [ua[k] for k in sorted(ua.keys() - ub.keys())]
+        removed = [ub[k] for k in sorted(ub.keys() - ua.keys())]
+        if ub or ua:
+            stats["unit_identity_observations"] += 1
+            stats["unit_additions"] += len(added)
+            stats["unit_removals"] += len(removed)
+        timeline.append({
+            "player": player, "step": entry.get("step"), "sequence_id": entry.get("sequence_id"),
+            "round": get_round(entry), "timestamp": entry.get("timestamp"),
+            "action": p.get("action"), "action_name": action_name, "strategy": strategy,
+            "strategy_reason": ctx.get("strategy_reason") or before.get("strategy_reason"),
+            "decision_context": ctx, "state_before": before, "state_after": after,
+            "legal_action_audit": mask, "action_mask_before": p.get("action_mask_before"),
+            "action_mask_after": p.get("action_mask_after"),
+            "policy_diagnostics": p.get("policy_diagnostics") or {},
+            "reward_components": rewards, "reward": p.get("reward"),
+            "economic_diagnostics": p.get("economic_diagnostics") or {},
+            "unit_changes": {"added": added, "removed": removed},
+            "composition_diagnostics": p.get("composition_diagnostics") or {},
+            "item_audit": p.get("item_audit") or {}})
+    for key in ("by_action", "by_strategy", "by_strategy_action"):
+        stats[key] = dict(sorted(stats[key].items()))
+
+
 def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_window: int) -> None:
     player_id = doc.get("player_number")
     if player_id is None:
@@ -817,6 +902,7 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
     audit_board_quality(doc["entries"], player, report)
     audit_positioning_and_composition(doc["entries"], player, report)
     audit_team_progression(doc["entries"], player, report)
+    audit_decision_context(doc["entries"], player, report)
     report["log_files"].append(str(path))
 
     entries = sorted(doc["entries"], key=lambda e: (e.get("sequence_id", 0), e.get("step", 0)))
@@ -962,36 +1048,205 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
 
 
 def audit_text(path: Path, report: dict) -> None:
+    """Extract every available event from legacy .tft text logs.
+
+    These logs do not contain full per-action state snapshots. The timeline therefore
+    preserves the source evidence and labels inferred conformity as a candidate.
+    """
     try:
-        text = path.read_text(encoding="utf-8-sig", errors="replace")
+        content = path.read_text(encoding="utf-8-sig", errors="replace")
     except OSError as exc:
         print(f"[WARN] Falha lendo {path}: {exc}", file=sys.stderr)
         return
     match = re.search(r"player_(\d+)_log", path.name)
     player_id = match.group(1) if match else path.stem
+    player = f"Jogador {player_id}"
     report["players_seen"].add(str(player_id))
     report["log_files"].append(str(path))
+
+    action_line = re.compile(
+        r"^\[(?P<time>[^]]+)\]\s*(?P<label>.*?)\s*\|\s*Rew:\s*(?P<reward>[+-]?\d+(?:\.\d+)?)",
+        re.I,
+    )
+    round_line = re.compile(r"FIM DO ROUND\s+(?P<stage>\d+)-(?P<round>\d+)\s*\|\s*GOLD:\s*(?P<gold>\d+)", re.I)
+    strategy_line = re.compile(r"STRATEGY:\s*(?P<strategy>[^|]+)\|\s*COMP DIRECTION:\s*(?P<direction>[^|]+)\|\s*FOCUS:\s*(?P<focus>[^|]+)", re.I)
+    reason_line = re.compile(r"STRATEGY REASON:\s*(?P<reason>.*?)\s*\|\s*CONF:\s*(?P<confidence>[+-]?\d+(?:\.\d+)?)", re.I)
+    gold_line = re.compile(r"GOLD:\s*(?P<gold>\d+)\s*\|\s*renda base\s*\+(?P<base>\d+)\s*\|\s*juros\s*\+(?P<interest>\d+)\s*\|\s*sequência\s*\+(?P<streak>\d+)\s*\|\s*vitória\s*\+(?P<win>\d+)", re.I)
+    comp_line = re.compile(r"COMP BEFORE -> AFTER:\s*dir=(?P<before>.*?)\s*->\s*(?P<after>.*?)\s*\|\s*foco=(?P<focus_before>.*?)\s*->\s*(?P<focus_after>.*?)\s*\|\s*lock=(?P<lock_before>.*?)\s*->\s*(?P<lock_after>.*?)\s*\|\s*strength=(?P<strength_before>[\d.]+)\s*->\s*(?P<strength_after>[\d.]+)", re.I)
+    fit_line = re.compile(r"FIT UNIDADE:\s*(?P<unit>.*?)\s*\|\s*core=(?P<core>.*?)\s*\|\s*fit=(?P<fit>-?[\d.]+)\s*\|\s*(?P<traits>.*)", re.I)
+    income_line = re.compile(r"RENDA PRÓXIMO ROUND:\s*\+(?P<base>\d+) base,\s*\+(?P<interest>\d+) juros,\s*\+(?P<streak>\d+) sequência,\s*\+(?P<win>\d+) vitória \(total:\s*\+(?P<total>\d+)\)", re.I)
+    direction_line = re.compile(r"COMP DIRECTION:\s*(?P<direction>[^|]+)\|\s*FOCUS:\s*(?P<focus>[^|]+)\|\s*LOCK:\s*(?P<lock>[^|]+)\|\s*STRENGTH:\s*(?P<strength>[\d.]+)", re.I)
+    metrics = {
+        "player": player, "actions": 0, "action_counts": {}, "reward_by_action": {},
+        "strategy_action_counts": {}, "gold_observations": [], "rounds": [],
+        "composition_changes": 0, "composition_change_events": [],
+        "position_warnings": Counter(), "item_snapshots": 0, "item_nonempty_snapshots": 0,
+        "shop_snapshots": 0, "shop_offers": 0, "buy_costs": 0,
+        "strategies_seen": Counter(), "action_rewards": [], "timeline": [],
+    }
     current_round = "?"
-    moves, comps = [], []
-    for line_no, line in enumerate(text.splitlines(), 1):
-        rm = ROUND_RE.search(line)
+    current_event = None
+    board_section = False
+    item_section = False
+    shop_section = False
+    for line_no, line in enumerate(content.splitlines(), 1):
+        rm = round_line.search(line)
         if rm:
-            current_round = f"{rm.group(1)}-{rm.group(2)}"
-        mm = MOVE_RE.search(line)
+            current_round = f"{rm.group('stage')}-{rm.group('round')}"
+            metrics["rounds"].append({"round": current_round, "gold": int(rm.group("gold")), "line": line_no})
+            # Round-summary metadata describes a boundary snapshot, not the previous action.
+            current_event = None
+            board_section = item_section = shop_section = False
+        if "--- CONFIGURAÇÃO DO TABULEIRO ---" in line:
+            board_section, item_section, shop_section = True, False, False
+        elif "--- ITENS ---" in line:
+            board_section, item_section, shop_section = False, True, False
+            metrics["item_snapshots"] += 1
+        elif "--- ESTADO DO BANCO ---" in line:
+            board_section, item_section, shop_section = False, False, False
+        elif "🛒 LOJA:" in line or "LOJA:" in line:
+            board_section, item_section, shop_section = False, False, True
+            metrics["shop_snapshots"] += 1
+            metrics["shop_offers"] += max(0, line.count(",") + 1)
+        elif board_section and "⚠️" in line:
+            warning = line.split("⚠️", 1)[1].strip().casefold()
+            metrics["position_warnings"][warning] += 1
+            add_issue(report, "LOW", "TEXT_POSITION_WARNING", player, current_round, line_no,
+                      f"Warning de posicionamento emitido pelo Viewer: {warning}.",
+                      {"line": line.strip(), "source": str(path)})
+        if item_section and any(token in line.casefold() for token in ("componentes:", "itens na bag:", "itens equipados:")):
+            if not re.search(r":\s*nenhum\s*$", line.strip(), re.I):
+                metrics["item_nonempty_snapshots"] += 1
+
+        am = action_line.search(line)
+        if am:
+            label = am.group("label").strip()
+            reward = float(am.group("reward"))
+            upper = label.upper()
+            if upper.startswith("COMPROU:"):
+                action = "BUY"
+                cost_match = re.search(r"Custo\s+(\d+)", label, re.I)
+                cost = int(cost_match.group(1)) if cost_match else None
+                metrics["buy_costs"] += cost or 0
+            elif upper.startswith("VENDEU:"):
+                action = "SELL"
+                cost = None
+            elif upper.startswith("MOVE BENCH"):
+                action, cost = "MOVE_BENCH", None
+            elif upper.startswith("MOVE BOARD"):
+                action, cost = "MOVE_BOARD", None
+            elif "PASSOU TURNO" in upper:
+                action, cost = "PASS", None
+            elif "XP" in upper and any(word in upper for word in ("COMPROU", "BUY", "EXPERIÊNCIA")):
+                action, cost = "BUY_XP", None
+            elif "REROLL" in upper or "RE-ROLL" in upper or "RE-ROL" in upper:
+                action, cost = "REROLL", None
+            elif "ITEM" in upper or "BIGORNA" in upper or "COMPONENTE" in upper:
+                action, cost = "ITEM", None
+            else:
+                action, cost = "OTHER", None
+            current_event = {
+                "player": player, "line": line_no, "timestamp": am.group("time"),
+                "round": current_round, "action": action, "raw_action": label,
+                "reward": reward, "cost": cost, "strategy": None, "strategy_reason": None,
+                "confidence": None, "comp_direction": None, "comp_focus": None,
+                "gold_after": None, "income": None, "unit_fit": None,
+                "composition_transition": None, "source": str(path),
+            }
+            metrics["timeline"].append(current_event)
+            metrics["actions"] += 1
+            metrics["action_counts"][action] = metrics["action_counts"].get(action, 0) + 1
+            bucket = metrics["reward_by_action"].setdefault(action, {"count": 0, "sum": 0.0, "positive": 0, "negative": 0})
+            bucket["count"] += 1
+            bucket["sum"] += reward
+            bucket["positive"] += int(reward > 0)
+            bucket["negative"] += int(reward < 0)
+            metrics["action_rewards"].append(reward)
+            board_section = item_section = shop_section = False
+            continue
+
+        if current_event is None:
+            continue
+        sm = strategy_line.search(line)
+        if sm:
+            current_event["strategy"] = sm.group("strategy").strip()
+            current_event["comp_direction"] = sm.group("direction").strip()
+            current_event["comp_focus"] = sm.group("focus").strip()
+            strategy = current_event["strategy"]
+            metrics["strategies_seen"][strategy] += 1
+            key = f"{strategy}::{current_event['action']}"
+            metrics["strategy_action_counts"][key] = metrics["strategy_action_counts"].get(key, 0) + 1
+            dm = direction_line.search(line)
+            if dm:
+                current_event["composition_locked"] = dm.group("lock").strip()
+                current_event["composition_strength"] = float(dm.group("strength"))
+        rm2 = reason_line.search(line)
+        if rm2:
+            current_event["strategy_reason"] = rm2.group("reason").strip()
+            current_event["confidence"] = float(rm2.group("confidence"))
+        gm = gold_line.search(line)
+        if gm:
+            observation = {
+                "gold": int(gm.group("gold")), "base_income": int(gm.group("base")),
+                "interest": int(gm.group("interest")), "streak_income": int(gm.group("streak")),
+                "win_income": int(gm.group("win")), "round": current_round, "line": line_no,
+            }
+            current_event["gold_after"] = observation["gold"]
+            current_event["income"] = observation
+            metrics["gold_observations"].append(observation)
+        cm = comp_line.search(line)
+        if cm:
+            transition = {key: value.strip() for key, value in cm.groupdict().items()}
+            current_event["composition_transition"] = transition
+            if transition["before"] != transition["after"] or transition["focus_before"] != transition["focus_after"]:
+                metrics["composition_changes"] += 1
+                metrics["composition_change_events"].append({"line": line_no, "round": current_round, **transition})
+        fm = fit_line.search(line)
+        if fm:
+            current_event["unit_fit"] = {
+                "unit": fm.group("unit").strip(), "core": fm.group("core").strip().casefold() in ("sim", "yes", "true"),
+                "fit": float(fm.group("fit")), "traits": fm.group("traits").strip(),
+            }
+        im = income_line.search(line)
+        if im:
+            current_event["next_round_income"] = {key: int(value) for key, value in im.groupdict().items()}
+        if current_event["strategy"] == "FAST8" and current_event["action"] == "REROLL":
+            current_event["conformity_candidate"] = "FAST8_REROLL_REVIEW"
+        elif current_event["strategy"] == "SLOWROLL" and current_event["action"] == "BUY_XP":
+            current_event["conformity_candidate"] = "SLOWROLL_BUY_XP_REVIEW"
+
+    for action in metrics["timeline"]:
+        if action["strategy"] == "STABILIZE" and action["action"] == "PASS" and action.get("gold_after", 0) >= 10:
+            action["conformity_candidate"] = "STABILIZE_PASS_WITH_GOLD_REVIEW"
+        if action["strategy"] == "ECON" and action["action"] in ("BUY", "BUY_XP", "REROLL") and action.get("gold_after") is not None and action["gold_after"] < 50:
+            action["conformity_candidate"] = "ECON_SPEND_BELOW_50_REVIEW"
+        if action.get("conformity_candidate"):
+            add_issue(report, "MEDIUM", action["conformity_candidate"], player, action.get("round"),
+                      action.get("line"), "Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado.",
+                      {k: action.get(k) for k in ("action", "strategy", "strategy_reason", "gold_after", "comp_direction", "comp_focus", "reward", "raw_action")})
+    for action, bucket in metrics["reward_by_action"].items():
+        bucket["mean"] = round(bucket["sum"] / bucket["count"], 5) if bucket["count"] else 0.0
+    metrics["mean_reward"] = round(sum(metrics["action_rewards"]) / len(metrics["action_rewards"]), 5) if metrics["action_rewards"] else 0.0
+    metrics["strategies_seen"] = dict(metrics["strategies_seen"])
+    metrics["position_warnings"] = dict(metrics["position_warnings"])
+    metrics.pop("action_rewards", None)
+    report.setdefault("text_log_metrics", {})[player] = metrics
+    report.setdefault("decision_timeline", []).extend(metrics["timeline"])
+    # Corroborate movement oscillations. Text labels are not unit identity; these
+    # remain candidates, never confirmed unit-level cycles.
+    moves = []
+    for event in metrics["timeline"]:
+        if event["action"] not in ("MOVE_BENCH", "MOVE_BOARD"):
+            continue
+        mm = MOVE_RE.search(event["raw_action"] + " | Rew: " + str(event["reward"]))
         if mm:
-            kind, left, right, reward = mm.groups()
-            move = (line_no, current_round, kind, left.strip(), right.strip(), float(reward), line.strip())
-            moves.append(move)
-            if len(moves) >= 4:
-                a, b, c, d = moves[-4:]
-                if ((a[2:5] == c[2:5]) and (b[2:5] == d[2:5])
-                        and a[2:5] != b[2:5]):
-                    add_issue(report, "HIGH", "TEXT_MOVE_OSCILLATION", f"Jogador {player_id}",
-                              current_round, line_no,
-                              "Possível alternância de duas unidades; confirme no JSON estruturado.",
-                              [a[6], b[6], c[6], d[6]])
-        # A direção da composição é auditada no JSON estruturado; não duplicar o mesmo estado
-        # lendo-o novamente no .tft. O .tft aqui serve para corroborar loops de movimento.
+            moves.append((event["line"], event["round"], mm.group(1), mm.group(2).strip(), mm.group(3).strip(), event["reward"], event["raw_action"]))
+    for i in range(len(moves) - 3):
+        a, b, c, d = moves[i:i + 4]
+        if (a[2:5] == c[2:5] and b[2:5] == d[2:5] and a[2:5] != b[2:5]):
+            add_issue(report, "HIGH", "TEXT_MOVE_OSCILLATION", player, d[1], d[0],
+                      "Possível alternância de duas unidades; confirme identidade/estado nos snapshots estruturados.",
+                      [a[6], b[6], c[6], d[6]])
 
 
 def markdown_report(report: dict) -> str:
@@ -1004,6 +1259,54 @@ def markdown_report(report: dict) -> str:
         f"- Achados: **{len(report['issues'])}**",
         f"- CRITICAL: {counts['CRITICAL']} | HIGH: {counts['HIGH']} | MEDIUM: {counts['MEDIUM']} | LOW: {counts['LOW']}", "",
     ]
+    if report.get("text_log_metrics"):
+        lines += ["## Reconstrução de decisões dos logs legados", "",
+                  "Esta seção usa o que está explícito em cada linha de ação. HP, nível, máscara legal e canais separados de recompensa não são inferidos quando o log não os registra.", "",
+                  "| Jogador | Ações | Compras | Vendas | XP | Rerolls | Passes | Movimentos | Δ recompensa média | Mudanças comp/foco | Warnings posicionamento |",
+                  "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+        for player, metrics in sorted(report["text_log_metrics"].items()):
+            counts = metrics.get("action_counts", {})
+            lines.append(
+                f"| {player} | {metrics.get('actions', 0)} | {counts.get('BUY', 0)} | {counts.get('SELL', 0)} | "
+                f"{counts.get('BUY_XP', 0)} | {counts.get('REROLL', 0)} | {counts.get('PASS', 0)} | "
+                f"{counts.get('MOVE_BENCH', 0) + counts.get('MOVE_BOARD', 0)} | {metrics.get('mean_reward', 0):.4f} | "
+                f"{metrics.get('composition_changes', 0)} | {sum(metrics.get('position_warnings', {}).values())} |"
+            )
+            lines.append(f"- {player} — ações por estratégia: " + ", ".join(f"{k}: {v}" for k, v in sorted(metrics.get("strategy_action_counts", {}).items())))
+            lines.append(f"- {player} — recompensas por ação: " + ", ".join(f"{k}: média {v.get('mean', 0):.4f} (n={v.get('count', 0)})" for k, v in sorted(metrics.get("reward_by_action", {}).items())))
+        lines += ["", "### Timeline por decisão", "",
+                  "| Jogador | Round | Horário | Ação | Estratégia | Motivo | Ouro observado | Juros | Comp direction | Focus | Recompensa | Sinal para revisar |",
+                  "|---|---|---|---|---|---|---:|---:|---|---|---:|---|"]
+        for event in report.get("decision_timeline", []):
+            income = event.get("income") or {}
+            note = event.get("conformity_candidate", "")
+            safe = lambda value: str(value if value is not None else "—").replace("|", "\\|").replace("\n", " ")
+            lines.append(
+                f"| {safe(event.get('player'))} | {safe(event.get('round'))} | {safe(event.get('timestamp'))} | "
+                f"{safe(event.get('raw_action'))} | {safe(event.get('strategy'))} | {safe(event.get('strategy_reason'))} | "
+                f"{safe(event.get('gold_after'))} | {safe(income.get('interest'))} | {safe(event.get('comp_direction'))} | "
+                f"{safe(event.get('comp_focus'))} | {float(event.get('reward') or 0):.4f} | {safe(note)} |"
+            )
+        lines += ["", "As flags FAST8/SLOWROLL/STABILIZE/ECON são candidatos de revisão, não violações definitivas: logs legados não incluem a máscara legal completa nem sempre registram HP, nível e alternativas no mesmo instante.", ""]
+
+    if report.get("decision_audit_metrics"):
+        lines += ["## Auditoria decisão por decisão", "",
+                  "| Jogador | Ações | Máscaras | Tipo permitido | Tipo bloqueado | Validação completa | Falhas | Estado completo | Recompensas completas | UUIDs observados | Adições/remoções |",
+                  "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+        for player, m in sorted(report["decision_audit_metrics"].items()):
+            lines.append(f"| {player} | {m['actions']} | {m['mask_snapshots']} | {m['chosen_type_enabled']} | {m['chosen_type_disabled']} | {m['full_action_validation_available']} | {m['full_action_validation_failed']} | {m['decision_state_complete']} | {m['reward_channels_complete']} | {m['unit_identity_observations']} | {m['unit_additions']}/{m['unit_removals']} |")
+        lines += ["", "### Timeline", "",
+                  "| Jogador | Round | Step | Ação | Estratégia | HP | Nível | Ouro | Juros | Força | Direção/foco | Tipos legais | Tipo permitido | Parâmetros válidos | Rew ação | Combate | Colocação | UUIDs adicionados/removidos |",
+                  "|---|---|---:|---|---|---:|---:|---:|---:|---:|---|---|---|---|---:|---:|---:|---|"]
+        cell = lambda v: str(v if v is not None else "—").replace("|", "\\|").replace("\n", " ")
+        for d in report.get("decision_timeline", []):
+            c, r, m, u = d.get("decision_context") or {}, d.get("reward_components") or {}, d.get("legal_action_audit") or {}, d.get("unit_changes") or {}
+            added = ",".join(str(x.get("uuid")) for x in u.get("added", [])) or "—"
+            removed = ",".join(str(x.get("uuid")) for x in u.get("removed", [])) or "—"
+            legal = ", ".join(x.get("name", str(x.get("id"))) for x in m.get("legal_action_types", []))
+            lines.append(f"| {cell(d.get('player'))} | {cell(d.get('round'))} | {cell(d.get('step'))} | {cell(d.get('action_name'))} | {cell(d.get('strategy'))} | {cell(c.get('hp'))} | {cell(c.get('level'))} | {cell(c.get('gold'))} | {cell(c.get('interest_if_resolved_now'))} | {cell(c.get('board_power'))} | {cell(str(c.get('composition_direction') or '—') + '/' + str(c.get('composition_focus') or '—'))} | {cell(legal)} | {cell(m.get('chosen_type_enabled'))} | {cell(m.get('chosen_action_fully_validated'))} | {cell(r.get('action'))} | {cell(r.get('combat'))} | {cell(r.get('placement'))} | +{cell(added)} / -{cell(removed)} |")
+        lines += ["", "O audit_report.json mantém as máscaras brutas, distribuições da política, estados antes/depois, componentes de recompensa e mudanças por UUID. Null indica campo ausente, não zero.", ""]
+
     if report.get("economic_action_metrics"):
         lines += ["## Auditoria econômica por ação", "",
                   "| Jogador | Ações | Ouro gasto | Ouro recuperado | Juros potenciais perdidos | XP sem level-up | Level-up sem unidade implantada | Rerolls sem ganho imediato | Reroll → PASS | Ouro final | Força final |",
@@ -1110,7 +1413,7 @@ def markdown_report(report: dict) -> str:
               "- Achados CRITICAL/HIGH são sinais fortes para investigar, não prova isolada da causa.",
               "- Troca de comp direction pode ser legítima conforme loja, unidades, nível e economia.",
               "- A checagem de fusão conta apenas unidades compradas no tabuleiro+banco, nunca as da loja.",
-              "- JSON e TFT são usados de forma complementar: JSON para estado/estratégia; TFT para corroborar loops de movimento. Alertas de composição do TFT foram desativados para não duplicar episódios.",
+              "- O JSON estruturado é a fonte primária para estado de decisão, máscaras, política e recompensas; .tft é analisado apenas para jogadores sem sidecar JSON."
               "- A auditoria não pode decidir se uma compra era ótima sem comparar loja, ouro, limite do banco, máscaras e avaliação de composição no mesmo estado.",
               "- Uma fusão só pode ser confirmada com segurança se o log registrar cópias elegíveis antes/depois e o evento de merge; contar cópias é apenas um indício.",
               "- Alertas de posicionamento dependem de role/row nos dados; em tabuleiro achatado assume-se grade 4x7 com rows 0-1 na frontline, convenção a validar no Viewer.",
@@ -1139,8 +1442,9 @@ def main() -> int:
             json_files = sorted(source.rglob("player_*_log.json"))
         if not tft_files:
             tft_files = sorted(source.rglob("player_*_log.tft"))
-        # JSON fornece estado estruturado; TFT complementa movimentos que o JSON não reconstrói bem.
-        files = json_files + tft_files
+        # Structured JSON sidecars are authoritative; avoid double-counting matching .tft files.
+        json_stems = {p.stem for p in json_files}
+        files = json_files + [p for p in tft_files if p.stem not in json_stems]
         default_out = source / "audit"
     else:
         parser.error(f"caminho não existe: {source}")
@@ -1149,6 +1453,7 @@ def main() -> int:
               "composition_direction_metrics": {},
               "board_quality_metrics": {},
               "team_progression_metrics": {},
+              "decision_audit_metrics": {}, "decision_timeline": [],
               "entries_read": 0, "diagnostics_missing": 0, "issues": [], "notes": [],
               "mask_note_added": False}
     for path in files:
@@ -1157,7 +1462,13 @@ def main() -> int:
             if doc:
                 audit_json(path, doc, report, args.loop_window, args.comp_window)
         elif path.suffix.lower() == ".tft":
-            audit_text(path, report)
+            # Current PlayerJsonLogWriter stores structured JSON documents in .tft
+            # files. Prefer structured analysis; fall back to legacy text parsing.
+            doc = read_json(path)
+            if doc:
+                audit_json(path, doc, report, args.loop_window, args.comp_window)
+            else:
+                audit_text(path, report)
     unique, seen = [], set()
     for item in report["issues"]:
         key = (item["severity"], item["code"], item["player"], item["round"], item["step"], item["message"])
@@ -1165,6 +1476,7 @@ def main() -> int:
             seen.add(key)
             unique.append(item)
     report["issues"] = unique
+    report["decision_timeline"].sort(key=lambda e: (str(e.get("player")), e.get("step") or 0, e.get("sequence_id") or 0))
     report["players_seen"] = sorted(report["players_seen"], key=lambda x: int(x) if x.isdigit() else 9999)
     report["summary"] = dict(Counter(x["severity"] for x in unique))
     out_dir = args.out_dir or default_out

@@ -218,6 +218,7 @@ class ViewerSession:
             self._session_dir = session_dir
             self._metadata_path = session_dir / "metadata.json"
             log_files = [f"player_{player_id + 1}_log.tft" for player_id in range(8)]
+            structured_log_files = [f"player_{player_id + 1}_log.json" for player_id in range(8)]
             self._metadata_path.write_text(json.dumps({
                 "schema_version": 1,
                 "match_id": self.match_id,
@@ -230,8 +231,14 @@ class ViewerSession:
                 "policy_class": "TFTPolicy",
                 "observation_dim": current_obs_dim,
                 "action_dims": list(action_dims),
-                "log_format": "legacy-style UTF-8 TFT text log, one file per player",
+                "log_format": "structured JSON sidecar plus legacy UTF-8 TFT text log, one pair per player",
                 "player_log_files": log_files,
+                "structured_player_log_files": structured_log_files,
+                "decision_audit_fields": [
+                    "state_before/state_after", "action_masks_before/action_masks_after",
+                    "policy_diagnostics", "reward_components", "economic_diagnostics",
+                    "unit UUIDs", "strategy/composition snapshots",
+                ],
             }, ensure_ascii=False, indent=2), encoding="utf-8")
             self._player_log_writer = PlayerJsonLogWriter(
                 session_dir,
@@ -397,6 +404,8 @@ class ViewerSession:
                 self._backline_fallback_checked = False
 
         before = self._snapshot_for_event()
+        # Preserve the exact masks presented to the policy before the native step.
+        action_masks_before = self.masks
         actions, diagnostics = [], []
         for player_id in range(8):
             player_state = self.public_state.get("players", [])
@@ -565,6 +574,8 @@ class ViewerSession:
                 diagnostics=diagnostics,
                 rewards=self.last_rewards,
                 info=info,
+                action_masks_before=action_masks_before,
+                action_masks_after=self.masks,
                 step=self.step_count,
                 finished=self.finished,
             )
