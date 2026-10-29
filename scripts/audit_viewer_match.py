@@ -1008,6 +1008,8 @@ def audit_text(path: Path, report: dict) -> None:
         if rm:
             current_round = f"{rm.group('stage')}-{rm.group('round')}"
             metrics["rounds"].append({"round": current_round, "gold": int(rm.group("gold")), "line": line_no})
+            # Round-summary metadata describes a boundary snapshot, not the previous action.
+            current_event = None
             board_section = item_section = shop_section = False
         if "--- CONFIGURAÇÃO DO TABULEIRO ---" in line:
             board_section, item_section, shop_section = True, False, False
