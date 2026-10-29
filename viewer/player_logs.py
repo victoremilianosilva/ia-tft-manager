@@ -71,6 +71,67 @@ def _synergy_level(count: int) -> int:
     return 0
 
 
+
+
+def _mask_audit(action: list[int], mask: dict | None) -> dict:
+    """Summarize the exact native masks while preserving raw mask values."""
+    mask = _jsonable(mask or {})
+    type_mask = mask.get("type_mask") or []
+    try:
+        action_type = int(action[0])
+    except (TypeError, ValueError, IndexError):
+        action_type = -1
+    type_enabled = action_type >= 0 and action_type < len(type_mask) and int(type_mask[action_type]) == 1
+    legal_types = [
+        {"id": index, "name": ACTION_NAMES.get(index, f"UNKNOWN_{index}")}
+        for index, enabled in enumerate(type_mask) if int(enabled or 0) == 1
+    ]
+    def enabled_count(key):
+        values = mask.get(key) or []
+        return sum(1 for value in values if int(value or 0) == 1) if isinstance(values, list) else None
+    summary = {
+        "chosen_action_type": action_type,
+        "chosen_action_name": ACTION_NAMES.get(action_type, f"UNKNOWN_{action_type}"),
+        "chosen_type_enabled": type_enabled,
+        "chosen_action_fully_validated": None,
+        "legal_action_types": legal_types,
+        "legal_action_type_count": len(legal_types),
+        "legal_shop_slots": [i for i, v in enumerate(mask.get("shop_mask") or []) if int(v or 0) == 1],
+        "legal_bench_sources": [i for i, v in enumerate(mask.get("bench_source_mask") or []) if int(v or 0) == 1],
+        "legal_board_sources": [i for i, v in enumerate(mask.get("board_source_mask") or []) if int(v or 0) == 1],
+        "legal_board_targets": [i for i, v in enumerate(mask.get("board_target_mask") or []) if int(v or 0) == 1],
+        "legal_move_pairs": {
+            "bench_to_board": sum(1 for row in (mask.get("bench_to_board_target_masks") or []) if isinstance(row, list) for value in row if int(value or 0) == 1),
+            "board_to_board": sum(1 for row in (mask.get("board_move_target_masks") or []) if isinstance(row, list) for value in row if int(value or 0) == 1),
+            "item_component_pairs": sum(1 for row in (mask.get("item_component_pair_masks") or []) if isinstance(row, list) for value in row if int(value or 0) == 1),
+        },
+        "enabled_counts": {key: enabled_count(key) for key in (
+            "type_mask", "shop_mask", "bench_source_mask", "board_target_mask",
+            "board_source_mask", "bench_move_source_mask", "item_inventory_mask",
+            "item_component_first_mask", "item_target_mask",
+        )},
+    }
+    try:
+        if action_type == 0:
+            slot = int(action[1]); values = mask.get("shop_mask") or []
+            summary["chosen_action_fully_validated"] = type_enabled and slot < len(values) and int(values[slot]) == 1
+        elif action_type == 3:
+            source, target = int(action[2]), int(action[3]); matrix = mask.get("bench_to_board_target_masks") or []
+            summary["chosen_action_fully_validated"] = type_enabled and source < len(matrix) and target < len(matrix[source]) and int(matrix[source][target]) == 1
+        elif action_type == 4:
+            source, target = int(action[4]), int(action[5]); matrix = mask.get("board_move_target_masks") or []
+            summary["chosen_action_fully_validated"] = type_enabled and source < len(matrix) and target < len(matrix[source]) and int(matrix[source][target]) == 1
+        elif action_type == 5:
+            slot = int(action[2]); sources = mask.get("bench_source_mask") or []
+            summary["chosen_action_fully_validated"] = type_enabled and slot < len(sources) and int(sources[slot]) == 1
+        elif action_type in (1, 2, 6):
+            summary["chosen_action_fully_validated"] = type_enabled
+    except (IndexError, TypeError, ValueError, KeyError):
+        summary["chosen_action_fully_validated"] = False
+    summary["raw_mask"] = mask
+    return summary
+
+
 class PlayerJsonLogWriter:
     """Persists one self-contained legacy-style .tft timeline for each lobby seat."""
 
@@ -96,10 +157,11 @@ class PlayerJsonLogWriter:
         created_at = datetime.now(timezone.utc).isoformat()
         self.documents = []
         self.paths = []
+        self.json_paths = []
         for player_id in range(8):
             player_number = player_id + 1
             self.documents.append({
-                "schema_version": 1,
+                "schema_version": 2,
                 "log_format": "tft_player_log",
                 "match_id": self.match_id,
                 "player_id": player_id,
@@ -114,6 +176,7 @@ class PlayerJsonLogWriter:
                 "entries": [],
             })
             self.paths.append(self.session_dir / f"player_{player_number}_log.tft")
+            self.json_paths.append(self.session_dir / f"player_{player_number}_log.json")
         snapshot = initial_snapshot or {}
         initial_round = int(snapshot.get("round", 1) or 1)
         stage, round_in_stage = _round_coordinates(initial_round)
@@ -932,7 +995,8 @@ class PlayerJsonLogWriter:
         return relevant
 
     def record_step(self, *, before: dict, after: dict, actions: list[list[int]],
-                    diagnostics: list[dict], rewards, info: dict, step: int, finished: bool):
+                    diagnostics: list[dict], rewards, info: dict, step: int, finished: bool,
+                    action_masks_before=None, action_masks_after=None):
         """Append per-seat action lines and matching board/bench/shop snapshots."""
         if self._closed:
             return
@@ -1027,6 +1091,15 @@ class PlayerJsonLogWriter:
             economic_diagnostics = self._economic_diagnostics(
                 action, before_state, after_state, before_audit, after_audit
             )
+            mask_before = action_masks_before[player_id] if isinstance(action_masks_before, (list, tuple)) and player_id < len(action_masks_before) else {}
+            mask_after = action_masks_after[player_id] if isinstance(action_masks_after, (list, tuple)) and player_id < len(action_masks_after) else {}
+            legal_action_audit = _mask_audit(action, mask_before)
+            legal_action_audit["mask_changed_after_action"] = _jsonable(mask_before) != _jsonable(mask_after)
+            legal_action_audit["policy_status"] = diagnostic.get("status", "policy_selected")
+            legal_action_audit["action_source"] = (
+                "forced_or_fallback" if diagnostic.get("status") not in (None, "", "ok", "policy_selected")
+                else "policy"
+            )
             if player_id in native_economic_events:
                 step_gold_after = economic_diagnostics["gold_after"]
                 economic_diagnostics.update(native_economic_events[player_id])
@@ -1060,6 +1133,26 @@ class PlayerJsonLogWriter:
                 "state_changed": before_state != after_state,
                 "item_audit": item_audit,
                 "economic_diagnostics": economic_diagnostics,
+                "decision_context": {
+                    "strategy": before_state.get("strategy_name"),
+                    "strategy_reason": before_state.get("strategy_reason"),
+                    "hp": before_state.get("hp"), "level": before_state.get("level"),
+                    "gold": before_state.get("gold"), "xp": before_state.get("xp"),
+                    "interest_if_resolved_now": before_state.get("interest_if_resolved_now"),
+                    "board_power": before_state.get("board_power"),
+                    "synergy_score": before_state.get("synergy_score"),
+                    "positioning_score": before_state.get("positioning_score"),
+                    "composition_direction": before_state.get("comp_direction"),
+                    "composition_focus": before_state.get("comp_focus"),
+                    "composition_locked": before_state.get("composition_locked"),
+                    "composition_strength": before_state.get("composition_strength"),
+                    "alive": before_state.get("alive"), "opponent_id": before_state.get("opponent_id"),
+                    "board": before_state.get("board"), "bench": before_state.get("bench"),
+                    "shop": before_state.get("shop"),
+                },
+                "action_mask_before": _jsonable(mask_before),
+                "action_mask_after": _jsonable(mask_after),
+                "legal_action_audit": legal_action_audit,
                 "state_before": before_state, "state_after": after_state,
                 "composition_diagnostics": {
                     "before": {
@@ -1297,9 +1390,13 @@ class PlayerJsonLogWriter:
             temporary = path.with_suffix(path.suffix + ".tmp")
             temporary.write_text(self._render_legacy_log(player_id), encoding="utf-8")
             temporary.replace(path)
-
-            # Structured entries remain in memory for diagnostics; only the
-            # legacy-compatible .tft timeline is persisted to disk.
+            # Persist a machine-readable sidecar; keep .tft readable for people.
+            json_path = self.json_paths[player_id]
+            json_temporary = json_path.with_suffix(json_path.suffix + ".tmp")
+            document = self.documents[player_id]
+            document["updated_at"] = datetime.now(timezone.utc).isoformat()
+            json_temporary.write_text(json.dumps(document, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            json_temporary.replace(json_path)
             self._dirty.discard(player_id)
 
     def close(self):
