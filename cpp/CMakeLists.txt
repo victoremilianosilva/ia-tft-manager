@@ -324,6 +324,11 @@ if(BUILD_TESTING)
     enable_tft_test_assertions(test_board_evaluation)
     add_test(NAME test_board_evaluation COMMAND test_board_evaluation)
 
+    add_executable(test_strategy_policy tests/test_strategy_policy.cpp)
+    configure_tft_module(test_strategy_policy)
+    enable_tft_test_assertions(test_strategy_policy)
+    add_test(NAME test_strategy_policy COMMAND test_strategy_policy)
+
     add_executable(test_reward_model tests/test_reward_model.cpp)
     target_include_directories(test_reward_model PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
     add_test(NAME test_reward_model COMMAND test_reward_model)
