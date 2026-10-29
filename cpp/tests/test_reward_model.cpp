@@ -297,6 +297,9 @@ int main() {
     require_close(strategy_action_reward(0, 2, 40, 35, 80.0, 3,
                                          false, false, false, false),
                   -0.09, "ECON strongly discourages premature XP below interest cap");
+    require_close(strategy_action_reward(0, 2, 50, 46, 80.0, 3,
+                                         false, false, false, false),
+                  -0.09, "ECON protects the interest floor when XP starts at 50 gold");
     require_close(strategy_action_reward(0, 1, 40, 38, 80.0, 3,
                                          false, true, false, false),
                   0.0, "ECON permits an improved reroll without preferring it to saving");
