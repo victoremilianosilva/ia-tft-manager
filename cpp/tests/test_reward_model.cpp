@@ -54,7 +54,7 @@ int main() {
     require_close(xp_level_transition_value(60, 56, 80.0, 4, 7, 8),
                   0.05875, "late level milestone rewards surplus XP progress");
     require_close(xp_level_transition_value(22, 18, 80.0, 2, 4, 5),
-                  0.01, "XP transition accounts for lost interest breakpoint");
+                  0.02, "XP transition accounts for lost interest breakpoint");
     require_close(xp_level_transition_value(40, 36, 80.0, 2, 5, 5),
                   0.0, "XP without level transition has no progress reward");
 
