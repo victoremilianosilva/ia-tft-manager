@@ -99,7 +99,7 @@ class AuditWindow(QMainWindow):
         header.addWidget(self.export_button)
         layout.addLayout(header)
 
-        self.status = QLabel("Selecione a pasta da partida. O auditor lê logs estruturados e legados sem alterar os arquivos.")
+        self.status = QLabel("Logs novos incluem estado antes/depois, máscaras legais, diagnóstico da política, recompensas por canal e UUIDs. Partidas antigas são auditadas conforme os campos registrados.")
         self.status.setWordWrap(True)
         layout.addWidget(self.status)
         self.tabs = QTabWidget()
@@ -129,9 +129,13 @@ class AuditWindow(QMainWindow):
         if folder is None or not folder.is_dir():
             QMessageBox.warning(self, "Pasta inválida", "Selecione uma pasta de partida existente.")
             return
-        logs = list(folder.glob("player_*_log.json")) + list(folder.glob("player_*_log.tft"))
+        logs = list(folder.glob("player_*_log.json"))
         if not logs:
-            logs = list(folder.rglob("player_*_log.json")) + list(folder.rglob("player_*_log.tft"))
+            logs = list(folder.glob("player_*_log.tft"))
+        if not logs:
+            logs = list(folder.rglob("player_*_log.json"))
+        if not logs:
+            logs = list(folder.rglob("player_*_log.tft"))
         if not logs:
             QMessageBox.warning(self, "Logs não encontrados", "A pasta não contém player_*_log.json nem player_*_log.tft.")
             return
@@ -208,12 +212,71 @@ class AuditWindow(QMainWindow):
             f"Jogadores: {', '.join(map(str, report.get('players_seen', []))) or 'nenhum'}",
             f"Entradas estruturadas: {report.get('entries_read', 0)}",
             f"Diagnósticos ausentes: {report.get('diagnostics_missing', 0)}",
+            f"Decisões reconstruídas: {len(report.get('decision_timeline', []))}",
+            f"Snapshots de máscaras: {sum(x.get('mask_snapshots', 0) for x in report.get('decision_audit_metrics', {}).values())}",
+            f"Canais de recompensa completos: {sum(x.get('reward_channels_complete', 0) for x in report.get('decision_audit_metrics', {}).values())}",
             f"Achados totais: {len(issues)}",
             f"Severidade: CRITICAL={counts['CRITICAL']} | HIGH={counts['HIGH']} | MEDIUM={counts['MEDIUM']} | LOW={counts['LOW']}",
             "", "O relatório completo inclui evidências e limitações; alertas são pistas para investigação, não causalidade automática."
         ]
         self._add_text(layout, "\n".join(overview))
         self._add_chart(layout, "Achados por severidade", list(counts.items()))
+
+        layout = self._page("Decisões")
+        decisions = report.get("decision_timeline", [])
+        summary = []
+        for player, data in sorted(report.get("decision_audit_metrics", {}).items()):
+            summary.append(f"{player}: ações={data.get('actions', 0)} | máscaras={data.get('mask_snapshots', 0)} | tipo bloqueado={data.get('chosen_type_disabled', 0)} | falhas de parâmetros={data.get('full_action_validation_failed', 0)} | estado completo={data.get('decision_state_complete', 0)} | recompensas completas={data.get('reward_channels_complete', 0)}")
+        self._add_text(layout, "\n".join(summary) or "Sem timeline estruturada; logs legados podem não conter contexto completo.")
+        table = QTableWidget(len(decisions), 16)
+        table.setHorizontalHeaderLabels(["Jogador", "Round", "Step", "Ação", "Estratégia", "HP", "Nível", "Ouro", "Juros", "Força", "Direção/foco", "Tipos legais", "Tipo permitido", "Parâmetros válidos", "Rew ação/combate/colocação", "UUIDs adicionados/removidos"])
+        table.setAlternatingRowColors(True)
+        for row, d in enumerate(decisions):
+            c, m, r, u = d.get("decision_context") or {}, d.get("legal_action_audit") or {}, d.get("reward_components") or {}, d.get("unit_changes") or {}
+            legal = ", ".join(str(x.get("name", x.get("id"))) for x in m.get("legal_action_types", [])) or "—"
+            ids = "+" + ",".join(str(x.get("uuid")) for x in u.get("added", [])) + " / -" + ",".join(str(x.get("uuid")) for x in u.get("removed", []))
+            values = [d.get("player"), d.get("round"), d.get("step"), d.get("action_name") or d.get("raw_action"), d.get("strategy"), c.get("hp"), c.get("level"), c.get("gold"), c.get("interest_if_resolved_now"), c.get("board_power"), f"{c.get('composition_direction') or '—'} / {c.get('composition_focus') or '—'}", legal, m.get("chosen_type_enabled"), m.get("chosen_action_fully_validated"), " / ".join(_fmt(r.get(k)) for k in ("action", "combat", "placement")), ids]
+            for col, value in enumerate(values):
+                item = QTableWidgetItem(_fmt(value))
+                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                table.setItem(row, col, item)
+        table.horizontalHeader().setStretchLastSection(True)
+        table.resizeColumnsToContents()
+        layout.addWidget(table, 1)
+
+        layout = self._page("Máscaras & política")
+        rows = []
+        table = QTableWidget(len(decisions), 9)
+        table.setHorizontalHeaderLabels(["Jogador", "Round", "Step", "Ação", "Status", "Tipos legais", "Tipo permitido", "Validação completa", "Entropia / Value"])
+        for row, d in enumerate(decisions):
+            m, p = d.get("legal_action_audit") or {}, d.get("policy_diagnostics") or {}
+            values = [d.get("player"), d.get("round"), d.get("step"), d.get("action_name"), p.get("status", m.get("policy_status", "—")), ", ".join(str(x.get("name", x.get("id"))) for x in m.get("legal_action_types", [])), m.get("chosen_type_enabled"), m.get("chosen_action_fully_validated"), f"{_fmt(p.get('entropy'))} / {_fmt(p.get('value_estimate'))}"]
+            for col, value in enumerate(values):
+                item = QTableWidgetItem(_fmt(value))
+                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                table.setItem(row, col, item)
+            rows.append((d, m, p))
+        table.horizontalHeader().setStretchLastSection(True)
+        table.resizeColumnsToContents()
+        details = QPlainTextEdit()
+        details.setReadOnly(True)
+        def show_details(row, _col):
+            if 0 <= row < len(rows):
+                d, m, p = rows[row]
+                details.setPlainText(json.dumps({
+                    "decision_context": d.get("decision_context"), "action": d.get("action"),
+                    "legal_action_audit": m, "policy_diagnostics": p,
+                    "action_mask_after": d.get("action_mask_after"),
+                    "reward_components": d.get("reward_components"),
+                    "economic_diagnostics": d.get("economic_diagnostics"),
+                    "unit_changes": d.get("unit_changes"),
+                }, ensure_ascii=False, indent=2))
+        table.cellClicked.connect(show_details)
+        layout.addWidget(table, 2)
+        layout.addWidget(QLabel("Máscara bruta, distribuição da política, estado e recompensa da decisão selecionada:"))
+        layout.addWidget(details, 2)
+        if table.rowCount():
+            show_details(0, 0)
 
         layout = self._page("Economia")
         econ = report.get("economic_action_metrics", {})

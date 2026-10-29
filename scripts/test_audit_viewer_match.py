@@ -4,6 +4,7 @@ import unittest
 from pathlib import Path
 
 from scripts import audit_viewer_match as audit
+from viewer.player_logs import PlayerJsonLogWriter, _mask_audit
 
 
 def unit(name, **extra):
@@ -43,6 +44,45 @@ class UnifiedAuditRegressionTests(unittest.TestCase):
             self.assertEqual(metrics["timeline"][0]["gold_after"], 34)
             self.assertEqual(metrics["timeline"][0]["income"]["interest"], 3)
             self.assertEqual(metrics["timeline"][0]["conformity_candidate"], "FAST8_REROLL_REVIEW")
+
+    def test_mask_audit_preserves_legal_alternatives(self):
+        mask = {"type_mask": [1, 1, 1, 0, 0, 1, 1, 0, 0], "shop_mask": [1, 0, 1, 0, 0],
+                "bench_source_mask": [1] + [0] * 8, "board_target_mask": [0] * 28,
+                "board_source_mask": [0] * 28, "bench_to_board_target_masks": [[0] * 28 for _ in range(9)],
+                "board_move_target_masks": [[0] * 28 for _ in range(28)]}
+        result = _mask_audit([0, 2, 0, 0, 0, 0], mask)
+        self.assertTrue(result["chosen_type_enabled"])
+        self.assertTrue(result["chosen_action_fully_validated"])
+        self.assertEqual(result["legal_shop_slots"], [0, 2])
+        self.assertIn({"id": 1, "name": "REROLL"}, result["legal_action_types"])
+
+    def test_writer_persists_structured_json_sidecars(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            writer = PlayerJsonLogWriter(root, match_id="test-match", checkpoint_sha256="abc",
+                seed=7, deterministic=True, catalog_path=root / "missing-catalog.json")
+            writer.close()
+            doc = json.loads((root / "player_1_log.json").read_text(encoding="utf-8"))
+            self.assertEqual(doc["schema_version"], 2)
+            self.assertEqual(doc["match_id"], "test-match")
+            self.assertTrue((root / "player_1_log.tft").is_file())
+
+    def test_decision_audit_crosses_mask_reward_and_uuid(self):
+        entry = {"event_type": "action", "sequence_id": 1, "step": 10, "round": 4, "payload": {
+            "action": [0, 0, 0, 0, 0, 0], "action_name": "BUY",
+            "decision_context": {"hp": 72, "level": 5, "gold": 22, "xp": 4, "board_power": 40, "strategy": "STABILIZE"},
+            "legal_action_audit": {"chosen_type_enabled": True, "chosen_action_fully_validated": True,
+                                   "legal_action_types": [{"id": 0, "name": "BUY"}]},
+            "action_mask_before": {"type_mask": [1]},
+            "reward_components": {"action": 0.1, "combat": 0.0, "placement": 0.0, "returned_reward": 0.1},
+            "state_before": {"board": [], "bench": []},
+            "state_after": {"board": [], "bench": [unit("A", uuid="unit-uuid")]}}}
+        report = {"issues": []}
+        audit.audit_decision_context([entry], "Jogador 1", report)
+        metrics = report["decision_audit_metrics"]["Jogador 1"]
+        self.assertEqual(metrics["mask_snapshots"], 1)
+        self.assertEqual(metrics["reward_channels_complete"], 1)
+        self.assertEqual(report["decision_timeline"][0]["unit_changes"]["added"][0]["uuid"], "unit-uuid")
 
     def test_uuid_signature_distinguishes_duplicate_champions(self):
         state = {"board": [], "bench": [unit("A", uuid="unit-1"), unit("A", uuid="unit-2")]}

@@ -803,6 +803,91 @@ def audit_positioning_and_composition(entries: list[dict], player: str, report: 
             missing_counts.clear()
             missing_reported.clear()
 
+def _decision_units(state: dict) -> dict[str, dict]:
+    result = {}
+    for location, slot, unit in iter_units(state):
+        uid = str(unit.get("uuid") or "").strip()
+        if uid:
+            result[uid] = {"uuid": uid, "champion_id": unit_name(unit), "location": location,
+                           "slot": slot, "star": int(unit.get("star", 1) or 1),
+                           "items": list(unit.get("items") or unit.get("item_ids") or [])}
+    return result
+
+
+def audit_decision_context(entries: list[dict], player: str, report: dict) -> None:
+    timeline = report.setdefault("decision_timeline", [])
+    stats = report.setdefault("decision_audit_metrics", {}).setdefault(player, {
+        "actions": 0, "mask_snapshots": 0, "mask_missing": 0, "chosen_type_enabled": 0,
+        "chosen_type_disabled": 0, "full_action_validation_available": 0,
+        "full_action_validation_failed": 0, "decision_state_complete": 0,
+        "decision_state_missing": 0, "reward_channels_complete": 0,
+        "reward_channels_partial": 0, "by_strategy_action": {}, "by_action": {},
+        "by_strategy": {}, "unit_identity_observations": 0, "unit_additions": 0, "unit_removals": 0})
+    for entry in sorted(entries, key=lambda e: (e.get("sequence_id", 0), e.get("step", 0))):
+        if not isinstance(entry, dict) or entry.get("event_type") != "action":
+            continue
+        p = entry.get("payload") or {}
+        before, after = p.get("state_before") or {}, p.get("state_after") or {}
+        ctx, mask, rewards = p.get("decision_context") or {}, p.get("legal_action_audit") or {}, p.get("reward_components") or {}
+        action_name = str(p.get("action_name") or mask.get("chosen_action_name") or "UNKNOWN")
+        strategy = str(ctx.get("strategy") or before.get("strategy_name") or "UNKNOWN")
+        stats["actions"] += 1
+        for bucket, key in (("by_action", action_name), ("by_strategy", strategy), ("by_strategy_action", f"{strategy}::{action_name}")):
+            stats[bucket][key] = stats[bucket].get(key, 0) + 1
+        if isinstance(p.get("action_mask_before"), dict) and p["action_mask_before"]:
+            stats["mask_snapshots"] += 1
+        else:
+            stats["mask_missing"] += 1
+        if mask.get("chosen_type_enabled") is True:
+            stats["chosen_type_enabled"] += 1
+        elif mask.get("chosen_type_enabled") is False:
+            stats["chosen_type_disabled"] += 1
+            add_issue(report, "HIGH", "ACTION_TYPE_MASK_MISMATCH", player, get_round(entry), entry.get("step"),
+                      "Ação com tipo desabilitado na máscara capturada antes da decisão.",
+                      {"action": p.get("action"), "action_name": action_name, "strategy": strategy,
+                       "legal_action_types": mask.get("legal_action_types")})
+        full = mask.get("chosen_action_fully_validated")
+        if full is not None:
+            stats["full_action_validation_available"] += 1
+            if full is False:
+                stats["full_action_validation_failed"] += 1
+                add_issue(report, "HIGH", "ACTION_PARAMETER_MASK_MISMATCH", player, get_round(entry), entry.get("step"),
+                          "Parâmetros da ação não correspondem à máscara condicional capturada.",
+                          {"action": p.get("action"), "action_name": action_name,
+                           "legal_action_audit": {k: v for k, v in mask.items() if k != "raw_mask"}})
+        if all(ctx.get(k) is not None for k in ("hp", "level", "gold", "xp", "board_power")):
+            stats["decision_state_complete"] += 1
+        else:
+            stats["decision_state_missing"] += 1
+        if all(rewards.get(k) is not None for k in ("action", "combat", "placement", "returned_reward")):
+            stats["reward_channels_complete"] += 1
+        else:
+            stats["reward_channels_partial"] += 1
+        ub, ua = _decision_units(before), _decision_units(after)
+        added = [ua[k] for k in sorted(ua.keys() - ub.keys())]
+        removed = [ub[k] for k in sorted(ub.keys() - ua.keys())]
+        if ub or ua:
+            stats["unit_identity_observations"] += 1
+            stats["unit_additions"] += len(added)
+            stats["unit_removals"] += len(removed)
+        timeline.append({
+            "player": player, "step": entry.get("step"), "sequence_id": entry.get("sequence_id"),
+            "round": get_round(entry), "timestamp": entry.get("timestamp"),
+            "action": p.get("action"), "action_name": action_name, "strategy": strategy,
+            "strategy_reason": ctx.get("strategy_reason") or before.get("strategy_reason"),
+            "decision_context": ctx, "state_before": before, "state_after": after,
+            "legal_action_audit": mask, "action_mask_before": p.get("action_mask_before"),
+            "action_mask_after": p.get("action_mask_after"),
+            "policy_diagnostics": p.get("policy_diagnostics") or {},
+            "reward_components": rewards, "reward": p.get("reward"),
+            "economic_diagnostics": p.get("economic_diagnostics") or {},
+            "unit_changes": {"added": added, "removed": removed},
+            "composition_diagnostics": p.get("composition_diagnostics") or {},
+            "item_audit": p.get("item_audit") or {}})
+    for key in ("by_action", "by_strategy", "by_strategy_action"):
+        stats[key] = dict(sorted(stats[key].items()))
+
+
 def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_window: int) -> None:
     player_id = doc.get("player_number")
     if player_id is None:
@@ -817,6 +902,7 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
     audit_board_quality(doc["entries"], player, report)
     audit_positioning_and_composition(doc["entries"], player, report)
     audit_team_progression(doc["entries"], player, report)
+    audit_decision_context(doc["entries"], player, report)
     report["log_files"].append(str(path))
 
     entries = sorted(doc["entries"], key=lambda e: (e.get("sequence_id", 0), e.get("step", 0)))
@@ -1203,6 +1289,24 @@ def markdown_report(report: dict) -> str:
             )
         lines += ["", "As flags FAST8/SLOWROLL/STABILIZE/ECON são candidatos de revisão, não violações definitivas: logs legados não incluem a máscara legal completa nem sempre registram HP, nível e alternativas no mesmo instante.", ""]
 
+    if report.get("decision_audit_metrics"):
+        lines += ["## Auditoria decisão por decisão", "",
+                  "| Jogador | Ações | Máscaras | Tipo permitido | Tipo bloqueado | Validação completa | Falhas | Estado completo | Recompensas completas | UUIDs observados | Adições/remoções |",
+                  "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+        for player, m in sorted(report["decision_audit_metrics"].items()):
+            lines.append(f"| {player} | {m['actions']} | {m['mask_snapshots']} | {m['chosen_type_enabled']} | {m['chosen_type_disabled']} | {m['full_action_validation_available']} | {m['full_action_validation_failed']} | {m['decision_state_complete']} | {m['reward_channels_complete']} | {m['unit_identity_observations']} | {m['unit_additions']}/{m['unit_removals']} |")
+        lines += ["", "### Timeline", "",
+                  "| Jogador | Round | Step | Ação | Estratégia | HP | Nível | Ouro | Juros | Força | Direção/foco | Tipos legais | Tipo permitido | Parâmetros válidos | Rew ação | Combate | Colocação | UUIDs adicionados/removidos |",
+                  "|---|---|---:|---|---|---:|---:|---:|---:|---:|---|---|---|---|---:|---:|---:|---|"]
+        cell = lambda v: str(v if v is not None else "—").replace("|", "\\|").replace("\n", " ")
+        for d in report.get("decision_timeline", []):
+            c, r, m, u = d.get("decision_context") or {}, d.get("reward_components") or {}, d.get("legal_action_audit") or {}, d.get("unit_changes") or {}
+            added = ",".join(str(x.get("uuid")) for x in u.get("added", [])) or "—"
+            removed = ",".join(str(x.get("uuid")) for x in u.get("removed", [])) or "—"
+            legal = ", ".join(x.get("name", str(x.get("id"))) for x in m.get("legal_action_types", []))
+            lines.append(f"| {cell(d.get('player'))} | {cell(d.get('round'))} | {cell(d.get('step'))} | {cell(d.get('action_name'))} | {cell(d.get('strategy'))} | {cell(c.get('hp'))} | {cell(c.get('level'))} | {cell(c.get('gold'))} | {cell(c.get('interest_if_resolved_now'))} | {cell(c.get('board_power'))} | {cell(str(c.get('composition_direction') or '—') + '/' + str(c.get('composition_focus') or '—'))} | {cell(legal)} | {cell(m.get('chosen_type_enabled'))} | {cell(m.get('chosen_action_fully_validated'))} | {cell(r.get('action'))} | {cell(r.get('combat'))} | {cell(r.get('placement'))} | +{cell(added)} / -{cell(removed)} |")
+        lines += ["", "O audit_report.json mantém as máscaras brutas, distribuições da política, estados antes/depois, componentes de recompensa e mudanças por UUID. Null indica campo ausente, não zero.", ""]
+
     if report.get("economic_action_metrics"):
         lines += ["## Auditoria econômica por ação", "",
                   "| Jogador | Ações | Ouro gasto | Ouro recuperado | Juros potenciais perdidos | XP sem level-up | Level-up sem unidade implantada | Rerolls sem ganho imediato | Reroll → PASS | Ouro final | Força final |",
@@ -1309,7 +1413,7 @@ def markdown_report(report: dict) -> str:
               "- Achados CRITICAL/HIGH são sinais fortes para investigar, não prova isolada da causa.",
               "- Troca de comp direction pode ser legítima conforme loja, unidades, nível e economia.",
               "- A checagem de fusão conta apenas unidades compradas no tabuleiro+banco, nunca as da loja.",
-              "- JSON e TFT são usados de forma complementar: JSON para estado/estratégia; TFT para corroborar loops de movimento. Alertas de composição do TFT foram desativados para não duplicar episódios.",
+              "- O JSON estruturado é a fonte primária para estado de decisão, máscaras, política e recompensas; .tft é analisado apenas para jogadores sem sidecar JSON."
               "- A auditoria não pode decidir se uma compra era ótima sem comparar loja, ouro, limite do banco, máscaras e avaliação de composição no mesmo estado.",
               "- Uma fusão só pode ser confirmada com segurança se o log registrar cópias elegíveis antes/depois e o evento de merge; contar cópias é apenas um indício.",
               "- Alertas de posicionamento dependem de role/row nos dados; em tabuleiro achatado assume-se grade 4x7 com rows 0-1 na frontline, convenção a validar no Viewer.",
@@ -1338,8 +1442,9 @@ def main() -> int:
             json_files = sorted(source.rglob("player_*_log.json"))
         if not tft_files:
             tft_files = sorted(source.rglob("player_*_log.tft"))
-        # JSON fornece estado estruturado; TFT complementa movimentos que o JSON não reconstrói bem.
-        files = json_files + tft_files
+        # Structured JSON sidecars are authoritative; avoid double-counting matching .tft files.
+        json_stems = {p.stem for p in json_files}
+        files = json_files + [p for p in tft_files if p.stem not in json_stems]
         default_out = source / "audit"
     else:
         parser.error(f"caminho não existe: {source}")
@@ -1348,6 +1453,7 @@ def main() -> int:
               "composition_direction_metrics": {},
               "board_quality_metrics": {},
               "team_progression_metrics": {},
+              "decision_audit_metrics": {}, "decision_timeline": [],
               "entries_read": 0, "diagnostics_missing": 0, "issues": [], "notes": [],
               "mask_note_added": False}
     for path in files:
@@ -1370,6 +1476,7 @@ def main() -> int:
             seen.add(key)
             unique.append(item)
     report["issues"] = unique
+    report["decision_timeline"].sort(key=lambda e: (str(e.get("player")), e.get("step") or 0, e.get("sequence_id") or 0))
     report["players_seen"] = sorted(report["players_seen"], key=lambda x: int(x) if x.isdigit() else 9999)
     report["summary"] = dict(Counter(x["severity"] for x in unique))
     out_dir = args.out_dir or default_out
