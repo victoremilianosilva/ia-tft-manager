@@ -3872,9 +3872,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             economy.gold,
             static_cast<double>(this->info.hp),
             static_cast<int>(lobby.stage),
-            (buy_strategy_approved || buy_completes_upgrade || buy_builds_pair),
-            reroll_new_best_fit > reroll_old_best_fit,
-            economy.level > old_level,
+            success && (buy_strategy_approved || buy_completes_upgrade || buy_builds_pair),
+            success && reroll_new_best_fit > reroll_old_best_fit,
+            success && economy.level > old_level,
             active_strategy_id == 2 || active_strategy_id == 3);
         const double action_gold_reward =
             reward_model::gold_change_reward(old_gold, economy.gold);
