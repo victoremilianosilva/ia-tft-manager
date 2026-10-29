@@ -256,9 +256,21 @@ class AuditWindow(QMainWindow):
 
         layout = self._page("Itens")
         item_lines = []
-        for player, data in sorted(progression.items()):
-            item_lines.append(f"{player}: estado final — {data.get('final_item_state', 'não registrado')}")
-        self._add_text(layout, "\n".join(item_lines) or "O log atual pode não expor todos os detalhes de componentes, bigornas e transferência de itens. Ausência de dados não significa ausência de ações.")
+        text_metrics = report.get("text_log_metrics", {})
+        for player, data in sorted(text_metrics.items()):
+            action_counts = data.get("action_counts", {})
+            item_lines.append(
+                f"{player}: snapshots de inventário={data.get('item_snapshots', 0)} | "
+                f"snapshots com itens/componentes={data.get('item_nonempty_snapshots', 0)} | "
+                f"ações de item identificadas={action_counts.get('ITEM', 0)}"
+            )
+            item_events = [event for event in data.get("timeline", []) if event.get("action") == "ITEM"]
+            for event in item_events[:100]:
+                item_lines.append(
+                    f"  linha {event.get('line')} · round {event.get('round')} · "
+                    f"{event.get('raw_action')} · recompensa {event.get('reward')}"
+                )
+        self._add_text(layout, "\n".join(item_lines) or "Nenhum snapshot textual de itens encontrado. Os logs antigos podem registrar apenas componentes/itens visíveis no fim do round, sem histórico completo de bigorna, transferência ou equipamento.")
 
         layout = self._page("Loops e movimentos")
         movement_issues = [x for x in issues if "LOOP" in str(x.get("code", "")).upper() or "MOVE" in str(x.get("code", "")).upper() or "CYCLE" in str(x.get("code", "")).upper()]
@@ -276,7 +288,9 @@ class AuditWindow(QMainWindow):
             f"Diagnósticos ausentes: {report.get('diagnostics_missing', 0)}",
             "", "Limitações registradas pelo analisador:",
             *[f"- {note}" for note in report.get("notes", [])],
-            "", "Importante: uma métrica ausente é marcada como não disponível; não deve ser interpretada como zero."
+            "", "Importante: uma métrica ausente é marcada como não disponível; não deve ser interpretada como zero.",
+            "Logs legados em texto não registram a máscara completa de ações legais nem os canais de recompensa separados; nesses casos a timeline contém recompensa total e flags de revisão, não uma prova de que a ação era ótima.",
+            f"Decisões reconstruídas: {len(report.get('decision_timeline', []))}"
         ]))
         layout = self._page("Achados")
         issue_rows = sorted(issues, key=lambda x: ({"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}.get(x.get("severity"), 4), str(x.get("player")), str(x.get("step"))))
