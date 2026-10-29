@@ -30,7 +30,7 @@ UNIT_RE = re.compile(r"\[([^\[\]]+\|[^\[\]]+)\]")
 
 def parse_log(path: Path) -> dict:
     text = path.read_text(encoding="utf-8-sig")
-    moves, meta_events, purchases, strategy_events, rounds = [], [], [], [], []
+    moves, meta_events, purchases, strategy_events, rounds, synergies = [], [], [], [], [], []
     selected_name = None
     for line_no, line in enumerate(text.splitlines(), 1):
         mm = MOVE_RE.search(line)
@@ -63,6 +63,10 @@ def parse_log(path: Path) -> dict:
         rm = ROUND_RE.search(line)
         if rm:
             rounds.append({"line": line_no, **{k: int(v) for k, v in rm.groupdict().items()}})
+        ym = SYNERGY_RE.search(line)
+        if ym:
+            synergies.append({"line": line_no, "name": ym.group("name").strip(),
+                              "level": int(ym.group("level"))})
 
     # A reverse is only a textual oscillation candidate: labels are not stable
     # unit identities and the legacy format has no complete per-action snapshots.
@@ -93,6 +97,23 @@ def parse_log(path: Path) -> dict:
     candidate_names = sorted({e["composition"] for e in meta_events if e["event"] == "candidate"})
     selected_names = sorted({e.get("best", "") for e in selected_events})
     latest = strategy_events[-1] if strategy_events else {}
+    placement_match = PLACEMENT_RE.search(text)
+    board_sections = text.split("--- CONFIGURAÇÃO DO TABULEIRO ---")
+    final_board = []
+    if len(board_sections) > 1:
+        final_section = board_sections[-1].split("--- ESTADO DO BANCO ---", 1)[0]
+        for token in UNIT_RE.findall(final_section):
+            parts = token.split("|")
+            if len(parts) >= 3 and parts[0].strip() not in (".", " . ", "VAZIO"):
+                final_board.append({"display": token, "name": parts[0].strip(),
+                                    "role": parts[1].strip(), "star": parts[2].strip()})
+    latest_opgg_source = next((e for e in reversed(strategy_events)
+                               if (e.get("source") or "").startswith("OP.GG")), None)
+    selected_comp_names = {e.get("best", "") for e in selected_events}
+    executed_meta = bool(latest_opgg_source and any(
+        name.casefold() in (latest_opgg_source.get("source") or "").casefold()
+        for name in selected_comp_names if name
+    ))
     return {
         "file": str(path),
         "bytes": len(text.encode("utf-8")),
@@ -106,6 +127,12 @@ def parse_log(path: Path) -> dict:
             "selection_count": len(selected_events),
             "strategy_direction_events": strategy_events,
             "last_strategy": latest,
+            "selected_to_execution": {
+                "status": "executed_source_observed" if executed_meta else
+                          ("selected_but_execution_not_proven" if selected_events else "not_selected"),
+                "last_opgg_source": latest_opgg_source,
+                "selected_names": selected_names,
+            },
             "candidate_to_selection": [
                 {"composition": e.get("best"), "line": e["line"],
                  "selected_has_matching_candidate": e.get("best") in candidate_names}
@@ -114,6 +141,9 @@ def parse_log(path: Path) -> dict:
         },
         "purchases": purchases,
         "rounds": rounds,
+        "synergy_events": synergies,
+        "final_board_units": final_board,
+        "final_placement": int(placement_match.group("place")) if placement_match else None,
         "limitations": [
             "Legacy .tft movement labels do not contain unit UUIDs or full before/after snapshots.",
             "Textual reversals are candidates for replay, not proof of an exact state cycle.",
