@@ -32,6 +32,24 @@ PASS = [6, 0, 0, 0, 0, 0]
 MOVEMENT_TYPES = {3, 4}
 
 
+def _reward_component_snapshot(info, player_id, total_reward):
+    """Expose reward channels separately when the native adapter provides them."""
+    result = {"total_reward": total_reward}
+    for key in ("action_rewards", "combat_rewards", "placement_rewards"):
+        values = info.get(key)
+        if isinstance(values, (list, tuple, np.ndarray)) and player_id < len(values):
+            try:
+                result[key.removesuffix("_rewards")] = float(values[player_id])
+            except (TypeError, ValueError):
+                result[key.removesuffix("_rewards")] = None
+        else:
+            result[key.removesuffix("_rewards")] = None
+    result["all_native_channels_available"] = all(
+        result.get(key) is not None for key in ("action", "combat", "placement")
+    )
+    return result
+
+
 def _mask_batch(masks, player_ids, device):
     keys = masks[player_ids[0]].keys()
     return {
@@ -86,6 +104,98 @@ def _mask_allows(action, masks):
         source = int(action[2])
         return 0 <= source < 9 and bool(masks["bench_source_mask"][source])
     return True
+
+
+def _legal_alternatives(action, masks, player):
+    """Compact, human-readable legal alternatives from the exact PPO mask."""
+    alternatives = []
+    type_mask = np.asarray(masks.get("type_mask", []), dtype=bool).reshape(-1)
+    labels = {0: "BUY", 1: "BUY_XP", 2: "REROLL", 3: "MOVE_BENCH_TO_BOARD",
+              4: "MOVE_BOARD", 5: "SELL", 6: "PASS", 7: "ITEM_COMPONENT",
+              8: "ITEM_EQUIP"}
+    for kind, allowed in enumerate(type_mask):
+        if not allowed:
+            continue
+        entry = {"type": int(kind), "label": labels.get(int(kind), f"TYPE_{kind}")}
+        if kind == 0:
+            shop_mask = np.asarray(masks.get("shop_mask", []), dtype=bool).reshape(-1)
+            offers = player.get("shop", [])
+            entry["slots"] = [
+                {"slot": int(slot),
+                 "champion_id": (offers[slot].get("champion_id") if slot < len(offers) and isinstance(offers[slot], dict) else None)}
+                for slot, allowed_slot in enumerate(shop_mask) if allowed_slot
+            ]
+        elif kind == 3:
+            source_mask = np.asarray(masks.get("bench_move_source_mask", []), dtype=bool).reshape(-1)
+            target_masks = np.asarray(masks.get("bench_to_board_target_masks", []), dtype=bool)
+            entry["moves"] = [
+                {"source_bench_slot": int(src), "legal_board_targets":
+                 np.flatnonzero(target_masks[src]).astype(int).tolist()}
+                for src, allowed_src in enumerate(source_mask)
+                if allowed_src and src < len(target_masks)
+            ]
+        elif kind == 4:
+            source_mask = np.asarray(masks.get("board_source_mask", []), dtype=bool).reshape(-1)
+            target_masks = np.asarray(masks.get("board_move_target_masks", []), dtype=bool)
+            entry["moves"] = [
+                {"source_board_slot": int(src), "legal_board_targets":
+                 np.flatnonzero(target_masks[src]).astype(int).tolist()}
+                for src, allowed_src in enumerate(source_mask)
+                if allowed_src and src < len(target_masks)
+            ]
+        elif kind == 5:
+            sell_mask = np.asarray(masks.get("bench_source_mask", []), dtype=bool).reshape(-1)
+            entry["sellable_bench_slots"] = np.flatnonzero(sell_mask).astype(int).tolist()
+        alternatives.append(entry)
+    return alternatives
+
+
+def _economy_diagnostic(player, strategy, legal_alternatives, round_index, selected_action):
+    """Flag only evidence-backed candidates; legal offers are not automatically useful."""
+    gold = int(player.get("gold", 0))
+    hp = float(player.get("hp", 100.0))
+    level = int(player.get("level", 1))
+    expected_level = (4 if round_index <= 4 else 5 if round_index <= 8 else
+                      6 if round_index <= 12 else 7 if round_index <= 16 else 8)
+    risk = hp <= 35.0
+    has_buy = any(x["type"] == 0 and x.get("slots") for x in legal_alternatives)
+    has_xp = any(x["type"] == 1 for x in legal_alternatives)
+    has_reroll = any(x["type"] == 2 for x in legal_alternatives)
+    shop = player.get("shop", [])
+    inventory = [u for u in list(player.get("board", [])) + list(player.get("bench", []))
+                 if isinstance(u, dict) and u.get("occupied")]
+    owned_ids = {str(u.get("champion_id")) for u in inventory}
+    useful_offer = any(
+        isinstance(shop[slot].get("champion_id"), (str, int)) and
+        str(shop[slot].get("champion_id")) in owned_ids
+        for option in legal_alternatives if option["type"] == 0
+        for slot in [item.get("slot") for item in option.get("slots", [])]
+        if slot is not None and slot < len(shop) and isinstance(shop[slot], dict)
+    )
+    action_type = int(selected_action[0]) if selected_action else -1
+    action_reason = strategy.get("reason") or strategy.get("strategy_reason")
+    risk_economy = risk and gold > 50 and level < expected_level
+    progression_candidate = useful_offer or (has_xp and level < expected_level and gold > 50)
+    missed_candidate = bool(risk_economy and action_type == 6 and progression_candidate)
+    return {
+        "risk_state": risk,
+        "high_gold": gold > 50,
+        "expected_level": expected_level,
+        "below_expected_level": level < expected_level,
+        "legal_buy_available": has_buy,
+        "legal_xp_available": has_xp,
+        "legal_reroll_available": has_reroll,
+        "useful_pair_or_upgrade_offer_detected": useful_offer,
+        "level_progression_option_detected": bool(has_xp and level < expected_level and gold > 50),
+        "selected_action_type": action_type,
+        "selected_strategy_reason": action_reason,
+        "potential_missed_progress": missed_candidate,
+        "interpretation": (
+            "PASS while at risk, above 50 gold and below the level target, with a matching copy or an XP progression option; review board strength and actual marginal value."
+            if missed_candidate else
+            "No strong missed-progress signal. A legal offer alone is not evidence that spending was correct."
+        ),
+    }
 
 
 def _signature(player):
@@ -168,6 +278,9 @@ def _strategic_summary(lobby, player_id, player, strategy):
         },
         "board_two_star_count": sum(int(u.get("star", 1)) >= 2 for u in board_units),
         "bench_two_star_count": sum(int(u.get("star", 1)) >= 2 for u in bench_units),
+        "strategy": strategy.get("strategy", strategy.get("strategy_name", "")),
+        "reason": strategy.get("reason", strategy.get("strategy_reason", "")),
+        "composition_source": strategy.get("composition_source", strategy.get("source", "")),
         "composition_direction": strategy.get("composition_direction", ""),
         "composition_locked": bool(strategy.get("composition_locked", False)),
         "composition_focus": strategy.get("composition_focus", ""),
@@ -332,6 +445,16 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
                     "action_reward": action_reward,
                     "total_reward": float(total_rewards[player_id]) if player_id < len(total_rewards) else None,
                     "action_diagnostics": diagnostics[player_id],
+                    "legal_alternatives": _legal_alternatives(action, masks[player_id], before),
+                    "economy_diagnostic": _economy_diagnostic(
+                        before, strategies_before[player_id],
+                        _legal_alternatives(action, masks[player_id], before),
+                        int(before_snapshot["round"]), action
+                    ),
+                    "reward_components": _reward_component_snapshot(
+                        info, player_id,
+                        float(total_rewards[player_id]) if player_id < len(total_rewards) else None
+                    ),
                     "native_mask": _json_masks(masks[player_id]),
                     "board_bench_signature_before": repr(before_sig),
                     "board_bench_signature_after": repr(after_sig),
@@ -351,6 +474,8 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
                     "bench_before": before["bench"],
                     "shop_before": before["shop"],
                     "gold_before": int(before["gold"]),
+                    "hp_before": float(before.get("hp", 100.0)),
+                    "level_before": int(before.get("level", 1)),
                     "xp_before": int(before["xp"]),
                     "board_after": after["board"],
                     "bench_after": after["bench"],
@@ -360,6 +485,10 @@ def audit_seed(policy, device, seed, max_steps, output, fail_on_loop):
                     "item_inventory_before": list(before.get("item_inventory", [])),
                     "item_inventory_after": list(after.get("item_inventory", [])),
                     "gold_after": int(after["gold"]),
+                    "hp_after": float(after.get("hp", 100.0)),
+                    "level_after": int(after.get("level", 1)),
+                    "placement": getattr(lobby.players[player_id], "placement",
+                                         getattr(lobby.players[player_id], "rank", None)),
                     "xp_after": int(after["xp"]),
                     "strategy_before": strategic_before,
                     "strategy_after": strategic_after,

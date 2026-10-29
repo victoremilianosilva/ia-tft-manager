@@ -248,6 +248,33 @@ inline double buy_xp_timing_reward(
     return std::min(0.10, 0.10 * liquidity * urgency);
 }
 
+// Marginal value of an XP purchase that actually crosses a level boundary.
+// Urgency and the level milestone matter; crossing an interest breakpoint has
+// an explicit opportunity cost. Non-leveling XP is not rewarded as a gold sink.
+inline double xp_level_transition_value(
+    int gold_before, int gold_after, double hp, int stage,
+    int old_level, int new_level, double board_power_delta = 0.0
+) noexcept {
+    if (new_level <= old_level) return 0.0;
+    const double urgency = std::max(
+        std::clamp((45.0 - hp) / 45.0, 0.0, 1.0),
+        std::clamp((static_cast<double>(stage) - 3.0) / 4.0, 0.0, 1.0));
+    const bool key_milestone = new_level >= 4 && new_level <= 10;
+    const double milestone_value = key_milestone ? 0.035 : 0.015;
+    const double surplus = gold_before >= 50 ? 1.0
+        : (gold_before >= 40 ? 0.75 : (gold_before >= 30 ? 0.50 : 0.25));
+    const double marginal_strength = std::clamp(board_power_delta / 20.0, 0.0, 1.0);
+    double value = milestone_value + 0.045 * urgency * surplus +
+        0.025 * marginal_strength;
+    int lost_breakpoints = 0;
+    constexpr int interest_thresholds[] = {10, 20, 30, 40, 50};
+    for (const int threshold : interest_thresholds) {
+        if (gold_before >= threshold && gold_after < threshold) ++lost_breakpoints;
+    }
+    value -= 0.025 * static_cast<double>(lost_breakpoints);
+    return std::clamp(value, -0.05, 0.10);
+}
+
 // Small additional signal for useful unit acquisitions beyond the early game.
 // Requires real composition fit or upgrade progress, available bench space and
 // enough remaining gold, so this cannot reward arbitrary shop-clearing.

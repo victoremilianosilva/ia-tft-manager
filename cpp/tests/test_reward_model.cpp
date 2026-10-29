@@ -51,6 +51,13 @@ int main() {
     require_close(placement(8, 8), -1.0, "last-place terminal reward");
     require_close(placement(4, 8), 1.0 / 7.0, "middle-place terminal reward");
 
+    require_close(xp_level_transition_value(60, 56, 80.0, 4, 7, 8),
+                  0.04625, "late level milestone rewards surplus XP progress");
+    require_close(xp_level_transition_value(22, 18, 80.0, 2, 4, 5),
+                  0.01, "XP transition accounts for lost interest breakpoint");
+    require_close(xp_level_transition_value(40, 36, 80.0, 2, 5, 5),
+                  0.0, "XP without level transition has no progress reward");
+
     require_close(level(4, 1), 1.5, "level reward cap");
     require_close(economy(50, 20), 0.25 - 0.05, "economy reward");
     require_close(streak(5, 4), 0.15 + 0.08, "streak reward");

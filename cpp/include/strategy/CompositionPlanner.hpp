@@ -403,6 +403,16 @@ public:
         // Optional OP.GG catalog: use it as a candidate, not as a hard constraint.
         // Emit audit notes through planned_acquisition_notes so existing Viewer logs
         // can explain both selection and fallback.
+        const auto join_unit_ids = [](const auto& ids) {
+            std::string result;
+            for (const auto id : ids) {
+                if (!result.empty()) result += ",";
+                result += std::to_string(id);
+            }
+            return result.empty() ? std::string("none") : result;
+        };
+        const std::string meta_audit_native_ids = join_unit_ids(plan.unit_ids);
+        std::string meta_audit_candidate_ids = "none";
         std::string meta_audit_status = "not_evaluated";
         std::string meta_audit_best_name;
         double meta_audit_best_score = -std::numeric_limits<double>::infinity();
@@ -762,6 +772,8 @@ public:
                     }
                 }
 
+                // Preserve the exact candidate IDs even when the native plan wins.
+                meta_audit_candidate_ids = join_unit_ids(best_meta_ids);
                 // Require a real contextual advantage over the native planner.
                 // Meta performance is an explicit strategic prior. Require a mapped,
                 // set-compatible lineup and contextual evidence (checked above),
@@ -851,6 +863,10 @@ public:
             "; best=" + (meta_audit_best_name.empty() ? std::string("none") : meta_audit_best_name) +
             "; best_score=" + (std::isfinite(meta_audit_best_score) ? std::to_string(meta_audit_best_score) : std::string("n/a")) +
             "; native_score=" + std::to_string(meta_audit_native_score) +
+            "; native_ids=" + meta_audit_native_ids +
+            "; candidate_ids=" + meta_audit_candidate_ids +
+            "; confirmed_ids=" + join_unit_ids(plan.unit_ids) +
+            "; confirmed_carry_id=" + std::to_string(plan.main_carry_id) +
             "; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50");
         return plan;
     }
