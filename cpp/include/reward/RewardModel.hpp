@@ -119,8 +119,7 @@ inline double strategy_action_reward(
         case 0: // ECON: protect interest up to 50, but permit useful surplus spend.
             if (new_gold >= 50 && old_gold < 50) reward += 0.04;
             if (old_gold >= 50 && new_gold >= 50 &&
-                (action_type == 0 || action_type == 1 || action_type == 2) &&
-                useful_purchase && has_composition_target) reward += 0.03;
+                action_type == 0 && useful_purchase) reward += 0.03;
             if (old_gold < 50 && new_gold < old_gold && hp > 40.0 &&
                 !has_composition_target &&
                 ((action_type == 1 || action_type == 2) ||
