@@ -35,6 +35,6 @@ def test_meta_selected_is_distinct_from_executed_source_and_final_outcome():
     assert player["final_board_units"]
     assert player["synergy_events"]
     # We must not infer actual execution merely from a candidate event.
-    empty = parse_log(SESSION / "player_1_log.tft")
+    empty = parse_log(SESSION / "player_2_log.tft")
     assert empty["meta"]["selection_count"] == 0
     assert empty["meta"]["selected_to_execution"]["status"] == "not_selected"
