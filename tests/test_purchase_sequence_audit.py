@@ -75,3 +75,50 @@ def test_does_not_classify_sale_after_composition_transition_as_reversal():
     assert metrics["reversed_1"] == 0
     assert metrics["classified_sales"]["COMP_TRANSITION"] == 1
     assert not any(issue["code"] == "PURCHASE_REVERSED" for issue in report["issues"])
+
+
+def test_core_and_pair_sales_are_counted_only_after_first_comp_direction():
+    early = _unit("Briar", cost=1)
+    core = _unit("Carry", cost=4)
+    before_decision = _entry(
+        1, 1, [5, 0, 0, 0, 0, 0], "SELL",
+        _state(10, bench=[early], comp=""),
+        _state(11, bench=[], comp=""),
+    )
+    decision = _entry(
+        2, 2, [6, 0, 0, 0, 0, 0], "PASS",
+        _state(11, board=[core], comp=""),
+        _state(11, board=[core], comp="CarryTrait"),
+    )
+    after_decision = _entry(
+        3, 3, [5, 0, 0, 0, 0, 0], "SELL",
+        _state(11, bench=[core], comp="CarryTrait"),
+        _state(15, bench=[], comp="CarryTrait"),
+    )
+    report = {"issues": []}
+    audit_purchase_sequences([before_decision, decision, after_decision], "Jogador 1", report)
+    metrics = report["purchase_sequence_metrics"]["Jogador 1"]
+    assert metrics["composition_decision_found"] is True
+    assert metrics["composition_decision_round"] == "1-1"
+    assert metrics["core_pair_sales_before_comp_decision_ignored"] == 1
+    assert metrics["core_unit_sales"] == 1
+    assert metrics["core_or_pair_sales"] == 1
+    assert sum(issue["code"] == "SOLD_CORE_UNIT" for issue in report["issues"]) == 1
+
+
+def test_purchase_reversed_in_immediately_following_action_counts_reversed_1():
+    briar = _unit("Briar", cost=1)
+    bought = _entry(
+        1, 1, [0, 0, 0, 0, 0, 0], "BUY",
+        _state(10, shop=[briar]), _state(9, bench=[briar]),
+    )
+    sold = _entry(
+        2, 2, [5, 0, 0, 0, 0, 0], "SELL",
+        _state(9, bench=[briar]), _state(10, bench=[]),
+    )
+    report = {"issues": []}
+    audit_purchase_sequences([bought, sold], "Jogador 1", report)
+    metrics = report["purchase_sequence_metrics"]["Jogador 1"]
+    assert metrics["reversed_1"] == 1
+    assert metrics["reversed_2"] == 1
+    assert metrics["reversed_4"] == 1
