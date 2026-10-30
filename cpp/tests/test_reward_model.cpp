@@ -358,7 +358,7 @@ int main() {
                   0.0, "ECON permits an improved reroll without preferring it to saving");
     require_close(strategy_action_reward(0, 1, 40, 38, 80.0, 3,
                                          false, false, false, false),
-                  -0.025, "ECON discourages an unproductive reroll");
+                  -0.04, "ECON discourages an unproductive reroll");
     require_close(strategy_action_reward(0, 0, 55, 50, 80.0, 4,
                                          true, false, false, false),
                   0.03, "ECON allows useful spending from surplus above 50");
