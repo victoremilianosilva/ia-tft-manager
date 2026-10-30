@@ -52,9 +52,9 @@ int main() {
     require_close(placement(4, 8), 1.0 / 7.0, "middle-place terminal reward");
 
     require_close(xp_level_transition_value(60, 56, 80.0, 4, 7, 8),
-                  0.05875, "late level milestone rewards surplus XP progress");
+                  0.052875, "XP level reward is slightly reduced to favor useful unit purchases");
     require_close(xp_level_transition_value(22, 18, 80.0, 2, 4, 5),
-                  0.02, "XP transition accounts for lost interest breakpoint");
+                  0.018, "XP transition accounts for lost interest breakpoint");
     require_close(xp_level_transition_value(40, 36, 80.0, 2, 5, 5),
                   0.0, "XP without level transition has no progress reward");
     if (!(xp_level_transition_value(60, 56, 80.0, 4, 7, 8, 20.0) >
@@ -102,7 +102,7 @@ int main() {
     }
     require_close(unit_purchase_timing_reward(4, 51, 2, 1, 0.8, 80.0, false, false),
                   0.0, "surplus conversion must not break the 50-gold interest floor");
-    if (!(unit_purchase_timing_reward(4, 52, 2, 1, 0.8, 80.0, false, false) > 0.0)) {
+    if (!(unit_purchase_timing_reward(4, 52, 2, 1, 0.8, 80.0, false, false) > 0.08)) {
         throw std::runtime_error("useful purchase may convert surplus while preserving 50 gold");
     }
     require_close(unit_purchase_timing_reward(5, 25, 2, 1, 0.7, 80.0, false, false),
