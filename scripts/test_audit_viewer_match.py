@@ -116,12 +116,12 @@ class UnifiedAuditRegressionTests(unittest.TestCase):
         }
         full = audit.markdown_full_report(report)
         self.assertTrue(full.startswith("# Auditoria da partida TFT"))
-        self.assertIn("# Anexo detalhado — evidências por decisão", full)
-        self.assertIn("Máscaras e validação da ação", full)
-        self.assertIn('"type_mask": [', full)
-        self.assertIn('"focus_fit_score": 1.0', full)
-        self.assertIn('"inventory_after": [', full)
-        self.assertIn("Achados com evidências", full)
+        self.assertIn("## Evidências resumidas dos achados", full)
+        self.assertIn("Legalidade: tipo permitido", full)
+        self.assertNotIn('"type_mask": [', full)
+        self.assertNotIn('"focus_fit_score": 1.0', full)
+        self.assertNotIn('"inventory_after": [', full)
+        self.assertIn("Evidência adicional: gold=12", full)
 
     def test_full_report_supports_legacy_without_decisions(self):
         full = audit.markdown_full_report({
@@ -129,7 +129,7 @@ class UnifiedAuditRegressionTests(unittest.TestCase):
             "entries_read": 0, "diagnostics_missing": 0, "issues": [],
             "notes": [], "decision_timeline": [],
         })
-        self.assertIn("Índice de decisões (0 registros)", full)
+        self.assertIn("Decisões com timeline: 0", full)
 
 
 if __name__ == "__main__":
