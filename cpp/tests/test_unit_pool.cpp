@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <iostream>
+#include <random>
 #include <stdexcept>
 
 namespace {
@@ -124,6 +125,59 @@ int main(int argc, char** argv) {
                 "Reset não restaurou o estoque de um campeão."
             );
         }
+
+        // 8. O sorteio dentro do mesmo custo deve ser proporcional às
+        // cópias restantes, e não uniforme entre campeões ainda disponíveis.
+        std::int32_t scarce_id = -1;
+        std::int32_t abundant_id = -1;
+        for (const auto& champion : catalog.all()) {
+            if (champion.cost != 1) continue;
+            if (scarce_id < 0) scarce_id = champion.internal_id;
+            else if (abundant_id < 0) abundant_id = champion.internal_id;
+        }
+        require(scarce_id >= 0 && abundant_id >= 0,
+                "Catálogo precisa de dois campeões de custo 1 para testar pesos.");
+
+        for (const auto& champion : catalog.all()) {
+            if (champion.cost == 1 &&
+                champion.internal_id != scarce_id &&
+                champion.internal_id != abundant_id) {
+                while (pool.take(champion.internal_id)) {}
+            }
+        }
+        for (std::int32_t i = 0; i < pool.initial_count(scarce_id) - 1; ++i)
+            require(pool.take(scarce_id), "Falha ao deixar uma cópia do campeão escasso.");
+        require(pool.available(scarce_id) == 1 && pool.available(abundant_id) == 30,
+                "Fixture proporcional não ficou com estoques 1:30.");
+
+        std::mt19937_64 weighted_rng(0x5E7C18ULL);
+        constexpr std::int32_t kWeightedSamples = 30000;
+        std::int32_t scarce_draws = 0;
+        for (std::int32_t sample = 0; sample < kWeightedSamples; ++sample) {
+            const auto drawn = pool.draw_by_cost(1, weighted_rng);
+            require(drawn.has_value(), "Sorteio proporcional retornou vazio.");
+            if (*drawn == scarce_id) ++scarce_draws;
+            require(pool.give_back(*drawn),
+                    "Falha ao restaurar cópia após amostra estatística.");
+        }
+        // P(escasso) = 1 / (1 + 30), portanto ~968 ocorrências em 30 mil.
+        // A faixa é larga o bastante para evitar flakiness e rejeita o antigo
+        // algoritmo uniforme (que produziria aproximadamente 15 mil).
+        require(scarce_draws >= 800 && scarce_draws <= 1150,
+                "Draw_by_cost não respeitou a proporção 1:30 do estoque restante.");
+
+        // Um campeão esgotado nunca pode ser sorteado enquanto outro do
+        // mesmo custo ainda tiver cópias disponíveis.
+        require(pool.take(scarce_id), "Falha ao esgotar a última cópia escassa.");
+        for (std::int32_t sample = 0; sample < 100; ++sample) {
+            const auto drawn = pool.draw_by_cost(1, weighted_rng);
+            require(drawn && *drawn == abundant_id,
+                    "Sorteio selecionou campeão sem cópias disponíveis.");
+            require(pool.give_back(*drawn),
+                    "Falha ao devolver cópia abundante do teste.");
+        }
+        pool.reset();
+        require(pool.validate(), "Pool inválido após teste estatístico do sorteio.");
 
         std::cout << "UnitPool: OK\n";
         return 0;

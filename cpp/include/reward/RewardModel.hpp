@@ -144,9 +144,13 @@ inline double strategy_action_reward(
             // simply because the active composition aims for level eight.
             if (action_type == 1 && !reroll_improved) reward -= 0.015;
             break;
-        case 3: // SLOWROLL: reward improved rolls, but keep the signal bounded.
+        case 3: // SLOWROLL: reward improved rolls without blocking useful XP progress.
             if (action_type == 1) reward += reroll_improved ? 0.10 : -0.025;
-            if (action_type == 2 && !leveled) reward -= 0.07;
+            // Buying XP without an immediate level-up is progress, not proof of
+            // waste. Keep only a small early/safe-game nudge against leaving the
+            // intended slow-roll plan; gold/interest cost remains the main signal.
+            if (action_type == 2 && !leveled && stage <= 3 &&
+                hp > 50.0 && old_gold < 50) reward -= 0.02;
             break;
         case 4: // ALL_IN: useful immediate strength over passive saving.
             if (action_type == 0 && useful_purchase) reward += 0.06;
@@ -447,6 +451,13 @@ inline double reversed_sequence_adjustment(
     double target = -0.05
 ) noexcept {
     return std::min(0.0, target - prior_buy_reward - sale_reward_including_gold);
+}
+
+// A duplicate champion remains an upgrade path even when its copies have
+// different star levels (for example, a 2-star plus a 1-star toward 3-star).
+// Count owned unit instances, not only instances at the sold unit's star level.
+inline bool protects_upgrade_path(int owned_unit_instances) noexcept {
+    return owned_unit_instances >= 2;
 }
 
 // Selling should be attractive for low-value clutter, but not intrinsically
