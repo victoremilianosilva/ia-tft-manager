@@ -1,4 +1,4 @@
-from scripts.audit_viewer_match import audit_board_quality
+from scripts.audit_viewer_match import audit_board_quality, audit_item_state
 
 
 def test_board_quality_audit_tracks_action_delta_and_combat_context():
@@ -88,3 +88,50 @@ def test_board_quality_audit_ignores_entries_without_native_metrics():
     metrics = report["board_quality_metrics"]["Jogador 2"]
     assert metrics["actions_with_metrics"] == 0
     assert metrics["mean_quality_delta"] == 0.0
+
+
+def test_item_state_audit_reads_equipment_bag_components_and_events():
+    entries = [
+        {
+            "event_type": "action",
+            "sequence_id": 1,
+            "payload": {
+                "action_name": "EQUIP_FROM_INVENTORY",
+                "state_after": {
+                    "board": [
+                        {"occupied": True, "items": ["Deathblade"]},
+                        {"occupied": False, "items": []},
+                    ],
+                    "bench": [{"occupied": True, "items": ["GargoyleStoneplate"]}],
+                    "item_inventory": ["JeweledGauntlet"],
+                    "item_components": ["ComponentSword"],
+                },
+                "events": ["ITEM_EQUIPPED"],
+            },
+        },
+        {
+            "event_type": "action",
+            "sequence_id": 2,
+            "payload": {
+                "action_name": "PASS",
+                "state_after": {
+                    "board": [{"occupied": True, "items": ["Deathblade", "JeweledGauntlet"]}],
+                    "bench": [],
+                    "item_inventory": [],
+                    "item_components": ["ComponentSword"],
+                },
+            },
+        },
+    ]
+    report = {}
+    audit_item_state(entries, "Jogador 1", report)
+    metrics = report["item_state_metrics"]["Jogador 1"]
+    assert metrics["item_evidence_available"] is True
+    assert metrics["snapshots"] == 2
+    assert metrics["distinct_equipped_item_ids"] == [
+        "Deathblade", "GargoyleStoneplate", "JeweledGauntlet"
+    ]
+    assert metrics["final_snapshot"]["board_equipped_items"] == 2
+    assert metrics["final_snapshot"]["bag_item_count"] == 0
+    assert metrics["final_snapshot"]["component_count"] == 1
+    assert metrics["item_events"]["ITEM_EQUIPPED"] == 1
