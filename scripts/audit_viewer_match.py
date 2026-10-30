@@ -1423,118 +1423,102 @@ def markdown_report(report: dict) -> str:
 
 
 def markdown_full_report(report: dict) -> str:
-    """Build a readable, decision-level report from the complete audit JSON."""
+    """Build a compact human-readable report without embedding raw JSON snapshots."""
     lines = [
-        markdown_report(report), "", "---", "",
-        "# Anexo detalhado — evidências por decisão", "",
-        "Este anexo é derivado de audit_report.json. Ele preserva os diagnósticos por ação "
-        "e resume os estados antes/depois para leitura humana. O JSON continua sendo a fonte "
-        "bruta, incluindo máscaras condicionais e snapshots integrais.", "",
+        markdown_report(report),
+        "",
+        "---",
+        "",
+        "## Evidências resumidas dos achados",
+        "",
+        "O relatório apresenta métricas agregadas e a timeline em tabelas. "
+        "Esta seção complementa apenas os achados com o contexto mínimo da decisão; "
+        "snapshots, máscaras brutas e diagnósticos completos não são duplicados em Markdown.",
+        "",
     ]
 
-    def compact_unit(unit):
-        if not isinstance(unit, dict):
-            return unit
-        if not unit.get("occupied", True):
-            return {"occupied": False, "slot": unit.get("slot")}
-        keys = ("slot", "location", "champion_id", "name", "uuid", "star", "cost",
-                "role", "role_name", "impact", "traits", "items")
-        return {key: unit.get(key) for key in keys if key in unit}
-
-    def compact_state(state):
-        if not isinstance(state, dict) or not state:
-            return state
-        keys = (
-            "hp", "level", "xp", "gold", "interest_if_resolved_now",
-            "round_base_gold", "round_interest", "round_streak_gold", "round_win_gold",
-            "round_total_income", "board_power", "synergy_score", "positioning_score",
-            "board_quality_score", "board_quality_delta", "board_structural_score",
-            "strategy_name", "strategy_reason", "comp_direction", "comp_focus",
-            "composition_locked", "composition_strength", "composition_candidate_direction",
-            "composition_candidate_strength", "composition_focus_weights", "core_units",
-            "core_traits", "planned_units", "planned_traits", "planned_main_carry_id",
-            "planned_composition_score", "active_traits", "item_components",
-            "item_inventory", "placement",
+    decisions = {}
+    for decision in report.get("decision_timeline", []):
+        key = (
+            str(decision.get("player")),
+            str(decision.get("round")),
+            decision.get("step"),
         )
-        result = {key: state.get(key) for key in keys if key in state}
-        for location in ("board", "bench", "shop"):
-            units = state.get(location)
-            if isinstance(units, list):
-                result[location] = [compact_unit(unit) for unit in units]
-        return result
+        decisions[key] = decision
 
-    def dump(value):
-        return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, default=str)
+    def compact(value, limit=5):
+        if value is None:
+            return "—"
+        if isinstance(value, dict):
+            parts = [
+                f"{key}={item}" for key, item in value.items()
+                if isinstance(item, (str, int, float, bool)) or item is None
+            ][:limit]
+            return ", ".join(parts) if parts else f"{len(value)} campos"
+        if isinstance(value, (list, tuple, set)):
+            return f"{len(value)} itens"
+        return str(value).replace("|", "/").replace("\\n", " ")[:180]
 
-    decisions = report.get("decision_timeline", [])
-    lines += [
-        f"## Índice de decisões ({len(decisions)} registros)", "",
-        "| # | Jogador | Round | Step | Ação | Estratégia | Ouro antes | Nível |",
-        "|---:|---|---|---:|---|---|---:|---:|",
-    ]
-    for index, decision in enumerate(decisions, 1):
-        context = decision.get("decision_context") or {}
-        lines.append(
-            f"| {index} | {decision.get('player', '—')} | {decision.get('round', '—')} | "
-            f"{decision.get('step', '—')} | {decision.get('action_name') or decision.get('raw_action') or '—'} | "
-            f"{decision.get('strategy', '—')} | {context.get('gold', '—')} | {context.get('level', '—')} |"
-        )
+    issues = report.get("issues", [])
+    if not issues:
+        lines.append("Nenhum achado registrado.")
+    else:
+        for issue in issues:
+            key = (
+                str(issue.get("player")),
+                str(issue.get("round")),
+                issue.get("step"),
+            )
+            decision = decisions.get(key, {})
+            context = decision.get("decision_context") or {}
+            legal = decision.get("legal_action_audit") or {}
+            rewards = decision.get("reward_components") or {}
+            changes = decision.get("unit_changes") or {}
+            added = [unit.get("name") or unit.get("champion_id") or unit.get("uuid")
+                     for unit in changes.get("added", []) if isinstance(unit, dict)]
+            removed = [unit.get("name") or unit.get("champion_id") or unit.get("uuid")
+                       for unit in changes.get("removed", []) if isinstance(unit, dict)]
 
-    lines += ["", "## Evidência detalhada por decisão", ""]
-    for index, decision in enumerate(decisions, 1):
-        context = decision.get("decision_context") or {}
-        title = (
-            f"### {index}. {decision.get('player', 'Jogador?')} · "
-            f"{decision.get('round', '?')} · step {decision.get('step', '?')} · "
-            f"{decision.get('action_name') or decision.get('raw_action') or 'ação desconhecida'}"
-        )
-        blocks = [
-            ("Contexto capturado antes da decisão", context),
-            ("Estado anterior — campos estratégicos, unidades, banco e loja", compact_state(decision.get("state_before") or {})),
-            ("Estado posterior — campos estratégicos, unidades, banco e loja", compact_state(decision.get("state_after") or {})),
-            ("Máscaras e validação da ação", {
-                "legal_action_audit": decision.get("legal_action_audit") or {},
-                "action_mask_before": decision.get("action_mask_before"),
-                "action_mask_after": decision.get("action_mask_after"),
-            }),
-            ("Política, recompensas e economia", {
-                "policy_diagnostics": decision.get("policy_diagnostics") or {},
-                "reward_components": decision.get("reward_components") or {},
-                "economic_diagnostics": decision.get("economic_diagnostics") or {},
-            }),
-            ("Unidades, composição e itens", {
-                "unit_changes": decision.get("unit_changes") or {},
-                "composition_diagnostics": decision.get("composition_diagnostics") or {},
-                "item_audit": decision.get("item_audit") or {},
-            }),
-        ]
-        lines += [
-            title, "",
-            f"- Sequência: {decision.get('sequence_id', '—')} · horário: {decision.get('timestamp', '—')}",
-            f"- Estratégia: {decision.get('strategy', '—')} · motivo: {decision.get('strategy_reason', '—')}",
-            f"- Ação codificada: {decision.get('action', '—')} · recompensa total: {decision.get('reward', '—')}",
-            "",
-        ]
-        for heading, payload in blocks:
-            lines += [f"**{heading}**", "", "~~~json", dump(payload), "~~~", ""]
+            lines += [
+                f"### {issue.get('severity', '—')} · {issue.get('code', '—')} · "
+                f"{issue.get('player', '—')} · {issue.get('round', '—')} · "
+                f"step {issue.get('step', '—')}",
+                "",
+                str(issue.get("message", "Sem descrição.")).replace("\\n", " "),
+            ]
+            if decision:
+                lines += [
+                    f"- Decisão: **{decision.get('action_name') or decision.get('raw_action') or '—'}** "
+                    f"· estratégia {decision.get('strategy') or '—'} "
+                    f"· motivo {decision.get('strategy_reason') or '—'}",
+                    f"- Estado: HP {context.get('hp', '—')}, nível {context.get('level', '—')}, "
+                    f"ouro {context.get('gold', '—')}, força {context.get('board_power', '—')}",
+                    f"- Composição: {context.get('composition_direction') or '—'} / "
+                    f"{context.get('composition_focus') or '—'}",
+                    f"- Legalidade: tipo permitido {legal.get('chosen_type_enabled', '—')}, "
+                    f"ação validada {legal.get('chosen_action_fully_validated', '—')}",
+                    f"- Recompensas: ação {rewards.get('action', '—')}, combate "
+                    f"{rewards.get('combat', '—')}, colocação {rewards.get('placement', '—')}",
+                    f"- Unidades: +{compact(added)} / -{compact(removed)}",
+                ]
+            evidence = issue.get("evidence")
+            if isinstance(evidence, dict) and evidence:
+                summary = compact(evidence, limit=8)
+                lines.append(f"- Evidência adicional: {summary}")
+            lines.append("")
 
     lines += [
-        "## Métricas agregadas completas", "",
-        "Objetos agregados e achados mantidos no JSON, reproduzidos abaixo para consulta sem abrir o arquivo bruto.",
-        "", "~~~json",
-        dump({key: value for key, value in report.items()
-              if key not in ("decision_timeline", "issues", "log_files", "players_seen", "source")}),
-        "~~~", "", "## Achados com evidências", "", "~~~json",
-        dump(report.get("issues", [])),
-        "~~~", "", "## Rastreabilidade", "",
-        f"- Origem: {report.get('source', '—')}",
-        f"- Arquivos analisados: {len(report.get('log_files', []))}",
-        f"- Entradas estruturadas: {report.get('entries_read', 0)}",
-        "- Nenhuma recompensa, máscara ou decisão foi alterada por esta exportação.",
-        "- Campos ausentes permanecem ausentes; não são convertidos em zero.", "",
+        "## Arquivos e rastreabilidade",
+        "",
+        f"- Jogadores analisados: {len(report.get('players_seen', []))}",
+        f"- Entradas analisadas: {report.get('entries_read', 0)}",
+        f"- Decisões com timeline: {len(report.get('decision_timeline', []))}",
+        f"- Achados: {len(issues)}",
+        "- Os arquivos estruturados de origem permanecem separados deste relatório.",
+        "- Campos ausentes são exibidos como “—”; não são inferidos como zero.",
+        "",
     ]
-    return "\n".join(lines)
-
+    return "\\n".join(lines)
 
 
 def main() -> int:
