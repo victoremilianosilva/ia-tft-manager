@@ -153,6 +153,8 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
         payload = payload or {}
         diagnostics = payload.get("composition_diagnostics") or {}
         strategy = state.get("strategy") or {}
+        if not isinstance(strategy, dict):
+            strategy = {}
         value = (state.get("comp_direction") or state.get("composition_direction")
                  or strategy.get("composition_direction")
                  or diagnostics.get("composition_direction") or "")
