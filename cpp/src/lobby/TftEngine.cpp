@@ -1852,7 +1852,8 @@ struct TFTEngine::Impl {
             economy.loss_streak,
             power,
             composition_requests_fast8,
-            composition_requests_three_star
+            composition_requests_three_star,
+            static_cast<int>(stage_for_round(round + 1))
         };
         const auto strategy_decision =
             strategy::select_economic_strategy(strategy_context);
