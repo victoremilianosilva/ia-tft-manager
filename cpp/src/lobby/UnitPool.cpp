@@ -90,26 +90,27 @@ std::optional<std::int32_t> UnitPool::draw_by_cost(
     if (cost < 1 || cost > static_cast<std::int32_t>(ids_by_cost_.size()))
         return std::nullopt;
 
-    // Count and select from the same ordered candidate set without a
-    // per-draw heap allocation. The uniform distribution receives the same
-    // range as before, and the second pass preserves candidate ordering.
+    // TFT first chooses a cost, then chooses a champion proportionally
+    // to the number of copies of that champion still in the shared bag.
+    // A champion with one remaining copy must therefore be less likely than
+    // one with thirty copies; choosing uniformly among non-empty IDs is wrong.
     const auto& cost_ids = ids_by_cost_[static_cast<std::size_t>(cost - 1)];
-    std::size_t candidate_count = 0;
+    std::int64_t remaining_copies = 0;
     for (const auto id : cost_ids) {
-        if (has_available(id)) ++candidate_count;
+        remaining_copies += available(id);
     }
-    if (candidate_count == 0) return std::nullopt;
+    if (remaining_copies <= 0) return std::nullopt;
 
-    std::uniform_int_distribution<std::size_t> choose(0, candidate_count - 1);
-    const auto selected_index = choose(rng);
-    std::size_t current_index = 0;
+    std::uniform_int_distribution<std::int64_t> choose(1, remaining_copies);
+    auto selected_copy = choose(rng);
     for (const auto id : cost_ids) {
-        if (!has_available(id)) continue;
-        if (current_index == selected_index) {
+        const auto count = available(id);
+        if (count <= 0) continue;
+        if (selected_copy <= count) {
             if (!take(id)) return std::nullopt;
             return id;
         }
-        ++current_index;
+        selected_copy -= count;
     }
     return std::nullopt;
 }
