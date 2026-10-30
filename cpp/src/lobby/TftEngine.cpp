@@ -3604,19 +3604,22 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             unit_composition_score(current_strategy, *definition, unit.star, lobby.trait_milestones) / 32.5,
                             0.0, 1.0);
                     }
-                    int same_star_copies = 0;
+                    int owned_unit_instances = 0;
                     for (const auto& candidate : this->board) {
                         if (candidate &&
-                            candidate->champion_internal_id == unit.champion_internal_id &&
-                            candidate->star == unit.star) ++same_star_copies;
+                            candidate->champion_internal_id == unit.champion_internal_id)
+                            ++owned_unit_instances;
                     }
                     for (const auto& candidate : this->bench) {
                         if (candidate &&
-                            candidate->champion_internal_id == unit.champion_internal_id &&
-                            candidate->star == unit.star) ++same_star_copies;
+                            candidate->champion_internal_id == unit.champion_internal_id)
+                            ++owned_unit_instances;
                     }
-                    // Selling one of a pair removes an immediate path toward a merge.
-                    sold_unit_protects_upgrade = same_star_copies >= 2;
+                    // Copies at different star levels still share an upgrade path:
+                    // e.g. selling a 1-star while retaining a 2-star discards progress
+                    // toward a possible 3-star. Count the sold unit in this total.
+                    sold_unit_protects_upgrade =
+                        reward_model::protects_upgrade_path(owned_unit_instances);
                     const auto sell_value =
                         EconomyEngine::get_sell_value(
                             definition->cost,
