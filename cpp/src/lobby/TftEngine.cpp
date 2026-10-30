@@ -2063,7 +2063,9 @@ struct TFTEngine::Impl {
         bool composition_transition_unlocked_this_update = false;
 
         std::map<std::string, double> new_comp_traits;
-        if (current_stage <= 2) {
+        // The first composition decision is made at round 9 (stage 2-5),
+        // after the opening PvE rounds and enough shop/board evidence.
+        if (current_round < 9) {
             info.composition_locked = false;
             info.composition_direction.clear();
             info.composition_strength = 0.0;
@@ -2080,7 +2082,8 @@ struct TFTEngine::Impl {
             focus.clear();
         } else {
             ++info.comp_direction_update_steps;
-            if (info.comp_direction_update_steps >= 2) {
+            if (info.comp_direction_update_steps >= 2 ||
+                (current_round == 9 && info.composition_direction.empty())) {
                 info.comp_direction_update_steps = 0;
                 if (!sorted_traits.empty()) {
                     const auto& top = sorted_traits.front();
@@ -2378,7 +2381,7 @@ struct TFTEngine::Impl {
         // direction exists. The anchor trait guides selection, but the planner
         // deliberately reserves room for a carry, frontline and bridge/support
         // traits instead of forcing every slot into one trait.
-        if (current_stage >= 3 && !info.composition_direction.empty()) {
+        if (current_round >= 9 && !info.composition_direction.empty()) {
             strategy::CompositionPlanner::OwnedCopies owned_copies;
             for (const auto& [unit_id, copies] : copies_by_unit)
                 owned_copies[unit_id] = copies;
@@ -3978,7 +3981,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         // 50. Critical health is the explicit exception; at/above 50 the
         // liquidity-scaled reroll quality signal decides whether to spend.
         if (type == 1 && success && old_gold < 50 && this->info.hp > 40.0) {
-            action_reward -= 0.06;
+            // Small additional opportunity cost: discourage marginal rolls,
+            // without suppressing genuinely useful rolls under pressure.
+            action_reward -= 0.07;
         }
 
         const double action_gold_reward =
