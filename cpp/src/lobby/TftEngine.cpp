@@ -3736,11 +3736,22 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             success = economy.gold == old_gold - EconomyEngine::REROLL_COST;
             action_reward = success ? -0.01 : -0.10;
             if (success) {
-                // The shop-improvement signal belongs only to SLOWROLL (id 3).
-                if (!this->strategy.empty() && this->strategy.back().strategy == 3) {
-                    action_reward += reward_model::reroll_quality_reward(
+                // SLOWROLL receives the full shop-quality signal. Other plans
+                // may still reroll tactically when the board is under critical
+                // health pressure or the post-reroll balance preserves 50 gold;
+                // keep that cross-strategy signal deliberately smaller.
+                const bool slowroll_active =
+                    !this->strategy.empty() && this->strategy.back().strategy == 3;
+                const bool tactical_reroll_allowed =
+                    this->info.hp <= 30.0 ||
+                    economy.gold >= 50;
+                if (slowroll_active || tactical_reroll_allowed) {
+                    const double quality_reward = reward_model::reroll_quality_reward(
                         reroll_old_best_fit, reroll_new_best_fit,
-                        old_gold, this->info.hp, static_cast<int>(lobby.stage));
+                        economy.gold, this->info.hp, static_cast<int>(lobby.stage));
+                    action_reward += slowroll_active
+                        ? quality_reward
+                        : 0.35 * quality_reward;
                 }
                 // Reroll quality already includes liquidity and urgency. Do not
                 // add the generic spending-timing bonus here, which could make
