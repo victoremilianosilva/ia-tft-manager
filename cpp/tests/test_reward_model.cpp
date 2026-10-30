@@ -246,6 +246,15 @@ int main() {
     require_close(strategy_action_reward(0, 1, 60, 58, 80.0, 4,
                                          false, true, false, false),
                   0.0, "strategy shaping stays separate from the shared tactical reroll signal");
+    require_close(strategy_action_reward(1, 1, 55, 53, 90.0, 3,
+                                         false, false, false, true),
+                  -0.015, "unproductive reroll receives only a small off-strategy nudge");
+    require_close(strategy_action_reward(1, 1, 55, 53, 90.0, 3,
+                                         false, true, false, true),
+                  0.0, "a genuinely improved tactical reroll is not discouraged");
+    require_close(strategy_action_reward(3, 1, 55, 53, 90.0, 3,
+                                         false, true, false, true),
+                  0.10, "slow-roll strategy retains the stronger reroll signal");
     require_close(strategy_action_reward(3, 2, 30, 28, 80.0, 2,
                                          false, false, false, false),
                   -0.02, "safe early slow-roll XP nudge remains small");
