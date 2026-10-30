@@ -117,6 +117,7 @@ inline double strategy_action_reward(
     double reward = 0.0;
     switch (strategy_id) {
         case 0: // ECON: preserve interest; never treat XP as the default use of gold.
+            if (action_type == 1 && !reroll_improved) reward -= 0.015;
             if (new_gold >= 50 && old_gold < 50) reward += 0.04;
             if (old_gold >= 50 && new_gold >= 50 &&
                 action_type == 0 && useful_purchase) reward += 0.03;
@@ -131,6 +132,7 @@ inline double strategy_action_reward(
             }
             break;
         case 1: // STABILIZE: favor playable-board upgrades over routine leveling.
+            if (action_type == 1 && !reroll_improved) reward -= 0.015;
             if (action_type == 0 && useful_purchase) reward += 0.07;
             if (action_type == 2 && leveled)
                 reward += hp <= 30.0 ? 0.07 : (old_gold >= 50 ? 0.05 : 0.015);
@@ -153,10 +155,12 @@ inline double strategy_action_reward(
                 hp > 50.0 && old_gold < 50) reward -= 0.02;
             break;
         case 4: // ALL_IN: useful immediate strength over passive saving.
+            if (action_type == 1 && !reroll_improved) reward -= 0.015;
             if (action_type == 0 && useful_purchase) reward += 0.06;
             if (hp <= 15.0 && action_type == 6) reward -= 0.05;
             break;
         case 5: // WINSTREAK: preserve strength, avoid wasteful economy actions.
+            if (action_type == 1 && !reroll_improved) reward -= 0.015;
             if (action_type == 0 && useful_purchase) reward += 0.05;
             if (action_type == 2 && leveled) reward += 0.04;
             break;
@@ -258,7 +262,7 @@ inline double buy_xp_timing_reward(
     const double urgency = std::max(health_urgency, stage_urgency);
     if (urgency <= 0.0) return 0.0;
     // Only an actual level transition is rewarded, with a strict cap.
-    return std::min(0.10, 0.10 * liquidity * urgency);
+    return std::min(0.10, 0.09 * liquidity * urgency);
 }
 
 // Marginal value of an XP purchase that actually crosses a level boundary.
@@ -285,6 +289,9 @@ inline double xp_level_transition_value(
         if (gold_before >= threshold && gold_after < threshold) ++lost_breakpoints;
     }
     value -= 0.025 * static_cast<double>(lost_breakpoints);
+    // Reduce only the positive level-up incentive. Preserve the full
+    // opportunity-cost penalty when XP crosses an interest breakpoint.
+    if (value > 0.0) value *= 0.90;
     return std::clamp(value, -0.05, 0.12);
 }
 
@@ -340,7 +347,7 @@ inline double unit_purchase_timing_reward(
     const double surplus_spending = std::clamp(
         (static_cast<double>(gold_before) - 50.0) / 100.0, 0.0, 1.0);
     return std::min(0.20,
-        (0.12 * liquidity * urgency + 0.08 * surplus_spending) *
+        1.10 * (0.12 * liquidity * urgency + 0.08 * surplus_spending) *
         quality * bench_capacity);
 }
 

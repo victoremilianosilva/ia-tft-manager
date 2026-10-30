@@ -393,6 +393,16 @@ struct AuditPlayerSnapshot {
     double board_power{0.0};
     double synergy_score{0.0};
     double positioning_score{0.0};
+    // Keep native board-evaluation diagnostics in the audit snapshot; the
+    // Viewer cannot reconstruct structural quality from board power alone.
+    double board_quality_score{0.0};
+    double board_positional_score{0.0};
+    double board_structural_score{0.0};
+    double board_quality_delta{0.0};
+    std::int32_t board_exposed_carries{0};
+    std::int32_t board_frontline_count{0};
+    std::int32_t board_isolated_frontline_count{0};
+    std::int32_t board_important_bench_units_unplayed{0};
     std::int32_t round_gold{0};
     std::int32_t round_base_gold{0};
     std::int32_t round_interest{0};

@@ -52,9 +52,9 @@ int main() {
     require_close(placement(4, 8), 1.0 / 7.0, "middle-place terminal reward");
 
     require_close(xp_level_transition_value(60, 56, 80.0, 4, 7, 8),
-                  0.05875, "late level milestone rewards surplus XP progress");
+                  0.052875, "XP level reward is slightly reduced to favor useful unit purchases");
     require_close(xp_level_transition_value(22, 18, 80.0, 2, 4, 5),
-                  0.02, "XP transition accounts for lost interest breakpoint");
+                  0.018, "XP transition accounts for lost interest breakpoint");
     require_close(xp_level_transition_value(40, 36, 80.0, 2, 5, 5),
                   0.0, "XP without level transition has no progress reward");
     if (!(xp_level_transition_value(60, 56, 80.0, 4, 7, 8, 20.0) >
@@ -102,7 +102,7 @@ int main() {
     }
     require_close(unit_purchase_timing_reward(4, 51, 2, 1, 0.8, 80.0, false, false),
                   0.0, "surplus conversion must not break the 50-gold interest floor");
-    if (!(unit_purchase_timing_reward(4, 52, 2, 1, 0.8, 80.0, false, false) > 0.0)) {
+    if (!(unit_purchase_timing_reward(4, 52, 2, 1, 0.8, 80.0, false, false) > 0.08)) {
         throw std::runtime_error("useful purchase may convert surplus while preserving 50 gold");
     }
     require_close(unit_purchase_timing_reward(5, 25, 2, 1, 0.7, 80.0, false, false),
@@ -246,6 +246,15 @@ int main() {
     require_close(strategy_action_reward(0, 1, 60, 58, 80.0, 4,
                                          false, true, false, false),
                   0.0, "strategy shaping stays separate from the shared tactical reroll signal");
+    require_close(strategy_action_reward(1, 1, 55, 53, 90.0, 3,
+                                         false, false, false, true),
+                  -0.015, "unproductive reroll receives only a small off-strategy nudge");
+    require_close(strategy_action_reward(1, 1, 55, 53, 90.0, 3,
+                                         false, true, false, true),
+                  0.0, "a genuinely improved tactical reroll is not discouraged");
+    require_close(strategy_action_reward(3, 1, 55, 53, 90.0, 3,
+                                         false, true, false, true),
+                  0.10, "slow-roll strategy retains the stronger reroll signal");
     require_close(strategy_action_reward(3, 2, 30, 28, 80.0, 2,
                                          false, false, false, false),
                   -0.02, "safe early slow-roll XP nudge remains small");
@@ -349,7 +358,7 @@ int main() {
                   0.0, "ECON permits an improved reroll without preferring it to saving");
     require_close(strategy_action_reward(0, 1, 40, 38, 80.0, 3,
                                          false, false, false, false),
-                  -0.025, "ECON discourages an unproductive reroll");
+                  -0.04, "ECON discourages an unproductive reroll");
     require_close(strategy_action_reward(0, 0, 55, 50, 80.0, 4,
                                          true, false, false, false),
                   0.03, "ECON allows useful spending from surplus above 50");

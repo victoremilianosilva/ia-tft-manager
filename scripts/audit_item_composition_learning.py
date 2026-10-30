@@ -22,9 +22,14 @@ def _units(state: Any) -> list[dict[str, Any]]:
 
 
 def _item_ids(unit: dict[str, Any]) -> list[str]:
-    values = unit.get("items", unit.get("equipped_items", unit.get("item_ids", [])))
-    if not isinstance(values, list):
-        return []
+    values = []
+    for key in ("items", "equipped_items", "item_ids"):
+        candidate = unit.get(key)
+        if isinstance(candidate, list) and candidate:
+            values = candidate
+            break
+        if isinstance(candidate, list) and not values:
+            values = candidate
     result = []
     for item in values:
         if isinstance(item, str):
@@ -40,7 +45,6 @@ def audit_records(records: list[dict[str, Any]], expected_players: int = 8) -> d
     per_player: dict[int, dict[str, Any]] = {}
     item_events: Counter[str] = Counter()
     action_counts: Counter[str] = Counter()
-    all_item_evidence = False
 
     def player_bucket(player_id: int) -> dict[str, Any]:
         if player_id not in per_player:
@@ -62,6 +66,10 @@ def audit_records(records: list[dict[str, Any]], expected_players: int = 8) -> d
                 "bag_item_ids": set(),
                 "component_ids": set(),
                 "item_evidence_rows": 0,
+                "last_board_item_instances": 0,
+                "last_bench_item_instances": 0,
+                "last_bag_item_instances": 0,
+                "last_component_instances": 0,
                 "board_two_star_peak": 0,
                 "buy_actions": 0,
                 "sell_actions": 0,
@@ -134,17 +142,23 @@ def audit_records(records: list[dict[str, Any]], expected_players: int = 8) -> d
             bucket["bag_item_instances"] += len(inventory_after)
             bucket["item_inventory_peak"] = max(bucket["item_inventory_peak"], len(inventory_after))
             bucket["bag_item_ids"].update(str(item) for item in inventory_after if isinstance(item, str))
-            all_item_evidence = True
         if isinstance(components_after, list):
             bucket["component_observations"] += 1
             bucket["component_instances"] += len(components_after)
             bucket["component_inventory_peak"] = max(bucket["component_inventory_peak"], len(components_after))
             bucket["component_ids"].update(str(item) for item in components_after if isinstance(item, str))
-            all_item_evidence = True
-        if observed_items or any("items" in unit or "equipped_items" in unit or "item_ids" in unit
-                                 for unit in board + bench):
+        has_unit_item_fields = any(
+            any(key in unit for key in ("items", "equipped_items", "item_ids"))
+            for unit in board + bench
+        )
+        has_inventory_fields = isinstance(inventory_after, list) or isinstance(components_after, list)
+        if observed_items or has_unit_item_fields or has_inventory_fields:
             bucket["item_evidence_rows"] += 1
-            all_item_evidence = True
+        # Latest-state counts are separate from cumulative observation totals.
+        bucket["last_board_item_instances"] = sum(len(_item_ids(unit)) for unit in board)
+        bucket["last_bench_item_instances"] = sum(len(_item_ids(unit)) for unit in bench)
+        bucket["last_bag_item_instances"] = len(inventory_after) if isinstance(inventory_after, list) else 0
+        bucket["last_component_instances"] = len(components_after) if isinstance(components_after, list) else 0
         bucket["board_two_star_peak"] = max(
             bucket["board_two_star_peak"],
             sum(int(unit.get("star", 1) or 1) >= 2 for unit in board),
@@ -167,6 +181,11 @@ def audit_records(records: list[dict[str, Any]], expected_players: int = 8) -> d
     players_seen = sorted(per_player)
     expected_ids = set(range(expected_players))
     missing_players = sorted(expected_ids - set(players_seen))
+    evidence_players = sorted(
+        player_id for player_id, bucket in per_player.items()
+        if bucket["item_evidence_rows"] > 0
+    )
+    missing_evidence_players = sorted(expected_ids - set(evidence_players))
     summaries = {}
     for player_id, bucket in sorted(per_player.items()):
         summaries[str(player_id)] = {
@@ -183,11 +202,13 @@ def audit_records(records: list[dict[str, Any]], expected_players: int = 8) -> d
         "players_seen": players_seen,
         "missing_players": missing_players,
         "all_players_present": not missing_players,
-        "item_evidence_available": all_item_evidence,
+        "item_evidence_players": evidence_players,
+        "players_without_item_evidence": missing_evidence_players,
+        "item_evidence_available": not missing_players and not missing_evidence_players,
         "item_evidence_note": (
-            "Unit item fields were present in the audit rows."
-            if all_item_evidence else
-            "No equipped-item fields were found; item quality cannot be inferred from this input."
+            "All expected players have item snapshots; latest-state counts are separated from cumulative observations."
+            if not missing_players and not missing_evidence_players else
+            "Item evidence is incomplete: missing player snapshots or item fields for one or more players."
         ),
         "action_counts": dict(action_counts),
         "item_event_counts": dict(item_events),

@@ -34,6 +34,10 @@ def test_audit_aggregates_all_players_items_and_composition_evidence():
     assert report["players"]["0"]["component_instances"] == 1
     assert report["players"]["0"]["directions"] == {"Invoker": 1}
     assert report["players"]["0"]["opgg_statuses"] == {"selected": 1}
+    assert report["item_evidence_players"] == list(range(8))
+    assert report["item_evidence_available"] is True
+    assert report["players"]["0"]["last_board_item_instances"] == 1
+    assert report["players"]["0"]["last_bag_item_instances"] == 1
 
 
 def test_audit_reports_missing_item_evidence_instead_of_guessing_quality():
@@ -44,5 +48,25 @@ def test_audit_reports_missing_item_evidence_instead_of_guessing_quality():
         "bench_after": [],
     }])
     assert report["item_evidence_available"] is False
-    assert "cannot be inferred" in report["item_evidence_note"]
+    assert report["players_without_item_evidence"] == list(range(8))
+    assert "incomplete" in report["item_evidence_note"]
     assert report["all_players_present"] is False
+
+
+def test_item_evidence_must_cover_every_expected_player():
+    records = []
+    for player_id in range(8):
+        row = {
+            "player_id": player_id,
+            "selected_action": [6, 0, 0, 0, 0, 0],
+            "board_after": [],
+            "bench_after": [],
+        }
+        if player_id != 7:
+            row["item_inventory_after"] = []
+            row["item_components_after"] = []
+        records.append(row)
+    report = audit_records(records)
+    assert report["all_players_present"] is True
+    assert report["item_evidence_available"] is False
+    assert report["players_without_item_evidence"] == [7]
