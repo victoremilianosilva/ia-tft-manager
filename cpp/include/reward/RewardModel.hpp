@@ -449,6 +449,13 @@ inline double reversed_sequence_adjustment(
     return std::min(0.0, target - prior_buy_reward - sale_reward_including_gold);
 }
 
+// A duplicate champion remains an upgrade path even when its copies have
+// different star levels (for example, a 2-star plus a 1-star toward 3-star).
+// Count owned unit instances, not only instances at the sold unit's star level.
+inline bool protects_upgrade_path(int owned_unit_instances) noexcept {
+    return owned_unit_instances >= 2;
+}
+
 // Selling should be attractive for low-value clutter, but not intrinsically
 // rewarding for disposing of useful bench units. Fit is normalized to [0, 1].
 // Gold recovery is shaped separately by gold_change_reward().
