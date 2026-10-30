@@ -1523,8 +1523,8 @@ def markdown_report(report: dict) -> str:
 
     if report.get("board_quality_metrics"):
         lines += ["## Qualidade estrutural e posicionamento do tabuleiro", "",
-                  "| Jogador | Ações com métrica | Ganhos | Pioras | Neutras | Δ médio qualidade | Δ estrutural médio | Δ qualidade quando combate positivo | Δ qualidade quando combate negativo |",
-                  "|---|---:|---:|---:|---:|---:|---:|---:|---:|"]
+                  "| Jogador | Ações com métrica | Ganhos | Pioras | Neutras | Δ médio qualidade | Estrutural médio | Δ estrutural médio | Posicional médio | Δ qualidade combate + | Δ qualidade combate - |",
+                  "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
         for player, metrics in sorted(report["board_quality_metrics"].items()):
             structural_delta = metrics.get("mean_structural_delta")
             structural_score = metrics.get("mean_structural_score")
