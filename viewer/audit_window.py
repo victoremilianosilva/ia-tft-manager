@@ -93,10 +93,6 @@ class AuditWindow(QMainWindow):
         self.audit_button = QPushButton("Executar auditoria")
         self.audit_button.clicked.connect(self.run_audit)
         header.addWidget(self.audit_button)
-        self.export_button = QPushButton("Exportar Markdown…")
-        self.export_button.clicked.connect(self.export_markdown)
-        self.export_button.setEnabled(False)
-        header.addWidget(self.export_button)
         layout.addLayout(header)
 
         self.status = QLabel("Logs novos incluem estado antes/depois, máscaras legais, diagnóstico da política, recompensas por canal e UUIDs. Partidas antigas são auditadas conforme os campos registrados.")
@@ -158,7 +154,6 @@ class AuditWindow(QMainWindow):
             self.report_md = md_path.read_text(encoding="utf-8") if md_path.is_file() else completed.stdout
             self.session_dir = folder
             self._render_report()
-            self.export_button.setEnabled(bool(self.report_md))
             issues = self.report.get("issues", [])
             counts = Counter(x.get("severity", "UNKNOWN") for x in issues)
             self.status.setText(
@@ -371,19 +366,6 @@ class AuditWindow(QMainWindow):
         table.resizeColumnsToContents()
         layout.addWidget(table)
         self.tabs.setCurrentIndex(0)
-
-    def export_markdown(self):
-        if not self.report_md:
-            return
-        default = str((self.session_dir or ROOT) / "audit_report.md")
-        path, _ = QFileDialog.getSaveFileName(self, "Exportar auditoria Markdown", default, "Markdown (*.md)")
-        if not path:
-            return
-        try:
-            Path(path).write_text(self.report_md, encoding="utf-8")
-            QMessageBox.information(self, "Exportação concluída", f"Relatório Markdown exportado para:\n{path}")
-        except OSError as exc:
-            QMessageBox.critical(self, "Falha ao exportar", str(exc))
 
 
 def main():

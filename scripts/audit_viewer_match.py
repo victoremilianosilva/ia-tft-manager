@@ -1421,6 +1421,122 @@ def markdown_report(report: dict) -> str:
     return "\n".join(lines)
 
 
+
+def markdown_full_report(report: dict) -> str:
+    """Build a readable, decision-level report from the complete audit JSON."""
+    lines = [
+        markdown_report(report), "", "---", "",
+        "# Anexo detalhado — evidências por decisão", "",
+        "Este anexo é derivado de audit_report.json. Ele preserva os diagnósticos por ação "
+        "e resume os estados antes/depois para leitura humana. O JSON continua sendo a fonte "
+        "bruta, incluindo máscaras condicionais e snapshots integrais.", "",
+    ]
+
+    def compact_unit(unit):
+        if not isinstance(unit, dict):
+            return unit
+        if not unit.get("occupied", True):
+            return {"occupied": False, "slot": unit.get("slot")}
+        keys = ("slot", "location", "champion_id", "name", "uuid", "star", "cost",
+                "role", "role_name", "impact", "traits", "items")
+        return {key: unit.get(key) for key in keys if key in unit}
+
+    def compact_state(state):
+        if not isinstance(state, dict) or not state:
+            return state
+        keys = (
+            "hp", "level", "xp", "gold", "interest_if_resolved_now",
+            "round_base_gold", "round_interest", "round_streak_gold", "round_win_gold",
+            "round_total_income", "board_power", "synergy_score", "positioning_score",
+            "board_quality_score", "board_quality_delta", "board_structural_score",
+            "strategy_name", "strategy_reason", "comp_direction", "comp_focus",
+            "composition_locked", "composition_strength", "composition_candidate_direction",
+            "composition_candidate_strength", "composition_focus_weights", "core_units",
+            "core_traits", "planned_units", "planned_traits", "planned_main_carry_id",
+            "planned_composition_score", "active_traits", "item_components",
+            "item_inventory", "placement",
+        )
+        result = {key: state.get(key) for key in keys if key in state}
+        for location in ("board", "bench", "shop"):
+            units = state.get(location)
+            if isinstance(units, list):
+                result[location] = [compact_unit(unit) for unit in units]
+        return result
+
+    def dump(value):
+        return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, default=str)
+
+    decisions = report.get("decision_timeline", [])
+    lines += [
+        f"## Índice de decisões ({len(decisions)} registros)", "",
+        "| # | Jogador | Round | Step | Ação | Estratégia | Ouro antes | Nível |",
+        "|---:|---|---|---:|---|---|---:|---:|",
+    ]
+    for index, decision in enumerate(decisions, 1):
+        context = decision.get("decision_context") or {}
+        lines.append(
+            f"| {index} | {decision.get('player', '—')} | {decision.get('round', '—')} | "
+            f"{decision.get('step', '—')} | {decision.get('action_name') or decision.get('raw_action') or '—'} | "
+            f"{decision.get('strategy', '—')} | {context.get('gold', '—')} | {context.get('level', '—')} |"
+        )
+
+    lines += ["", "## Evidência detalhada por decisão", ""]
+    for index, decision in enumerate(decisions, 1):
+        context = decision.get("decision_context") or {}
+        title = (
+            f"### {index}. {decision.get('player', 'Jogador?')} · "
+            f"{decision.get('round', '?')} · step {decision.get('step', '?')} · "
+            f"{decision.get('action_name') or decision.get('raw_action') or 'ação desconhecida'}"
+        )
+        blocks = [
+            ("Contexto capturado antes da decisão", context),
+            ("Estado anterior — campos estratégicos, unidades, banco e loja", compact_state(decision.get("state_before") or {})),
+            ("Estado posterior — campos estratégicos, unidades, banco e loja", compact_state(decision.get("state_after") or {})),
+            ("Máscaras e validação da ação", {
+                "legal_action_audit": decision.get("legal_action_audit") or {},
+                "action_mask_before": decision.get("action_mask_before"),
+                "action_mask_after": decision.get("action_mask_after"),
+            }),
+            ("Política, recompensas e economia", {
+                "policy_diagnostics": decision.get("policy_diagnostics") or {},
+                "reward_components": decision.get("reward_components") or {},
+                "economic_diagnostics": decision.get("economic_diagnostics") or {},
+            }),
+            ("Unidades, composição e itens", {
+                "unit_changes": decision.get("unit_changes") or {},
+                "composition_diagnostics": decision.get("composition_diagnostics") or {},
+                "item_audit": decision.get("item_audit") or {},
+            }),
+        ]
+        lines += [
+            title, "",
+            f"- Sequência: {decision.get('sequence_id', '—')} · horário: {decision.get('timestamp', '—')}",
+            f"- Estratégia: {decision.get('strategy', '—')} · motivo: {decision.get('strategy_reason', '—')}",
+            f"- Ação codificada: {decision.get('action', '—')} · recompensa total: {decision.get('reward', '—')}",
+            "",
+        ]
+        for heading, payload in blocks:
+            lines += [f"**{heading}**", "", "~~~json", dump(payload), "~~~", ""]
+
+    lines += [
+        "## Métricas agregadas completas", "",
+        "Objetos agregados e achados mantidos no JSON, reproduzidos abaixo para consulta sem abrir o arquivo bruto.",
+        "", "~~~json",
+        dump({key: value for key, value in report.items()
+              if key not in ("decision_timeline", "issues", "log_files", "players_seen", "source")}),
+        "~~~", "", "## Achados com evidências", "", "~~~json",
+        dump(report.get("issues", [])),
+        "~~~", "", "## Rastreabilidade", "",
+        f"- Origem: {report.get('source', '—')}",
+        f"- Arquivos analisados: {len(report.get('log_files', []))}",
+        f"- Entradas estruturadas: {report.get('entries_read', 0)}",
+        "- Nenhuma recompensa, máscara ou decisão foi alterada por esta exportação.",
+        "- Campos ausentes permanecem ausentes; não são convertidos em zero.", "",
+    ]
+    return "\n".join(lines)
+
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("input", type=Path, help="pasta da sessão ou arquivo player log")
@@ -1482,10 +1598,12 @@ def main() -> int:
     out_dir = args.out_dir or default_out
     out_dir.mkdir(parents=True, exist_ok=True)
     json_path, md_path = out_dir / "audit_report.json", out_dir / "audit_report.md"
+    full_md_path = out_dir / "audit_report_completo.md"
     json_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     md_path.write_text(markdown_report(report), encoding="utf-8")
+    full_md_path.write_text(markdown_full_report(report), encoding="utf-8")
     print(markdown_report(report))
-    print(f"\nRelatórios salvos em:\n- {json_path}\n- {md_path}")
+    print(f"\nRelatórios salvos em:\n- {json_path}\n- {md_path}\n- {full_md_path}")
     if args.strict and any(x["severity"] in ("CRITICAL", "HIGH") for x in unique):
         return 1
     return 0

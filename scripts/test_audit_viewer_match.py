@@ -91,5 +91,46 @@ class UnifiedAuditRegressionTests(unittest.TestCase):
         self.assertNotEqual(sig[0][2], sig[1][2])
 
 
+    def test_full_report_includes_decision_evidence_and_existing_summary(self):
+        report = {
+            "source": "fixture", "log_files": ["player_1_log.json"],
+            "players_seen": ["1"], "entries_read": 1, "diagnostics_missing": 0,
+            "issues": [{"severity": "MEDIUM", "code": "TEST", "player": "Jogador 1",
+                        "round": "2-1", "step": 7, "message": "review", "evidence": {"gold": 12}}],
+            "notes": [],
+            "decision_timeline": [{
+                "player": "Jogador 1", "round": "2-1", "step": 7, "sequence_id": 8,
+                "action": [0, 1, 0, 0, 0, 0], "action_name": "BUY", "strategy": "STABILIZE",
+                "decision_context": {"gold": 12, "level": 4},
+                "state_before": {"gold": 12, "board": [unit("A", uuid="u1")]},
+                "state_after": {"gold": 9, "board": [unit("A", uuid="u1")], "comp_direction": "A"},
+                "legal_action_audit": {"chosen_type_enabled": True, "raw_mask": {"type_mask": [1, 1]}},
+                "action_mask_before": {"type_mask": [1, 1]},
+                "policy_diagnostics": {"entropy": 0.2},
+                "reward_components": {"action": 0.25},
+                "economic_diagnostics": {"action_cost": 3},
+                "unit_changes": {"added": [], "removed": []},
+                "composition_diagnostics": {"unit_fit": {"focus_fit_score": 1.0}},
+                "item_audit": {"inventory_after": ["item_a"]},
+            }],
+        }
+        full = audit.markdown_full_report(report)
+        self.assertTrue(full.startswith("# Auditoria da partida TFT"))
+        self.assertIn("# Anexo detalhado — evidências por decisão", full)
+        self.assertIn("Máscaras e validação da ação", full)
+        self.assertIn('"type_mask": [', full)
+        self.assertIn('"focus_fit_score": 1.0', full)
+        self.assertIn('"inventory_after": [', full)
+        self.assertIn("Achados com evidências", full)
+
+    def test_full_report_supports_legacy_without_decisions(self):
+        full = audit.markdown_full_report({
+            "source": "legacy", "log_files": [], "players_seen": [],
+            "entries_read": 0, "diagnostics_missing": 0, "issues": [],
+            "notes": [], "decision_timeline": [],
+        })
+        self.assertIn("Índice de decisões (0 registros)", full)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
