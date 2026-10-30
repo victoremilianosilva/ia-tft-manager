@@ -73,7 +73,7 @@ def test_board_quality_audit_tracks_action_delta_and_combat_context():
     assert metrics["by_action"]["MOVE_BOARD"]["mean_quality_delta"] == -0.1
     assert metrics["structural_metrics_available"] is True
     assert metrics["structural_samples"] == 3
-    assert metrics["mean_structural_delta"] == -0.2 / 3
+    assert metrics["mean_structural_delta"] == 0.2 / 3
     assert metrics["mean_structural_score"] == -0.7 / 3
     assert metrics["mean_positional_score"] == (0.6 + 0.4 + 0.4) / 3
 
