@@ -289,7 +289,10 @@ inline double xp_level_transition_value(
         if (gold_before >= threshold && gold_after < threshold) ++lost_breakpoints;
     }
     value -= 0.025 * static_cast<double>(lost_breakpoints);
-    return std::clamp(value * 0.90, -0.05, 0.12);
+    // Reduce only the positive level-up incentive. Preserve the full
+    // opportunity-cost penalty when XP crosses an interest breakpoint.
+    if (value > 0.0) value *= 0.90;
+    return std::clamp(value, -0.05, 0.12);
 }
 
 // Small additional signal for useful unit acquisitions beyond the early game.
