@@ -100,9 +100,9 @@ int main() {
     if (!(unit_purchase_timing_reward(5, 50, 2, 1, 0.7, 80.0, false, false) > 0.0)) {
         throw std::runtime_error("useful unit purchase with capped gold should be rewarded in mid-game");
     }
-    require_close(unit_purchase_timing_reward(51, 2, 1, 0, 0.8, 80.0, false, false),
+    require_close(unit_purchase_timing_reward(4, 51, 2, 1, 0.8, 80.0, false, false),
                   0.0, "surplus conversion must not break the 50-gold interest floor");
-    if (!(unit_purchase_timing_reward(52, 2, 1, 0, 0.8, 80.0, false, false) > 0.0)) {
+    if (!(unit_purchase_timing_reward(4, 52, 2, 1, 0.8, 80.0, false, false) > 0.0)) {
         throw std::runtime_error("useful purchase may convert surplus while preserving 50 gold");
     }
     require_close(unit_purchase_timing_reward(5, 25, 2, 1, 0.7, 80.0, false, false),
