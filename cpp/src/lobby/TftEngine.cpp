@@ -3799,7 +3799,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     : (old_gold >= 40 ? 0.10
                     : (old_gold >= 30 ? 0.08
                     : (old_gold >= 20 ? 0.04 : 0.02)))));
-                action_reward += level_scale * reward_model::level(
+                // Trim the extra level-transition shaping by the same
+                // modest factor as the XP-specific marginal reward.
+                action_reward += 0.90 * level_scale * reward_model::level(
                     economy.level, this->previous_reward_level);
                 this->previous_reward_level = economy.level;
                 // Early XP should not receive the rich-spending bonus unless
@@ -3810,7 +3812,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 if (this->info.hp <= 30.0 ||
                     (old_gold >= EconomyEngine::BUY_XP_COST + 50 &&
                      economy.gold >= 50)) {
-                    action_reward += reward_model::spending_timing_reward(
+                    action_reward += 0.90 * reward_model::spending_timing_reward(
                         old_gold, this->info.hp, lobby.stage, 0.0, false, true);
                 }
             }
