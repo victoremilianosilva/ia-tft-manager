@@ -1255,7 +1255,7 @@ def markdown_report(report: dict) -> str:
         "# Auditoria da partida TFT", "",
         f"- Arquivos lidos: **{len(set(report['log_files']))}**",
         f"- Jogadores encontrados: **{len(report['players_seen'])}** ({', '.join(report['players_seen']) or 'nenhum'})",
-        f"- Entradas JSON analisadas: **{report['entries_read']}**",
+        f"- Registros estruturados analisados: **{report['entries_read']}**",
         f"- Achados: **{len(report['issues'])}**",
         f"- CRITICAL: {counts['CRITICAL']} | HIGH: {counts['HIGH']} | MEDIUM: {counts['MEDIUM']} | LOW: {counts['LOW']}", "",
     ]
@@ -1305,7 +1305,7 @@ def markdown_report(report: dict) -> str:
             removed = ",".join(str(x.get("uuid")) for x in u.get("removed", [])) or "—"
             legal = ", ".join(x.get("name", str(x.get("id"))) for x in m.get("legal_action_types", []))
             lines.append(f"| {cell(d.get('player'))} | {cell(d.get('round'))} | {cell(d.get('step'))} | {cell(d.get('action_name'))} | {cell(d.get('strategy'))} | {cell(c.get('hp'))} | {cell(c.get('level'))} | {cell(c.get('gold'))} | {cell(c.get('interest_if_resolved_now'))} | {cell(c.get('board_power'))} | {cell(str(c.get('composition_direction') or '—') + '/' + str(c.get('composition_focus') or '—'))} | {cell(legal)} | {cell(m.get('chosen_type_enabled'))} | {cell(m.get('chosen_action_fully_validated'))} | {cell(r.get('action'))} | {cell(r.get('combat'))} | {cell(r.get('placement'))} | +{cell(added)} / -{cell(removed)} |")
-        lines += ["", "O audit_report.json mantém as máscaras brutas, distribuições da política, estados antes/depois, componentes de recompensa e mudanças por UUID. Null indica campo ausente, não zero.", ""]
+        lines += ["", "Os dados estruturados de origem preservam máscaras, diagnósticos da política, estados antes/depois, componentes de recompensa e mudanças por UUID. Campo ausente não significa zero.", ""]
 
     if report.get("economic_action_metrics"):
         lines += ["## Auditoria econômica por ação", "",
@@ -1341,7 +1341,7 @@ def markdown_report(report: dict) -> str:
                 f"{metrics['changes_without_measurable_gain']} | "
                 f"{metrics.get('rate_without_measurable_gain', 0.0):.1%} |"
             )
-        lines += ["", "Os detalhes por transição ficam em audit_report.json. "
+        lines += ["", "Os detalhes por transição permanecem nos dados estruturados de origem. "
                   "‘Sem ganho mensurável’ indica falta de evidência nos campos disponíveis, não prova de decisão ruim.", ""]
 
     if report.get("board_quality_metrics"):
@@ -1396,7 +1396,7 @@ def markdown_report(report: dict) -> str:
                 f"{metrics['net_gold_lost_reversed']} | {metrics['upgrade_completing_buys']} | "
                 f"{metrics['core_or_pair_sales']} | {metrics.get('average_strategic_value_per_purchase', 0.0)} |"
             )
-        lines += ["", "As classificações detalhadas e cada sequência correlacionada ficam em audit_report.json.",
+        lines += ["", "As classificações detalhadas e sequências correlacionadas permanecem nos dados estruturados de origem.",
                   "Uma venda sem compra correspondente na janela é UNKNOWN; sequências ambíguas não são penalizadas automaticamente.", ""]
     if report["issues"]:
         lines += ["## Achados", "", "| Severidade | Jogador | Round | Step | Código | Descrição |",
