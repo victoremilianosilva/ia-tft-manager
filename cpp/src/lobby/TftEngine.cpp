@@ -1852,7 +1852,8 @@ struct TFTEngine::Impl {
             economy.loss_streak,
             power,
             composition_requests_fast8,
-            composition_requests_three_star
+            composition_requests_three_star,
+            static_cast<int>(stage_for_round(round + 1))
         };
         const auto strategy_decision =
             strategy::select_economic_strategy(strategy_context);
@@ -3743,18 +3744,17 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 // may still reroll tactically when the board is under critical
                 // health pressure or the post-reroll balance preserves 50 gold;
                 // keep that cross-strategy signal deliberately smaller.
-                const bool slowroll_active =
-                    !this->strategy.empty() && this->strategy.back().strategy == 3;
-                const bool tactical_reroll_allowed =
-                    this->info.hp <= 30.0 ||
-                    economy.gold >= 50;
-                if (slowroll_active || tactical_reroll_allowed) {
+                const std::int32_t active_strategy_id =
+                    this->strategy.empty() ? 0 : this->strategy.back().strategy;
+                const double tactical_reroll_scale =
+                    reward_model::tactical_reroll_quality_scale(
+                        active_strategy_id, this->info.hp, economy.gold,
+                        static_cast<int>(lobby.stage));
+                if (tactical_reroll_scale > 0.0) {
                     const double quality_reward = reward_model::reroll_quality_reward(
                         reroll_old_best_fit, reroll_new_best_fit,
                         economy.gold, this->info.hp, static_cast<int>(lobby.stage));
-                    action_reward += slowroll_active
-                        ? quality_reward
-                        : 0.35 * quality_reward;
+                    action_reward += tactical_reroll_scale * quality_reward;
                 }
                 // Reroll quality already includes liquidity and urgency. Do not
                 // add the generic spending-timing bonus here, which could make

@@ -233,6 +233,18 @@ int main() {
     if (!(item_crafting_bonus(0.15) > 0.0 && item_crafting_bonus(0.15) <= 0.08)) {
         throw std::runtime_error("useful crafted items should receive a small bounded bonus");
     }
+    require_close(tactical_reroll_quality_scale(0, 90.0, 39, 4), 0.0,
+                  "healthy tactical reroll below 40 gold remains discouraged");
+    require_close(tactical_reroll_quality_scale(0, 90.0, 40, 3), 0.0,
+                  "pre-stage-4 tactical reroll below 50 gold remains discouraged");
+    require_close(tactical_reroll_quality_scale(0, 90.0, 40, 4), 0.20,
+                  "stage-4 surplus reroll gets only a small quality signal");
+    require_close(tactical_reroll_quality_scale(0, 90.0, 50, 2), 0.35,
+                  "existing 50-gold tactical reroll signal is preserved");
+    require_close(tactical_reroll_quality_scale(1, 25.0, 20, 2), 0.35,
+                  "critical-health tactical reroll signal is preserved");
+    require_close(tactical_reroll_quality_scale(3, 90.0, 20, 2), 1.0,
+                  "SLOWROLL retains its full reroll quality signal");
     require_close(reroll_quality_reward(8.0, 8.0), 0.0,
                   "reroll with no quality improvement receives no reward");
     if (!(reroll_quality_reward(2.0, 10.0, 50, 25.0, 5) >

@@ -25,6 +25,7 @@ struct EconomicStrategyContext {
     double board_power{0.0};
     bool composition_requests_fast8{false};
     bool composition_requests_three_star{false};
+    int stage{1};
 };
 
 struct EconomicStrategyDecision {
@@ -53,6 +54,23 @@ inline EconomicStrategyDecision select_economic_strategy(
         out.reason = s.hp <= 38.0
             ? "STABILIZE: pressão de vida"
             : "STABILIZE: tabuleiro fraco sob pressão";
+    }
+
+    // Gradual late-game correction: a healthy player may still need to
+    // stabilize when holding substantial surplus gold and a weak board.
+    // The score is intentionally close to ECON and never overrides a
+    // composition-specific FAST8/SLOWROLL plan or emergency ALL_IN.
+    if (s.stage >= 4 && s.gold >= 70 && s.board_power < 35.0 &&
+        s.hp > 38.0 && s.hp > 15.0) {
+        const double stage_pressure =
+            std::clamp(static_cast<double>(s.stage - 4), 0.0, 3.0) * 1.5;
+        const double surplus_pressure =
+            std::clamp(static_cast<double>(s.gold - 70) / 30.0, 0.0, 2.0) * 1.5;
+        const double board_pressure =
+            std::clamp((35.0 - s.board_power) / 10.0, 0.0, 1.0) * 1.0;
+        const double late_stabilize_score =
+            42.0 + stage_pressure + surplus_pressure + board_pressure;
+        out.scores[1] = std::max(out.scores[1], late_stabilize_score);
     }
 
     const bool has_comp_goal =
@@ -125,9 +143,12 @@ inline EconomicStrategyDecision select_economic_strategy(
                 : "ECON: manter reserva de 50 e gastar excedente útil";
             break;
         case EconomicStrategy::Stabilize:
-            out.reason = s.hp <= 38.0
-                ? "STABILIZE: pressão de vida"
-                : "STABILIZE: tabuleiro fraco sob pressão";
+            out.reason = (s.stage >= 4 && s.gold >= 70 &&
+                          s.board_power < 35.0 && s.hp > 38.0)
+                ? "STABILIZE: excedente alto e tabuleiro fraco no late game"
+                : (s.hp <= 38.0
+                    ? "STABILIZE: pressão de vida"
+                    : "STABILIZE: tabuleiro fraco sob pressão");
             break;
         case EconomicStrategy::Fast8:
             out.reason = "FAST8: composição planejada exige nível 8";

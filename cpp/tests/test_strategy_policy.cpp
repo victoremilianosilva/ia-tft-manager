@@ -30,6 +30,23 @@ int main() {
             std::string(d.reason).find("excedente") != std::string::npos,
             "ECON at 50 should explicitly permit spending surplus");
 
+    // Late stabilization is a soft correction, not a blanket late-game rule.
+    s.stage = 4; s.gold = 69; s.board_power = 30; s.hp = 85;
+    d = select_economic_strategy(s);
+    require(d.selected == EconomicStrategy::Econ,
+            "late stage alone must not displace ECON without meaningful surplus");
+
+    s.gold = 100; s.stage = 5;
+    d = select_economic_strategy(s);
+    require(d.selected == EconomicStrategy::Stabilize &&
+            std::string(d.reason).find("late game") != std::string::npos,
+            "late high-surplus weak board should gently prioritize stabilization");
+
+    s.board_power = 45; s.gold = 50;
+    d = select_economic_strategy(s);
+    require(d.selected == EconomicStrategy::Econ,
+            "healthy strong board should retain ECON even in late stages");
+
     s.composition_requests_fast8 = true;
     d = select_economic_strategy(s);
     require(d.selected == EconomicStrategy::Fast8,

@@ -405,6 +405,21 @@ inline double reroll_quality_reward(
     return 0.14 * improvement * liquidity * stage_factor * pressure_factor;
 }
 
+// Shared tactical reroll gate. Existing behavior is preserved for SLOWROLL,
+// critical HP, and rolls that leave at least 50 gold. A smaller signal is
+// introduced only from stage 4 when the roll spends surplus but retains 40g.
+inline double tactical_reroll_quality_scale(
+    int active_strategy,
+    double hp,
+    int gold_after,
+    int stage
+) noexcept {
+    if (active_strategy == 3) return 1.0;
+    if (hp <= 30.0 || gold_after >= 50) return 0.35;
+    if (stage >= 4 && gold_after >= 40) return 0.20;
+    return 0.0;
+}
+
 inline double pass_opportunity_penalty(
     int gold,
     double hp,
