@@ -267,7 +267,7 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
                           {"champion": champion, "core_sale": core_sale, "pair_lost": pair_lost,
                            "composition_decision_round": decision_round,
                            "pair_count_before": _pair_count(before), "pair_count_after": _pair_count(after),
-                           "gold_before": before.get("gold"), "gold_after": after.get("gold)})
+                           "gold_before": before.get("gold"), "gold_after": after.get("gold")})
             sold_uuid = unit.get("uuid")
             match = next((p for p in reversed(purchases)
                           if not p["sold"]
