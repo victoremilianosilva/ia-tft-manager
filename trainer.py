@@ -177,7 +177,7 @@ class Trainer:
         # ============================================================
 
         self.writer = SummaryWriter(
-            "tft_logs/AkameIA_V5"
+            "tft_logs/AkameIA_V6"
         )
 
         # ============================================================
@@ -1986,6 +1986,6 @@ if __name__ == "__main__":
     )
 
     trainer.train(
-        total_updates=160,
+        total_updates=280,
         rollout_steps=128
     )
