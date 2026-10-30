@@ -94,7 +94,12 @@ int main() {
         throw std::runtime_error("pair completion should have a clear but bounded acquisition signal");
     }
     if (!(unit_purchase_timing_reward(5, 50, 2, 1, 0.7, 80.0, false, false) > 0.0)) {
-        throw std::runtime_error("useful unit purchase with excess gold should be rewarded in mid-game");
+        throw std::runtime_error("useful unit purchase with capped gold should be rewarded in mid-game");
+    }
+    require_close(unit_purchase_timing_reward(51, 2, 1, 0, 0.8, 80.0, false, false),
+                  0.0, "surplus conversion must not break the 50-gold interest floor");
+    if (!(unit_purchase_timing_reward(52, 2, 1, 0, 0.8, 80.0, false, false) > 0.0)) {
+        throw std::runtime_error("useful purchase may convert surplus while preserving 50 gold");
     }
     require_close(unit_purchase_timing_reward(5, 25, 2, 1, 0.7, 80.0, false, false),
                   0.0, "healthy mid-game should preserve a modest gold reserve");
@@ -226,9 +231,23 @@ int main() {
     }
     require_close(reroll_quality_reward(8.0, 8.0), 0.0,
                   "reroll with no quality improvement receives no reward");
+    if (!(reroll_quality_reward(2.0, 10.0, 50, 25.0, 5) >
+          reroll_quality_reward(2.0, 10.0, 50, 90.0, 2))) {
+        throw std::runtime_error("critical health should increase the value of a genuinely improved shop");
+    }
+    if (!(reroll_quality_reward(2.0, 10.0, 50, 90.0, 5) >
+          reroll_quality_reward(2.0, 10.0, 15, 90.0, 2))) {
+        throw std::runtime_error("later-stage surplus should make a useful reroll more viable");
+    }
     require_close(strategy_action_reward(0, 1, 60, 58, 80.0, 4,
                                          false, true, false, false),
-                  0.0, "non-reroll strategy gets no reroll improvement bonus");
+                  0.0, "strategy shaping stays separate from the shared tactical reroll signal");
+    require_close(strategy_action_reward(3, 2, 30, 28, 80.0, 2,
+                                         false, false, false, false),
+                  -0.02, "safe early slow-roll XP nudge remains small");
+    require_close(strategy_action_reward(3, 2, 60, 58, 25.0, 5,
+                                         false, false, false, false),
+                  0.0, "urgent or surplus XP progress is not penalized by slow-roll label");
     if (!(reroll_quality_reward(2.0, 10.0) > 0.0)) {
         throw std::runtime_error("reroll that reveals a much better offer should be rewarded");
     }
