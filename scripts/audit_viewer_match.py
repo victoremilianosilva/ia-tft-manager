@@ -1526,11 +1526,13 @@ def markdown_report(report: dict) -> str:
                   "| Jogador | Ações com métrica | Ganhos | Pioras | Neutras | Δ médio qualidade | Δ estrutural médio | Δ qualidade quando combate positivo | Δ qualidade quando combate negativo |",
                   "|---|---:|---:|---:|---:|---:|---:|---:|---:|"]
         for player, metrics in sorted(report["board_quality_metrics"].items()):
+            structural_delta = metrics.get("mean_structural_delta")
+            structural_text = f"{structural_delta:.4f}" if structural_delta is not None else "—"
             lines.append(
                 f"| {player} | {metrics['actions_with_metrics']} | "
                 f"{metrics['positive_quality_delta']} | {metrics['negative_quality_delta']} | "
                 f"{metrics['neutral_quality_delta']} | {metrics['mean_quality_delta']:.4f} | "
-                f"{metrics['mean_structural_delta']:.4f} | "
+                f"{structural_text} | "
                 f"{metrics['mean_quality_delta_when_combat_reward_positive']:.4f} | "
                 f"{metrics['mean_quality_delta_when_combat_reward_negative']:.4f} |"
             )
@@ -1541,6 +1543,25 @@ def markdown_report(report: dict) -> str:
             lines.append(f"- {player} — ganho médio por ação: {breakdown}")
         lines += ["", "A pontuação é uma heurística para auditoria, não uma verdade absoluta. "
                   "Compare-a com recompensas e resultados de combate; correlação não prova causalidade.", ""]
+
+    if report.get("item_state_metrics"):
+        lines += ["## Auditoria de itens e componentes", "",
+                  "| Jogador | Snapshots | Com evidência | Itens equipados no tabuleiro | Itens no banco | Itens na bolsa | Componentes | Pico de itens equipados | Pico bolsa |",
+                  "|---|---:|---:|---:|---:|---:|---:|---:|---:|"]
+        for player, metrics in sorted(report["item_state_metrics"].items()):
+            final = metrics.get("final_snapshot") or {}
+            evidence = "OK" if metrics.get("item_evidence_available") else "INCOMPLETA"
+            lines.append(
+                f"| {player} | {metrics.get('snapshots', 0)} | {evidence} "
+                f"({metrics.get('snapshots_with_item_evidence', 0)}) | "
+                f"{final.get('board_equipped_items', '—')} | {final.get('bench_equipped_items', '—')} | "
+                f"{final.get('bag_item_count', '—')} | {final.get('component_count', '—')} | "
+                f"{metrics.get('peak_equipped_items', 0)} | {metrics.get('peak_bag_items', 0)} |"
+            )
+            item_ids = ", ".join(metrics.get("distinct_equipped_item_ids", [])) or "nenhum observado"
+            events = ", ".join(f"{name}: {count}" for name, count in sorted(metrics.get("item_events", {}).items())) or "nenhum evento"
+            lines.append(f"- {player} — IDs equipados observados: {item_ids}; eventos: {events}.")
+        lines += ["", "Os totais finais vêm do último snapshot disponível; picos e IDs distintos são métricas de observação, não inventário atual.", ""]
 
     if report.get("team_progression_metrics"):
         lines += ["## Evolução estratégica por jogador e estágio", "",
@@ -1573,7 +1594,17 @@ def markdown_report(report: dict) -> str:
                 f"{metrics['net_gold_lost_reversed']} | {metrics['upgrade_completing_buys']} | "
                 f"{metrics['core_or_pair_sales']} | {metrics.get('average_strategic_value_per_purchase', 0.0)} |"
             )
-        lines += ["", "As classificações detalhadas e sequências correlacionadas permanecem nos dados estruturados de origem.",
+        ignored_pre_decision = sum(
+            int(metrics.get("core_pair_sales_before_comp_decision_ignored", 0))
+            for metrics in report["purchase_sequence_metrics"].values()
+        )
+        decisions = ", ".join(
+            f"{player}: {metrics.get('composition_decision_round') or 'sem decisão observada'}"
+            for player, metrics in sorted(report["purchase_sequence_metrics"].items())
+        )
+        lines += ["", f"Vendas de core/pares ignoradas antes da decisão da composição: **{ignored_pre_decision}**.",
+                  f"Round da decisão por jogador: {decisions}.",
+                  "As classificações detalhadas e sequências correlacionadas permanecem nos dados estruturados de origem.",
                   "Uma venda sem compra correspondente na janela é UNKNOWN; sequências ambíguas não são penalizadas automaticamente.", ""]
     if report["issues"]:
         lines += ["## Achados", "", "| Severidade | Jogador | Round | Step | Código | Descrição |",
