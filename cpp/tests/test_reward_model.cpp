@@ -57,6 +57,10 @@ int main() {
                   0.02, "XP transition accounts for lost interest breakpoint");
     require_close(xp_level_transition_value(40, 36, 80.0, 2, 5, 5),
                   0.0, "XP without level transition has no progress reward");
+    if (!(xp_level_transition_value(60, 56, 80.0, 4, 7, 8, 20.0) >
+          xp_level_transition_value(60, 56, 80.0, 4, 7, 8, 0.0))) {
+        throw std::runtime_error("a level-up that unlocks deployable board power must be valued above a level-only transition");
+    }
 
     require_close(level(4, 1), 1.5, "level reward cap");
     require_close(economy(50, 20), 0.25 - 0.05, "economy reward");
