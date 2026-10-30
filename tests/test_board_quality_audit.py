@@ -11,8 +11,13 @@ def test_board_quality_audit_tracks_action_delta_and_combat_context():
                 "state_before": {"board_structural_score": -0.5},
                 "state_after": {
                     "board_quality_score": 0.7,
+                    "board_positional_score": 0.6,
                     "board_quality_delta": 0.2,
                     "board_structural_score": -0.1,
+                    "board_exposed_carries": 0,
+                    "board_frontline_count": 2,
+                    "board_isolated_frontline_count": 1,
+                    "board_important_bench_units_unplayed": 0,
                 },
             },
         },
@@ -24,8 +29,13 @@ def test_board_quality_audit_tracks_action_delta_and_combat_context():
                 "state_before": {"board_structural_score": -0.1},
                 "state_after": {
                     "board_quality_score": 0.3,
+                    "board_positional_score": 0.4,
                     "board_quality_delta": -0.4,
                     "board_structural_score": -0.3,
+                    "board_exposed_carries": 1,
+                    "board_frontline_count": 1,
+                    "board_isolated_frontline_count": 2,
+                    "board_important_bench_units_unplayed": 1,
                 },
             },
         },
@@ -37,8 +47,13 @@ def test_board_quality_audit_tracks_action_delta_and_combat_context():
                 "state_before": {"board_structural_score": -0.3},
                 "state_after": {
                     "board_quality_score": 0.3,
+                    "board_positional_score": 0.4,
                     "board_quality_delta": 0.0,
                     "board_structural_score": -0.3,
+                    "board_exposed_carries": 1,
+                    "board_frontline_count": 1,
+                    "board_isolated_frontline_count": 2,
+                    "board_important_bench_units_unplayed": 1,
                 },
             },
         },
@@ -56,6 +71,11 @@ def test_board_quality_audit_tracks_action_delta_and_combat_context():
     assert metrics["mean_quality_delta_when_combat_reward_negative"] == -0.4
     assert metrics["by_action"]["MOVE_BOARD"]["actions"] == 2
     assert metrics["by_action"]["MOVE_BOARD"]["mean_quality_delta"] == -0.1
+    assert metrics["structural_metrics_available"] is True
+    assert metrics["structural_samples"] == 3
+    assert metrics["mean_structural_delta"] == -0.2 / 3
+    assert metrics["mean_structural_score"] == -0.7 / 3
+    assert metrics["mean_positional_score"] == (0.6 + 0.4 + 0.4) / 3
 
 
 def test_board_quality_audit_ignores_entries_without_native_metrics():
