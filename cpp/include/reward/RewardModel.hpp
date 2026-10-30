@@ -258,7 +258,7 @@ inline double buy_xp_timing_reward(
     const double urgency = std::max(health_urgency, stage_urgency);
     if (urgency <= 0.0) return 0.0;
     // Only an actual level transition is rewarded, with a strict cap.
-    return std::min(0.10, 0.10 * liquidity * urgency);
+    return std::min(0.10, 0.09 * liquidity * urgency);
 }
 
 // Marginal value of an XP purchase that actually crosses a level boundary.
@@ -285,7 +285,7 @@ inline double xp_level_transition_value(
         if (gold_before >= threshold && gold_after < threshold) ++lost_breakpoints;
     }
     value -= 0.025 * static_cast<double>(lost_breakpoints);
-    return std::clamp(value, -0.05, 0.12);
+    return std::clamp(value * 0.90, -0.05, 0.12);
 }
 
 // Small additional signal for useful unit acquisitions beyond the early game.
@@ -340,7 +340,7 @@ inline double unit_purchase_timing_reward(
     const double surplus_spending = std::clamp(
         (static_cast<double>(gold_before) - 50.0) / 100.0, 0.0, 1.0);
     return std::min(0.20,
-        (0.12 * liquidity * urgency + 0.08 * surplus_spending) *
+        1.10 * (0.12 * liquidity * urgency + 0.08 * surplus_spending) *
         quality * bench_capacity);
 }
 
