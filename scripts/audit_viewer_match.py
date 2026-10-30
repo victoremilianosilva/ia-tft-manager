@@ -152,7 +152,8 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
     def direction_of(state: dict, payload: dict | None = None) -> str:
         payload = payload or {}
         diagnostics = payload.get("composition_diagnostics") or {}
-        strategy = state.get("strategy") or {}
+        strategy = (state.get("strategy") or payload.get("strategy_after")
+                    or payload.get("strategy") or {})
         if not isinstance(strategy, dict):
             strategy = {}
         value = (state.get("comp_direction") or state.get("composition_direction")
@@ -169,7 +170,11 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
     decision_round = None
     for idx, (entry, payload, _action) in enumerate(actions):
         state_after = payload.get("state_after") or {}
-        explicit_round = state_after.get("composition_decision_round")
+        strategy_after = payload.get("strategy_after") or {}
+        explicit_round = (state_after.get("composition_decision_round")
+                          or payload.get("composition_decision_round")
+                          or (strategy_after.get("composition_decision_round")
+                              if isinstance(strategy_after, dict) else None))
         if explicit_round is not None or direction_of(state_after, payload):
             decision_start_index = idx
             decision_round = explicit_round or get_round(entry)
