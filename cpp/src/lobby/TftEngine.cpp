@@ -4497,6 +4497,15 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         target.board_power = impl_->board_power(i);
         target.synergy_score = impl_->synergy_score(i);
         target.positioning_score = impl_->positioning_score(i);
+        target.board_quality_score = source.info.board_quality_score;
+        target.board_positional_score = source.info.board_positional_score;
+        target.board_structural_score = source.info.board_structural_score;
+        target.board_quality_delta = source.info.board_quality_delta;
+        target.board_exposed_carries = source.info.board_exposed_carries;
+        target.board_frontline_count = source.info.board_frontline_count;
+        target.board_isolated_frontline_count = source.info.board_isolated_frontline_count;
+        target.board_important_bench_units_unplayed =
+            source.info.board_important_bench_units_unplayed;
         target.round_gold = source.economy.round_gold;
         target.round_base_gold = source.economy.round_base_gold;
         target.round_interest = source.economy.round_interest;
