@@ -657,6 +657,15 @@ PYBIND11_MODULE(tft_engine, module) {
                     p["board_power"] = player.board_power;
                     p["synergy_score"] = player.synergy_score;
                     p["positioning_score"] = player.positioning_score;
+                    p["board_quality_score"] = player.board_quality_score;
+                    p["board_positional_score"] = player.board_positional_score;
+                    p["board_structural_score"] = player.board_structural_score;
+                    p["board_quality_delta"] = player.board_quality_delta;
+                    p["board_exposed_carries"] = player.board_exposed_carries;
+                    p["board_frontline_count"] = player.board_frontline_count;
+                    p["board_isolated_frontline_count"] = player.board_isolated_frontline_count;
+                    p["board_important_bench_units_unplayed"] =
+                        player.board_important_bench_units_unplayed;
                     p["round_gold"] = player.round_gold;
                     p["round_base_gold"] = player.round_base_gold;
                     p["round_interest"] = player.round_interest;
