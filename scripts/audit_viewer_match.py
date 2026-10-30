@@ -500,7 +500,7 @@ def audit_composition_direction_changes(entries: list[dict], player: str, report
 
 
 def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
-    """Aggregate structural/positional gains per action alongside combat outcomes."""
+    """Aggregate native positional and structural diagnostics exposed by AuditSnapshot."""
     actions = [
         entry for entry in entries
         if isinstance(entry, dict) and entry.get("event_type") == "action"
@@ -510,24 +510,32 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
         "actions_with_metrics": 0, "positive_quality_delta": 0,
         "negative_quality_delta": 0, "neutral_quality_delta": 0,
         "quality_delta_sum": 0.0, "structural_delta_sum": 0.0,
+        "structural_samples": 0, "structural_score_sum": 0.0,
+        "positional_score_sum": 0.0, "exposed_carries_sum": 0,
+        "frontline_count_sum": 0, "isolated_frontline_count_sum": 0,
+        "important_bench_units_unplayed_sum": 0,
         "positive_combat_outcomes": 0, "negative_combat_outcomes": 0,
         "quality_delta_when_combat_reward_positive": 0.0,
         "quality_delta_when_combat_reward_negative": 0.0,
         "positive_combat_samples": 0, "negative_combat_samples": 0,
         "by_action": {},
     }
-    by_action = defaultdict(lambda: {"actions": 0, "quality_delta_sum": 0.0,
-                                     "positive_gains": 0, "structural_delta_sum": 0.0})
+    by_action = defaultdict(lambda: {
+        "actions": 0, "quality_delta_sum": 0.0, "positive_gains": 0,
+        "structural_delta_sum": 0.0, "structural_samples": 0,
+    })
     for entry in actions:
         payload = entry.get("payload") or {}
         before = payload.get("state_before") or {}
         after = payload.get("state_after") or {}
-        if after.get("board_quality_score") is None:
+        # The native audit snapshot is authoritative. Do not silently convert
+        # missing metrics into zero; older logs are reported as unavailable.
+        if after.get("board_quality_score") is None and after.get("board_positional_score") is None:
             continue
         try:
-            delta = float(after.get("board_quality_delta", 0.0) or 0.0)
-            structural_before = float(before.get("board_structural_score", 0.0) or 0.0)
-            structural_after = float(after.get("board_structural_score", 0.0) or 0.0)
+            score_after = float(after.get("board_quality_score", after.get("positioning_score", 0.0)) or 0.0)
+            score_before = float(before.get("board_quality_score", before.get("positioning_score", score_after)) or 0.0)
+            delta = float(after.get("board_quality_delta", score_after - score_before) or 0.0)
             combat = float(payload.get("combat_reward", 0.0) or 0.0)
         except (TypeError, ValueError):
             continue
@@ -535,17 +543,43 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
         bucket = by_action[action_name]
         bucket["actions"] += 1
         bucket["quality_delta_sum"] += delta
-        bucket["structural_delta_sum"] += structural_after - structural_before
         bucket["positive_gains"] += int(delta > 1e-6)
         totals["actions_with_metrics"] += 1
         totals["quality_delta_sum"] += delta
-        totals["structural_delta_sum"] += structural_after - structural_before
         if delta > 1e-6:
             totals["positive_quality_delta"] += 1
         elif delta < -1e-6:
             totals["negative_quality_delta"] += 1
         else:
             totals["neutral_quality_delta"] += 1
+
+        structural_after = after.get("board_structural_score")
+        if structural_after is not None:
+            try:
+                structural_after = float(structural_after)
+                structural_before = float(before.get("board_structural_score", structural_after) or 0.0)
+            except (TypeError, ValueError):
+                structural_after = None
+            if structural_after is not None:
+                structural_delta = structural_after - structural_before
+                totals["structural_samples"] += 1
+                totals["structural_score_sum"] += structural_after
+                totals["structural_delta_sum"] += structural_delta
+                bucket["structural_samples"] += 1
+                bucket["structural_delta_sum"] += structural_delta
+        for field, total_key in (
+            ("board_positional_score", "positional_score_sum"),
+            ("board_exposed_carries", "exposed_carries_sum"),
+            ("board_frontline_count", "frontline_count_sum"),
+            ("board_isolated_frontline_count", "isolated_frontline_count_sum"),
+            ("board_important_bench_units_unplayed", "important_bench_units_unplayed_sum"),
+        ):
+            value = after.get(field)
+            if value is not None:
+                try:
+                    totals[total_key] += float(value)
+                except (TypeError, ValueError):
+                    pass
         if combat > 1e-6:
             totals["positive_combat_outcomes"] += 1
             totals["quality_delta_when_combat_reward_positive"] += delta
@@ -554,14 +588,16 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
             totals["negative_combat_outcomes"] += 1
             totals["quality_delta_when_combat_reward_negative"] += delta
             totals["negative_combat_samples"] += 1
-    totals["mean_quality_delta"] = (
-        totals["quality_delta_sum"] / totals["actions_with_metrics"]
-        if totals["actions_with_metrics"] else 0.0
-    )
-    totals["mean_structural_delta"] = (
-        totals["structural_delta_sum"] / totals["actions_with_metrics"]
-        if totals["actions_with_metrics"] else 0.0
-    )
+
+    n = totals["actions_with_metrics"]
+    structural_n = totals["structural_samples"]
+    totals["mean_quality_delta"] = totals["quality_delta_sum"] / n if n else 0.0
+    totals["mean_structural_delta"] = totals["structural_delta_sum"] / structural_n if structural_n else None
+    totals["mean_structural_score"] = totals["structural_score_sum"] / structural_n if structural_n else None
+    totals["mean_positional_score"] = totals["positional_score_sum"] / n if n else None
+    for key in ("exposed_carries_sum", "frontline_count_sum",
+                "isolated_frontline_count_sum", "important_bench_units_unplayed_sum"):
+        totals["mean_" + key.removesuffix("_sum")] = totals[key] / n if n else None
     for label, sample_count, key in (
         ("mean_quality_delta_when_combat_reward_positive", totals["positive_combat_samples"],
          "quality_delta_when_combat_reward_positive"),
@@ -569,17 +605,113 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
          "quality_delta_when_combat_reward_negative"),
     ):
         totals[label] = totals[key] / sample_count if sample_count else 0.0
+    totals["structural_metrics_available"] = structural_n > 0
     totals["by_action"] = {
         name: {
             **values,
             "mean_quality_delta": values["quality_delta_sum"] / values["actions"]
                 if values["actions"] else 0.0,
-            "mean_structural_delta": values["structural_delta_sum"] / values["actions"]
-                if values["actions"] else 0.0,
+            "mean_structural_delta": values["structural_delta_sum"] / values["structural_samples"]
+                if values["structural_samples"] else None,
         }
         for name, values in sorted(by_action.items())
     }
     report.setdefault("board_quality_metrics", {})[player] = totals
+
+
+def audit_item_state(entries: list[dict], player: str, report: dict) -> None:
+    """Audit equipped items, loose components and item-bag state from native snapshots."""
+    snapshots = 0
+    evidence_snapshots = 0
+    equipped_observations = 0
+    item_ids_seen = set()
+    component_ids_seen = set()
+    bag_item_ids_seen = set()
+    item_events = Counter()
+    final = None
+    peaks = {"equipped": 0, "bag": 0, "components": 0}
+
+    def ids_from_unit(unit: dict) -> list[str]:
+        values = unit.get("items", unit.get("equipped_items", unit.get("item_ids", [])))
+        if not isinstance(values, list):
+            return []
+        result = []
+        for value in values:
+            if isinstance(value, str) and value:
+                result.append(value)
+            elif isinstance(value, dict):
+                item_id = value.get("id", value.get("api_name", value.get("apiName", value.get("name"))))
+                if isinstance(item_id, str) and item_id:
+                    result.append(item_id)
+        return result
+
+    ordered = sorted(
+        (entry for entry in entries if isinstance(entry, dict)
+         and entry.get("event_type") in ("action", "round_finished")),
+        key=lambda e: (e.get("sequence_id", 0), e.get("step", 0)),
+    )
+    for entry in ordered:
+        payload = entry.get("payload") or {}
+        state = payload.get("state_after") or {}
+        if not isinstance(state, dict):
+            continue
+        snapshots += 1
+        board = _occupied_units(state, "board")
+        bench = _occupied_units(state, "bench")
+        has_unit_item_fields = any(
+            any(key in unit for key in ("items", "equipped_items", "item_ids"))
+            for unit in board + bench
+        )
+        bag = state.get("item_inventory", state.get("item_inventory_after"))
+        components = state.get("item_components", state.get("item_components_after"))
+        has_bag_fields = isinstance(bag, list) or isinstance(components, list)
+        equipped = [item for unit in board + bench for item in ids_from_unit(unit)]
+        if has_unit_item_fields or has_bag_fields:
+            evidence_snapshots += 1
+        if has_unit_item_fields:
+            equipped_observations += 1
+        item_ids_seen.update(equipped)
+        if isinstance(bag, list):
+            bag_item_ids_seen.update(str(value) for value in bag if isinstance(value, str))
+        if isinstance(components, list):
+            component_ids_seen.update(str(value) for value in components if isinstance(value, str))
+        bag_count = len(bag) if isinstance(bag, list) else 0
+        component_count = len(components) if isinstance(components, list) else 0
+        peaks["equipped"] = max(peaks["equipped"], len(equipped))
+        peaks["bag"] = max(peaks["bag"], bag_count)
+        peaks["components"] = max(peaks["components"], component_count)
+        final = {
+            "board_equipped_items": sum(len(ids_from_unit(unit)) for unit in board),
+            "bench_equipped_items": sum(len(ids_from_unit(unit)) for unit in bench),
+            "bag_item_count": bag_count,
+            "component_count": component_count,
+            "board_units_with_items": sum(bool(ids_from_unit(unit)) for unit in board),
+            "bench_units_with_items": sum(bool(ids_from_unit(unit)) for unit in bench),
+        }
+        events = payload.get("engine_events", payload.get("events", []))
+        if isinstance(events, list):
+            for event in events:
+                value = event if isinstance(event, str) else json.dumps(event, ensure_ascii=False)
+                for token in ("COMPONENT_LOOT_GRANTED", "COMPONENT_ANVIL_GRANTED",
+                              "COMPLETED_ITEM_ANVIL_GRANTED", "ITEM_EQUIPPED",
+                              "ITEM_CRAFTED", "ITEM_RETURNED"):
+                    if token in value:
+                        item_events[token] += 1
+
+    report.setdefault("item_state_metrics", {})[player] = {
+        "snapshots": snapshots,
+        "snapshots_with_item_evidence": evidence_snapshots,
+        "equipped_item_observations": equipped_observations,
+        "item_evidence_available": evidence_snapshots > 0,
+        "distinct_equipped_item_ids": sorted(item_ids_seen),
+        "distinct_bag_item_ids": sorted(bag_item_ids_seen),
+        "distinct_component_ids": sorted(component_ids_seen),
+        "peak_equipped_items": peaks["equipped"],
+        "peak_bag_items": peaks["bag"],
+        "peak_components": peaks["components"],
+        "final_snapshot": final,
+        "item_events": dict(item_events),
+    }
 
 
 def audit_team_progression(entries: list[dict], player: str, report: dict) -> None:
@@ -942,6 +1074,7 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
     audit_economic_actions(doc["entries"], player, report)
     audit_composition_direction_changes(doc["entries"], player, report)
     audit_board_quality(doc["entries"], player, report)
+    audit_item_state(doc["entries"], player, report)
     audit_positioning_and_composition(doc["entries"], player, report)
     audit_team_progression(doc["entries"], player, report)
     audit_decision_context(doc["entries"], player, report)
