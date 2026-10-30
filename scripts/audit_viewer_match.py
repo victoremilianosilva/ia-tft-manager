@@ -139,7 +139,7 @@ def _pair_count(state: dict) -> int:
 
 
 def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> None:
-    """Correlate buys and sells by champion across the next 1/2/4 player actions."""
+    """Correlate buys/sells and count comp-core sales only after the comp decision."""
     actions = []
     for entry in sorted(entries, key=lambda e: (e.get("sequence_id", 0), e.get("step", 0))):
         if not isinstance(entry, dict) or entry.get("event_type") not in ("action", "round_finished"):
@@ -149,11 +149,40 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
         if action:
             actions.append((entry, payload, action))
 
+    def direction_of(state: dict, payload: dict | None = None) -> str:
+        payload = payload or {}
+        diagnostics = payload.get("composition_diagnostics") or {}
+        strategy = state.get("strategy") or {}
+        value = (state.get("comp_direction") or state.get("composition_direction")
+                 or strategy.get("composition_direction")
+                 or diagnostics.get("composition_direction") or "")
+        value = str(value).strip()
+        return "" if value in ("", "—", "-", "None", "null") else value
+
+    # The first observed non-empty direction is the decision boundary. Earlier
+    # sales are part of scouting and must not be judged against a comp that did
+    # not exist yet. This also works with older logs that lack an explicit
+    # composition_decision_round field.
+    decision_start_index = None
+    decision_round = None
+    for idx, (entry, payload, _action) in enumerate(actions):
+        state_after = payload.get("state_after") or {}
+        explicit_round = state_after.get("composition_decision_round")
+        if explicit_round is not None or direction_of(state_after, payload):
+            decision_start_index = idx
+            decision_round = explicit_round or get_round(entry)
+            break
+
     metrics = {
         "buys": 0, "sells": 0, "reversed_1": 0, "reversed_2": 0, "reversed_4": 0,
         "net_gold_lost_reversed": 0, "upgrade_completing_buys": 0,
         "buys_with_positive_comp_fit": 0, "buys_with_board_gain": 0, "buys_with_synergy_milestone": 0,
-        "core_or_pair_sales": 0, "core_unit_sales": 0, "classified_sales": {}, "purchase_records": [],
+        "core_or_pair_sales": 0, "core_unit_sales": 0,
+        "core_pair_sales_before_comp_decision_ignored": 0,
+        "composition_decision_found": decision_start_index is not None,
+        "composition_decision_round": decision_round,
+        "composition_decision_action_index": decision_start_index,
+        "classified_sales": {}, "purchase_records": [],
     }
     purchases = []
     classifications = Counter()
@@ -184,13 +213,14 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
             if board_gain:
                 strategic_value += 1.0
             record = {
-                "champion": champion, "uuid": unit.get("uuid"), "buy_action_index": idx, "step": step, "round": rnd,
+                "champion": champion, "uuid": unit.get("uuid"), "buy_action_index": idx,
+                "step": step, "round": rnd,
                 "cost": max(0, int(unit.get("cost", 0) or 0)), "fit_score": fit_score,
                 "strategic_value": round(strategic_value, 4),
                 "upgrade_completed": upgrade_completed, "pair_count_before": _pair_count(before),
                 "pair_count_after": _pair_count(after), "board_power_before": _board_power(before),
                 "board_power_after": _board_power(after), "gold_before": before.get("gold"),
-                "gold_after": after.get("gold"), "comp_direction": after.get("comp_direction"),
+                "gold_after": after.get("gold"), "comp_direction": direction_of(after, payload),
                 "sold": False, "classification": "NOT_REVERSED",
             }
             purchases.append(record)
@@ -203,21 +233,34 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
                 continue
             champion = unit_name(unit)
             metrics["sells"] += 1
+            after_comp_decision = (
+                decision_start_index is not None and idx >= decision_start_index
+            )
             core_units = [str(value).casefold() for value in (before.get("core_units") or [])]
-            core_sale = any(champion.casefold() == core or champion.casefold() in core
-                            or core in champion.casefold() for core in core_units if core)
+            core_sale = after_comp_decision and any(
+                champion.casefold() == core or champion.casefold() in core
+                or core in champion.casefold() for core in core_units if core
+            )
+            pair_lost = after_comp_decision and _pair_count(before) > _pair_count(after)
+            if not after_comp_decision and (
+                _pair_count(before) > _pair_count(after)
+                or any(champion.casefold() == core or champion.casefold() in core
+                       or core in champion.casefold()
+                       for core in core_units if core)
+            ):
+                metrics["core_pair_sales_before_comp_decision_ignored"] += 1
             if core_sale:
                 metrics["core_unit_sales"] += 1
-            pair_lost = _pair_count(before) > _pair_count(after)
             if core_sale or pair_lost:
                 metrics["core_or_pair_sales"] += 1
                 code = "SOLD_CORE_UNIT" if core_sale else "SOLD_UPGRADE_PAIR_COPY"
-                severity = "HIGH" if core_sale or pair_lost else "MEDIUM"
+                severity = "HIGH"
                 add_issue(report, severity, code, player, rnd, step,
-                          f"Venda de '{champion}' removeu uma unidade core ou reduziu pares disponíveis; verificar custo estratégico.",
+                          f"Venda de '{champion}' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense.",
                           {"champion": champion, "core_sale": core_sale, "pair_lost": pair_lost,
+                           "composition_decision_round": decision_round,
                            "pair_count_before": _pair_count(before), "pair_count_after": _pair_count(after),
-                           "gold_before": before.get("gold"), "gold_after": after.get("gold")})
+                           "gold_before": before.get("gold"), "gold_after": after.get("gold)})
             sold_uuid = unit.get("uuid")
             match = next((p for p in reversed(purchases)
                           if not p["sold"]
@@ -231,8 +274,8 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
             distance = idx - match["buy_action_index"]
             bench_units = _occupied_units(before, "bench")
             bench_was_full = bool(before.get("bench")) and len(bench_units) >= len(before.get("bench") or [])
-            comp_changed = (match.get("comp_direction") != before.get("comp_direction")
-                            and bool(match.get("comp_direction") or before.get("comp_direction")))
+            comp_changed = (match.get("comp_direction") != direction_of(before, payload)
+                            and bool(match.get("comp_direction") or direction_of(before, payload)))
             intervening = actions[match["buy_action_index"] + 1:idx + 1]
             deployed = any(any(unit_name(u).casefold() == champion.casefold()
                                for u in _occupied_units((item[1].get("state_after") or {}), "board"))
@@ -271,7 +314,6 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
     metrics["board_gain_rate"] = round(metrics["buys_with_board_gain"] / buys, 4)
     metrics["synergy_milestone_rate"] = round(metrics["buys_with_synergy_milestone"] / buys, 4)
     report.setdefault("purchase_sequence_metrics", {})[player] = metrics
-
 
 
 def audit_economic_actions(entries: list[dict], player: str, report: dict) -> None:
