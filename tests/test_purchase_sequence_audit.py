@@ -82,8 +82,8 @@ def test_core_and_pair_sales_are_counted_only_after_first_comp_direction():
     core = _unit("Carry", cost=4)
     before_decision = _entry(
         1, 1, [5, 0, 0, 0, 0, 0], "SELL",
-        _state(10, bench=[early], comp=""),
-        _state(11, bench=[], comp=""),
+        _state(10, bench=[early], comp="", core_units=["Briar"]),
+        _state(11, bench=[], comp="", core_units=["Briar"]),
     )
     decision = _entry(
         2, 2, [6, 0, 0, 0, 0, 0], "PASS",
