@@ -8,12 +8,12 @@ def _unit(champion="", *, cost=1, star=1, impact=2.0, occupied=True):
     }
 
 
-def _state(gold, *, bench=None, shop=None, board=None, comp="Trait"):
+def _state(gold, *, bench=None, shop=None, board=None, comp="Trait", core_units=None):
     def padded(values, size):
         values = list(values or [])
         return values + [_unit(occupied=False) for _ in range(max(0, size - len(values)))]
     return {
-        "gold": gold, "comp_direction": comp,
+        "gold": gold, "comp_direction": comp, "core_units": list(core_units or []),
         "bench": padded(bench, 9),
         "shop": padded(shop, 5),
         "board": padded(board, 28),
@@ -92,8 +92,8 @@ def test_core_and_pair_sales_are_counted_only_after_first_comp_direction():
     )
     after_decision = _entry(
         3, 3, [5, 0, 0, 0, 0, 0], "SELL",
-        _state(11, bench=[core], comp="CarryTrait"),
-        _state(15, bench=[], comp="CarryTrait"),
+        _state(11, bench=[core], comp="CarryTrait", core_units=["Carry"]),
+        _state(15, bench=[], comp="CarryTrait", core_units=["Carry"]),
     )
     report = {"issues": []}
     audit_purchase_sequences([before_decision, decision, after_decision], "Jogador 1", report)
