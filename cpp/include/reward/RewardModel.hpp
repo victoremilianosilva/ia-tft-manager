@@ -117,6 +117,7 @@ inline double strategy_action_reward(
     double reward = 0.0;
     switch (strategy_id) {
         case 0: // ECON: preserve interest; never treat XP as the default use of gold.
+            if (action_type == 1 && !reroll_improved) reward -= 0.015;
             if (new_gold >= 50 && old_gold < 50) reward += 0.04;
             if (old_gold >= 50 && new_gold >= 50 &&
                 action_type == 0 && useful_purchase) reward += 0.03;
@@ -131,6 +132,7 @@ inline double strategy_action_reward(
             }
             break;
         case 1: // STABILIZE: favor playable-board upgrades over routine leveling.
+            if (action_type == 1 && !reroll_improved) reward -= 0.015;
             if (action_type == 0 && useful_purchase) reward += 0.07;
             if (action_type == 2 && leveled)
                 reward += hp <= 30.0 ? 0.07 : (old_gold >= 50 ? 0.05 : 0.015);
@@ -153,10 +155,12 @@ inline double strategy_action_reward(
                 hp > 50.0 && old_gold < 50) reward -= 0.02;
             break;
         case 4: // ALL_IN: useful immediate strength over passive saving.
+            if (action_type == 1 && !reroll_improved) reward -= 0.015;
             if (action_type == 0 && useful_purchase) reward += 0.06;
             if (hp <= 15.0 && action_type == 6) reward -= 0.05;
             break;
         case 5: // WINSTREAK: preserve strength, avoid wasteful economy actions.
+            if (action_type == 1 && !reroll_improved) reward -= 0.015;
             if (action_type == 0 && useful_purchase) reward += 0.05;
             if (action_type == 2 && leveled) reward += 0.04;
             break;
