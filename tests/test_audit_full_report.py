@@ -36,13 +36,13 @@ def test_full_report_keeps_summary_and_adds_decision_evidence():
 
     full = markdown_full_report(report)
     assert full.startswith("# Auditoria da partida TFT")
-    assert "# Anexo detalhado — evidências por decisão" in full
-    assert "Máscaras e validação da ação" in full
-    assert '"type_mask": [' in full
-    assert '"focus_fit_score": 1.0' in full
-    assert '"inventory_after": [' in full
-    assert "Achados com evidências" in full
-    assert "Campos ausentes permanecem ausentes" in full
+    assert "## Evidências resumidas dos achados" in full
+    assert "Legalidade: tipo permitido" in full
+    assert '"type_mask": [' not in full
+    assert '"focus_fit_score": 1.0' not in full
+    assert '"inventory_after": [' not in full
+    assert "Evidência adicional: gold=12" in full
+    assert "Campos ausentes são exibidos" in full
 
 
 def test_full_report_handles_empty_decision_timeline():
@@ -56,5 +56,5 @@ def test_full_report_handles_empty_decision_timeline():
         "notes": [],
         "decision_timeline": [],
     })
-    assert "Índice de decisões (0 registros)" in full
-    assert "Evidência detalhada por decisão" in full
+    assert "Decisões com timeline: 0" in full
+    assert "~~~json" not in full
