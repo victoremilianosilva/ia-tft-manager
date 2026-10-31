@@ -604,6 +604,7 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
         "negative_quality_delta": 0, "neutral_quality_delta": 0,
         "quality_delta_sum": 0.0, "structural_delta_sum": 0.0,
         "structural_samples": 0, "structural_score_sum": 0.0,
+        "positional_samples": 0, "role_diagnostic_samples": 0,
         "positional_score_sum": 0.0, "exposed_carries_sum": 0,
         "frontline_count_sum": 0, "isolated_frontline_count_sum": 0,
         "important_bench_units_unplayed_sum": 0,
@@ -663,19 +664,22 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
                 totals["structural_delta_sum"] += structural_delta
                 bucket["structural_samples"] += 1
                 bucket["structural_delta_sum"] += structural_delta
-        for field, total_key in (
-            ("board_positional_score", "positional_score_sum"),
-            ("board_exposed_carries", "exposed_carries_sum"),
-            ("board_frontline_count", "frontline_count_sum"),
-            ("board_isolated_frontline_count", "isolated_frontline_count_sum"),
-            ("board_important_bench_units_unplayed", "important_bench_units_unplayed_sum"),
-        ):
-            value = after.get(field)
-            if value is not None:
-                try:
-                    totals[total_key] += float(value)
-                except (TypeError, ValueError):
-                    pass
+        if _board_eval_snapshot_valid(after):
+            totals["positional_samples"] += 1
+            totals["role_diagnostic_samples"] += 1
+            for field, total_key in (
+                ("board_positional_score", "positional_score_sum"),
+                ("board_exposed_carries", "exposed_carries_sum"),
+                ("board_frontline_count", "frontline_count_sum"),
+                ("board_isolated_frontline_count", "isolated_frontline_count_sum"),
+                ("board_important_bench_units_unplayed", "important_bench_units_unplayed_sum"),
+            ):
+                value = after.get(field)
+                if value is not None:
+                    try:
+                        totals[total_key] += float(value)
+                    except (TypeError, ValueError):
+                        pass
         if combat > 1e-6:
             totals["positive_combat_outcomes"] += 1
             totals["quality_delta_when_combat_reward_positive"] += delta
@@ -690,10 +694,14 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
     totals["mean_quality_delta"] = totals["quality_delta_sum"] / n if n else 0.0
     totals["mean_structural_delta"] = totals["structural_delta_sum"] / structural_n if structural_n else None
     totals["mean_structural_score"] = totals["structural_score_sum"] / structural_n if structural_n else None
-    totals["mean_positional_score"] = totals["positional_score_sum"] / n if n else None
+    positional_n = totals["positional_samples"]
+    role_n = totals["role_diagnostic_samples"]
+    totals["mean_positional_score"] = (
+        totals["positional_score_sum"] / positional_n if positional_n else None
+    )
     for key in ("exposed_carries_sum", "frontline_count_sum",
                 "isolated_frontline_count_sum", "important_bench_units_unplayed_sum"):
-        totals["mean_" + key.removesuffix("_sum")] = totals[key] / n if n else None
+        totals["mean_" + key.removesuffix("_sum")] = totals[key] / role_n if role_n else None
     for label, sample_count, key in (
         ("mean_quality_delta_when_combat_reward_positive", totals["positive_combat_samples"],
          "quality_delta_when_combat_reward_positive"),
