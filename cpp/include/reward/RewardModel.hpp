@@ -130,7 +130,7 @@ inline double strategy_action_reward(
             }
             break;
         case 1: // STABILIZE: favor playable-board upgrades over routine leveling.
-            if (action_type == 1 && !reroll_improved) reward -= 0.015;
+            if (action_type == 1) reward -= 0.025;
             if (action_type == 0 && useful_purchase) reward += 0.07;
             if (action_type == 2 && leveled)
                 reward += 0.95 * (hp <= 30.0 ? 0.07 : (old_gold >= 50 ? 0.05 : 0.015));
@@ -140,9 +140,8 @@ inline double strategy_action_reward(
         case 2: // FAST8 is a plan, not permission to ignore early-game economy.
             if (action_type == 2 && leveled)
                 reward += hp <= 30.0 ? 0.11 : (old_gold >= 50 ? 0.08 : 0.03);
-            // A good reroll remains a valid tactical choice; do not penalize it
-            // simply because the active composition aims for level eight.
-            if (action_type == 1 && !reroll_improved) reward -= 0.015;
+            // FAST8 advances through XP and useful purchases, not reroll.
+            if (action_type == 1) reward -= 0.025;
             break;
         case 3: // SLOWROLL: reward improved rolls without blocking useful XP progress.
             if (action_type == 1) reward += reroll_improved ? 0.12 : -0.025;
@@ -153,12 +152,12 @@ inline double strategy_action_reward(
                 hp > 50.0 && old_gold < 50) reward -= 0.02;
             break;
         case 4: // ALL_IN: useful immediate strength over passive saving.
-            if (action_type == 1 && !reroll_improved) reward -= 0.015;
+            if (action_type == 1) reward -= 0.025;
             if (action_type == 0 && useful_purchase) reward += 0.06;
             if (hp <= 15.0 && action_type == 6) reward -= 0.05;
             break;
         case 5: // WINSTREAK: preserve strength, avoid wasteful economy actions.
-            if (action_type == 1 && !reroll_improved) reward -= 0.015;
+            if (action_type == 1) reward -= 0.025;
             if (action_type == 0 && useful_purchase) reward += 0.05;
             if (action_type == 2 && leveled) reward += 0.04;
             break;
@@ -477,9 +476,7 @@ inline double reroll_quality_reward(
     return 0.14 * improvement * liquidity * stage_factor * pressure_factor;
 }
 
-// Shared tactical reroll gate. Existing behavior is preserved for SLOWROLL,
-// critical HP, and rolls that leave at least 50 gold. A smaller signal is
-// introduced only from stage 4 when the roll spends surplus but retains 40g.
+// Shared reroll gate: only SLOWROLL receives positive shop-quality shaping.
 inline double tactical_reroll_quality_scale(
     int active_strategy,
     double hp,
