@@ -226,6 +226,7 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
         "buys_with_positive_comp_fit": 0, "buys_with_board_gain": 0, "buys_with_synergy_milestone": 0,
         "core_or_pair_sales": 0, "core_unit_sales": 0,
         "core_pair_sales_before_comp_decision_ignored": 0,
+        "confirmed_pair_path_losses": 0, "ambiguous_identity_sales": 0,
         "composition_decision_found": decision_start_index is not None,
         "composition_decision_round": decision_round,
         "composition_decision_action_index": decision_start_index,
@@ -723,6 +724,20 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
     report.setdefault("board_quality_metrics", {})[player] = totals
 
 
+def _occupied_item_units(state: dict, location: str) -> list[dict]:
+    """Item snapshots may omit champion names; occupancy is sufficient here."""
+    result = []
+    values = state.get(location) or []
+    if not isinstance(values, list):
+        return result
+    for item in values:
+        candidates = item if isinstance(item, list) else [item]
+        for unit in candidates:
+            if isinstance(unit, dict) and unit.get("occupied", True):
+                result.append(unit)
+    return result
+
+
 def audit_item_state(entries: list[dict], player: str, report: dict) -> None:
     """Audit equipped items, loose components and item-bag state from native snapshots."""
     snapshots = 0
@@ -760,8 +775,8 @@ def audit_item_state(entries: list[dict], player: str, report: dict) -> None:
         if not isinstance(state, dict) or state.get("alive") is False or state.get("eliminated"):
             continue
         snapshots += 1
-        board = _occupied_units(state, "board")
-        bench = _occupied_units(state, "bench")
+        board = _occupied_item_units(state, "board")
+        bench = _occupied_item_units(state, "bench")
         has_unit_item_fields = any(
             any(key in unit for key in ("items", "equipped_items", "item_ids"))
             for unit in board + bench
