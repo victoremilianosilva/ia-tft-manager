@@ -716,7 +716,7 @@ def audit_item_state(entries: list[dict], player: str, report: dict) -> None:
     for entry in ordered:
         payload = entry.get("payload") or {}
         state = payload.get("state_after") or {}
-        if not isinstance(state, dict):
+        if not isinstance(state, dict) or state.get("alive") is False or state.get("eliminated"):
             continue
         snapshots += 1
         board = _occupied_units(state, "board")
@@ -975,7 +975,8 @@ def audit_positioning_and_composition(entries: list[dict], player: str, report: 
             continue
         payload = entry.get("payload") or {}
         state = payload.get("state_after") or payload.get("state") or {}
-        if not isinstance(state, dict) or not state:
+        if (not isinstance(state, dict) or not state
+                or state.get("alive") is False or state.get("eliminated")):
             continue
         board_rows = []
         for slot, unit in [(slot, unit) for _, slot, unit in iter_units(state, ("board",))]:
