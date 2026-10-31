@@ -540,8 +540,22 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
         if after.get("board_quality_score") is None and after.get("board_positional_score") is None:
             continue
         try:
-            score_after = float(after.get("board_quality_score", after.get("positioning_score", 0.0)) or 0.0)
-            score_before = float(before.get("board_quality_score", before.get("positioning_score", score_after)) or 0.0)
+            score_after_raw = after.get("board_quality_score")
+            if score_after_raw is None:
+                score_after_raw = after.get("board_positional_score")
+            if score_after_raw is None:
+                score_after_raw = after.get("positioning_score")
+            score_before_raw = before.get("board_quality_score")
+            if score_before_raw is None:
+                score_before_raw = before.get("board_positional_score")
+            if score_before_raw is None:
+                score_before_raw = before.get("positioning_score")
+            if score_after_raw is None:
+                continue
+            if score_before_raw is None:
+                score_before_raw = score_after_raw
+            score_after = float(score_after_raw)
+            score_before = float(score_before_raw)
             delta = float(after.get("board_quality_delta", score_after - score_before) or 0.0)
             combat = float(payload.get("combat_reward", 0.0) or 0.0)
         except (TypeError, ValueError):
@@ -1630,7 +1644,7 @@ def markdown_report(report: dict) -> str:
               "- Achados CRITICAL/HIGH são sinais fortes para investigar, não prova isolada da causa.",
               "- Troca de comp direction pode ser legítima conforme loja, unidades, nível e economia.",
               "- A checagem de fusão conta apenas unidades compradas no tabuleiro+banco, nunca as da loja.",
-              "- O JSON estruturado é a fonte primária para estado de decisão, máscaras, política e recompensas; .tft é analisado apenas para jogadores sem sidecar JSON."
+              "- Os registros estruturados são a fonte primária para estado de decisão, máscaras, política e recompensas; registros textuais legados são usados apenas quando faltam dados estruturados."
               "- A auditoria não pode decidir se uma compra era ótima sem comparar loja, ouro, limite do banco, máscaras e avaliação de composição no mesmo estado.",
               "- Uma fusão só pode ser confirmada com segurança se o log registrar cópias elegíveis antes/depois e o evento de merge; contar cópias é apenas um indício.",
               "- Alertas de posicionamento dependem de role/row nos dados; em tabuleiro achatado assume-se grade 4x7 com rows 0-1 na frontline, convenção a validar no Viewer.",
