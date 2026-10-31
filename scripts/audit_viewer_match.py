@@ -157,11 +157,11 @@ def _owned_copy_count(state: dict, champion: str) -> int:
     return copies
 
 
-def _one_star_copy_count(state: dict, champion: str) -> int:
+def _same_star_copy_count(state: dict, champion: str, star: int) -> int:
     key = _normalized_unit_id(champion)
     return sum(1 for _, _, unit in iter_units(state)
                if _normalized_unit_id(unit) == key
-               and int(unit.get("star", 1) or 1) == 1)
+               and int(unit.get("star", 1) or 1) == star)
 
 
 def _newly_acquired_uuid(before: dict, after: dict, champion: str) -> str | None:
@@ -291,11 +291,11 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
             copies_before = _owned_copy_count(before, champion)
             copies_after = _owned_copy_count(after, champion)
             # Only flag loss when this exact champion falls below its owned upgrade threshold.
-            one_star_before = _one_star_copy_count(before, champion)
-            one_star_after = _one_star_copy_count(after, champion)
             sold_star = int(unit.get("star", 1) or 1)
-            pair_lost = (after_comp_decision and sold_star == 1
-                         and one_star_before >= 2 and one_star_after < 2)
+            same_star_before = _same_star_copy_count(before, champion, sold_star)
+            same_star_after = _same_star_copy_count(after, champion, sold_star)
+            pair_lost = (after_comp_decision and sold_star in (1, 2)
+                         and same_star_before >= 2 and same_star_after < 2)
             # A sale can be correct when it enables a stronger board or merge.
             # A SELL cannot itself create an upgrade or add board units. Only
             # live, measured synergy/positioning deltas may compensate this sale.
@@ -315,7 +315,7 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
             core_sale = core_sale and not compensated_sale
             pair_lost = pair_lost and not compensated_sale
             if not after_comp_decision and (
-                (sold_star == 1 and one_star_before >= 2 and one_star_after < 2) or champion_key in core_keys
+                (sold_star in (1, 2) and same_star_before >= 2 and same_star_after < 2) or champion_key in core_keys
             ):
                 metrics["core_pair_sales_before_comp_decision_ignored"] += 1
             if pair_lost:
