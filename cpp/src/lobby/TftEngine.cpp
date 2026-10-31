@@ -3824,6 +3824,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 action_reward += reward_model::surplus_xp_spending_reward(
                     old_gold, economy.gold, static_cast<int>(lobby.stage),
                     xp_strategy_id, useful_shop_purchase_available);
+                action_reward += reward_model::xp_progress_reward(
+                    old_gold, economy.gold, old_level, economy.level,
+                    old_xp, economy.xp, this->info.hp, static_cast<int>(lobby.stage),
+                    xp_strategy_id, useful_shop_purchase_available);
             }
             // RewardManager tracks the last rewarded level, initialized to 1,
             // not merely the level at the start of this action.
