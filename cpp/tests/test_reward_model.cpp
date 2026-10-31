@@ -397,6 +397,11 @@ int main() {
     require_close(strategy_action_reward(0, 0, 55, 50, 80.0, 4,
                                          true, false, false, false),
                   0.03, "ECON allows useful spending from surplus above 50");
+    require_close(strategy_action_reward(1, 2, 60, 56, 80.0, 4,
+                                         false, false, true, false),
+                  0.0475, "STABILIZE XP reward is reduced by five percent");
+    require_close(surplus_xp_spending_reward(54, 50, 4, 1, false), 0.02014,
+                  "STABILIZE surplus XP fallback uses the same five-percent reduction");
     require_close(strategy_action_reward(2, 2, 40, 35, 80.0, 4,
                                          false, false, true, true),
                   0.03, "FAST8 keeps level progress modest below the interest cap");
