@@ -138,6 +138,46 @@ def _pair_count(state: dict) -> int:
     return sum(1 for count in counts.values() if count >= 2)
 
 
+
+
+def _normalized_unit_id(value: Any) -> str:
+    raw = unit_name(value) if isinstance(value, dict) else str(value or "")
+    normalized = re.sub(r"[^a-z0-9]+", "", raw.casefold())
+    return re.sub(r"^tft[0-9]*", "", normalized)
+
+
+def _owned_copy_count(state: dict, champion: str) -> int:
+    key = _normalized_unit_id(champion)
+    copies = 0
+    for _, _, unit in iter_units(state):
+        if _normalized_unit_id(unit) != key:
+            continue
+        star = max(1, min(3, int(unit.get("star", 1) or 1)))
+        copies += 1 if star == 1 else (3 if star == 2 else 9)
+    return copies
+
+
+def _same_star_copy_count(state: dict, champion: str, star: int) -> int:
+    key = _normalized_unit_id(champion)
+    return sum(1 for _, _, unit in iter_units(state)
+               if _normalized_unit_id(unit) == key
+               and int(unit.get("star", 1) or 1) == star)
+
+
+def _newly_acquired_uuid(before: dict, after: dict, champion: str) -> str | None:
+    before_ids = {str(u.get("uuid")) for _, _, u in iter_units(before) if u.get("uuid")}
+    key = _normalized_unit_id(champion)
+    added = [u for _, _, u in iter_units(after)
+             if _normalized_unit_id(u) == key and u.get("uuid")
+             and str(u.get("uuid")) not in before_ids]
+    return str(added[0]["uuid"]) if len(added) == 1 else None
+
+
+def _plan_signature(state: dict) -> tuple:
+    return (_normalized_unit_id(state.get("comp_direction")),
+            _normalized_unit_id(state.get("comp_focus")),
+            tuple(sorted(_normalized_unit_id(x) for x in (state.get("core_units") or []))))
+
 def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> None:
     """Correlate buys/sells and count comp-core sales only after the comp decision."""
     actions = []
@@ -186,6 +226,7 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
         "buys_with_positive_comp_fit": 0, "buys_with_board_gain": 0, "buys_with_synergy_milestone": 0,
         "core_or_pair_sales": 0, "core_unit_sales": 0,
         "core_pair_sales_before_comp_decision_ignored": 0,
+        "confirmed_pair_path_losses": 0, "ambiguous_identity_sales": 0,
         "composition_decision_found": decision_start_index is not None,
         "composition_decision_round": decision_round,
         "composition_decision_action_index": decision_start_index,
@@ -220,14 +261,14 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
             if board_gain:
                 strategic_value += 1.0
             record = {
-                "champion": champion, "uuid": unit.get("uuid"), "buy_action_index": idx,
+                "champion": champion, "uuid": _newly_acquired_uuid(before, after, champion), "buy_action_index": idx,
                 "step": step, "round": rnd,
                 "cost": max(0, int(unit.get("cost", 0) or 0)), "fit_score": fit_score,
                 "strategic_value": round(strategic_value, 4),
                 "upgrade_completed": upgrade_completed, "pair_count_before": _pair_count(before),
                 "pair_count_after": _pair_count(after), "board_power_before": _board_power(before),
                 "board_power_after": _board_power(after), "gold_before": before.get("gold"),
-                "gold_after": after.get("gold"), "comp_direction": direction_of(after, payload),
+                "gold_after": after.get("gold"), "comp_direction": direction_of(after, payload), "plan_signature": _plan_signature(after),
                 "sold": False, "classification": "NOT_REVERSED",
             }
             purchases.append(record)
@@ -243,40 +284,42 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
             after_comp_decision = (
                 decision_start_index is not None and idx >= decision_start_index
             )
-            core_units = [str(value).casefold() for value in (before.get("core_units") or [])]
-            core_sale = after_comp_decision and any(
-                champion.casefold() == core or champion.casefold() in core
-                or core in champion.casefold() for core in core_units if core
-            )
-            pair_lost = after_comp_decision and _pair_count(before) > _pair_count(after)
+            core_units = before.get("core_units") or []
+            champion_key = _normalized_unit_id(champion)
+            core_keys = {_normalized_unit_id(value) for value in core_units if _normalized_unit_id(value)}
+            core_sale = after_comp_decision and champion_key in core_keys
+            copies_before = _owned_copy_count(before, champion)
+            copies_after = _owned_copy_count(after, champion)
+            # Only flag loss when this exact champion falls below its owned upgrade threshold.
+            sold_star = int(unit.get("star", 1) or 1)
+            same_star_before = _same_star_copy_count(before, champion, sold_star)
+            same_star_after = _same_star_copy_count(after, champion, sold_star)
+            pair_lost = (after_comp_decision and sold_star in (1, 2)
+                         and same_star_before >= 2 and same_star_after < 2)
             # A sale can be correct when it enables a stronger board or merge.
-            upgrade_gain = _star_counts(after)[2] > _star_counts(before)[2]
-            board_power_gain = _board_power(after) > _board_power(before) + 0.5
-            def _quality(state):
-                value = state.get("board_quality_score")
-                if value is None:
-                    value = state.get("board_positional_score")
-                if value is None:
-                    value = state.get("positioning_score")
-                try:
-                    return float(value) if value is not None else None
-                except (TypeError, ValueError):
-                    return None
-            before_quality, after_quality = _quality(before), _quality(after)
-            positioning_gain = (
-                before_quality is not None and after_quality is not None
-                and after_quality > before_quality + 0.25
-            )
-            compensated_sale = upgrade_gain or board_power_gain or positioning_gain
+            # A SELL cannot itself create an upgrade or add board units. Only
+            # live, measured synergy/positioning deltas may compensate this sale.
+            try:
+                synergy_gain = (before.get("synergy_score") is not None
+                                and after.get("synergy_score") is not None
+                                and float(after["synergy_score"]) > float(before["synergy_score"]) + 1e-6)
+            except (TypeError, ValueError):
+                synergy_gain = False
+            try:
+                positioning_gain = (before.get("positioning_score") is not None
+                                    and after.get("positioning_score") is not None
+                                    and float(after["positioning_score"]) > float(before["positioning_score"]) + 0.25)
+            except (TypeError, ValueError):
+                positioning_gain = False
+            compensated_sale = synergy_gain or positioning_gain
             core_sale = core_sale and not compensated_sale
             pair_lost = pair_lost and not compensated_sale
             if not after_comp_decision and (
-                _pair_count(before) > _pair_count(after)
-                or any(champion.casefold() == core or champion.casefold() in core
-                       or core in champion.casefold()
-                       for core in core_units if core)
+                (sold_star in (1, 2) and same_star_before >= 2 and same_star_after < 2) or champion_key in core_keys
             ):
                 metrics["core_pair_sales_before_comp_decision_ignored"] += 1
+            if pair_lost:
+                metrics["confirmed_pair_path_losses"] += 1
             if core_sale:
                 metrics["core_unit_sales"] += 1
             if core_sale or pair_lost:
@@ -290,24 +333,35 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
                            "pair_count_before": _pair_count(before), "pair_count_after": _pair_count(after),
                            "gold_before": before.get("gold"), "gold_after": after.get("gold")})
             sold_uuid = unit.get("uuid")
-            match = next((p for p in reversed(purchases)
-                          if not p["sold"]
-                          and ((sold_uuid and p.get("uuid") and p["uuid"] == sold_uuid)
-                               or (not sold_uuid or not p.get("uuid"))
-                               and p["champion"].casefold() == champion.casefold())
-                          and 1 <= idx - p["buy_action_index"] <= 4), None)
+            pending = [p for p in purchases if not p["sold"]
+                       and 1 <= idx - p["buy_action_index"] <= 4
+                       and _normalized_unit_id(p["champion"]) == champion_key]
+            if sold_uuid:
+                pending = [p for p in pending if p.get("uuid") == sold_uuid]
+            else:
+                pending = [p for p in pending if not p.get("uuid")]
+            match = pending[0] if len(pending) == 1 else None
+            if match is None and any(
+                not p["sold"] and 1 <= idx - p["buy_action_index"] <= 4
+                and _normalized_unit_id(p["champion"]) == champion_key
+                for p in purchases
+            ):
+                metrics["ambiguous_identity_sales"] += 1
+                classifications["UNKNOWN"] += 1
+                continue
             if match is None:
                 classifications["UNKNOWN"] += 1
                 continue
             distance = idx - match["buy_action_index"]
             bench_units = _occupied_units(before, "bench")
             bench_was_full = bool(before.get("bench")) and len(bench_units) >= len(before.get("bench") or [])
-            comp_changed = (match.get("comp_direction") != direction_of(before, payload)
-                            and bool(match.get("comp_direction") or direction_of(before, payload)))
-            intervening = actions[match["buy_action_index"] + 1:idx + 1]
-            deployed = any(any(unit_name(u).casefold() == champion.casefold()
-                               for u in _occupied_units((item[1].get("state_after") or {}), "board"))
-                           for item in intervening)
+            comp_changed = (_plan_signature(before) != match.get("plan_signature", ("", "", ()))
+                            and _plan_signature(before) != ("", "", ()))
+            intervening = actions[match["buy_action_index"] + 1:idx]
+            deployed = bool(match.get("uuid")) and any(
+                any(str(u.get("uuid") or "") == match["uuid"]
+                    for u in _occupied_units((item[1].get("state_after") or {}), "board"))
+                for item in intervening)
             if match["upgrade_completed"]:
                 classification = "PURCHASE_UPGRADE"
             elif bench_was_full:
@@ -422,7 +476,9 @@ def audit_economic_actions(entries: list[dict], player: str, report: dict) -> No
         if payload.get("action_reward") is not None:
             reward_component_samples += 1
         after = payload.get("state_after") or {}
-        if after:
+        # Keep the death-causing decision, but never publish terminal eliminated
+        # gold/board as a living player strategic final state.
+        if after and after.get("alive") is not False and not after.get("eliminated"):
             final_gold = after.get("gold", final_gold)
             final_board_power = after.get("board_power", final_board_power)
     if not actions:
@@ -527,6 +583,18 @@ def audit_composition_direction_changes(entries: list[dict], player: str, report
         report.setdefault("composition_direction_metrics", {})[player] = metrics
 
 
+def _board_eval_snapshot_valid(state: dict) -> bool:
+    """Cached structural fields are trusted only when their total matches live score."""
+    try:
+        return (state.get("board_structural_score") is not None
+                and state.get("board_quality_score") is not None
+                and state.get("positioning_score") is not None
+                and abs(float(state["board_quality_score"])
+                        - float(state["positioning_score"])) <= 1e-5)
+    except (TypeError, ValueError):
+        return False
+
+
 def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
     """Aggregate native positional and structural diagnostics exposed by AuditSnapshot."""
     actions = [
@@ -539,6 +607,7 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
         "negative_quality_delta": 0, "neutral_quality_delta": 0,
         "quality_delta_sum": 0.0, "structural_delta_sum": 0.0,
         "structural_samples": 0, "structural_score_sum": 0.0,
+        "positional_samples": 0, "role_diagnostic_samples": 0,
         "positional_score_sum": 0.0, "exposed_carries_sum": 0,
         "frontline_count_sum": 0, "isolated_frontline_count_sum": 0,
         "important_bench_units_unplayed_sum": 0,
@@ -556,28 +625,16 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
         payload = entry.get("payload") or {}
         before = payload.get("state_before") or {}
         after = payload.get("state_after") or {}
-        # The native audit snapshot is authoritative. Do not silently convert
-        # missing metrics into zero; older logs are reported as unavailable.
-        if after.get("board_quality_score") is None and after.get("board_positional_score") is None:
+        # positioning_score is recalculated from the live board in AuditSnapshot.
+        # Cached board_quality fields were historically left at default zeroes.
+        score_after_raw = after.get("positioning_score")
+        score_before_raw = before.get("positioning_score")
+        if score_after_raw is None or score_before_raw is None:
             continue
         try:
-            score_after_raw = after.get("board_quality_score")
-            if score_after_raw is None:
-                score_after_raw = after.get("board_positional_score")
-            if score_after_raw is None:
-                score_after_raw = after.get("positioning_score")
-            score_before_raw = before.get("board_quality_score")
-            if score_before_raw is None:
-                score_before_raw = before.get("board_positional_score")
-            if score_before_raw is None:
-                score_before_raw = before.get("positioning_score")
-            if score_after_raw is None:
-                continue
-            if score_before_raw is None:
-                score_before_raw = score_after_raw
             score_after = float(score_after_raw)
             score_before = float(score_before_raw)
-            delta = float(after.get("board_quality_delta", score_after - score_before) or 0.0)
+            delta = score_after - score_before
             combat = float(payload.get("combat_reward", 0.0) or 0.0)
         except (TypeError, ValueError):
             continue
@@ -596,10 +653,11 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
             totals["neutral_quality_delta"] += 1
 
         structural_after = after.get("board_structural_score")
-        if structural_after is not None:
+        structural_before_raw = before.get("board_structural_score")
+        if _board_eval_snapshot_valid(after) and _board_eval_snapshot_valid(before):
             try:
                 structural_after = float(structural_after)
-                structural_before = float(before.get("board_structural_score", structural_after) or 0.0)
+                structural_before = float(structural_before_raw)
             except (TypeError, ValueError):
                 structural_after = None
             if structural_after is not None:
@@ -609,19 +667,22 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
                 totals["structural_delta_sum"] += structural_delta
                 bucket["structural_samples"] += 1
                 bucket["structural_delta_sum"] += structural_delta
-        for field, total_key in (
-            ("board_positional_score", "positional_score_sum"),
-            ("board_exposed_carries", "exposed_carries_sum"),
-            ("board_frontline_count", "frontline_count_sum"),
-            ("board_isolated_frontline_count", "isolated_frontline_count_sum"),
-            ("board_important_bench_units_unplayed", "important_bench_units_unplayed_sum"),
-        ):
-            value = after.get(field)
-            if value is not None:
-                try:
-                    totals[total_key] += float(value)
-                except (TypeError, ValueError):
-                    pass
+        if _board_eval_snapshot_valid(after):
+            totals["positional_samples"] += 1
+            totals["role_diagnostic_samples"] += 1
+            for field, total_key in (
+                ("board_positional_score", "positional_score_sum"),
+                ("board_exposed_carries", "exposed_carries_sum"),
+                ("board_frontline_count", "frontline_count_sum"),
+                ("board_isolated_frontline_count", "isolated_frontline_count_sum"),
+                ("board_important_bench_units_unplayed", "important_bench_units_unplayed_sum"),
+            ):
+                value = after.get(field)
+                if value is not None:
+                    try:
+                        totals[total_key] += float(value)
+                    except (TypeError, ValueError):
+                        pass
         if combat > 1e-6:
             totals["positive_combat_outcomes"] += 1
             totals["quality_delta_when_combat_reward_positive"] += delta
@@ -636,10 +697,14 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
     totals["mean_quality_delta"] = totals["quality_delta_sum"] / n if n else 0.0
     totals["mean_structural_delta"] = totals["structural_delta_sum"] / structural_n if structural_n else None
     totals["mean_structural_score"] = totals["structural_score_sum"] / structural_n if structural_n else None
-    totals["mean_positional_score"] = totals["positional_score_sum"] / n if n else None
+    positional_n = totals["positional_samples"]
+    role_n = totals["role_diagnostic_samples"]
+    totals["mean_positional_score"] = (
+        totals["positional_score_sum"] / positional_n if positional_n else None
+    )
     for key in ("exposed_carries_sum", "frontline_count_sum",
                 "isolated_frontline_count_sum", "important_bench_units_unplayed_sum"):
-        totals["mean_" + key.removesuffix("_sum")] = totals[key] / n if n else None
+        totals["mean_" + key.removesuffix("_sum")] = totals[key] / role_n if role_n else None
     for label, sample_count, key in (
         ("mean_quality_delta_when_combat_reward_positive", totals["positive_combat_samples"],
          "quality_delta_when_combat_reward_positive"),
@@ -659,6 +724,20 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
         for name, values in sorted(by_action.items())
     }
     report.setdefault("board_quality_metrics", {})[player] = totals
+
+
+def _occupied_item_units(state: dict, location: str) -> list[dict]:
+    """Item snapshots may omit champion names; occupancy is sufficient here."""
+    result = []
+    values = state.get(location) or []
+    if not isinstance(values, list):
+        return result
+    for item in values:
+        candidates = item if isinstance(item, list) else [item]
+        for unit in candidates:
+            if isinstance(unit, dict) and unit.get("occupied", True):
+                result.append(unit)
+    return result
 
 
 def audit_item_state(entries: list[dict], player: str, report: dict) -> None:
@@ -695,11 +774,11 @@ def audit_item_state(entries: list[dict], player: str, report: dict) -> None:
     for entry in ordered:
         payload = entry.get("payload") or {}
         state = payload.get("state_after") or {}
-        if not isinstance(state, dict):
+        if not isinstance(state, dict) or state.get("alive") is False or state.get("eliminated"):
             continue
         snapshots += 1
-        board = _occupied_units(state, "board")
-        bench = _occupied_units(state, "bench")
+        board = _occupied_item_units(state, "board")
+        bench = _occupied_item_units(state, "bench")
         has_unit_item_fields = any(
             any(key in unit for key in ("items", "equipped_items", "item_ids"))
             for unit in board + bench
@@ -883,7 +962,8 @@ def audit_team_progression(entries: list[dict], player: str, report: dict) -> No
                                                  "focus": current.get("composition_focus", after.get("comp_focus"))})
         if direction:
             previous_direction = direction
-        final_state = after
+        if after.get("alive") is not False and not after.get("eliminated"):
+            final_state = after
     for values in stages.values():
         values["board_strength_delta"] = round(values["board_strength_delta"], 4)
         values["bench_potential_delta"] = round(values["bench_potential_delta"], 4)
@@ -953,7 +1033,8 @@ def audit_positioning_and_composition(entries: list[dict], player: str, report: 
             continue
         payload = entry.get("payload") or {}
         state = payload.get("state_after") or payload.get("state") or {}
-        if not isinstance(state, dict) or not state:
+        if (not isinstance(state, dict) or not state
+                or state.get("alive") is False or state.get("eliminated")):
             continue
         board_rows = []
         for slot, unit in [(slot, unit) for _, slot, unit in iter_units(state, ("board",))]:
@@ -1104,6 +1185,33 @@ def audit_decision_context(entries: list[dict], player: str, report: dict) -> No
         stats[key] = dict(sorted(stats[key].items()))
 
 
+
+
+def _active_entries_before_elimination(entries: list[dict]) -> tuple[list[dict], int]:
+    """Keep decisions made while alive; drop elimination snapshots and later events.
+
+    The action causing elimination remains valid because state_before was alive.
+    Its terminal state is not used as a living-player final economy snapshot.
+    """
+    active, eliminated, ignored = [], False, 0
+    for entry in sorted(entries, key=lambda e: (e.get("sequence_id", 0), e.get("step", 0))):
+        if not isinstance(entry, dict):
+            continue
+        before, after = get_state(entry, "state_before"), get_state(entry, "state_after")
+        context = (entry.get("payload") or {}).get("decision_context") or {}
+        before_alive = before.get("alive", context.get("alive"))
+        before_dead = before_alive is False or bool(before.get("eliminated"))
+        after_dead = after.get("alive") is False or bool(after.get("eliminated"))
+        if eliminated or before_dead:
+            ignored += 1
+            eliminated = True
+            continue
+        active.append(entry)
+        if after_dead:
+            eliminated = True
+    return active, ignored
+
+
 def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_window: int) -> None:
     player_id = doc.get("player_number")
     if player_id is None:
@@ -1112,17 +1220,23 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
     player = f"Jogador {player_id}"
     report["players_seen"].add(str(player_id))
     report["entries_read"] += len(doc["entries"])
-    audit_purchase_sequences(doc["entries"], player, report)
-    audit_economic_actions(doc["entries"], player, report)
-    audit_composition_direction_changes(doc["entries"], player, report)
-    audit_board_quality(doc["entries"], player, report)
-    audit_item_state(doc["entries"], player, report)
-    audit_positioning_and_composition(doc["entries"], player, report)
-    audit_team_progression(doc["entries"], player, report)
-    audit_decision_context(doc["entries"], player, report)
+    entries, ignored_after_elimination = _active_entries_before_elimination(doc["entries"])
+    report.setdefault("elimination_filter", {})[player] = {
+        "entries_total": len(doc["entries"]),
+        "entries_analyzed_while_alive": len(entries),
+        "entries_ignored_after_elimination": ignored_after_elimination,
+    }
+    audit_purchase_sequences(entries, player, report)
+    audit_economic_actions(entries, player, report)
+    audit_composition_direction_changes(entries, player, report)
+    audit_board_quality(entries, player, report)
+    audit_item_state(entries, player, report)
+    audit_positioning_and_composition(entries, player, report)
+    audit_team_progression(entries, player, report)
+    audit_decision_context(entries, player, report)
     report["log_files"].append(str(path))
 
-    entries = sorted(doc["entries"], key=lambda e: (e.get("sequence_id", 0), e.get("step", 0)))
+    entries = sorted(entries, key=lambda e: (e.get("sequence_id", 0), e.get("step", 0)))
     recent_moves = deque(maxlen=loop_window)
     state_visits = defaultdict(lambda: deque(maxlen=loop_window))
     comp_history = deque(maxlen=comp_window)
@@ -1476,6 +1590,14 @@ def markdown_report(report: dict) -> str:
         f"- Achados: **{len(report['issues'])}**",
         f"- CRITICAL: {counts['CRITICAL']} | HIGH: {counts['HIGH']} | MEDIUM: {counts['MEDIUM']} | LOW: {counts['LOW']}", "",
     ]
+    if report.get("elimination_filter"):
+        ignored = sum(int(value.get("entries_ignored_after_elimination", 0))
+                      for value in report["elimination_filter"].values())
+        active = sum(int(value.get("entries_analyzed_while_alive", 0))
+                     for value in report["elimination_filter"].values())
+        lines += [f"- Decisões analisadas enquanto os jogadores estavam vivos: **{active}**",
+                  f"- Entradas posteriores à eliminação ignoradas: **{ignored}**",
+                  "- A ação que causa a eliminação permanece válida; o estado terminal não é usado como economia final.", ""]
     if report.get("text_log_metrics"):
         lines += ["## Reconstrução de decisões dos logs legados", "",
                   "Esta seção usa o que está explícito em cada linha de ação. HP, nível, máscara legal e canais separados de recompensa não são inferidos quando o log não os registra.", "",

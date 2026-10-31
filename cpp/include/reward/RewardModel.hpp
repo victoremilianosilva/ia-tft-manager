@@ -117,7 +117,7 @@ inline double strategy_action_reward(
     double reward = 0.0;
     switch (strategy_id) {
         case 0: // ECON: preserve interest; never treat XP as the default use of gold.
-            if (action_type == 1 && !reroll_improved) reward -= 0.015;
+            if (action_type == 1) reward -= 0.05;
             if (new_gold >= 50 && old_gold < 50) reward += 0.04;
             if (old_gold >= 50 && new_gold >= 50 &&
                 action_type == 0 && useful_purchase) reward += 0.03;
@@ -125,14 +125,12 @@ inline double strategy_action_reward(
                 !has_composition_target) {
                 // Keep the 50-gold interest floor even when the action starts
                 // above it. Useful unit purchases remain exempt.
-                if (action_type == 2) reward -= 0.09;
-                else if (action_type == 1)
-                    reward -= reroll_improved ? 0.0 : 0.025;
+                if (action_type == 2) reward -= 0.01;
                 else if (action_type == 0 && !useful_purchase) reward -= 0.06;
             }
             break;
         case 1: // STABILIZE: favor playable-board upgrades over routine leveling.
-            if (action_type == 1 && !reroll_improved) reward -= 0.015;
+            if (action_type == 1) reward -= 0.05;
             if (action_type == 0 && useful_purchase) reward += 0.07;
             if (action_type == 2 && leveled)
                 reward += 0.95 * (hp <= 30.0 ? 0.07 : (old_gold >= 50 ? 0.05 : 0.015));
@@ -142,9 +140,8 @@ inline double strategy_action_reward(
         case 2: // FAST8 is a plan, not permission to ignore early-game economy.
             if (action_type == 2 && leveled)
                 reward += hp <= 30.0 ? 0.11 : (old_gold >= 50 ? 0.08 : 0.03);
-            // A good reroll remains a valid tactical choice; do not penalize it
-            // simply because the active composition aims for level eight.
-            if (action_type == 1 && !reroll_improved) reward -= 0.015;
+            // FAST8 advances through XP and useful purchases, not reroll.
+            if (action_type == 1) reward -= 0.05;
             break;
         case 3: // SLOWROLL: reward improved rolls without blocking useful XP progress.
             if (action_type == 1) reward += reroll_improved ? 0.12 : -0.025;
@@ -155,16 +152,17 @@ inline double strategy_action_reward(
                 hp > 50.0 && old_gold < 50) reward -= 0.02;
             break;
         case 4: // ALL_IN: useful immediate strength over passive saving.
-            if (action_type == 1 && !reroll_improved) reward -= 0.015;
+            if (action_type == 1) reward -= 0.05;
             if (action_type == 0 && useful_purchase) reward += 0.06;
             if (hp <= 15.0 && action_type == 6) reward -= 0.05;
             break;
         case 5: // WINSTREAK: preserve strength, avoid wasteful economy actions.
-            if (action_type == 1 && !reroll_improved) reward -= 0.015;
+            if (action_type == 1) reward -= 0.05;
             if (action_type == 0 && useful_purchase) reward += 0.05;
             if (action_type == 2 && leveled) reward += 0.04;
             break;
         case 6: // LOSS_STREAK: preserve the streak only while purchases are not useful.
+            if (action_type == 1) reward -= 0.05;
             if (hp >= 50.0 && !useful_purchase &&
                 (action_type == 0 || action_type == 1 || action_type == 2))
                 reward -= 0.04;
@@ -322,6 +320,51 @@ inline double surplus_xp_spending_reward(
         std::min(0.035, 0.020 + 0.015 * surplus);
 }
 
+ // Progress reward for XP that does not immediately cross a level boundary.
+// It is strategy-gated and deliberately smaller than an actual level-up.
+// Useful shop pairs/upgrades keep priority; ECON uses the separate surplus
+// fallback, while SLOWROLL preserves gold for its three-star plan.
+inline double xp_progress_reward(
+    int gold_before, int gold_after, int old_level, int new_level,
+    int old_xp, int new_xp, double hp, int stage, int active_strategy,
+    bool useful_purchase_available
+) noexcept {
+    if (gold_before < 4 || gold_after >= gold_before || new_level != old_level
+        || new_xp <= old_xp || active_strategy == 3)
+        return 0.0;
+    // The shared surplus fallback already rewards safe XP above 50 gold.
+    // This extra signal is only for urgent progress below that reserve, and
+    // never competes with an actually useful shop offer.
+    if (useful_purchase_available)
+        return 0.0;
+    const bool urgent = hp <= 35.0;
+    if (!urgent)
+        return 0.0;
+    const double progress = std::clamp(
+        static_cast<double>(new_xp - old_xp) / 4.0, 0.0, 1.0);
+    if (progress <= 0.0) return 0.0;
+    double value = 0.0;
+    switch (active_strategy) {
+        case 2: // FAST8: make incremental progress toward the planned level 8.
+            if (stage >= 3 && old_level < 8)
+                value = 0.035;
+            break;
+        case 1: // STABILIZE: modest XP progress is valid, but board purchases stay first.
+            if (stage >= 3 || urgent)
+                value = 0.035;
+            break;
+        case 4: // ALL_IN: only when life is critical and XP is a viable survival action.
+            if (hp <= 25.0) value = 0.035;
+            break;
+        case 5: // WINSTREAK: use only safe surplus.
+            // Safe surplus XP is already covered by the shared fallback.
+            break;
+        default:
+            break;
+    }
+    return std::clamp(value * progress, 0.0, 0.060);
+}
+
 // Small additional signal for useful unit acquisitions beyond the early game.
 // Requires real composition fit or upgrade progress, available bench space and
 // enough remaining gold, so this cannot reward arbitrary shop-clearing.
@@ -434,19 +477,20 @@ inline double reroll_quality_reward(
     return 0.14 * improvement * liquidity * stage_factor * pressure_factor;
 }
 
-// Shared tactical reroll gate. Existing behavior is preserved for SLOWROLL,
-// critical HP, and rolls that leave at least 50 gold. A smaller signal is
-// introduced only from stage 4 when the roll spends surplus but retains 40g.
+// Shared reroll gate: only SLOWROLL receives positive shop-quality shaping.
 inline double tactical_reroll_quality_scale(
     int active_strategy,
     double hp,
     int gold_after,
     int stage
 ) noexcept {
-    if (active_strategy == 3) return 1.0;
-    if (hp <= 30.0 || gold_after >= 50) return 0.35;
-    if (stage >= 4 && gold_after >= 40) return 0.20;
-    return 0.0;
+    // Reroll is the defining spend action only for SLOWROLL. Other strategies
+    // receive no positive reroll shaping; their shop search must not compete
+    // with planned XP progress or interest preservation.
+    (void)hp;
+    (void)gold_after;
+    (void)stage;
+    return active_strategy == 3 ? 1.0 : 0.0;
 }
 
 inline double pass_opportunity_penalty(
@@ -504,11 +548,17 @@ inline double reversed_sequence_adjustment(
     return std::min(0.0, target - prior_buy_reward - sale_reward_including_gold);
 }
 
-// A duplicate champion remains an upgrade path even when its copies have
-// different star levels (for example, a 2-star plus a 1-star toward 3-star).
-// Count owned unit instances, not only instances at the sold unit's star level.
-inline bool protects_upgrade_path(int owned_unit_instances) noexcept {
-    return owned_unit_instances >= 2;
+// Protect a real same-star pair. A 2-star also remains valuable when three
+// 1-star copies can create another 2-star, but a lone 1-star beside a 2-star
+// is not a pair and should not be artificially locked on the bench.
+inline bool protects_upgrade_path(
+    int sold_star, int same_star_copies, int one_star_copies
+) noexcept {
+    if (sold_star == 1)
+        return same_star_copies >= 1;
+    if (sold_star == 2)
+        return same_star_copies >= 1 || one_star_copies >= 3;
+    return false;
 }
 
 // Selling should be attractive for low-value clutter, but not intrinsically

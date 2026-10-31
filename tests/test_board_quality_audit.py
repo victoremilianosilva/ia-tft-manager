@@ -8,8 +8,9 @@ def test_board_quality_audit_tracks_action_delta_and_combat_context():
             "payload": {
                 "action_name": "MOVE_BOARD",
                 "combat_reward": 0.0,
-                "state_before": {"board_structural_score": -0.5},
+                "state_before": {"board_structural_score": -0.5, "positioning_score": 0.5, "board_quality_score": 0.5},
                 "state_after": {
+                    "positioning_score": 0.7,
                     "board_quality_score": 0.7,
                     "board_positional_score": 0.6,
                     "board_quality_delta": 0.2,
@@ -26,8 +27,9 @@ def test_board_quality_audit_tracks_action_delta_and_combat_context():
             "payload": {
                 "action_name": "MOVE_BOARD",
                 "combat_reward": -1.0,
-                "state_before": {"board_structural_score": -0.1},
+                "state_before": {"board_structural_score": -0.1, "positioning_score": 0.7, "board_quality_score": 0.7},
                 "state_after": {
+                    "positioning_score": 0.3,
                     "board_quality_score": 0.3,
                     "board_positional_score": 0.4,
                     "board_quality_delta": -0.4,
@@ -44,8 +46,9 @@ def test_board_quality_audit_tracks_action_delta_and_combat_context():
             "payload": {
                 "action_name": "PASS",
                 "combat_reward": 1.0,
-                "state_before": {"board_structural_score": -0.3},
+                "state_before": {"board_structural_score": -0.3, "positioning_score": 0.3, "board_quality_score": 0.3},
                 "state_after": {
+                    "positioning_score": 0.3,
                     "board_quality_score": 0.3,
                     "board_positional_score": 0.4,
                     "board_quality_delta": 0.0,
@@ -68,14 +71,14 @@ def test_board_quality_audit_tracks_action_delta_and_combat_context():
     assert metrics["neutral_quality_delta"] == 1
     assert metrics["mean_quality_delta"] == -0.2 / 3
     assert metrics["mean_quality_delta_when_combat_reward_positive"] == 0.0
-    assert metrics["mean_quality_delta_when_combat_reward_negative"] == -0.4
+    assert abs(metrics["mean_quality_delta_when_combat_reward_negative"] + 0.4) < 1e-9
     assert metrics["by_action"]["MOVE_BOARD"]["actions"] == 2
     assert metrics["by_action"]["MOVE_BOARD"]["mean_quality_delta"] == -0.1
     assert metrics["structural_metrics_available"] is True
     assert metrics["structural_samples"] == 3
-    assert metrics["mean_structural_delta"] == 0.2 / 3
-    assert metrics["mean_structural_score"] == -0.7 / 3
-    assert metrics["mean_positional_score"] == (0.6 + 0.4 + 0.4) / 3
+    assert abs(metrics["mean_structural_delta"] - (0.2 / 3)) < 1e-9
+    assert abs(metrics["mean_structural_score"] - (-0.7 / 3)) < 1e-9
+    assert abs(metrics["mean_positional_score"] - ((0.6 + 0.4 + 0.4) / 3)) < 1e-9
 
 
 def test_board_quality_audit_ignores_entries_without_native_metrics():
@@ -135,3 +138,22 @@ def test_item_state_audit_reads_equipment_bag_components_and_events():
     assert metrics["final_snapshot"]["bag_item_count"] == 0
     assert metrics["final_snapshot"]["component_count"] == 1
     assert metrics["item_events"]["ITEM_EQUIPPED"] == 1
+
+
+def test_board_quality_uses_live_positioning_not_zero_initialized_cached_fields():
+    report = {}
+    entries = [{
+        "event_type": "action",
+        "payload": {
+            "action_name": "MOVE_BOARD",
+            "state_before": {"positioning_score": 0.4, "board_quality_score": 0.0},
+            "state_after": {"positioning_score": 0.7, "board_quality_score": 0.0},
+        },
+    }]
+    audit_board_quality(entries, "Jogador 1", report)
+    metrics = report["board_quality_metrics"]["Jogador 1"]
+    assert metrics["actions_with_metrics"] == 1
+    assert metrics["positive_quality_delta"] == 1
+    assert abs(metrics["mean_quality_delta"] - 0.3) < 1e-9
+    assert metrics["structural_metrics_available"] is False
+    assert metrics["structural_samples"] == 0

@@ -3608,22 +3608,24 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             unit_composition_score(current_strategy, *definition, unit.star, lobby.trait_milestones) / 32.5,
                             0.0, 1.0);
                     }
-                    int owned_unit_instances = 0;
-                    for (const auto& candidate : this->board) {
-                        if (candidate &&
-                            candidate->champion_internal_id == unit.champion_internal_id)
-                            ++owned_unit_instances;
-                    }
-                    for (const auto& candidate : this->bench) {
-                        if (candidate &&
-                            candidate->champion_internal_id == unit.champion_internal_id)
-                            ++owned_unit_instances;
-                    }
-                    // Copies at different star levels still share an upgrade path:
-                    // e.g. selling a 1-star while retaining a 2-star discards progress
-                    // toward a possible 3-star. Count the sold unit in this total.
-                    sold_unit_protects_upgrade =
-                        reward_model::protects_upgrade_path(owned_unit_instances);
+                    int same_star_copies = 0;
+                    int one_star_copies = 0;
+                    const auto count_upgrade_copies = [&](const auto& candidate) {
+                        if (!candidate ||
+                            candidate->champion_internal_id != unit.champion_internal_id ||
+                            &*candidate == &unit)
+                            return;
+                        if (candidate->star == unit.star) ++same_star_copies;
+                        if (candidate->star == 1) ++one_star_copies;
+                    };
+                    for (const auto& candidate : this->board)
+                        count_upgrade_copies(candidate);
+                    for (const auto& candidate : this->bench)
+                        count_upgrade_copies(candidate);
+                    // Only same-star copies form a pair. For a 2-star sale, three
+                    // 1-star copies also represent a concrete route to another 2-star.
+                    sold_unit_protects_upgrade = reward_model::protects_upgrade_path(
+                        unit.star, same_star_copies, one_star_copies);
                     const auto sell_value =
                         EconomyEngine::get_sell_value(
                             definition->cost,
@@ -3773,10 +3775,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             success = economy.gold == old_gold - EconomyEngine::REROLL_COST;
             action_reward = success ? -0.01 : -0.10;
             if (success) {
-                // SLOWROLL receives the full shop-quality signal. Other plans
-                // may still reroll tactically when the board is under critical
-                // health pressure or the post-reroll balance preserves 50 gold;
-                // keep that cross-strategy signal deliberately smaller.
+                // Only SLOWROLL receives positive shop-quality feedback.
+                // Other strategies use planned XP progress and useful purchases;
+                // a better shop alone must not teach them to reroll.
                 const std::int32_t active_strategy_id =
                     this->strategy.empty() ? 0 : this->strategy.back().strategy;
                 const double tactical_reroll_scale =
@@ -3823,6 +3824,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     xp_strategy_id);
                 action_reward += reward_model::surplus_xp_spending_reward(
                     old_gold, economy.gold, static_cast<int>(lobby.stage),
+                    xp_strategy_id, useful_shop_purchase_available);
+                action_reward += reward_model::xp_progress_reward(
+                    old_gold, economy.gold, old_level, economy.level,
+                    old_xp, economy.xp, this->info.hp, static_cast<int>(lobby.stage),
                     xp_strategy_id, useful_shop_purchase_available);
             }
             // RewardManager tracks the last rewarded level, initialized to 1,
@@ -3996,7 +4001,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         // and leveling unlocks a real slot, or health pressure is critical.
         if (type == 2 && success && old_gold < 50 &&
             this->info.hp > 30.0 && old_board_count < old_level) {
-            action_reward -= 0.12;
+            // Interest loss is already represented by gold_change_reward().
+            // Keep XP slightly costly below 50, but do not stack a large
+            // penalty that makes reroll the less-bad choice outside SLOWROLL.
+            action_reward -= active_strategy_id == 3 ? 0.12 : 0.025;
         }
         // Even a better shop is usually not worth sacrificing interest below
         // 50. Critical health is the explicit exception; at/above 50 the
@@ -4517,16 +4525,21 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         target.interest_if_resolved_now = impl_->economy_engine.get_interest(source.economy.gold);
         target.board_power = impl_->board_power(i);
         target.synergy_score = impl_->synergy_score(i);
-        target.positioning_score = impl_->positioning_score(i);
-        target.board_quality_score = source.info.board_quality_score;
-        target.board_positional_score = source.info.board_positional_score;
-        target.board_structural_score = source.info.board_structural_score;
-        target.board_quality_delta = source.info.board_quality_delta;
-        target.board_exposed_carries = source.info.board_exposed_carries;
-        target.board_frontline_count = source.info.board_frontline_count;
-        target.board_isolated_frontline_count = source.info.board_isolated_frontline_count;
+        // Recompute board diagnostics from the current board. PlayerInfo's
+        // cached fields are not guaranteed to have been refreshed on every
+        // action and may remain at their zero-initialized defaults.
+        const auto board_eval = impl_->board_evaluation(i);
+        target.positioning_score = board_eval.total_score;
+        target.board_quality_score = board_eval.total_score;
+        target.board_positional_score = board_eval.positional_score;
+        target.board_structural_score = board_eval.structural_score;
+        // Per-action deltas are derived by comparing consecutive snapshots.
+        target.board_quality_delta = 0.0;
+        target.board_exposed_carries = board_eval.exposed_carry_count;
+        target.board_frontline_count = board_eval.frontline_count;
+        target.board_isolated_frontline_count = board_eval.isolated_frontline_count;
         target.board_important_bench_units_unplayed =
-            source.info.board_important_bench_units_unplayed;
+            board_eval.important_bench_units_unplayed;
         target.round_gold = source.economy.round_gold;
         target.round_base_gold = source.economy.round_base_gold;
         target.round_interest = source.economy.round_interest;

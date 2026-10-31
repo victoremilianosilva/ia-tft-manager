@@ -57,6 +57,20 @@ int main() {
                   0.018, "XP transition accounts for lost interest breakpoint");
     require_close(xp_level_transition_value(40, 36, 80.0, 2, 5, 5),
                   0.0, "XP without level transition has no progress reward");
+    require_close(xp_progress_reward(54, 50, 6, 6, 0, 4, 80.0, 4, 2, false),
+                  0.0, "safe surplus XP uses the shared fallback without double-counting");
+    require_close(xp_progress_reward(54, 50, 6, 6, 0, 4, 80.0, 4, 2, true),
+                  0.0, "a useful shop pair keeps priority over incremental XP");
+    require_close(xp_progress_reward(54, 50, 6, 6, 0, 4, 80.0, 4, 3, false),
+                  0.0, "SLOWROLL does not receive incremental XP progress reward");
+    require_close(xp_progress_reward(40, 36, 6, 6, 0, 4, 30.0, 4, 1, false),
+                  0.035, "STABILIZE can value urgent XP progress below the interest reserve");
+    require_close(xp_progress_reward(40, 36, 6, 6, 0, 4, 30.0, 4, 2, false),
+                  0.035, "FAST8 can value urgent progress toward level eight");
+    require_close(xp_progress_reward(40, 36, 6, 6, 0, 4, 30.0, 4, 2, true),
+                  0.0, "urgent XP does not outrank a useful shop offer");
+    require_close(xp_progress_reward(40, 36, 6, 6, 0, 4, 80.0, 4, 2, false),
+                  0.0, "safe XP progress below the interest cap is not encouraged");
     require_close(xp_strategy_reward_scale(1), 0.95,
                   "STABILIZE positive XP shaping is reduced by five percent");
     require_close(xp_strategy_reward_scale(3), 0.90,
@@ -262,12 +276,12 @@ int main() {
                   "healthy tactical reroll below 40 gold remains discouraged");
     require_close(tactical_reroll_quality_scale(0, 90.0, 40, 3), 0.0,
                   "pre-stage-4 tactical reroll below 50 gold remains discouraged");
-    require_close(tactical_reroll_quality_scale(0, 90.0, 40, 4), 0.20,
-                  "stage-4 surplus reroll gets only a small quality signal");
-    require_close(tactical_reroll_quality_scale(0, 90.0, 50, 2), 0.35,
-                  "existing 50-gold tactical reroll signal is preserved");
-    require_close(tactical_reroll_quality_scale(1, 25.0, 20, 2), 0.35,
-                  "critical-health tactical reroll signal is preserved");
+    require_close(tactical_reroll_quality_scale(0, 90.0, 40, 4), 0.0,
+                  "non-SLOWROLL stage-4 reroll receives no positive quality signal");
+    require_close(tactical_reroll_quality_scale(0, 90.0, 50, 2), 0.0,
+                  "non-SLOWROLL 50-gold reroll receives no positive quality signal");
+    require_close(tactical_reroll_quality_scale(1, 25.0, 20, 2), 0.0,
+                  "critical-health reroll is still not positively shaped outside SLOWROLL");
     require_close(tactical_reroll_quality_scale(3, 90.0, 20, 2), 1.0,
                   "SLOWROLL retains its full reroll quality signal");
     require_close(reroll_quality_reward(8.0, 8.0), 0.0,
@@ -282,13 +296,13 @@ int main() {
     }
     require_close(strategy_action_reward(0, 1, 60, 58, 80.0, 4,
                                          false, true, false, false),
-                  0.0, "strategy shaping stays separate from the shared tactical reroll signal");
+                  -0.05, "non-SLOWROLL reroll is penalized even when its shop improved");
     require_close(strategy_action_reward(1, 1, 55, 53, 90.0, 3,
                                          false, false, false, true),
-                  -0.015, "unproductive reroll receives only a small off-strategy nudge");
+                  -0.05, "all non-SLOWROLL rerolls receive a bounded penalty");
     require_close(strategy_action_reward(1, 1, 55, 53, 90.0, 3,
                                          false, true, false, true),
-                  0.0, "a genuinely improved tactical reroll is not discouraged");
+                  -0.05, "a good non-SLOWROLL reroll does not become the preferred spend");
     require_close(strategy_action_reward(3, 1, 55, 53, 90.0, 3,
                                          false, true, false, true),
                   0.12, "slow-roll strategy receives a stronger improved-reroll signal");
@@ -312,8 +326,10 @@ int main() {
         throw std::runtime_error("reroll that destroys a stronger shop must receive a negative quality signal");
     }
 
-    if (!protects_upgrade_path(2) || protects_upgrade_path(1)) {
-        throw std::runtime_error("upgrade path must be protected across different star levels, but not for a lone unit");
+    if (!protects_upgrade_path(1, 1, 0) || protects_upgrade_path(1, 0, 0) ||
+        !protects_upgrade_path(2, 1, 0) || !protects_upgrade_path(2, 0, 3) ||
+        protects_upgrade_path(2, 0, 2) || protects_upgrade_path(3, 0, 3)) {
+        throw std::runtime_error("only real same-star pairs and complete 1-star-to-2-star paths should be protected");
     }
     if (!(sale_quality(0.0, false, true, true) < 0.0)) {
         throw std::runtime_error("selling a pair copy must remain unattractive even when it frees bench space");
@@ -388,16 +404,16 @@ int main() {
     // Strategy-specific shaping stays small and rewards the plan's actual goal.
     require_close(strategy_action_reward(0, 2, 40, 35, 80.0, 3,
                                          false, false, false, false),
-                  -0.09, "ECON strongly discourages premature XP below interest cap");
+                  -0.01, "ECON applies only a small XP nudge; interest cost is already explicit");
     require_close(strategy_action_reward(0, 2, 50, 46, 80.0, 3,
                                          false, false, false, false),
-                  -0.09, "ECON protects the interest floor when XP starts at 50 gold");
+                  -0.01, "ECON avoids double-penalizing XP at the interest floor");
     require_close(strategy_action_reward(0, 1, 40, 38, 80.0, 3,
                                          false, true, false, false),
-                  0.0, "ECON permits an improved reroll without preferring it to saving");
+                  -0.05, "ECON does not prefer improved rerolls over planned spending");
     require_close(strategy_action_reward(0, 1, 40, 38, 80.0, 3,
                                          false, false, false, false),
-                  -0.04, "ECON discourages an unproductive reroll");
+                  -0.05, "ECON applies one bounded penalty to rerolls");
     require_close(strategy_action_reward(0, 0, 55, 50, 80.0, 4,
                                          true, false, false, false),
                   0.03, "ECON allows useful spending from surplus above 50");
@@ -421,6 +437,37 @@ int main() {
     require_close(strategy_action_reward(6, 0, 40, 37, 70.0, 3,
                                          false, false, false, false),
                   -0.04, "LOSS_STREAK discourages wasteful spending");
+    const double econ_xp_below_interest =
+        strategy_action_reward(0, 2, 40, 36, 80.0, 4,
+                               false, false, false, false) - 0.025;
+    const double econ_reroll_below_interest =
+        strategy_action_reward(0, 1, 40, 36, 80.0, 4,
+                               false, true, false, false);
+    if (!(econ_xp_below_interest > econ_reroll_below_interest))
+        throw std::runtime_error("outside SLOWROLL, XP must be slightly preferable to reroll at the same gold cost");
+
+    const double fast8_xp_urgent =
+        strategy_action_reward(2, 2, 40, 36, 30.0, 4,
+                               false, false, false, true) - 0.025 +
+        xp_progress_reward(40, 36, 6, 6, 0, 4, 30.0, 4, 2, false);
+    const double fast8_reroll_urgent =
+        strategy_action_reward(2, 1, 40, 36, 30.0, 4,
+                               false, true, false, true) +
+        reroll_quality_reward(2.0, 10.0) *
+            tactical_reroll_quality_scale(2, 30.0, 36, 4);
+    if (!(fast8_xp_urgent > fast8_reroll_urgent))
+        throw std::runtime_error("FAST8 urgent XP progress must beat a better shop reroll");
+
+    const double slowroll_reroll =
+        strategy_action_reward(3, 1, 40, 36, 80.0, 4,
+                               false, true, false, true) +
+        reroll_quality_reward(2.0, 10.0) *
+            tactical_reroll_quality_scale(3, 80.0, 36, 4);
+    const double slowroll_xp_action_reward =
+        strategy_action_reward(3, 2, 40, 36, 80.0, 4,
+                               false, false, false, false) - 0.12;
+    if (!(slowroll_reroll > slowroll_xp_action_reward))
+        throw std::runtime_error("only SLOWROLL should prefer an improved reroll over XP");
 
     std::cout << "[PASS] C++ reward formulas and deterministic action sequence.\n";
     return EXIT_SUCCESS;

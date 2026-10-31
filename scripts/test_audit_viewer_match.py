@@ -66,6 +66,18 @@ class UnifiedAuditRegressionTests(unittest.TestCase):
             self.assertEqual(doc["schema_version"], 2)
             self.assertEqual(doc["match_id"], "test-match")
             self.assertTrue((root / "player_1_log.tft").is_file())
+            snapshot = writer._player_snapshot(
+                {"positioning_score": 0.7, "board_quality_score": 0.7,
+                 "board_positional_score": 0.4, "board_structural_score": 0.3,
+                 "board_frontline_count": 2},
+                {"board_quality_score": 0.0, "board_positional_score": 0.0,
+                 "board_structural_score": 0.0, "board_frontline_count": 0},
+            )
+            self.assertEqual(snapshot["positioning_score"], 0.7)
+            self.assertEqual(snapshot["board_quality_score"], 0.7)
+            self.assertEqual(snapshot["board_positional_score"], 0.4)
+            self.assertEqual(snapshot["board_structural_score"], 0.3)
+            self.assertEqual(snapshot["board_frontline_count"], 2)
 
     def test_decision_audit_crosses_mask_reward_and_uuid(self):
         entry = {"event_type": "action", "sequence_id": 1, "step": 10, "round": 4, "payload": {
