@@ -204,3 +204,20 @@ def test_elimination_filter_keeps_death_causing_action_but_ignores_later_events(
     active, ignored = _active_entries_before_elimination([alive_action, after_death])
     assert active == [alive_action]
     assert ignored == 1
+
+
+def test_real_pair_loss_requires_two_owned_one_star_copies_of_sold_champion():
+    briar_a = _unit("Briar")
+    briar_b = _unit("Briar")
+    decision = _entry(1, 1, [6, 0, 0, 0, 0, 0], "PASS",
+                      _state(20, bench=[briar_a, briar_b], comp=""),
+                      _state(20, bench=[briar_a, briar_b], comp="Trait"))
+    sale = _entry(2, 2, [5, 0, 1, 0, 0, 0], "SELL",
+                  _state(20, bench=[briar_a, briar_b], comp="Trait"),
+                  _state(21, bench=[briar_a], comp="Trait"))
+    report = {"issues": []}
+    audit_purchase_sequences([decision, sale], "Jogador 1", report)
+    metrics = report["purchase_sequence_metrics"]["Jogador 1"]
+    assert metrics["confirmed_pair_path_losses"] == 1
+    assert metrics["core_or_pair_sales"] == 1
+    assert any(issue["code"] == "SOLD_UPGRADE_PAIR_COPY" for issue in report["issues"])
