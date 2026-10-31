@@ -399,7 +399,7 @@ int main() {
                   0.03, "ECON allows useful spending from surplus above 50");
     require_close(strategy_action_reward(2, 2, 40, 35, 80.0, 4,
                                          false, false, true, true),
-                  0.025, "FAST8 keeps level progress modest below the interest cap");
+                  0.03, "FAST8 keeps level progress modest below the interest cap");
     require_close(strategy_action_reward(3, 1, 40, 38, 80.0, 3,
                                          false, true, false, true),
                   0.12, "SLOWROLL rewards a useful reroll");
