@@ -330,12 +330,22 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
                            "pair_count_before": _pair_count(before), "pair_count_after": _pair_count(after),
                            "gold_before": before.get("gold"), "gold_after": after.get("gold")})
             sold_uuid = unit.get("uuid")
-            match = next((p for p in reversed(purchases)
-                          if not p["sold"]
-                          and ((sold_uuid and p.get("uuid") and p["uuid"] == sold_uuid)
-                               or (not sold_uuid or not p.get("uuid"))
-                               and p["champion"].casefold() == champion.casefold())
-                          and 1 <= idx - p["buy_action_index"] <= 4), None)
+            pending = [p for p in purchases if not p["sold"]
+                       and 1 <= idx - p["buy_action_index"] <= 4
+                       and _normalized_unit_id(p["champion"]) == champion_key]
+            if sold_uuid:
+                pending = [p for p in pending if p.get("uuid") == sold_uuid]
+            else:
+                pending = [p for p in pending if not p.get("uuid")]
+            match = pending[0] if len(pending) == 1 else None
+            if match is None and any(
+                not p["sold"] and 1 <= idx - p["buy_action_index"] <= 4
+                and _normalized_unit_id(p["champion"]) == champion_key
+                for p in purchases
+            ):
+                metrics["ambiguous_identity_sales"] += 1
+                classifications["UNKNOWN"] += 1
+                continue
             if match is None:
                 classifications["UNKNOWN"] += 1
                 continue
