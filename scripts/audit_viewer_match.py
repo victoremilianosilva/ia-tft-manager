@@ -1553,6 +1553,14 @@ def markdown_report(report: dict) -> str:
         f"- Achados: **{len(report['issues'])}**",
         f"- CRITICAL: {counts['CRITICAL']} | HIGH: {counts['HIGH']} | MEDIUM: {counts['MEDIUM']} | LOW: {counts['LOW']}", "",
     ]
+    if report.get("elimination_filter"):
+        ignored = sum(int(value.get("entries_ignored_after_elimination", 0))
+                      for value in report["elimination_filter"].values())
+        active = sum(int(value.get("entries_analyzed_while_alive", 0))
+                     for value in report["elimination_filter"].values())
+        lines += [f"- Decisões analisadas enquanto os jogadores estavam vivos: **{active}**",
+                  f"- Entradas posteriores à eliminação ignoradas: **{ignored}**",
+                  "- A ação que causa a eliminação permanece válida; o estado terminal não é usado como economia final.", ""]
     if report.get("text_log_metrics"):
         lines += ["## Reconstrução de decisões dos logs legados", "",
                   "Esta seção usa o que está explícito em cada linha de ação. HP, nível, máscara legal e canais separados de recompensa não são inferidos quando o log não os registra.", "",
