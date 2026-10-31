@@ -253,14 +253,14 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
             if board_gain:
                 strategic_value += 1.0
             record = {
-                "champion": champion, "uuid": unit.get("uuid"), "buy_action_index": idx,
+                "champion": champion, "uuid": _newly_acquired_uuid(before, after, champion), "buy_action_index": idx,
                 "step": step, "round": rnd,
                 "cost": max(0, int(unit.get("cost", 0) or 0)), "fit_score": fit_score,
                 "strategic_value": round(strategic_value, 4),
                 "upgrade_completed": upgrade_completed, "pair_count_before": _pair_count(before),
                 "pair_count_after": _pair_count(after), "board_power_before": _board_power(before),
                 "board_power_after": _board_power(after), "gold_before": before.get("gold"),
-                "gold_after": after.get("gold"), "comp_direction": direction_of(after, payload),
+                "gold_after": after.get("gold"), "comp_direction": direction_of(after, payload), "plan_signature": _plan_signature(after),
                 "sold": False, "classification": "NOT_REVERSED",
             }
             purchases.append(record)
@@ -303,10 +303,7 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
             core_sale = core_sale and not compensated_sale
             pair_lost = pair_lost and not compensated_sale
             if not after_comp_decision and (
-                _pair_count(before) > _pair_count(after)
-                or any(champion.casefold() == core or champion.casefold() in core
-                       or core in champion.casefold()
-                       for core in core_units if core)
+                (copies_before >= 2 and copies_after < 2) or champion_key in core_keys
             ):
                 metrics["core_pair_sales_before_comp_decision_ignored"] += 1
             if core_sale:
@@ -334,12 +331,13 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
             distance = idx - match["buy_action_index"]
             bench_units = _occupied_units(before, "bench")
             bench_was_full = bool(before.get("bench")) and len(bench_units) >= len(before.get("bench") or [])
-            comp_changed = (match.get("comp_direction") != direction_of(before, payload)
-                            and bool(match.get("comp_direction") or direction_of(before, payload)))
+            comp_changed = (_plan_signature(before) != match.get("plan_signature", ("", "", ()))
+                            and _plan_signature(before) != ("", "", ()))
             intervening = actions[match["buy_action_index"] + 1:idx + 1]
-            deployed = any(any(unit_name(u).casefold() == champion.casefold()
-                               for u in _occupied_units((item[1].get("state_after") or {}), "board"))
-                           for item in intervening)
+            deployed = bool(match.get("uuid")) and any(
+                any(str(u.get("uuid") or "") == match["uuid"]
+                    for u in _occupied_units((item[1].get("state_after") or {}), "board"))
+                for item in intervening)
             if match["upgrade_completed"]:
                 classification = "PURCHASE_UPGRADE"
             elif bench_was_full:
