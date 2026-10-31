@@ -109,10 +109,10 @@ int main() {
     if (!(purchase_pair_quality(0.0) > 0.30)) {
         throw std::runtime_error("pair completion should have a clear but bounded acquisition signal");
     }
-    if (!(unit_purchase_timing_reward(4, 55, 2, 1, 0.8, 80.0, false, true) > 0.0)) {
+    if (!(unit_purchase_timing_reward(4, 55, 6, 1, 0.8, 80.0, false, true) > 0.0)) {
         throw std::runtime_error("a high-value pair may spend surplus while retaining 40 gold");
     }
-    require_close(unit_purchase_timing_reward(4, 55, 2, 1, 0.8, 80.0, false, false),
+    require_close(unit_purchase_timing_reward(4, 55, 6, 1, 0.8, 80.0, false, false),
                   0.0, "ordinary purchases must preserve the 50-gold interest floor");
     require_close(surplus_xp_spending_reward(54, 50, 4, 0, false), 0.0212,
                   "XP may convert surplus when no useful shop unit is available");
