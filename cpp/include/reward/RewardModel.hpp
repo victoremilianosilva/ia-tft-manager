@@ -135,19 +135,19 @@ inline double strategy_action_reward(
             if (action_type == 1 && !reroll_improved) reward -= 0.015;
             if (action_type == 0 && useful_purchase) reward += 0.07;
             if (action_type == 2 && leveled)
-                reward += hp <= 30.0 ? 0.07 : (old_gold >= 50 ? 0.05 : 0.015);
+                reward += 0.95 * (hp <= 30.0 ? 0.07 : (old_gold >= 50 ? 0.05 : 0.015));
             if (hp <= 35.0 && action_type == 6 && !useful_purchase)
                 reward -= 0.04;
             break;
         case 2: // FAST8 is a plan, not permission to ignore early-game economy.
             if (action_type == 2 && leveled)
-                reward += hp <= 30.0 ? 0.10 : (old_gold >= 50 ? 0.07 : 0.025);
+                reward += hp <= 30.0 ? 0.11 : (old_gold >= 50 ? 0.08 : 0.03);
             // A good reroll remains a valid tactical choice; do not penalize it
             // simply because the active composition aims for level eight.
             if (action_type == 1 && !reroll_improved) reward -= 0.015;
             break;
         case 3: // SLOWROLL: reward improved rolls without blocking useful XP progress.
-            if (action_type == 1) reward += reroll_improved ? 0.10 : -0.025;
+            if (action_type == 1) reward += reroll_improved ? 0.12 : -0.025;
             // Buying XP without an immediate level-up is progress, not proof of
             // waste. Keep only a small early/safe-game nudge against leaving the
             // intended slow-roll plan; gold/interest cost remains the main signal.
@@ -265,12 +265,21 @@ inline double buy_xp_timing_reward(
     return std::min(0.10, 0.09 * liquidity * urgency);
 }
 
+// Relative positive-XP shaping by economic plan. Interest-breakpoint costs are
+// never scaled: only the positive incentive is adjusted.
+inline double xp_strategy_reward_scale(int active_strategy) noexcept {
+    if (active_strategy == 1) return 0.95; // STABILIZE: -5%
+    if (active_strategy == 3) return 0.90; // SLOWROLL: -10%
+    return 1.0;
+}
+
 // Marginal value of an XP purchase that actually crosses a level boundary.
 // Urgency and the level milestone matter; crossing an interest breakpoint has
 // an explicit opportunity cost. Non-leveling XP is not rewarded as a gold sink.
 inline double xp_level_transition_value(
     int gold_before, int gold_after, double hp, int stage,
-    int old_level, int new_level, double board_power_delta = 0.0
+    int old_level, int new_level, double board_power_delta = 0.0,
+    int active_strategy = -1
 ) noexcept {
     if (new_level <= old_level) return 0.0;
     const double urgency = std::max(
@@ -291,8 +300,26 @@ inline double xp_level_transition_value(
     value -= 0.025 * static_cast<double>(lost_breakpoints);
     // Reduce only the positive level-up incentive. Preserve the full
     // opportunity-cost penalty when XP crosses an interest breakpoint.
-    if (value > 0.0) value *= 0.90;
+    if (value > 0.0) {
+        value *= 0.90;
+        value *= xp_strategy_reward_scale(active_strategy);
+    }
     return std::clamp(value, -0.05, 0.12);
+}
+
+// Convert surplus into XP only when no useful shop acquisition is available.
+// This is a fallback, not a generic gold sink: SLOWROLL keeps its 3-star plan.
+inline double surplus_xp_spending_reward(
+    int gold_before, int gold_after, int stage, int active_strategy,
+    bool useful_purchase_available
+) noexcept {
+    if (active_strategy == 3 || useful_purchase_available || stage < 3 ||
+        gold_before < 54 || gold_after < 50 || gold_after >= gold_before)
+        return 0.0;
+    const double surplus = std::clamp(
+        (static_cast<double>(gold_before) - 50.0) / 50.0, 0.0, 1.0);
+    return xp_strategy_reward_scale(active_strategy) *
+        std::min(0.035, 0.020 + 0.015 * surplus);
 }
 
 // Small additional signal for useful unit acquisitions beyond the early game.
@@ -320,7 +347,9 @@ inline double unit_purchase_timing_reward(
     const int normal_reserve = (hp <= 35.0 || stage >= 6) ? 5
         : (stage >= 4 || hp <= 50.0 ? 10 : 20);
     // Above the interest cap, surplus can be converted into useful units.
-    const int reserve = gold_before > 50 ? 50 : normal_reserve;
+    const bool high_value_purchase = completes_upgrade || builds_pair;
+    const int reserve = gold_before > 50
+        ? (high_value_purchase ? 40 : 50) : normal_reserve;
     if (gold_after < reserve) return 0.0;
 
     const double liquidity = gold_before >= 50 ? 1.0
@@ -437,7 +466,7 @@ inline double pass_opportunity_penalty(
         : (gold >= 40 ? 0.75 : (gold >= 30 ? 0.50 : 0.25));
     const double surplus = std::clamp(
         (static_cast<double>(gold) - 50.0) / 150.0, 0.0, 1.0);
-    const double progressive_penalty = 0.30 * std::pow(surplus, 1.20);
+    const double progressive_penalty = 0.325 * std::pow(surplus, 1.20);
     const double useful_offer_penalty = useful_purchase_available
         ? 0.12 * liquidity * urgency : 0.0;
     return -opportunity_factor * (progressive_penalty + useful_offer_penalty);
@@ -486,14 +515,14 @@ inline bool protects_upgrade_path(int owned_unit_instances) noexcept {
 // rewarding for disposing of useful bench units. Fit is normalized to [0, 1].
 // Gold recovery is shaped separately by gold_change_reward().
 inline double sale_quality(double fit_score, bool core_unit,
-                           bool protects_upgrade, bool frees_bench_space) noexcept {
+                           bool protects_upgrade, bool frees_bench_space,
+                           bool compensated_by_board_gain = false) noexcept {
     const double fit = std::clamp(fit_score, 0.0, 1.0);
-    // Sale proceeds are already represented by gold_change_reward. This signal
-    // must therefore protect strategic units and copies rather than rewarding
-    // selling merely because it produces gold.
+    // Sale proceeds are already represented by gold_change_reward. Protect
+    // core/upgrade copies unless the same action produces a measurable board gain.
     return 0.015 - 0.20 * fit -
-        (core_unit ? 0.28 : 0.0) -
-        (protects_upgrade ? 0.30 : 0.0) +
+        (core_unit && !compensated_by_board_gain ? 0.28 : 0.0) -
+        (protects_upgrade && !compensated_by_board_gain ? 0.30 : 0.0) +
         (frees_bench_space ? 0.035 : 0.0);
 }
 

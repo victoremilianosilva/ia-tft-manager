@@ -57,6 +57,18 @@ int main() {
                   0.018, "XP transition accounts for lost interest breakpoint");
     require_close(xp_level_transition_value(40, 36, 80.0, 2, 5, 5),
                   0.0, "XP without level transition has no progress reward");
+    require_close(xp_strategy_reward_scale(1), 0.95,
+                  "STABILIZE positive XP shaping is reduced by five percent");
+    require_close(xp_strategy_reward_scale(3), 0.90,
+                  "SLOWROLL positive XP shaping is reduced by ten percent");
+    require_close(xp_strategy_reward_scale(2), 1.0,
+                  "FAST8 XP shaping remains unchanged");
+    const double neutral_xp = xp_level_transition_value(60, 56, 80.0, 4, 7, 8, 0.0, 0);
+    const double stabilize_xp = xp_level_transition_value(60, 56, 80.0, 4, 7, 8, 0.0, 1);
+    const double slowroll_xp = xp_level_transition_value(60, 56, 80.0, 4, 7, 8, 0.0, 3);
+    if (!(stabilize_xp < neutral_xp && slowroll_xp < stabilize_xp)) {
+        throw std::runtime_error("strategy-specific XP shaping must reduce only positive incentives");
+    }
     if (!(xp_level_transition_value(60, 56, 80.0, 4, 7, 8, 20.0) >
           xp_level_transition_value(60, 56, 80.0, 4, 7, 8, 0.0))) {
         throw std::runtime_error("a level-up that unlocks deployable board power must be valued above a level-only transition");
@@ -97,6 +109,17 @@ int main() {
     if (!(purchase_pair_quality(0.0) > 0.30)) {
         throw std::runtime_error("pair completion should have a clear but bounded acquisition signal");
     }
+    if (!(unit_purchase_timing_reward(4, 54, 5, 1, 0.8, 80.0, false, true) > 0.0)) {
+        throw std::runtime_error("a high-value pair may spend surplus while retaining 40 gold");
+    }
+    require_close(unit_purchase_timing_reward(4, 54, 5, 1, 0.8, 80.0, false, false),
+                  0.0, "ordinary purchases must preserve the 50-gold interest floor");
+    require_close(surplus_xp_spending_reward(54, 50, 4, 0, false), 0.0212,
+                  "XP may convert surplus when no useful shop unit is available");
+    require_close(surplus_xp_spending_reward(54, 50, 4, 0, true), 0.0,
+                  "useful shop offers take priority over surplus XP");
+    require_close(surplus_xp_spending_reward(54, 50, 4, 3, false), 0.0,
+                  "SLOWROLL never receives the surplus XP fallback");
     if (!(unit_purchase_timing_reward(5, 50, 2, 1, 0.7, 80.0, false, false) > 0.0)) {
         throw std::runtime_error("useful unit purchase with capped gold should be rewarded in mid-game");
     }
@@ -218,6 +241,8 @@ int main() {
     const double pass_75 = pass_opportunity_penalty(75, 100.0, 2, false);
     const double pass_125 = pass_opportunity_penalty(125, 100.0, 2, false);
     const double pass_200 = pass_opportunity_penalty(200, 100.0, 2, false);
+    require_close(pass_125, -0.35 * 0.325 * std::pow(0.5, 1.20),
+                  "surplus-gold hoarding penalty uses the increased 2.5-point coefficient");
     if (!(pass_50 > pass_75 && pass_75 > pass_125 && pass_125 > pass_200))
         throw std::runtime_error("PASS penalty must grow with gold above 50");
     if (!(pass_opportunity_penalty(125, 100.0, 2, true) <
@@ -266,7 +291,7 @@ int main() {
                   0.0, "a genuinely improved tactical reroll is not discouraged");
     require_close(strategy_action_reward(3, 1, 55, 53, 90.0, 3,
                                          false, true, false, true),
-                  0.10, "slow-roll strategy retains the stronger reroll signal");
+                  0.12, "slow-roll strategy receives a stronger improved-reroll signal");
     require_close(strategy_action_reward(3, 2, 30, 28, 80.0, 2,
                                          false, false, false, false),
                   -0.02, "safe early slow-roll XP nudge remains small");
@@ -297,6 +322,8 @@ int main() {
                   "sale of low-fit non-core unit frees space");
     require_close(sale_quality(1.0, true, true, false), -0.765,
                   "sale protects core unit and upgrade copies");
+    require_close(sale_quality(1.0, true, true, false, true), -0.185,
+                  "measurable board gain removes the core and pair sale penalties");
     if (!(sale_quality(0.0, false, false, false) >
           sale_quality(0.5, false, false, false) &&
           sale_quality(0.5, false, false, false) >
@@ -374,12 +401,17 @@ int main() {
     require_close(strategy_action_reward(0, 0, 55, 50, 80.0, 4,
                                          true, false, false, false),
                   0.03, "ECON allows useful spending from surplus above 50");
+    require_close(strategy_action_reward(1, 2, 60, 56, 80.0, 4,
+                                         false, false, true, false),
+                  0.0475, "STABILIZE XP reward is reduced by five percent");
+    require_close(surplus_xp_spending_reward(54, 50, 4, 1, false), 0.02014,
+                  "STABILIZE surplus XP fallback uses the same five-percent reduction");
     require_close(strategy_action_reward(2, 2, 40, 35, 80.0, 4,
                                          false, false, true, true),
-                  0.025, "FAST8 keeps level progress modest below the interest cap");
+                  0.03, "FAST8 keeps level progress modest below the interest cap");
     require_close(strategy_action_reward(3, 1, 40, 38, 80.0, 3,
                                          false, true, false, true),
-                  0.10, "SLOWROLL rewards a useful reroll");
+                  0.12, "SLOWROLL rewards a useful reroll");
     require_close(strategy_action_reward(3, 1, 40, 38, 80.0, 3,
                                          false, false, false, true),
                   -0.025, "SLOWROLL penalizes a reroll without improvement");

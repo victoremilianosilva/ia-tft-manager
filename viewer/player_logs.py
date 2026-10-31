@@ -595,9 +595,9 @@ class PlayerJsonLogWriter:
         elif action_type == 4:
             reason = "REPOSITION_IMPROVED" if float(diagnostics["positioning_delta"]) > 1e-6 else "REPOSITION_NO_SCORE_GAIN"
         elif action_type == 5:
-            reason = "SALE_CORE_OR_PAIR_RISK" if (
-                diagnostics["sold_core_unit"] or diagnostics["pairs_after"] < diagnostics["pairs_before"]
-            ) else ("SALE_SPACE_FREED" if diagnostics["space_freed"] else "SALE_GOLD_RECOVERY")
+            sale_risk = diagnostics["sold_core_unit"] or diagnostics["pairs_after"] < diagnostics["pairs_before"]
+            sale_compensated = float(diagnostics["board_power_delta"]) > 0.5 or float(diagnostics["positioning_delta"]) > 0.25 or diagnostics["two_star_or_higher_after"] > diagnostics["two_star_or_higher_before"]
+            reason = "SALE_CORE_OR_PAIR_RISK" if sale_risk and not sale_compensated else ("SALE_WITH_REPLACEMENT_GAIN" if sale_risk else ("SALE_SPACE_FREED" if diagnostics["space_freed"] else "SALE_GOLD_RECOVERY"))
         else:
             reason = "PASS_NO_SPEND"
         diagnostics["reason_code"] = reason
