@@ -296,13 +296,13 @@ int main() {
     }
     require_close(strategy_action_reward(0, 1, 60, 58, 80.0, 4,
                                          false, true, false, false),
-                  -0.025, "non-SLOWROLL reroll is penalized even when its shop improved");
+                  -0.05, "non-SLOWROLL reroll is penalized even when its shop improved");
     require_close(strategy_action_reward(1, 1, 55, 53, 90.0, 3,
                                          false, false, false, true),
-                  -0.025, "all non-SLOWROLL rerolls receive a bounded penalty");
+                  -0.05, "all non-SLOWROLL rerolls receive a bounded penalty");
     require_close(strategy_action_reward(1, 1, 55, 53, 90.0, 3,
                                          false, true, false, true),
-                  -0.025, "a good non-SLOWROLL reroll does not become the preferred spend");
+                  -0.05, "a good non-SLOWROLL reroll does not become the preferred spend");
     require_close(strategy_action_reward(3, 1, 55, 53, 90.0, 3,
                                          false, true, false, true),
                   0.12, "slow-roll strategy receives a stronger improved-reroll signal");
@@ -402,16 +402,16 @@ int main() {
     // Strategy-specific shaping stays small and rewards the plan's actual goal.
     require_close(strategy_action_reward(0, 2, 40, 35, 80.0, 3,
                                          false, false, false, false),
-                  -0.09, "ECON strongly discourages premature XP below interest cap");
+                  -0.01, "ECON applies only a small XP nudge; interest cost is already explicit");
     require_close(strategy_action_reward(0, 2, 50, 46, 80.0, 3,
                                          false, false, false, false),
-                  -0.09, "ECON protects the interest floor when XP starts at 50 gold");
+                  -0.01, "ECON avoids double-penalizing XP at the interest floor");
     require_close(strategy_action_reward(0, 1, 40, 38, 80.0, 3,
                                          false, true, false, false),
-                  -0.025, "ECON does not prefer improved rerolls over planned spending");
+                  -0.05, "ECON does not prefer improved rerolls over planned spending");
     require_close(strategy_action_reward(0, 1, 40, 38, 80.0, 3,
                                          false, false, false, false),
-                  -0.025, "ECON applies one bounded penalty to rerolls");
+                  -0.05, "ECON applies one bounded penalty to rerolls");
     require_close(strategy_action_reward(0, 0, 55, 50, 80.0, 4,
                                          true, false, false, false),
                   0.03, "ECON allows useful spending from surplus above 50");
