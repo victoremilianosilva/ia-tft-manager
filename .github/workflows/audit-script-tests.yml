@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'scripts/audit_viewer_match.py'
+      - 'tests/test_purchase_sequence_audit.py'
+      - 'tests/test_board_quality_audit.py'
       - 'scripts/test_audit_viewer_match.py'
       - 'viewer/audit_window.py'
       - 'viewer/player_logs.py'
@@ -28,5 +30,9 @@ jobs:
           python-version: '3.12'
       - name: Compile Python
         run: python -m py_compile scripts/audit_viewer_match.py scripts/test_audit_viewer_match.py viewer/audit_window.py viewer/main.py viewer/player_logs.py viewer/session.py
+      - name: Install pytest for audit unit tests
+        run: python -m pip install pytest
       - name: Run audit regression tests
-        run: python -m unittest -v scripts/test_audit_viewer_match.py
+        run: |
+          python -m unittest -v scripts/test_audit_viewer_match.py
+          python -m pytest -q tests/test_purchase_sequence_audit.py tests/test_board_quality_audit.py
