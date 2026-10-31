@@ -3937,10 +3937,18 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             }
         } else if (type == 5) {
             success = economy.gold > old_gold;
+            const double sale_synergy_delta =
+                lobby.synergy_score(player_id) - old_synergy_score;
+            const double sale_positioning_delta =
+                lobby.positioning_score(player_id) - old_positioning_score;
+            const bool sale_compensated_by_board_gain =
+                sale_synergy_delta > 1e-6 || sale_positioning_delta > 1e-6;
             action_reward = success
                 ? reward_model::sale_quality(
                     sold_unit_fit_score, sold_core_unit,
-                    sold_unit_protects_upgrade, old_bench_count >= static_cast<int>(kBenchSlots))
+                    sold_unit_protects_upgrade,
+                    old_bench_count >= static_cast<int>(kBenchSlots),
+                    sale_compensated_by_board_gain)
                 : -0.10;
             if (success && purchase_was_recently_reversed &&
                 old_bench_count < static_cast<int>(kBenchSlots)) {
