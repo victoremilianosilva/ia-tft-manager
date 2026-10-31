@@ -155,3 +155,5 @@ def test_board_quality_uses_live_positioning_not_zero_initialized_cached_fields(
     assert metrics["actions_with_metrics"] == 1
     assert metrics["positive_quality_delta"] == 1
     assert abs(metrics["mean_quality_delta"] - 0.3) < 1e-9
+    assert metrics["structural_metrics_available"] is False
+    assert metrics["structural_samples"] == 0
