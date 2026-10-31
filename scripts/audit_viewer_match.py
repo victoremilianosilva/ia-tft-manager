@@ -138,6 +138,39 @@ def _pair_count(state: dict) -> int:
     return sum(1 for count in counts.values() if count >= 2)
 
 
+
+
+def _normalized_unit_id(value: Any) -> str:
+    raw = unit_name(value) if isinstance(value, dict) else str(value or "")
+    normalized = re.sub(r"[^a-z0-9]+", "", raw.casefold())
+    return normalized[3:] if normalized.startswith("tft") else normalized
+
+
+def _owned_copy_count(state: dict, champion: str) -> int:
+    key = _normalized_unit_id(champion)
+    copies = 0
+    for _, _, unit in iter_units(state):
+        if _normalized_unit_id(unit) != key:
+            continue
+        star = max(1, min(3, int(unit.get("star", 1) or 1)))
+        copies += 1 if star == 1 else (3 if star == 2 else 9)
+    return copies
+
+
+def _newly_acquired_uuid(before: dict, after: dict, champion: str) -> str | None:
+    before_ids = {str(u.get("uuid")) for _, _, u in iter_units(before) if u.get("uuid")}
+    key = _normalized_unit_id(champion)
+    added = [u for _, _, u in iter_units(after)
+             if _normalized_unit_id(u) == key and u.get("uuid")
+             and str(u.get("uuid")) not in before_ids]
+    return str(added[0]["uuid"]) if len(added) == 1 else None
+
+
+def _plan_signature(state: dict) -> tuple:
+    return (_normalized_unit_id(state.get("comp_direction")),
+            _normalized_unit_id(state.get("comp_focus")),
+            tuple(sorted(_normalized_unit_id(x) for x in (state.get("core_units") or []))))
+
 def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> None:
     """Correlate buys/sells and count comp-core sales only after the comp decision."""
     actions = []
@@ -244,30 +277,29 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
                 decision_start_index is not None and idx >= decision_start_index
             )
             core_units = [str(value).casefold() for value in (before.get("core_units") or [])]
-            core_sale = after_comp_decision and any(
-                champion.casefold() == core or champion.casefold() in core
-                or core in champion.casefold() for core in core_units if core
-            )
-            pair_lost = after_comp_decision and _pair_count(before) > _pair_count(after)
+            champion_key = _normalized_unit_id(champion)
+            core_keys = {_normalized_unit_id(value) for value in core_units if _normalized_unit_id(value)}
+            core_sale = after_comp_decision and champion_key in core_keys
+            copies_before = _owned_copy_count(before, champion)
+            copies_after = _owned_copy_count(after, champion)
+            # Only flag loss when this exact champion falls below its owned upgrade threshold.
+            pair_lost = after_comp_decision and copies_before >= 2 and copies_after < 2
             # A sale can be correct when it enables a stronger board or merge.
-            upgrade_gain = _star_counts(after)[2] > _star_counts(before)[2]
-            board_power_gain = _board_power(after) > _board_power(before) + 0.5
-            def _quality(state):
-                value = state.get("board_quality_score")
-                if value is None:
-                    value = state.get("board_positional_score")
-                if value is None:
-                    value = state.get("positioning_score")
-                try:
-                    return float(value) if value is not None else None
-                except (TypeError, ValueError):
-                    return None
-            before_quality, after_quality = _quality(before), _quality(after)
-            positioning_gain = (
-                before_quality is not None and after_quality is not None
-                and after_quality > before_quality + 0.25
-            )
-            compensated_sale = upgrade_gain or board_power_gain or positioning_gain
+            # A SELL cannot itself create an upgrade or add board units. Only
+            # live, measured synergy/positioning deltas may compensate this sale.
+            try:
+                synergy_gain = (before.get("synergy_score") is not None
+                                and after.get("synergy_score") is not None
+                                and float(after["synergy_score"]) > float(before["synergy_score"]) + 1e-6)
+            except (TypeError, ValueError):
+                synergy_gain = False
+            try:
+                positioning_gain = (before.get("positioning_score") is not None
+                                    and after.get("positioning_score") is not None
+                                    and float(after["positioning_score"]) > float(before["positioning_score"]) + 0.25)
+            except (TypeError, ValueError):
+                positioning_gain = False
+            compensated_sale = synergy_gain or positioning_gain
             core_sale = core_sale and not compensated_sale
             pair_lost = pair_lost and not compensated_sale
             if not after_comp_decision and (
