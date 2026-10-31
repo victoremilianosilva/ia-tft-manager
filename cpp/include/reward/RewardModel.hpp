@@ -135,7 +135,7 @@ inline double strategy_action_reward(
             if (action_type == 1 && !reroll_improved) reward -= 0.015;
             if (action_type == 0 && useful_purchase) reward += 0.07;
             if (action_type == 2 && leveled)
-                reward += hp <= 30.0 ? 0.07 : (old_gold >= 50 ? 0.05 : 0.015);
+                reward += 0.95 * (hp <= 30.0 ? 0.07 : (old_gold >= 50 ? 0.05 : 0.015));
             if (hp <= 35.0 && action_type == 6 && !useful_purchase)
                 reward -= 0.04;
             break;
@@ -265,12 +265,21 @@ inline double buy_xp_timing_reward(
     return std::min(0.10, 0.09 * liquidity * urgency);
 }
 
+// Relative positive-XP shaping by economic plan. Interest-breakpoint costs are
+// never scaled: only the positive incentive is adjusted.
+inline double xp_strategy_reward_scale(int active_strategy) noexcept {
+    if (active_strategy == 1) return 0.95; // STABILIZE: -5%
+    if (active_strategy == 3) return 0.90; // SLOWROLL: -10%
+    return 1.0;
+}
+
 // Marginal value of an XP purchase that actually crosses a level boundary.
 // Urgency and the level milestone matter; crossing an interest breakpoint has
 // an explicit opportunity cost. Non-leveling XP is not rewarded as a gold sink.
 inline double xp_level_transition_value(
     int gold_before, int gold_after, double hp, int stage,
-    int old_level, int new_level, double board_power_delta = 0.0
+    int old_level, int new_level, double board_power_delta = 0.0,
+    int active_strategy = -1
 ) noexcept {
     if (new_level <= old_level) return 0.0;
     const double urgency = std::max(
@@ -291,7 +300,10 @@ inline double xp_level_transition_value(
     value -= 0.025 * static_cast<double>(lost_breakpoints);
     // Reduce only the positive level-up incentive. Preserve the full
     // opportunity-cost penalty when XP crosses an interest breakpoint.
-    if (value > 0.0) value *= 0.90;
+    if (value > 0.0) {
+        value *= 0.90;
+        value *= xp_strategy_reward_scale(active_strategy);
+    }
     return std::clamp(value, -0.05, 0.12);
 }
 
