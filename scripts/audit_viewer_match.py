@@ -143,7 +143,7 @@ def _pair_count(state: dict) -> int:
 def _normalized_unit_id(value: Any) -> str:
     raw = unit_name(value) if isinstance(value, dict) else str(value or "")
     normalized = re.sub(r"[^a-z0-9]+", "", raw.casefold())
-    return normalized[3:] if normalized.startswith("tft") else normalized
+    return re.sub(r"^tft[0-9]*", "", normalized)
 
 
 def _owned_copy_count(state: dict, champion: str) -> int:
@@ -904,7 +904,8 @@ def audit_team_progression(entries: list[dict], player: str, report: dict) -> No
                                                  "focus": current.get("composition_focus", after.get("comp_focus"))})
         if direction:
             previous_direction = direction
-        final_state = after
+        if after.get("alive") is not False and not after.get("eliminated"):
+            final_state = after
     for values in stages.values():
         values["board_strength_delta"] = round(values["board_strength_delta"], 4)
         values["bench_potential_delta"] = round(values["bench_potential_delta"], 4)
@@ -1138,7 +1139,9 @@ def _active_entries_before_elimination(entries: list[dict]) -> tuple[list[dict],
         if not isinstance(entry, dict):
             continue
         before, after = get_state(entry, "state_before"), get_state(entry, "state_after")
-        before_dead = before.get("alive") is False or bool(before.get("eliminated"))
+        context = (entry.get("payload") or {}).get("decision_context") or {}
+        before_alive = before.get("alive", context.get("alive"))
+        before_dead = before_alive is False or bool(before.get("eliminated"))
         after_dead = after.get("alive") is False or bool(after.get("eliminated"))
         if eliminated or before_dead:
             ignored += 1
