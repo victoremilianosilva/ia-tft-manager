@@ -3670,6 +3670,39 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         for (const auto& unit : this->board) if (unit) ++new_board_count;
         for (const auto& unit : this->bench) if (unit) ++new_bench_count;
 
+        // Shared shop-opportunity check: buy meaningful pairs/upgrades/fits
+        // before converting surplus gold into XP or passing.
+        const auto has_useful_shop_purchase = [&]() {
+            if (this->strategy.empty()) return false;
+            const bool has_free_bench_slot = std::any_of(
+                this->bench.begin(), this->bench.end(),
+                [](const auto& unit) { return !unit.has_value(); });
+            if (!has_free_bench_slot) return false;
+            const auto& current_strategy = this->strategy.back();
+            for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
+                const auto* offer = shop.get_unit(static_cast<std::int32_t>(slot));
+                if (!offer) continue;
+                const auto* definition = lobby.catalog->find_by_id(offer->champion_internal_id);
+                if (!definition || economy.gold < definition->cost) continue;
+                const double fit = unit_composition_score(
+                    current_strategy, *definition, offer->star, lobby.trait_milestones);
+                const double normalized_fit = std::clamp(fit / 32.5, 0.0, 1.0);
+                int copies = 0;
+                for (const auto& unit : this->board)
+                    if (unit && unit->champion_internal_id == offer->champion_internal_id)
+                        copies += star_copies(unit->star);
+                for (const auto& unit : this->bench)
+                    if (unit && unit->champion_internal_id == offer->champion_internal_id)
+                        copies += star_copies(unit->star);
+                const bool completes_upgrade = copies == 2 && offer->star == 1;
+                const bool builds_pair = copies == 1 && offer->star == 1;
+                if (completes_upgrade || builds_pair || normalized_fit >= 0.30)
+                    return true;
+            }
+            return false;
+        };
+        const bool useful_shop_purchase_available = has_useful_shop_purchase();
+
         // Alinhado a RewardManager.calculate_action_reward() e aos valores
         // usados em env.py para compra, reroll e XP.
         double action_reward = 0.0;
@@ -3788,6 +3821,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     old_gold, economy.gold, this->info.hp, lobby.stage,
                     old_level, economy.level, unlocked_board_power,
                     xp_strategy_id);
+                action_reward += reward_model::surplus_xp_spending_reward(
+                    old_gold, economy.gold, static_cast<int>(lobby.stage),
+                    xp_strategy_id, useful_shop_purchase_available);
             }
             // RewardManager tracks the last rewarded level, initialized to 1,
             // not merely the level at the start of this action.
@@ -3922,38 +3958,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         } else {
             success = true;
             if (type == 6 && !this->strategy.empty()) {
-                bool useful_purchase_available = false;
-                const bool has_free_bench_slot = std::any_of(
-                    this->bench.begin(), this->bench.end(),
-                    [](const auto& unit) { return !unit.has_value(); });
-                const auto& current_strategy = this->strategy.back();
-                for (std::size_t slot = 0;
-                     has_free_bench_slot && slot < kShopSlots; ++slot) {
-                    const auto* offer = shop.get_unit(static_cast<std::int32_t>(slot));
-                    if (!offer) continue;
-                    const auto* definition = lobby.catalog->find_by_id(offer->champion_internal_id);
-                    if (!definition || economy.gold < definition->cost) continue;
-                    const double fit = unit_composition_score(
-                        current_strategy, *definition, offer->star, lobby.trait_milestones);
-                    const double normalized_fit = std::clamp(fit / 32.5, 0.0, 1.0);
-                    int copies = 0;
-                    for (const auto& unit : this->board)
-                        if (unit && unit->champion_internal_id == offer->champion_internal_id)
-                            copies += star_copies(unit->star);
-                    for (const auto& unit : this->bench)
-                        if (unit && unit->champion_internal_id == offer->champion_internal_id)
-                            copies += star_copies(unit->star);
-                    const bool completes_upgrade = copies == 2 && offer->star == 1;
-                    const bool builds_pair = copies == 1 && offer->star == 1;
-                    // Passing should recognize pair progress and moderately
-                    // compatible acquisitions, not only near-perfect comp fits.
-                    if (completes_upgrade || builds_pair || normalized_fit >= 0.30) {
-                        useful_purchase_available = true;
-                        break;
-                    }
-                }
                 action_reward += reward_model::pass_opportunity_penalty(
-                    economy.gold, this->info.hp, lobby.stage, useful_purchase_available);
+                    economy.gold, this->info.hp, lobby.stage,
+                    useful_shop_purchase_available);
             }
         }
 
