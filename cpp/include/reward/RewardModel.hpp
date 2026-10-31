@@ -141,7 +141,7 @@ inline double strategy_action_reward(
             break;
         case 2: // FAST8 is a plan, not permission to ignore early-game economy.
             if (action_type == 2 && leveled)
-                reward += hp <= 30.0 ? 0.10 : (old_gold >= 50 ? 0.07 : 0.025);
+                reward += hp <= 30.0 ? 0.11 : (old_gold >= 50 ? 0.08 : 0.03);
             // A good reroll remains a valid tactical choice; do not penalize it
             // simply because the active composition aims for level eight.
             if (action_type == 1 && !reroll_improved) reward -= 0.015;
