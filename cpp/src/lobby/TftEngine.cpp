@@ -3608,22 +3608,24 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             unit_composition_score(current_strategy, *definition, unit.star, lobby.trait_milestones) / 32.5,
                             0.0, 1.0);
                     }
-                    int owned_unit_instances = 0;
-                    for (const auto& candidate : this->board) {
-                        if (candidate &&
-                            candidate->champion_internal_id == unit.champion_internal_id)
-                            ++owned_unit_instances;
-                    }
-                    for (const auto& candidate : this->bench) {
-                        if (candidate &&
-                            candidate->champion_internal_id == unit.champion_internal_id)
-                            ++owned_unit_instances;
-                    }
-                    // Copies at different star levels still share an upgrade path:
-                    // e.g. selling a 1-star while retaining a 2-star discards progress
-                    // toward a possible 3-star. Count the sold unit in this total.
-                    sold_unit_protects_upgrade =
-                        reward_model::protects_upgrade_path(owned_unit_instances);
+                    int same_star_copies = 0;
+                    int one_star_copies = 0;
+                    const auto count_upgrade_copies = [&](const auto& candidate) {
+                        if (!candidate ||
+                            candidate->champion_internal_id != unit.champion_internal_id ||
+                            candidate->uuid == unit.uuid)
+                            return;
+                        if (candidate->star == unit.star) ++same_star_copies;
+                        if (candidate->star == 1) ++one_star_copies;
+                    };
+                    for (const auto& candidate : this->board)
+                        count_upgrade_copies(candidate);
+                    for (const auto& candidate : this->bench)
+                        count_upgrade_copies(candidate);
+                    // Only same-star copies form a pair. For a 2-star sale, three
+                    // 1-star copies also represent a concrete route to another 2-star.
+                    sold_unit_protects_upgrade = reward_model::protects_upgrade_path(
+                        unit.star, same_star_copies, one_star_copies);
                     const auto sell_value =
                         EconomyEngine::get_sell_value(
                             definition->cost,
