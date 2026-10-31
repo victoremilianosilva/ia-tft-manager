@@ -554,8 +554,10 @@ inline double reversed_sequence_adjustment(
 inline bool protects_upgrade_path(
     int sold_star, int same_star_copies, int one_star_copies
 ) noexcept {
-    if (sold_star == 1 || sold_star == 2)
+    if (sold_star == 1)
         return same_star_copies >= 1;
+    if (sold_star == 2)
+        return same_star_copies >= 1 || one_star_copies >= 3;
     return false;
 }
 
