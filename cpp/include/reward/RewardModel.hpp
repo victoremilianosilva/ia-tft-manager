@@ -318,7 +318,8 @@ inline double surplus_xp_spending_reward(
         return 0.0;
     const double surplus = std::clamp(
         (static_cast<double>(gold_before) - 50.0) / 50.0, 0.0, 1.0);
-    return std::min(0.035, 0.020 + 0.015 * surplus);
+    return xp_strategy_reward_scale(active_strategy) *
+        std::min(0.035, 0.020 + 0.015 * surplus);
 }
 
 // Small additional signal for useful unit acquisitions beyond the early game.
