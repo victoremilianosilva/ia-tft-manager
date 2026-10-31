@@ -2,10 +2,10 @@
   "schema_version": 1,
   "source": "op.gg",
   "tool": "tft_list_meta_decks",
-  "fetched_at": "2026-10-30T22:22:38.902078+00:00",
+  "fetched_at": "2026-10-31T13:37:49.953165+00:00",
   "metadata": {
-    "gameStatCounts": 2205072,
-    "gameStatDateTime": "2026-10-30T21:59:23.000Z"
+    "gameStatCounts": 3283232,
+    "gameStatDateTime": "2026-10-31T12:59:37.000Z"
   },
   "compositions": [
     {
@@ -169,24 +169,24 @@
       "badge": [],
       "statistics": {
         "deck": {
-          "totalCount": 1687249,
-          "compsCount": 32735,
-          "avgPlacement": 2.49,
-          "winCount": 11480,
-          "top4Count": 28836,
-          "winRate": 0.3507,
-          "top4Rate": 0.8809,
-          "pickRate": 0.019401404297765178
+          "totalCount": 2575421,
+          "compsCount": 49876,
+          "avgPlacement": 2.5,
+          "winCount": 17353,
+          "top4Count": 43806,
+          "winRate": 0.3479,
+          "top4Rate": 0.8783,
+          "pickRate": 0.01936615411616198
         },
         "label": {
-          "totalCount": 1687249,
-          "compsCount": 71409,
-          "avgPlacement": 3.22,
-          "winCount": 17739,
-          "top4Count": 53045,
-          "winRate": 0.2484,
-          "top4Rate": 0.7428,
-          "pickRate": 0.04232273956007679
+          "totalCount": 2575421,
+          "compsCount": 109846,
+          "avgPlacement": 3.23,
+          "winCount": 27049,
+          "top4Count": 81243,
+          "winRate": 0.2462,
+          "top4Rate": 0.7396,
+          "pickRate": 0.04265166743612015
         }
       },
       "early_game": {
@@ -300,9 +300,9 @@
             "num_units": 1
           }
         ],
-        "play": 2108.0,
-        "win": 865.0,
-        "lose": 1173.0
+        "play": 2503.0,
+        "win": 1028.0,
+        "lose": 1396.0
       },
       "mid_game": {
         "level": 7,
@@ -460,9 +460,9 @@
             "num_units": 1
           }
         ],
-        "play": 2560.0,
-        "win": 1544.0,
-        "lose": 956.0
+        "play": 2968.0,
+        "win": 1797.0,
+        "lose": 1101.0
       }
     },
     {
@@ -668,24 +668,24 @@
       ],
       "statistics": {
         "deck": {
-          "totalCount": 1687249,
-          "compsCount": 30673,
-          "avgPlacement": 3.21,
-          "winCount": 9198,
-          "top4Count": 22094,
-          "winRate": 0.2999,
-          "top4Rate": 0.7203,
-          "pickRate": 0.018179296594634225
+          "totalCount": 2575421,
+          "compsCount": 47071,
+          "avgPlacement": 3.22,
+          "winCount": 14097,
+          "top4Count": 33944,
+          "winRate": 0.2995,
+          "top4Rate": 0.7211,
+          "pickRate": 0.0182770117972945
         },
         "label": {
-          "totalCount": 1687249,
-          "compsCount": 50693,
-          "avgPlacement": 2.95,
-          "winCount": 18684,
-          "top4Count": 38416,
-          "winRate": 0.3686,
-          "top4Rate": 0.7578,
-          "pickRate": 0.030044765176924094
+          "totalCount": 2575421,
+          "compsCount": 79409,
+          "avgPlacement": 2.96,
+          "winCount": 29232,
+          "top4Count": 60108,
+          "winRate": 0.3681,
+          "top4Rate": 0.7569,
+          "pickRate": 0.030833405489820886
         }
       },
       "early_game": {
@@ -722,21 +722,6 @@
             "priority": 0
           },
           {
-            "key": "DA_Gromp18_AP",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 3,
-              "y": 1
-            },
-            "is_core": false,
-            "priority": 0
-          },
-          {
             "key": "DA_Murkwolf18",
             "items": [
               "None",
@@ -745,14 +730,29 @@
             ],
             "tier": 0,
             "cell": {
-              "x": 4,
-              "y": 2
+              "x": 3,
+              "y": 4
             },
             "is_core": false,
             "priority": 0
           },
           {
             "key": "DA_Scuttlecrab18",
+            "items": [
+              "None",
+              "None",
+              "None"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 5,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Krug18",
             "items": [
               "None",
               "None",
@@ -784,11 +784,6 @@
             "num_units": 1
           },
           {
-            "key": "DA_18_Adaptor",
-            "style": 0,
-            "num_units": 1
-          },
-          {
             "key": "DA_18_Slayer",
             "style": 0,
             "num_units": 1
@@ -797,11 +792,16 @@
             "key": "DA_Juggernaut18",
             "style": 0,
             "num_units": 1
+          },
+          {
+            "key": "DA_18_Brawler",
+            "style": 0,
+            "num_units": 1
           }
         ],
-        "play": 2074.0,
-        "win": 825.0,
-        "lose": 1179.0
+        "play": 2503.0,
+        "win": 1028.0,
+        "lose": 1396.0
       },
       "mid_game": {
         "level": 7,
@@ -949,9 +949,9 @@
             "num_units": 1
           }
         ],
-        "play": 1796.0,
-        "win": 1179.0,
-        "lose": 563.0
+        "play": 2100.0,
+        "win": 1374.0,
+        "lose": 663.0
       }
     },
     {
@@ -995,7 +995,7 @@
             "y": 1
           },
           "is_core": true,
-          "priority": 3
+          "priority": 2
         },
         {
           "key": "DA_18_Kayle",
@@ -1035,7 +1035,7 @@
             "y": 4
           },
           "is_core": true,
-          "priority": 2
+          "priority": 3
         },
         {
           "key": "DA_18_Yunara",
@@ -1116,48 +1116,27 @@
           "num_units": 1
         }
       ],
-      "badge": [
-        {
-          "key": "difficulty",
-          "value": 1
-        },
-        {
-          "key": "tempo",
-          "value": null
-        },
-        {
-          "key": "reroll",
-          "value": 6
-        },
-        {
-          "key": "honey",
-          "value": false
-        },
-        {
-          "key": "ppm",
-          "value": "high"
-        }
-      ],
+      "badge": [],
       "statistics": {
         "deck": {
-          "totalCount": 1687249,
-          "compsCount": 21065,
-          "avgPlacement": 3.14,
-          "winCount": 4890,
-          "top4Count": 16268,
-          "winRate": 0.2321,
-          "top4Rate": 0.7723,
-          "pickRate": 0.012484819964332473
+          "totalCount": 2575421,
+          "compsCount": 32219,
+          "avgPlacement": 3.12,
+          "winCount": 7495,
+          "top4Count": 24995,
+          "winRate": 0.2326,
+          "top4Rate": 0.7758,
+          "pickRate": 0.012510187654756252
         },
         "label": {
-          "totalCount": 1687249,
-          "compsCount": 28925,
-          "avgPlacement": 2.93,
-          "winCount": 7561,
-          "top4Count": 23376,
-          "winRate": 0.2614,
-          "top4Rate": 0.8082,
-          "pickRate": 0.017143290646490235
+          "totalCount": 2575421,
+          "compsCount": 44381,
+          "avgPlacement": 2.91,
+          "winCount": 11687,
+          "top4Count": 35994,
+          "winRate": 0.2633,
+          "top4Rate": 0.811,
+          "pickRate": 0.01723252237207043
         }
       },
       "early_game": {
@@ -1276,9 +1255,9 @@
             "num_units": 1
           }
         ],
-        "play": 5171.0,
-        "win": 2871.0,
-        "lose": 2127.0
+        "play": 6168.0,
+        "win": 3442.0,
+        "lose": 2517.0
       },
       "mid_game": {
         "level": 7,
@@ -1436,9 +1415,9 @@
             "num_units": 1
           }
         ],
-        "play": 12682.0,
-        "win": 7491.0,
-        "lose": 4697.0
+        "play": 15114.0,
+        "win": 8910.0,
+        "lose": 5619.0
       }
     },
     {
@@ -1612,24 +1591,24 @@
       "badge": [],
       "statistics": {
         "deck": {
-          "totalCount": 1687249,
-          "compsCount": 23210,
-          "avgPlacement": 3.41,
-          "winCount": 6805,
-          "top4Count": 15781,
-          "winRate": 0.2932,
-          "top4Rate": 0.6799,
-          "pickRate": 0.013756120169577815
+          "totalCount": 2575421,
+          "compsCount": 36220,
+          "avgPlacement": 3.4,
+          "winCount": 10602,
+          "top4Count": 24684,
+          "winRate": 0.2927,
+          "top4Rate": 0.6815,
+          "pickRate": 0.014063720067515176
         },
         "label": {
-          "totalCount": 1687249,
-          "compsCount": 31757,
-          "avgPlacement": 3.16,
-          "winCount": 10944,
-          "top4Count": 22823,
-          "winRate": 0.3446,
-          "top4Rate": 0.7187,
-          "pickRate": 0.018821762525863105
+          "totalCount": 2575421,
+          "compsCount": 50425,
+          "avgPlacement": 3.17,
+          "winCount": 17235,
+          "top4Count": 36183,
+          "winRate": 0.3418,
+          "top4Rate": 0.7176,
+          "pickRate": 0.019579323147555294
         }
       },
       "early_game": {
@@ -1743,9 +1722,9 @@
             "num_units": 1
           }
         ],
-        "play": 2108.0,
-        "win": 865.0,
-        "lose": 1173.0
+        "play": 2503.0,
+        "win": 1028.0,
+        "lose": 1396.0
       },
       "mid_game": {
         "level": 7,
@@ -1903,9 +1882,9 @@
             "num_units": 1
           }
         ],
-        "play": 2560.0,
-        "win": 1544.0,
-        "lose": 956.0
+        "play": 2968.0,
+        "win": 1797.0,
+        "lose": 1101.0
       }
     },
     {
@@ -2074,24 +2053,24 @@
       "badge": [],
       "statistics": {
         "deck": {
-          "totalCount": 1687249,
-          "compsCount": 11832,
-          "avgPlacement": 3.14,
-          "winCount": 3665,
-          "top4Count": 8761,
-          "winRate": 0.3098,
-          "top4Rate": 0.7404,
-          "pickRate": 0.007012598614668019
+          "totalCount": 2575421,
+          "compsCount": 18314,
+          "avgPlacement": 3.15,
+          "winCount": 5603,
+          "top4Count": 13511,
+          "winRate": 0.3059,
+          "top4Rate": 0.7377,
+          "pickRate": 0.007111070384220677
         },
         "label": {
-          "totalCount": 1687249,
-          "compsCount": 24250,
+          "totalCount": 2575421,
+          "compsCount": 37581,
           "avgPlacement": 3.25,
-          "winCount": 7805,
-          "top4Count": 17267,
+          "winCount": 12096,
+          "top4Count": 26727,
           "winRate": 0.3219,
-          "top4Rate": 0.712,
-          "pickRate": 0.014372508147878589
+          "top4Rate": 0.7112,
+          "pickRate": 0.01459217735663412
         }
       },
       "early_game": {
@@ -2205,9 +2184,9 @@
             "num_units": 1
           }
         ],
-        "play": 608.0,
-        "win": 268.0,
-        "lose": 328.0
+        "play": 694.0,
+        "win": 306.0,
+        "lose": 374.0
       },
       "mid_game": {
         "level": 7,
@@ -2360,9 +2339,9 @@
             "num_units": 1
           }
         ],
-        "play": 389.0,
-        "win": 140.0,
-        "lose": 228.0
+        "play": 469.0,
+        "win": 162.0,
+        "lose": 280.0
       }
     },
     {
@@ -2542,24 +2521,24 @@
       ],
       "statistics": {
         "deck": {
-          "totalCount": 1687249,
-          "compsCount": 8090,
+          "totalCount": 2575421,
+          "compsCount": 11870,
           "avgPlacement": 3.06,
-          "winCount": 1838,
-          "top4Count": 6403,
-          "winRate": 0.2272,
-          "top4Rate": 0.7915,
-          "pickRate": 0.0047947872542819705
+          "winCount": 2654,
+          "top4Count": 9375,
+          "winRate": 0.2236,
+          "top4Rate": 0.7898,
+          "pickRate": 0.00460895519606309
         },
         "label": {
-          "totalCount": 1687249,
-          "compsCount": 21157,
-          "avgPlacement": 2.86,
-          "winCount": 5818,
-          "top4Count": 17303,
-          "winRate": 0.275,
-          "top4Rate": 0.8178,
-          "pickRate": 0.012539346593182156
+          "totalCount": 2575421,
+          "compsCount": 32086,
+          "avgPlacement": 2.84,
+          "winCount": 8856,
+          "top4Count": 26357,
+          "winRate": 0.276,
+          "top4Rate": 0.8214,
+          "pickRate": 0.01245854561254257
         }
       },
       "early_game": {
@@ -2668,9 +2647,9 @@
             "num_units": 1
           }
         ],
-        "play": 1739.0,
-        "win": 981.0,
-        "lose": 696.0
+        "play": 2035.0,
+        "win": 1149.0,
+        "lose": 811.0
       },
       "mid_game": {
         "level": 7,
@@ -2823,9 +2802,9 @@
             "num_units": 1
           }
         ],
-        "play": 1820.0,
-        "win": 971.0,
-        "lose": 767.0
+        "play": 2101.0,
+        "win": 1126.0,
+        "lose": 883.0
       }
     },
     {
@@ -2889,9 +2868,9 @@
         {
           "key": "DA_Fiddlesticks18",
           "items": [
+            "DA_IonicSpark",
             "DA_SpiritVisage",
-            "DA_SunfireCape",
-            "DA_WarmogsArmor"
+            "DA_SunfireCape"
           ],
           "tier": 3,
           "cell": {
@@ -3015,24 +2994,24 @@
       ],
       "statistics": {
         "deck": {
-          "totalCount": 1687249,
-          "compsCount": 6095,
-          "avgPlacement": 2.75,
-          "winCount": 1727,
-          "top4Count": 5122,
-          "winRate": 0.2833,
-          "top4Rate": 0.8404,
-          "pickRate": 0.0036123891612915462
+          "totalCount": 2575421,
+          "compsCount": 9579,
+          "avgPlacement": 2.76,
+          "winCount": 2685,
+          "top4Count": 8014,
+          "winRate": 0.2803,
+          "top4Rate": 0.8366,
+          "pickRate": 0.0037193918974800623
         },
         "label": {
-          "totalCount": 1687249,
-          "compsCount": 22175,
+          "totalCount": 2575421,
+          "compsCount": 34570,
           "avgPlacement": 2.81,
-          "winCount": 6033,
-          "top4Count": 18380,
-          "winRate": 0.2721,
-          "top4Rate": 0.8289,
-          "pickRate": 0.013142695595018874
+          "winCount": 9412,
+          "top4Count": 28679,
+          "winRate": 0.2723,
+          "top4Rate": 0.8296,
+          "pickRate": 0.013423048115240187
         }
       },
       "early_game": {
@@ -3151,9 +3130,9 @@
             "num_units": 1
           }
         ],
-        "play": 536.0,
-        "win": 286.0,
-        "lose": 226.0
+        "play": 652.0,
+        "win": 354.0,
+        "lose": 269.0
       },
       "mid_game": {
         "level": 7,
@@ -3311,9 +3290,9 @@
             "num_units": 1
           }
         ],
-        "play": 5833.0,
-        "win": 3384.0,
-        "lose": 2231.0
+        "play": 6807.0,
+        "win": 3918.0,
+        "lose": 2634.0
       }
     },
     {
@@ -3513,24 +3492,24 @@
       "badge": [],
       "statistics": {
         "deck": {
-          "totalCount": 1687249,
-          "compsCount": 10615,
+          "totalCount": 2575421,
+          "compsCount": 16411,
           "avgPlacement": 3.54,
-          "winCount": 2459,
-          "top4Count": 7134,
-          "winRate": 0.2317,
-          "top4Rate": 0.6721,
-          "pickRate": 0.006291306143906441
+          "winCount": 3759,
+          "top4Count": 11054,
+          "winRate": 0.2291,
+          "top4Rate": 0.6736,
+          "pickRate": 0.006372162065930192
         },
         "label": {
-          "totalCount": 1687249,
-          "compsCount": 25913,
-          "avgPlacement": 3.45,
-          "winCount": 6975,
-          "top4Count": 17618,
-          "winRate": 0.2692,
-          "top4Rate": 0.6799,
-          "pickRate": 0.015358136232411458
+          "totalCount": 2575421,
+          "compsCount": 40761,
+          "avgPlacement": 3.42,
+          "winCount": 11120,
+          "top4Count": 27929,
+          "winRate": 0.2728,
+          "top4Rate": 0.6852,
+          "pickRate": 0.015826926937382278
         }
       },
       "early_game": {
@@ -3644,9 +3623,9 @@
             "num_units": 1
           }
         ],
-        "play": 608.0,
-        "win": 268.0,
-        "lose": 328.0
+        "play": 694.0,
+        "win": 306.0,
+        "lose": 374.0
       },
       "mid_game": {
         "level": 7,
@@ -3660,8 +3639,23 @@
             ],
             "tier": 0,
             "cell": {
-              "x": 1,
-              "y": 3
+              "x": 6,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Rakan",
+            "items": [
+              "None",
+              "None",
+              "None"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 7,
+              "y": 2
             },
             "is_core": false,
             "priority": 0
@@ -3675,7 +3669,7 @@
             ],
             "tier": 0,
             "cell": {
-              "x": 2,
+              "x": 6,
               "y": 1
             },
             "is_core": false,
@@ -3690,7 +3684,7 @@
             ],
             "tier": 0,
             "cell": {
-              "x": 3,
+              "x": 5,
               "y": 4
             },
             "is_core": false,
@@ -3705,7 +3699,7 @@
             ],
             "tier": 0,
             "cell": {
-              "x": 1,
+              "x": 7,
               "y": 1
             },
             "is_core": false,
@@ -3720,14 +3714,14 @@
             ],
             "tier": 0,
             "cell": {
-              "x": 2,
-              "y": 4
+              "x": 5,
+              "y": 2
             },
             "is_core": false,
             "priority": 0
           },
           {
-            "key": "DA_Fiddlesticks18",
+            "key": "DA_18_Hecarim",
             "items": [
               "None",
               "None",
@@ -3736,22 +3730,7 @@
             "tier": 0,
             "cell": {
               "x": 4,
-              "y": 4
-            },
-            "is_core": false,
-            "priority": 0
-          },
-          {
-            "key": "DA_18_Morgana",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 2,
-              "y": 3
+              "y": 2
             },
             "is_core": false,
             "priority": 0
@@ -3761,12 +3740,12 @@
           {
             "key": "DA_18_Coven",
             "style": 3,
-            "num_units": 5
+            "num_units": 4
           },
           {
-            "key": "DA_FloraFatalis18",
-            "style": 1,
-            "num_units": 1
+            "key": "DA_18_Vanguard",
+            "style": 3,
+            "num_units": 4
           },
           {
             "key": "DA_18_Slayer",
@@ -3774,17 +3753,22 @@
             "num_units": 2
           },
           {
-            "key": "DA_18_Vanguard",
-            "style": 1,
-            "num_units": 2
+            "key": "DA_18_Fae",
+            "style": 0,
+            "num_units": 1
           },
           {
-            "key": "DA_18_Spellweaver",
-            "style": 1,
-            "num_units": 2
+            "key": "DA_Juggernaut18",
+            "style": 0,
+            "num_units": 1
           },
           {
             "key": "DA_18_Hunter",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Spellweaver",
             "style": 0,
             "num_units": 1
           },
@@ -3794,19 +3778,14 @@
             "num_units": 1
           },
           {
-            "key": "DA_18_Defender",
-            "style": 0,
-            "num_units": 1
-          },
-          {
-            "key": "DA_18_Invoker",
+            "key": "DA_18_Elderwood",
             "style": 0,
             "num_units": 1
           }
         ],
-        "play": 171.0,
-        "win": 43.0,
-        "lose": 121.0
+        "play": 200.0,
+        "win": 67.0,
+        "lose": 128.0
       }
     },
     {
@@ -3975,24 +3954,24 @@
       "badge": [],
       "statistics": {
         "deck": {
-          "totalCount": 1687249,
-          "compsCount": 7245,
-          "avgPlacement": 3.18,
-          "winCount": 1427,
-          "top4Count": 5604,
-          "winRate": 0.197,
-          "top4Rate": 0.7735,
-          "pickRate": 0.0042939720219125925
+          "totalCount": 2575421,
+          "compsCount": 11274,
+          "avgPlacement": 3.2,
+          "winCount": 2149,
+          "top4Count": 8701,
+          "winRate": 0.1906,
+          "top4Rate": 0.7718,
+          "pickRate": 0.004377536721180731
         },
         "label": {
-          "totalCount": 1687249,
-          "compsCount": 24998,
+          "totalCount": 2575421,
+          "compsCount": 38000,
           "avgPlacement": 2.97,
-          "winCount": 5615,
-          "top4Count": 20215,
-          "winRate": 0.2246,
-          "top4Rate": 0.8087,
-          "pickRate": 0.014815833347656451
+          "winCount": 8508,
+          "top4Count": 30789,
+          "winRate": 0.2239,
+          "top4Rate": 0.8102,
+          "pickRate": 0.014754869203908798
         }
       },
       "early_game": {
@@ -4007,8 +3986,23 @@
             ],
             "tier": 0,
             "cell": {
-              "x": 3,
+              "x": 4,
               "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Karma18",
+            "items": [
+              "None",
+              "None",
+              "None"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 7,
+              "y": 1
             },
             "is_core": false,
             "priority": 0
@@ -4023,7 +4017,7 @@
             "tier": 0,
             "cell": {
               "x": 7,
-              "y": 2
+              "y": 3
             },
             "is_core": false,
             "priority": 0
@@ -4037,22 +4031,7 @@
             ],
             "tier": 0,
             "cell": {
-              "x": 6,
-              "y": 2
-            },
-            "is_core": false,
-            "priority": 0
-          },
-          {
-            "key": "DA_Krug18",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 4,
+              "x": 5,
               "y": 4
             },
             "is_core": false,
@@ -4067,7 +4046,7 @@
             ],
             "tier": 0,
             "cell": {
-              "x": 5,
+              "x": 6,
               "y": 4
             },
             "is_core": false,
@@ -4086,7 +4065,17 @@
             "num_units": 2
           },
           {
+            "key": "DA_18_Blossom",
+            "style": 1,
+            "num_units": 3
+          },
+          {
             "key": "DA_18_Summoner",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Spellweaver",
             "style": 0,
             "num_units": 1
           },
@@ -4096,29 +4085,14 @@
             "num_units": 1
           },
           {
-            "key": "DA_18_Brawler",
-            "style": 0,
-            "num_units": 1
-          },
-          {
-            "key": "DA_Riftbeast18",
-            "style": 0,
-            "num_units": 1
-          },
-          {
             "key": "DA_Primal18",
             "style": 0,
             "num_units": 1
-          },
-          {
-            "key": "DA_18_Blossom",
-            "style": 0,
-            "num_units": 2
           }
         ],
-        "play": 29.0,
-        "win": 10.0,
-        "lose": 18.0
+        "play": 107.0,
+        "win": 62.0,
+        "lose": 40.0
       },
       "mid_game": {
         "level": 7,
@@ -4281,9 +4255,9 @@
             "num_units": 1
           }
         ],
-        "play": 1221.0,
-        "win": 650.0,
-        "lose": 530.0
+        "play": 1581.0,
+        "win": 852.0,
+        "lose": 676.0
       }
     },
     {
@@ -4452,24 +4426,24 @@
       "badge": [],
       "statistics": {
         "deck": {
-          "totalCount": 1687249,
-          "compsCount": 6108,
-          "avgPlacement": 3.57,
-          "winCount": 765,
-          "top4Count": 4339,
-          "winRate": 0.1252,
+          "totalCount": 2575421,
+          "compsCount": 9378,
+          "avgPlacement": 3.56,
+          "winCount": 1156,
+          "top4Count": 6662,
+          "winRate": 0.1233,
           "top4Rate": 0.7104,
-          "pickRate": 0.0036200940110203057
+          "pickRate": 0.0036413464051120187
         },
         "label": {
-          "totalCount": 1687249,
-          "compsCount": 10809,
+          "totalCount": 2575421,
+          "compsCount": 16492,
           "avgPlacement": 3.42,
-          "winCount": 1619,
-          "top4Count": 7908,
-          "winRate": 0.1498,
-          "top4Rate": 0.7316,
-          "pickRate": 0.00640628620908947
+          "winCount": 2461,
+          "top4Count": 12059,
+          "winRate": 0.1492,
+          "top4Rate": 0.7312,
+          "pickRate": 0.006403613234496419
         }
       },
       "early_game": {
@@ -4484,8 +4458,8 @@
             ],
             "tier": 0,
             "cell": {
-              "x": 4,
-              "y": 3
+              "x": 2,
+              "y": 4
             },
             "is_core": false,
             "priority": 0
@@ -4499,7 +4473,7 @@
             ],
             "tier": 0,
             "cell": {
-              "x": 4,
+              "x": 3,
               "y": 4
             },
             "is_core": false,
@@ -4514,8 +4488,8 @@
             ],
             "tier": 0,
             "cell": {
-              "x": 5,
-              "y": 3
+              "x": 4,
+              "y": 4
             },
             "is_core": false,
             "priority": 0
@@ -4529,7 +4503,7 @@
             ],
             "tier": 0,
             "cell": {
-              "x": 1,
+              "x": 7,
               "y": 1
             },
             "is_core": false,
@@ -4544,8 +4518,8 @@
             ],
             "tier": 0,
             "cell": {
-              "x": 3,
-              "y": 3
+              "x": 5,
+              "y": 4
             },
             "is_core": false,
             "priority": 0
@@ -4588,9 +4562,9 @@
             "num_units": 1
           }
         ],
-        "play": 44.0,
-        "win": 20.0,
-        "lose": 22.0
+        "play": 56.0,
+        "win": 28.0,
+        "lose": 24.0
       },
       "mid_game": {
         "level": 7,
@@ -4748,9 +4722,9 @@
             "num_units": 1
           }
         ],
-        "play": 683.0,
-        "win": 298.0,
-        "lose": 363.0
+        "play": 804.0,
+        "win": 352.0,
+        "lose": 420.0
       }
     }
   ]

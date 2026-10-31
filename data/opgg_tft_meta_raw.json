@@ -191,26 +191,26 @@
         "originHash": "25e6c08cee3fb517b00a8c3cb27179a7",
         "labelNumber": 1,
         "opTier": "OP",
-        "opScore": 3.8996822638508,
+        "opScore": 3.873230823232396,
         "deck": {
-          "totalCount": 1687249,
-          "compsCount": 32735,
-          "avgPlacement": 2.49,
-          "winCount": 11480,
-          "top4Count": 28836,
-          "winRate": 0.3507,
-          "top4Rate": 0.8809,
-          "pickRate": 0.019401404297765178
+          "totalCount": 2575421,
+          "compsCount": 49876,
+          "avgPlacement": 2.5,
+          "winCount": 17353,
+          "top4Count": 43806,
+          "winRate": 0.3479,
+          "top4Rate": 0.8783,
+          "pickRate": 0.01936615411616198
         },
         "label": {
-          "totalCount": 1687249,
-          "compsCount": 71409,
-          "avgPlacement": 3.22,
-          "winCount": 17739,
-          "top4Count": 53045,
-          "winRate": 0.2484,
-          "top4Rate": 0.7428,
-          "pickRate": 0.04232273956007679
+          "totalCount": 2575421,
+          "compsCount": 109846,
+          "avgPlacement": 3.23,
+          "winCount": 27049,
+          "top4Count": 81243,
+          "winRate": 0.2462,
+          "top4Rate": 0.7396,
+          "pickRate": 0.04265166743612015
         },
         "representative": true
       },
@@ -312,9 +312,9 @@
             "numUnits": 1
           }
         ],
-        "play": 2108,
-        "win": 865,
-        "lose": 1173
+        "play": 2503,
+        "win": 1028,
+        "lose": 1396
       },
       "middle": {
         "finalDeckId": "25e6c08cee3fb517b00a8c3cb27179a7",
@@ -453,9 +453,9 @@
             "numUnits": 1
           }
         ],
-        "play": 2560,
-        "win": 1544,
-        "lose": 956
+        "play": 2968,
+        "win": 1797,
+        "lose": 1101
       }
     },
     {
@@ -691,32 +691,32 @@
         "originHash": "c5a44db118188c9565578d30c786b078",
         "labelNumber": 2,
         "opTier": "OP",
-        "opScore": 2.345129260707815,
+        "opScore": 2.3394575100536956,
         "deck": {
-          "totalCount": 1687249,
-          "compsCount": 30673,
-          "avgPlacement": 3.21,
-          "winCount": 9198,
-          "top4Count": 22094,
-          "winRate": 0.2999,
-          "top4Rate": 0.7203,
-          "pickRate": 0.018179296594634225
+          "totalCount": 2575421,
+          "compsCount": 47071,
+          "avgPlacement": 3.22,
+          "winCount": 14097,
+          "top4Count": 33944,
+          "winRate": 0.2995,
+          "top4Rate": 0.7211,
+          "pickRate": 0.0182770117972945
         },
         "label": {
-          "totalCount": 1687249,
-          "compsCount": 50693,
-          "avgPlacement": 2.95,
-          "winCount": 18684,
-          "top4Count": 38416,
-          "winRate": 0.3686,
-          "top4Rate": 0.7578,
-          "pickRate": 0.030044765176924094
+          "totalCount": 2575421,
+          "compsCount": 79409,
+          "avgPlacement": 2.96,
+          "winCount": 29232,
+          "top4Count": 60108,
+          "winRate": 0.3681,
+          "top4Rate": 0.7569,
+          "pickRate": 0.030833405489820886
         },
         "representative": true
       },
       "early": {
         "finalDeckId": "c5a44db118188c9565578d30c786b078",
-        "deckId": "dc116f73fd77b4cc1c848110b67adb09",
+        "deckId": "64d9e03bd3ffbffc7ce9e945854c0f9f",
         "level": "5",
         "units": [
           {
@@ -744,18 +744,6 @@
             }
           },
           {
-            "characterId": "DA_Gromp18_AP",
-            "items": [
-              null,
-              null,
-              null
-            ],
-            "cell": {
-              "x": 3,
-              "y": 1
-            }
-          },
-          {
             "characterId": "DA_Murkwolf18",
             "items": [
               null,
@@ -763,12 +751,24 @@
               null
             ],
             "cell": {
-              "x": 4,
-              "y": 2
+              "x": 3,
+              "y": 4
             }
           },
           {
             "characterId": "DA_Scuttlecrab18",
+            "items": [
+              null,
+              null,
+              null
+            ],
+            "cell": {
+              "x": 5,
+              "y": 4
+            }
+          },
+          {
+            "characterId": "DA_Krug18",
             "items": [
               null,
               null,
@@ -797,11 +797,6 @@
             "numUnits": 1
           },
           {
-            "key": "DA_18_Adaptor",
-            "style": 0,
-            "numUnits": 1
-          },
-          {
             "key": "DA_18_Slayer",
             "style": 0,
             "numUnits": 1
@@ -810,11 +805,16 @@
             "key": "DA_Juggernaut18",
             "style": 0,
             "numUnits": 1
+          },
+          {
+            "key": "DA_18_Brawler",
+            "style": 0,
+            "numUnits": 1
           }
         ],
-        "play": 2074,
-        "win": 825,
-        "lose": 1179
+        "play": 2503,
+        "win": 1028,
+        "lose": 1396
       },
       "middle": {
         "finalDeckId": "c5a44db118188c9565578d30c786b078",
@@ -943,9 +943,9 @@
             "numUnits": 1
           }
         ],
-        "play": 1796,
-        "win": 1179,
-        "lose": 563
+        "play": 2100,
+        "win": 1374,
+        "lose": 663
       }
     },
     {
@@ -1017,7 +1017,7 @@
             "y": 1
           },
           "isCore": true,
-          "priority": 3
+          "priority": 2
         },
         {
           "key": "DA_18_Kayle",
@@ -1057,7 +1057,7 @@
             "y": 4
           },
           "isCore": true,
-          "priority": 2
+          "priority": 3
         },
         {
           "key": "DA_18_Yunara",
@@ -1138,52 +1138,31 @@
           "numUnits": 1
         }
       ],
-      "badge": [
-        {
-          "key": "difficulty",
-          "value": 1
-        },
-        {
-          "key": "tempo",
-          "value": null
-        },
-        {
-          "key": "reroll",
-          "value": 6
-        },
-        {
-          "key": "honey",
-          "value": false
-        },
-        {
-          "key": "ppm",
-          "value": "high"
-        }
-      ],
+      "badge": [],
       "stat": {
         "originHash": "e79e0b44fb8b780e395642c6c706fc35",
         "labelNumber": 4,
         "opTier": "OP",
-        "opScore": 1.6979355151492161,
+        "opScore": 1.7264058963563627,
         "deck": {
-          "totalCount": 1687249,
-          "compsCount": 21065,
-          "avgPlacement": 3.14,
-          "winCount": 4890,
-          "top4Count": 16268,
-          "winRate": 0.2321,
-          "top4Rate": 0.7723,
-          "pickRate": 0.012484819964332473
+          "totalCount": 2575421,
+          "compsCount": 32219,
+          "avgPlacement": 3.12,
+          "winCount": 7495,
+          "top4Count": 24995,
+          "winRate": 0.2326,
+          "top4Rate": 0.7758,
+          "pickRate": 0.012510187654756252
         },
         "label": {
-          "totalCount": 1687249,
-          "compsCount": 28925,
-          "avgPlacement": 2.93,
-          "winCount": 7561,
-          "top4Count": 23376,
-          "winRate": 0.2614,
-          "top4Rate": 0.8082,
-          "pickRate": 0.017143290646490235
+          "totalCount": 2575421,
+          "compsCount": 44381,
+          "avgPlacement": 2.91,
+          "winCount": 11687,
+          "top4Count": 35994,
+          "winRate": 0.2633,
+          "top4Rate": 0.811,
+          "pickRate": 0.01723252237207043
         },
         "representative": true
       },
@@ -1290,9 +1269,9 @@
             "numUnits": 1
           }
         ],
-        "play": 5171,
-        "win": 2871,
-        "lose": 2127
+        "play": 6168,
+        "win": 3442,
+        "lose": 2517
       },
       "middle": {
         "finalDeckId": "e79e0b44fb8b780e395642c6c706fc35",
@@ -1431,9 +1410,9 @@
             "numUnits": 1
           }
         ],
-        "play": 12682,
-        "win": 7491,
-        "lose": 4697
+        "play": 15114,
+        "win": 8910,
+        "lose": 5619
       }
     },
     {
@@ -1636,27 +1615,27 @@
       "stat": {
         "originHash": "96aeda6509f73e075c028fbbfc984091",
         "labelNumber": 3,
-        "opTier": "S",
-        "opScore": 1.4994170984839816,
+        "opTier": "OP",
+        "opScore": 1.5470092074266695,
         "deck": {
-          "totalCount": 1687249,
-          "compsCount": 23210,
-          "avgPlacement": 3.41,
-          "winCount": 6805,
-          "top4Count": 15781,
-          "winRate": 0.2932,
-          "top4Rate": 0.6799,
-          "pickRate": 0.013756120169577815
+          "totalCount": 2575421,
+          "compsCount": 36220,
+          "avgPlacement": 3.4,
+          "winCount": 10602,
+          "top4Count": 24684,
+          "winRate": 0.2927,
+          "top4Rate": 0.6815,
+          "pickRate": 0.014063720067515176
         },
         "label": {
-          "totalCount": 1687249,
-          "compsCount": 31757,
-          "avgPlacement": 3.16,
-          "winCount": 10944,
-          "top4Count": 22823,
-          "winRate": 0.3446,
-          "top4Rate": 0.7187,
-          "pickRate": 0.018821762525863105
+          "totalCount": 2575421,
+          "compsCount": 50425,
+          "avgPlacement": 3.17,
+          "winCount": 17235,
+          "top4Count": 36183,
+          "winRate": 0.3418,
+          "top4Rate": 0.7176,
+          "pickRate": 0.019579323147555294
         },
         "representative": true
       },
@@ -1758,9 +1737,9 @@
             "numUnits": 1
           }
         ],
-        "play": 2108,
-        "win": 865,
-        "lose": 1173
+        "play": 2503,
+        "win": 1028,
+        "lose": 1396
       },
       "middle": {
         "finalDeckId": "96aeda6509f73e075c028fbbfc984091",
@@ -1899,9 +1878,9 @@
             "numUnits": 1
           }
         ],
-        "play": 2560,
-        "win": 1544,
-        "lose": 956
+        "play": 2968,
+        "win": 1797,
+        "lose": 1101
       }
     },
     {
@@ -2100,26 +2079,26 @@
         "originHash": "80c87fc58f8286ad9209df87d89d3d91",
         "labelNumber": 7,
         "opTier": "S",
-        "opScore": 0.9537134115948506,
+        "opScore": 0.9599945018697913,
         "deck": {
-          "totalCount": 1687249,
-          "compsCount": 11832,
-          "avgPlacement": 3.14,
-          "winCount": 3665,
-          "top4Count": 8761,
-          "winRate": 0.3098,
-          "top4Rate": 0.7404,
-          "pickRate": 0.007012598614668019
+          "totalCount": 2575421,
+          "compsCount": 18314,
+          "avgPlacement": 3.15,
+          "winCount": 5603,
+          "top4Count": 13511,
+          "winRate": 0.3059,
+          "top4Rate": 0.7377,
+          "pickRate": 0.007111070384220677
         },
         "label": {
-          "totalCount": 1687249,
-          "compsCount": 24250,
+          "totalCount": 2575421,
+          "compsCount": 37581,
           "avgPlacement": 3.25,
-          "winCount": 7805,
-          "top4Count": 17267,
+          "winCount": 12096,
+          "top4Count": 26727,
           "winRate": 0.3219,
-          "top4Rate": 0.712,
-          "pickRate": 0.014372508147878589
+          "top4Rate": 0.7112,
+          "pickRate": 0.01459217735663412
         },
         "representative": true
       },
@@ -2221,9 +2200,9 @@
             "numUnits": 1
           }
         ],
-        "play": 608,
-        "win": 268,
-        "lose": 328
+        "play": 694,
+        "win": 306,
+        "lose": 374
       },
       "middle": {
         "finalDeckId": "80c87fc58f8286ad9209df87d89d3d91",
@@ -2357,9 +2336,9 @@
             "numUnits": 1
           }
         ],
-        "play": 389,
-        "win": 140,
-        "lose": 228
+        "play": 469,
+        "win": 162,
+        "lose": 280
       }
     },
     {
@@ -2569,26 +2548,26 @@
         "originHash": "91fa8a5b041869b676179aa7841c6780",
         "labelNumber": 9,
         "opTier": "S",
-        "opScore": 0.6904493646166038,
+        "opScore": 0.6636895482330849,
         "deck": {
-          "totalCount": 1687249,
-          "compsCount": 8090,
+          "totalCount": 2575421,
+          "compsCount": 11870,
           "avgPlacement": 3.06,
-          "winCount": 1838,
-          "top4Count": 6403,
-          "winRate": 0.2272,
-          "top4Rate": 0.7915,
-          "pickRate": 0.0047947872542819705
+          "winCount": 2654,
+          "top4Count": 9375,
+          "winRate": 0.2236,
+          "top4Rate": 0.7898,
+          "pickRate": 0.00460895519606309
         },
         "label": {
-          "totalCount": 1687249,
-          "compsCount": 21157,
-          "avgPlacement": 2.86,
-          "winCount": 5818,
-          "top4Count": 17303,
-          "winRate": 0.275,
-          "top4Rate": 0.8178,
-          "pickRate": 0.012539346593182156
+          "totalCount": 2575421,
+          "compsCount": 32086,
+          "avgPlacement": 2.84,
+          "winCount": 8856,
+          "top4Count": 26357,
+          "winRate": 0.276,
+          "top4Rate": 0.8214,
+          "pickRate": 0.01245854561254257
         },
         "representative": true
       },
@@ -2685,9 +2664,9 @@
             "numUnits": 1
           }
         ],
-        "play": 1739,
-        "win": 981,
-        "lose": 696
+        "play": 2035,
+        "win": 1149,
+        "lose": 811
       },
       "middle": {
         "finalDeckId": "91fa8a5b041869b676179aa7841c6780",
@@ -2821,9 +2800,9 @@
             "numUnits": 1
           }
         ],
-        "play": 1820,
-        "win": 971,
-        "lose": 767
+        "play": 2101,
+        "win": 1126,
+        "lose": 883
       }
     },
     {
@@ -2915,9 +2894,9 @@
         {
           "key": "DA_Fiddlesticks18",
           "items": [
+            "DA_IonicSpark",
             "DA_SpiritVisage",
-            "DA_SunfireCape",
-            "DA_WarmogsArmor"
+            "DA_SunfireCape"
           ],
           "tier": 3,
           "cell": {
@@ -3043,26 +3022,26 @@
         "originHash": "31f55aeac2d48af5d44aa1e99f0b0c39",
         "labelNumber": 12,
         "opTier": "S",
-        "opScore": 0.6321681032260206,
+        "opScore": 0.6471741901615309,
         "deck": {
-          "totalCount": 1687249,
-          "compsCount": 6095,
-          "avgPlacement": 2.75,
-          "winCount": 1727,
-          "top4Count": 5122,
-          "winRate": 0.2833,
-          "top4Rate": 0.8404,
-          "pickRate": 0.0036123891612915462
+          "totalCount": 2575421,
+          "compsCount": 9579,
+          "avgPlacement": 2.76,
+          "winCount": 2685,
+          "top4Count": 8014,
+          "winRate": 0.2803,
+          "top4Rate": 0.8366,
+          "pickRate": 0.0037193918974800623
         },
         "label": {
-          "totalCount": 1687249,
-          "compsCount": 22175,
+          "totalCount": 2575421,
+          "compsCount": 34570,
           "avgPlacement": 2.81,
-          "winCount": 6033,
-          "top4Count": 18380,
-          "winRate": 0.2721,
-          "top4Rate": 0.8289,
-          "pickRate": 0.013142695595018874
+          "winCount": 9412,
+          "top4Count": 28679,
+          "winRate": 0.2723,
+          "top4Rate": 0.8296,
+          "pickRate": 0.013423048115240187
         },
         "representative": true
       },
@@ -3169,9 +3148,9 @@
             "numUnits": 1
           }
         ],
-        "play": 536,
-        "win": 286,
-        "lose": 226
+        "play": 652,
+        "win": 354,
+        "lose": 269
       },
       "middle": {
         "finalDeckId": "31f55aeac2d48af5d44aa1e99f0b0c39",
@@ -3310,9 +3289,9 @@
             "numUnits": 1
           }
         ],
-        "play": 5833,
-        "win": 3384,
-        "lose": 2231
+        "play": 6807,
+        "win": 3918,
+        "lose": 2634
       }
     },
     {
@@ -3542,26 +3521,26 @@
         "originHash": "63f8b64181d2cb89afee42cf22378557",
         "labelNumber": 8,
         "opTier": "S",
-        "opScore": 0.6039653898150183,
+        "opScore": 0.6117275583292984,
         "deck": {
-          "totalCount": 1687249,
-          "compsCount": 10615,
+          "totalCount": 2575421,
+          "compsCount": 16411,
           "avgPlacement": 3.54,
-          "winCount": 2459,
-          "top4Count": 7134,
-          "winRate": 0.2317,
-          "top4Rate": 0.6721,
-          "pickRate": 0.006291306143906441
+          "winCount": 3759,
+          "top4Count": 11054,
+          "winRate": 0.2291,
+          "top4Rate": 0.6736,
+          "pickRate": 0.006372162065930192
         },
         "label": {
-          "totalCount": 1687249,
-          "compsCount": 25913,
-          "avgPlacement": 3.45,
-          "winCount": 6975,
-          "top4Count": 17618,
-          "winRate": 0.2692,
-          "top4Rate": 0.6799,
-          "pickRate": 0.015358136232411458
+          "totalCount": 2575421,
+          "compsCount": 40761,
+          "avgPlacement": 3.42,
+          "winCount": 11120,
+          "top4Count": 27929,
+          "winRate": 0.2728,
+          "top4Rate": 0.6852,
+          "pickRate": 0.015826926937382278
         },
         "representative": true
       },
@@ -3663,13 +3642,13 @@
             "numUnits": 1
           }
         ],
-        "play": 608,
-        "win": 268,
-        "lose": 328
+        "play": 694,
+        "win": 306,
+        "lose": 374
       },
       "middle": {
         "finalDeckId": "63f8b64181d2cb89afee42cf22378557",
-        "deckId": "84646c77e930149c16b00846a7739bf3",
+        "deckId": "304eae5f9317fa68c9b7ae3affa43932",
         "level": "7",
         "units": [
           {
@@ -3680,8 +3659,20 @@
               null
             ],
             "cell": {
-              "x": 1,
-              "y": 3
+              "x": 6,
+              "y": 2
+            }
+          },
+          {
+            "characterId": "DA_18_Rakan",
+            "items": [
+              null,
+              null,
+              null
+            ],
+            "cell": {
+              "x": 7,
+              "y": 2
             }
           },
           {
@@ -3692,7 +3683,7 @@
               null
             ],
             "cell": {
-              "x": 2,
+              "x": 6,
               "y": 1
             }
           },
@@ -3704,7 +3695,7 @@
               null
             ],
             "cell": {
-              "x": 3,
+              "x": 5,
               "y": 4
             }
           },
@@ -3716,7 +3707,7 @@
               null
             ],
             "cell": {
-              "x": 1,
+              "x": 7,
               "y": 1
             }
           },
@@ -3728,12 +3719,12 @@
               null
             ],
             "cell": {
-              "x": 2,
-              "y": 4
+              "x": 5,
+              "y": 2
             }
           },
           {
-            "characterId": "DA_Fiddlesticks18",
+            "characterId": "DA_18_Hecarim",
             "items": [
               null,
               null,
@@ -3741,19 +3732,7 @@
             ],
             "cell": {
               "x": 4,
-              "y": 4
-            }
-          },
-          {
-            "characterId": "DA_18_Morgana",
-            "items": [
-              null,
-              null,
-              null
-            ],
-            "cell": {
-              "x": 2,
-              "y": 3
+              "y": 2
             }
           }
         ],
@@ -3761,12 +3740,12 @@
           {
             "key": "DA_18_Coven",
             "style": 3,
-            "numUnits": 5
+            "numUnits": 4
           },
           {
-            "key": "DA_FloraFatalis18",
-            "style": 1,
-            "numUnits": 1
+            "key": "DA_18_Vanguard",
+            "style": 3,
+            "numUnits": 4
           },
           {
             "key": "DA_18_Slayer",
@@ -3774,17 +3753,22 @@
             "numUnits": 2
           },
           {
-            "key": "DA_18_Vanguard",
-            "style": 1,
-            "numUnits": 2
+            "key": "DA_18_Fae",
+            "style": 0,
+            "numUnits": 1
           },
           {
-            "key": "DA_18_Spellweaver",
-            "style": 1,
-            "numUnits": 2
+            "key": "DA_Juggernaut18",
+            "style": 0,
+            "numUnits": 1
           },
           {
             "key": "DA_18_Hunter",
+            "style": 0,
+            "numUnits": 1
+          },
+          {
+            "key": "DA_18_Spellweaver",
             "style": 0,
             "numUnits": 1
           },
@@ -3794,19 +3778,14 @@
             "numUnits": 1
           },
           {
-            "key": "DA_18_Defender",
-            "style": 0,
-            "numUnits": 1
-          },
-          {
-            "key": "DA_18_Invoker",
+            "key": "DA_18_Elderwood",
             "style": 0,
             "numUnits": 1
           }
         ],
-        "play": 171,
-        "win": 43,
-        "lose": 121
+        "play": 200,
+        "win": 67,
+        "lose": 128
       }
     },
     {
@@ -4005,72 +3984,36 @@
         "originHash": "cd2ff8ee4b6b682adfd9e77363573881",
         "labelNumber": 10,
         "opTier": "S",
-        "opScore": 0.5668043068924622,
+        "opScore": 0.5690797737534949,
         "deck": {
-          "totalCount": 1687249,
-          "compsCount": 7245,
-          "avgPlacement": 3.18,
-          "winCount": 1427,
-          "top4Count": 5604,
-          "winRate": 0.197,
-          "top4Rate": 0.7735,
-          "pickRate": 0.0042939720219125925
+          "totalCount": 2575421,
+          "compsCount": 11274,
+          "avgPlacement": 3.2,
+          "winCount": 2149,
+          "top4Count": 8701,
+          "winRate": 0.1906,
+          "top4Rate": 0.7718,
+          "pickRate": 0.004377536721180731
         },
         "label": {
-          "totalCount": 1687249,
-          "compsCount": 24998,
+          "totalCount": 2575421,
+          "compsCount": 38000,
           "avgPlacement": 2.97,
-          "winCount": 5615,
-          "top4Count": 20215,
-          "winRate": 0.2246,
-          "top4Rate": 0.8087,
-          "pickRate": 0.014815833347656451
+          "winCount": 8508,
+          "top4Count": 30789,
+          "winRate": 0.2239,
+          "top4Rate": 0.8102,
+          "pickRate": 0.014754869203908798
         },
         "representative": true
       },
       "early": {
         "finalDeckId": "cd2ff8ee4b6b682adfd9e77363573881",
-        "deckId": "a5db97742135c678c149ca3e16b809d1",
+        "deckId": "fca9b6adb35d2624c539933584851021",
         "level": "5",
         "units": [
           {
             "characterId": "DA_18_Yorick",
-            "items": [
-              null,
-              null,
-              null
-            ],
-            "cell": {
-              "x": 3,
-              "y": 4
-            }
-          },
-          {
-            "characterId": "DA_18_MasterYi_AD",
-            "items": [
-              null,
-              null,
-              null
-            ],
-            "cell": {
-              "x": 7,
-              "y": 2
-            }
-          },
-          {
-            "characterId": "DA_18_Rengar",
-            "items": [
-              null,
-              null,
-              null
-            ],
-            "cell": {
-              "x": 6,
-              "y": 2
-            }
-          },
-          {
-            "characterId": "DA_Krug18",
             "items": [
               null,
               null,
@@ -4082,7 +4025,31 @@
             }
           },
           {
-            "characterId": "DA_Vi18",
+            "characterId": "DA_Karma18",
+            "items": [
+              null,
+              null,
+              null
+            ],
+            "cell": {
+              "x": 7,
+              "y": 1
+            }
+          },
+          {
+            "characterId": "DA_18_MasterYi_AD",
+            "items": [
+              null,
+              null,
+              null
+            ],
+            "cell": {
+              "x": 7,
+              "y": 3
+            }
+          },
+          {
+            "characterId": "DA_18_Rengar",
             "items": [
               null,
               null,
@@ -4090,6 +4057,18 @@
             ],
             "cell": {
               "x": 5,
+              "y": 4
+            }
+          },
+          {
+            "characterId": "DA_Vi18",
+            "items": [
+              null,
+              null,
+              null
+            ],
+            "cell": {
+              "x": 6,
               "y": 4
             }
           }
@@ -4106,7 +4085,17 @@
             "numUnits": 2
           },
           {
+            "key": "DA_18_Blossom",
+            "style": 1,
+            "numUnits": 3
+          },
+          {
             "key": "DA_18_Summoner",
+            "style": 0,
+            "numUnits": 1
+          },
+          {
+            "key": "DA_18_Spellweaver",
             "style": 0,
             "numUnits": 1
           },
@@ -4116,29 +4105,14 @@
             "numUnits": 1
           },
           {
-            "key": "DA_18_Brawler",
-            "style": 0,
-            "numUnits": 1
-          },
-          {
-            "key": "DA_Riftbeast18",
-            "style": 0,
-            "numUnits": 1
-          },
-          {
             "key": "DA_Primal18",
             "style": 0,
             "numUnits": 1
-          },
-          {
-            "key": "DA_18_Blossom",
-            "style": 0,
-            "numUnits": 2
           }
         ],
-        "play": 29,
-        "win": 10,
-        "lose": 18
+        "play": 107,
+        "win": 62,
+        "lose": 40
       },
       "middle": {
         "finalDeckId": "cd2ff8ee4b6b682adfd9e77363573881",
@@ -4282,9 +4256,9 @@
             "numUnits": 1
           }
         ],
-        "play": 1221,
-        "win": 650,
-        "lose": 530
+        "play": 1581,
+        "win": 852,
+        "lose": 676
       }
     },
     {
@@ -4483,26 +4457,26 @@
         "originHash": "744234e84d716f4b87a69a7d85888ea3",
         "labelNumber": 13,
         "opTier": "A",
-        "opScore": 0.3366687430248885,
+        "opScore": 0.34228656208052977,
         "deck": {
-          "totalCount": 1687249,
-          "compsCount": 6108,
-          "avgPlacement": 3.57,
-          "winCount": 765,
-          "top4Count": 4339,
-          "winRate": 0.1252,
+          "totalCount": 2575421,
+          "compsCount": 9378,
+          "avgPlacement": 3.56,
+          "winCount": 1156,
+          "top4Count": 6662,
+          "winRate": 0.1233,
           "top4Rate": 0.7104,
-          "pickRate": 0.0036200940110203057
+          "pickRate": 0.0036413464051120187
         },
         "label": {
-          "totalCount": 1687249,
-          "compsCount": 10809,
+          "totalCount": 2575421,
+          "compsCount": 16492,
           "avgPlacement": 3.42,
-          "winCount": 1619,
-          "top4Count": 7908,
-          "winRate": 0.1498,
-          "top4Rate": 0.7316,
-          "pickRate": 0.00640628620908947
+          "winCount": 2461,
+          "top4Count": 12059,
+          "winRate": 0.1492,
+          "top4Rate": 0.7312,
+          "pickRate": 0.006403613234496419
         },
         "representative": true
       },
@@ -4519,8 +4493,8 @@
               null
             ],
             "cell": {
-              "x": 4,
-              "y": 3
+              "x": 2,
+              "y": 4
             }
           },
           {
@@ -4531,7 +4505,7 @@
               null
             ],
             "cell": {
-              "x": 4,
+              "x": 3,
               "y": 4
             }
           },
@@ -4543,8 +4517,8 @@
               null
             ],
             "cell": {
-              "x": 5,
-              "y": 3
+              "x": 4,
+              "y": 4
             }
           },
           {
@@ -4555,7 +4529,7 @@
               null
             ],
             "cell": {
-              "x": 1,
+              "x": 7,
               "y": 1
             }
           },
@@ -4567,8 +4541,8 @@
               null
             ],
             "cell": {
-              "x": 3,
-              "y": 3
+              "x": 5,
+              "y": 4
             }
           }
         ],
@@ -4609,9 +4583,9 @@
             "numUnits": 1
           }
         ],
-        "play": 44,
-        "win": 20,
-        "lose": 22
+        "play": 56,
+        "win": 28,
+        "lose": 24
       },
       "middle": {
         "finalDeckId": "744234e84d716f4b87a69a7d85888ea3",
@@ -4750,14 +4724,14 @@
             "numUnits": 1
           }
         ],
-        "play": 683,
-        "win": 298,
-        "lose": 363
+        "play": 804,
+        "win": 352,
+        "lose": 420
       }
     }
   ],
   "metadata": {
-    "gameStatCounts": 2205072,
-    "gameStatDateTime": "2026-10-30T21:59:23.000Z"
+    "gameStatCounts": 3283232,
+    "gameStatDateTime": "2026-10-31T12:59:37.000Z"
   }
 }
