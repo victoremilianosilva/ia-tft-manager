@@ -58,13 +58,17 @@ int main() {
     require_close(xp_level_transition_value(40, 36, 80.0, 2, 5, 5),
                   0.0, "XP without level transition has no progress reward");
     require_close(xp_progress_reward(54, 50, 6, 6, 0, 4, 80.0, 4, 2, false),
-                  0.04, "FAST8 receives a modest signal for non-leveling XP progress from surplus");
+                  0.0, "safe surplus XP uses the shared fallback without double-counting");
     require_close(xp_progress_reward(54, 50, 6, 6, 0, 4, 80.0, 4, 2, true),
                   0.0, "a useful shop pair keeps priority over incremental XP");
     require_close(xp_progress_reward(54, 50, 6, 6, 0, 4, 80.0, 4, 3, false),
                   0.0, "SLOWROLL does not receive incremental XP progress reward");
-    require_close(xp_progress_reward(54, 50, 6, 6, 0, 4, 30.0, 4, 1, false),
-                  0.05, "STABILIZE can value XP progress under pressure");
+    require_close(xp_progress_reward(40, 36, 6, 6, 0, 4, 30.0, 4, 1, false),
+                  0.035, "STABILIZE can value urgent XP progress below the interest reserve");
+    require_close(xp_progress_reward(40, 36, 6, 6, 0, 4, 30.0, 4, 2, false),
+                  0.035, "FAST8 can value urgent progress toward level eight");
+    require_close(xp_progress_reward(40, 36, 6, 6, 0, 4, 30.0, 4, 2, true),
+                  0.0, "urgent XP does not outrank a useful shop offer");
     require_close(xp_progress_reward(40, 36, 6, 6, 0, 4, 80.0, 4, 2, false),
                   0.0, "safe XP progress below the interest cap is not encouraged");
     require_close(xp_strategy_reward_scale(1), 0.95,
