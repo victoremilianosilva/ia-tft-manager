@@ -297,7 +297,7 @@ public:
                     if (trait == direction) score += 1.0;
                     const auto focus_it = focus.find(trait);
                     if (focus_it != focus.end())
-                        score += std::min(1.2, focus_it->second * 0.16);
+                        score += std::min(1.5, focus_it->second * 0.20);
                     if (anchor_traits.count(trait) != 0 && trait != direction)
                         score += 0.45;
                     if (before > 0) score += std::min(0.45, before * 0.12);
