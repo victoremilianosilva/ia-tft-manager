@@ -3798,6 +3798,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             // Do not give a positive reward merely for spending on XP. Early
             // levels are less valuable than building a playable board and pairs.
             action_reward = success ? (lobby.stage <= 2 ? -0.03 : 0.0) : -0.10;
+            const std::int32_t xp_strategy_id =
+                this->strategy.empty() ? 0 : this->strategy.back().strategy;
             if (success) {
                 double unlocked_board_power = 0.0;
                 // A level-up can unlock a board slot. Credit only a plausible
@@ -3815,8 +3817,6 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                                 static_cast<double>(unit->star) * 2.0);
                     }
                 }
-                const std::int32_t xp_strategy_id =
-                    this->strategy.empty() ? 0 : this->strategy.back().strategy;
                 action_reward += reward_model::xp_level_transition_value(
                     old_gold, economy.gold, this->info.hp, lobby.stage,
                     old_level, economy.level, unlocked_board_power,
