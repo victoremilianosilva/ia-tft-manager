@@ -331,11 +331,13 @@ inline double xp_progress_reward(
 ) noexcept {
     if (new_level != old_level || new_xp <= old_xp || active_strategy == 3)
         return 0.0;
-    if (useful_purchase_available && gold_before >= 50)
+    // The shared surplus fallback already rewards safe XP above 50 gold.
+    // This extra signal is only for urgent progress below that reserve, and
+    // never competes with an actually useful shop offer.
+    if (useful_purchase_available)
         return 0.0;
-    const bool surplus_preserved = gold_before >= 54 && gold_after >= 50;
     const bool urgent = hp <= 35.0;
-    if (!surplus_preserved && !urgent)
+    if (!urgent)
         return 0.0;
     const double progress = std::clamp(
         static_cast<double>(new_xp - old_xp) / 4.0, 0.0, 1.0);
@@ -344,19 +346,17 @@ inline double xp_progress_reward(
     switch (active_strategy) {
         case 2: // FAST8: make incremental progress toward the planned level 8.
             if (stage >= 3 && old_level < 8)
-                value = 0.025 + (surplus_preserved ? 0.015 : 0.0)
-                    + (urgent ? 0.010 : 0.0);
+                value = 0.035;
             break;
         case 1: // STABILIZE: modest XP progress is valid, but board purchases stay first.
             if (stage >= 3 || urgent)
-                value = 0.015 + (surplus_preserved ? 0.015 : 0.0)
-                    + (urgent ? 0.020 : 0.0);
+                value = 0.035;
             break;
         case 4: // ALL_IN: only when life is critical and XP is a viable survival action.
             if (hp <= 25.0) value = 0.035;
             break;
         case 5: // WINSTREAK: use only safe surplus.
-            if (stage >= 4 && surplus_preserved) value = 0.020;
+            // Safe surplus XP is already covered by the shared fallback.
             break;
         default:
             break;
