@@ -318,6 +318,8 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
                 (sold_star == 1 and one_star_before >= 2 and one_star_after < 2) or champion_key in core_keys
             ):
                 metrics["core_pair_sales_before_comp_decision_ignored"] += 1
+            if pair_lost:
+                metrics["confirmed_pair_path_losses"] += 1
             if core_sale:
                 metrics["core_unit_sales"] += 1
             if core_sale or pair_lost:
