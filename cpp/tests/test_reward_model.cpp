@@ -461,10 +461,10 @@ int main() {
                                false, true, false, true) +
         reroll_quality_reward(2.0, 10.0) *
             tactical_reroll_quality_scale(3, 80.0, 36, 4);
-    const double slowroll_xp =
+    const double slowroll_xp_action_reward =
         strategy_action_reward(3, 2, 40, 36, 80.0, 4,
                                false, false, false, false) - 0.12;
-    if (!(slowroll_reroll > slowroll_xp))
+    if (!(slowroll_reroll > slowroll_xp_action_reward))
         throw std::runtime_error("only SLOWROLL should prefer an improved reroll over XP");
 
     std::cout << "[PASS] C++ reward formulas and deterministic action sequence.\n";
