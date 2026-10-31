@@ -4521,16 +4521,21 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         target.interest_if_resolved_now = impl_->economy_engine.get_interest(source.economy.gold);
         target.board_power = impl_->board_power(i);
         target.synergy_score = impl_->synergy_score(i);
-        target.positioning_score = impl_->positioning_score(i);
-        target.board_quality_score = source.info.board_quality_score;
-        target.board_positional_score = source.info.board_positional_score;
-        target.board_structural_score = source.info.board_structural_score;
-        target.board_quality_delta = source.info.board_quality_delta;
-        target.board_exposed_carries = source.info.board_exposed_carries;
-        target.board_frontline_count = source.info.board_frontline_count;
-        target.board_isolated_frontline_count = source.info.board_isolated_frontline_count;
+        // Recompute board diagnostics from the current board. PlayerInfo's
+        // cached fields are not guaranteed to have been refreshed on every
+        // action and may remain at their zero-initialized defaults.
+        const auto board_eval = impl_->board_evaluation(i);
+        target.positioning_score = board_eval.total_score;
+        target.board_quality_score = board_eval.total_score;
+        target.board_positional_score = board_eval.positional_score;
+        target.board_structural_score = board_eval.structural_score;
+        // Per-action deltas are derived by comparing consecutive snapshots.
+        target.board_quality_delta = 0.0;
+        target.board_exposed_carries = board_eval.exposed_carry_count;
+        target.board_frontline_count = board_eval.frontline_count;
+        target.board_isolated_frontline_count = board_eval.isolated_frontline_count;
         target.board_important_bench_units_unplayed =
-            source.info.board_important_bench_units_unplayed;
+            board_eval.important_bench_units_unplayed;
         target.round_gold = source.economy.round_gold;
         target.round_base_gold = source.economy.round_base_gold;
         target.round_interest = source.economy.round_interest;
