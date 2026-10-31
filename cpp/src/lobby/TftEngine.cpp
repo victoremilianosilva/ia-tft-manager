@@ -3999,7 +3999,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         // and leveling unlocks a real slot, or health pressure is critical.
         if (type == 2 && success && old_gold < 50 &&
             this->info.hp > 30.0 && old_board_count < old_level) {
-            action_reward -= 0.12;
+            // Interest loss is already represented by gold_change_reward().
+            // Keep XP slightly costly below 50, but do not stack a large
+            // penalty that makes reroll the less-bad choice outside SLOWROLL.
+            action_reward -= active_strategy_id == 3 ? 0.12 : 0.025;
         }
         // Even a better shop is usually not worth sacrificing interest below
         // 50. Critical health is the explicit exception; at/above 50 the
