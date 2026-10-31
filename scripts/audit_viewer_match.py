@@ -333,7 +333,7 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
             bench_was_full = bool(before.get("bench")) and len(bench_units) >= len(before.get("bench") or [])
             comp_changed = (_plan_signature(before) != match.get("plan_signature", ("", "", ()))
                             and _plan_signature(before) != ("", "", ()))
-            intervening = actions[match["buy_action_index"] + 1:idx + 1]
+            intervening = actions[match["buy_action_index"] + 1:idx]
             deployed = bool(match.get("uuid")) and any(
                 any(str(u.get("uuid") or "") == match["uuid"]
                     for u in _occupied_units((item[1].get("state_after") or {}), "board"))
