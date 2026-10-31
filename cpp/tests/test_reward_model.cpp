@@ -320,6 +320,8 @@ int main() {
                   "sale of low-fit non-core unit frees space");
     require_close(sale_quality(1.0, true, true, false), -0.765,
                   "sale protects core unit and upgrade copies");
+    require_close(sale_quality(1.0, true, true, false, true), -0.185,
+                  "measurable board gain removes the core and pair sale penalties");
     if (!(sale_quality(0.0, false, false, false) >
           sale_quality(0.5, false, false, false) &&
           sale_quality(0.5, false, false, false) >
