@@ -580,6 +580,18 @@ def audit_composition_direction_changes(entries: list[dict], player: str, report
         report.setdefault("composition_direction_metrics", {})[player] = metrics
 
 
+def _board_eval_snapshot_valid(state: dict) -> bool:
+    """Cached structural fields are trusted only when their total matches live score."""
+    try:
+        return (state.get("board_structural_score") is not None
+                and state.get("board_quality_score") is not None
+                and state.get("positioning_score") is not None
+                and abs(float(state["board_quality_score"])
+                        - float(state["positioning_score"])) <= 1e-5)
+    except (TypeError, ValueError):
+        return False
+
+
 def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
     """Aggregate native positional and structural diagnostics exposed by AuditSnapshot."""
     actions = [
@@ -638,7 +650,7 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
 
         structural_after = after.get("board_structural_score")
         structural_before_raw = before.get("board_structural_score")
-        if structural_after is not None and structural_before_raw is not None:
+        if _board_eval_snapshot_valid(after) and _board_eval_snapshot_valid(before):
             try:
                 structural_after = float(structural_after)
                 structural_before = float(structural_before_raw)
