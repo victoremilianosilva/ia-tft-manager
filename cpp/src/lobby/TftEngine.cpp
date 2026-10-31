@@ -205,7 +205,7 @@ double unit_composition_score(
             score += needed == 1 ? 5.0 : (needed == 2 ? 2.5 : 1.0);
         } else score += 0.5;
         const double f = focus(trait);
-        score += f > 0.0 ? std::min(3.0, f * 0.4) : -0.1;
+        score += f > 0.0 ? std::min(3.5, f * 0.45) : -0.1;
     }
     const auto copies = std::find_if(strategy.unit_counts_by_id.begin(), strategy.unit_counts_by_id.end(),
         [&](const auto& x) { return x.first == def.internal_id; });
@@ -276,7 +276,7 @@ double unit_board_impact_score(
         }();
         const int after_level = next > 0 && count + 1 >= next ? before_level + 1 : before_level;
         if (after_level > before_level) score += 1.5 + before_level * 0.3;
-        synergy_score += std::max(0, count) * 0.15 + std::min(2.0, focus_weight(trait) * 0.1);
+        synergy_score += std::max(0, count) * 0.15 + std::min(2.2, focus_weight(trait) * 0.12);
     }
     score += synergy_score * 0.6;
 
