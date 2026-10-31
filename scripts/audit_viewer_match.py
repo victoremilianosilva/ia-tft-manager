@@ -249,6 +249,27 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
                 or core in champion.casefold() for core in core_units if core
             )
             pair_lost = after_comp_decision and _pair_count(before) > _pair_count(after)
+            # A sale can be correct when it enables a stronger board or merge.
+            upgrade_gain = _star_counts(after)[2] > _star_counts(before)[2]
+            board_power_gain = _board_power(after) > _board_power(before) + 0.5
+            def _quality(state):
+                value = state.get("board_quality_score")
+                if value is None:
+                    value = state.get("board_positional_score")
+                if value is None:
+                    value = state.get("positioning_score")
+                try:
+                    return float(value) if value is not None else None
+                except (TypeError, ValueError):
+                    return None
+            before_quality, after_quality = _quality(before), _quality(after)
+            positioning_gain = (
+                before_quality is not None and after_quality is not None
+                and after_quality > before_quality + 0.25
+            )
+            compensated_sale = upgrade_gain or board_power_gain or positioning_gain
+            core_sale = core_sale and not compensated_sale
+            pair_lost = pair_lost and not compensated_sale
             if not after_comp_decision and (
                 _pair_count(before) > _pair_count(after)
                 or any(champion.casefold() == core or champion.casefold() in core
