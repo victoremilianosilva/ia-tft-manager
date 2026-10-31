@@ -435,6 +435,37 @@ int main() {
     require_close(strategy_action_reward(6, 0, 40, 37, 70.0, 3,
                                          false, false, false, false),
                   -0.04, "LOSS_STREAK discourages wasteful spending");
+    const double econ_xp_below_interest =
+        strategy_action_reward(0, 2, 40, 36, 80.0, 4,
+                               false, false, false, false) - 0.025;
+    const double econ_reroll_below_interest =
+        strategy_action_reward(0, 1, 40, 36, 80.0, 4,
+                               false, true, false, false);
+    if (!(econ_xp_below_interest > econ_reroll_below_interest))
+        throw std::runtime_error("outside SLOWROLL, XP must be slightly preferable to reroll at the same gold cost");
+
+    const double fast8_xp_urgent =
+        strategy_action_reward(2, 2, 40, 36, 30.0, 4,
+                               false, false, false, true) - 0.025 +
+        xp_progress_reward(40, 36, 6, 6, 0, 4, 30.0, 4, 2, false);
+    const double fast8_reroll_urgent =
+        strategy_action_reward(2, 1, 40, 36, 30.0, 4,
+                               false, true, false, true) +
+        reroll_quality_reward(2.0, 10.0) *
+            tactical_reroll_quality_scale(2, 30.0, 36, 4);
+    if (!(fast8_xp_urgent > fast8_reroll_urgent))
+        throw std::runtime_error("FAST8 urgent XP progress must beat a better shop reroll");
+
+    const double slowroll_reroll =
+        strategy_action_reward(3, 1, 40, 36, 80.0, 4,
+                               false, true, false, true) +
+        reroll_quality_reward(2.0, 10.0) *
+            tactical_reroll_quality_scale(3, 80.0, 36, 4);
+    const double slowroll_xp =
+        strategy_action_reward(3, 2, 40, 36, 80.0, 4,
+                               false, false, false, false) - 0.12;
+    if (!(slowroll_reroll > slowroll_xp))
+        throw std::runtime_error("only SLOWROLL should prefer an improved reroll over XP");
 
     std::cout << "[PASS] C++ reward formulas and deterministic action sequence.\n";
     return EXIT_SUCCESS;
