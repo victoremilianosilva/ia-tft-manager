@@ -238,3 +238,19 @@ def test_buy_sell_without_matching_uuid_is_ambiguous_not_confirmed_reversal():
     assert metrics["reversed_1"] == 0
     assert metrics["ambiguous_identity_sales"] == 1
     assert metrics["classified_sales"]["UNKNOWN"] == 1
+
+
+def test_real_two_star_pair_loss_is_also_detected():
+    briar_a = _unit("Briar", star=2)
+    briar_b = _unit("Briar", star=2)
+    decision = _entry(1, 1, [6, 0, 0, 0, 0, 0], "PASS",
+                      _state(20, bench=[briar_a, briar_b], comp=""),
+                      _state(20, bench=[briar_a, briar_b], comp="Trait"))
+    sale = _entry(2, 2, [5, 0, 1, 0, 0, 0], "SELL",
+                  _state(20, bench=[briar_a, briar_b], comp="Trait"),
+                  _state(21, bench=[briar_a], comp="Trait"))
+    report = {"issues": []}
+    audit_purchase_sequences([decision, sale], "Jogador 1", report)
+    metrics = report["purchase_sequence_metrics"]["Jogador 1"]
+    assert metrics["confirmed_pair_path_losses"] == 1
+    assert metrics["core_or_pair_sales"] == 1
