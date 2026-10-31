@@ -578,7 +578,7 @@ public:
                 // The native lineup is a useful fallback, but it was systematically
                 // winning because its score was compared at full scale while meta
                 // candidates also paid the cost of being a future target.
-                const double native_comparison_score = own_score * 0.80;
+                const double native_comparison_score = own_score * 0.75;
                 meta_audit_native_score = native_comparison_score;
                 double best_meta_score = -std::numeric_limits<double>::infinity();
                 std::vector<std::int32_t> best_meta_ids;
@@ -744,7 +744,7 @@ public:
                     const double bounded_meta_prior = std::min(1.75,
                         0.55 * static_cast<double>(owned_core_count) +
                         0.25 * static_cast<double>(stage_owned_count));
-                    const double score = 1.20 * lineup_score(final_ids, no_core, no_stage_units, stats_prior)
+                    const double score = 1.25 * lineup_score(final_ids, no_core, no_stage_units, stats_prior)
                         + future_target_bonus + bounded_meta_prior
                         + std::min(0.75, stage_snapshot_bonus * 0.20)
                         + std::min(0.35, item_fit_bonus)
