@@ -3613,7 +3613,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     const auto count_upgrade_copies = [&](const auto& candidate) {
                         if (!candidate ||
                             candidate->champion_internal_id != unit.champion_internal_id ||
-                            candidate->uuid == unit.uuid)
+                            candidate.get() == &unit)
                             return;
                         if (candidate->star == unit.star) ++same_star_copies;
                         if (candidate->star == 1) ++one_star_copies;
