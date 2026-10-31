@@ -141,6 +141,19 @@ int main() {
     assert(std::find(open_plan.core_traits.begin(), open_plan.core_traits.end(), "")
            == open_plan.core_traits.end());
 
+    // A selected focus must influence the carry choice when candidates
+    // are otherwise equivalent; it is a preference, not a hard unit lock.
+    std::vector<ChampionDefinition> focus_pool{
+        champion(51, "FocusedCarry", 1, {"FocusedTrait"}, 3),
+        champion(52, "UnfocusedCarry", 1, {"OtherTrait"}, 3)
+    };
+    const auto focused_plan = CompositionPlanner::build(
+        focus_pool, {}, "", {{"FocusedTrait", 10.0}}, {}, 1);
+    const auto alternate_focus_plan = CompositionPlanner::build(
+        focus_pool, {}, "", {{"OtherTrait", 10.0}}, {}, 1);
+    assert(focused_plan.main_carry_id == 51);
+    assert(alternate_focus_plan.main_carry_id == 52);
+
     std::cout << "flexible composition planner tests passed\n";
     return 0;
 }

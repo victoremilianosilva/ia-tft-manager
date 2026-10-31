@@ -133,7 +133,7 @@ class AuditWindow(QMainWindow):
         if not logs:
             logs = list(folder.rglob("player_*_log.tft"))
         if not logs:
-            QMessageBox.warning(self, "Logs não encontrados", "A pasta não contém player_*_log.json nem player_*_log.tft.")
+            QMessageBox.warning(self, "Logs não encontrados", "A pasta não contém registros de partida compatíveis para auditoria.")
             return
         self.audit_button.setEnabled(False)
         self.status.setText(f"Analisando {len(logs)} arquivos em {folder}…")
