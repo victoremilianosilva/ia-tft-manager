@@ -283,7 +283,7 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
             after_comp_decision = (
                 decision_start_index is not None and idx >= decision_start_index
             )
-            core_units = [str(value).casefold() for value in (before.get("core_units") or [])]
+            core_units = before.get("core_units") or []
             champion_key = _normalized_unit_id(champion)
             core_keys = {_normalized_unit_id(value) for value in core_units if _normalized_unit_id(value)}
             core_sale = after_comp_decision and champion_key in core_keys
