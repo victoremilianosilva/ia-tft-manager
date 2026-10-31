@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'scripts/audit_viewer_match.py'
+      - 'viewer/player_logs.py'
       - 'tests/test_purchase_sequence_audit.py'
       - 'tests/test_board_quality_audit.py'
       - 'scripts/test_audit_viewer_match.py'
