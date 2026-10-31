@@ -548,11 +548,15 @@ inline double reversed_sequence_adjustment(
     return std::min(0.0, target - prior_buy_reward - sale_reward_including_gold);
 }
 
-// A duplicate champion remains an upgrade path even when its copies have
-// different star levels (for example, a 2-star plus a 1-star toward 3-star).
-// Count owned unit instances, not only instances at the sold unit's star level.
-inline bool protects_upgrade_path(int owned_unit_instances) noexcept {
-    return owned_unit_instances >= 2;
+// Protect a real same-star pair. A 2-star also remains valuable when three
+// 1-star copies can create another 2-star, but a lone 1-star beside a 2-star
+// is not a pair and should not be artificially locked on the bench.
+inline bool protects_upgrade_path(
+    int sold_star, int same_star_copies, int one_star_copies
+) noexcept {
+    if (sold_star == 1 || sold_star == 2)
+        return same_star_copies >= 1;
+    return false;
 }
 
 // Selling should be attractive for low-value clutter, but not intrinsically
