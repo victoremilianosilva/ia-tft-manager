@@ -109,6 +109,17 @@ int main() {
     if (!(purchase_pair_quality(0.0) > 0.30)) {
         throw std::runtime_error("pair completion should have a clear but bounded acquisition signal");
     }
+    if (!(unit_purchase_timing_reward(4, 55, 2, 1, 0.8, 80.0, false, true) > 0.0)) {
+        throw std::runtime_error("a high-value pair may spend surplus while retaining 40 gold");
+    }
+    require_close(unit_purchase_timing_reward(4, 55, 2, 1, 0.8, 80.0, false, false),
+                  0.0, "ordinary purchases must preserve the 50-gold interest floor");
+    require_close(surplus_xp_spending_reward(54, 50, 4, 0, false), 0.0206,
+                  "XP may convert surplus when no useful shop unit is available");
+    require_close(surplus_xp_spending_reward(54, 50, 4, 0, true), 0.0,
+                  "useful shop offers take priority over surplus XP");
+    require_close(surplus_xp_spending_reward(54, 50, 4, 3, false), 0.0,
+                  "SLOWROLL never receives the surplus XP fallback");
     if (!(unit_purchase_timing_reward(5, 50, 2, 1, 0.7, 80.0, false, false) > 0.0)) {
         throw std::runtime_error("useful unit purchase with capped gold should be rewarded in mid-game");
     }
