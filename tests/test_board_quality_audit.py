@@ -30,7 +30,6 @@ def test_board_quality_audit_tracks_action_delta_and_combat_context():
                 "state_before": {"board_structural_score": -0.1, "positioning_score": 0.7},
                 "state_after": {
                     "positioning_score": 0.3,
-                    "positioning_score": 0.3,
                     "board_quality_score": 0.3,
                     "board_positional_score": 0.4,
                     "board_quality_delta": -0.4,
@@ -49,6 +48,7 @@ def test_board_quality_audit_tracks_action_delta_and_combat_context():
                 "combat_reward": 1.0,
                 "state_before": {"board_structural_score": -0.3, "positioning_score": 0.3},
                 "state_after": {
+                    "positioning_score": 0.3,
                     "board_quality_score": 0.3,
                     "board_positional_score": 0.4,
                     "board_quality_delta": 0.0,
