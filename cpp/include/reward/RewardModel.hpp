@@ -307,6 +307,20 @@ inline double xp_level_transition_value(
     return std::clamp(value, -0.05, 0.12);
 }
 
+// Convert surplus into XP only when no useful shop acquisition is available.
+// This is a fallback, not a generic gold sink: SLOWROLL keeps its 3-star plan.
+inline double surplus_xp_spending_reward(
+    int gold_before, int gold_after, int stage, int active_strategy,
+    bool useful_purchase_available
+) noexcept {
+    if (active_strategy == 3 || useful_purchase_available || stage < 3 ||
+        gold_before < 54 || gold_after < 50 || gold_after >= gold_before)
+        return 0.0;
+    const double surplus = std::clamp(
+        (static_cast<double>(gold_before) - 50.0) / 50.0, 0.0, 1.0);
+    return std::min(0.035, 0.020 + 0.015 * surplus);
+}
+
 // Small additional signal for useful unit acquisitions beyond the early game.
 // Requires real composition fit or upgrade progress, available bench space and
 // enough remaining gold, so this cannot reward arbitrary shop-clearing.
@@ -332,7 +346,9 @@ inline double unit_purchase_timing_reward(
     const int normal_reserve = (hp <= 35.0 || stage >= 6) ? 5
         : (stage >= 4 || hp <= 50.0 ? 10 : 20);
     // Above the interest cap, surplus can be converted into useful units.
-    const int reserve = gold_before > 50 ? 50 : normal_reserve;
+    const bool high_value_purchase = completes_upgrade || builds_pair;
+    const int reserve = gold_before > 50
+        ? (high_value_purchase ? 40 : 50) : normal_reserve;
     if (gold_after < reserve) return 0.0;
 
     const double liquidity = gold_before >= 50 ? 1.0
