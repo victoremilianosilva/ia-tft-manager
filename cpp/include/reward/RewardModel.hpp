@@ -466,7 +466,7 @@ inline double pass_opportunity_penalty(
         : (gold >= 40 ? 0.75 : (gold >= 30 ? 0.50 : 0.25));
     const double surplus = std::clamp(
         (static_cast<double>(gold) - 50.0) / 150.0, 0.0, 1.0);
-    const double progressive_penalty = 0.30 * std::pow(surplus, 1.20);
+    const double progressive_penalty = 0.325 * std::pow(surplus, 1.20);
     const double useful_offer_penalty = useful_purchase_available
         ? 0.12 * liquidity * urgency : 0.0;
     return -opportunity_factor * (progressive_penalty + useful_offer_penalty);
