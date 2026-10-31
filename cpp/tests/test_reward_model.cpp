@@ -57,6 +57,18 @@ int main() {
                   0.018, "XP transition accounts for lost interest breakpoint");
     require_close(xp_level_transition_value(40, 36, 80.0, 2, 5, 5),
                   0.0, "XP without level transition has no progress reward");
+    require_close(xp_strategy_reward_scale(1), 0.95,
+                  "STABILIZE positive XP shaping is reduced by five percent");
+    require_close(xp_strategy_reward_scale(3), 0.90,
+                  "SLOWROLL positive XP shaping is reduced by ten percent");
+    require_close(xp_strategy_reward_scale(2), 1.0,
+                  "FAST8 XP shaping remains unchanged");
+    const double neutral_xp = xp_level_transition_value(60, 56, 80.0, 4, 7, 8, 0.0, 0);
+    const double stabilize_xp = xp_level_transition_value(60, 56, 80.0, 4, 7, 8, 0.0, 1);
+    const double slowroll_xp = xp_level_transition_value(60, 56, 80.0, 4, 7, 8, 0.0, 3);
+    if (!(stabilize_xp < neutral_xp && slowroll_xp < stabilize_xp)) {
+        throw std::runtime_error("strategy-specific XP shaping must reduce only positive incentives");
+    }
     if (!(xp_level_transition_value(60, 56, 80.0, 4, 7, 8, 20.0) >
           xp_level_transition_value(60, 56, 80.0, 4, 7, 8, 0.0))) {
         throw std::runtime_error("a level-up that unlocks deployable board power must be valued above a level-only transition");
