@@ -8,7 +8,7 @@ def test_board_quality_audit_tracks_action_delta_and_combat_context():
             "payload": {
                 "action_name": "MOVE_BOARD",
                 "combat_reward": 0.0,
-                "state_before": {"board_structural_score": -0.5, "positioning_score": 0.5},
+                "state_before": {"board_structural_score": -0.5, "positioning_score": 0.5, "board_quality_score": 0.5},
                 "state_after": {
                     "positioning_score": 0.7,
                     "board_quality_score": 0.7,
@@ -27,7 +27,7 @@ def test_board_quality_audit_tracks_action_delta_and_combat_context():
             "payload": {
                 "action_name": "MOVE_BOARD",
                 "combat_reward": -1.0,
-                "state_before": {"board_structural_score": -0.1, "positioning_score": 0.7},
+                "state_before": {"board_structural_score": -0.1, "positioning_score": 0.7, "board_quality_score": 0.7},
                 "state_after": {
                     "positioning_score": 0.3,
                     "board_quality_score": 0.3,
@@ -46,7 +46,7 @@ def test_board_quality_audit_tracks_action_delta_and_combat_context():
             "payload": {
                 "action_name": "PASS",
                 "combat_reward": 1.0,
-                "state_before": {"board_structural_score": -0.3, "positioning_score": 0.3},
+                "state_before": {"board_structural_score": -0.3, "positioning_score": 0.3, "board_quality_score": 0.3},
                 "state_after": {
                     "positioning_score": 0.3,
                     "board_quality_score": 0.3,
