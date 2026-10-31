@@ -515,14 +515,14 @@ inline bool protects_upgrade_path(int owned_unit_instances) noexcept {
 // rewarding for disposing of useful bench units. Fit is normalized to [0, 1].
 // Gold recovery is shaped separately by gold_change_reward().
 inline double sale_quality(double fit_score, bool core_unit,
-                           bool protects_upgrade, bool frees_bench_space) noexcept {
+                           bool protects_upgrade, bool frees_bench_space,
+                           bool compensated_by_board_gain = false) noexcept {
     const double fit = std::clamp(fit_score, 0.0, 1.0);
-    // Sale proceeds are already represented by gold_change_reward. This signal
-    // must therefore protect strategic units and copies rather than rewarding
-    // selling merely because it produces gold.
+    // Sale proceeds are already represented by gold_change_reward. Protect
+    // core/upgrade copies unless the same action produces a measurable board gain.
     return 0.015 - 0.20 * fit -
-        (core_unit ? 0.28 : 0.0) -
-        (protects_upgrade ? 0.30 : 0.0) +
+        (core_unit && !compensated_by_board_gain ? 0.28 : 0.0) -
+        (protects_upgrade && !compensated_by_board_gain ? 0.30 : 0.0) +
         (frees_bench_space ? 0.035 : 0.0);
 }
 
