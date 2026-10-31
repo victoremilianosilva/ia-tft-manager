@@ -117,7 +117,7 @@ inline double strategy_action_reward(
     double reward = 0.0;
     switch (strategy_id) {
         case 0: // ECON: preserve interest; never treat XP as the default use of gold.
-            if (action_type == 1) reward -= 0.025;
+            if (action_type == 1) reward -= 0.05;
             if (new_gold >= 50 && old_gold < 50) reward += 0.04;
             if (old_gold >= 50 && new_gold >= 50 &&
                 action_type == 0 && useful_purchase) reward += 0.03;
@@ -125,12 +125,12 @@ inline double strategy_action_reward(
                 !has_composition_target) {
                 // Keep the 50-gold interest floor even when the action starts
                 // above it. Useful unit purchases remain exempt.
-                if (action_type == 2) reward -= 0.09;
+                if (action_type == 2) reward -= 0.01;
                 else if (action_type == 0 && !useful_purchase) reward -= 0.06;
             }
             break;
         case 1: // STABILIZE: favor playable-board upgrades over routine leveling.
-            if (action_type == 1) reward -= 0.025;
+            if (action_type == 1) reward -= 0.05;
             if (action_type == 0 && useful_purchase) reward += 0.07;
             if (action_type == 2 && leveled)
                 reward += 0.95 * (hp <= 30.0 ? 0.07 : (old_gold >= 50 ? 0.05 : 0.015));
@@ -141,7 +141,7 @@ inline double strategy_action_reward(
             if (action_type == 2 && leveled)
                 reward += hp <= 30.0 ? 0.11 : (old_gold >= 50 ? 0.08 : 0.03);
             // FAST8 advances through XP and useful purchases, not reroll.
-            if (action_type == 1) reward -= 0.025;
+            if (action_type == 1) reward -= 0.05;
             break;
         case 3: // SLOWROLL: reward improved rolls without blocking useful XP progress.
             if (action_type == 1) reward += reroll_improved ? 0.12 : -0.025;
@@ -152,17 +152,17 @@ inline double strategy_action_reward(
                 hp > 50.0 && old_gold < 50) reward -= 0.02;
             break;
         case 4: // ALL_IN: useful immediate strength over passive saving.
-            if (action_type == 1) reward -= 0.025;
+            if (action_type == 1) reward -= 0.05;
             if (action_type == 0 && useful_purchase) reward += 0.06;
             if (hp <= 15.0 && action_type == 6) reward -= 0.05;
             break;
         case 5: // WINSTREAK: preserve strength, avoid wasteful economy actions.
-            if (action_type == 1) reward -= 0.025;
+            if (action_type == 1) reward -= 0.05;
             if (action_type == 0 && useful_purchase) reward += 0.05;
             if (action_type == 2 && leveled) reward += 0.04;
             break;
         case 6: // LOSS_STREAK: preserve the streak only while purchases are not useful.
-            if (action_type == 1) reward -= 0.025;
+            if (action_type == 1) reward -= 0.05;
             if (hp >= 50.0 && !useful_purchase &&
                 (action_type == 0 || action_type == 1 || action_type == 2))
                 reward -= 0.04;
