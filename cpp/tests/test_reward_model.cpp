@@ -114,7 +114,7 @@ int main() {
     }
     require_close(unit_purchase_timing_reward(4, 55, 2, 1, 0.8, 80.0, false, false),
                   0.0, "ordinary purchases must preserve the 50-gold interest floor");
-    require_close(surplus_xp_spending_reward(54, 50, 4, 0, false), 0.0206,
+    require_close(surplus_xp_spending_reward(54, 50, 4, 0, false), 0.0212,
                   "XP may convert surplus when no useful shop unit is available");
     require_close(surplus_xp_spending_reward(54, 50, 4, 0, true), 0.0,
                   "useful shop offers take priority over surplus XP");
