@@ -138,3 +138,20 @@ def test_item_state_audit_reads_equipment_bag_components_and_events():
     assert metrics["final_snapshot"]["bag_item_count"] == 0
     assert metrics["final_snapshot"]["component_count"] == 1
     assert metrics["item_events"]["ITEM_EQUIPPED"] == 1
+
+
+def test_board_quality_uses_live_positioning_not_zero_initialized_cached_fields():
+    report = {}
+    entries = [{
+        "event_type": "action",
+        "payload": {
+            "action_name": "MOVE_BOARD",
+            "state_before": {"positioning_score": 0.4, "board_quality_score": 0.0},
+            "state_after": {"positioning_score": 0.7, "board_quality_score": 0.0},
+        },
+    }]
+    audit_board_quality(entries, "Jogador 1", report)
+    metrics = report["board_quality_metrics"]["Jogador 1"]
+    assert metrics["actions_with_metrics"] == 1
+    assert metrics["positive_quality_delta"] == 1
+    assert abs(metrics["mean_quality_delta"] - 0.3) < 1e-9
