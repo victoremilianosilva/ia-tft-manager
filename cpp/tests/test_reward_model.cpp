@@ -326,8 +326,10 @@ int main() {
         throw std::runtime_error("reroll that destroys a stronger shop must receive a negative quality signal");
     }
 
-    if (!protects_upgrade_path(2) || protects_upgrade_path(1)) {
-        throw std::runtime_error("upgrade path must be protected across different star levels, but not for a lone unit");
+    if (!protects_upgrade_path(1, 1, 0) || protects_upgrade_path(1, 0, 0) ||
+        !protects_upgrade_path(2, 1, 0) || !protects_upgrade_path(2, 0, 3) ||
+        protects_upgrade_path(2, 0, 2) || protects_upgrade_path(3, 0, 3)) {
+        throw std::runtime_error("only real same-star pairs and complete 1-star-to-2-star paths should be protected");
     }
     if (!(sale_quality(0.0, false, true, true) < 0.0)) {
         throw std::runtime_error("selling a pair copy must remain unattractive even when it frees bench space");
