@@ -147,7 +147,7 @@ inline double strategy_action_reward(
             if (action_type == 1 && !reroll_improved) reward -= 0.015;
             break;
         case 3: // SLOWROLL: reward improved rolls without blocking useful XP progress.
-            if (action_type == 1) reward += reroll_improved ? 0.10 : -0.025;
+            if (action_type == 1) reward += reroll_improved ? 0.12 : -0.025;
             // Buying XP without an immediate level-up is progress, not proof of
             // waste. Keep only a small early/safe-game nudge against leaving the
             // intended slow-roll plan; gold/interest cost remains the main signal.
