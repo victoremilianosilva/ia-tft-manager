@@ -221,3 +221,20 @@ def test_real_pair_loss_requires_two_owned_one_star_copies_of_sold_champion():
     assert metrics["confirmed_pair_path_losses"] == 1
     assert metrics["core_or_pair_sales"] == 1
     assert any(issue["code"] == "SOLD_UPGRADE_PAIR_COPY" for issue in report["issues"])
+
+
+def test_buy_sell_without_matching_uuid_is_ambiguous_not_confirmed_reversal():
+    bought_unit = _unit("Briar")
+    bought_unit["uuid"] = ""
+    sold_unit = _unit("Briar")
+    sold_unit["uuid"] = "unrelated-copy"
+    bought = _entry(1, 1, [0, 0, 0, 0, 0, 0], "BUY",
+                    _state(10, shop=[bought_unit]), _state(9, bench=[bought_unit]))
+    sold = _entry(2, 2, [5, 0, 0, 0, 0, 0], "SELL",
+                  _state(9, bench=[sold_unit]), _state(10, bench=[]))
+    report = {"issues": []}
+    audit_purchase_sequences([bought, sold], "Jogador 1", report)
+    metrics = report["purchase_sequence_metrics"]["Jogador 1"]
+    assert metrics["reversed_1"] == 0
+    assert metrics["ambiguous_identity_sales"] == 1
+    assert metrics["classified_sales"]["UNKNOWN"] == 1
