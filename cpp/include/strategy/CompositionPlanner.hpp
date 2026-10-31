@@ -225,7 +225,7 @@ public:
             if (has_trait(champion, direction)) score += 2.2;
             for (const auto& trait : champion.traits) {
                 const auto focus_it = focus.find(trait);
-                if (focus_it != focus.end()) score += std::min(1.5, focus_it->second * 0.20);
+                if (focus_it != focus.end()) score += std::min(1.8, focus_it->second * 0.24);
                 if (anchor_traits.count(trait) != 0) score += 0.8;
             }
             const auto owned = owned_copies.find(champion.internal_id);
