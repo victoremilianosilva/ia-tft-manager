@@ -329,7 +329,8 @@ inline double xp_progress_reward(
     int old_xp, int new_xp, double hp, int stage, int active_strategy,
     bool useful_purchase_available
 ) noexcept {
-    if (new_level != old_level || new_xp <= old_xp || active_strategy == 3)
+    if (gold_before < 4 || gold_after >= gold_before || new_level != old_level
+        || new_xp <= old_xp || active_strategy == 3)
         return 0.0;
     // The shared surplus fallback already rewards safe XP above 50 gold.
     // This extra signal is only for urgent progress below that reserve, and
