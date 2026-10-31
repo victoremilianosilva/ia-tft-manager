@@ -3782,9 +3782,12 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                                 static_cast<double>(unit->star) * 2.0);
                     }
                 }
+                const std::int32_t xp_strategy_id =
+                    this->strategy.empty() ? 0 : this->strategy.back().strategy;
                 action_reward += reward_model::xp_level_transition_value(
                     old_gold, economy.gold, this->info.hp, lobby.stage,
-                    old_level, economy.level, unlocked_board_power);
+                    old_level, economy.level, unlocked_board_power,
+                    xp_strategy_id);
             }
             // RewardManager tracks the last rewarded level, initialized to 1,
             // not merely the level at the start of this action.
@@ -3801,8 +3804,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     : (old_gold >= 20 ? 0.04 : 0.02)))));
                 // Trim the extra level-transition shaping by the same
                 // modest factor as the XP-specific marginal reward.
-                action_reward += 0.90 * level_scale * reward_model::level(
-                    economy.level, this->previous_reward_level);
+                action_reward += 0.90 * level_scale *
+                    reward_model::xp_strategy_reward_scale(xp_strategy_id) *
+                    reward_model::level(economy.level, this->previous_reward_level);
                 this->previous_reward_level = economy.level;
                 // Early XP should not receive the rich-spending bonus unless
                 // the player is already under meaningful health pressure.
