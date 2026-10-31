@@ -241,6 +241,8 @@ int main() {
     const double pass_75 = pass_opportunity_penalty(75, 100.0, 2, false);
     const double pass_125 = pass_opportunity_penalty(125, 100.0, 2, false);
     const double pass_200 = pass_opportunity_penalty(200, 100.0, 2, false);
+    require_close(pass_125, -0.35 * 0.325 * std::pow(0.5, 1.20),
+                  "surplus-gold hoarding penalty uses the increased 2.5-point coefficient");
     if (!(pass_50 > pass_75 && pass_75 > pass_125 && pass_125 > pass_200))
         throw std::runtime_error("PASS penalty must grow with gold above 50");
     if (!(pass_opportunity_penalty(125, 100.0, 2, true) <
