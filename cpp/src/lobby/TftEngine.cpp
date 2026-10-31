@@ -3773,10 +3773,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             success = economy.gold == old_gold - EconomyEngine::REROLL_COST;
             action_reward = success ? -0.01 : -0.10;
             if (success) {
-                // SLOWROLL receives the full shop-quality signal. Other plans
-                // may still reroll tactically when the board is under critical
-                // health pressure or the post-reroll balance preserves 50 gold;
-                // keep that cross-strategy signal deliberately smaller.
+                // Only SLOWROLL receives positive shop-quality feedback.
+                // Other strategies use planned XP progress and useful purchases;
+                // a better shop alone must not teach them to reroll.
                 const std::int32_t active_strategy_id =
                     this->strategy.empty() ? 0 : this->strategy.back().strategy;
                 const double tactical_reroll_scale =
