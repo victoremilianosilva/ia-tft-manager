@@ -1104,6 +1104,31 @@ def audit_decision_context(entries: list[dict], player: str, report: dict) -> No
         stats[key] = dict(sorted(stats[key].items()))
 
 
+
+
+def _active_entries_before_elimination(entries: list[dict]) -> tuple[list[dict], int]:
+    """Keep decisions made while alive; drop elimination snapshots and later events.
+
+    The action causing elimination remains valid because state_before was alive.
+    Its terminal state is not used as a living-player final economy snapshot.
+    """
+    active, eliminated, ignored = [], False, 0
+    for entry in sorted(entries, key=lambda e: (e.get("sequence_id", 0), e.get("step", 0))):
+        if not isinstance(entry, dict):
+            continue
+        before, after = get_state(entry, "state_before"), get_state(entry, "state_after")
+        before_dead = before.get("alive") is False or bool(before.get("eliminated"))
+        after_dead = after.get("alive") is False or bool(after.get("eliminated"))
+        if eliminated or before_dead:
+            ignored += 1
+            eliminated = True
+            continue
+        active.append(entry)
+        if after_dead:
+            eliminated = True
+    return active, ignored
+
+
 def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_window: int) -> None:
     player_id = doc.get("player_number")
     if player_id is None:
@@ -1112,17 +1137,23 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
     player = f"Jogador {player_id}"
     report["players_seen"].add(str(player_id))
     report["entries_read"] += len(doc["entries"])
-    audit_purchase_sequences(doc["entries"], player, report)
-    audit_economic_actions(doc["entries"], player, report)
-    audit_composition_direction_changes(doc["entries"], player, report)
-    audit_board_quality(doc["entries"], player, report)
-    audit_item_state(doc["entries"], player, report)
-    audit_positioning_and_composition(doc["entries"], player, report)
-    audit_team_progression(doc["entries"], player, report)
-    audit_decision_context(doc["entries"], player, report)
+    entries, ignored_after_elimination = _active_entries_before_elimination(doc["entries"])
+    report.setdefault("elimination_filter", {})[player] = {
+        "entries_total": len(doc["entries"]),
+        "entries_analyzed_while_alive": len(entries),
+        "entries_ignored_after_elimination": ignored_after_elimination,
+    }
+    audit_purchase_sequences(entries, player, report)
+    audit_economic_actions(entries, player, report)
+    audit_composition_direction_changes(entries, player, report)
+    audit_board_quality(entries, player, report)
+    audit_item_state(entries, player, report)
+    audit_positioning_and_composition(entries, player, report)
+    audit_team_progression(entries, player, report)
+    audit_decision_context(entries, player, report)
     report["log_files"].append(str(path))
 
-    entries = sorted(doc["entries"], key=lambda e: (e.get("sequence_id", 0), e.get("step", 0)))
+    entries = sorted(entries, key=lambda e: (e.get("sequence_id", 0), e.get("step", 0)))
     recent_moves = deque(maxlen=loop_window)
     state_visits = defaultdict(lambda: deque(maxlen=loop_window))
     comp_history = deque(maxlen=comp_window)
