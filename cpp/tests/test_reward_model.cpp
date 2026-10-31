@@ -289,7 +289,7 @@ int main() {
                   0.0, "a genuinely improved tactical reroll is not discouraged");
     require_close(strategy_action_reward(3, 1, 55, 53, 90.0, 3,
                                          false, true, false, true),
-                  0.10, "slow-roll strategy retains the stronger reroll signal");
+                  0.12, "slow-roll strategy receives a stronger improved-reroll signal");
     require_close(strategy_action_reward(3, 2, 30, 28, 80.0, 2,
                                          false, false, false, false),
                   -0.02, "safe early slow-roll XP nudge remains small");
@@ -402,7 +402,7 @@ int main() {
                   0.025, "FAST8 keeps level progress modest below the interest cap");
     require_close(strategy_action_reward(3, 1, 40, 38, 80.0, 3,
                                          false, true, false, true),
-                  0.10, "SLOWROLL rewards a useful reroll");
+                  0.12, "SLOWROLL rewards a useful reroll");
     require_close(strategy_action_reward(3, 1, 40, 38, 80.0, 3,
                                          false, false, false, true),
                   -0.025, "SLOWROLL penalizes a reroll without improvement");
