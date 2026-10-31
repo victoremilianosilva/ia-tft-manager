@@ -422,7 +422,9 @@ def audit_economic_actions(entries: list[dict], player: str, report: dict) -> No
         if payload.get("action_reward") is not None:
             reward_component_samples += 1
         after = payload.get("state_after") or {}
-        if after:
+        # Keep the death-causing decision, but never publish terminal eliminated
+        # gold/board as a living player strategic final state.
+        if after and after.get("alive") is not False and not after.get("eliminated"):
             final_gold = after.get("gold", final_gold)
             final_board_power = after.get("board_power", final_board_power)
     if not actions:
@@ -556,28 +558,16 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
         payload = entry.get("payload") or {}
         before = payload.get("state_before") or {}
         after = payload.get("state_after") or {}
-        # The native audit snapshot is authoritative. Do not silently convert
-        # missing metrics into zero; older logs are reported as unavailable.
-        if after.get("board_quality_score") is None and after.get("board_positional_score") is None:
+        # positioning_score is recalculated from the live board in AuditSnapshot.
+        # Cached board_quality fields were historically left at default zeroes.
+        score_after_raw = after.get("positioning_score")
+        score_before_raw = before.get("positioning_score")
+        if score_after_raw is None or score_before_raw is None:
             continue
         try:
-            score_after_raw = after.get("board_quality_score")
-            if score_after_raw is None:
-                score_after_raw = after.get("board_positional_score")
-            if score_after_raw is None:
-                score_after_raw = after.get("positioning_score")
-            score_before_raw = before.get("board_quality_score")
-            if score_before_raw is None:
-                score_before_raw = before.get("board_positional_score")
-            if score_before_raw is None:
-                score_before_raw = before.get("positioning_score")
-            if score_after_raw is None:
-                continue
-            if score_before_raw is None:
-                score_before_raw = score_after_raw
             score_after = float(score_after_raw)
             score_before = float(score_before_raw)
-            delta = float(after.get("board_quality_delta", score_after - score_before) or 0.0)
+            delta = score_after - score_before
             combat = float(payload.get("combat_reward", 0.0) or 0.0)
         except (TypeError, ValueError):
             continue
@@ -596,10 +586,11 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
             totals["neutral_quality_delta"] += 1
 
         structural_after = after.get("board_structural_score")
-        if structural_after is not None:
+        structural_before_raw = before.get("board_structural_score")
+        if structural_after is not None and structural_before_raw is not None:
             try:
                 structural_after = float(structural_after)
-                structural_before = float(before.get("board_structural_score", structural_after) or 0.0)
+                structural_before = float(structural_before_raw)
             except (TypeError, ValueError):
                 structural_after = None
             if structural_after is not None:
