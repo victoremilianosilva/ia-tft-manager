@@ -1665,7 +1665,7 @@ def markdown_report(report: dict) -> str:
               "- Achados CRITICAL/HIGH são sinais fortes para investigar, não prova isolada da causa.",
               "- Troca de comp direction pode ser legítima conforme loja, unidades, nível e economia.",
               "- A checagem de fusão conta apenas unidades compradas no tabuleiro+banco, nunca as da loja.",
-              "- Os registros estruturados são a fonte primária para estado de decisão, máscaras, política e recompensas; registros textuais legados são usados apenas quando faltam dados estruturados."
+              "- Os registros estruturados são a fonte primária para estado de decisão, máscaras, política e recompensas; registros textuais legados são usados apenas quando faltam dados estruturados.",
               "- A auditoria não pode decidir se uma compra era ótima sem comparar loja, ouro, limite do banco, máscaras e avaliação de composição no mesmo estado.",
               "- Uma fusão só pode ser confirmada com segurança se o log registrar cópias elegíveis antes/depois e o evento de merge; contar cópias é apenas um indício.",
               "- Alertas de posicionamento dependem de role/row nos dados; em tabuleiro achatado assume-se grade 4x7 com rows 0-1 na frontline, convenção a validar no Viewer.",
