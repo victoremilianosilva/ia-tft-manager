@@ -446,14 +446,15 @@ inline double early_purchase_reward(
     // In stages 1-2, a modestly compatible acquisition has option value
     // before the final composition is known. Avoid arbitrary clutter: require
     // a small fit signal unless it forms a real pair or completes an upgrade.
-    if (!completes_upgrade && !builds_pair && fit < 0.08)
+    if (!completes_upgrade && !builds_pair && fit < 0.08 && cost > 2)
         return 0.0;
 
     const double capacity = bench_count <= 3 ? 1.0
         : (bench_count <= 5 ? 0.75 : 0.40);
     const double quality = completes_upgrade ? 1.0
         : (builds_pair ? std::max(0.70, fit) : (0.35 + 0.65 * fit));
-    const double base = (completes_upgrade || builds_pair) ? 0.12 : 0.055;
+    const double base = (completes_upgrade || builds_pair) ? 0.12
+        : (fit < 0.08 ? 0.04 : 0.055);
     const double fit_bonus = (completes_upgrade || builds_pair) ? 0.16 : 0.075;
     return capacity * (base + fit_bonus * quality);
 }
