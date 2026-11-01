@@ -130,14 +130,14 @@ def test_inventory_candidate_scorer_uses_item_semantics():
         policy.item_inventory_head.bias.zero_()
         first.weight.zero_()
         first.bias.zero_()
-        first.weight[0, -17] = 1.0
+        first.weight[0, -19] = 1.0
         last.weight.zero_()
         last.bias.zero_()
         last.weight[0, 0] = 1.0
 
     logits = policy._item_inventory_logits(
-        conditioned, inventory_features, torch.zeros(1, 9, 11),
-        torch.tensor([False])
+        conditioned, inventory_features, torch.zeros(1, 9, 37),
+        torch.zeros(1, 9, 11), torch.tensor([False])
     )
     assert logits[0, 1] > logits[0, 0]
 
@@ -165,7 +165,8 @@ def test_anvil_candidate_scorer_uses_anvil_option_features():
         last.weight[0, 0] = 1.0
 
     logits = policy._item_inventory_logits(
-        conditioned, inventory_features, anvil_features, torch.tensor([True])
+        conditioned, inventory_features, torch.zeros(1, 9, 37),
+        anvil_features, torch.tensor([True])
     )
     assert logits[0, 2] > logits[0, 1]
     assert logits[0, 2] > logits[0, 0]
