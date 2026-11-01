@@ -13,6 +13,9 @@ class TrainingConfig:
     min_learning_rate: float = 5e-5
     lr_schedule_updates: int = 1000
     adam_eps: float = 1e-5
+    adam_beta1: float = 0.9
+    adam_beta2: float = 0.999
+    weight_decay: float = 0.0
 
     clip_coef: float = 0.2
     entropy_coef_initial: float = 0.02
@@ -37,7 +40,8 @@ class TrainingConfig:
 
     def validate(self) -> None:
         finite_fields = (
-            "learning_rate", "min_learning_rate", "adam_eps", "clip_coef",
+            "learning_rate", "min_learning_rate", "adam_eps", "adam_beta1", "adam_beta2",
+            "weight_decay", "clip_coef",
             "entropy_coef_initial", "entropy_coef_final", "entropy_decay_rate",
             "vf_coef", "max_grad_norm", "gamma", "gae_lambda",
         )
@@ -58,6 +62,10 @@ class TrainingConfig:
             raise ValueError("entropy_coef_final deve estar entre 0 e entropy_coef_initial.")
         if self.entropy_decay_rate <= 0:
             raise ValueError("entropy_decay_rate deve ser > 0.")
+        if not 0 < self.adam_beta1 < 1 or not 0 < self.adam_beta2 < 1:
+            raise ValueError("adam_beta1 e adam_beta2 devem estar entre 0 e 1.")
+        if self.weight_decay < 0:
+            raise ValueError("weight_decay deve ser >= 0.")
         if not 0 < self.clip_coef < 1:
             raise ValueError("clip_coef deve estar entre 0 e 1.")
         if self.vf_coef < 0 or self.max_grad_norm <= 0:
@@ -90,6 +98,9 @@ class TrainingConfig:
             "min_learning_rate": ("TFT_PPO_MIN_LR", float),
             "lr_schedule_updates": ("TFT_PPO_LR_SCHEDULE_UPDATES", int),
             "adam_eps": ("TFT_PPO_ADAM_EPS", float),
+            "adam_beta1": ("TFT_PPO_ADAM_BETA1", float),
+            "adam_beta2": ("TFT_PPO_ADAM_BETA2", float),
+            "weight_decay": ("TFT_PPO_WEIGHT_DECAY", float),
             "clip_coef": ("TFT_PPO_CLIP_COEF", float),
             "entropy_coef_initial": ("TFT_PPO_ENT_COEF", float),
             "entropy_coef_final": ("TFT_PPO_ENT_COEF_FINAL", float),
