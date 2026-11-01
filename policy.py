@@ -199,7 +199,20 @@ class TFTPolicy(nn.Module):
                 and target_value.shape[1] > source_value.shape[1]
             ):
                 added = target_value.shape[1] - source_value.shape[1]
-                insertion = source_value.shape[1] - self.candidate_observation_dim
+                # Native item features are inserted in the observation before
+                # the derived economic context. Recent checkpoints already have
+                # that context; older checkpoints do not. Detect both layouts
+                # from the exact added-column count so economic columns are not
+                # accidentally mapped onto item features.
+                if added == self.item_state_observation_dim:
+                    trailing_context = self.economic_context_dim
+                elif added == self.item_state_observation_dim + self.economic_context_dim:
+                    trailing_context = 0
+                else:
+                    trailing_context = 0
+                insertion = (
+                    source_value.shape[1] - self.candidate_observation_dim - trailing_context
+                )
                 expanded = torch.zeros_like(target_value)
                 if 0 <= insertion <= source_value.shape[1]:
                     expanded[:, :insertion] = source_value[:, :insertion]
