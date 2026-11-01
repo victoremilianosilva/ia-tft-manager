@@ -9,6 +9,8 @@ def test_defaults_are_valid_and_exposed():
     assert config.learning_rate == 3e-4
     assert config.batch_size == 64
     assert config.ppo_epochs == 4
+    assert config.total_updates == 280
+    assert config.num_lobbies == 4
 
 
 def test_environment_overrides_major_parameters(monkeypatch):
@@ -22,6 +24,8 @@ def test_environment_overrides_major_parameters(monkeypatch):
         "TFT_PPO_ENT_COEF_FINAL": "0.01",
         "TFT_PPO_GAMMA": "0.98",
         "TFT_PPO_GAE_LAMBDA": "0.9",
+        "TFT_NUM_LOBBIES": "2",
+        "TFT_TOTAL_UPDATES": "500",
     }
     for key, value in values.items():
         monkeypatch.setenv(key, value)
@@ -35,6 +39,8 @@ def test_environment_overrides_major_parameters(monkeypatch):
     assert config.entropy_coef_final == 0.01
     assert config.gamma == 0.98
     assert config.gae_lambda == 0.9
+    assert config.num_lobbies == 2
+    assert config.total_updates == 500
 
 
 def test_target_kl_can_be_disabled(monkeypatch):
