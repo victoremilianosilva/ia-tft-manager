@@ -177,6 +177,10 @@ int main() {
                   0.232, "early pair purchase bonus remains stronger than a single flexible unit");
     if (!(early_purchase_reward(2, 10, 1, 2, 0.10, false, false) > 0.0))
         throw std::runtime_error("modestly compatible early units should retain option value");
+    require_close(early_purchase_reward(2, 10, 1, 2, 0.0, false, false),
+                  0.06625, "cheap early flex acquisition has bounded option value");
+    require_close(early_purchase_reward(2, 10, 4, 2, 0.0, false, false),
+                  0.0, "low-fit expensive early acquisition is not rewarded");
     require_close(early_purchase_reward(2, 10, 1, 8, 0.0, false, false),
                   0.0, "early low-fit purchase rejected with crowded bench");
     require_close(early_purchase_reward(3, 10, 1, 2, 0.5, false, false),
