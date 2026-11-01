@@ -2,6 +2,9 @@ import torch
 import torch.optim as optim
 import numpy as np
 import os
+import json
+
+from training_config import TrainingConfig
 
 from cpp_lobby_env import CppTFTLobbyWrapper
 
@@ -95,7 +98,13 @@ class Trainer:
         num_envs=4,
         use_subprocess=True,
         item_catalog_path=None,
+        config=None,
     ):
+        self.config = TrainingConfig.from_env(config)
+        self.config.validate()
+        print("⚙️ Configuração efetiva do treinamento:")
+        print(json.dumps(self.config.to_dict(), indent=2, ensure_ascii=False))
+
 
         # ============================================================
         # 🖥️ DEVICE
@@ -224,196 +233,85 @@ class Trainer:
         ).to(self.device)
 
         # ============================================================
-        # 💾 CHECKPOINT
+        # 💾 CHECKPOINT / OPTIMIZER / SCHEDULER
         # ============================================================
 
         self.start_update = 1
+        checkpoint_path = self.config.checkpoint_path
+        checkpoint = None
+        migrated_checkpoint = False
 
-        checkpoint_path = (
-            "tft_checkpoint.pt"
+        if os.path.exists(checkpoint_path):
+            print(f"📂 Carregando checkpoint: {checkpoint_path}")
+            checkpoint = torch.load(checkpoint_path, map_location=self.device)
+            migrated_checkpoint = self.policy.load_compatible_state_dict(checkpoint["policy"])
+            print("⚠️ Checkpoint migrado; optimizer/scheduler serão reiniciados." if migrated_checkpoint
+                  else "✅ Pesos da policy carregados.")
+
+        self.optimizer = optim.Adam(
+            self.policy.parameters(),
+            lr=self.config.learning_rate,
+            eps=self.config.adam_eps,
         )
 
-        if os.path.exists(
-            checkpoint_path
-        ):
+        saved_config = checkpoint.get("training_config", {}) if checkpoint else {}
+        saved_schedule = (
+            saved_config.get("lr_schedule_updates"),
+            saved_config.get("min_learning_rate"),
+            saved_config.get("learning_rate"),
+        )
+        current_schedule = (
+            self.config.lr_schedule_updates,
+            self.config.min_learning_rate,
+            self.config.learning_rate,
+        )
+        can_restore_optimizer = bool(checkpoint and "optimizer" in checkpoint and not migrated_checkpoint)
+        if can_restore_optimizer:
+            self.optimizer.load_state_dict(checkpoint["optimizer"])
+            # Restaura os momentos do Adam, mas o LR solicitado nesta execução
+            # sempre prevalece sobre o valor salvo no checkpoint.
+            for group in self.optimizer.param_groups:
+                group["lr"] = self.config.learning_rate
+            print("✅ Momentos do Adam restaurados; LR efetivo aplicado pela configuração atual.")
 
+        self.scheduler = optim.lr_scheduler.CosineAnnealingLR(
+            self.optimizer,
+            T_max=self.config.lr_schedule_updates,
+            eta_min=self.config.min_learning_rate,
+        )
+        restore_scheduler = bool(
+            can_restore_optimizer and "scheduler" in checkpoint
+            and saved_schedule == current_schedule
+        )
+        if restore_scheduler:
+            self.scheduler.load_state_dict(checkpoint["scheduler"])
             print(
-                "📂 Carregando checkpoint completo..."
+                f"✅ Scheduler restaurado | step={self.scheduler.last_epoch} | "
+                f"LR={self.optimizer.param_groups[0]['lr']:.3e}"
             )
+        elif checkpoint:
+            print("ℹ️ Scheduler reiniciado: LR/schedule mudou ou checkpoint incompatível.")
 
-            checkpoint = torch.load(
-                checkpoint_path,
-                map_location=self.device
-            )
-
-            migrated_checkpoint = self.policy.load_compatible_state_dict(
-                checkpoint["policy"]
-            )
-            if migrated_checkpoint:
-                print(
-                    "⚠️ Checkpoint migrado para a observação temporal e a nova cabeça "
-                    "MOVE_BENCH. O estado do optimizer/scheduler será reiniciado."
-                )
-            else:
-                print("✅ Pesos da política carregados sem migração.")
-
-            # --------------------------------------------------------
-            # OPTIMIZER
-            # --------------------------------------------------------
-
-            self.optimizer = optim.Adam(
-                self.policy.parameters(),
-                lr=3e-4,
-                eps=1e-5
-            )
-
-            if "optimizer" in checkpoint and not migrated_checkpoint:
-
-                self.optimizer.load_state_dict(
-                    checkpoint["optimizer"]
-                )
-
-                print("✅ Estado do optimizer restaurado.")
-                restored_lr = [float(group["lr"]) for group in self.optimizer.param_groups]
-                print(f"📉 LR efetiva após restaurar optimizer: {restored_lr}")
-            elif migrated_checkpoint:
-                print("ℹ️ Optimizer reiniciado porque as formas dos pesos mudaram.")
-
-            # --------------------------------------------------------
-            # SCHEDULER
-            # --------------------------------------------------------
-
-            self.scheduler = (
-                optim.lr_scheduler.CosineAnnealingLR(
-                    self.optimizer,
-                    T_max=2000,
-                    eta_min=5e-5
-                )
-            )
-
-            if "scheduler" in checkpoint and not migrated_checkpoint:
-
-                self.scheduler.load_state_dict(
-                    checkpoint["scheduler"]
-                )
-
-                print("✅ Estado do scheduler restaurado.")
-                print(
-                    f"🗓️ Scheduler restaurado | last_epoch={self.scheduler.last_epoch} | "
-                    f"LR atual={[float(group['lr']) for group in self.optimizer.param_groups]}"
-                )
-            elif migrated_checkpoint:
-                print("ℹ️ Scheduler reiniciado para a arquitetura atual.")
-
-            # --------------------------------------------------------
-            # Controlled LR override (opt-in via TFT_PPO_LR)
-            # --------------------------------------------------------
-            requested_lr = os.getenv("TFT_PPO_LR")
-            if requested_lr:
-                controlled_lr = float(requested_lr)
-                if not np.isfinite(controlled_lr) or controlled_lr <= 0:
-                    raise ValueError("TFT_PPO_LR deve ser um número finito > 0.")
-                for group in self.optimizer.param_groups:
-                    group["lr"] = controlled_lr
-                min_lr = float(os.getenv("TFT_PPO_MIN_LR", str(min(2e-5, controlled_lr))))
-                if not np.isfinite(min_lr) or min_lr < 0 or min_lr > controlled_lr:
-                    raise ValueError("TFT_PPO_MIN_LR deve estar entre 0 e TFT_PPO_LR.")
-                # Reinicia a fase do scheduler para que a curva antiga do
-                # checkpoint não altere silenciosamente o teste controlado.
-                self.scheduler = optim.lr_scheduler.CosineAnnealingLR(
-                    self.optimizer,
-                    T_max=2000,
-                    eta_min=min_lr,
-                )
-                print(
-                    f"🧪 LR controlado via ambiente: lr={controlled_lr:.2e}, "
-                    f"eta_min={min_lr:.2e}"
-                )
-
-            # --------------------------------------------------------
-            # UPDATE
-            # --------------------------------------------------------
-
-            self.start_update = (
-                checkpoint.get(
-                    "update",
-                    0
-                )
-                + 1
-            )
-
-            print(
-                f"▶️ Retomando do update "
-                f"{self.start_update}"
-            )
-
-            print(
-                "⚠️ ATENÇÃO: o checkpoint anterior "
-                "foi treinado antes do Self-Play."
-            )
-
-            print(
-                "⚠️ Os pesos são compatíveis com a "
-                "policy, mas o comportamento aprendido "
-                "é de ambiente antigo."
-            )
-
+        if checkpoint:
+            self.start_update = int(checkpoint.get("update", 0)) + 1
+            print(f"▶️ Retomando do update {self.start_update}")
         else:
-
-            print(
-                "⚠️ Nenhum checkpoint encontrado, "
-                "iniciando do zero."
-            )
-
-            self.optimizer = optim.Adam(
-                self.policy.parameters(),
-                lr=3e-4,
-                eps=1e-5
-            )
-
-            self.scheduler = (
-                optim.lr_scheduler.CosineAnnealingLR(
-                    self.optimizer,
-                    T_max=2000,
-                    eta_min=5e-5
-                )
-            )
-
-            requested_lr = os.getenv("TFT_PPO_LR")
-            if requested_lr:
-                controlled_lr = float(requested_lr)
-                if not np.isfinite(controlled_lr) or controlled_lr <= 0:
-                    raise ValueError("TFT_PPO_LR deve ser um número finito > 0.")
-                for group in self.optimizer.param_groups:
-                    group["lr"] = controlled_lr
-                min_lr = float(os.getenv("TFT_PPO_MIN_LR", str(min(2e-5, controlled_lr))))
-                if not np.isfinite(min_lr) or min_lr < 0 or min_lr > controlled_lr:
-                    raise ValueError("TFT_PPO_MIN_LR deve estar entre 0 e TFT_PPO_LR.")
-                # Reinicia a fase do scheduler para que a curva antiga do
-                # checkpoint não altere silenciosamente o teste controlado.
-                self.scheduler = optim.lr_scheduler.CosineAnnealingLR(
-                    self.optimizer,
-                    T_max=2000,
-                    eta_min=min_lr,
-                )
-                print(
-                    f"🧪 LR controlado via ambiente: lr={controlled_lr:.2e}, "
-                    f"eta_min={min_lr:.2e}"
-                )
-
-        # ============================================================
-        # 🧠 PPO TRAINER
-        # ============================================================
+            print("⚠️ Nenhum checkpoint encontrado; iniciando do zero.")
 
         self.ppo = PPOTrainer(
             self.policy,
             self.optimizer,
             self.writer,
-            clip_coef=0.2,
-            ent_coef=0.02,
-            vf_coef=0.5,
-            max_grad_norm=0.5,
-            target_kl=0.02
+            clip_coef=self.config.clip_coef,
+            ent_coef=self.config.entropy_coef_initial,
+            vf_coef=self.config.vf_coef,
+            max_grad_norm=self.config.max_grad_norm,
+            target_kl=self.config.target_kl,
+        )
+        self.writer.add_text(
+            "training/config",
+            json.dumps(self.config.to_dict(), indent=2, ensure_ascii=False),
+            self.start_update,
         )
 
     # ================================================================
@@ -943,9 +841,12 @@ class Trainer:
     def train(
         self,
         total_updates=1000,
-        rollout_steps=128
+        rollout_steps=None
     ):
 
+        rollout_steps = self.config.rollout_steps if rollout_steps is None else int(rollout_steps)
+        if rollout_steps <= 0:
+            raise ValueError("rollout_steps deve ser > 0.")
         start = self.start_update
 
         end = (
@@ -1527,43 +1428,28 @@ class Trainer:
 
             rollout.compute_returns_and_advantages(
                 next_value,
-                dones
+                dones,
+                gamma=self.config.gamma,
+                gae_lambda=self.config.gae_lambda,
             )
 
             # ========================================================
-            # 🔥 ENTROPY COEFFICIENT
+            # 🔥 ENTROPY COEFFICIENT — PROGRESSO GLOBAL
             # ========================================================
 
-            initial_ent = 0.02
-
-            final_ent = 0.005
-
-            decay_rate = 2.0
-
-            progress = (
-                (update - start)
-                / max(1, end - start - 1)
+            entropy_progress = min(
+                1.0,
+                max(0.0, (update - 1) / max(1, self.config.entropy_schedule_updates - 1)),
             )
-
-            progress = min(
-                progress,
-                1.0
-            )
-
             self.ppo.ent_coef = exponential_schedule_value(
-                progress,
-                initial_ent,
-                final_ent,
-                decay_rate,
+                entropy_progress,
+                self.config.entropy_coef_initial,
+                self.config.entropy_coef_final,
+                self.config.entropy_decay_rate,
             )
+            self.writer.add_scalar("charts/entropy_coef", self.ppo.ent_coef, update)
+            self.writer.add_scalar("training/entropy_schedule_progress", entropy_progress, update)
 
-            self.writer.add_scalar(
-                "charts/entropy_coef",
-                self.ppo.ent_coef,
-                update
-            )
-
-            
             # ========================================================
             # 📊 ENTROPY SAMPLE
             # ========================================================
@@ -1645,11 +1531,17 @@ class Trainer:
 
             self.policy.train()
 
-            self.ppo.update(
+            ppo_metrics = self.ppo.update(
                 rollout,
-                batch_size=64,
-                epochs=4
-            )
+                batch_size=self.config.batch_size,
+                epochs=self.config.ppo_epochs,
+            ) or {}
+            self.writer.add_scalar("training/optimizer_steps", ppo_metrics.get("optimizer_steps", 0), update)
+            self.writer.add_scalar("training/grad_norm_mean", ppo_metrics.get("grad_norm_mean", 0.0), update)
+            self.writer.add_scalar("training/grad_norm_max", ppo_metrics.get("grad_norm_max", 0.0), update)
+            self.writer.add_scalar("training/attempted_minibatches", ppo_metrics.get("attempted_batches", 0), update)
+            self.writer.add_scalar("training/processed_minibatches", ppo_metrics.get("batches_processed", 0), update)
+            self.writer.add_scalar("training/early_stop", float(ppo_metrics.get("early_stop", False)), update)
 
             # ========================================================
             # 📉 SCHEDULER
@@ -1937,9 +1829,11 @@ class Trainer:
                             self.scheduler.state_dict(),
 
                         "update":
-                            update
+                            update,
+                        "training_config":
+                            self.config.to_dict(),
                     },
-                    "tft_checkpoint.pt"
+                    self.config.checkpoint_path
                 )
 
                 print(
@@ -1982,10 +1876,7 @@ if __name__ == "__main__":
 
     trainer = Trainer(
         num_envs=4,
-        use_subprocess=True
+        use_subprocess=True,
     )
 
-    trainer.train(
-        total_updates=280,
-        rollout_steps=128
-    )
+    trainer.train(total_updates=280)
