@@ -1179,6 +1179,8 @@ class PlayerJsonLogWriter:
             item_audit["decision"] = self._item_action_diagnostics(
                 action, before_audit, before_state, after_state, item_before, item_after
             )
+            if item_audit["decision"].get("is_anvil_choice"):
+                item_audit["action_name"] = "ANVIL_CHOICE"
             was_alive = bool(before_state.get("alive")) and not bool(before_state.get("eliminated"))
             after_alive = after_state.get("alive")
             is_eliminated = bool(after_state.get("eliminated")) or (
@@ -1378,11 +1380,20 @@ class PlayerJsonLogWriter:
                     + self._unit_composition_fit_text(primary_data["composition_diagnostics"]["unit_fit"])
                 )
                 if action_type in (7, 8) or item_audit["changed"]:
+                    decision = item_audit.get("decision", {})
                     line += (
                         "    ITEM AUDIT: "
-                        f"componentes {item_before['components']} -> {item_after['components']} | "
-                        f"bag {item_before['inventory']} -> {item_after['inventory']} | "
-                        f"equipados {item_before['equipped']} -> {item_after['equipped']}\n"
+                        f"op={decision.get('operation') or 'unknown'} | "
+                        f"item={decision.get('selected_item_id') or '—'} | "
+                        f"receita={decision.get('first_component_id') or '—'} + "
+                        f"{decision.get('second_component_id') or '—'} | "
+                        f"alvo={decision.get('target') or '—'} | "
+                        f"fit={decision.get('item_fit', 0.0):.3f} | "
+                        f"força_estimada={decision.get('estimated_immediate_strength', 0.0):.3f} | "
+                        f"reward_atribuição={decision.get('assignment_reward', 0.0):.3f}\n"
+                        f"    COMPONENTES {item_before['components']} -> {item_after['components']} | "
+                        f"BAG {item_before['inventory']} -> {item_after['inventory']} | "
+                        f"EQUIPADOS {item_before['equipped']} -> {item_after['equipped']}\n"
                     )
                 self._append_entry(
                     player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,
