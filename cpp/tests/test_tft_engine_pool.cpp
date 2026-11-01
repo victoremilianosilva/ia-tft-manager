@@ -1027,7 +1027,7 @@ int main(int argc, char** argv) {
             while (anvil_engine.round() < 39) round_result = finish_round();
             require(contains_event(round_result, "COMPLETED_ITEM_ANVIL_GRANTED:"),
                     "A rodada 6-7 nao concedeu bigorna de itens completos.");
-            resolve_anvil(4);
+            resolve_anvil(4, 1);
         }
 
         std::cout << "TFTEngine + loja/economia/ActionMask/AntiLoop/CompLock: OK\n";
