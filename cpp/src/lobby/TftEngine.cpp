@@ -666,10 +666,15 @@ struct TFTEngine::Impl {
             const auto strategy = player.strategy.empty() ? StrategyInfo{} : player.strategy.back();
             const double fit = unit_composition_score(strategy, *def, unit.star, trait_milestones);
             std::vector<std::string> preferred_traits = strategy.core_traits;
+            preferred_traits.insert(preferred_traits.end(),
+                strategy.planned_traits.begin(), strategy.planned_traits.end());
             if (!strategy.composition_direction.empty())
                 preferred_traits.push_back(strategy.composition_direction);
             for (const auto& [trait, weight] : strategy.composition_focus_weights) {
                 if (weight > 0.1) preferred_traits.push_back(trait);
+            }
+            for (const auto& [trait, count] : strategy.active_traits) {
+                if (count > 0) preferred_traits.push_back(trait);
             }
             std::sort(preferred_traits.begin(), preferred_traits.end());
             preferred_traits.erase(
