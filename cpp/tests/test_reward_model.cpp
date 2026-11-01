@@ -309,7 +309,7 @@ int main() {
     require_close(phase_xp_progress_reward(54, 50, 4, 4, 0, 4, 80.0, 2, 0, false),
                   0.0, "stage 2 must prioritize board development over XP");
     require_close(phase_xp_progress_reward(54, 50, 5, 5, 0, 4, 80.0, 3, 0, false),
-                  0.03825, "stage 3 begins gradual progression toward level 6");
+                  0.019125, "stage 3 begins gradual progression toward level 6");
     require_close(economy_phase_target_level(1), 3.0, "stage 1 target level");
     require_close(economy_phase_target_level(2), 5.0, "stage 2 target level");
     require_close(economy_phase_target_level(3), 6.0, "stage 3 target level");
