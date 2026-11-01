@@ -294,9 +294,9 @@ int main() {
         throw std::runtime_error("late-game surplus hoarding must be penalized more than opening-game saving");
     }
     require_close(phase_xp_progress_reward(54, 50, 6, 6, 0, 4, 80.0, 4, 1, false),
-                  0.04725, "stage 4 rewards safe XP progress toward level 7");
+                  0.023625, "stage 4 rewards safe XP progress toward level 7");
     require_close(phase_xp_progress_reward(103, 99, 7, 7, 0, 4, 80.0, 5, 0, false),
-                  0.045, "stage 5 rewards safe XP progress toward level 8");
+                  0.0225, "stage 5 rewards safe XP progress toward level 8");
     require_close(phase_xp_progress_reward(103, 99, 7, 7, 0, 4, 80.0, 6, 2, true),
                   0.0378, "FAST8 values XP while preserving priority for a useful shop offer");
     require_close(phase_xp_progress_reward(103, 99, 6, 6, 0, 4, 80.0, 4, 3, false),
@@ -306,6 +306,7 @@ int main() {
     if (!(phase_xp_progress_reward(40, 36, 7, 7, 0, 4, 25.0, 5, 1, false) > 0.0)) {
         throw std::runtime_error("critical HP may justify XP spending below the interest floor");
     }
+    require_close(economy_phase_target_level(1), 3.0, "stage 1 target level");
     require_close(economy_phase_target_level(2), 5.0, "stage 2 target level");
     require_close(economy_phase_target_level(3), 6.0, "stage 3 target level");
     require_close(economy_phase_target_level(4), 7.0, "stage 4 target level");
