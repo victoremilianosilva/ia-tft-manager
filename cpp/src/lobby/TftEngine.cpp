@@ -403,6 +403,20 @@ struct TFTEngine::Impl {
         };
         std::uint64_t action_serial{0};
         std::vector<RecentPurchase> recent_purchases;
+        struct ItemActionAudit {
+            std::string kind;
+            std::string item_id;
+            std::string first_component;
+            std::string second_component;
+            std::string target_uuid;
+            std::int32_t target_slot{-1};
+            bool target_on_board{false};
+            double fit{0.0};
+            double immediate_strength{0.0};
+            double role_alignment{0.0};
+            double assignment_reward{0.0};
+        };
+        ItemActionAudit last_item_action{};
 
         PlayerTransition step(
             TFTEngine::Impl& lobby,
@@ -3097,6 +3111,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         const auto& action = player_action.values;
 
         const auto type = action[0];
+        last_item_action = {};
 
         const auto shop_slot = action[1];
         actions_taken_this_round = std::min<std::uint32_t>(
@@ -3600,10 +3615,16 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             if (type == 7 && this->item_engine->has_pending_anvil()) {
                 // The option index is the only meaningful argument while an
                 // anvil is pending; target-head index zero is a masked sentinel.
-                if (!this->item_engine->choose_anvil_option(static_cast<std::size_t>(action[1])))
+                const auto* pending = this->item_engine->pending_anvil();
+                const auto option = static_cast<std::size_t>(action[1]);
+                if (!pending || option >= pending->options.size())
+                    throw std::invalid_argument("Opcao de bigorna fora das opcoes oferecidas.");
+                last_item_action.kind = pending->kind == items::ItemAnvilKind::COMPONENT
+                    ? "anvil_component_choice" : "anvil_completed_item_choice";
+                last_item_action.item_id = pending->options[option];
+                if (!this->item_engine->choose_anvil_option(option))
                     throw std::invalid_argument("Escolha de opcao da bigorna rejeitada.");
-                // Item value is learned through subsequent combat, not by
-                // forcing a handcrafted preference at the choice boundary.
+                // Anvil selection is a grant, not an equip or craft operation.
             } else {
                 const auto target_index = static_cast<std::size_t>(type == 7 ? action[2] : action[3]);
                 auto* target_unit = lobby.item_target_unit(player_id, target_index);
@@ -3613,10 +3634,16 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 command.operation = type == 7 ? items::ItemOperation::EQUIP_FROM_INVENTORY
                                                : items::ItemOperation::CRAFT_AND_EQUIP;
                 command.target_unit_uuid = target_unit->uuid;
+                last_item_action.kind = type == 7 ? "equip_inventory_item" : "craft_and_equip";
+                last_item_action.target_uuid = target_unit->uuid;
+                last_item_action.target_slot = static_cast<std::int32_t>(target_index < kBoardSlots
+                    ? target_index : target_index - kBoardSlots);
+                last_item_action.target_on_board = target_index < kBoardSlots;
                 if (type == 7) {
                     const auto slot = static_cast<std::size_t>(action[1]);
                     if (slot >= this->item_engine->inventory().size()) throw std::invalid_argument("Indice de item fora do inventario.");
                     command.item_id = this->item_engine->inventory()[slot];
+                    last_item_action.item_id = command.item_id;
                 } else {
                     const auto first = static_cast<std::size_t>(action[1]);
                     const auto second = static_cast<std::size_t>(action[2]);
@@ -3625,6 +3652,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         throw std::invalid_argument("Indice de tipo de componente fora do catalogo.");
                     command.first_component_id = lobby.item_catalog->components[first].first;
                     command.second_component_id = lobby.item_catalog->components[second].first;
+                    last_item_action.first_component = command.first_component_id;
+                    last_item_action.second_component = command.second_component_id;
                 }
                 const auto result = this->item_engine->apply_action(command, profiles);
                 if (!result.success) throw std::invalid_argument("Acao de item rejeitada: " + result.reason);
@@ -3668,6 +3697,12 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             item_assignment_reward +=
                                 reward_model::item_crafting_bonus(item_assignment_reward);
                         }
+                        last_item_action.item_id = item_definition->id;
+                        last_item_action.fit = this->item_engine->item_fit(
+                            item_definition->id, *target_profile);
+                        last_item_action.immediate_strength = immediate_strength;
+                        last_item_action.role_alignment = role_alignment;
+                        last_item_action.assignment_reward = item_assignment_reward;
                     }
                 }
                 lobby.sync_unit_items_from_engine(player_id, target_unit->uuid);
