@@ -115,13 +115,27 @@ def test_old_checkpoint_migrates_item_observation_and_neutral_candidate_heads():
 
     restored, _ = _policy_with_native_item_block()
     assert restored.load_compatible_state_dict(legacy_state)
-    old_global_input = old_policy.state_dict()["global_mlp.0.weight"].shape[1]
-    insertion = old_global_input - restored.candidate_observation_dim
+    old_global = old_policy.state_dict()["global_mlp.0.weight"]
+    old_global_input = old_global.shape[1]
+    insertion = (
+        old_global_input - restored.candidate_observation_dim
+        - restored.economic_context_dim
+    )
     added_columns = restored.item_state_observation_dim
     migrated_global = restored.state_dict()["global_mlp.0.weight"]
     assert torch.count_nonzero(
         migrated_global[:, insertion:insertion + added_columns]
     ) == 0
+    assert torch.equal(migrated_global[:, :insertion], old_global[:, :insertion])
+    assert torch.equal(
+        migrated_global[:, insertion + added_columns:
+                        insertion + added_columns + restored.economic_context_dim],
+        old_global[:, insertion:insertion + restored.economic_context_dim],
+    )
+    assert torch.equal(
+        migrated_global[:, insertion + added_columns + restored.economic_context_dim:],
+        old_global[:, insertion + restored.economic_context_dim:],
+    )
     for head in (
         restored.item_inventory_candidate_head,
         restored.item_component_candidate_head,
