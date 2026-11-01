@@ -3090,9 +3090,14 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         std::find(strategy_before.planned_unit_ids.begin(),
                             strategy_before.planned_unit_ids.end(), def->internal_id) !=
                                 strategy_before.planned_unit_ids.end();
+                    const int offer_stage =
+                        static_cast<int>(stage_for_round(lobby.round + 1));
+                    const bool early_flex_purchase =
+                        offer_stage <= 2 && def->cost <= 2 &&
+                        old_bench_count < 6 && candidate_comp_score >= -2.0;
                     buy_strategy_approved = should_buy_unit(candidate_board_impact, upgrade_value,
                         in_top_trait || in_planned_comp, old_bench_count,
-                        static_cast<int>(stage_for_round(lobby.round + 1)), def->cost);
+                        offer_stage, def->cost) || early_flex_purchase;
                     // A second matching copy is valuable future upgrade potential,
                     // but only reward it when it also fits the current comp.
                     const bool composition_fit =
@@ -3725,13 +3730,19 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     current_strategy, *definition, offer->star, lobby.trait_milestones,
                     new_board_count, economy.level,
                     static_cast<int>(stage_for_round(lobby.round + 1)));
+                const int offer_stage =
+                    static_cast<int>(stage_for_round(lobby.round + 1));
+                const bool early_flex_purchase =
+                    offer_stage <= 2 && definition->cost <= 2 &&
+                    new_bench_count < 6;
                 const bool strategy_approved = should_buy_unit(
                     board_impact, upgrade_value, in_top_trait || in_planned_comp,
-                    new_bench_count, static_cast<int>(stage_for_round(lobby.round + 1)),
-                    definition->cost);
-                // Match the actual BUY approval rule. Weak/merely plausible shop
-                // offers must not block surplus-to-XP conversion indefinitely.
-                if (strategy_approved || completes_upgrade || builds_pair)
+                    new_bench_count, offer_stage, definition->cost);
+                // Early low-cost units create options before the comp is known.
+                // Keep this bounded by cost and bench capacity so it cannot
+                // turn into indiscriminate shop clearing.
+                if (strategy_approved || early_flex_purchase ||
+                    completes_upgrade || builds_pair)
                     return true;
             }
             return false;
