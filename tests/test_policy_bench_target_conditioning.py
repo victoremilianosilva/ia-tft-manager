@@ -137,17 +137,23 @@ def test_legacy_global_encoder_migrates_five_derived_economic_features():
     policy, _ = _policy_and_observation()
     state = {key: value.detach().clone() for key, value in policy.state_dict().items()}
     current = state["global_mlp.0.weight"]
-    state["global_mlp.0.weight"] = current[:, :-5].clone()
+    insertion = current.shape[1] - 5 - policy.candidate_observation_dim
+    # Legacy checkpoints predate these five features, but retain the complete
+    # candidate tail. Remove the inserted feature block, not the final five
+    # columns (which belong to the candidate tail).
+    state["global_mlp.0.weight"] = torch.cat(
+        [current[:, :insertion], current[:, insertion + 5:]],
+        dim=1,
+    )
 
     restored = TFTPolicy(obs_dim=OBS_DIM, action_dims=ACTION_DIMS, hidden_size=64)
     assert restored.load_compatible_state_dict(state)
     migrated = restored.state_dict()["global_mlp.0.weight"]
-    insertion = current.shape[1] - 5 - restored.candidate_observation_dim
     assert torch.equal(migrated[:, :insertion], current[:, :insertion])
     assert torch.count_nonzero(migrated[:, insertion:insertion + 5]) == 0
     assert torch.equal(
         migrated[:, insertion + 5:],
-        current[:, insertion:],
+        current[:, insertion + 5:],
     )
 
 
