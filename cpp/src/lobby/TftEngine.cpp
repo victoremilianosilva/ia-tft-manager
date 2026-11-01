@@ -4776,7 +4776,27 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         if (source.item_engine) {
             target.item_components = source.item_engine->components();
             target.item_inventory = source.item_engine->inventory();
+            if (impl_->item_catalog) {
+                for (const auto& component : impl_->item_catalog->components)
+                    target.item_component_catalog.push_back(component.first);
+            }
+            if (const auto* pending = source.item_engine->pending_anvil()) {
+                target.pending_anvil = true;
+                target.pending_anvil_kind = static_cast<std::int32_t>(pending->kind);
+                target.pending_anvil_options = pending->options;
+            }
         }
+        target.last_item_action_kind = source.last_item_action.kind;
+        target.last_item_id = source.last_item_action.item_id;
+        target.last_item_first_component = source.last_item_action.first_component;
+        target.last_item_second_component = source.last_item_action.second_component;
+        target.last_item_target_uuid = source.last_item_action.target_uuid;
+        target.last_item_target_slot = source.last_item_action.target_slot;
+        target.last_item_target_on_board = source.last_item_action.target_on_board;
+        target.last_item_fit = source.last_item_action.fit;
+        target.last_item_immediate_strength = source.last_item_action.immediate_strength;
+        target.last_item_role_alignment = source.last_item_action.role_alignment;
+        target.last_item_assignment_reward = source.last_item_action.assignment_reward;
     }
     return snapshot;
 }
