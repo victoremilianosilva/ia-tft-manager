@@ -95,7 +95,7 @@ class Trainer:
 
     def __init__(
         self,
-        num_envs=4,
+        num_envs=None,
         use_subprocess=True,
         item_catalog_path=None,
         config=None,
@@ -158,7 +158,10 @@ class Trainer:
         #     × 8 jogadores
         #     = 32 agentes
         #
-        self.num_envs = num_envs
+        self.num_envs = self.config.num_lobbies if num_envs is None else int(num_envs)
+        if self.num_envs <= 0:
+            raise ValueError("num_envs/num_lobbies deve ser > 0.")
+        self.config.num_lobbies = self.num_envs
 
         self.use_subprocess = use_subprocess
 
@@ -850,10 +853,11 @@ class Trainer:
 
     def train(
         self,
-        total_updates=1000,
+        total_updates=None,
         rollout_steps=None
     ):
 
+        total_updates = self.config.total_updates if total_updates is None else int(total_updates)
         rollout_steps = self.config.rollout_steps if rollout_steps is None else int(rollout_steps)
         if rollout_steps <= 0:
             raise ValueError("rollout_steps deve ser > 0.")
@@ -1574,7 +1578,11 @@ class Trainer:
                 lr_used_for_update,
                 update,
             )
-            self.scheduler.step()
+            if int(ppo_metrics.get("optimizer_steps", 0)) > 0:
+                self.scheduler.step()
+                self.writer.add_scalar("training/scheduler_stepped", 1.0, update)
+            else:
+                self.writer.add_scalar("training/scheduler_stepped", 0.0, update)
 
             current_lrs = [float(group["lr"]) for group in self.optimizer.param_groups]
             current_lr = current_lrs[0]
@@ -1909,9 +1917,5 @@ if __name__ == "__main__":
     #
     # ================================================================
 
-    trainer = Trainer(
-        num_envs=4,
-        use_subprocess=True,
-    )
-
-    trainer.train(total_updates=280)
+    trainer = Trainer(use_subprocess=True)
+    trainer.train()
