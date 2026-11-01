@@ -415,6 +415,23 @@ struct AuditPlayerSnapshot {
     // loose components, completed items in the bag, and unit equipment.
     std::vector<std::string> item_components;
     std::vector<std::string> item_inventory;
+    std::vector<std::string> item_component_catalog;
+    bool pending_anvil{false};
+    std::int32_t pending_anvil_kind{-1};
+    std::vector<std::string> pending_anvil_options;
+    // Last item decision is carried by the post-action snapshot for exact
+    // Viewer attribution (normal equip/craft versus forced anvil selection).
+    std::string last_item_action_kind;
+    std::string last_item_id;
+    std::string last_item_first_component;
+    std::string last_item_second_component;
+    std::string last_item_target_uuid;
+    std::int32_t last_item_target_slot{-1};
+    bool last_item_target_on_board{false};
+    double last_item_fit{0.0};
+    double last_item_immediate_strength{0.0};
+    double last_item_role_alignment{0.0};
+    double last_item_assignment_reward{0.0};
     PlayerActionMasks masks{};
 };
 
