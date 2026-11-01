@@ -278,7 +278,8 @@ class PlayerJsonLogWriter:
             return {}
         kind = str(after_state.get("last_item_action_kind") or "")
         is_anvil = kind.startswith("anvil_")
-        target_slot = int(after_state.get("last_item_target_slot", -1) or -1)
+        target_value = after_state.get("last_item_target_slot", -1)
+        target_slot = int(target_value if target_value is not None else -1)
         target_on_board = bool(after_state.get("last_item_target_on_board", False))
         target_location = "board" if target_on_board else "bench"
         target_units = after_state.get(target_location, []) or []
@@ -419,7 +420,10 @@ class PlayerJsonLogWriter:
             "last_item_first_component": audit.get("last_item_first_component", ""),
             "last_item_second_component": audit.get("last_item_second_component", ""),
             "last_item_target_uuid": audit.get("last_item_target_uuid", ""),
-            "last_item_target_slot": int(audit.get("last_item_target_slot", -1) or -1),
+            "last_item_target_slot": int(
+                audit.get("last_item_target_slot", -1)
+                if audit.get("last_item_target_slot") is not None else -1
+            ),
             "last_item_target_on_board": bool(audit.get("last_item_target_on_board", False)),
             "last_item_fit": float(audit.get("last_item_fit", 0.0) or 0.0),
             "last_item_immediate_strength": float(audit.get("last_item_immediate_strength", 0.0) or 0.0),
