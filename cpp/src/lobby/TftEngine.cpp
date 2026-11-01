@@ -661,6 +661,16 @@ struct TFTEngine::Impl {
             const auto& combat = def->combat_profile;
             const auto strategy = player.strategy.empty() ? StrategyInfo{} : player.strategy.back();
             const double fit = unit_composition_score(strategy, *def, unit.star, trait_milestones);
+            std::vector<std::string> preferred_traits = strategy.core_traits;
+            if (!strategy.composition_direction.empty())
+                preferred_traits.push_back(strategy.composition_direction);
+            for (const auto& [trait, weight] : strategy.composition_focus_weights) {
+                if (weight > 0.1) preferred_traits.push_back(trait);
+            }
+            std::sort(preferred_traits.begin(), preferred_traits.end());
+            preferred_traits.erase(
+                std::unique(preferred_traits.begin(), preferred_traits.end()),
+                preferred_traits.end());
             profiles.push_back(items::UnitProfile{
                 unit.uuid, unit.star, std::clamp(combat.role, 0, 4),
                 frontline, backline,
@@ -670,7 +680,9 @@ struct TFTEngine::Impl {
                 combat.max_hp > 0.0 ? combat.max_hp : stats.max_hp,
                 combat.armor > 0.0 ? combat.armor : stats.armor,
                 combat.magic_resist > 0.0 ? combat.magic_resist : stats.magic_resist,
-                std::clamp(fit / 32.5, 0.0, 1.0)
+                std::clamp(fit / 32.5, 0.0, 1.0),
+                def->traits,
+                std::move(preferred_traits)
             });
         };
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
