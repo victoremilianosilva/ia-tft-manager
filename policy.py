@@ -930,6 +930,10 @@ class TFTPolicy(nn.Module):
     def evaluate_actions(self, obs, actions, masks):
         hidden = self.encode(obs)
         bench_candidate_features, shop_candidate_features = self._candidate_features(obs)
+        (
+            item_component_features, item_inventory_features, item_recipe_features,
+            item_target_features, item_anvil_pending,
+        ) = self._item_state_features(obs)
 
         # Type
         type_logits = self.type_head(hidden)
