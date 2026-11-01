@@ -3698,7 +3698,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         copies += star_copies(unit->star);
                 const bool completes_upgrade = copies == 2 && offer->star == 1;
                 const bool builds_pair = copies == 1 && offer->star == 1;
-                if (completes_upgrade || builds_pair || normalized_fit >= 0.30)
+                // Only a genuinely strong fit or concrete upgrade path should
+                // block surplus-to-XP conversion. A merely plausible shop offer
+                // must not keep the agent hoarding indefinitely.
+                if (completes_upgrade || builds_pair || normalized_fit >= 0.45)
                     return true;
             }
             return false;
