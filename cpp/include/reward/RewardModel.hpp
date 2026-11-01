@@ -574,7 +574,8 @@ inline double pass_opportunity_penalty(
         : (gold >= 40 ? 0.75 : (gold >= 30 ? 0.50 : 0.25));
     const double surplus = std::clamp(
         (static_cast<double>(gold) - 50.0) / 150.0, 0.0, 1.0);
-    const double phase_scale = stage >= 5 ? 1.15 : (stage >= 4 ? 1.0 : 0.85);
+    const double phase_scale = stage >= 5 ? 1.15
+        : (stage >= 4 ? 1.0 : (stage >= 3 ? 0.85 : 1.0));
     const double progressive_coefficient = stage >= 4 ? 0.55
         : (stage >= 3 ? 0.42 : 0.325);
     const double progressive_penalty = progressive_coefficient *
