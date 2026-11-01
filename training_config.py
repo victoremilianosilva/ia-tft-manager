@@ -1,6 +1,7 @@
 """Configuração central, validada e auditável do treinamento PPO."""
 from __future__ import annotations
 
+import math
 import os
 from dataclasses import asdict, dataclass, fields
 from typing import Any
@@ -35,6 +36,16 @@ class TrainingConfig:
         return asdict(self)
 
     def validate(self) -> None:
+        finite_fields = (
+            "learning_rate", "min_learning_rate", "adam_eps", "clip_coef",
+            "entropy_coef_initial", "entropy_coef_final", "entropy_decay_rate",
+            "vf_coef", "max_grad_norm", "gamma", "gae_lambda",
+        )
+        for name in finite_fields:
+            if not math.isfinite(float(getattr(self, name))):
+                raise ValueError(f"{name} deve ser finito.")
+        if self.target_kl is not None and not math.isfinite(float(self.target_kl)):
+            raise ValueError("target_kl deve ser finito ou None.")
         for name in (
             "learning_rate", "adam_eps", "lr_schedule_updates",
             "entropy_schedule_updates", "batch_size", "ppo_epochs", "rollout_steps",
