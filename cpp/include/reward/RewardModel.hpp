@@ -369,6 +369,54 @@ inline double xp_progress_reward(
     return std::clamp(value * progress, 0.0, 0.060);
 }
 
+// Phase-aware XP progress: the expected level rises with the match. This
+// provides a learnable signal even when a purchase adds XP without leveling,
+// while preserving the 50-gold interest floor and the SLOWROLL three-star plan.
+inline int economy_phase_target_level(int stage) noexcept {
+    switch (stage) {
+        case 1: return 3;
+        case 2: return 5;
+        case 3: return 6;
+        case 4: return 7;
+        case 5: return 8;
+        default: return 9;
+    }
+}
+
+inline double phase_xp_progress_reward(
+    int gold_before, int gold_after, int old_level, int new_level,
+    int old_xp, int new_xp, double hp, int stage, int active_strategy,
+    bool useful_purchase_available
+) noexcept {
+    if (active_strategy == 3 || stage < 3 || gold_after >= gold_before ||
+        new_level < old_level || (new_level == old_level && new_xp <= old_xp))
+        return 0.0;
+    const int target_level = economy_phase_target_level(stage);
+    if (old_level >= target_level || new_level > target_level)
+        return 0.0;
+
+    // Healthy players should generally spend only from surplus. Under severe
+    // HP pressure, allow controlled spending below 50 rather than dying rich.
+    const bool preserves_interest = gold_after >= 50;
+    const bool emergency = hp <= 30.0;
+    if (!preserves_interest && !emergency)
+        return 0.0;
+
+    const double deficit = std::clamp(
+        static_cast<double>(target_level - old_level) / 2.0, 0.5, 1.0);
+    const double health_scale = emergency ? 1.15
+        : (hp <= 45.0 ? 1.05 : 1.0);
+    const double shop_priority_scale = useful_purchase_available ? 0.70 : 1.0;
+    double strategy_scale = 1.0;
+    if (active_strategy == 2) strategy_scale = 1.20; // FAST8
+    else if (active_strategy == 1) strategy_scale = 1.05; // STABILIZE
+    else if (active_strategy == 4) strategy_scale = 1.15; // ALL_IN
+    else if (active_strategy == 6) strategy_scale = 0.80; // LOSS_STREAK
+    const double level_progress = new_level > old_level ? 1.0 : 0.85;
+    return std::clamp(0.045 * deficit * health_scale *
+        shop_priority_scale * strategy_scale * level_progress, 0.0, 0.075);
+}
+
 // Small additional signal for useful unit acquisitions beyond the early game.
 // Requires real composition fit or upgrade progress, available bench space and
 // enough remaining gold, so this cannot reward arbitrary shop-clearing.
@@ -516,12 +564,21 @@ inline double pass_opportunity_penalty(
         (static_cast<double>(stage) - 2.0) / 4.0, 0.0, 1.0);
     const double baseline_urgency = gold >= 50 ? 0.35 : 0.0;
     const double urgency = std::max({health_urgency, stage_urgency, baseline_urgency});
-    const double opportunity_factor = useful_purchase_available ? 1.0 : 0.35;
+    // In the opening, preserving interest remains a valid plan. From stage 3
+    // onward, a large reserve with no useful shop offer must create a meaningful
+    // opportunity cost; otherwise PASS wins against small XP progress signals.
+    const double opportunity_factor = useful_purchase_available ? 1.0
+        : (stage >= 4 && gold >= 50 ? 0.80
+        : (stage >= 3 && gold >= 50 ? 0.55 : 0.35));
     const double liquidity = gold >= 50 ? 1.0
         : (gold >= 40 ? 0.75 : (gold >= 30 ? 0.50 : 0.25));
     const double surplus = std::clamp(
         (static_cast<double>(gold) - 50.0) / 150.0, 0.0, 1.0);
-    const double progressive_penalty = 0.325 * std::pow(surplus, 1.20);
+    const double phase_scale = stage >= 5 ? 1.15 : (stage >= 4 ? 1.0 : 0.85);
+    const double progressive_coefficient = stage >= 4 ? 0.55
+        : (stage >= 3 ? 0.42 : 0.325);
+    const double progressive_penalty = progressive_coefficient *
+        phase_scale * std::pow(surplus, 1.20);
     const double useful_offer_penalty = useful_purchase_available
         ? 0.12 * liquidity * urgency : 0.0;
     return -opportunity_factor * (progressive_penalty + useful_offer_penalty);
