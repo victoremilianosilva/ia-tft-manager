@@ -79,8 +79,12 @@ int main(int argc, char** argv) {
             }
         }
         const std::size_t legacy_observation_dim = 248 + trait_order.size();
-        const std::size_t item_state_observation_dim =
+        const std::size_t item_global_observation_dim =
             10 + 9 * 17 + 100 * 17 + (tft::kBoardSlots + tft::kBenchSlots) * 18;
+        const std::size_t item_compatibility_observation_dim =
+            (9 + 100) * (tft::kBoardSlots + tft::kBenchSlots);
+        const std::size_t item_state_observation_dim =
+            item_global_observation_dim + item_compatibility_observation_dim;
         const std::size_t expected_observation_dim =
             legacy_observation_dim + 2 * trait_order.size() +
             tft::kBoardSlots + tft::kBenchSlots + tft::kShopSlots +
@@ -840,6 +844,14 @@ int main(int argc, char** argv) {
                     "Atributos dos resultados de receitas nao chegaram a observacao PPO.");
             require(item_observation[target_feature_offset] == 1.0f,
                     "Perfil da unidade-alvo nao chegou a observacao PPO.");
+            const auto inventory_fit_offset =
+                target_feature_offset + (tft::kBoardSlots + tft::kBenchSlots) * 18;
+            const auto recipe_fit_offset = inventory_fit_offset +
+                9 * (tft::kBoardSlots + tft::kBenchSlots);
+            require(item_observation[inventory_fit_offset] > 0.0f,
+                    "Compatibilidade do item da bag com o alvo nao chegou a observacao PPO.");
+            require(item_observation[recipe_fit_offset + 1] > 0.0f,
+                    "Compatibilidade do item craftavel com o alvo nao chegou a observacao PPO.");
             auto masks = item_action_engine.get_action_masks();
             require(masks[0].type_mask[8] == 1,
                     "CRAFT_AND_EQUIP deveria estar habilitada com receita e alvo validos.");
