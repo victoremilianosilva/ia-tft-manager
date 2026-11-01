@@ -231,6 +231,7 @@ def test_checkpoint_without_derived_economic_context_migrates_both_insertions():
         for key, value in old_policy.state_dict().items()
         if not key.startswith((
             "item_inventory_candidate_head.",
+            "item_anvil_candidate_head.",
             "item_component_candidate_head.",
             "item_target_candidate_head.",
         ))
