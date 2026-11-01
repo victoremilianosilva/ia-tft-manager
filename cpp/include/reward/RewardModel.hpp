@@ -446,7 +446,8 @@ inline double early_purchase_reward(
     // In stages 1-2, a modestly compatible acquisition has option value
     // before the final composition is known. Avoid arbitrary clutter: require
     // a small fit signal unless it forms a real pair or completes an upgrade.
-    if (!completes_upgrade && !builds_pair && fit < 0.08 && cost > 2)
+    if (!completes_upgrade && !builds_pair && fit < 0.08 &&
+        (cost > 2 || bench_count >= 7))
         return 0.0;
 
     const double capacity = bench_count <= 3 ? 1.0
