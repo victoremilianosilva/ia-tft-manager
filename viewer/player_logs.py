@@ -1241,7 +1241,10 @@ class PlayerJsonLogWriter:
             else:
                 economic_diagnostics["cost_source"] = "gold_delta_fallback"
             primary_data = {
-                "action": action, "action_name": ACTION_NAMES.get(action_type, "UNKNOWN"),
+                "action": action, "action_name": (
+                    "ANVIL_CHOICE" if item_audit.get("decision", {}).get("is_anvil_choice")
+                    else ACTION_NAMES.get(action_type, "UNKNOWN")
+                ),
                 "reward": reward,
                 "action_reward": action_rewards[player_id] if isinstance(action_rewards, list) and player_id < len(action_rewards) else None,
                 "combat_reward": combat_rewards[player_id] if isinstance(combat_rewards, list) and player_id < len(combat_rewards) else None,
