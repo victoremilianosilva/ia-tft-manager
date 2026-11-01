@@ -116,21 +116,19 @@ inline double strategy_action_reward(
     bool has_composition_target) noexcept {
     double reward = 0.0;
     switch (strategy_id) {
-        case 0: // ECON: preserve interest; never treat XP as the default use of gold.
-            if (action_type == 1) reward -= 0.05;
-            if (new_gold >= 50 && old_gold < 50) reward += 0.04;
-            if (old_gold >= 50 && new_gold >= 50 &&
-                action_type == 0 && useful_purchase) reward += 0.03;
-            if (new_gold < 50 && new_gold < old_gold && hp > 40.0 &&
-                !has_composition_target) {
-                // Keep the 50-gold interest floor even when the action starts
-                // above it. Useful unit purchases remain exempt.
-                if (action_type == 2) reward -= 0.01;
+        case 0: // ECON: protect early interest, but convert late reserves into strength.
+            if (action_type == 1) reward -= 0.08;
+            if (new_gold >= 50 && old_gold < 50 && stage <= 2) reward += 0.04;
+            if (old_gold >= 50 && action_type == 0 && useful_purchase)
+                reward += 0.04;
+            if (stage <= 2 && new_gold < 50 && new_gold < old_gold &&
+                hp > 40.0 && !has_composition_target) {
+                if (action_type == 2) reward -= 0.015;
                 else if (action_type == 0 && !useful_purchase) reward -= 0.06;
             }
             break;
         case 1: // STABILIZE: favor playable-board upgrades over routine leveling.
-            if (action_type == 1) reward -= 0.05;
+            if (action_type == 1) reward -= 0.08;
             if (action_type == 0 && useful_purchase) reward += 0.07;
             if (action_type == 2 && leveled)
                 reward += 0.95 * (hp <= 30.0 ? 0.07 : (old_gold >= 50 ? 0.05 : 0.015));
@@ -141,7 +139,7 @@ inline double strategy_action_reward(
             if (action_type == 2 && leveled)
                 reward += hp <= 30.0 ? 0.11 : (old_gold >= 50 ? 0.08 : 0.03);
             // FAST8 advances through XP and useful purchases, not reroll.
-            if (action_type == 1) reward -= 0.05;
+            if (action_type == 1) reward -= 0.08;
             break;
         case 3: // SLOWROLL: reward improved rolls without blocking useful XP progress.
             if (action_type == 1) reward += reroll_improved ? 0.12 : -0.025;
@@ -152,17 +150,17 @@ inline double strategy_action_reward(
                 hp > 50.0 && old_gold < 50) reward -= 0.02;
             break;
         case 4: // ALL_IN: useful immediate strength over passive saving.
-            if (action_type == 1) reward -= 0.05;
+            if (action_type == 1) reward -= 0.08;
             if (action_type == 0 && useful_purchase) reward += 0.06;
             if (hp <= 15.0 && action_type == 6) reward -= 0.05;
             break;
         case 5: // WINSTREAK: preserve strength, avoid wasteful economy actions.
-            if (action_type == 1) reward -= 0.05;
+            if (action_type == 1) reward -= 0.08;
             if (action_type == 0 && useful_purchase) reward += 0.05;
             if (action_type == 2 && leveled) reward += 0.04;
             break;
         case 6: // LOSS_STREAK: preserve the streak only while purchases are not useful.
-            if (action_type == 1) reward -= 0.05;
+            if (action_type == 1) reward -= 0.08;
             if (hp >= 50.0 && !useful_purchase &&
                 (action_type == 0 || action_type == 1 || action_type == 2))
                 reward -= 0.04;
@@ -198,7 +196,7 @@ inline double purchase_quality(double fit_delta, bool completes_upgrade) noexcep
 inline double purchase_pair_quality(double fit_score) noexcept {
     // A pair is real upgrade progress even before the third copy appears.
     // Keep the baseline meaningful, while favoring units that fit the plan.
-    return 0.32 + 0.14 * std::tanh(std::max(0.0, fit_score) / 5.0);
+    return 0.36 + 0.16 * std::tanh(std::max(0.0, fit_score) / 5.0);
 }
 
 // Reward timely, high-value spending when liquidity is already healthy and
@@ -372,15 +370,34 @@ inline double xp_progress_reward(
 // Phase-aware XP progress: the expected level rises with the match. This
 // provides a learnable signal even when a purchase adds XP without leveling,
 // while preserving the 50-gold interest floor and the SLOWROLL three-star plan.
-inline int economy_phase_target_level(int stage) noexcept {
+inline int economy_phase_target_level(int stage, int active_strategy = -1) noexcept {
+    if (active_strategy == 2) return 8; // FAST8 is always anchored to level 8.
+    if (active_strategy == 3) return 6; // SLOWROLL keeps its level-6 roll window.
     switch (stage) {
         case 1: return 3;
         case 2: return 5;
-        case 3: return 6;
-        case 4: return 7;
-        case 5: return 8;
+        case 3: return 7;
+        case 4: return 8;
+        case 5: return 9;
         default: return 9;
     }
+}
+
+// The interest cap is a reference, not a hard reserve. As the match advances,
+// the amount kept liquid falls so the policy cannot finish rich and under-levelled.
+inline int economy_phase_minimum_reserve(
+    int stage, double hp, int active_strategy
+) noexcept {
+    if (hp <= 20.0 || active_strategy == 4) return 0;
+    if (hp <= 30.0) return 5;
+    if (active_strategy == 3) {
+        const int slowroll_reserve = stage <= 3 ? 30 : (stage <= 4 ? 25 : 15);
+        return hp <= 40.0 ? slowroll_reserve - 5 : slowroll_reserve;
+    }
+    int reserve = stage <= 2 ? 30
+        : (stage == 3 ? 20 : (stage == 4 ? 15 : (stage == 5 ? 10 : 5)));
+    if (hp <= 40.0) reserve = std::max(0, reserve - 5);
+    return reserve;
 }
 
 inline double phase_xp_progress_reward(
@@ -391,30 +408,34 @@ inline double phase_xp_progress_reward(
     if (active_strategy == 3 || stage < 3 || gold_after >= gold_before ||
         new_level < old_level || (new_level == old_level && new_xp <= old_xp))
         return 0.0;
-    const int target_level = economy_phase_target_level(stage);
+    const int target_level = economy_phase_target_level(stage, active_strategy);
     if (old_level >= target_level || new_level > target_level)
         return 0.0;
 
-    // Healthy players should generally spend only from surplus. Under severe
-    // HP pressure, allow controlled spending below 50 rather than dying rich.
-    const bool preserves_interest = gold_after >= 50;
-    const bool emergency = hp <= 30.0;
-    if (!preserves_interest && !emergency)
+    const int reserve = economy_phase_minimum_reserve(stage, hp, active_strategy);
+    if (gold_after < reserve)
         return 0.0;
 
     const double deficit = std::clamp(
-        static_cast<double>(target_level - old_level) / 2.0, 0.5, 1.0);
-    const double health_scale = emergency ? 1.15
-        : (hp <= 45.0 ? 1.05 : 1.0);
-    const double shop_priority_scale = useful_purchase_available ? 0.70 : 1.0;
+        static_cast<double>(target_level - old_level) / 2.0, 0.5, 1.25);
+    const double stage_scale = stage >= 6 ? 1.10
+        : (stage >= 5 ? 1.05 : (stage >= 4 ? 1.0 : 0.85));
+    const double health_scale = hp <= 25.0 ? 1.20
+        : (hp <= 40.0 ? 1.10 : (hp <= 60.0 ? 1.0 : 0.95));
+    const double liquidity_scale = gold_after >= 50 ? 1.0 : 0.90;
+    // A shop offer may deserve priority, but it must not suppress XP forever.
+    const double shop_priority_scale = useful_purchase_available ? 0.85 : 1.0;
     double strategy_scale = 1.0;
-    if (active_strategy == 2) strategy_scale = 1.20; // FAST8
-    else if (active_strategy == 1) strategy_scale = 1.05; // STABILIZE
+    if (active_strategy == 2) strategy_scale = 1.35; // FAST8
+    else if (active_strategy == 1) strategy_scale = 1.10; // STABILIZE
     else if (active_strategy == 4) strategy_scale = 1.15; // ALL_IN
-    else if (active_strategy == 6) strategy_scale = 0.80; // LOSS_STREAK
-    const double level_progress = new_level > old_level ? 1.0 : 0.85;
-    return std::clamp(0.045 * deficit * health_scale *
-        shop_priority_scale * strategy_scale * level_progress, 0.0, 0.075);
+    else if (active_strategy == 5) strategy_scale = 1.05; // WINSTREAK
+    else if (active_strategy == 6) strategy_scale = 0.95; // LOSS_STREAK
+    const double progress = new_level > old_level ? 1.0
+        : std::clamp(static_cast<double>(new_xp - old_xp) / 4.0, 0.0, 1.0);
+    return std::clamp(0.12 * deficit * stage_scale * health_scale *
+        liquidity_scale * shop_priority_scale * strategy_scale * progress,
+        0.0, 0.20);
 }
 
 // Small additional signal for useful unit acquisitions beyond the early game.
@@ -428,7 +449,8 @@ inline double unit_purchase_timing_reward(
     double normalized_fit,
     double hp,
     bool completes_upgrade,
-    bool builds_pair
+    bool builds_pair,
+    int active_strategy = 0
 ) noexcept {
     if (stage < 3 || cost <= 0 || gold_before < cost ||
         bench_count >= 7) return 0.0;
@@ -436,43 +458,30 @@ inline double unit_purchase_timing_reward(
     const double fit = std::clamp(normalized_fit, 0.0, 1.0);
     if (!completes_upgrade && !builds_pair && fit < 0.35) return 0.0;
 
-    // Keep interest in a healthy early game, but permit good acquisitions when
-    // low HP or a late stage makes immediate board strength more valuable.
     const int gold_after = gold_before - cost;
-    const int normal_reserve = (hp <= 35.0 || stage >= 6) ? 5
-        : (stage >= 4 || hp <= 50.0 ? 10 : 20);
-    // Above the interest cap, surplus can be converted into useful units.
-    const bool high_value_purchase = completes_upgrade || builds_pair;
-    const int reserve = gold_before > 50
-        ? (high_value_purchase ? 40 : 50) : normal_reserve;
+    const int reserve = economy_phase_minimum_reserve(stage, hp, active_strategy);
     if (gold_after < reserve) return 0.0;
 
     const double liquidity = gold_before >= 50 ? 1.0
-        : (gold_before >= 40 ? 0.75
-        : (gold_before >= 30 ? 0.50 : (gold_before >= 20 ? 0.25 : 0.0)));
-    const double gold_urgency = gold_before >= 50
-        ? std::clamp(0.65 + (static_cast<double>(gold_before) - 50.0) / 100.0,
-                     0.65, 1.0)
-        : (gold_before >= 40 ? 0.35 : (gold_before >= 30 ? 0.15 : 0.0));
+        : (gold_before >= 30 ? 0.80 : 0.65);
+    const double surplus = std::clamp(
+        (static_cast<double>(gold_before) - 50.0) / 100.0, 0.0, 1.0);
+    const double stage_urgency = std::clamp(
+        (static_cast<double>(stage) - 2.0) / 4.0, 0.0, 1.0);
     const double health_urgency = std::clamp((50.0 - hp) / 50.0, 0.0, 1.0);
-    const double raw_stage_urgency = std::clamp(
-        (static_cast<double>(stage) - 3.0) / 4.0, 0.0, 1.0);
-    // Stage alone must not encourage spending below 30 gold when health is safe.
-    const double stage_urgency =
-        (gold_before >= 30 || hp <= 50.0) ? raw_stage_urgency : 0.0;
-    const double urgency = std::max({gold_urgency, health_urgency, stage_urgency});
-    if (liquidity <= 0.0 || urgency <= 0.0) return 0.0;
+    const double urgency = std::max({stage_urgency, health_urgency,
+                                     gold_before >= 50 ? 0.75 : 0.0});
+    if (urgency <= 0.0) return 0.0;
 
-    // Pair/upgrade progress is useful even when current comp fit is imperfect.
     const double quality = (completes_upgrade || builds_pair)
-        ? 1.0 : (0.55 + 0.45 * fit);
+        ? 1.0 : (0.45 + 0.55 * fit);
     const double bench_capacity = bench_count <= 3 ? 1.0
         : (bench_count <= 5 ? 0.75 : 0.40);
-    const double surplus_spending = std::clamp(
-        (static_cast<double>(gold_before) - 50.0) / 100.0, 0.0, 1.0);
-    return std::min(0.20,
-        1.10 * (0.12 * liquidity * urgency + 0.08 * surplus_spending) *
-        quality * bench_capacity);
+    const double strategy_scale = active_strategy == 2 ? 1.10
+        : (active_strategy == 1 || active_strategy == 4 ? 1.05 : 1.0);
+    return std::min(0.24,
+        (0.12 * liquidity * urgency + 0.10 * surplus) *
+        quality * bench_capacity * strategy_scale);
 }
 
 // Early-game acquisition shaping: prefer filling useful pairs and building a
@@ -558,31 +567,28 @@ inline double pass_opportunity_penalty(
     int stage,
     bool useful_purchase_available
 ) noexcept {
-    if (gold < 20) return 0.0;
-    const double health_urgency = std::clamp((50.0 - hp) / 50.0, 0.0, 1.0);
-    const double stage_urgency = std::clamp(
-        (static_cast<double>(stage) - 2.0) / 4.0, 0.0, 1.0);
-    const double baseline_urgency = gold >= 50 ? 0.35 : 0.0;
-    const double urgency = std::max({health_urgency, stage_urgency, baseline_urgency});
-    // In the opening, preserving interest remains a valid plan. From stage 3
-    // onward, a large reserve with no useful shop offer must create a meaningful
-    // opportunity cost; otherwise PASS wins against small XP progress signals.
-    const double opportunity_factor = useful_purchase_available ? 1.0
-        : (stage >= 4 && gold >= 50 ? 0.80
-        : (stage >= 3 && gold >= 50 ? 0.55 : 0.35));
-    const double liquidity = gold >= 50 ? 1.0
-        : (gold >= 40 ? 0.75 : (gold >= 30 ? 0.50 : 0.25));
+    if (gold < 15) return 0.0;
+
+    // Strongly discourage sitting on a large reserve from stage 3 onward.
+    // The curve accelerates with surplus so 100+ gold is clearly undesirable
+    // when the player still needs XP, upgrades or a stronger board.
     const double surplus = std::clamp(
-        (static_cast<double>(gold) - 50.0) / 150.0, 0.0, 1.0);
-    const double phase_scale = stage >= 5 ? 1.15
-        : (stage >= 4 ? 1.0 : (stage >= 3 ? 0.85 : 1.0));
-    const double progressive_coefficient = stage >= 4 ? 0.55
-        : (stage >= 3 ? 0.42 : 0.325);
-    const double progressive_penalty = progressive_coefficient *
-        phase_scale * std::pow(surplus, 1.20);
-    const double useful_offer_penalty = useful_purchase_available
-        ? 0.12 * liquidity * urgency : 0.0;
-    return -opportunity_factor * (progressive_penalty + useful_offer_penalty);
+        (static_cast<double>(gold) - 50.0) / 100.0, 0.0, 2.0);
+    const double stage_scale = stage <= 2 ? 0.25
+        : (stage == 3 ? 0.70 : (stage == 4 ? 1.0
+        : (stage == 5 ? 1.15 : 1.30)));
+    const double surplus_pressure = gold >= 50
+        ? 0.10 + 0.22 * std::pow(surplus, 1.15)
+        : 0.06 * std::clamp(static_cast<double>(gold - 15) / 35.0, 0.0, 1.0);
+    const double useful_offer_pressure = useful_purchase_available
+        ? (gold >= 30 ? 0.18 : 0.10) : 0.0;
+    const double health_pressure =
+        std::clamp((45.0 - hp) / 45.0, 0.0, 1.0) *
+        std::clamp(static_cast<double>(gold - 10) / 30.0, 0.0, 1.0) * 0.12;
+
+    return -std::clamp(
+        stage_scale * (surplus_pressure + useful_offer_pressure + health_pressure),
+        0.0, 0.85);
 }
 
 // A low-fit purchase sold almost immediately is usually a wasted buy.
@@ -609,7 +615,7 @@ inline bool should_penalize_reversed_purchase(
 }
 
 inline double reversed_purchase_penalty() noexcept {
-    return -0.24;
+    return -0.30;
 }
 
 inline double reversed_sequence_adjustment(
@@ -642,10 +648,10 @@ inline double sale_quality(double fit_score, bool core_unit,
     const double fit = std::clamp(fit_score, 0.0, 1.0);
     // Sale proceeds are already represented by gold_change_reward. Protect
     // core/upgrade copies unless the same action produces a measurable board gain.
-    return 0.015 - 0.20 * fit -
-        (core_unit && !compensated_by_board_gain ? 0.28 : 0.0) -
-        (protects_upgrade && !compensated_by_board_gain ? 0.30 : 0.0) +
-        (frees_bench_space ? 0.035 : 0.0);
+    return 0.015 - 0.24 * fit -
+        (core_unit && !compensated_by_board_gain ? 0.34 : 0.0) -
+        (protects_upgrade && !compensated_by_board_gain ? 0.36 : 0.0) +
+        (frees_bench_space ? 0.06 : 0.0);
 }
 
 // Shared no-progress penalty for both board repositioning and bench-to-board
