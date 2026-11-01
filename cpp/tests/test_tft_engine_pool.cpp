@@ -850,7 +850,7 @@ int main(int argc, char** argv) {
                 9 * (tft::kBoardSlots + tft::kBenchSlots);
             require(item_observation[inventory_fit_offset] > 0.0f,
                     "Compatibilidade do item da bag com o alvo nao chegou a observacao PPO.");
-            require(item_observation[recipe_fit_offset + 1] > 0.0f,
+            require(item_observation[recipe_fit_offset + 37] > 0.0f,
                     "Compatibilidade do item craftavel com o alvo nao chegou a observacao PPO.");
             auto masks = item_action_engine.get_action_masks();
             require(masks[0].type_mask[8] == 1,
