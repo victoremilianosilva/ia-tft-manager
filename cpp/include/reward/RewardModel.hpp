@@ -316,8 +316,11 @@ inline double surplus_xp_spending_reward(
         return 0.0;
     const double surplus = std::clamp(
         (static_cast<double>(gold_before) - 50.0) / 50.0, 0.0, 1.0);
+    // A meaningful, repeatable signal is required for the policy to learn that
+    // surplus can become level progress even before the purchase levels up.
+    // The 50-gold floor is still mandatory and SLOWROLL remains excluded.
     return xp_strategy_reward_scale(active_strategy) *
-        std::min(0.035, 0.020 + 0.015 * surplus);
+        std::min(0.065, 0.045 + 0.020 * surplus);
 }
 
  // Progress reward for XP that does not immediately cross a level boundary.
