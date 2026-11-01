@@ -30,9 +30,13 @@ class TFTPolicy(nn.Module):
         self.num_cell_features = 5  # [cost/5, star/3, impact, comp_score, role]
         self.pre_board_dim = 22     # Tamanho fixo do início: 10 do Core + 12 de Strategy
         self.board_flat_dim = 4 * 7 * self.num_cell_features  # 140
-        
-        # O contexto global passa a ser tudo que NÃO é o tabuleiro plano
-        self.global_features_dim = obs_dim - self.board_flat_dim
+        self.economic_context_dim = 5
+
+        # Derive explicit phase/level/reserve features from native core fields.
+        # They are inserted before the candidate tail for checkpoint migration.
+        self.global_features_dim = (
+            obs_dim - self.board_flat_dim + self.economic_context_dim
+        )
 
         # Encoder Convolucional (Percepção Espacial Geométrica)
         self.board_cnn = nn.Sequential(
@@ -199,10 +203,16 @@ class TFTPolicy(nn.Module):
         # Extrai a seção geométrica do tabuleiro usando o deslocamento inicial fixo
         board_part = obs[:, self.pre_board_dim : self.pre_board_dim + self.board_flat_dim]
 
-        # Isola e concatena todo o resto (o início do estado + a cauda dinâmica pós-tabuleiro)
+        # Keep candidate records at the tail; the compatible-checkpoint loader
+        # inserts the five derived economic features immediately before them.
         pre_part = obs[:, :self.pre_board_dim]
         post_part = obs[:, self.pre_board_dim + self.board_flat_dim :]
-        global_part = torch.cat([pre_part, post_part], dim=-1)
+        candidate_tail = post_part[:, -self.candidate_observation_dim:]
+        middle_part = post_part[:, :-self.candidate_observation_dim]
+        economic_context = self._economic_context_features(obs)
+        global_part = torch.cat(
+            [pre_part, middle_part, economic_context, candidate_tail], dim=-1
+        )
 
         # Transforma o vetor plano em uma imagem estruturada (Batch, Features, Rows, Cols) -> (B, 5, 4, 7)
         board_2d = board_part.view(-1, self.num_cell_features, 4, 7)
@@ -214,6 +224,72 @@ class TFTPolicy(nn.Module):
         # Fusão latente
         combined = torch.cat([cnn_features, global_features], dim=-1)
         return self.fusion(combined)
+
+    def _economic_context_features(self, obs):
+        """Expose phase target/reserve context explicitly to the PPO encoder.
+
+        The native observation already contains the source fields. Deriving these
+        features here keeps the engine contract stable and ensures action sampling,
+        value estimation and PPO replay all see exactly the same deterministic data.
+        """
+        gold = (obs[:, 1] * 50.0).clamp(min=0.0)
+        hp = (obs[:, 0] * 100.0).clamp(0.0, 100.0)
+        level = (obs[:, 2] * 9.0).clamp(1.0, 10.0)
+
+        round_fraction = obs[:, 6].clamp(0.0, 0.999)
+        round_number = (10.0 * round_fraction / (1.0 - round_fraction)).clamp(1.0, 42.0)
+        stage = torch.where(
+            round_number <= 4.0,
+            torch.ones_like(round_number),
+            2.0 + torch.floor((round_number - 5.0) / 7.0),
+        ).clamp(1.0, 7.0)
+
+        # Core strategy one-hot occupies [10:17], matching the C++ observation.
+        strategy = obs[:, 10:17].argmax(dim=-1)
+        target_level = torch.where(
+            stage <= 1.0, 3.0,
+            torch.where(stage <= 2.0, 5.0,
+                torch.where(stage <= 3.0, 7.0,
+                    torch.where(stage <= 4.0, 8.0, 9.0))),
+        )
+        target_level = torch.where(strategy == 2, 8.0, target_level)  # FAST8
+        target_level = torch.where(strategy == 3, 6.0, target_level)  # SLOWROLL
+
+        reserve = torch.where(
+            stage <= 2.0, 30.0,
+            torch.where(stage <= 3.0, 20.0,
+                torch.where(stage <= 4.0, 15.0,
+                    torch.where(stage <= 5.0, 10.0, 5.0))),
+        )
+        slowroll_reserve = torch.where(
+            stage <= 3.0, 30.0,
+            torch.where(stage <= 4.0, 25.0, 15.0),
+        )
+        reserve = torch.where(strategy == 3, slowroll_reserve, reserve)
+        reserve = torch.where(hp <= 30.0, 5.0, reserve)
+        reserve = torch.where((hp <= 20.0) | (strategy == 4), 0.0, reserve)
+        reserve = torch.where(
+            (hp <= 40.0) & (hp > 20.0) & (strategy != 4),
+            (reserve - 5.0).clamp(min=0.0),
+            reserve,
+        )
+
+        level_deficit = (target_level - level).clamp(0.0, 8.0)
+        spendable_gold = (gold - reserve).clamp(0.0, 200.0)
+        phase_pressure = (
+            ((stage - 2.0) / 4.0).clamp(0.0, 1.0)
+            * (level_deficit / 3.0).clamp(0.0, 1.0)
+        )
+        return torch.stack(
+            [
+                target_level / 10.0,
+                level_deficit / 8.0,
+                reserve / 50.0,
+                spendable_gold / 200.0,
+                phase_pressure,
+            ],
+            dim=-1,
+        )
 
     def _candidate_features(self, obs):
         """Extract slot-aligned strategic features appended by the native C++ engine."""
