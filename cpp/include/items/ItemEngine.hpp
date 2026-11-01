@@ -349,8 +349,8 @@ public:
         if (unit.role == 1 || unit.role == 4 || unit.backline) role_fit += item->carry_weight;
         if (unit.role == 2) role_fit += item->support_weight;
         if (unit.role == 3) role_fit += 0.5 * (item->tank_weight + item->carry_weight);
-        // A trait emblem has strategic value even when its numeric stats are
-        // zero; scale it by composition fit without forcing a particular trait.
+        // A trait emblem receives meaningful value only when it advances the
+        // selected composition; an already-native trait has little marginal value.
         if (!item->grants_trait.empty()) {
             const auto normalize_trait_key = [](const std::string& value) {
                 std::string normalized;
