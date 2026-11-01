@@ -3686,22 +3686,52 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 if (!offer) continue;
                 const auto* definition = lobby.catalog->find_by_id(offer->champion_internal_id);
                 if (!definition || economy.gold < definition->cost) continue;
-                const double fit = unit_composition_score(
-                    current_strategy, *definition, offer->star, lobby.trait_milestones);
-                const double normalized_fit = std::clamp(fit / 32.5, 0.0, 1.0);
-                int copies = 0;
+                int same_star_copies = 0;
                 for (const auto& unit : this->board)
-                    if (unit && unit->champion_internal_id == offer->champion_internal_id)
-                        copies += star_copies(unit->star);
+                    if (unit && unit->champion_internal_id == offer->champion_internal_id &&
+                        unit->star == offer->star) ++same_star_copies;
                 for (const auto& unit : this->bench)
-                    if (unit && unit->champion_internal_id == offer->champion_internal_id)
-                        copies += star_copies(unit->star);
-                const bool completes_upgrade = copies == 2 && offer->star == 1;
-                const bool builds_pair = copies == 1 && offer->star == 1;
-                // Only a genuinely strong fit or concrete upgrade path should
-                // block surplus-to-XP conversion. A merely plausible shop offer
-                // must not keep the agent hoarding indefinitely.
-                if (completes_upgrade || builds_pair || normalized_fit >= 0.45)
+                    if (unit && unit->champion_internal_id == offer->champion_internal_id &&
+                        unit->star == offer->star) ++same_star_copies;
+                const double upgrade_value = same_star_copies >= 3 ? 1.0
+                    : (same_star_copies == 2 ? 0.6
+                    : (same_star_copies == 1 ? 0.2 : 0.0));
+                const bool completes_upgrade =
+                    same_star_copies >= 2 && offer->star == 1;
+                const bool composition_fit =
+                    unit_composition_score(current_strategy, *definition,
+                        offer->star, lobby.trait_milestones) > 0.0 ||
+                    current_strategy.composition_direction.empty() || lobby.stage <= 2;
+                const bool builds_pair =
+                    same_star_copies == 1 && offer->star == 1 && composition_fit;
+                const bool in_top_trait =
+                    (!current_strategy.composition_direction.empty() &&
+                     std::find(definition->traits.begin(), definition->traits.end(),
+                        current_strategy.composition_direction) != definition->traits.end()) ||
+                    std::any_of(definition->traits.begin(), definition->traits.end(),
+                        [&](const auto& trait) {
+                            return std::find(current_strategy.core_traits.begin(),
+                                current_strategy.core_traits.end(), trait) !=
+                                current_strategy.core_traits.end();
+                        });
+                const bool in_planned_comp =
+                    std::find(current_strategy.core_unit_ids.begin(),
+                        current_strategy.core_unit_ids.end(), definition->internal_id) !=
+                            current_strategy.core_unit_ids.end() ||
+                    std::find(current_strategy.planned_unit_ids.begin(),
+                        current_strategy.planned_unit_ids.end(), definition->internal_id) !=
+                            current_strategy.planned_unit_ids.end();
+                const double board_impact = unit_board_impact_score(
+                    current_strategy, *definition, offer->star, lobby.trait_milestones,
+                    new_board_count, economy.level,
+                    static_cast<int>(stage_for_round(lobby.round + 1)));
+                const bool strategy_approved = should_buy_unit(
+                    board_impact, upgrade_value, in_top_trait || in_planned_comp,
+                    new_bench_count, static_cast<int>(stage_for_round(lobby.round + 1)),
+                    definition->cost);
+                // Match the actual BUY approval rule. Weak/merely plausible shop
+                // offers must not block surplus-to-XP conversion indefinitely.
+                if (strategy_approved || completes_upgrade || builds_pair)
                     return true;
             }
             return false;
