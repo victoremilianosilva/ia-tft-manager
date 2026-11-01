@@ -55,12 +55,16 @@ def test_item_target_scorer_uses_each_candidates_role_and_position_features():
         policy.item_target_head.bias.zero_()
         first.weight.zero_()
         first.bias.zero_()
-        first.weight[0, -1] = 1.0
+        target_feature_start = conditioned.shape[-1] + target_context.shape[-1] + item_features.shape[-1]
+        first.weight[0, target_feature_start + 1] = 0.2  # board/bench location
+        first.weight[0, target_feature_start + 5] = 1.0  # role one-hot
         last.weight.zero_()
         last.bias.zero_()
         last.weight[0, 0] = 1.0
-        target_features[0, 0, -1] = 0.1
-        target_features[0, 1, -1] = 0.9
+        target_features[0, 0, 1] = 1.0  # board
+        target_features[0, 0, 5] = 0.1  # role score
+        target_features[0, 1, 2] = 1.0  # bench
+        target_features[0, 1, 5] = 0.9  # role score
 
     logits = policy._item_target_logits(
         conditioned, target_context, item_features, target_features,
