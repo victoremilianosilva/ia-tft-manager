@@ -128,8 +128,12 @@ int main() {
     }
     require_close(unit_purchase_timing_reward(4, 54, 5, 1, 0.8, 80.0, false, false),
                   0.0, "ordinary purchases must preserve the 50-gold interest floor");
-    require_close(surplus_xp_spending_reward(54, 50, 4, 0, false), 0.0212,
-                  "XP may convert surplus when no useful shop unit is available");
+    require_close(surplus_xp_spending_reward(54, 50, 4, 0, false), 0.0466,
+                  "XP receives a learnable progress signal when spending surplus above 50");
+    require_close(surplus_xp_spending_reward(103, 99, 5, 0, false), 0.065,
+                  "large late-game surplus should strongly favor converting gold into XP");
+    require_close(surplus_xp_spending_reward(50, 46, 5, 0, false), 0.0,
+                  "XP surplus fallback must preserve the 50-gold interest floor");
     require_close(surplus_xp_spending_reward(54, 50, 4, 0, true), 0.0,
                   "useful shop offers take priority over surplus XP");
     require_close(surplus_xp_spending_reward(54, 50, 4, 3, false), 0.0,
@@ -420,7 +424,7 @@ int main() {
     require_close(strategy_action_reward(1, 2, 60, 56, 80.0, 4,
                                          false, false, true, false),
                   0.0475, "STABILIZE XP reward is reduced by five percent");
-    require_close(surplus_xp_spending_reward(54, 50, 4, 1, false), 0.02014,
+    require_close(surplus_xp_spending_reward(54, 50, 4, 1, false), 0.04427,
                   "STABILIZE surplus XP fallback uses the same five-percent reduction");
     require_close(strategy_action_reward(2, 2, 40, 35, 80.0, 4,
                                          false, false, true, true),
