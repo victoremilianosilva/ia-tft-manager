@@ -51,14 +51,14 @@ int main() {
     d = select_economic_strategy(s);
     require(d.selected == EconomicStrategy::Fast8,
             "FAST8 must be selected when the composition requires level 8");
-    s.gold = 20;
+    s.gold = 0;
     d = select_economic_strategy(s);
-    require(d.selected != EconomicStrategy::Fast8,
-            "FAST8 must not be selected without enough economy");
+    require(d.selected == EconomicStrategy::Fast8,
+            "FAST8 must remain the active plan while funds fluctuate");
 
     s.composition_requests_fast8 = false;
     s.composition_requests_three_star = true;
-    s.gold = 40; s.level = 6;
+    s.gold = 10; s.level = 6;
     d = select_economic_strategy(s);
     require(d.selected == EconomicStrategy::Slowroll,
             "SLOWROLL must be composition-driven by a 3-star target");

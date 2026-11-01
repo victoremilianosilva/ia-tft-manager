@@ -3873,6 +3873,11 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     old_gold, economy.gold, old_level, economy.level,
                     old_xp, economy.xp, this->info.hp, static_cast<int>(lobby.stage),
                     xp_strategy_id, useful_shop_purchase_available);
+                action_reward += reward_model::phase_xp_progress_reward(
+                    old_gold, economy.gold, old_level, economy.level,
+                    old_xp, economy.xp, this->info.hp,
+                    static_cast<int>(lobby.stage), xp_strategy_id,
+                    useful_shop_purchase_available);
             }
             // RewardManager tracks the last rewarded level, initialized to 1,
             // not merely the level at the start of this action.
@@ -4017,9 +4022,16 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         } else {
             success = true;
             if (type == 6 && !this->strategy.empty()) {
+                const std::int32_t pass_strategy_id =
+                    this->strategy.back().strategy;
+                const bool useful_xp_spending_available =
+                    reward_model::phase_xp_opportunity_available(
+                        economy.gold, economy.level, this->info.hp,
+                        static_cast<int>(lobby.stage), pass_strategy_id);
                 action_reward += reward_model::pass_opportunity_penalty(
                     economy.gold, this->info.hp, lobby.stage,
-                    useful_shop_purchase_available);
+                    useful_shop_purchase_available,
+                    useful_xp_spending_available);
             }
         }
 

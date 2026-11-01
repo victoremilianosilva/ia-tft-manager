@@ -126,8 +126,8 @@ int main() {
     if (!(unit_purchase_timing_reward(4, 54, 5, 1, 0.8, 80.0, false, true) > 0.0)) {
         throw std::runtime_error("a high-value pair may spend surplus while retaining 40 gold");
     }
-    require_close(unit_purchase_timing_reward(4, 54, 5, 1, 0.8, 80.0, false, false),
-                  0.0, "ordinary purchases must preserve the 50-gold interest floor");
+    if (!(unit_purchase_timing_reward(4, 54, 5, 1, 0.8, 80.0, false, false) > 0.0))
+        throw std::runtime_error("useful purchases may spend below 50 in the mid/late game");
     require_close(surplus_xp_spending_reward(54, 50, 4, 0, false), 0.0,
                   "small surplus should not trigger routine XP spending");
     require_close(surplus_xp_spending_reward(60, 56, 4, 0, false), 0.0215,
@@ -153,13 +153,13 @@ int main() {
     if (!(unit_purchase_timing_reward(5, 50, 2, 1, 0.7, 80.0, false, false) > 0.0)) {
         throw std::runtime_error("useful unit purchase with capped gold should be rewarded in mid-game");
     }
-    require_close(unit_purchase_timing_reward(4, 51, 2, 1, 0.8, 80.0, false, false),
-                  0.0, "surplus conversion must not break the 50-gold interest floor");
+    if (!(unit_purchase_timing_reward(4, 51, 2, 1, 0.8, 80.0, false, false) > 0.0))
+        throw std::runtime_error("stage 4 useful purchases may spend through the interest breakpoint");
     if (!(unit_purchase_timing_reward(4, 52, 2, 1, 0.8, 80.0, false, false) > 0.08)) {
         throw std::runtime_error("useful purchase may convert surplus while preserving 50 gold");
     }
-    require_close(unit_purchase_timing_reward(5, 25, 2, 1, 0.7, 80.0, false, false),
-                  0.0, "healthy mid-game should preserve a modest gold reserve");
+    if (!(unit_purchase_timing_reward(5, 25, 2, 1, 0.7, 80.0, false, false) > 0.0))
+        throw std::runtime_error("stage 5 should convert idle gold into useful board strength");
     if (!(unit_purchase_timing_reward(6, 25, 2, 1, 0.7, 25.0, false, false) > 0.0)) {
         throw std::runtime_error("useful unit purchase should be rewarded under low-health pressure");
     }
@@ -185,7 +185,7 @@ int main() {
                   0.0, "early low-fit purchase rejected with crowded bench");
     require_close(early_purchase_reward(3, 10, 1, 2, 0.5, false, false),
                   0.0, "early purchase bonus does not persist into later stages");
-    require_close(reversed_purchase_penalty(), -0.24,
+    require_close(reversed_purchase_penalty(), -0.30,
                   "targeted reversed-purchase penalty");
     // Regressions from the Viewer match: Teemo/Caitlyn were bought and sold
     // on the next action without being deployed or completing an upgrade.
@@ -230,7 +230,7 @@ int main() {
     }
     require_close(reversed_sequence_adjustment(-0.10, -0.20), 0.0,
                   "already-negative reversal sequence needs no extra adjustment");
-    require_close(purchase_pair_quality(0.0), 0.32,
+    require_close(purchase_pair_quality(0.0), 0.36,
                   "pair-building baseline bonus");
     if (!(purchase_pair_quality(10.0) > purchase_pair_quality(0.0))) {
         throw std::runtime_error("pair reward must increase with composition fit");
@@ -271,24 +271,79 @@ int main() {
         throw std::runtime_error("XP spending reward must remain capped to avoid repeated XP spam");
     }
     if (!(pass_opportunity_penalty(50, 100.0, 2, true) < 0.0)) {
-        throw std::runtime_error("passing at the interest cap with a useful offer should be discouraged");
+        throw std::runtime_error("passing with a useful shop offer should be discouraged");
     }
-    const double pass_50 = pass_opportunity_penalty(50, 100.0, 2, false);
-    const double pass_75 = pass_opportunity_penalty(75, 100.0, 2, false);
-    const double pass_125 = pass_opportunity_penalty(125, 100.0, 2, false);
-    const double pass_200 = pass_opportunity_penalty(200, 100.0, 2, false);
-    require_close(pass_125, -0.35 * 0.325 * std::pow(0.5, 1.20),
-                  "surplus-gold hoarding penalty uses the increased 2.5-point coefficient");
+    // A high balance alone is not an actionable opportunity: do not punish
+    // PASS when the shop is poor and the player has reached the phase target.
+    require_close(pass_opportunity_penalty(200, 100.0, 6, false), 0.0,
+                  "no useful purchase or XP opportunity means PASS is neutral");
+    const double pass_50 = pass_opportunity_penalty(50, 100.0, 5, false, true);
+    const double pass_75 = pass_opportunity_penalty(75, 100.0, 5, false, true);
+    const double pass_125 = pass_opportunity_penalty(125, 100.0, 5, false, true);
+    const double pass_200 = pass_opportunity_penalty(200, 100.0, 5, false, true);
+    if (!(pass_125 < -0.02))
+        throw std::runtime_error("large reserves with useful XP progress must have an opportunity cost");
     if (!(pass_50 > pass_75 && pass_75 > pass_125 && pass_125 > pass_200))
-        throw std::runtime_error("PASS penalty must grow with gold above 50");
-    if (!(pass_opportunity_penalty(125, 100.0, 2, true) <
-          pass_opportunity_penalty(125, 100.0, 2, false)))
+        throw std::runtime_error("PASS penalty must grow gradually with surplus when XP is useful");
+    if (!(pass_opportunity_penalty(125, 80.0, 5, true, true) <
+          pass_opportunity_penalty(125, 80.0, 5, false, true)))
         throw std::runtime_error("PASS with a useful unit offer must be penalized more");
-    if (!(pass_opportunity_penalty(50, 20.0, 6, true) < 0.0)) {
+    if (!(pass_opportunity_penalty(50, 20.0, 6, true) < 0.0))
         throw std::runtime_error("passing with a useful offer, high gold and low HP must be discouraged");
+    if (!(pass_opportunity_penalty(50, 20.0, 6, false, true) < 0.0))
+        throw std::runtime_error("late-game XP opportunity and low HP must discourage passive saving");
+    if (!(pass_opportunity_penalty(125, 80.0, 6, false, true) <
+          pass_opportunity_penalty(125, 80.0, 3, false, true))) {
+        throw std::runtime_error("late-game surplus opportunity cost must exceed opening-stage pressure");
     }
-    require_close(pass_opportunity_penalty(50, 20.0, 6, false),
-                  0.0, "must not force spending when the shop has no useful offer");
+    if (!(phase_xp_progress_reward(54, 50, 6, 6, 0, 4, 80.0, 4, 1, false) > 0.02))
+        throw std::runtime_error("stage 4 should provide a small signal for useful XP progress toward level 8");
+    require_close(phase_xp_progress_reward(103, 99, 7, 7, 0, 4, 80.0, 5, 0, false),
+                  0.0, "safe surplus XP is rewarded only by the shared surplus fallback");
+    if (!(phase_xp_progress_reward(103, 99, 7, 7, 0, 4, 80.0, 5, 0, true) > 0.014))
+        throw std::runtime_error("phase XP keeps a reduced signal when a useful shop offer exists");
+    if (!(phase_xp_progress_reward(103, 99, 6, 6, 0, 4, 80.0, 4, 2, true) > 0.015))
+        throw std::runtime_error("FAST8 should retain a modest XP signal when a useful shop offer exists");
+    require_close(phase_xp_progress_reward(103, 99, 6, 6, 0, 4, 80.0, 4, 3, false),
+                  0.0, "SLOWROLL keeps its three-star economy");
+    if (!(phase_xp_progress_reward(40, 36, 6, 6, 0, 4, 80.0, 5, 0, false) > 0.02))
+        throw std::runtime_error("late-game XP may spend below 50 when behind target and above the soft reserve");
+    require_close(phase_xp_progress_reward(40, 36, 7, 7, 0, 4, 25.0, 5, 1, false),
+                  0.0, "urgent partial XP uses the dedicated urgent reward, not duplicate phase shaping");
+    if (!(xp_progress_reward(40, 36, 7, 7, 0, 4, 25.0, 5, 1, false) > 0.0))
+        throw std::runtime_error("critical HP may justify XP progress below the interest floor");
+    require_close(phase_xp_progress_reward(54, 50, 4, 4, 0, 4, 80.0, 2, 0, false),
+                  0.0, "stage 2 must prioritize board development over XP");
+    if (!(phase_xp_progress_reward(54, 50, 5, 5, 0, 4, 80.0, 3, 0, false) > 0.015))
+        throw std::runtime_error("stage 3 begins gradual progression toward level 7");
+    require_close(economy_phase_target_level(1), 3.0, "stage 1 target level");
+    require_close(economy_phase_target_level(2), 5.0, "stage 2 target level");
+    require_close(economy_phase_target_level(3), 7.0, "stage 3 target level");
+    require_close(economy_phase_target_level(4), 8.0, "stage 4 target level");
+    require_close(economy_phase_target_level(5), 9.0, "stage 5 target level");
+    require_close(economy_phase_target_level(4, 2), 8.0, "FAST8 target level");
+    require_close(economy_phase_target_level(4, 3), 6.0, "SLOWROLL target level");
+    require_close(economy_phase_minimum_reserve(3, 80.0, 0), 20.0,
+                  "stage 3 releases liquidity gradually");
+    require_close(economy_phase_minimum_reserve(4, 80.0, 0), 10.0,
+                  "stage 4 keeps only a modest soft reserve");
+    require_close(economy_phase_minimum_reserve(5, 80.0, 0), 5.0,
+                  "stage 5 releases nearly all reserved liquidity");
+    require_close(economy_phase_minimum_reserve(6, 80.0, 0), 0.0,
+                  "late game does not protect idle gold");
+    require_close(economy_phase_minimum_reserve(4, 80.0, 3), 25.0,
+                  "SLOWROLL protects its roll economy");
+    require_close(economy_phase_minimum_reserve(4, 80.0, 4), 0.0,
+                  "ALL_IN removes the soft reserve");
+    require_close(economy_phase_target_level(6), 9.0, "stage 6 target level");
+    if (!phase_xp_opportunity_available(40, 6, 80.0, 4, 2))
+        throw std::runtime_error("FAST8 should expose XP as a useful spend below its target");
+    if (phase_xp_opportunity_available(40, 8, 80.0, 4, 2))
+        throw std::runtime_error("XP is not a useful phase opportunity after reaching the target");
+    if (phase_xp_opportunity_available(13, 6, 80.0, 4, 0))
+        throw std::runtime_error("XP opportunity must preserve the phase reserve");
+    if (phase_xp_opportunity_available(40, 6, 80.0, 4, 3))
+        throw std::runtime_error("SLOWROLL must not be pressured to spend on XP");
     require_close(item_crafting_bonus(-0.02), 0.0,
                   "poor item craft should not receive a crafting bonus");
     if (!(item_crafting_bonus(0.15) > 0.0 && item_crafting_bonus(0.15) <= 0.08)) {
@@ -318,13 +373,13 @@ int main() {
     }
     require_close(strategy_action_reward(0, 1, 60, 58, 80.0, 4,
                                          false, true, false, false),
-                  -0.05, "non-SLOWROLL reroll is penalized even when its shop improved");
+                  -0.08, "non-SLOWROLL reroll is penalized even when its shop improved");
     require_close(strategy_action_reward(1, 1, 55, 53, 90.0, 3,
                                          false, false, false, true),
-                  -0.05, "all non-SLOWROLL rerolls receive a bounded penalty");
+                  -0.08, "all non-SLOWROLL rerolls receive a bounded penalty");
     require_close(strategy_action_reward(1, 1, 55, 53, 90.0, 3,
                                          false, true, false, true),
-                  -0.05, "a good non-SLOWROLL reroll does not become the preferred spend");
+                  -0.08, "a good non-SLOWROLL reroll does not become the preferred spend");
     require_close(strategy_action_reward(3, 1, 55, 53, 90.0, 3,
                                          false, true, false, true),
                   0.12, "slow-roll strategy receives a stronger improved-reroll signal");
@@ -356,11 +411,11 @@ int main() {
     if (!(sale_quality(0.0, false, true, true) < 0.0)) {
         throw std::runtime_error("selling a pair copy must remain unattractive even when it frees bench space");
     }
-    require_close(sale_quality(0.0, false, false, true), 0.05,
+    require_close(sale_quality(0.0, false, false, true), 0.075,
                   "sale of low-fit non-core unit frees space");
-    require_close(sale_quality(1.0, true, true, false), -0.765,
+    require_close(sale_quality(1.0, true, true, false), -0.925,
                   "sale protects core unit and upgrade copies");
-    require_close(sale_quality(1.0, true, true, false, true), -0.185,
+    require_close(sale_quality(1.0, true, true, false, true), -0.225,
                   "measurable board gain removes the core and pair sale penalties");
     if (!(sale_quality(0.0, false, false, false) >
           sale_quality(0.5, false, false, false) &&
@@ -426,19 +481,19 @@ int main() {
     // Strategy-specific shaping stays small and rewards the plan's actual goal.
     require_close(strategy_action_reward(0, 2, 40, 35, 80.0, 3,
                                          false, false, false, false),
-                  -0.01, "ECON applies only a small XP nudge; interest cost is already explicit");
+                  0.0, "ECON no longer adds a blanket XP penalty after stage 2");
     require_close(strategy_action_reward(0, 2, 50, 46, 80.0, 3,
                                          false, false, false, false),
-                  -0.01, "ECON avoids double-penalizing XP at the interest floor");
+                  0.0, "ECON permits planned XP progress below the old interest floor");
     require_close(strategy_action_reward(0, 1, 40, 38, 80.0, 3,
                                          false, true, false, false),
-                  -0.05, "ECON does not prefer improved rerolls over planned spending");
+                  -0.08, "ECON does not prefer improved rerolls over planned spending");
     require_close(strategy_action_reward(0, 1, 40, 38, 80.0, 3,
                                          false, false, false, false),
-                  -0.05, "ECON applies one bounded penalty to rerolls");
+                  -0.08, "ECON applies one bounded penalty to rerolls");
     require_close(strategy_action_reward(0, 0, 55, 50, 80.0, 4,
                                          true, false, false, false),
-                  0.03, "ECON allows useful spending from surplus above 50");
+                  0.04, "ECON allows useful spending from surplus above 50");
     require_close(strategy_action_reward(1, 2, 60, 56, 80.0, 4,
                                          false, false, true, false),
                   0.0475, "STABILIZE XP reward is reduced by five percent");
@@ -461,7 +516,7 @@ int main() {
                   -0.04, "LOSS_STREAK discourages wasteful spending");
     const double econ_xp_below_interest =
         strategy_action_reward(0, 2, 40, 36, 80.0, 4,
-                               false, false, false, false) - 0.025;
+                               false, false, false, false);
     const double econ_reroll_below_interest =
         strategy_action_reward(0, 1, 40, 36, 80.0, 4,
                                false, true, false, false);

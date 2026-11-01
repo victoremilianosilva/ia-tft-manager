@@ -107,6 +107,56 @@ def test_legacy_checkpoint_migrates_new_observation_and_bench_target_inputs():
     assert torch.count_nonzero(migrated_target[:, -17:]) == 0
 
 
+def test_economic_phase_features_reach_the_policy_encoder():
+    policy, obs = _policy_and_observation()
+    obs.zero_()
+    # Round 4-1, level 7, 75 gold, healthy FAST8 plan.
+    obs[:, 0] = 0.80
+    obs[:, 1] = 1.50
+    obs[:, 2] = 7.0 / 9.0
+    obs[:, 6] = 19.0 / 29.0
+    obs[:, 12] = 1.0
+
+    features = policy._economic_context_features(obs)
+    assert torch.allclose(features[0, 0], torch.tensor(0.8))
+    assert torch.allclose(features[0, 1], torch.tensor(1.0 / 8.0))
+    assert torch.allclose(features[0, 2], torch.tensor(10.0 / 50.0))
+    assert torch.allclose(features[0, 3], torch.tensor(65.0 / 200.0))
+    assert torch.allclose(features[0, 4], torch.tensor(1.0 / 6.0), atol=1e-6)
+
+    # The same phase under SLOWROLL exposes its level-6 target and roll reserve.
+    obs[:, 12] = 0.0
+    obs[:, 13] = 1.0
+    slowroll = policy._economic_context_features(obs)
+    assert torch.allclose(slowroll[0, 0], torch.tensor(0.6))
+    assert torch.allclose(slowroll[0, 1], torch.tensor(0.0))
+    assert torch.allclose(slowroll[0, 2], torch.tensor(25.0 / 50.0))
+
+
+def test_legacy_global_encoder_migrates_five_derived_economic_features():
+    policy, _ = _policy_and_observation()
+    state = {key: value.detach().clone() for key, value in policy.state_dict().items()}
+    current = state["global_mlp.0.weight"]
+    insertion = current.shape[1] - 5 - policy.candidate_observation_dim
+    # Legacy checkpoints predate these five features, but retain the complete
+    # candidate tail. Remove the inserted feature block, not the final five
+    # columns (which belong to the candidate tail).
+    state["global_mlp.0.weight"] = torch.cat(
+        [current[:, :insertion], current[:, insertion + 5:]],
+        dim=1,
+    )
+
+    restored = TFTPolicy(obs_dim=OBS_DIM, action_dims=ACTION_DIMS, hidden_size=64)
+    assert restored.load_compatible_state_dict(state)
+    migrated = restored.state_dict()["global_mlp.0.weight"]
+    assert torch.equal(migrated[:, :insertion], current[:, :insertion])
+    assert torch.count_nonzero(migrated[:, insertion:insertion + 5]) == 0
+    assert torch.equal(
+        migrated[:, insertion + 5:],
+        current[:, insertion + 5:],
+    )
+
+
 def test_entropy_only_diagnostics_are_compact_and_finite():
     policy, obs = _policy_and_observation()
     with torch.no_grad():

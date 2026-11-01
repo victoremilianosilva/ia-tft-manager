@@ -85,7 +85,7 @@ inline EconomicStrategyDecision select_economic_strategy(
     // Slowroll is a comp-driven plan, never a generic fallback just because
     // the player has gold and is at a low level.
     if (s.composition_requests_three_star && s.level >= 5 &&
-        s.level <= 6 && s.gold >= 30 && s.hp > 38.0) {
+        s.level <= 6 && s.hp > 38.0) {
         out.scores[3] = 76.0 + std::min(s.gold, 50) * 0.04;
         out.reason = "SLOWROLL: composição tem alvo de 3 estrelas";
     }
@@ -93,9 +93,10 @@ inline EconomicStrategyDecision select_economic_strategy(
     // Fast 8 is only enabled when the active composition plan calls for at
     // least eight units; gold alone must never select this strategy.
     if (s.composition_requests_fast8 && s.level >= 6 && s.level < 8 &&
-        s.gold >= 30 && s.hp > 38.0 && s.board_power >= 25.0) {
-        out.scores[2] = 74.0 + std::min(s.gold, 50) * 0.04
-            + (s.level >= 7 ? 2.0 : 0.0);
+        s.hp > 38.0 && s.board_power >= 25.0) {
+        out.scores[2] = 76.0 + std::min(s.gold, 50) * 0.04
+            + (s.level >= 7 ? 3.0 : 0.0)
+            + (s.stage >= 5 ? 2.0 : 0.0);
         out.reason = "FAST8: composição planejada exige nível 8";
     }
 

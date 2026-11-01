@@ -24,6 +24,12 @@ Esses campos tornam a direção e a compatibilidade visíveis à policy, em vez 
 
 ### Sinais econômicos e features por candidato
 
+A policy deriva cinco features econômicas determinísticas dos campos nativos já presentes na observação (ouro, HP, nível, rodada e one-hot da estratégia): nível-alvo da fase/plano, distância até o alvo, reserva mínima dinâmica, ouro disponível acima dessa reserva e pressão de progressão. Elas são inseridas no encoder global imediatamente antes da cauda de candidatos. Assim, a policy e o value head recebem explicitamente o contexto econômico; a amostragem e o replay PPO usam a mesma derivação, sem alterar o contrato do vetor C++.
+
+A reserva deixa de ser fixa em 50: fases iniciais preservam mais liquidez, enquanto as fases 3+ reduzem progressivamente a reserva (e FAST8 pode gastar para alcançar o nível 8). SLOWROLL mantém uma reserva própria para rolagem. HP crítico e ALL_IN podem reduzir a reserva a zero. Checkpoints anteriores migram com as cinco colunas novas inicializadas em zero; fine-tuning continua necessário para aprender a utilizá-las.
+
+
+
 - A recompensa de cada ação inclui a diferença da potencialização do ouro antes/depois. O potencial combina um valor pequeno por ouro líquido com bônus nos patamares de 10 em 10 até 50, aproximando o benefício dos juros. É uma diferença entre estados, não um bônus repetido por ficar parado.
 - Comprar recebe um sinal adicional pela melhoria marginal de compatibilidade quando já existe uma composição no tabuleiro, e por completar um upgrade quando há duas cópias compatíveis.
 - Vender é avaliado pelo score de compatibilidade da unidade, se ela é core, se sua venda destrói uma possibilidade próxima de upgrade e se libera espaço no banco.
