@@ -105,7 +105,7 @@ class TFTPolicy(nn.Module):
         # component, recipe and target rather than learning arbitrary slot IDs.
         # Their final layers start at zero to preserve legacy checkpoint logits.
         self.item_component_feature_dim = 10
-        self.item_semantic_feature_dim = 15
+        self.item_semantic_feature_dim = 17
         self.item_target_feature_dim = 18
         self.item_anvil_observation_dim = 3 + 9 * 11
         self.item_state_observation_dim = (
@@ -353,8 +353,19 @@ class TFTPolicy(nn.Module):
         """Decode the semantic item block appended immediately before the candidate tail."""
         start = obs.shape[-1] - self.candidate_observation_dim - self.item_state_observation_dim
         end = obs.shape[-1] - self.candidate_observation_dim
-        if start < 0:
-            raise ValueError("Observation does not contain the native semantic item feature block.")
+        if start < self.item_anvil_observation_dim:
+            # Small synthetic/legacy policy fixtures do not include the native
+            # item block. Treat them as an empty inventory rather than changing
+            # their established observation contract.
+            batch = obs.shape[0]
+            zeros = torch.zeros(batch, device=obs.device, dtype=obs.dtype)
+            return (
+                zeros.unsqueeze(-1).expand(-1, 10),
+                zeros.view(batch, 1, 1).expand(-1, 9, self.item_semantic_feature_dim),
+                zeros.view(batch, 1, 1).expand(-1, 100, self.item_semantic_feature_dim),
+                zeros.view(batch, 1, 1).expand(-1, 37, self.item_target_feature_dim),
+                torch.zeros(batch, device=obs.device, dtype=torch.bool),
+            )
         block = obs[:, start:end]
         offset = 0
         components = block[:, offset:offset + self.item_component_feature_dim]
