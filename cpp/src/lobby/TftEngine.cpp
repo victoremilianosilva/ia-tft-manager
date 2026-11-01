@@ -92,9 +92,13 @@ constexpr std::size_t kAnvilObservationDim = 3 + kAnvilOptionCount * kAnvilOptio
 // fixed strategic-candidate tail so legacy checkpoints can migrate by insertion.
 constexpr std::size_t kItemSemanticFeatureDim = 17;
 constexpr std::size_t kItemTargetFeatureDim = 18;
-constexpr std::size_t kItemStateObservationDim =
+constexpr std::size_t kItemCompatibilityObservationDim =
+    (9 + 100) * (kBoardSlots + kBenchSlots);
+constexpr std::size_t kItemGlobalObservationDim =
     10 + 9 * kItemSemanticFeatureDim + 100 * kItemSemanticFeatureDim +
     (kBoardSlots + kBenchSlots) * kItemTargetFeatureDim;
+constexpr std::size_t kItemStateObservationDim =
+    kItemGlobalObservationDim + kItemCompatibilityObservationDim;
 constexpr std::size_t kActionMemoryObservationDim = 1 + kBoardSlots;
 constexpr std::uint32_t kActionMemoryHorizon = 10;
 
@@ -1424,6 +1428,7 @@ struct TFTEngine::Impl {
             // Recipe features are indexed [first_component * 10 + second].
             // Both orders are populated because the recipe contract is symmetric.
             std::array<std::array<float, kItemSemanticFeatureDim>, 100> recipe_features{};
+            std::array<std::string, 100> recipe_item_ids{};
             if (item_catalog) {
                 for (const auto& definition : item_catalog->items) {
                     if (definition.recipe_components[0].empty() ||
@@ -1446,6 +1451,8 @@ struct TFTEngine::Impl {
                     const auto encoded = encode_item(definition);
                     recipe_features[a * 10 + b] = encoded;
                     recipe_features[b * 10 + a] = encoded;
+                    recipe_item_ids[a * 10 + b] = definition.id;
+                    recipe_item_ids[b * 10 + a] = definition.id;
                 }
             }
             for (const auto& recipe : recipe_features)
@@ -1486,6 +1493,46 @@ struct TFTEngine::Impl {
                     }
                 }
                 for (const float feature : features) out[offset++] = feature;
+            }
+
+            // Exact item-to-target compatibility for the currently held items
+            // and every possible craft result. These matrices are consumed only
+            // by the autoregressive target scorer, not the global encoder.
+            std::unordered_map<std::string, const items::UnitProfile*> profile_by_uuid;
+            const auto item_profiles = item_state
+                ? item_unit_profiles(i) : std::vector<items::UnitProfile>{};
+            profile_by_uuid.reserve(item_profiles.size());
+            for (const auto& profile : item_profiles)
+                profile_by_uuid.emplace(profile.uuid, &profile);
+
+            for (std::size_t item_slot = 0; item_slot < 9; ++item_slot) {
+                const std::string* item_id =
+                    item_state && item_slot < item_state->inventory().size()
+                    ? &item_state->inventory()[item_slot] : nullptr;
+                for (std::size_t target = 0; target < kBoardSlots + kBenchSlots; ++target) {
+                    double fit = 0.0;
+                    const auto* unit = item_target_unit(i, target);
+                    if (item_id && unit) {
+                        const auto profile = profile_by_uuid.find(unit->uuid);
+                        if (profile != profile_by_uuid.end())
+                            fit = item_state->item_fit(*item_id, *profile->second);
+                    }
+                    out[offset++] = static_cast<float>(std::clamp(fit / 50.0, 0.0, 1.0));
+                }
+            }
+
+            for (std::size_t recipe = 0; recipe < recipe_item_ids.size(); ++recipe) {
+                const auto& item_id = recipe_item_ids[recipe];
+                for (std::size_t target = 0; target < kBoardSlots + kBenchSlots; ++target) {
+                    double fit = 0.0;
+                    const auto* unit = item_target_unit(i, target);
+                    if (item_state && !item_id.empty() && unit) {
+                        const auto profile = profile_by_uuid.find(unit->uuid);
+                        if (profile != profile_by_uuid.end())
+                            fit = item_state->item_fit(item_id, *profile->second);
+                    }
+                    out[offset++] = static_cast<float>(std::clamp(fit / 50.0, 0.0, 1.0));
+                }
             }
 
             // 17) PER-CANDIDATE DECISION FEATURES. These are explicit slot-local
