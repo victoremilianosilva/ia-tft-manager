@@ -289,8 +289,8 @@ def test_pair_copy_merged_into_higher_star_is_not_reported_as_pair_loss():
 
 
 def test_pair_loss_reports_champion_specific_evidence_when_global_pair_count_is_unchanged():
-    briar_a = _unit("Briar")
-    briar_b = _unit("Briar")
+    briar_a = _unit("Briar", star=2)
+    briar_b = _unit("Briar", star=2)
     nasus_a = _unit("Nasus")
     nasus_b = _unit("Nasus")
     decision = _entry(1, 1, [6, 0, 0, 0, 0, 0], "PASS",
