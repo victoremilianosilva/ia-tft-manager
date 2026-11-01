@@ -451,10 +451,13 @@ inline double phase_xp_progress_reward(
 
     const double progress = std::clamp(
         static_cast<double>(new_xp - old_xp) / 4.0, 0.0, 1.0);
-    // Keep this complementary signal small; it must not outweigh a real
-    // purchase/upgrade or stack on top of a level-up reward.
-    return std::clamp(0.045 * deficit * stage_scale * liquidity_scale *
-        shop_priority_scale * strategy_scale * progress, 0.0, 0.055);
+    // When the shop has no useful acquisition, give phase-relevant XP a
+    // slightly clearer fallback signal. If a useful offer exists, retain the
+    // previous lower value so XP does not compete with buying that unit.
+    // This remains partial-progress shaping and never stacks on a level-up.
+    const double base_signal = useful_purchase_available ? 0.045 : 0.052;
+    return std::clamp(base_signal * deficit * stage_scale * liquidity_scale *
+        shop_priority_scale * strategy_scale * progress, 0.0, 0.060);
 }
 
 // True only when a legal BUY_XP action can make phase-relevant progress while
