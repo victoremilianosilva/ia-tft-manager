@@ -292,7 +292,15 @@ class PlayerJsonLogWriter:
                 else "completed_item" if kind == "anvil_completed_item_choice" else None
             ),
             "anvil_options_before": list(before_audit.get("pending_anvil_options", []) or []),
-            "selected_item_id": after_state.get("last_item_id") or None,
+            "selected_id": after_state.get("last_item_id") or None,
+            "selected_item_id": (
+                after_state.get("last_item_id") or None
+                if kind != "anvil_component_choice" else None
+            ),
+            "selected_component_id": (
+                after_state.get("last_item_id") or None
+                if kind == "anvil_component_choice" else None
+            ),
             "first_component_id": after_state.get("last_item_first_component") or None,
             "second_component_id": after_state.get("last_item_second_component") or None,
             "target": ({
@@ -1384,7 +1392,7 @@ class PlayerJsonLogWriter:
                     line += (
                         "    ITEM AUDIT: "
                         f"op={decision.get('operation') or 'unknown'} | "
-                        f"item={decision.get('selected_item_id') or '—'} | "
+                        f"selecionado={decision.get('selected_id') or '—'} | "
                         f"receita={decision.get('first_component_id') or '—'} + "
                         f"{decision.get('second_component_id') or '—'} | "
                         f"alvo={decision.get('target') or '—'} | "
