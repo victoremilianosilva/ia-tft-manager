@@ -79,9 +79,37 @@ def test_item_target_scorer_uses_each_candidates_role_and_position_features():
 
     logits = policy._item_target_logits(
         conditioned, target_context, item_features, target_features,
-        torch.tensor([False]),
+        torch.zeros(1, 37), torch.tensor([False]),
     )
     assert logits[0, 1] > logits[0, 0]
+
+
+def test_target_scorer_uses_exact_item_to_unit_compatibility():
+    policy, _ = _policy_with_native_item_block()
+    conditioned = torch.zeros(1, 64 + len(ACTION_DIMS))
+    target_context = torch.zeros(1, 20)
+    item_features = torch.zeros(1, 17)
+    target_features = torch.zeros(1, 37, 18)
+    compatibility = torch.zeros(1, 37)
+    compatibility[0, 3] = 0.2
+    compatibility[0, 4] = 0.9
+    first = policy.item_target_candidate_head[0]
+    last = policy.item_target_candidate_head[-1]
+    with torch.no_grad():
+        policy.item_target_head.weight.zero_()
+        policy.item_target_head.bias.zero_()
+        first.weight.zero_()
+        first.bias.zero_()
+        first.weight[0, -1] = 1.0  # exact item-to-target fit scalar
+        last.weight.zero_()
+        last.bias.zero_()
+        last.weight[0, 0] = 1.0
+
+    logits = policy._item_target_logits(
+        conditioned, target_context, item_features, target_features,
+        compatibility, torch.tensor([False]),
+    )
+    assert logits[0, 4] > logits[0, 3]
 
 
 def test_inventory_candidate_scorer_uses_item_semantics():
