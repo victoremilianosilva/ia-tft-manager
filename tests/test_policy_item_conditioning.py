@@ -278,6 +278,34 @@ def test_item_sampling_and_ppo_replay_use_identical_conditioned_distributions():
     assert torch.allclose(sampled_logprob, replay_logprob, atol=1e-6, rtol=1e-6)
 
 
+def test_anvil_option_sampling_and_ppo_replay_use_anvil_context():
+    policy, obs = _policy_with_native_item_block()
+    anvil_index = (
+        obs.shape[-1] - policy.candidate_observation_dim
+        - policy.item_state_observation_dim - policy.item_anvil_observation_dim
+    )
+    obs[0, anvil_index] = 1.0
+    obs[0, anvil_index + 3 + 11] = 0.8
+    type_mask = torch.zeros(1, 9, dtype=torch.bool)
+    type_mask[0, 7] = True
+    inventory_mask = torch.zeros(1, 9, dtype=torch.bool)
+    inventory_mask[0, 1] = True
+    target_mask = torch.zeros(1, 37, dtype=torch.bool)
+    target_mask[0, 0] = True  # forced target-head sentinel for anvil choice
+    masks = {
+        "type_mask": type_mask,
+        "item_inventory_mask": inventory_mask,
+        "item_target_mask": target_mask,
+    }
+    actions, sampled_logprob, _, _ = policy.get_action_and_value(
+        obs, masks=masks, deterministic=True
+    )
+    replay_logprob, _, _ = policy.evaluate_actions(obs, actions, masks)
+    assert actions[0, 0].item() == 7
+    assert actions[0, 1].item() == 1
+    assert torch.allclose(sampled_logprob, replay_logprob, atol=1e-6, rtol=1e-6)
+
+
 def test_craft_sampling_and_ppo_replay_use_same_recipe_target_context():
     policy, obs = _policy_with_native_item_block()
     type_mask = torch.zeros(1, 9, dtype=torch.bool)
