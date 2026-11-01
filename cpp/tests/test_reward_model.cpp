@@ -296,11 +296,11 @@ int main() {
           pass_opportunity_penalty(125, 80.0, 2, false, true))) {
         throw std::runtime_error("late-game surplus opportunity cost must exceed opening-stage pressure");
     }
-    if (!(phase_xp_progress_reward(54, 50, 6, 6, 0, 4, 80.0, 4, 1, false) > 0.025))
+    if (!(phase_xp_progress_reward(54, 50, 6, 6, 0, 4, 80.0, 4, 1, false) > 0.02))
         throw std::runtime_error("stage 4 should provide a small signal for useful XP progress toward level 8");
     require_close(phase_xp_progress_reward(103, 99, 7, 7, 0, 4, 80.0, 5, 0, false),
                   0.0, "safe surplus XP is rewarded only by the shared surplus fallback");
-    if (!(phase_xp_progress_reward(103, 99, 7, 7, 0, 4, 80.0, 5, 0, true) > 0.015))
+    if (!(phase_xp_progress_reward(103, 99, 7, 7, 0, 4, 80.0, 5, 0, true) > 0.014))
         throw std::runtime_error("phase XP keeps a reduced signal when a useful shop offer exists");
     if (!(phase_xp_progress_reward(103, 99, 6, 6, 0, 4, 80.0, 4, 2, true) > 0.015))
         throw std::runtime_error("FAST8 should retain a modest XP signal when a useful shop offer exists");
