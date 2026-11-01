@@ -142,7 +142,7 @@ class TFTPolicy(nn.Module):
         self.item_target_candidate_head = nn.Sequential(
             nn.Linear(
                 hidden_size + self.num_action_types + 20
-                + self.item_semantic_feature_dim + self.item_target_feature_dim,
+                + self.item_semantic_feature_dim + self.item_target_feature_dim + 1,
                 128,
             ),
             nn.ReLU(),
@@ -219,9 +219,9 @@ class TFTPolicy(nn.Module):
                 # that context; older checkpoints do not. Detect both layouts
                 # from the exact added-column count so economic columns are not
                 # accidentally mapped onto item features.
-                if added == self.item_state_observation_dim:
+                if added == self.item_global_observation_dim:
                     trailing_context = self.economic_context_dim
-                elif added == self.item_state_observation_dim + self.economic_context_dim:
+                elif added == self.item_global_observation_dim + self.economic_context_dim:
                     trailing_context = 0
                 else:
                     trailing_context = 0
@@ -278,6 +278,8 @@ class TFTPolicy(nn.Module):
         post_part = obs[:, self.pre_board_dim + self.board_flat_dim :]
         candidate_tail = post_part[:, -self.candidate_observation_dim:]
         middle_part = post_part[:, :-self.candidate_observation_dim]
+        if self.has_item_compatibility_observation:
+            middle_part = middle_part[:, :-self.item_compatibility_observation_dim]
         economic_context = self._economic_context_features(obs)
         global_part = torch.cat(
             [pre_part, middle_part, economic_context, candidate_tail], dim=-1
@@ -392,6 +394,8 @@ class TFTPolicy(nn.Module):
                 zeros.view(batch, 1, 1).expand(-1, 9, self.item_semantic_feature_dim),
                 zeros.view(batch, 1, 1).expand(-1, 100, self.item_semantic_feature_dim),
                 zeros.view(batch, 1, 1).expand(-1, 37, self.item_target_feature_dim),
+                zeros.view(batch, 1, 1).expand(-1, 9, 37),
+                zeros.view(batch, 1, 1).expand(-1, 100, 37),
                 torch.zeros(batch, device=obs.device, dtype=torch.bool),
             )
         block = obs[:, start:end]
@@ -408,13 +412,26 @@ class TFTPolicy(nn.Module):
             -1, 100, self.item_semantic_feature_dim
         )
         offset += recipe_size
-        targets = block[:, offset:].reshape(-1, 37, self.item_target_feature_dim)
+        target_size = 37 * self.item_target_feature_dim
+        targets = block[:, offset:offset + target_size].reshape(
+            -1, 37, self.item_target_feature_dim
+        )
+        offset += target_size
+        inventory_fit_size = 9 * 37
+        inventory_target_fit = block[:, offset:offset + inventory_fit_size].reshape(
+            -1, 9, 37
+        )
+        offset += inventory_fit_size
+        recipe_target_fit = block[:, offset:].reshape(-1, 100, 37)
         anvil_index = start - self.item_anvil_observation_dim
         anvil_pending = (
             obs[:, anvil_index] > 0.5
             if anvil_index >= 0 else torch.zeros(obs.shape[0], device=obs.device, dtype=torch.bool)
         )
-        return components, inventory, recipes, targets, anvil_pending
+        return (
+            components, inventory, recipes, targets,
+            inventory_target_fit, recipe_target_fit, anvil_pending
+        )
 
     def _item_inventory_logits(self, conditioned, inventory_features, anvil_pending):
         logits = self.item_inventory_head(conditioned)
@@ -440,7 +457,8 @@ class TFTPolicy(nn.Module):
         return logits + self.item_component_candidate_head(candidate_context).squeeze(-1)
 
     def _item_target_logits(
-        self, conditioned, target_context, item_features, target_features, anvil_pending
+        self, conditioned, target_context, item_features, target_features,
+        compatibility_scores, anvil_pending
     ):
         logits = self.item_target_head(torch.cat([conditioned, target_context], dim=-1))
         batch = conditioned.shape[0]
@@ -449,6 +467,7 @@ class TFTPolicy(nn.Module):
             target_context.unsqueeze(1).expand(-1, 37, -1),
             item_features.unsqueeze(1).expand(-1, 37, -1).to(dtype=conditioned.dtype),
             target_features.to(dtype=conditioned.dtype),
+            compatibility_scores.unsqueeze(-1).to(dtype=conditioned.dtype),
         ], dim=-1)
         scores = self.item_target_candidate_head(joined).squeeze(-1)
         return logits + scores * (~anvil_pending).to(dtype=logits.dtype).unsqueeze(-1)
@@ -595,7 +614,8 @@ class TFTPolicy(nn.Module):
         bench_candidate_features, shop_candidate_features = self._candidate_features(obs)
         (
             item_component_features, item_inventory_features, item_recipe_features,
-            item_target_features, item_anvil_pending,
+            item_target_features, item_inventory_target_fit, item_recipe_target_fit,
+            item_anvil_pending,
         ) = self._item_state_features(obs)
 
         def record_distribution(name, logits, chosen, row_indices, applied_mask=None):
@@ -856,9 +876,13 @@ class TFTPolicy(nn.Module):
             selected_item_features = item_inventory_features[equip_item_mask].gather(
                 1, item_index.view(-1, 1, 1).expand(-1, 1, self.item_semantic_feature_dim)
             ).squeeze(1)
+            selected_item_fit = item_inventory_target_fit[equip_item_mask].gather(
+                1, item_index.view(-1, 1, 1).expand(-1, 1, 37)
+            ).squeeze(1)
             target_logits = self._item_target_logits(
                 conditioned_item, target_context, selected_item_features,
-                item_target_features[equip_item_mask], item_anvil_pending[equip_item_mask],
+                item_target_features[equip_item_mask], selected_item_fit,
+                item_anvil_pending[equip_item_mask],
             )
             target_mask = masks["item_target_mask"][equip_item_mask] if masks is not None else None
             if target_mask is not None:
@@ -908,9 +932,13 @@ class TFTPolicy(nn.Module):
             selected_recipe_features = item_recipe_features[craft_item_mask].gather(
                 1, recipe_index.view(-1, 1, 1).expand(-1, 1, self.item_semantic_feature_dim)
             ).squeeze(1)
+            selected_recipe_fit = item_recipe_target_fit[craft_item_mask].gather(
+                1, recipe_index.view(-1, 1, 1).expand(-1, 1, 37)
+            ).squeeze(1)
             target_logits = self._item_target_logits(
                 conditioned_item, target_context, selected_recipe_features,
-                item_target_features[craft_item_mask], item_anvil_pending[craft_item_mask],
+                item_target_features[craft_item_mask], selected_recipe_fit,
+                item_anvil_pending[craft_item_mask],
             )
             target_mask = masks["item_target_mask"][craft_item_mask] if masks is not None else None
             if target_mask is not None:
@@ -1152,7 +1180,8 @@ class TFTPolicy(nn.Module):
             target_logits = self._mask_logits(
                 self._item_target_logits(
                     conditioned_item, target_context, selected_item_features,
-                    item_target_features[equip_item_mask], item_anvil_pending[equip_item_mask],
+                    item_target_features[equip_item_mask], selected_item_fit,
+                    item_anvil_pending[equip_item_mask],
                 ), target_mask,
             )
             self._validate_selected_actions(target_index, target_mask, "item_target")
@@ -1203,7 +1232,8 @@ class TFTPolicy(nn.Module):
             target_logits = self._mask_logits(
                 self._item_target_logits(
                     conditioned_item, target_context, selected_recipe_features,
-                    item_target_features[craft_item_mask], item_anvil_pending[craft_item_mask],
+                    item_target_features[craft_item_mask], selected_recipe_fit,
+                    item_anvil_pending[craft_item_mask],
                 ), target_mask,
             )
             self._validate_selected_actions(target_index, target_mask, "item_target")
