@@ -1207,6 +1207,9 @@ class TFTPolicy(nn.Module):
             selected_item_features = item_inventory_features[equip_item_mask].gather(
                 1, item_index.view(-1, 1, 1).expand(-1, 1, self.item_semantic_feature_dim)
             ).squeeze(1)
+            selected_item_fit = item_inventory_target_fit[equip_item_mask].gather(
+                1, item_index.view(-1, 1, 1).expand(-1, 1, 37)
+            ).squeeze(1)
             target_logits = self._mask_logits(
                 self._item_target_logits(
                     conditioned_item, target_context, selected_item_features,
@@ -1258,6 +1261,9 @@ class TFTPolicy(nn.Module):
             recipe_index = first_index * 10 + second_index
             selected_recipe_features = item_recipe_features[craft_item_mask].gather(
                 1, recipe_index.view(-1, 1, 1).expand(-1, 1, self.item_semantic_feature_dim)
+            ).squeeze(1)
+            selected_recipe_fit = item_recipe_target_fit[craft_item_mask].gather(
+                1, recipe_index.view(-1, 1, 1).expand(-1, 1, 37)
             ).squeeze(1)
             target_logits = self._mask_logits(
                 self._item_target_logits(
