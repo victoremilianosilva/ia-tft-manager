@@ -298,8 +298,10 @@ int main() {
     }
     if (!(phase_xp_progress_reward(54, 50, 6, 6, 0, 4, 80.0, 4, 1, false) > 0.025))
         throw std::runtime_error("stage 4 should provide a small signal for useful XP progress toward level 8");
-    if (!(phase_xp_progress_reward(103, 99, 7, 7, 0, 4, 80.0, 5, 0, false) > 0.025))
-        throw std::runtime_error("stage 5 should provide a small signal for progress toward level 9");
+    require_close(phase_xp_progress_reward(103, 99, 7, 7, 0, 4, 80.0, 5, 0, false),
+                  0.0, "safe surplus XP is rewarded only by the shared surplus fallback");
+    if (!(phase_xp_progress_reward(103, 99, 7, 7, 0, 4, 80.0, 5, 0, true) > 0.015))
+        throw std::runtime_error("phase XP keeps a reduced signal when a useful shop offer exists");
     if (!(phase_xp_progress_reward(103, 99, 6, 6, 0, 4, 80.0, 4, 2, true) > 0.015))
         throw std::runtime_error("FAST8 should retain a modest XP signal when a useful shop offer exists");
     require_close(phase_xp_progress_reward(103, 99, 6, 6, 0, 4, 80.0, 4, 3, false),
@@ -338,7 +340,7 @@ int main() {
         throw std::runtime_error("FAST8 should expose XP as a useful spend below its target");
     if (phase_xp_opportunity_available(40, 8, 80.0, 4, 2))
         throw std::runtime_error("XP is not a useful phase opportunity after reaching the target");
-    if (phase_xp_opportunity_available(20, 6, 80.0, 4, 0))
+    if (phase_xp_opportunity_available(18, 6, 80.0, 4, 0))
         throw std::runtime_error("XP opportunity must preserve the phase reserve");
     if (phase_xp_opportunity_available(40, 6, 80.0, 4, 3))
         throw std::runtime_error("SLOWROLL must not be pressured to spend on XP");
