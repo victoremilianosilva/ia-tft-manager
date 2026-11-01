@@ -33,6 +33,8 @@ class TrainingConfig:
     gamma: float = 0.99
     gae_lambda: float = 0.95
 
+    num_lobbies: int = 4
+    total_updates: int = 280
     checkpoint_path: str = "tft_checkpoint.pt"
 
     def to_dict(self) -> dict[str, Any]:
@@ -53,6 +55,7 @@ class TrainingConfig:
         for name in (
             "learning_rate", "adam_eps", "lr_schedule_updates",
             "entropy_schedule_updates", "batch_size", "ppo_epochs", "rollout_steps",
+            "num_lobbies", "total_updates",
         ):
             if getattr(self, name) <= 0:
                 raise ValueError(f"{name} deve ser > 0.")
@@ -111,6 +114,8 @@ class TrainingConfig:
             "batch_size": ("TFT_PPO_BATCH_SIZE", int),
             "ppo_epochs": ("TFT_PPO_EPOCHS", int),
             "rollout_steps": ("TFT_ROLLOUT_STEPS", int),
+            "num_lobbies": ("TFT_NUM_LOBBIES", int),
+            "total_updates": ("TFT_TOTAL_UPDATES", int),
             "gamma": ("TFT_PPO_GAMMA", float),
             "gae_lambda": ("TFT_PPO_GAE_LAMBDA", float),
         }
