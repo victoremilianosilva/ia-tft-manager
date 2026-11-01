@@ -832,7 +832,7 @@ int main(int argc, char** argv) {
             require(item_observation[item_block_offset] > 0.0f &&
                     item_observation[item_block_offset + 1] > 0.0f,
                     "Contagens de componentes nao chegaram a observacao PPO.");
-            require(item_observation[bag_feature_offset] > 0.0f,
+            require(item_observation[bag_feature_offset + 5] > 0.0f,
                     "Atributos do item completo na bag nao chegaram a observacao PPO.");
             require(std::any_of(item_observation + recipe_feature_offset,
                                 item_observation + target_feature_offset,
