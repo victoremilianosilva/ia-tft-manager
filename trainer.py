@@ -4,7 +4,7 @@ import numpy as np
 import os
 import json
 
-from training_config import TrainingConfig
+from training_config import TrainingConfig, cosine_lr_factor
 
 from cpp_lobby_env import CppTFTLobbyWrapper
 
@@ -282,10 +282,14 @@ class Trainer:
                 group["weight_decay"] = self.config.weight_decay
             print("✅ Momentos do Adam restaurados; hiperparâmetros atuais aplicados.")
 
-        self.scheduler = optim.lr_scheduler.CosineAnnealingLR(
+        self.scheduler = optim.lr_scheduler.LambdaLR(
             self.optimizer,
-            T_max=self.config.lr_schedule_updates,
-            eta_min=self.config.min_learning_rate,
+            lr_lambda=lambda step: cosine_lr_factor(
+                step,
+                self.config.learning_rate,
+                self.config.min_learning_rate,
+                self.config.lr_schedule_updates,
+            ),
         )
         restore_scheduler = bool(
             can_restore_optimizer and "scheduler" in checkpoint
