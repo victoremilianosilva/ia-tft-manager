@@ -1499,8 +1499,6 @@ struct TFTEngine::Impl {
             // and every possible craft result. These matrices are consumed only
             // by the autoregressive target scorer, not the global encoder.
             std::unordered_map<std::string, const items::UnitProfile*> profile_by_uuid;
-            const auto item_profiles = item_state
-                ? item_unit_profiles(i) : std::vector<items::UnitProfile>{};
             profile_by_uuid.reserve(item_profiles.size());
             for (const auto& profile : item_profiles)
                 profile_by_uuid.emplace(profile.uuid, &profile);
