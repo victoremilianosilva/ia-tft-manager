@@ -134,3 +134,29 @@ def test_item_sampling_and_ppo_replay_use_identical_conditioned_distributions():
     replay_logprob, _, _ = policy.evaluate_actions(obs, actions, masks)
     assert actions[0, 0].item() == 7
     assert torch.allclose(sampled_logprob, replay_logprob, atol=1e-6, rtol=1e-6)
+
+
+def test_craft_sampling_and_ppo_replay_use_same_recipe_target_context():
+    policy, obs = _policy_with_native_item_block()
+    type_mask = torch.zeros(1, 9, dtype=torch.bool)
+    type_mask[0, 8] = True
+    first_mask = torch.zeros(1, 10, dtype=torch.bool)
+    first_mask[0, 0] = True
+    pair_mask = torch.zeros(1, 10, 10, dtype=torch.bool)
+    pair_mask[0, 0, 1] = True
+    target_mask = torch.zeros(1, 37, dtype=torch.bool)
+    target_mask[0, 0] = True
+    masks = {
+        "type_mask": type_mask,
+        "item_component_first_mask": first_mask,
+        "item_component_pair_masks": pair_mask,
+        "item_target_mask": target_mask,
+    }
+    actions, sampled_logprob, _, _ = policy.get_action_and_value(
+        obs, masks=masks, deterministic=True
+    )
+    replay_logprob, _, _ = policy.evaluate_actions(obs, actions, masks)
+    assert actions[0, 0].item() == 8
+    assert actions[0, 1].item() == 0
+    assert actions[0, 2].item() == 1
+    assert torch.allclose(sampled_logprob, replay_logprob, atol=1e-6, rtol=1e-6)
