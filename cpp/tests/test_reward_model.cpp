@@ -325,12 +325,12 @@ int main() {
     require_close(economy_phase_target_level(4, 3), 6.0, "SLOWROLL target level");
     require_close(economy_phase_minimum_reserve(3, 80.0, 0), 20.0,
                   "stage 3 releases liquidity gradually");
-    require_close(economy_phase_minimum_reserve(4, 80.0, 0), 15.0,
-                  "stage 4 retains a modest reserve while permitting spend-down");
-    require_close(economy_phase_minimum_reserve(5, 80.0, 0), 10.0,
-                  "stage 5 reserve continues to decline");
-    require_close(economy_phase_minimum_reserve(6, 80.0, 0), 5.0,
-                  "late game retains only a small liquidity buffer");
+    require_close(economy_phase_minimum_reserve(4, 80.0, 0), 10.0,
+                  "stage 4 keeps only a modest soft reserve");
+    require_close(economy_phase_minimum_reserve(5, 80.0, 0), 5.0,
+                  "stage 5 releases nearly all reserved liquidity");
+    require_close(economy_phase_minimum_reserve(6, 80.0, 0), 0.0,
+                  "late game does not protect idle gold");
     require_close(economy_phase_minimum_reserve(4, 80.0, 3), 25.0,
                   "SLOWROLL protects its roll economy");
     require_close(economy_phase_minimum_reserve(4, 80.0, 4), 0.0,
@@ -340,7 +340,7 @@ int main() {
         throw std::runtime_error("FAST8 should expose XP as a useful spend below its target");
     if (phase_xp_opportunity_available(40, 8, 80.0, 4, 2))
         throw std::runtime_error("XP is not a useful phase opportunity after reaching the target");
-    if (phase_xp_opportunity_available(18, 6, 80.0, 4, 0))
+    if (phase_xp_opportunity_available(13, 6, 80.0, 4, 0))
         throw std::runtime_error("XP opportunity must preserve the phase reserve");
     if (phase_xp_opportunity_available(40, 6, 80.0, 4, 3))
         throw std::runtime_error("SLOWROLL must not be pressured to spend on XP");
