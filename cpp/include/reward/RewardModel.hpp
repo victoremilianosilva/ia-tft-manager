@@ -404,8 +404,8 @@ inline int economy_phase_minimum_reserve(
     // threshold for XP shaping, never a hard spending restriction.
     int reserve = stage <= 2 ? 30
         : (stage == 3 ? 20
-        : (stage == 4 ? 15
-        : (stage == 5 ? 10 : 5)));
+        : (stage == 4 ? 10
+        : (stage == 5 ? 5 : 0)));
     if (hp <= 40.0) reserve = std::max(0, reserve - 5);
     return reserve;
 }
