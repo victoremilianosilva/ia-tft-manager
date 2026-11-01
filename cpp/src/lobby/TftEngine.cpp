@@ -3090,9 +3090,14 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         std::find(strategy_before.planned_unit_ids.begin(),
                             strategy_before.planned_unit_ids.end(), def->internal_id) !=
                                 strategy_before.planned_unit_ids.end();
+                    const int offer_stage =
+                        static_cast<int>(stage_for_round(lobby.round + 1));
+                    const bool early_flex_purchase =
+                        offer_stage <= 2 && def->cost <= 2 &&
+                        old_bench_count < 6 && candidate_comp_score >= -2.0;
                     buy_strategy_approved = should_buy_unit(candidate_board_impact, upgrade_value,
                         in_top_trait || in_planned_comp, old_bench_count,
-                        static_cast<int>(stage_for_round(lobby.round + 1)), def->cost);
+                        offer_stage, def->cost) || early_flex_purchase;
                     // A second matching copy is valuable future upgrade potential,
                     // but only reward it when it also fits the current comp.
                     const bool composition_fit =
@@ -3686,19 +3691,58 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 if (!offer) continue;
                 const auto* definition = lobby.catalog->find_by_id(offer->champion_internal_id);
                 if (!definition || economy.gold < definition->cost) continue;
-                const double fit = unit_composition_score(
-                    current_strategy, *definition, offer->star, lobby.trait_milestones);
-                const double normalized_fit = std::clamp(fit / 32.5, 0.0, 1.0);
-                int copies = 0;
+                int same_star_copies = 0;
                 for (const auto& unit : this->board)
-                    if (unit && unit->champion_internal_id == offer->champion_internal_id)
-                        copies += star_copies(unit->star);
+                    if (unit && unit->champion_internal_id == offer->champion_internal_id &&
+                        unit->star == offer->star) ++same_star_copies;
                 for (const auto& unit : this->bench)
-                    if (unit && unit->champion_internal_id == offer->champion_internal_id)
-                        copies += star_copies(unit->star);
-                const bool completes_upgrade = copies == 2 && offer->star == 1;
-                const bool builds_pair = copies == 1 && offer->star == 1;
-                if (completes_upgrade || builds_pair || normalized_fit >= 0.30)
+                    if (unit && unit->champion_internal_id == offer->champion_internal_id &&
+                        unit->star == offer->star) ++same_star_copies;
+                const double upgrade_value = same_star_copies >= 3 ? 1.0
+                    : (same_star_copies == 2 ? 0.6
+                    : (same_star_copies == 1 ? 0.2 : 0.0));
+                const bool completes_upgrade =
+                    same_star_copies >= 2 && offer->star == 1;
+                const bool composition_fit =
+                    unit_composition_score(current_strategy, *definition,
+                        offer->star, lobby.trait_milestones) > 0.0 ||
+                    current_strategy.composition_direction.empty() || lobby.stage <= 2;
+                const bool builds_pair =
+                    same_star_copies == 1 && offer->star == 1 && composition_fit;
+                const bool in_top_trait =
+                    (!current_strategy.composition_direction.empty() &&
+                     std::find(definition->traits.begin(), definition->traits.end(),
+                        current_strategy.composition_direction) != definition->traits.end()) ||
+                    std::any_of(definition->traits.begin(), definition->traits.end(),
+                        [&](const auto& trait) {
+                            return std::find(current_strategy.core_traits.begin(),
+                                current_strategy.core_traits.end(), trait) !=
+                                current_strategy.core_traits.end();
+                        });
+                const bool in_planned_comp =
+                    std::find(current_strategy.core_unit_ids.begin(),
+                        current_strategy.core_unit_ids.end(), definition->internal_id) !=
+                            current_strategy.core_unit_ids.end() ||
+                    std::find(current_strategy.planned_unit_ids.begin(),
+                        current_strategy.planned_unit_ids.end(), definition->internal_id) !=
+                            current_strategy.planned_unit_ids.end();
+                const double board_impact = unit_board_impact_score(
+                    current_strategy, *definition, offer->star, lobby.trait_milestones,
+                    new_board_count, economy.level,
+                    static_cast<int>(stage_for_round(lobby.round + 1)));
+                const int offer_stage =
+                    static_cast<int>(stage_for_round(lobby.round + 1));
+                const bool early_flex_purchase =
+                    offer_stage <= 2 && definition->cost <= 2 &&
+                    new_bench_count < 6;
+                const bool strategy_approved = should_buy_unit(
+                    board_impact, upgrade_value, in_top_trait || in_planned_comp,
+                    new_bench_count, offer_stage, definition->cost);
+                // Early low-cost units create options before the comp is known.
+                // Keep this bounded by cost and bench capacity so it cannot
+                // turn into indiscriminate shop clearing.
+                if (strategy_approved || early_flex_purchase ||
+                    completes_upgrade || builds_pair)
                     return true;
             }
             return false;
@@ -3731,8 +3775,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 // a modest positive floor for an affordable bench acquisition
                 // instead of letting the current direction erase its value.
                 // The early-game floor is for actual upgrade/pair progress.
-                // Do not manufacture fit for arbitrary cheap units: that made
-                // buy-then-sell loops more rewarding than the reversal penalty.
+                // Modest-fit early acquisitions preserve option value; the
+                // recent-purchase sale guard prevents rewarding buy/sell loops.
                 const bool early_purchase_has_progress =
                     buy_completes_upgrade || buy_builds_pair;
                 const double effective_candidate_score =
@@ -3946,8 +3990,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 lobby.synergy_score(player_id) - old_synergy_score;
             const double sale_positioning_delta =
                 lobby.positioning_score(player_id) - old_positioning_score;
+            // A negligible score fluctuation must not justify selling a planned
+            // unit. Require a material, measurable improvement to the active board.
             const bool sale_compensated_by_board_gain =
-                sale_synergy_delta > 1e-6 || sale_positioning_delta > 1e-6;
+                sale_synergy_delta >= 0.20 || sale_positioning_delta >= 0.10;
             action_reward = success
                 ? reward_model::sale_quality(
                     sold_unit_fit_score, sold_core_unit,

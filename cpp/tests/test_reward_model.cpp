@@ -128,12 +128,28 @@ int main() {
     }
     require_close(unit_purchase_timing_reward(4, 54, 5, 1, 0.8, 80.0, false, false),
                   0.0, "ordinary purchases must preserve the 50-gold interest floor");
-    require_close(surplus_xp_spending_reward(54, 50, 4, 0, false), 0.0212,
-                  "XP may convert surplus when no useful shop unit is available");
+    require_close(surplus_xp_spending_reward(54, 50, 4, 0, false), 0.0,
+                  "small surplus should not trigger routine XP spending");
+    require_close(surplus_xp_spending_reward(60, 56, 4, 0, false), 0.0215,
+                  "XP fallback starts modestly when there is meaningful surplus");
+    require_close(surplus_xp_spending_reward(103, 99, 5, 0, false), 0.02795,
+                  "large surplus increases XP value gradually without dominating purchases");
+    require_close(surplus_xp_spending_reward(50, 46, 5, 0, false), 0.0,
+                  "XP surplus fallback must preserve the 50-gold interest floor");
     require_close(surplus_xp_spending_reward(54, 50, 4, 0, true), 0.0,
                   "useful shop offers take priority over surplus XP");
     require_close(surplus_xp_spending_reward(54, 50, 4, 3, false), 0.0,
                   "SLOWROLL never receives the surplus XP fallback");
+    require_close(surplus_xp_spending_reward(103, 99, 5, 3, false), 0.0,
+                  "even a large surplus must not turn SLOWROLL into a leveling strategy");
+    const double late_surplus_xp =
+        surplus_xp_spending_reward(103, 99, 5, 1, false);
+    const double late_surplus_pass =
+        pass_opportunity_penalty(103, 80.0, 5, false);
+    if (!(late_surplus_xp > late_surplus_pass)) {
+        throw std::runtime_error(
+            "late-game surplus XP progress must be preferred over passive hoarding");
+    }
     if (!(unit_purchase_timing_reward(5, 50, 2, 1, 0.7, 80.0, false, false) > 0.0)) {
         throw std::runtime_error("useful unit purchase with capped gold should be rewarded in mid-game");
     }
@@ -156,14 +172,20 @@ int main() {
     require_close(unit_purchase_timing_reward(5, 50, 1, 7, 0.7, 30.0, false, false),
                   0.0, "do not reward purchases when the bench is nearly full");
     require_close(early_purchase_reward(2, 10, 1, 2, 0.5, false, false),
-                  0.20, "early useful unit purchase bonus");
+                  0.105625, "early flexible unit acquisition bonus");
     require_close(early_purchase_reward(2, 10, 1, 2, 0.0, false, true),
-                  0.224, "early pair purchase bonus");
+                  0.232, "early pair purchase bonus remains stronger than a single flexible unit");
+    if (!(early_purchase_reward(2, 10, 1, 2, 0.10, false, false) > 0.0))
+        throw std::runtime_error("modestly compatible early units should retain option value");
+    require_close(early_purchase_reward(2, 10, 1, 2, 0.0, false, false),
+                  0.06625, "cheap early flex acquisition has bounded option value");
+    require_close(early_purchase_reward(2, 10, 4, 2, 0.0, false, false),
+                  0.0, "low-fit expensive early acquisition is not rewarded");
     require_close(early_purchase_reward(2, 10, 1, 8, 0.0, false, false),
                   0.0, "early low-fit purchase rejected with crowded bench");
     require_close(early_purchase_reward(3, 10, 1, 2, 0.5, false, false),
                   0.0, "early purchase bonus does not persist into later stages");
-    require_close(reversed_purchase_penalty(), -0.18,
+    require_close(reversed_purchase_penalty(), -0.24,
                   "targeted reversed-purchase penalty");
     // Regressions from the Viewer match: Teemo/Caitlyn were bought and sold
     // on the next action without being deployed or completing an upgrade.
@@ -174,8 +196,8 @@ int main() {
         throw std::runtime_error("Caitlyn-like low-fit immediate reversal should be penalized");
     if (!should_penalize_reversed_purchase(0.20, false, false, false, false))
         throw std::runtime_error("threshold-fit immediate reversal should be penalized");
-    if (should_penalize_reversed_purchase(0.21, false, false, false, false))
-        throw std::runtime_error("strategically useful unit should be exempt from low-fit reversal penalty");
+    if (!should_penalize_reversed_purchase(0.80, false, false, false, false))
+        throw std::runtime_error("a recently bought unit sold without deployment must be penalized regardless of fit");
     static_assert(kRecentPurchaseHistoryActions == 8,
                   "recent purchase association window should cover intervening actions");
     if (should_penalize_reversed_purchase(0.08, true, false, false, false))
@@ -420,8 +442,8 @@ int main() {
     require_close(strategy_action_reward(1, 2, 60, 56, 80.0, 4,
                                          false, false, true, false),
                   0.0475, "STABILIZE XP reward is reduced by five percent");
-    require_close(surplus_xp_spending_reward(54, 50, 4, 1, false), 0.02014,
-                  "STABILIZE surplus XP fallback uses the same five-percent reduction");
+    require_close(surplus_xp_spending_reward(103, 99, 5, 1, false), 0.0265525,
+                  "STABILIZE receives only a modest scaled surplus XP signal");
     require_close(strategy_action_reward(2, 2, 40, 35, 80.0, 4,
                                          false, false, true, true),
                   0.03, "FAST8 keeps level progress modest below the interest cap");
