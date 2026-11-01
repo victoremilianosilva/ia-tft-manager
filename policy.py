@@ -101,6 +101,45 @@ class TFTPolicy(nn.Module):
         self.item_target_head = nn.Linear(
             hidden_size + self.num_action_types + 20, 37
         )
+        # Slot-local semantic scorers let item actions compare the actual item,
+        # component, recipe and target rather than learning arbitrary slot IDs.
+        # Their final layers start at zero to preserve legacy checkpoint logits.
+        self.item_component_feature_dim = 10
+        self.item_semantic_feature_dim = 15
+        self.item_target_feature_dim = 18
+        self.item_anvil_observation_dim = 3 + 9 * 11
+        self.item_state_observation_dim = (
+            self.item_component_feature_dim
+            + 9 * self.item_semantic_feature_dim
+            + 100 * self.item_semantic_feature_dim
+            + 37 * self.item_target_feature_dim
+        )
+        self.item_inventory_candidate_head = nn.Sequential(
+            nn.Linear(hidden_size + self.num_action_types + self.item_semantic_feature_dim, 64),
+            nn.ReLU(),
+            nn.Linear(64, 1),
+        )
+        self.item_component_candidate_head = nn.Sequential(
+            nn.Linear(hidden_size + self.num_action_types + 10 + 1, 64),
+            nn.ReLU(),
+            nn.Linear(64, 1),
+        )
+        self.item_target_candidate_head = nn.Sequential(
+            nn.Linear(
+                hidden_size + self.num_action_types + 20
+                + self.item_semantic_feature_dim + self.item_target_feature_dim,
+                128,
+            ),
+            nn.ReLU(),
+            nn.Linear(128, 1),
+        )
+        for candidate_head in (
+            self.item_inventory_candidate_head,
+            self.item_component_candidate_head,
+            self.item_target_candidate_head,
+        ):
+            nn.init.zeros_(candidate_head[-1].weight)
+            nn.init.zeros_(candidate_head[-1].bias)
         self.value_head = nn.Linear(hidden_size, 1)
 
     def load_compatible_state_dict(self, state_dict):
@@ -114,7 +153,9 @@ class TFTPolicy(nn.Module):
         target = self.state_dict()
         item_head_keys = {key for key in target if key.startswith((
             "item_inventory_head.", "item_component_first_head.",
-            "item_component_second_head.", "item_target_head."
+            "item_component_second_head.", "item_target_head.",
+            "item_inventory_candidate_head.", "item_component_candidate_head.",
+            "item_target_candidate_head."
         ))}
         missing = sorted((set(target) - set(state_dict)) - item_head_keys)
         unexpected = sorted(set(state_dict) - set(target))
@@ -308,6 +349,71 @@ class TFTPolicy(nn.Module):
         )
         return bench, shop
 
+    def _item_state_features(self, obs):
+        """Decode the semantic item block appended immediately before the candidate tail."""
+        start = obs.shape[-1] - self.candidate_observation_dim - self.item_state_observation_dim
+        end = obs.shape[-1] - self.candidate_observation_dim
+        if start < 0:
+            raise ValueError("Observation does not contain the native semantic item feature block.")
+        block = obs[:, start:end]
+        offset = 0
+        components = block[:, offset:offset + self.item_component_feature_dim]
+        offset += self.item_component_feature_dim
+        inventory_size = 9 * self.item_semantic_feature_dim
+        inventory = block[:, offset:offset + inventory_size].reshape(
+            -1, 9, self.item_semantic_feature_dim
+        )
+        offset += inventory_size
+        recipe_size = 100 * self.item_semantic_feature_dim
+        recipes = block[:, offset:offset + recipe_size].reshape(
+            -1, 100, self.item_semantic_feature_dim
+        )
+        offset += recipe_size
+        targets = block[:, offset:].reshape(-1, 37, self.item_target_feature_dim)
+        anvil_index = start - self.item_anvil_observation_dim
+        anvil_pending = (
+            obs[:, anvil_index] > 0.5
+            if anvil_index >= 0 else torch.zeros(obs.shape[0], device=obs.device, dtype=torch.bool)
+        )
+        return components, inventory, recipes, targets, anvil_pending
+
+    def _item_inventory_logits(self, conditioned, inventory_features, anvil_pending):
+        logits = self.item_inventory_head(conditioned)
+        context = conditioned.unsqueeze(1).expand(-1, 9, -1)
+        scores = self.item_inventory_candidate_head(torch.cat(
+            [context, inventory_features.to(dtype=conditioned.dtype)], dim=-1
+        )).squeeze(-1)
+        return logits + scores * (~anvil_pending).to(dtype=logits.dtype).unsqueeze(-1)
+
+    def _item_component_logits(self, conditioned, component_features, first_context=None):
+        if first_context is None:
+            first_context = torch.zeros(
+                conditioned.shape[0], 10, device=conditioned.device, dtype=conditioned.dtype
+            )
+            logits = self.item_component_first_head(conditioned)
+        else:
+            logits = self.item_component_second_head(torch.cat([conditioned, first_context], dim=-1))
+        candidate_context = torch.cat([
+            conditioned.unsqueeze(1).expand(-1, 10, -1),
+            first_context.unsqueeze(1).expand(-1, 10, -1),
+            component_features.unsqueeze(-1).to(dtype=conditioned.dtype),
+        ], dim=-1)
+        return logits + self.item_component_candidate_head(candidate_context).squeeze(-1)
+
+    def _item_target_logits(
+        self, conditioned, target_context, item_features, target_features, anvil_pending
+    ):
+        logits = self.item_target_head(torch.cat([conditioned, target_context], dim=-1))
+        batch = conditioned.shape[0]
+        joined = torch.cat([
+            conditioned.unsqueeze(1).expand(-1, 37, -1),
+            target_context.unsqueeze(1).expand(-1, 37, -1),
+            item_features.unsqueeze(1).expand(-1, 37, -1).to(dtype=conditioned.dtype),
+            target_features.to(dtype=conditioned.dtype),
+        ], dim=-1)
+        scores = self.item_target_candidate_head(joined).squeeze(-1)
+        return logits + scores * (~anvil_pending).to(dtype=logits.dtype).unsqueeze(-1)
+
     def _bench_to_board_logits(self, conditioned, selected_slots, bench_candidate_features):
         """Score board destinations conditioned on the selected bench unit."""
         slot_onehot = F.one_hot(
@@ -448,6 +554,10 @@ class TFTPolicy(nn.Module):
         batch_size = obs.shape[0]
         player_diagnostics = [[] for _ in range(batch_size)]
         bench_candidate_features, shop_candidate_features = self._candidate_features(obs)
+        (
+            item_component_features, item_inventory_features, item_recipe_features,
+            item_target_features, item_anvil_pending,
+        ) = self._item_state_features(obs)
 
         def record_distribution(name, logits, chosen, row_indices, applied_mask=None):
             if not collect_diagnostics and not collect_entropy_diagnostics:
@@ -687,7 +797,10 @@ class TFTPolicy(nn.Module):
         equip_item_mask = action_type == 7
         if equip_item_mask.any():
             conditioned_item = conditioned[equip_item_mask]
-            logits = self.item_inventory_head(conditioned_item)
+            logits = self._item_inventory_logits(
+                conditioned_item, item_inventory_features[equip_item_mask],
+                item_anvil_pending[equip_item_mask],
+            )
             inventory_mask = masks["item_inventory_mask"][equip_item_mask] if masks is not None else None
             if inventory_mask is not None:
                 logits = self._mask_logits(logits, inventory_mask)
@@ -701,7 +814,13 @@ class TFTPolicy(nn.Module):
             item_context = F.one_hot(item_index, num_classes=9).to(dtype=conditioned.dtype)
             item_context = F.pad(item_context, (0, 1))
             target_context = torch.cat([item_context, torch.zeros_like(item_context)], dim=-1)
-            target_logits = self.item_target_head(torch.cat([conditioned_item, target_context], dim=-1))
+            selected_item_features = item_inventory_features[equip_item_mask].gather(
+                1, item_index.view(-1, 1, 1).expand(-1, 1, self.item_semantic_feature_dim)
+            ).squeeze(1)
+            target_logits = self._item_target_logits(
+                conditioned_item, target_context, selected_item_features,
+                item_target_features[equip_item_mask], item_anvil_pending[equip_item_mask],
+            )
             target_mask = masks["item_target_mask"][equip_item_mask] if masks is not None else None
             if target_mask is not None:
                 target_logits = self._mask_logits(target_logits, target_mask)
@@ -716,7 +835,9 @@ class TFTPolicy(nn.Module):
         craft_item_mask = action_type == 8
         if craft_item_mask.any():
             conditioned_item = conditioned[craft_item_mask]
-            first_logits = self.item_component_first_head(conditioned_item)
+            first_logits = self._item_component_logits(
+                conditioned_item, item_component_features[craft_item_mask], None
+            )
             first_mask = masks["item_component_first_mask"][craft_item_mask] if masks is not None else None
             if first_mask is not None:
                 first_logits = self._mask_logits(first_logits, first_mask)
@@ -728,8 +849,9 @@ class TFTPolicy(nn.Module):
             record_distribution("item_component_first", first_logits, first_index, torch.where(craft_item_mask)[0], first_mask)
 
             first_onehot = F.one_hot(first_index, num_classes=10).to(dtype=conditioned.dtype)
-            second_input = torch.cat([conditioned_item, first_onehot], dim=-1)
-            second_logits = self.item_component_second_head(second_input)
+            second_logits = self._item_component_logits(
+                conditioned_item, item_component_features[craft_item_mask], first_onehot
+            )
             pair_masks = masks["item_component_pair_masks"][craft_item_mask] if masks is not None else None
             second_mask = pair_masks[torch.arange(first_index.shape[0], device=device), first_index] if pair_masks is not None else None
             if second_mask is not None:
@@ -743,7 +865,14 @@ class TFTPolicy(nn.Module):
 
             second_onehot = F.one_hot(second_index, num_classes=10).to(dtype=conditioned.dtype)
             target_context = torch.cat([first_onehot, second_onehot], dim=-1)
-            target_logits = self.item_target_head(torch.cat([conditioned_item, target_context], dim=-1))
+            recipe_index = first_index * 10 + second_index
+            selected_recipe_features = item_recipe_features[craft_item_mask].gather(
+                1, recipe_index.view(-1, 1, 1).expand(-1, 1, self.item_semantic_feature_dim)
+            ).squeeze(1)
+            target_logits = self._item_target_logits(
+                conditioned_item, target_context, selected_recipe_features,
+                item_target_features[craft_item_mask], item_anvil_pending[craft_item_mask],
+            )
             target_mask = masks["item_target_mask"][craft_item_mask] if masks is not None else None
             if target_mask is not None:
                 target_logits = self._mask_logits(target_logits, target_mask)
@@ -958,7 +1087,12 @@ class TFTPolicy(nn.Module):
             conditioned_item = conditioned[equip_item_mask]
             item_index = actions[equip_item_mask, 1].long()
             inventory_mask = masks["item_inventory_mask"][equip_item_mask]
-            logits = self._mask_logits(self.item_inventory_head(conditioned_item), inventory_mask)
+            logits = self._mask_logits(
+                self._item_inventory_logits(
+                    conditioned_item, item_inventory_features[equip_item_mask],
+                    item_anvil_pending[equip_item_mask],
+                ), inventory_mask
+            )
             self._validate_selected_actions(item_index, inventory_mask, "item_inventory")
             dist = Categorical(logits=logits)
             total_logprob[equip_item_mask] += dist.log_prob(item_index)
@@ -969,9 +1103,14 @@ class TFTPolicy(nn.Module):
             item_context = F.pad(item_context, (0, 1))
             target_context = torch.cat([item_context, torch.zeros_like(item_context)], dim=-1)
             target_mask = masks["item_target_mask"][equip_item_mask]
+            selected_item_features = item_inventory_features[equip_item_mask].gather(
+                1, item_index.view(-1, 1, 1).expand(-1, 1, self.item_semantic_feature_dim)
+            ).squeeze(1)
             target_logits = self._mask_logits(
-                self.item_target_head(torch.cat([conditioned_item, target_context], dim=-1)),
-                target_mask,
+                self._item_target_logits(
+                    conditioned_item, target_context, selected_item_features,
+                    item_target_features[equip_item_mask], item_anvil_pending[equip_item_mask],
+                ), target_mask,
             )
             self._validate_selected_actions(target_index, target_mask, "item_target")
             target_dist = Categorical(logits=target_logits)
@@ -987,14 +1126,20 @@ class TFTPolicy(nn.Module):
             target_index = actions[craft_item_mask, 3].long()
 
             first_mask = masks["item_component_first_mask"][craft_item_mask]
-            first_logits = self._mask_logits(self.item_component_first_head(conditioned_item), first_mask)
+            first_logits = self._mask_logits(
+                self._item_component_logits(
+                    conditioned_item, item_component_features[craft_item_mask], None
+                ), first_mask
+            )
             self._validate_selected_actions(first_index, first_mask, "item_component_first")
             first_dist = Categorical(logits=first_logits)
             total_logprob[craft_item_mask] += first_dist.log_prob(first_index)
             total_entropy[craft_item_mask] += first_dist.entropy()
 
             first_onehot = F.one_hot(first_index, num_classes=10).to(dtype=conditioned.dtype)
-            second_logits = self.item_component_second_head(torch.cat([conditioned_item, first_onehot], dim=-1))
+            second_logits = self._item_component_logits(
+                conditioned_item, item_component_features[craft_item_mask], first_onehot
+            )
             pair_masks = masks["item_component_pair_masks"][craft_item_mask]
             second_mask = pair_masks[
                 torch.arange(first_index.shape[0], device=first_index.device), first_index
@@ -1008,9 +1153,15 @@ class TFTPolicy(nn.Module):
             second_onehot = F.one_hot(second_index, num_classes=10).to(dtype=conditioned.dtype)
             target_context = torch.cat([first_onehot, second_onehot], dim=-1)
             target_mask = masks["item_target_mask"][craft_item_mask]
+            recipe_index = first_index * 10 + second_index
+            selected_recipe_features = item_recipe_features[craft_item_mask].gather(
+                1, recipe_index.view(-1, 1, 1).expand(-1, 1, self.item_semantic_feature_dim)
+            ).squeeze(1)
             target_logits = self._mask_logits(
-                self.item_target_head(torch.cat([conditioned_item, target_context], dim=-1)),
-                target_mask,
+                self._item_target_logits(
+                    conditioned_item, target_context, selected_recipe_features,
+                    item_target_features[craft_item_mask], item_anvil_pending[craft_item_mask],
+                ), target_mask,
             )
             self._validate_selected_actions(target_index, target_mask, "item_target")
             target_dist = Categorical(logits=target_logits)
