@@ -525,8 +525,8 @@ int main() {
 
     const double fast8_xp_urgent =
         strategy_action_reward(2, 2, 40, 36, 30.0, 4,
-                               false, false, false, true) +
-        phase_xp_progress_reward(40, 36, 6, 6, 0, 4, 30.0, 4, 2, false);
+                               false, false, false, true) - 0.025 +
+        xp_progress_reward(40, 36, 6, 6, 0, 4, 30.0, 4, 2, false);
     const double fast8_reroll_urgent =
         strategy_action_reward(2, 1, 40, 36, 30.0, 4,
                                false, true, false, true) +
