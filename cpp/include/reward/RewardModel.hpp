@@ -423,6 +423,12 @@ inline double phase_xp_progress_reward(
         new_xp <= old_xp)
         return 0.0;
 
+    // The surplus fallback already covers safe XP bought from 60+ gold while
+    // retaining 50+. Do not pay a second phase bonus for the same action.
+    if (stage >= 4 && gold_before >= 60 && gold_after >= 50 &&
+        !useful_purchase_available)
+        return 0.0;
+
     const int target_level = economy_phase_target_level(stage, active_strategy);
     if (old_level >= target_level)
         return 0.0;
