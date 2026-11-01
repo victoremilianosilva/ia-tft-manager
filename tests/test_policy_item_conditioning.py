@@ -51,6 +51,8 @@ def test_item_target_scorer_uses_each_candidates_role_and_position_features():
     first = policy.item_target_candidate_head[0]
     last = policy.item_target_candidate_head[-1]
     with torch.no_grad():
+        policy.item_target_head.weight.zero_()
+        policy.item_target_head.bias.zero_()
         first.weight.zero_()
         first.bias.zero_()
         first.weight[0, -1] = 1.0
