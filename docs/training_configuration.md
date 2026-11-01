@@ -81,3 +81,8 @@ scheduler para evitar herdar silenciosamente uma curva desconhecida.
 A configuração efetiva é registrada em `training/config` no TensorBoard e impressa no
 início. Os diagnósticos PPO incluem minibatches tentados/processados, passos reais do
 optimizer, early stop/KL e norma do gradiente antes do clipping.
+
+
+O scheduler usa decaimento cosseno com piso: depois de atingir `min_learning_rate`,
+o LR permanece nesse valor e não volta a subir caso o treinamento ultrapasse
+`lr_schedule_updates`.
