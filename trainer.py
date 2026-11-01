@@ -308,6 +308,7 @@ class Trainer:
             max_grad_norm=self.config.max_grad_norm,
             target_kl=self.config.target_kl,
         )
+        self.ppo.update_step = self.start_update
         self.writer.add_text(
             "training/config",
             json.dumps(self.config.to_dict(), indent=2, ensure_ascii=False),
@@ -847,6 +848,12 @@ class Trainer:
         rollout_steps = self.config.rollout_steps if rollout_steps is None else int(rollout_steps)
         if rollout_steps <= 0:
             raise ValueError("rollout_steps deve ser > 0.")
+        self.config.rollout_steps = rollout_steps
+        self.writer.add_text(
+            "training/config",
+            json.dumps(self.config.to_dict(), indent=2, ensure_ascii=False),
+            self.start_update,
+        )
         start = self.start_update
 
         end = (
@@ -1542,6 +1549,8 @@ class Trainer:
             self.writer.add_scalar("training/attempted_minibatches", ppo_metrics.get("attempted_batches", 0), update)
             self.writer.add_scalar("training/processed_minibatches", ppo_metrics.get("batches_processed", 0), update)
             self.writer.add_scalar("training/early_stop", float(ppo_metrics.get("early_stop", False)), update)
+            self.writer.add_scalar("training/early_stop_kl", ppo_metrics.get("early_stop_kl", 0.0), update)
+            self.writer.add_scalar("training/approx_kl_max", ppo_metrics.get("approx_kl_max", 0.0), update)
 
             # ========================================================
             # 📉 SCHEDULER
@@ -1840,6 +1849,19 @@ class Trainer:
                     f"💾 Checkpoint salvo | "
                     f"update={update}"
                 )
+
+        # Salva o último update mesmo quando não for múltiplo de 40.
+        torch.save(
+            {
+                "policy": self.policy.state_dict(),
+                "optimizer": self.optimizer.state_dict(),
+                "scheduler": self.scheduler.state_dict(),
+                "update": end - 1,
+                "training_config": self.config.to_dict(),
+            },
+            self.config.checkpoint_path,
+        )
+        print(f"💾 Checkpoint final salvo | update={end - 1}")
 
         # ============================================================
         # 🔚 CLOSE
