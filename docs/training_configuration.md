@@ -86,3 +86,15 @@ optimizer, early stop/KL e norma do gradiente antes do clipping.
 O scheduler usa decaimento cosseno com piso: depois de atingir `min_learning_rate`,
 o LR permanece nesse valor e não volta a subir caso o treinamento ultrapasse
 `lr_schedule_updates`.
+
+## Progresso no terminal
+
+O treinamento usa Rich para exibir uma barra por update, com percentual, tempo decorrido
+e ETA (estimativa de tempo restante). A descrição da barra também acompanha reward médio,
+learning rate, entropia e maior approx KL do update. As métricas são atualizadas ao fim
+de cada update; o ETA é recalculado pelo tempo real observado.
+
+Instale as dependências com `pip install -r requirements.txt`. Para preservar a barra
+dinâmica no PowerShell, execute `.\train_cycle.ps1` diretamente: o script usa
+`Start-Transcript` para registrar a saída sem inserir `Tee-Object` no pipeline do
+processo Python.
