@@ -1529,7 +1529,15 @@ struct TFTEngine::Impl {
                 for (std::size_t target = 0; target < kBoardSlots + kBenchSlots; ++target) {
                     double fit = 0.0;
                     const auto* unit = item_target_unit(i, target);
-                    if (item_state && !item_id.empty() && unit) {
+                    const auto first_component = recipe / 10;
+                    const auto second_component = recipe % 10;
+                    const bool recipe_available = item_state && item_catalog &&
+                        first_component < item_catalog->components.size() &&
+                        second_component < item_catalog->components.size() &&
+                        item_state->can_craft(
+                            item_catalog->components[first_component].first,
+                            item_catalog->components[second_component].first);
+                    if (recipe_available && !item_id.empty() && unit) {
                         const auto profile = profile_by_uuid.find(unit->uuid);
                         if (profile != profile_by_uuid.end())
                             fit = item_state->item_fit(item_id, *profile->second);
