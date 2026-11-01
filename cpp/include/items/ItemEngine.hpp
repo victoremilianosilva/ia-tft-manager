@@ -60,6 +60,8 @@ struct UnitProfile {
     double armor{0.0};
     double magic_resist{0.0};
     double composition_fit{0.0}; // normalized [0,1]
+    std::vector<std::string> traits;
+    std::vector<std::string> preferred_traits;
 };
 
 struct ItemActionResult {
@@ -348,8 +350,24 @@ public:
         if (unit.role == 3) role_fit += 0.5 * (item->tank_weight + item->carry_weight);
         // A trait emblem has strategic value even when its numeric stats are
         // zero; scale it by composition fit without forcing a particular trait.
-        if (!item->grants_trait.empty())
-            role_fit += 0.5 + std::clamp(unit.composition_fit, 0.0, 1.0);
+        if (!item->grants_trait.empty()) {
+            const bool matches_plan = std::find(
+                unit.preferred_traits.begin(), unit.preferred_traits.end(),
+                item->grants_trait) != unit.preferred_traits.end();
+            const bool already_has_trait = std::find(
+                unit.traits.begin(), unit.traits.end(),
+                item->grants_trait) != unit.traits.end();
+            // An emblem should help complete the selected plan, not receive
+            // the same generic bonus for an unrelated trait. Giving a trait
+            // already native to the holder has only a small marginal value.
+            if (matches_plan && !already_has_trait) {
+                role_fit += 0.75 + std::clamp(unit.composition_fit, 0.0, 1.0);
+            } else if (matches_plan) {
+                role_fit += 0.15;
+            } else if (already_has_trait) {
+                role_fit += 0.05;
+            }
+        }
         return damage_fit + durability_fit + role_fit +
             0.25 * std::clamp(unit.composition_fit, 0.0, 1.0);
     }
