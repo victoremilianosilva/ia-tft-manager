@@ -293,6 +293,7 @@ class Trainer:
         )
         restore_scheduler = bool(
             can_restore_optimizer and "scheduler" in checkpoint
+            and checkpoint.get("scheduler_type") == "cosine_clamped"
             and saved_schedule == current_schedule
         )
         if restore_scheduler:
@@ -1866,6 +1867,8 @@ class Trainer:
                             update,
                         "training_config":
                             self.config.to_dict(),
+                        "scheduler_type":
+                            "cosine_clamped",
                     },
                     self.config.checkpoint_path
                 )
@@ -1883,6 +1886,7 @@ class Trainer:
                 "scheduler": self.scheduler.state_dict(),
                 "update": end - 1,
                 "training_config": self.config.to_dict(),
+                "scheduler_type": "cosine_clamped",
             },
             self.config.checkpoint_path,
         )
