@@ -3,6 +3,17 @@ import torch.optim as optim
 import numpy as np
 import os
 import json
+import sys
+
+from rich.console import Console
+from rich.progress import (
+    BarColumn,
+    Progress,
+    TaskProgressColumn,
+    TextColumn,
+    TimeElapsedColumn,
+    TimeRemainingColumn,
+)
 
 from training_config import TrainingConfig, cosine_lr_factor
 
@@ -996,6 +1007,23 @@ class Trainer:
         placement_samples = 0
         outcome_sample_step = 0
 
+        progress = Progress(
+            TextColumn("{task.description}"),
+            BarColumn(),
+            TaskProgressColumn(),
+            TimeElapsedColumn(),
+            TimeRemainingColumn(),
+            console=Console(),
+            refresh_per_second=4,
+            redirect_stdout=True,
+            redirect_stderr=True,
+        )
+        progress.start()
+        progress_task = progress.add_task(
+            "Preparando treinamento",
+            total=total_updates,
+        )
+
         for update in range(
             start,
             end
@@ -1877,6 +1905,22 @@ class Trainer:
                     f"💾 Checkpoint salvo | "
                     f"update={update}"
                 )
+
+            # Atualiza a barra uma vez por update, usando métricas já calculadas.
+            reward_label = f"{mean_reward:.3f}" if mean_reward is not None else "n/a"
+            kl_value = ppo_metrics.get("approx_kl_max")
+            kl_label = f"{float(kl_value):.4f}" if kl_value is not None else "n/a"
+            progress.update(
+                progress_task,
+                completed=update - start + 1,
+                description=(
+                    f"Treino | reward {reward_label} | "
+                    f"LR {current_lr:.2e} | Ent {self.ppo.ent_coef:.4f} | "
+                    f"KL {kl_label}"
+                ),
+            )
+
+        progress.stop()
 
         # Salva o último update mesmo quando não for múltiplo de 40.
         torch.save(
