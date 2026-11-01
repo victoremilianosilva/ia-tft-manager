@@ -31,6 +31,9 @@ Também é possível sobrescrever parâmetros por variáveis de ambiente:
 | `TFT_PPO_MIN_LR` | `min_learning_rate` |
 | `TFT_PPO_LR_SCHEDULE_UPDATES` | `lr_schedule_updates` |
 | `TFT_PPO_ADAM_EPS` | `adam_eps` |
+| `TFT_PPO_ADAM_BETA1` | `adam_beta1` |
+| `TFT_PPO_ADAM_BETA2` | `adam_beta2` |
+| `TFT_PPO_WEIGHT_DECAY` | `weight_decay` |
 | `TFT_PPO_CLIP_COEF` | `clip_coef` |
 | `TFT_PPO_ENT_COEF` | `entropy_coef_initial` |
 | `TFT_PPO_ENT_COEF_FINAL` | `entropy_coef_final` |
