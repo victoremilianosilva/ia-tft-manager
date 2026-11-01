@@ -2,10 +2,10 @@
   "schema_version": 1,
   "source": "op.gg",
   "tool": "tft_list_meta_decks",
-  "fetched_at": "2026-11-01T02:34:05.462380+00:00",
+  "fetched_at": "2026-11-01T16:17:20.010698+00:00",
   "metadata": {
-    "gameStatCounts": 2680728,
-    "gameStatDateTime": "2026-11-01T01:59:34.000Z"
+    "gameStatCounts": 1818616,
+    "gameStatDateTime": "2026-11-01T15:59:23.000Z"
   },
   "compositions": [
     {
@@ -166,27 +166,48 @@
           "num_units": 1
         }
       ],
-      "badge": [],
+      "badge": [
+        {
+          "key": "difficulty",
+          "value": 3
+        },
+        {
+          "key": "tempo",
+          "value": null
+        },
+        {
+          "key": "reroll",
+          "value": 8
+        },
+        {
+          "key": "honey",
+          "value": false
+        },
+        {
+          "key": "ppm",
+          "value": "high"
+        }
+      ],
       "statistics": {
         "deck": {
-          "totalCount": 2181288,
-          "compsCount": 40234,
-          "avgPlacement": 2.49,
-          "winCount": 14049,
-          "top4Count": 35380,
-          "winRate": 0.3492,
-          "top4Rate": 0.8794,
-          "pickRate": 0.018445065484246004
+          "totalCount": 2989172,
+          "compsCount": 56898,
+          "avgPlacement": 2.51,
+          "winCount": 19592,
+          "top4Count": 49905,
+          "winRate": 0.3443,
+          "top4Rate": 0.8771,
+          "pickRate": 0.019034702586535668
         },
         "label": {
-          "totalCount": 2181288,
-          "compsCount": 88973,
-          "avgPlacement": 3.23,
-          "winCount": 21918,
-          "top4Count": 65915,
-          "winRate": 0.2463,
-          "top4Rate": 0.7408,
-          "pickRate": 0.04078920344310334
+          "totalCount": 2989172,
+          "compsCount": 124997,
+          "avgPlacement": 3.24,
+          "winCount": 30434,
+          "top4Count": 92369,
+          "winRate": 0.2435,
+          "top4Rate": 0.739,
+          "pickRate": 0.04181659670303348
         }
       },
       "early_game": {
@@ -300,9 +321,9 @@
             "num_units": 1
           }
         ],
-        "play": 2206.0,
-        "win": 905.0,
-        "lose": 1228.0
+        "play": 2412.0,
+        "win": 1006.0,
+        "lose": 1332.0
       },
       "mid_game": {
         "level": 7,
@@ -460,9 +481,9 @@
             "num_units": 1
           }
         ],
-        "play": 2556.0,
-        "win": 1557.0,
-        "lose": 936.0
+        "play": 2677.0,
+        "win": 1659.0,
+        "lose": 951.0
       }
     },
     {
@@ -644,27 +665,48 @@
           "num_units": 1
         }
       ],
-      "badge": [],
+      "badge": [
+        {
+          "key": "difficulty",
+          "value": 3
+        },
+        {
+          "key": "tempo",
+          "value": 9
+        },
+        {
+          "key": "reroll",
+          "value": 9
+        },
+        {
+          "key": "honey",
+          "value": false
+        },
+        {
+          "key": "ppm",
+          "value": "high"
+        }
+      ],
       "statistics": {
         "deck": {
-          "totalCount": 2181288,
-          "compsCount": 39569,
-          "avgPlacement": 3.22,
-          "winCount": 11813,
-          "top4Count": 28559,
-          "winRate": 0.2985,
-          "top4Rate": 0.7218,
-          "pickRate": 0.018140199735202322
+          "totalCount": 2989172,
+          "compsCount": 54985,
+          "avgPlacement": 3.24,
+          "winCount": 16292,
+          "top4Count": 39498,
+          "winRate": 0.2963,
+          "top4Rate": 0.7183,
+          "pickRate": 0.018394726031155117
         },
         "label": {
-          "totalCount": 2181288,
-          "compsCount": 66398,
+          "totalCount": 2989172,
+          "compsCount": 93526,
           "avgPlacement": 2.97,
-          "winCount": 24352,
-          "top4Count": 50163,
-          "winRate": 0.3668,
-          "top4Rate": 0.7555,
-          "pickRate": 0.030439813541357216
+          "winCount": 34298,
+          "top4Count": 70650,
+          "winRate": 0.3667,
+          "top4Rate": 0.7554,
+          "pickRate": 0.031288263104297775
         }
       },
       "early_game": {
@@ -769,7 +811,7 @@
             ],
             "tier": 0,
             "cell": {
-              "x": 5,
+              "x": 6,
               "y": 4
             },
             "is_core": false,
@@ -777,81 +819,6 @@
           },
           {
             "key": "DA_Elderwood18_StonebarkTree",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 6,
-              "y": 4
-            },
-            "is_core": false,
-            "priority": 0
-          }
-        ],
-        "traits": [
-          {
-            "key": "DA_18_Elderwood",
-            "style": 3,
-            "num_units": 5
-          },
-          {
-            "key": "DA_18_Defender",
-            "style": 0,
-            "num_units": 1
-          },
-          {
-            "key": "DA_18_Fae",
-            "style": 0,
-            "num_units": 1
-          },
-          {
-            "key": "DA_18_Rapidfire",
-            "style": 0,
-            "num_units": 1
-          },
-          {
-            "key": "DA_18_Brawler",
-            "style": 0,
-            "num_units": 1
-          },
-          {
-            "key": "DA_18_Spellweaver",
-            "style": 0,
-            "num_units": 1
-          },
-          {
-            "key": "DA_18_Vanguard",
-            "style": 0,
-            "num_units": 1
-          }
-        ],
-        "play": 642.0,
-        "win": 268.0,
-        "lose": 350.0
-      },
-      "mid_game": {
-        "level": 7,
-        "units": [
-          {
-            "key": "DA_18_Ornn",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 5,
-              "y": 4
-            },
-            "is_core": false,
-            "priority": 0
-          },
-          {
-            "key": "DA_18_Varus",
             "items": [
               "None",
               "None",
@@ -860,126 +827,6 @@
             "tier": 0,
             "cell": {
               "x": 7,
-              "y": 1
-            },
-            "is_core": false,
-            "priority": 0
-          },
-          {
-            "key": "DA_18_Xayah",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 2,
-              "y": 1
-            },
-            "is_core": false,
-            "priority": 0
-          },
-          {
-            "key": "DA_18_Alistar",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 2,
-              "y": 4
-            },
-            "is_core": false,
-            "priority": 0
-          },
-          {
-            "key": "DA_18_LeBlanc",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 1,
-              "y": 1
-            },
-            "is_core": false,
-            "priority": 0
-          },
-          {
-            "key": "DA_18_Shen",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 3,
-              "y": 4
-            },
-            "is_core": false,
-            "priority": 0
-          },
-          {
-            "key": "DA_18_Hecarim",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 1,
-              "y": 4
-            },
-            "is_core": false,
-            "priority": 0
-          },
-          {
-            "key": "DA_Elderwood18_Lifeblossom",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 4,
-              "y": 1
-            },
-            "is_core": false,
-            "priority": 0
-          },
-          {
-            "key": "DA_Elderwood18_StonebarkTree",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 4,
-              "y": 4
-            },
-            "is_core": false,
-            "priority": 0
-          },
-          {
-            "key": "DA_Elderwood18_StonebarkTree",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 6,
               "y": 4
             },
             "is_core": false,
@@ -994,21 +841,16 @@
           },
           {
             "key": "DA_18_Defender",
-            "style": 1,
-            "num_units": 2
-          },
-          {
-            "key": "DA_18_Inferno",
-            "style": 1,
-            "num_units": 2
-          },
-          {
-            "key": "DA_18_Rapidfire",
-            "style": 1,
-            "num_units": 2
+            "style": 0,
+            "num_units": 1
           },
           {
             "key": "DA_18_Fae",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Rapidfire",
             "style": 0,
             "num_units": 1
           },
@@ -1028,9 +870,164 @@
             "num_units": 1
           }
         ],
-        "play": 66.0,
-        "win": 21.0,
-        "lose": 43.0
+        "play": 736.0,
+        "win": 313.0,
+        "lose": 393.0
+      },
+      "mid_game": {
+        "level": 7,
+        "units": [
+          {
+            "key": "DA_18_Sentry",
+            "items": [
+              "None",
+              "None",
+              "None"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 1,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Cinderling18",
+            "items": [
+              "None",
+              "None",
+              "None"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 2,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Gromp18_AP",
+            "items": [
+              "None",
+              "None",
+              "None"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Murkwolf18",
+            "items": [
+              "None",
+              "None",
+              "None"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Scuttlecrab18",
+            "items": [
+              "None",
+              "None",
+              "None"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Krug18",
+            "items": [
+              "None",
+              "None",
+              "None"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_Sentinel18",
+            "items": [
+              "None",
+              "None",
+              "None"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 5,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          }
+        ],
+        "traits": [
+          {
+            "key": "DA_Riftbeast18",
+            "style": 4,
+            "num_units": 7
+          },
+          {
+            "key": "DA_18_Invoker",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Hunter",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Adaptor",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Slayer",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_Juggernaut18",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Brawler",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Vanguard",
+            "style": 0,
+            "num_units": 1
+          }
+        ],
+        "play": 1549.0,
+        "win": 1016.0,
+        "lose": 491.0
       }
     },
     {
@@ -1195,27 +1192,48 @@
           "num_units": 1
         }
       ],
-      "badge": [],
+      "badge": [
+        {
+          "key": "difficulty",
+          "value": 1
+        },
+        {
+          "key": "tempo",
+          "value": null
+        },
+        {
+          "key": "reroll",
+          "value": 6
+        },
+        {
+          "key": "honey",
+          "value": false
+        },
+        {
+          "key": "ppm",
+          "value": "high"
+        }
+      ],
       "statistics": {
         "deck": {
-          "totalCount": 2181288,
-          "compsCount": 26496,
-          "avgPlacement": 3.12,
-          "winCount": 6178,
-          "top4Count": 20558,
-          "winRate": 0.2332,
-          "top4Rate": 0.7759,
-          "pickRate": 0.012146951709265351
+          "totalCount": 2989172,
+          "compsCount": 36807,
+          "avgPlacement": 3.1,
+          "winCount": 8551,
+          "top4Count": 28703,
+          "winRate": 0.2323,
+          "top4Rate": 0.7798,
+          "pickRate": 0.012313443321428141
         },
         "label": {
-          "totalCount": 2181288,
-          "compsCount": 36438,
-          "avgPlacement": 2.91,
-          "winCount": 9623,
-          "top4Count": 29529,
-          "winRate": 0.2641,
-          "top4Rate": 0.8104,
-          "pickRate": 0.016704809268652282
+          "totalCount": 2989172,
+          "compsCount": 50887,
+          "avgPlacement": 2.9,
+          "winCount": 13395,
+          "top4Count": 41418,
+          "winRate": 0.2632,
+          "top4Rate": 0.8139,
+          "pickRate": 0.017023777822085848
         }
       },
       "early_game": {
@@ -1334,9 +1352,9 @@
             "num_units": 1
           }
         ],
-        "play": 5743.0,
-        "win": 3233.0,
-        "lose": 2324.0
+        "play": 6019.0,
+        "win": 3450.0,
+        "lose": 2384.0
       },
       "mid_game": {
         "level": 7,
@@ -1494,14 +1512,14 @@
             "num_units": 1
           }
         ],
-        "play": 14121.0,
-        "win": 8203.0,
-        "lose": 5374.0
+        "play": 14868.0,
+        "win": 8636.0,
+        "lose": 5658.0
       }
     },
     {
       "id": "96aeda6509f73e075c028fbbfc984091",
-      "name": "Fera do Rift Maokai",
+      "name": "Fera do Rift Elder Dragon",
       "cost": 114,
       "team_code": "023ed4283fc40440b4153fb430000000TFTSet18",
       "units": [
@@ -1540,7 +1558,7 @@
             "y": 3
           },
           "is_core": true,
-          "priority": 2
+          "priority": 1
         },
         {
           "key": "DA_18_Ivern",
@@ -1581,7 +1599,7 @@
             "y": 4
           },
           "is_core": true,
-          "priority": 1
+          "priority": 2
         },
         {
           "key": "DA_Draven18",
@@ -1667,27 +1685,48 @@
           "num_units": 1
         }
       ],
-      "badge": [],
+      "badge": [
+        {
+          "key": "difficulty",
+          "value": 3
+        },
+        {
+          "key": "tempo",
+          "value": 9
+        },
+        {
+          "key": "reroll",
+          "value": 9
+        },
+        {
+          "key": "honey",
+          "value": false
+        },
+        {
+          "key": "ppm",
+          "value": "high"
+        }
+      ],
       "statistics": {
         "deck": {
-          "totalCount": 2181288,
-          "compsCount": 29676,
-          "avgPlacement": 3.37,
-          "winCount": 8709,
-          "top4Count": 20416,
-          "winRate": 0.2935,
-          "top4Rate": 0.688,
-          "pickRate": 0.013604805967850188
+          "totalCount": 2989172,
+          "compsCount": 42368,
+          "avgPlacement": 3.38,
+          "winCount": 12398,
+          "top4Count": 29062,
+          "winRate": 0.2926,
+          "top4Rate": 0.6859,
+          "pickRate": 0.014173824724706373
         },
         "label": {
-          "totalCount": 2181288,
-          "compsCount": 41906,
+          "totalCount": 2989172,
+          "compsCount": 59407,
           "avgPlacement": 3.14,
-          "winCount": 14397,
-          "top4Count": 30367,
+          "winCount": 20410,
+          "top4Count": 43008,
           "winRate": 0.3436,
-          "top4Rate": 0.7246,
-          "pickRate": 0.019211585081841554
+          "top4Rate": 0.724,
+          "pickRate": 0.019874065460267928
         }
       },
       "early_game": {
@@ -1801,9 +1840,9 @@
             "num_units": 1
           }
         ],
-        "play": 2349.0,
-        "win": 947.0,
-        "lose": 1326.0
+        "play": 2412.0,
+        "win": 1006.0,
+        "lose": 1332.0
       },
       "mid_game": {
         "level": 7,
@@ -1961,9 +2000,9 @@
             "num_units": 1
           }
         ],
-        "play": 2556.0,
-        "win": 1557.0,
-        "lose": 936.0
+        "play": 2677.0,
+        "win": 1659.0,
+        "lose": 951.0
       }
     },
     {
@@ -1998,7 +2037,7 @@
           "key": "DA_18_Alistar",
           "items": [
             "DA_GargoyleStoneplate",
-            "DA_SpiritVisage",
+            "DA_GargoyleStoneplate",
             "DA_WarmogsArmor"
           ],
           "tier": 3,
@@ -2007,7 +2046,7 @@
             "y": 4
           },
           "is_core": true,
-          "priority": 2
+          "priority": 3
         },
         {
           "key": "DA_18_LeBlanc",
@@ -2022,7 +2061,7 @@
             "y": 1
           },
           "is_core": true,
-          "priority": 3
+          "priority": 2
         },
         {
           "key": "DA_18_Teemo",
@@ -2124,27 +2163,48 @@
           "num_units": 1
         }
       ],
-      "badge": [],
+      "badge": [
+        {
+          "key": "difficulty",
+          "value": 1
+        },
+        {
+          "key": "tempo",
+          "value": null
+        },
+        {
+          "key": "reroll",
+          "value": 6
+        },
+        {
+          "key": "honey",
+          "value": false
+        },
+        {
+          "key": "ppm",
+          "value": "high"
+        }
+      ],
       "statistics": {
         "deck": {
-          "totalCount": 2181288,
-          "compsCount": 25050,
+          "totalCount": 2989172,
+          "compsCount": 34983,
           "avgPlacement": 3.46,
-          "winCount": 2591,
-          "top4Count": 18784,
-          "winRate": 0.1034,
-          "top4Rate": 0.7499,
-          "pickRate": 0.011484040621871115
+          "winCount": 3550,
+          "top4Count": 26240,
+          "winRate": 0.1015,
+          "top4Rate": 0.7501,
+          "pickRate": 0.011703240897479301
         },
         "label": {
-          "totalCount": 2181288,
-          "compsCount": 35875,
+          "totalCount": 2989172,
+          "compsCount": 50792,
           "avgPlacement": 3.2,
-          "winCount": 5017,
-          "top4Count": 28456,
-          "winRate": 0.1398,
-          "top4Rate": 0.7932,
-          "pickRate": 0.01644670488261981
+          "winCount": 7028,
+          "top4Count": 40308,
+          "winRate": 0.1384,
+          "top4Rate": 0.7936,
+          "pickRate": 0.016991996445838514
         }
       },
       "early_game": {
@@ -2258,9 +2318,9 @@
             "num_units": 2
           }
         ],
-        "play": 980.0,
-        "win": 559.0,
-        "lose": 392.0
+        "play": 1604.0,
+        "win": 923.0,
+        "lose": 631.0
       },
       "mid_game": {
         "level": 7,
@@ -2443,9 +2503,9 @@
             "num_units": 1
           }
         ],
-        "play": 1164.0,
-        "win": 576.0,
-        "lose": 541.0
+        "play": 1815.0,
+        "win": 912.0,
+        "lose": 824.0
       }
     },
     {
@@ -2470,7 +2530,7 @@
           "items": [],
           "tier": 2,
           "cell": {
-            "x": 7,
+            "x": 2,
             "y": 1
           },
           "is_core": false,
@@ -2611,27 +2671,48 @@
           "num_units": 1
         }
       ],
-      "badge": [],
+      "badge": [
+        {
+          "key": "difficulty",
+          "value": 3
+        },
+        {
+          "key": "tempo",
+          "value": null
+        },
+        {
+          "key": "reroll",
+          "value": 8
+        },
+        {
+          "key": "honey",
+          "value": false
+        },
+        {
+          "key": "ppm",
+          "value": "high"
+        }
+      ],
       "statistics": {
         "deck": {
-          "totalCount": 2181288,
-          "compsCount": 15570,
-          "avgPlacement": 3.14,
-          "winCount": 4786,
-          "top4Count": 11503,
-          "winRate": 0.3074,
-          "top4Rate": 0.7388,
-          "pickRate": 0.007137984530240849
+          "totalCount": 2989172,
+          "compsCount": 21060,
+          "avgPlacement": 3.16,
+          "winCount": 6355,
+          "top4Count": 15518,
+          "winRate": 0.3018,
+          "top4Rate": 0.7368,
+          "pickRate": 0.007045429302830349
         },
         "label": {
-          "totalCount": 2181288,
-          "compsCount": 31967,
+          "totalCount": 2989172,
+          "compsCount": 43746,
           "avgPlacement": 3.24,
-          "winCount": 10345,
-          "top4Count": 22778,
-          "winRate": 0.3236,
-          "top4Rate": 0.7125,
-          "pickRate": 0.014655102856660836
+          "winCount": 14061,
+          "top4Count": 31175,
+          "winRate": 0.3214,
+          "top4Rate": 0.7126,
+          "pickRate": 0.014634821950694038
         }
       },
       "early_game": {
@@ -2745,9 +2826,9 @@
             "num_units": 1
           }
         ],
-        "play": 629.0,
-        "win": 261.0,
-        "lose": 349.0
+        "play": 777.0,
+        "win": 323.0,
+        "lose": 434.0
       },
       "mid_game": {
         "level": 7,
@@ -2900,9 +2981,9 @@
             "num_units": 1
           }
         ],
-        "play": 425.0,
-        "win": 138.0,
-        "lose": 261.0
+        "play": 487.0,
+        "win": 151.0,
+        "lose": 311.0
       }
     },
     {
@@ -3068,27 +3149,48 @@
           "num_units": 1
         }
       ],
-      "badge": [],
+      "badge": [
+        {
+          "key": "difficulty",
+          "value": 2
+        },
+        {
+          "key": "tempo",
+          "value": null
+        },
+        {
+          "key": "reroll",
+          "value": 7
+        },
+        {
+          "key": "honey",
+          "value": false
+        },
+        {
+          "key": "ppm",
+          "value": "high"
+        }
+      ],
       "statistics": {
         "deck": {
-          "totalCount": 2181288,
-          "compsCount": 8008,
-          "avgPlacement": 2.75,
-          "winCount": 2244,
-          "top4Count": 6724,
-          "winRate": 0.2802,
-          "top4Rate": 0.8397,
-          "pickRate": 0.0036712254411155245
+          "totalCount": 2989172,
+          "compsCount": 11257,
+          "avgPlacement": 2.76,
+          "winCount": 3107,
+          "top4Count": 9448,
+          "winRate": 0.276,
+          "top4Rate": 0.8393,
+          "pickRate": 0.003765925814907941
         },
         "label": {
-          "totalCount": 2181288,
-          "compsCount": 29569,
+          "totalCount": 2989172,
+          "compsCount": 40756,
           "avgPlacement": 2.81,
-          "winCount": 8152,
-          "top4Count": 24524,
-          "winRate": 0.2757,
-          "top4Rate": 0.8294,
-          "pickRate": 0.013555752381161955
+          "winCount": 11166,
+          "top4Count": 33836,
+          "winRate": 0.274,
+          "top4Rate": 0.8302,
+          "pickRate": 0.013634544950909483
         }
       },
       "early_game": {
@@ -3207,9 +3309,9 @@
             "num_units": 1
           }
         ],
-        "play": 536.0,
-        "win": 292.0,
-        "lose": 219.0
+        "play": 505.0,
+        "win": 274.0,
+        "lose": 202.0
       },
       "mid_game": {
         "level": 7,
@@ -3367,451 +3469,9 @@
             "num_units": 1
           }
         ],
-        "play": 6295.0,
-        "win": 3656.0,
-        "lose": 2405.0
-      }
-    },
-    {
-      "id": "91fa8a5b041869b676179aa7841c6780",
-      "name": "Lunar Kayle",
-      "cost": 57,
-      "team_code": "0241143540a42742b3fa3ef3ed000000TFTSet18",
-      "units": [
-        {
-          "key": "DA_18_Leona",
-          "items": [],
-          "tier": 3,
-          "cell": {
-            "x": 3,
-            "y": 3
-          },
-          "is_core": false,
-          "priority": 0
-        },
-        {
-          "key": "DA_18_Varus",
-          "items": [
-            "DA_18_EmblemLunar",
-            "DA_InfinityEdge",
-            "DA_SpearOfShojin"
-          ],
-          "tier": 3,
-          "cell": {
-            "x": 1,
-            "y": 1
-          },
-          "is_core": false,
-          "priority": 0
-        },
-        {
-          "key": "DA_18_Kayle",
-          "items": [
-            "DA_GuinsoosRageblade",
-            "DA_JeweledGauntlet",
-            "DA_RabadonsDeathcap"
-          ],
-          "tier": 3,
-          "cell": {
-            "x": 7,
-            "y": 1
-          },
-          "is_core": true,
-          "priority": 1
-        },
-        {
-          "key": "DA_18_Sejuani",
-          "items": [
-            "DA_GargoyleStoneplate",
-            "DA_SpiritVisage",
-            "DA_WarmogsArmor"
-          ],
-          "tier": 3,
-          "cell": {
-            "x": 5,
-            "y": 4
-          },
-          "is_core": true,
-          "priority": 2
-        },
-        {
-          "key": "DA_18_Shen",
-          "items": [],
-          "tier": 3,
-          "cell": {
-            "x": 4,
-            "y": 2
-          },
-          "is_core": false,
-          "priority": 0
-        },
-        {
-          "key": "DA_18_Diana",
-          "items": [],
-          "tier": 2,
-          "cell": {
-            "x": 4,
-            "y": 3
-          },
-          "is_core": false,
-          "priority": 0
-        },
-        {
-          "key": "DA_18_Aphelios",
-          "items": [
-            "DA_Deathblade",
-            "DA_GuinsoosRageblade",
-            "DA_KrakensFury"
-          ],
-          "tier": 2,
-          "cell": {
-            "x": 6,
-            "y": 1
-          },
-          "is_core": true,
-          "priority": 3
-        },
-        {
-          "key": "DA_Amumu18",
-          "items": [],
-          "tier": 2,
-          "cell": {
-            "x": 5,
-            "y": 2
-          },
-          "is_core": false,
-          "priority": 0
-        }
-      ],
-      "traits": [
-        {
-          "key": "DA_18_Solar",
-          "style": 4,
-          "num_units": 3
-        },
-        {
-          "key": "DA_18_Lunar",
-          "style": 3,
-          "num_units": 3
-        },
-        {
-          "key": "DA_18_Rapidfire",
-          "style": 3,
-          "num_units": 3
-        },
-        {
-          "key": "DA_18_Inferno",
-          "style": 3,
-          "num_units": 3
-        },
-        {
-          "key": "DA_18_Defender",
-          "style": 1,
-          "num_units": 2
-        },
-        {
-          "key": "DA_Juggernaut18",
-          "style": 1,
-          "num_units": 2
-        },
-        {
-          "key": "DA_18_Slayer",
-          "style": 0,
-          "num_units": 1
-        },
-        {
-          "key": "DA_18_Vanguard",
-          "style": 0,
-          "num_units": 1
-        }
-      ],
-      "badge": [],
-      "statistics": {
-        "deck": {
-          "totalCount": 2181288,
-          "compsCount": 9561,
-          "avgPlacement": 3.07,
-          "winCount": 2125,
-          "top4Count": 7521,
-          "winRate": 0.2223,
-          "top4Rate": 0.7866,
-          "pickRate": 0.004383190115197993
-        },
-        "label": {
-          "totalCount": 2181288,
-          "compsCount": 26515,
-          "avgPlacement": 2.86,
-          "winCount": 7151,
-          "top4Count": 21682,
-          "winRate": 0.2697,
-          "top4Rate": 0.8177,
-          "pickRate": 0.012155662159238028
-        }
-      },
-      "early_game": {
-        "level": 5,
-        "units": [
-          {
-            "key": "DA_18_Leona",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 3,
-              "y": 4
-            },
-            "is_core": false,
-            "priority": 0
-          },
-          {
-            "key": "DA_18_Varus",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 2,
-              "y": 1
-            },
-            "is_core": false,
-            "priority": 0
-          },
-          {
-            "key": "DA_18_Kayle",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 1,
-              "y": 1
-            },
-            "is_core": false,
-            "priority": 0
-          },
-          {
-            "key": "DA_18_Sejuani",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 4,
-              "y": 4
-            },
-            "is_core": false,
-            "priority": 0
-          },
-          {
-            "key": "DA_18_Shen",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 5,
-              "y": 4
-            },
-            "is_core": false,
-            "priority": 0
-          }
-        ],
-        "traits": [
-          {
-            "key": "DA_18_Solar",
-            "style": 4,
-            "num_units": 3
-          },
-          {
-            "key": "DA_18_Defender",
-            "style": 1,
-            "num_units": 2
-          },
-          {
-            "key": "DA_18_Inferno",
-            "style": 1,
-            "num_units": 2
-          },
-          {
-            "key": "DA_18_Rapidfire",
-            "style": 1,
-            "num_units": 2
-          },
-          {
-            "key": "DA_Juggernaut18",
-            "style": 0,
-            "num_units": 1
-          }
-        ],
-        "play": 1762.0,
-        "win": 1019.0,
-        "lose": 683.0
-      },
-      "mid_game": {
-        "level": 7,
-        "units": [
-          {
-            "key": "DA_18_Leona",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 3,
-              "y": 3
-            },
-            "is_core": false,
-            "priority": 0
-          },
-          {
-            "key": "DA_18_Varus",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 1,
-              "y": 1
-            },
-            "is_core": false,
-            "priority": 0
-          },
-          {
-            "key": "DA_18_Kayle",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 7,
-              "y": 1
-            },
-            "is_core": false,
-            "priority": 0
-          },
-          {
-            "key": "DA_18_Sejuani",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 5,
-              "y": 4
-            },
-            "is_core": false,
-            "priority": 0
-          },
-          {
-            "key": "DA_18_Shen",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 4,
-              "y": 2
-            },
-            "is_core": false,
-            "priority": 0
-          },
-          {
-            "key": "DA_18_Diana",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 4,
-              "y": 3
-            },
-            "is_core": false,
-            "priority": 0
-          },
-          {
-            "key": "DA_18_Aphelios",
-            "items": [
-              "None",
-              "None",
-              "None"
-            ],
-            "tier": 0,
-            "cell": {
-              "x": 6,
-              "y": 1
-            },
-            "is_core": false,
-            "priority": 0
-          }
-        ],
-        "traits": [
-          {
-            "key": "DA_18_Solar",
-            "style": 4,
-            "num_units": 3
-          },
-          {
-            "key": "DA_18_Rapidfire",
-            "style": 3,
-            "num_units": 3
-          },
-          {
-            "key": "DA_18_Defender",
-            "style": 1,
-            "num_units": 2
-          },
-          {
-            "key": "DA_18_Inferno",
-            "style": 1,
-            "num_units": 2
-          },
-          {
-            "key": "DA_18_Lunar",
-            "style": 1,
-            "num_units": 2
-          },
-          {
-            "key": "DA_Juggernaut18",
-            "style": 0,
-            "num_units": 1
-          },
-          {
-            "key": "DA_18_Slayer",
-            "style": 0,
-            "num_units": 1
-          },
-          {
-            "key": "DA_18_Vanguard",
-            "style": 0,
-            "num_units": 1
-          }
-        ],
-        "play": 1868.0,
-        "win": 1016.0,
-        "lose": 783.0
+        "play": 6713.0,
+        "win": 3928.0,
+        "lose": 2543.0
       }
     },
     {
@@ -4007,27 +3667,48 @@
           "num_units": 1
         }
       ],
-      "badge": [],
+      "badge": [
+        {
+          "key": "difficulty",
+          "value": 3
+        },
+        {
+          "key": "tempo",
+          "value": null
+        },
+        {
+          "key": "reroll",
+          "value": 8
+        },
+        {
+          "key": "honey",
+          "value": false
+        },
+        {
+          "key": "ppm",
+          "value": "high"
+        }
+      ],
       "statistics": {
         "deck": {
-          "totalCount": 2181288,
-          "compsCount": 13769,
+          "totalCount": 2989172,
+          "compsCount": 19193,
           "avgPlacement": 3.53,
-          "winCount": 3178,
-          "top4Count": 9317,
-          "winRate": 0.2308,
-          "top4Rate": 0.6767,
-          "pickRate": 0.006312325561778178
+          "winCount": 4384,
+          "top4Count": 12998,
+          "winRate": 0.2284,
+          "top4Rate": 0.6772,
+          "pickRate": 0.006420841624369558
         },
         "label": {
-          "totalCount": 2181288,
-          "compsCount": 33520,
-          "avgPlacement": 3.41,
-          "winCount": 9197,
-          "top4Count": 23089,
-          "winRate": 0.2744,
-          "top4Rate": 0.6888,
-          "pickRate": 0.015367067530743303
+          "totalCount": 2989172,
+          "compsCount": 48239,
+          "avgPlacement": 3.39,
+          "winCount": 13394,
+          "top4Count": 33367,
+          "winRate": 0.2777,
+          "top4Rate": 0.6917,
+          "pickRate": 0.0161379137767917
         }
       },
       "early_game": {
@@ -4141,9 +3822,9 @@
             "num_units": 1
           }
         ],
-        "play": 629.0,
-        "win": 261.0,
-        "lose": 349.0
+        "play": 715.0,
+        "win": 303.0,
+        "lose": 393.0
       },
       "mid_game": {
         "level": 7,
@@ -4301,9 +3982,472 @@
             "num_units": 1
           }
         ],
-        "play": 184.0,
-        "win": 54.0,
-        "lose": 125.0
+        "play": 224.0,
+        "win": 67.0,
+        "lose": 147.0
+      }
+    },
+    {
+      "id": "91fa8a5b041869b676179aa7841c6780",
+      "name": "Fumegante Kayle",
+      "cost": 57,
+      "team_code": "0241143540a42742b3fa3ef3ed000000TFTSet18",
+      "units": [
+        {
+          "key": "DA_18_Leona",
+          "items": [],
+          "tier": 3,
+          "cell": {
+            "x": 3,
+            "y": 3
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Varus",
+          "items": [
+            "DA_InfinityEdge",
+            "DA_SpearOfShojin",
+            "DA_StrikersFlail"
+          ],
+          "tier": 3,
+          "cell": {
+            "x": 1,
+            "y": 1
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Kayle",
+          "items": [
+            "DA_GuinsoosRageblade",
+            "DA_JeweledGauntlet",
+            "DA_RabadonsDeathcap"
+          ],
+          "tier": 3,
+          "cell": {
+            "x": 7,
+            "y": 1
+          },
+          "is_core": true,
+          "priority": 1
+        },
+        {
+          "key": "DA_18_Sejuani",
+          "items": [
+            "DA_GargoyleStoneplate",
+            "DA_SpiritVisage",
+            "DA_WarmogsArmor"
+          ],
+          "tier": 3,
+          "cell": {
+            "x": 5,
+            "y": 4
+          },
+          "is_core": true,
+          "priority": 2
+        },
+        {
+          "key": "DA_18_Shen",
+          "items": [],
+          "tier": 3,
+          "cell": {
+            "x": 4,
+            "y": 2
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Diana",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 4,
+            "y": 3
+          },
+          "is_core": false,
+          "priority": 0
+        },
+        {
+          "key": "DA_18_Aphelios",
+          "items": [
+            "DA_Deathblade",
+            "DA_GuinsoosRageblade",
+            "DA_KrakensFury"
+          ],
+          "tier": 2,
+          "cell": {
+            "x": 6,
+            "y": 1
+          },
+          "is_core": true,
+          "priority": 3
+        },
+        {
+          "key": "DA_Amumu18",
+          "items": [],
+          "tier": 2,
+          "cell": {
+            "x": 5,
+            "y": 2
+          },
+          "is_core": false,
+          "priority": 0
+        }
+      ],
+      "traits": [
+        {
+          "key": "DA_18_Solar",
+          "style": 4,
+          "num_units": 3
+        },
+        {
+          "key": "DA_18_Rapidfire",
+          "style": 3,
+          "num_units": 3
+        },
+        {
+          "key": "DA_18_Inferno",
+          "style": 3,
+          "num_units": 3
+        },
+        {
+          "key": "DA_18_Lunar",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Defender",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_Juggernaut18",
+          "style": 1,
+          "num_units": 2
+        },
+        {
+          "key": "DA_18_Slayer",
+          "style": 0,
+          "num_units": 1
+        },
+        {
+          "key": "DA_18_Vanguard",
+          "style": 0,
+          "num_units": 1
+        }
+      ],
+      "badge": [
+        {
+          "key": "difficulty",
+          "value": 1
+        },
+        {
+          "key": "tempo",
+          "value": null
+        },
+        {
+          "key": "reroll",
+          "value": 6
+        },
+        {
+          "key": "honey",
+          "value": false
+        },
+        {
+          "key": "ppm",
+          "value": "high"
+        }
+      ],
+      "statistics": {
+        "deck": {
+          "totalCount": 2989172,
+          "compsCount": 12685,
+          "avgPlacement": 3.08,
+          "winCount": 2823,
+          "top4Count": 9981,
+          "winRate": 0.2225,
+          "top4Rate": 0.7868,
+          "pickRate": 0.004243650081025782
+        },
+        "label": {
+          "totalCount": 2989172,
+          "compsCount": 35347,
+          "avgPlacement": 2.88,
+          "winCount": 9477,
+          "top4Count": 28761,
+          "winRate": 0.2681,
+          "top4Rate": 0.8137,
+          "pickRate": 0.011825013749626988
+        }
+      },
+      "early_game": {
+        "level": 5,
+        "units": [
+          {
+            "key": "DA_18_Leona",
+            "items": [
+              "None",
+              "None",
+              "None"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Varus",
+            "items": [
+              "None",
+              "None",
+              "None"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 2,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Kayle",
+            "items": [
+              "None",
+              "None",
+              "None"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 1,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Sejuani",
+            "items": [
+              "None",
+              "None",
+              "None"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Shen",
+            "items": [
+              "None",
+              "None",
+              "None"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 5,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          }
+        ],
+        "traits": [
+          {
+            "key": "DA_18_Solar",
+            "style": 4,
+            "num_units": 3
+          },
+          {
+            "key": "DA_18_Defender",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Inferno",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Rapidfire",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_Juggernaut18",
+            "style": 0,
+            "num_units": 1
+          }
+        ],
+        "play": 1994.0,
+        "win": 1173.0,
+        "lose": 758.0
+      },
+      "mid_game": {
+        "level": 7,
+        "units": [
+          {
+            "key": "DA_18_Leona",
+            "items": [
+              "None",
+              "None",
+              "None"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 3,
+              "y": 3
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Varus",
+            "items": [
+              "None",
+              "None",
+              "None"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 1,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Kayle",
+            "items": [
+              "None",
+              "None",
+              "None"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 7,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Sejuani",
+            "items": [
+              "None",
+              "None",
+              "None"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 5,
+              "y": 4
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Shen",
+            "items": [
+              "None",
+              "None",
+              "None"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 2
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Diana",
+            "items": [
+              "None",
+              "None",
+              "None"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 4,
+              "y": 3
+            },
+            "is_core": false,
+            "priority": 0
+          },
+          {
+            "key": "DA_18_Aphelios",
+            "items": [
+              "None",
+              "None",
+              "None"
+            ],
+            "tier": 0,
+            "cell": {
+              "x": 6,
+              "y": 1
+            },
+            "is_core": false,
+            "priority": 0
+          }
+        ],
+        "traits": [
+          {
+            "key": "DA_18_Solar",
+            "style": 4,
+            "num_units": 3
+          },
+          {
+            "key": "DA_18_Rapidfire",
+            "style": 3,
+            "num_units": 3
+          },
+          {
+            "key": "DA_18_Defender",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Inferno",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_18_Lunar",
+            "style": 1,
+            "num_units": 2
+          },
+          {
+            "key": "DA_Juggernaut18",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Slayer",
+            "style": 0,
+            "num_units": 1
+          },
+          {
+            "key": "DA_18_Vanguard",
+            "style": 0,
+            "num_units": 1
+          }
+        ],
+        "play": 2002.0,
+        "win": 1097.0,
+        "lose": 841.0
       }
     },
     {
@@ -4469,27 +4613,48 @@
           "num_units": 1
         }
       ],
-      "badge": [],
+      "badge": [
+        {
+          "key": "difficulty",
+          "value": 2
+        },
+        {
+          "key": "tempo",
+          "value": null
+        },
+        {
+          "key": "reroll",
+          "value": 7
+        },
+        {
+          "key": "honey",
+          "value": false
+        },
+        {
+          "key": "ppm",
+          "value": "high"
+        }
+      ],
       "statistics": {
         "deck": {
-          "totalCount": 2181288,
-          "compsCount": 9508,
+          "totalCount": 2989172,
+          "compsCount": 13182,
           "avgPlacement": 3.2,
-          "winCount": 1806,
-          "top4Count": 7330,
-          "winRate": 0.1899,
-          "top4Rate": 0.7709,
-          "pickRate": 0.004358892544221579
+          "winCount": 2509,
+          "top4Count": 10153,
+          "winRate": 0.1903,
+          "top4Rate": 0.7702,
+          "pickRate": 0.004409916859919737
         },
         "label": {
-          "totalCount": 2181288,
-          "compsCount": 30825,
-          "avgPlacement": 2.96,
-          "winCount": 6921,
-          "top4Count": 25055,
-          "winRate": 0.2245,
-          "top4Rate": 0.8128,
-          "pickRate": 0.014131558968829425
+          "totalCount": 2989172,
+          "compsCount": 42243,
+          "avgPlacement": 2.97,
+          "winCount": 9420,
+          "top4Count": 34287,
+          "winRate": 0.223,
+          "top4Rate": 0.8117,
+          "pickRate": 0.014132007124380933
         }
       },
       "early_game": {
@@ -4608,9 +4773,9 @@
             "num_units": 1
           }
         ],
-        "play": 107.0,
-        "win": 62.0,
-        "lose": 40.0
+        "play": 106.0,
+        "win": 58.0,
+        "lose": 43.0
       },
       "mid_game": {
         "level": 7,
@@ -4773,9 +4938,9 @@
             "num_units": 1
           }
         ],
-        "play": 1702.0,
-        "win": 931.0,
-        "lose": 713.0
+        "play": 1897.0,
+        "win": 1026.0,
+        "lose": 808.0
       }
     }
   ]
