@@ -252,6 +252,8 @@ class Trainer:
             self.policy.parameters(),
             lr=self.config.learning_rate,
             eps=self.config.adam_eps,
+            betas=(self.config.adam_beta1, self.config.adam_beta2),
+            weight_decay=self.config.weight_decay,
         )
 
         saved_config = checkpoint.get("training_config", {}) if checkpoint else {}
@@ -272,7 +274,10 @@ class Trainer:
             # sempre prevalece sobre o valor salvo no checkpoint.
             for group in self.optimizer.param_groups:
                 group["lr"] = self.config.learning_rate
-            print("✅ Momentos do Adam restaurados; LR efetivo aplicado pela configuração atual.")
+                group["eps"] = self.config.adam_eps
+                group["betas"] = (self.config.adam_beta1, self.config.adam_beta2)
+                group["weight_decay"] = self.config.weight_decay
+            print("✅ Momentos do Adam restaurados; hiperparâmetros atuais aplicados.")
 
         self.scheduler = optim.lr_scheduler.CosineAnnealingLR(
             self.optimizer,
@@ -285,6 +290,10 @@ class Trainer:
         )
         if restore_scheduler:
             self.scheduler.load_state_dict(checkpoint["scheduler"])
+            # load_state_dict restaura o estado interno, mas não atualiza
+            # automaticamente o LR do optimizer para o último valor agendado.
+            for group, scheduled_lr in zip(self.optimizer.param_groups, self.scheduler.get_last_lr()):
+                group["lr"] = scheduled_lr
             print(
                 f"✅ Scheduler restaurado | step={self.scheduler.last_epoch} | "
                 f"LR={self.optimizer.param_groups[0]['lr']:.3e}"
@@ -854,6 +863,9 @@ class Trainer:
             json.dumps(self.config.to_dict(), indent=2, ensure_ascii=False),
             self.start_update,
         )
+        total_updates = int(total_updates)
+        if total_updates <= 0:
+            raise ValueError("total_updates deve ser > 0.")
         start = self.start_update
 
         end = (
@@ -1574,7 +1586,8 @@ class Trainer:
             )
             self.writer.add_scalar("charts/learning_rate_min", min(current_lrs), update)
             self.writer.add_scalar("charts/learning_rate_max", max(current_lrs), update)
-            self.writer.add_scalar("ppo/target_kl", float(self.ppo.target_kl), update)
+            if self.ppo.target_kl is not None:
+                self.writer.add_scalar("ppo/target_kl", float(self.ppo.target_kl), update)
   
             # ========================================================
             # 📊 GENERAL LOGS
