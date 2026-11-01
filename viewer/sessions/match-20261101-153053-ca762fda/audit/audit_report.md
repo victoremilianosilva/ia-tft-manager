@@ -3,8 +3,8 @@
 - Arquivos lidos: **8**
 - Jogadores encontrados: **8** (1, 2, 3, 4, 5, 6, 7, 8)
 - Registros estruturados analisados: **4625**
-- Achados: **76**
-- CRITICAL: 0 | HIGH: 48 | MEDIUM: 28 | LOW: 0
+- Achados: **70**
+- CRITICAL: 0 | HIGH: 11 | MEDIUM: 59 | LOW: 0
 
 - Decisões analisadas enquanto os jogadores estavam vivos: **3895**
 - Entradas posteriores à eliminação ignoradas: **730**
@@ -1778,12 +1778,12 @@ Força do banco e pares representam potencial futuro, não força atual de comba
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | Jogador 1 | 39 | 23 | 3 | 4 | 6 | 0 | 1 | 3 | 2.7245 |
 | Jogador 2 | 66 | 40 | 1 | 1 | 2 | 0 | 6 | 13 | 3.0184 |
-| Jogador 3 | 44 | 19 | 1 | 2 | 2 | 0 | 5 | 4 | 4.8739 |
-| Jogador 4 | 59 | 35 | 1 | 1 | 3 | 0 | 4 | 5 | 4.1119 |
-| Jogador 5 | 63 | 42 | 1 | 3 | 5 | 0 | 3 | 8 | 1.8524 |
+| Jogador 3 | 44 | 19 | 1 | 2 | 2 | 0 | 5 | 3 | 4.8739 |
+| Jogador 4 | 59 | 35 | 1 | 1 | 3 | 0 | 4 | 4 | 4.1119 |
+| Jogador 5 | 63 | 42 | 1 | 3 | 5 | 0 | 3 | 7 | 1.8524 |
 | Jogador 6 | 53 | 28 | 3 | 3 | 5 | 0 | 6 | 5 | 3.6999 |
 | Jogador 7 | 37 | 18 | 2 | 2 | 3 | 0 | 3 | 2 | 2.3566 |
-| Jogador 8 | 52 | 27 | 0 | 0 | 2 | 0 | 6 | 8 | 3.5039 |
+| Jogador 8 | 52 | 27 | 0 | 0 | 2 | 0 | 6 | 5 | 3.5039 |
 
 Vendas de core/pares ignoradas antes da decisão da composição: **34**.
 Round da decisão por jogador: Jogador 1: 2-5, Jogador 2: 2-5, Jogador 3: 2-5, Jogador 4: 2-5, Jogador 5: 2-5, Jogador 6: 2-5, Jogador 7: 2-5, Jogador 8: 2-5.
@@ -1800,76 +1800,70 @@ Uma venda sem compra correspondente na janela é UNKNOWN; sequências ambíguas 
 | MEDIUM | Jogador 1 | 2-2 | 50 | PURCHASE_REVERSED | Compra de DA_18_Varus desfeita em 4 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
 | MEDIUM | Jogador 1 | 2-3 | 63 | PURCHASE_REVERSED | Compra de DA_18_Shen desfeita em 1 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
 | MEDIUM | Jogador 1 | 2-4 | 70 | PURCHASE_REVERSED | Compra de DA_Gromp18_AP desfeita em 2 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
-| HIGH | Jogador 1 | 3-3 | 126 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Akali_AD' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 1 | 3-4 | 138 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Sentry' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 1 | 3-7 | 162 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_Gromp18_AP' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
+| MEDIUM | Jogador 1 | 3-3 | 126 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Akali_AD' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 1 | 3-4 | 138 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Sentry' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 1 | 3-7 | 162 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_Gromp18_AP' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
 | MEDIUM | Jogador 2 | 1-4 | 32 | PURCHASE_REVERSED | Compra de DA_18_Yunara desfeita em 1 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
 | MEDIUM | Jogador 2 | 2-1 | 40 | PURCHASE_REVERSED | Compra de DA_18_Xayah desfeita em 3 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
-| HIGH | Jogador 2 | 2-6 | 90 | SOLD_CORE_UNIT | Venda de 'DA_18_Azir' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 2 | 2-7 | 97 | SOLD_CORE_UNIT | Venda de 'DA_18_Sejuani' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 2 | 3-2 | 116 | SOLD_CORE_UNIT | Venda de 'DA_18_Yorick' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 2 | 4-6 | 222 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_Gromp18_AP' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 2 | 5-2 | 252 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_KhaZix' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 2 | 5-4 | 275 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_MasterYi_AD' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 2 | 5-5 | 284 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Ahri' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 2 | 6-2 | 327 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_KhaZix' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 2 | 6-2 | 330 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_MasterYi_AD' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 2 | 6-3 | 333 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Lillia' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 2 | 6-4 | 345 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_KhaZix' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 2 | 6-6 | 365 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_MasterYi_AD' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 2 | 6-6 | 369 | SOLD_CORE_UNIT | Venda de 'DA_18_Rammus' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 3 | 2-7 | 100 | SOLD_CORE_UNIT | Venda de 'DA_Scuttlecrab18' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
+| HIGH | Jogador 2 | 2-6 | 90 | SOLD_CORE_UNIT | Venda de 'DA_18_Azir' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 2 | 2-7 | 97 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Sejuani' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 2 | 3-2 | 116 | SOLD_CORE_UNIT | Venda de 'DA_18_Yorick' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 2 | 4-6 | 222 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_Gromp18_AP' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 2 | 5-2 | 252 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_KhaZix' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 2 | 5-4 | 275 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_MasterYi_AD' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 2 | 5-5 | 284 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Ahri' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 2 | 6-2 | 327 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_KhaZix' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 2 | 6-2 | 330 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_MasterYi_AD' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 2 | 6-3 | 333 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Lillia' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 2 | 6-4 | 345 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_KhaZix' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 2 | 6-6 | 365 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_MasterYi_AD' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 2 | 6-6 | 369 | SOLD_CORE_UNIT | Venda de 'DA_18_Rammus' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
 | MEDIUM | Jogador 3 | 2-7 | 100 | PURCHASE_REVERSED | Compra de DA_Scuttlecrab18 desfeita em 2 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
-| HIGH | Jogador 3 | 3-3 | 126 | SOLD_CORE_UNIT | Venda de 'DA_18_Tristana' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
+| MEDIUM | Jogador 3 | 3-3 | 126 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Tristana' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
 | MEDIUM | Jogador 3 | 3-3 | 126 | PURCHASE_REVERSED | Compra de DA_18_Tristana desfeita em 1 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
-| HIGH | Jogador 3 | 3-4 | 133 | SOLD_CORE_UNIT | Venda de 'DA_18_Diana' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 3 | 5-5 | 284 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_Fiddlesticks18' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
+| HIGH | Jogador 3 | 3-4 | 133 | SOLD_CORE_UNIT | Venda de 'DA_18_Diana' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 3 | 5-5 | 284 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_Fiddlesticks18' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
 | MEDIUM | Jogador 4 | 1-4 | 30 | PURCHASE_REVERSED | Compra de DA_Gromp18_AP desfeita em 3 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
 | MEDIUM | Jogador 4 | 1-4 | 32 | PURCHASE_REVERSED | Compra de DA_18_Akali_AD desfeita em 1 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
 | MEDIUM | Jogador 4 | 2-2 | 50 | PURCHASE_REVERSED | Compra de DA_18_Yorick desfeita em 3 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
-| HIGH | Jogador 4 | 3-4 | 133 | SOLD_CORE_UNIT | Venda de 'DA_18_Akali_AD' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 4 | 5-4 | 279 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_CrimsonRaptor18' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 4 | 5-6 | 297 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_Nidalee18_AP' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 4 | 6-3 | 337 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_Krug18' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 4 | 6-5 | 357 | SOLD_CORE_UNIT | Venda de 'DA_18_Diana' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
+| MEDIUM | Jogador 4 | 5-4 | 279 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_CrimsonRaptor18' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 4 | 5-6 | 297 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_Nidalee18_AP' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 4 | 6-3 | 337 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_Krug18' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 4 | 6-5 | 357 | SOLD_CORE_UNIT | Venda de 'DA_18_Diana' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
 | MEDIUM | Jogador 5 | 2-1 | 42 | PURCHASE_REVERSED | Compra de DA_18_Cassiopeia desfeita em 1 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
 | MEDIUM | Jogador 5 | 2-2 | 50 | PURCHASE_REVERSED | Compra de DA_18_LeBlanc desfeita em 3 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
 | MEDIUM | Jogador 5 | 2-3 | 60 | PURCHASE_REVERSED | Compra de DA_18_Tristana desfeita em 4 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
 | MEDIUM | Jogador 5 | 2-3 | 63 | PURCHASE_REVERSED | Compra de DA_18_Camille desfeita em 2 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
-| HIGH | Jogador 5 | 2-5 | 81 | SOLD_CORE_UNIT | Venda de 'DA_18_Akali_AD' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
+| MEDIUM | Jogador 5 | 2-5 | 81 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Akali_AD' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
 | MEDIUM | Jogador 5 | 2-5 | 81 | PURCHASE_REVERSED | Compra de DA_18_Akali_AD desfeita em 2 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
-| HIGH | Jogador 5 | 4-2 | 185 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Teemo' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 5 | 4-4 | 204 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_KhaZix' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 5 | 4-7 | 236 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_Murkwolf18' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 5 | 5-1 | 244 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Cassiopeia' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 5 | 5-1 | 249 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_KhaZix' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 5 | 5-3 | 262 | SOLD_CORE_UNIT | Venda de 'DA_18_Diana' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 5 | 5-4 | 277 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_Murkwolf18' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
+| MEDIUM | Jogador 5 | 4-2 | 185 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Teemo' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 5 | 4-4 | 204 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_KhaZix' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 5 | 4-7 | 236 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_Murkwolf18' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 5 | 5-1 | 244 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Cassiopeia' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 5 | 5-1 | 249 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_KhaZix' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 5 | 5-4 | 277 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_Murkwolf18' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
 | MEDIUM | Jogador 6 | 1-4 | 30 | PURCHASE_REVERSED | Compra de DA_18_Teemo desfeita em 3 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
 | MEDIUM | Jogador 6 | 2-1 | 41 | PURCHASE_REVERSED | Compra de DA_18_Rakan desfeita em 1 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
 | MEDIUM | Jogador 6 | 2-1 | 43 | PURCHASE_REVERSED | Compra de DA_18_Rakan desfeita em 1 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
 | MEDIUM | Jogador 6 | 2-2 | 50 | PURCHASE_REVERSED | Compra de DA_Karma18 desfeita em 3 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
 | MEDIUM | Jogador 6 | 2-4 | 71 | PURCHASE_REVERSED | Compra de DA_18_Rakan desfeita em 1 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
-| HIGH | Jogador 6 | 2-5 | 79 | SOLD_CORE_UNIT | Venda de 'DA_18_Rakan' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 6 | 4-3 | 192 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_MasterYi_AD' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 6 | 4-4 | 205 | SOLD_CORE_UNIT | Venda de 'DA_18_Tristana' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 6 | 4-4 | 207 | SOLD_CORE_UNIT | Venda de 'DA_18_Rammus' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 6 | 4-5 | 212 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Rakan' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
+| MEDIUM | Jogador 6 | 2-5 | 79 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Rakan' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 6 | 4-3 | 192 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_MasterYi_AD' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 6 | 4-4 | 205 | SOLD_CORE_UNIT | Venda de 'DA_18_Tristana' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 6 | 4-4 | 207 | SOLD_CORE_UNIT | Venda de 'DA_18_Rammus' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 6 | 4-5 | 212 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Rakan' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
 | MEDIUM | Jogador 7 | 1-4 | 30 | PURCHASE_REVERSED | Compra de DA_18_Elise desfeita em 4 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
 | MEDIUM | Jogador 7 | 1-4 | 32 | PURCHASE_REVERSED | Compra de DA_18_Elise desfeita em 1 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
 | MEDIUM | Jogador 7 | 1-4 | 34 | PURCHASE_REVERSED | Compra de DA_18_Veigar desfeita em 1 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
-| HIGH | Jogador 7 | 2-6 | 88 | SOLD_CORE_UNIT | Venda de 'DA_KogMaw18_AD' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 7 | 5-1 | 246 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Rengar' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
+| HIGH | Jogador 7 | 2-6 | 88 | SOLD_CORE_UNIT | Venda de 'DA_KogMaw18_AD' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 7 | 5-1 | 246 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Rengar' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
 | MEDIUM | Jogador 8 | 1-4 | 30 | PURCHASE_REVERSED | Compra de DA_18_Varus desfeita em 3 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
-| HIGH | Jogador 8 | 2-5 | 79 | SOLD_CORE_UNIT | Venda de 'DA_18_Leona' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 8 | 2-5 | 84 | SOLD_CORE_UNIT | Venda de 'DA_Gromp18_AP' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 8 | 3-1 | 106 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Akali_AD' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
+| HIGH | Jogador 8 | 2-5 | 84 | SOLD_CORE_UNIT | Venda de 'DA_Gromp18_AP' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 8 | 3-1 | 106 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Akali_AD' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
 | MEDIUM | Jogador 8 | 3-1 | 106 | PURCHASE_REVERSED | Compra de DA_18_Akali_AD desfeita em 4 ação(ões), sem upgrade, implantação ou motivo de capacidade/composição demonstrado. |
-| HIGH | Jogador 8 | 4-6 | 230 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_CrimsonRaptor18' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 8 | 5-3 | 262 | SOLD_CORE_UNIT | Venda de 'DA_18_Diana' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 8 | 5-3 | 265 | SOLD_CORE_UNIT | Venda de 'DA_18_MasterYi_AD' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 8 | 5-4 | 278 | SOLD_CORE_UNIT | Venda de 'DA_Fiddlesticks18' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
-| HIGH | Jogador 8 | 5-6 | 299 | SOLD_CORE_UNIT | Venda de 'DA_Gromp18_AP' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense. |
+| MEDIUM | Jogador 8 | 4-6 | 230 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_CrimsonRaptor18' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 8 | 5-4 | 278 | SOLD_CORE_UNIT | Venda de 'DA_Fiddlesticks18' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 8 | 5-6 | 299 | SOLD_CORE_UNIT | Venda de 'DA_Gromp18_AP' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
 
 ## Como interpretar
 
