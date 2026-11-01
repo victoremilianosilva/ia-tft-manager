@@ -40,6 +40,30 @@ def test_anvil_choice_is_not_logged_as_normal_equipment():
     assert decision["target"] is None
 
 
+def test_completed_item_anvil_is_recorded_as_anvil_not_equipment():
+    writer = object.__new__(PlayerJsonLogWriter)
+    before = {
+        "pending_anvil": True,
+        "pending_anvil_kind": 1,
+        "pending_anvil_options": ["Deathblade", "GiantSlayer", "Guardbreaker"],
+    }
+    after_state = {
+        "last_item_action_kind": "anvil_completed_item_choice",
+        "last_item_id": "GiantSlayer",
+        "last_item_target_slot": -1,
+        "last_item_target_on_board": False,
+    }
+    decision = writer._item_action_diagnostics(
+        [7, 1, 0, 0, 0, 0], before, {}, after_state,
+        {"components": [], "inventory": [], "equipped": []},
+        {"components": [], "inventory": ["GiantSlayer"], "equipped": []},
+    )
+    assert decision["is_anvil_choice"] is True
+    assert decision["anvil_kind"] == "completed_item"
+    assert decision["selected_item_id"] == "GiantSlayer"
+    assert decision["selected_component_id"] is None
+
+
 def test_item_action_audit_records_selected_item_and_exact_target():
     writer = object.__new__(PlayerJsonLogWriter)
     before = {
