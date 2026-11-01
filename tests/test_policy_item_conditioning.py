@@ -22,6 +22,8 @@ def test_item_observation_exposes_components_inventory_recipes_and_all_targets()
     item_dim = policy.item_state_observation_dim
     start = obs.shape[-1] - candidate_dim - item_dim
     obs[0, start] = 0.5  # component count feature
+    anvil_start = start - policy.item_anvil_observation_dim
+    obs[0, anvil_start + 3] = 0.3  # first anvil option semantic feature
     obs[0, start + 10] = 0.75  # first bag item semantic feature
     recipe_start = start + 10 + 9 * 17
     obs[0, recipe_start + 4 * 17 + 2] = 0.6  # recipe [0,4], AP feature
@@ -34,7 +36,7 @@ def test_item_observation_exposes_components_inventory_recipes_and_all_targets()
 
     (
         components, inventory, recipes, targets,
-        inventory_target_fit, recipe_target_fit, pending_anvil,
+        inventory_target_fit, recipe_target_fit, anvil_options, pending_anvil,
     ) = policy._item_state_features(obs)
 
     assert components.shape == (1, 10)
@@ -43,12 +45,14 @@ def test_item_observation_exposes_components_inventory_recipes_and_all_targets()
     assert targets.shape == (1, 37, 18)
     assert inventory_target_fit.shape == (1, 9, 37)
     assert recipe_target_fit.shape == (1, 100, 37)
+    assert anvil_options.shape == (1, 9, 11)
     assert components[0, 0].item() == 0.5
     assert inventory[0, 0, 0].item() == 0.75
     assert recipes[0, 4, 2].item() == 0.6
     assert targets[0, 28, 5].item() == 1.0
     assert inventory_target_fit[0, 2, 4].item() == 0.7
     assert recipe_target_fit[0, 5, 6].item() == 0.8
+    assert anvil_options[0, 0, 0].item() == 0.3
     assert pending_anvil.tolist() == [False]
     assert policy.encode(obs).shape == (1, 64)
 
@@ -132,9 +136,39 @@ def test_inventory_candidate_scorer_uses_item_semantics():
         last.weight[0, 0] = 1.0
 
     logits = policy._item_inventory_logits(
-        conditioned, inventory_features, torch.tensor([False])
+        conditioned, inventory_features, torch.zeros(1, 9, 11),
+        torch.tensor([False])
     )
     assert logits[0, 1] > logits[0, 0]
+
+
+def test_anvil_candidate_scorer_uses_anvil_option_features():
+    policy, _ = _policy_with_native_item_block()
+    conditioned = torch.zeros(1, 64 + len(ACTION_DIMS))
+    inventory_features = torch.zeros(1, 9, 17)
+    inventory_features[0, 0, 0] = 1.0  # deliberately attractive bag feature
+    anvil_features = torch.zeros(1, 9, 11)
+    anvil_features[0, 1, 0] = 0.2
+    anvil_features[0, 2, 0] = 0.9
+    first = policy.item_anvil_candidate_head[0]
+    last = policy.item_anvil_candidate_head[-1]
+    with torch.no_grad():
+        policy.item_inventory_head.weight.zero_()
+        policy.item_inventory_head.bias.zero_()
+        policy.item_inventory_candidate_head[-1].weight.zero_()
+        policy.item_inventory_candidate_head[-1].bias.zero_()
+        first.weight.zero_()
+        first.bias.zero_()
+        first.weight[0, -11] = 1.0
+        last.weight.zero_()
+        last.bias.zero_()
+        last.weight[0, 0] = 1.0
+
+    logits = policy._item_inventory_logits(
+        conditioned, inventory_features, anvil_features, torch.tensor([True])
+    )
+    assert logits[0, 2] > logits[0, 1]
+    assert logits[0, 2] > logits[0, 0]
 
 
 def test_old_checkpoint_migrates_item_observation_and_neutral_candidate_heads():
@@ -150,6 +184,7 @@ def test_old_checkpoint_migrates_item_observation_and_neutral_candidate_heads():
             "item_inventory_candidate_head.",
             "item_component_candidate_head.",
             "item_target_candidate_head.",
+            "item_anvil_candidate_head.",
         ))
     }
 
@@ -178,6 +213,7 @@ def test_old_checkpoint_migrates_item_observation_and_neutral_candidate_heads():
     )
     for head in (
         restored.item_inventory_candidate_head,
+        restored.item_anvil_candidate_head,
         restored.item_component_candidate_head,
         restored.item_target_candidate_head,
     ):
