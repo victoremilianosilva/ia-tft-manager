@@ -72,6 +72,14 @@ class PPOTrainer:
 
         self.max_grad_norm = max_grad_norm
         self.target_kl = target_kl
+        if not 0.0 < float(clip_coef) < 1.0:
+            raise ValueError("clip_coef deve estar entre 0 e 1.")
+        if float(vf_coef) < 0.0 or float(max_grad_norm) <= 0.0:
+            raise ValueError("vf_coef deve ser >= 0 e max_grad_norm deve ser > 0.")
+        if target_kl is not None and float(target_kl) <= 0.0:
+            raise ValueError("target_kl deve ser > 0 ou None.")
+        if float(ent_coef) < 0.0:
+            raise ValueError("ent_coef deve ser >= 0.")
 
         # ============================================================
         # TENSORBOARD
@@ -291,12 +299,10 @@ class PPOTrainer:
         # ============================================================
 
         if rollout.ptr <= 0:
-
-            print(
-                "⚠️ PPO Update ignorado: rollout vazio."
-            )
-
-            return
+            print("⚠️ PPO Update ignorado: rollout vazio.")
+            return {}
+        if batch_size <= 0 or epochs <= 0:
+            raise ValueError("batch_size e epochs devem ser > 0.")
 
         # ============================================================
         # NORMALIZAÇÃO DAS ADVANTAGES
@@ -321,6 +327,10 @@ class PPOTrainer:
         epochs_started = 0
 
         total_batches = 0
+        attempted_batches = 0
+        optimizer_steps = 0
+        grad_norm_sum = 0.0
+        grad_norm_max = 0.0
 
         stop_early = False
 
@@ -338,6 +348,7 @@ class PPOTrainer:
                 batch_size=batch_size,
                 normalize_advantages=False
             ):
+                attempted_batches += 1
 
                 # ====================================================
                 # COMPUTE LOSS
@@ -372,7 +383,7 @@ class PPOTrainer:
                 # ====================================================
                 # O minibatch que excede o limite não deve atualizar os pesos.
                 # A checagem ocorre após avaliar a policy atual e antes do backward.
-                if approx_kl.item() > self.target_kl:
+                if self.target_kl is not None and approx_kl.item() > self.target_kl:
                     stop_early = True
                     early_stop_triggered = True
                     early_stop_kl = float(approx_kl.item())
@@ -410,12 +421,16 @@ class PPOTrainer:
                 # GRADIENT CLIPPING
                 # ====================================================
 
-                torch.nn.utils.clip_grad_norm_(
+                grad_norm = torch.nn.utils.clip_grad_norm_(
                     self.policy.parameters(),
-                    self.max_grad_norm
+                    self.max_grad_norm,
                 )
+                grad_norm_value = float(grad_norm.detach().item())
+                grad_norm_sum += grad_norm_value
+                grad_norm_max = max(grad_norm_max, grad_norm_value)
 
                 self.optimizer.step()
+                optimizer_steps += 1
 
                 # ====================================================
                 # MÉTRICAS
@@ -506,7 +521,12 @@ class PPOTrainer:
             )
 
             self.writer.add_scalar("ppo/approx_kl_max", max_kl, self.update_step)
-            self.writer.add_scalar("ppo/target_kl", float(self.target_kl), self.update_step)
+            if self.target_kl is not None:
+                self.writer.add_scalar("ppo/target_kl", float(self.target_kl), self.update_step)
+            self.writer.add_scalar("ppo/attempted_batches", attempted_batches, self.update_step)
+            self.writer.add_scalar("ppo/optimizer_steps", optimizer_steps, self.update_step)
+            self.writer.add_scalar("ppo/grad_norm_mean", grad_norm_sum / max(1, optimizer_steps), self.update_step)
+            self.writer.add_scalar("ppo/grad_norm_max", grad_norm_max, self.update_step)
             self.writer.add_scalar("ppo/early_stop_rate", float(early_stop_triggered), self.update_step)
             self.writer.add_scalar("ppo/early_stop", float(early_stop_triggered), self.update_step)
             self.writer.add_scalar("ppo/early_stop_kl", early_stop_kl, self.update_step)
@@ -582,5 +602,9 @@ class PPOTrainer:
             "early_stop": early_stop_triggered,
             "early_stop_kl": early_stop_kl,
             "batches_processed": total_batches,
+            "attempted_batches": attempted_batches,
+            "optimizer_steps": optimizer_steps,
+            "grad_norm_mean": grad_norm_sum / max(1, optimizer_steps),
+            "grad_norm_max": grad_norm_max,
             "epochs_started": epochs_started,
         }
