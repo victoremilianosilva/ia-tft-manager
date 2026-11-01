@@ -284,21 +284,38 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
             after_comp_decision = (
                 decision_start_index is not None and idx >= decision_start_index
             )
-            core_units = before.get("core_units") or []
+            core_units = (before.get("core_units") or after.get("core_units") or [])
             champion_key = _normalized_unit_id(champion)
             core_keys = {_normalized_unit_id(value) for value in core_units if _normalized_unit_id(value)}
-            core_sale = after_comp_decision and champion_key in core_keys
             copies_before = _owned_copy_count(before, champion)
             copies_after = _owned_copy_count(after, champion)
-            # Only flag loss when this exact champion falls below its owned upgrade threshold.
-            sold_star = int(unit.get("star", 1) or 1)
+            # Selling a duplicate of a core champion is not a core loss while
+            # another copy remains on the board or bench.
+            core_sale = (after_comp_decision and champion_key in core_keys
+                         and copies_before > 0 and copies_after == 0)
+
+            # Pair potential is champion- and star-tier-specific. A global pair
+            # count can stay unchanged when a different champion forms a pair;
+            # conversely, a same-star pair may disappear because copies merged
+            # into a higher-star unit. Do not report that merge as a lost pair.
+            sold_star = max(1, min(3, int(unit.get("star", 1) or 1)))
             same_star_before = _same_star_copy_count(before, champion, sold_star)
             same_star_after = _same_star_copy_count(after, champion, sold_star)
-            pair_lost = (after_comp_decision and sold_star in (1, 2)
-                         and same_star_before >= 2 and same_star_after < 2)
-            # A sale can be correct when it enables a stronger board or merge.
-            # A SELL cannot itself create an upgrade or add board units. Only
-            # live, measured synergy/positioning deltas may compensate this sale.
+            higher_star_before = sum(
+                _same_star_copy_count(before, champion, star)
+                for star in range(sold_star + 1, 4)
+            )
+            higher_star_after = sum(
+                _same_star_copy_count(after, champion, star)
+                for star in range(sold_star + 1, 4)
+            )
+            pair_lost = (
+                after_comp_decision and sold_star in (1, 2)
+                and same_star_before >= 2 and same_star_after < 2
+                and higher_star_after <= higher_star_before
+            )
+
+            # A sale can be correct when it produces a measurable board benefit.
             try:
                 synergy_gain = (before.get("synergy_score") is not None
                                 and after.get("synergy_score") is not None
@@ -315,7 +332,8 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
             core_sale = core_sale and not compensated_sale
             pair_lost = pair_lost and not compensated_sale
             if not after_comp_decision and (
-                (sold_star in (1, 2) and same_star_before >= 2 and same_star_after < 2) or champion_key in core_keys
+                (sold_star in (1, 2) and same_star_before >= 2 and same_star_after < 2)
+                or champion_key in core_keys
             ):
                 metrics["core_pair_sales_before_comp_decision_ignored"] += 1
             if pair_lost:
@@ -325,12 +343,20 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
             if core_sale or pair_lost:
                 metrics["core_or_pair_sales"] += 1
                 code = "SOLD_CORE_UNIT" if core_sale else "SOLD_UPGRADE_PAIR_COPY"
-                severity = "HIGH"
+                severity = "HIGH" if core_sale else "MEDIUM"
+                reason = ("removeu a última cópia de uma unidade core"
+                          if core_sale else "removeu uma das cópias que formavam um par do mesmo campeão/estrela")
                 add_issue(report, severity, code, player, rnd, step,
-                          f"Venda de '{champion}' removeu uma unidade core ou reduziu pares após a decisão da composição; verificar se houve substituição/upgrade que compense.",
+                          f"Venda de '{champion}' {reason} após a decisão da composição; conferir substituição e evolução de estrelas.",
                           {"champion": champion, "core_sale": core_sale, "pair_lost": pair_lost,
                            "composition_decision_round": decision_round,
-                           "pair_count_before": _pair_count(before), "pair_count_after": _pair_count(after),
+                           "same_star_copies_before": same_star_before,
+                           "same_star_copies_after": same_star_after,
+                           "higher_star_copies_before": higher_star_before,
+                           "higher_star_copies_after": higher_star_after,
+                           "owned_copies_before": copies_before, "owned_copies_after": copies_after,
+                           "global_pair_count_before": _pair_count(before),
+                           "global_pair_count_after": _pair_count(after),
                            "gold_before": before.get("gold"), "gold_after": after.get("gold")})
             sold_uuid = unit.get("uuid")
             pending = [p for p in purchases if not p["sold"]

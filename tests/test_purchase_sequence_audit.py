@@ -254,3 +254,55 @@ def test_real_two_star_pair_loss_is_also_detected():
     metrics = report["purchase_sequence_metrics"]["Jogador 1"]
     assert metrics["confirmed_pair_path_losses"] == 1
     assert metrics["core_or_pair_sales"] == 1
+
+def test_selling_duplicate_core_copy_is_not_reported_as_core_loss():
+    core_a = _unit("Carry", star=2)
+    core_b = _unit("Carry", star=1)
+    decision = _entry(1, 1, [6, 0, 0, 0, 0, 0], "PASS",
+                      _state(20, bench=[core_a, core_b], comp=""),
+                      _state(20, bench=[core_a, core_b], comp="Trait"))
+    sale = _entry(2, 2, [5, 0, 0, 0, 0, 0], "SELL",
+                  _state(20, bench=[core_a, core_b], comp="Trait", core_units=["Carry"]),
+                  _state(21, bench=[core_b], comp="Trait", core_units=["Carry"]))
+    report = {"issues": []}
+    audit_purchase_sequences([decision, sale], "Jogador 1", report)
+    metrics = report["purchase_sequence_metrics"]["Jogador 1"]
+    assert metrics["core_unit_sales"] == 0
+    assert metrics["core_or_pair_sales"] == 0
+
+
+def test_pair_copy_merged_into_higher_star_is_not_reported_as_pair_loss():
+    briar_a = _unit("Briar", star=1)
+    briar_b = _unit("Briar", star=1)
+    briar_two = _unit("Briar", star=2)
+    decision = _entry(1, 1, [6, 0, 0, 0, 0, 0], "PASS",
+                      _state(20, bench=[briar_a, briar_b], comp=""),
+                      _state(20, bench=[briar_a, briar_b], comp="Trait"))
+    sale = _entry(2, 2, [5, 0, 0, 0, 0, 0], "SELL",
+                  _state(20, bench=[briar_a, briar_b], comp="Trait"),
+                  _state(21, bench=[briar_two], comp="Trait"))
+    report = {"issues": []}
+    audit_purchase_sequences([decision, sale], "Jogador 1", report)
+    metrics = report["purchase_sequence_metrics"]["Jogador 1"]
+    assert metrics["confirmed_pair_path_losses"] == 0
+    assert metrics["core_or_pair_sales"] == 0
+
+
+def test_pair_loss_reports_champion_specific_evidence_when_global_pair_count_is_unchanged():
+    briar_a = _unit("Briar", star=2)
+    briar_b = _unit("Briar", star=2)
+    nasus_a = _unit("Nasus")
+    nasus_b = _unit("Nasus")
+    decision = _entry(1, 1, [6, 0, 0, 0, 0, 0], "PASS",
+                      _state(20, bench=[briar_a, briar_b, nasus_a, nasus_b], comp=""),
+                      _state(20, bench=[briar_a, briar_b, nasus_a, nasus_b], comp="Trait"))
+    sale = _entry(2, 2, [5, 0, 0, 0, 0, 0], "SELL",
+                  _state(20, bench=[briar_a, briar_b, nasus_a, nasus_b], comp="Trait"),
+                  _state(21, bench=[briar_b, nasus_a, nasus_b], comp="Trait"))
+    report = {"issues": []}
+    audit_purchase_sequences([decision, sale], "Jogador 1", report)
+    issue = next(item for item in report["issues"] if item["code"] == "SOLD_UPGRADE_PAIR_COPY")
+    assert issue["severity"] == "MEDIUM"
+    assert issue["evidence"]["global_pair_count_before"] == issue["evidence"]["global_pair_count_after"]
+    assert issue["evidence"]["same_star_copies_before"] == 2
+    assert issue["evidence"]["same_star_copies_after"] == 1
