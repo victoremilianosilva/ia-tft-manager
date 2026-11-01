@@ -7,6 +7,15 @@ from dataclasses import asdict, dataclass, fields
 from typing import Any
 
 
+def cosine_lr_factor(step: int, base_lr: float, min_lr: float, total_steps: int) -> float:
+    """Cosine decay that clamps at min_lr instead of rising after its horizon."""
+    if base_lr <= 0 or min_lr < 0 or min_lr > base_lr or total_steps <= 0:
+        raise ValueError("Parâmetros inválidos para o schedule de learning rate.")
+    progress = min(1.0, max(0.0, float(step) / float(total_steps)))
+    min_factor = float(min_lr) / float(base_lr)
+    return min_factor + (1.0 - min_factor) * 0.5 * (1.0 + math.cos(math.pi * progress))
+
+
 @dataclass
 class TrainingConfig:
     learning_rate: float = 3e-4
