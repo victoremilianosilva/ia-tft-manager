@@ -134,6 +134,11 @@ class TFTPolicy(nn.Module):
             nn.ReLU(),
             nn.Linear(64, 1),
         )
+        self.item_anvil_candidate_head = nn.Sequential(
+            nn.Linear(hidden_size + self.num_action_types + 11, 64),
+            nn.ReLU(),
+            nn.Linear(64, 1),
+        )
         self.item_component_candidate_head = nn.Sequential(
             nn.Linear(hidden_size + self.num_action_types + 10 + 1, 64),
             nn.ReLU(),
@@ -150,6 +155,7 @@ class TFTPolicy(nn.Module):
         )
         for candidate_head in (
             self.item_inventory_candidate_head,
+            self.item_anvil_candidate_head,
             self.item_component_candidate_head,
             self.item_target_candidate_head,
         ):
@@ -169,7 +175,8 @@ class TFTPolicy(nn.Module):
         item_head_keys = {key for key in target if key.startswith((
             "item_inventory_head.", "item_component_first_head.",
             "item_component_second_head.", "item_target_head.",
-            "item_inventory_candidate_head.", "item_component_candidate_head.",
+            "item_inventory_candidate_head.", "item_anvil_candidate_head.",
+            "item_component_candidate_head.",
             "item_target_candidate_head."
         ))}
         missing = sorted((set(target) - set(state_dict)) - item_head_keys)
@@ -396,6 +403,7 @@ class TFTPolicy(nn.Module):
                 zeros.view(batch, 1, 1).expand(-1, 37, self.item_target_feature_dim),
                 zeros.view(batch, 1, 1).expand(-1, 9, 37),
                 zeros.view(batch, 1, 1).expand(-1, 100, 37),
+                zeros.view(batch, 1, 1).expand(-1, 9, 11),
                 torch.zeros(batch, device=obs.device, dtype=torch.bool),
             )
         block = obs[:, start:end]
@@ -424,22 +432,32 @@ class TFTPolicy(nn.Module):
         offset += inventory_fit_size
         recipe_target_fit = block[:, offset:].reshape(-1, 100, 37)
         anvil_index = start - self.item_anvil_observation_dim
-        anvil_pending = (
-            obs[:, anvil_index] > 0.5
-            if anvil_index >= 0 else torch.zeros(obs.shape[0], device=obs.device, dtype=torch.bool)
-        )
+        if anvil_index >= 0:
+            anvil_pending = obs[:, anvil_index] > 0.5
+            anvil_options = obs[:, anvil_index + 3:anvil_index + self.item_anvil_observation_dim].reshape(
+                -1, 9, 11
+            )
+        else:
+            anvil_pending = torch.zeros(obs.shape[0], device=obs.device, dtype=torch.bool)
+            anvil_options = torch.zeros(obs.shape[0], 9, 11, device=obs.device, dtype=obs.dtype)
         return (
             components, inventory, recipes, targets,
-            inventory_target_fit, recipe_target_fit, anvil_pending
+            inventory_target_fit, recipe_target_fit, anvil_options, anvil_pending
         )
 
-    def _item_inventory_logits(self, conditioned, inventory_features, anvil_pending):
+    def _item_inventory_logits(
+        self, conditioned, inventory_features, anvil_option_features, anvil_pending
+    ):
         logits = self.item_inventory_head(conditioned)
         context = conditioned.unsqueeze(1).expand(-1, 9, -1)
-        scores = self.item_inventory_candidate_head(torch.cat(
+        bag_scores = self.item_inventory_candidate_head(torch.cat(
             [context, inventory_features.to(dtype=conditioned.dtype)], dim=-1
         )).squeeze(-1)
-        return logits + scores * (~anvil_pending).to(dtype=logits.dtype).unsqueeze(-1)
+        anvil_scores = self.item_anvil_candidate_head(torch.cat(
+            [context, anvil_option_features.to(dtype=conditioned.dtype)], dim=-1
+        )).squeeze(-1)
+        scores = torch.where(anvil_pending.unsqueeze(-1), anvil_scores, bag_scores)
+        return logits + scores
 
     def _item_component_logits(self, conditioned, component_features, first_context=None):
         if first_context is None:
@@ -615,7 +633,7 @@ class TFTPolicy(nn.Module):
         (
             item_component_features, item_inventory_features, item_recipe_features,
             item_target_features, item_inventory_target_fit, item_recipe_target_fit,
-            item_anvil_pending,
+            item_anvil_options, item_anvil_pending,
         ) = self._item_state_features(obs)
 
         def record_distribution(name, logits, chosen, row_indices, applied_mask=None):
@@ -858,7 +876,7 @@ class TFTPolicy(nn.Module):
             conditioned_item = conditioned[equip_item_mask]
             logits = self._item_inventory_logits(
                 conditioned_item, item_inventory_features[equip_item_mask],
-                item_anvil_pending[equip_item_mask],
+                item_anvil_options[equip_item_mask], item_anvil_pending[equip_item_mask],
             )
             inventory_mask = masks["item_inventory_mask"][equip_item_mask] if masks is not None else None
             if inventory_mask is not None:
@@ -988,7 +1006,8 @@ class TFTPolicy(nn.Module):
         bench_candidate_features, shop_candidate_features = self._candidate_features(obs)
         (
             item_component_features, item_inventory_features, item_recipe_features,
-            item_target_features, item_anvil_pending,
+            item_target_features, item_inventory_target_fit, item_recipe_target_fit,
+            item_anvil_options, item_anvil_pending,
         ) = self._item_state_features(obs)
 
         # Type
@@ -1161,7 +1180,7 @@ class TFTPolicy(nn.Module):
             logits = self._mask_logits(
                 self._item_inventory_logits(
                     conditioned_item, item_inventory_features[equip_item_mask],
-                    item_anvil_pending[equip_item_mask],
+                    item_anvil_options[equip_item_mask], item_anvil_pending[equip_item_mask],
                 ), inventory_mask
             )
             self._validate_selected_actions(item_index, inventory_mask, "item_inventory")
