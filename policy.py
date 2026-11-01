@@ -31,11 +31,38 @@ class TFTPolicy(nn.Module):
         self.pre_board_dim = 22     # Tamanho fixo do início: 10 do Core + 12 de Strategy
         self.board_flat_dim = 4 * 7 * self.num_cell_features  # 140
         self.economic_context_dim = 5
+        self.candidate_feature_dim = 8
+        self.candidate_observation_dim = (
+            action_dims[2] + action_dims[1]
+        ) * self.candidate_feature_dim
+        self.item_component_feature_dim = 10
+        self.item_semantic_feature_dim = 17
+        self.item_target_feature_dim = 18
+        self.item_anvil_observation_dim = 3 + 9 * 11
+        self.item_compatibility_observation_dim = (9 + 100) * 37
+        self.item_global_observation_dim = (
+            self.item_component_feature_dim
+            + 9 * self.item_semantic_feature_dim
+            + 100 * self.item_semantic_feature_dim
+            + 37 * self.item_target_feature_dim
+        )
+        self.item_state_observation_dim = (
+            self.item_global_observation_dim + self.item_compatibility_observation_dim
+        )
+        self.has_item_compatibility_observation = obs_dim >= (
+            self.pre_board_dim + self.board_flat_dim
+            + self.item_anvil_observation_dim + self.item_state_observation_dim
+            + self.candidate_observation_dim
+        )
 
-        # Derive explicit phase/level/reserve features from native core fields.
-        # They are inserted before the candidate tail for checkpoint migration.
+        # Compatibility matrices are consumed by the autoregressive item-target
+        # scorer and excluded from the global MLP to avoid a 4k-wide global input.
+        # The semantic inventory/recipe/target block remains in the global encoder.
         self.global_features_dim = (
-            obs_dim - self.board_flat_dim + self.economic_context_dim
+            obs_dim - self.board_flat_dim
+            - (self.item_compatibility_observation_dim
+               if self.has_item_compatibility_observation else 0)
+            + self.economic_context_dim
         )
 
         # Encoder Convolucional (Percepção Espacial Geométrica)
@@ -69,8 +96,6 @@ class TFTPolicy(nn.Module):
         # The native observation ends with 9 bench + 5 shop candidate records,
         # each with 8 explicit strategic features. Shared per-slot scorers make
         # each action logit depend on that candidate, not only its slot index.
-        self.candidate_feature_dim = 8
-        self.candidate_observation_dim = (action_dims[2] + action_dims[1]) * self.candidate_feature_dim
         self.shop_head = nn.Sequential(
             nn.Linear(hidden_size + self.num_action_types + self.candidate_feature_dim, 256),
             nn.ReLU(),
@@ -104,16 +129,6 @@ class TFTPolicy(nn.Module):
         # Slot-local semantic scorers let item actions compare the actual item,
         # component, recipe and target rather than learning arbitrary slot IDs.
         # Their final layers start at zero to preserve legacy checkpoint logits.
-        self.item_component_feature_dim = 10
-        self.item_semantic_feature_dim = 17
-        self.item_target_feature_dim = 18
-        self.item_anvil_observation_dim = 3 + 9 * 11
-        self.item_state_observation_dim = (
-            self.item_component_feature_dim
-            + 9 * self.item_semantic_feature_dim
-            + 100 * self.item_semantic_feature_dim
-            + 37 * self.item_target_feature_dim
-        )
         self.item_inventory_candidate_head = nn.Sequential(
             nn.Linear(hidden_size + self.num_action_types + self.item_semantic_feature_dim, 64),
             nn.ReLU(),
