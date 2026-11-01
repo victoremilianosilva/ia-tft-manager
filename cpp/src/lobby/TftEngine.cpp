@@ -3764,8 +3764,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 // a modest positive floor for an affordable bench acquisition
                 // instead of letting the current direction erase its value.
                 // The early-game floor is for actual upgrade/pair progress.
-                // Do not manufacture fit for arbitrary cheap units: that made
-                // buy-then-sell loops more rewarding than the reversal penalty.
+                // Modest-fit early acquisitions preserve option value; the
+                // recent-purchase sale guard prevents rewarding buy/sell loops.
                 const bool early_purchase_has_progress =
                     buy_completes_upgrade || buy_builds_pair;
                 const double effective_candidate_score =
@@ -3979,8 +3979,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 lobby.synergy_score(player_id) - old_synergy_score;
             const double sale_positioning_delta =
                 lobby.positioning_score(player_id) - old_positioning_score;
+            // A negligible score fluctuation must not justify selling a planned
+            // unit. Require a material, measurable improvement to the active board.
             const bool sale_compensated_by_board_gain =
-                sale_synergy_delta > 1e-6 || sale_positioning_delta > 1e-6;
+                sale_synergy_delta >= 0.20 || sale_positioning_delta >= 0.10;
             action_reward = success
                 ? reward_model::sale_quality(
                     sold_unit_fit_score, sold_core_unit,
