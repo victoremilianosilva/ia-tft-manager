@@ -311,22 +311,23 @@ inline double surplus_xp_spending_reward(
     int gold_before, int gold_after, int stage, int active_strategy,
     bool useful_purchase_available
 ) noexcept {
-    if (active_strategy == 3 || useful_purchase_available || stage < 3 ||
-        gold_before < 54 || gold_after < 50 || gold_after >= gold_before)
+    if (active_strategy == 3 || useful_purchase_available || stage < 4 ||
+        gold_before < 60 || gold_after < 50 || gold_after >= gold_before)
         return 0.0;
     const double surplus = std::clamp(
-        (static_cast<double>(gold_before) - 50.0) / 50.0, 0.0, 1.0);
-    // A meaningful, repeatable signal is required for the policy to learn that
-    // surplus can become level progress even before the purchase levels up.
-    // The 50-gold floor is still mandatory and SLOWROLL remains excluded.
+        (static_cast<double>(gold_before) - 50.0) / 100.0, 0.0, 1.0);
+    // XP is a measured fallback, not the default sink for surplus. Keep the
+    // reward below useful acquisition/pair signals and preserve the 50-gold
+    // interest floor. This applies to every non-SLOWROLL plan; no ECON mode
+    // assumption is made about balances at or above the interest cap.
     return xp_strategy_reward_scale(active_strategy) *
-        std::min(0.065, 0.045 + 0.020 * surplus);
+        (0.020 + 0.015 * surplus);
 }
 
  // Progress reward for XP that does not immediately cross a level boundary.
 // It is strategy-gated and deliberately smaller than an actual level-up.
-// Useful shop pairs/upgrades keep priority; ECON uses the separate surplus
-// fallback, while SLOWROLL preserves gold for its three-star plan.
+// Useful shop pairs/upgrades keep priority; non-SLOWROLL plans may use the
+// bounded surplus fallback, while SLOWROLL preserves gold for its three-star plan.
 inline double xp_progress_reward(
     int gold_before, int gold_after, int old_level, int new_level,
     int old_xp, int new_xp, double hp, int stage, int active_strategy,
@@ -442,14 +443,19 @@ inline double early_purchase_reward(
         return 0.0;
 
     const double fit = std::clamp(normalized_fit, 0.0, 1.0);
-    if (!completes_upgrade && !builds_pair && fit < 0.15)
+    // In stages 1-2, a modestly compatible acquisition has option value
+    // before the final composition is known. Avoid arbitrary clutter: require
+    // a small fit signal unless it forms a real pair or completes an upgrade.
+    if (!completes_upgrade && !builds_pair && fit < 0.08)
         return 0.0;
 
     const double capacity = bench_count <= 3 ? 1.0
         : (bench_count <= 5 ? 0.75 : 0.40);
     const double quality = completes_upgrade ? 1.0
-        : (builds_pair ? std::max(0.65, fit) : fit);
-    return capacity * (0.12 + 0.16 * quality);
+        : (builds_pair ? std::max(0.70, fit) : (0.35 + 0.65 * fit));
+    const double base = (completes_upgrade || builds_pair) ? 0.12 : 0.055;
+    const double fit_bonus = (completes_upgrade || builds_pair) ? 0.16 : 0.075;
+    return capacity * (base + fit_bonus * quality);
 }
 
 // Small opportunity-cost signal for passing while rich and under pressure,
@@ -534,13 +540,16 @@ inline bool should_penalize_reversed_purchase(
     bool bench_was_full,
     bool composition_changed
 ) noexcept {
+    // Selling a recently acquired unit without deploying/merging it is itself
+    // evidence of a wasted buy, even if its initial fit score looked acceptable.
+    // Keep explicit exceptions for a full bench and a genuine comp transition.
+    (void)normalized_fit;
     return !completed_upgrade && !was_deployed && !bench_was_full &&
-        !composition_changed &&
-        std::clamp(normalized_fit, 0.0, 1.0) <= kRecentPurchaseLowFitThreshold;
+        !composition_changed;
 }
 
 inline double reversed_purchase_penalty() noexcept {
-    return -0.18;
+    return -0.24;
 }
 
 inline double reversed_sequence_adjustment(
