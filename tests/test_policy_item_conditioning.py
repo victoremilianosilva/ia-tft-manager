@@ -144,6 +144,42 @@ def test_old_checkpoint_migrates_item_observation_and_neutral_candidate_heads():
         assert torch.count_nonzero(head[-1].weight) == 0
         assert torch.count_nonzero(head[-1].bias) == 0
 
+def test_checkpoint_without_derived_economic_context_migrates_both_insertions():
+    new_policy, _ = _policy_with_native_item_block()
+    old_obs_dim = new_policy.obs_dim - new_policy.item_state_observation_dim
+    old_policy = TFTPolicy(
+        obs_dim=old_obs_dim, action_dims=ACTION_DIMS, hidden_size=64
+    )
+    legacy_state = {
+        key: value.detach().clone()
+        for key, value in old_policy.state_dict().items()
+        if not key.startswith((
+            "item_inventory_candidate_head.",
+            "item_component_candidate_head.",
+            "item_target_candidate_head.",
+        ))
+    }
+    old_global = legacy_state["global_mlp.0.weight"]
+    legacy_state["global_mlp.0.weight"] = torch.cat([
+        old_global[:, :-new_policy.candidate_observation_dim
+                   - new_policy.economic_context_dim],
+        old_global[:, -new_policy.candidate_observation_dim:],
+    ], dim=1)
+
+    restored, _ = _policy_with_native_item_block()
+    assert restored.load_compatible_state_dict(legacy_state)
+    source = legacy_state["global_mlp.0.weight"]
+    insertion = source.shape[1] - restored.candidate_observation_dim
+    added = restored.item_state_observation_dim + restored.economic_context_dim
+    migrated = restored.state_dict()["global_mlp.0.weight"]
+    assert torch.count_nonzero(migrated[:, insertion:insertion + added]) == 0
+    assert torch.equal(migrated[:, :insertion], source[:, :insertion])
+    assert torch.equal(
+        migrated[:, insertion + added:],
+        source[:, insertion:],
+    )
+
+
 def test_item_sampling_and_ppo_replay_use_identical_conditioned_distributions():
     policy, obs = _policy_with_native_item_block()
     type_mask = torch.zeros(1, 9, dtype=torch.bool)
