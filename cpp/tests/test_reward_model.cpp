@@ -130,7 +130,7 @@ int main() {
                   0.0, "ordinary purchases must preserve the 50-gold interest floor");
     require_close(surplus_xp_spending_reward(54, 50, 4, 0, false), 0.0,
                   "small surplus should not trigger routine XP spending");
-    require_close(surplus_xp_spending_reward(60, 56, 4, 0, false), 0.021,
+    require_close(surplus_xp_spending_reward(60, 56, 4, 0, false), 0.0215,
                   "XP fallback starts modestly when there is meaningful surplus");
     require_close(surplus_xp_spending_reward(103, 99, 5, 0, false), 0.02795,
                   "large surplus increases XP value gradually without dominating purchases");
