@@ -257,9 +257,9 @@ class TFTPolicy(nn.Module):
 
         reserve = torch.where(
             stage <= 2.0, 30.0,
-            torch.where(stage <= 3.0, 20.0,
-                torch.where(stage <= 4.0, 15.0,
-                    torch.where(stage <= 5.0, 10.0, 5.0))),
+            torch.where(stage <= 3.0, 15.0,
+                torch.where(stage <= 4.0, 10.0,
+                    torch.where(stage <= 5.0, 5.0, 0.0))),
         )
         slowroll_reserve = torch.where(
             stage <= 3.0, 30.0,
