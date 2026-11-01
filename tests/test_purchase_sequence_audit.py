@@ -256,8 +256,8 @@ def test_real_two_star_pair_loss_is_also_detected():
     assert metrics["core_or_pair_sales"] == 1
 
 def test_selling_duplicate_core_copy_is_not_reported_as_core_loss():
-    core_a = _unit("Carry")
-    core_b = _unit("Carry")
+    core_a = _unit("Carry", star=2)
+    core_b = _unit("Carry", star=1)
     decision = _entry(1, 1, [6, 0, 0, 0, 0, 0], "PASS",
                       _state(20, bench=[core_a, core_b], comp=""),
                       _state(20, bench=[core_a, core_b], comp="Trait"))
