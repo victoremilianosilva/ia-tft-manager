@@ -4022,9 +4022,16 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         } else {
             success = true;
             if (type == 6 && !this->strategy.empty()) {
+                const std::int32_t pass_strategy_id =
+                    this->strategy.back().strategy;
+                const bool useful_xp_spending_available =
+                    reward_model::phase_xp_opportunity_available(
+                        economy.gold, economy.level, this->info.hp,
+                        static_cast<int>(lobby.stage), pass_strategy_id);
                 action_reward += reward_model::pass_opportunity_penalty(
                     economy.gold, this->info.hp, lobby.stage,
-                    useful_shop_purchase_available);
+                    useful_shop_purchase_available,
+                    useful_xp_spending_available);
             }
         }
 
