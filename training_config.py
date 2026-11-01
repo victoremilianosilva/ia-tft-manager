@@ -52,11 +52,15 @@ class TrainingConfig:
                 raise ValueError(f"{name} deve ser finito.")
         if self.target_kl is not None and not math.isfinite(float(self.target_kl)):
             raise ValueError("target_kl deve ser finito ou None.")
-        for name in (
-            "learning_rate", "adam_eps", "lr_schedule_updates",
-            "entropy_schedule_updates", "batch_size", "ppo_epochs", "rollout_steps",
-            "num_lobbies", "total_updates",
-        ):
+        integer_fields = (
+            "lr_schedule_updates", "entropy_schedule_updates", "batch_size",
+            "ppo_epochs", "rollout_steps", "num_lobbies", "total_updates",
+        )
+        for name in integer_fields:
+            value = getattr(self, name)
+            if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+                raise ValueError(f"{name} deve ser um inteiro > 0.")
+        for name in ("learning_rate", "adam_eps"):
             if getattr(self, name) <= 0:
                 raise ValueError(f"{name} deve ser > 0.")
         if not 0 <= self.min_learning_rate <= self.learning_rate:
