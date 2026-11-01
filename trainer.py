@@ -3,7 +3,6 @@ import torch.optim as optim
 import numpy as np
 import os
 import json
-import sys
 
 from rich.console import Console
 from rich.progress import (
