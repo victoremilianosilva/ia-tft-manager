@@ -90,7 +90,7 @@ constexpr std::size_t kAnvilObservationDim = 3 + kAnvilOptionCount * kAnvilOptio
 // Semantic item-state block: component counts, bag item definitions, craftable
 // recipe definitions, and per-unit target profiles. It is appended before the
 // fixed strategic-candidate tail so legacy checkpoints can migrate by insertion.
-constexpr std::size_t kItemSemanticFeatureDim = 15;
+constexpr std::size_t kItemSemanticFeatureDim = 17;
 constexpr std::size_t kItemTargetFeatureDim = 18;
 constexpr std::size_t kItemStateObservationDim =
     10 + 9 * kItemSemanticFeatureDim + 100 * kItemSemanticFeatureDim +
@@ -1370,7 +1370,9 @@ struct TFTEngine::Impl {
                     static_cast<float>(std::clamp(item.mana / 100.0, 0.0, 1.0)),
                     static_cast<float>(std::clamp(item.carry_weight, 0.0, 1.0)),
                     static_cast<float>(std::clamp(item.tank_weight, 0.0, 1.0)),
-                    static_cast<float>(std::clamp(item.support_weight + item.utility_weight, 0.0, 1.0))
+                    static_cast<float>(std::clamp(item.support_weight, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.utility_weight, 0.0, 1.0)),
+                    item.grants_trait.empty() ? 0.0f : 1.0f
                 };
             };
 
