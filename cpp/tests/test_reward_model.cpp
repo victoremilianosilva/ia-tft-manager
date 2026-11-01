@@ -293,7 +293,7 @@ int main() {
     if (!(pass_opportunity_penalty(50, 20.0, 6, false, true) < 0.0))
         throw std::runtime_error("late-game XP opportunity and low HP must discourage passive saving");
     if (!(pass_opportunity_penalty(125, 80.0, 6, false, true) <
-          pass_opportunity_penalty(125, 80.0, 2, false, true))) {
+          pass_opportunity_penalty(125, 80.0, 3, false, true))) {
         throw std::runtime_error("late-game surplus opportunity cost must exceed opening-stage pressure");
     }
     if (!(phase_xp_progress_reward(54, 50, 6, 6, 0, 4, 80.0, 4, 1, false) > 0.02))
