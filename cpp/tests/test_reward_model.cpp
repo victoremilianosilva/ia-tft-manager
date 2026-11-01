@@ -271,44 +271,48 @@ int main() {
         throw std::runtime_error("XP spending reward must remain capped to avoid repeated XP spam");
     }
     if (!(pass_opportunity_penalty(50, 100.0, 2, true) < 0.0)) {
-        throw std::runtime_error("passing at the interest cap with a useful offer should be discouraged");
+        throw std::runtime_error("passing with a useful shop offer should be discouraged");
     }
-    const double pass_50 = pass_opportunity_penalty(50, 100.0, 2, false);
-    const double pass_75 = pass_opportunity_penalty(75, 100.0, 2, false);
-    const double pass_125 = pass_opportunity_penalty(125, 100.0, 2, false);
-    const double pass_200 = pass_opportunity_penalty(200, 100.0, 2, false);
-    if (!(pass_125 < -0.05))
-        throw std::runtime_error("large reserves must receive a meaningful opportunity cost");
+    // A high balance alone is not an actionable opportunity: do not punish
+    // PASS when the shop is poor and the player has reached the phase target.
+    require_close(pass_opportunity_penalty(200, 100.0, 6, false), 0.0,
+                  "no useful purchase or XP opportunity means PASS is neutral");
+    const double pass_50 = pass_opportunity_penalty(50, 100.0, 5, false, true);
+    const double pass_75 = pass_opportunity_penalty(75, 100.0, 5, false, true);
+    const double pass_125 = pass_opportunity_penalty(125, 100.0, 5, false, true);
+    const double pass_200 = pass_opportunity_penalty(200, 100.0, 5, false, true);
+    if (!(pass_125 < -0.02))
+        throw std::runtime_error("large reserves with useful XP progress must have an opportunity cost");
     if (!(pass_50 > pass_75 && pass_75 > pass_125 && pass_125 > pass_200))
-        throw std::runtime_error("PASS penalty must grow with gold above 50");
-    if (!(pass_opportunity_penalty(125, 100.0, 2, true) <
-          pass_opportunity_penalty(125, 100.0, 2, false)))
+        throw std::runtime_error("PASS penalty must grow gradually with surplus when XP is useful");
+    if (!(pass_opportunity_penalty(125, 80.0, 5, true, true) <
+          pass_opportunity_penalty(125, 80.0, 5, false, true)))
         throw std::runtime_error("PASS with a useful unit offer must be penalized more");
-    if (!(pass_opportunity_penalty(50, 20.0, 6, true) < 0.0)) {
+    if (!(pass_opportunity_penalty(50, 20.0, 6, true) < 0.0))
         throw std::runtime_error("passing with a useful offer, high gold and low HP must be discouraged");
+    if (!(pass_opportunity_penalty(50, 20.0, 6, false, true) < 0.0))
+        throw std::runtime_error("late-game XP opportunity and low HP must discourage passive saving");
+    if (!(pass_opportunity_penalty(125, 80.0, 6, false, true) <
+          pass_opportunity_penalty(125, 80.0, 2, false, true))) {
+        throw std::runtime_error("late-game surplus opportunity cost must exceed opening-stage pressure");
     }
-    if (!(pass_opportunity_penalty(50, 20.0, 6, false) < 0.0))
-        throw std::runtime_error("late-game health pressure must discourage passive saving");
-    if (!(pass_opportunity_penalty(125, 80.0, 6, false) <
-          pass_opportunity_penalty(125, 80.0, 2, false))) {
-        throw std::runtime_error("late-game surplus hoarding must be penalized more than opening-game saving");
-    }
-    if (!(phase_xp_progress_reward(54, 50, 6, 6, 0, 4, 80.0, 4, 1, false) > 0.12))
-        throw std::runtime_error("stage 4 must reward XP progress toward level 8 strongly enough to beat interest loss");
-    if (!(phase_xp_progress_reward(103, 99, 7, 7, 0, 4, 80.0, 5, 0, false) > 0.11))
-        throw std::runtime_error("stage 5 must reward progress toward level 9");
-    if (!(phase_xp_progress_reward(103, 99, 7, 7, 0, 4, 80.0, 6, 2, true) > 0.07))
-        throw std::runtime_error("FAST8 must keep XP progress valuable even with a useful shop offer");
+    if (!(phase_xp_progress_reward(54, 50, 6, 6, 0, 4, 80.0, 4, 1, false) > 0.025))
+        throw std::runtime_error("stage 4 should provide a small signal for useful XP progress toward level 8");
+    if (!(phase_xp_progress_reward(103, 99, 7, 7, 0, 4, 80.0, 5, 0, false) > 0.025))
+        throw std::runtime_error("stage 5 should provide a small signal for progress toward level 9");
+    if (!(phase_xp_progress_reward(103, 99, 6, 6, 0, 4, 80.0, 4, 2, true) > 0.015))
+        throw std::runtime_error("FAST8 should retain a modest XP signal when a useful shop offer exists");
     require_close(phase_xp_progress_reward(103, 99, 6, 6, 0, 4, 80.0, 4, 3, false),
                   0.0, "SLOWROLL keeps its three-star economy");
-    if (!(phase_xp_progress_reward(40, 36, 6, 6, 0, 4, 80.0, 5, 0, false) > 0.10))
-        throw std::runtime_error("late-game XP may spend below 50 when the player is behind target");
-    if (!(phase_xp_progress_reward(40, 36, 7, 7, 0, 4, 25.0, 5, 1, false) > 0.0)) {
-        throw std::runtime_error("critical HP may justify XP spending below the interest floor");
-    }
+    if (!(phase_xp_progress_reward(40, 36, 6, 6, 0, 4, 80.0, 5, 0, false) > 0.02))
+        throw std::runtime_error("late-game XP may spend below 50 when behind target and above the soft reserve");
+    require_close(phase_xp_progress_reward(40, 36, 7, 7, 0, 4, 25.0, 5, 1, false),
+                  0.0, "urgent partial XP uses the dedicated urgent reward, not duplicate phase shaping");
+    if (!(xp_progress_reward(40, 36, 7, 7, 0, 4, 25.0, 5, 1, false) > 0.0))
+        throw std::runtime_error("critical HP may justify XP progress below the interest floor");
     require_close(phase_xp_progress_reward(54, 50, 4, 4, 0, 4, 80.0, 2, 0, false),
                   0.0, "stage 2 must prioritize board development over XP");
-    if (!(phase_xp_progress_reward(54, 50, 5, 5, 0, 4, 80.0, 3, 0, false) > 0.08))
+    if (!(phase_xp_progress_reward(54, 50, 5, 5, 0, 4, 80.0, 3, 0, false) > 0.015))
         throw std::runtime_error("stage 3 begins gradual progression toward level 7");
     require_close(economy_phase_target_level(1), 3.0, "stage 1 target level");
     require_close(economy_phase_target_level(2), 5.0, "stage 2 target level");
@@ -317,11 +321,27 @@ int main() {
     require_close(economy_phase_target_level(5), 9.0, "stage 5 target level");
     require_close(economy_phase_target_level(4, 2), 8.0, "FAST8 target level");
     require_close(economy_phase_target_level(4, 3), 6.0, "SLOWROLL target level");
-    require_close(economy_phase_minimum_reserve(4, 80.0, 0), 10.0,
-                  "stage 4 minimum reserve permits controlled spend-down");
-    require_close(economy_phase_minimum_reserve(6, 80.0, 0), 0.0,
-                  "late game does not protect idle gold");
+    require_close(economy_phase_minimum_reserve(3, 80.0, 0), 20.0,
+                  "stage 3 releases liquidity gradually");
+    require_close(economy_phase_minimum_reserve(4, 80.0, 0), 15.0,
+                  "stage 4 retains a modest reserve while permitting spend-down");
+    require_close(economy_phase_minimum_reserve(5, 80.0, 0), 10.0,
+                  "stage 5 reserve continues to decline");
+    require_close(economy_phase_minimum_reserve(6, 80.0, 0), 5.0,
+                  "late game retains only a small liquidity buffer");
+    require_close(economy_phase_minimum_reserve(4, 80.0, 3), 25.0,
+                  "SLOWROLL protects its roll economy");
+    require_close(economy_phase_minimum_reserve(4, 80.0, 4), 0.0,
+                  "ALL_IN removes the soft reserve");
     require_close(economy_phase_target_level(6), 9.0, "stage 6 target level");
+    if (!phase_xp_opportunity_available(40, 6, 80.0, 4, 2))
+        throw std::runtime_error("FAST8 should expose XP as a useful spend below its target");
+    if (phase_xp_opportunity_available(40, 8, 80.0, 4, 2))
+        throw std::runtime_error("XP is not a useful phase opportunity after reaching the target");
+    if (phase_xp_opportunity_available(20, 6, 80.0, 4, 0))
+        throw std::runtime_error("XP opportunity must preserve the phase reserve");
+    if (phase_xp_opportunity_available(40, 6, 80.0, 4, 3))
+        throw std::runtime_error("SLOWROLL must not be pressured to spend on XP");
     require_close(item_crafting_bonus(-0.02), 0.0,
                   "poor item craft should not receive a crafting bonus");
     if (!(item_crafting_bonus(0.15) > 0.0 && item_crafting_bonus(0.15) <= 0.08)) {
