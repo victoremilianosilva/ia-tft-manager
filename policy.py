@@ -130,7 +130,7 @@ class TFTPolicy(nn.Module):
         # component, recipe and target rather than learning arbitrary slot IDs.
         # Their final layers start at zero to preserve legacy checkpoint logits.
         self.item_inventory_candidate_head = nn.Sequential(
-            nn.Linear(hidden_size + self.num_action_types + self.item_semantic_feature_dim, 64),
+            nn.Linear(hidden_size + self.num_action_types + self.item_semantic_feature_dim + 2, 64),
             nn.ReLU(),
             nn.Linear(64, 1),
         )
@@ -446,12 +446,21 @@ class TFTPolicy(nn.Module):
         )
 
     def _item_inventory_logits(
-        self, conditioned, inventory_features, anvil_option_features, anvil_pending
+        self, conditioned, inventory_features, inventory_target_fit,
+        anvil_option_features, anvil_pending
     ):
         logits = self.item_inventory_head(conditioned)
         context = conditioned.unsqueeze(1).expand(-1, 9, -1)
+        fit_summary = torch.stack([
+            inventory_target_fit.max(dim=-1).values,
+            inventory_target_fit.mean(dim=-1),
+        ], dim=-1)
         bag_scores = self.item_inventory_candidate_head(torch.cat(
-            [context, inventory_features.to(dtype=conditioned.dtype)], dim=-1
+            [
+                context,
+                inventory_features.to(dtype=conditioned.dtype),
+                fit_summary.to(dtype=conditioned.dtype),
+            ], dim=-1
         )).squeeze(-1)
         anvil_scores = self.item_anvil_candidate_head(torch.cat(
             [context, anvil_option_features.to(dtype=conditioned.dtype)], dim=-1
@@ -876,7 +885,8 @@ class TFTPolicy(nn.Module):
             conditioned_item = conditioned[equip_item_mask]
             logits = self._item_inventory_logits(
                 conditioned_item, item_inventory_features[equip_item_mask],
-                item_anvil_options[equip_item_mask], item_anvil_pending[equip_item_mask],
+                item_inventory_target_fit[equip_item_mask], item_anvil_options[equip_item_mask],
+                item_anvil_pending[equip_item_mask],
             )
             inventory_mask = masks["item_inventory_mask"][equip_item_mask] if masks is not None else None
             if inventory_mask is not None:
@@ -1180,7 +1190,8 @@ class TFTPolicy(nn.Module):
             logits = self._mask_logits(
                 self._item_inventory_logits(
                     conditioned_item, item_inventory_features[equip_item_mask],
-                    item_anvil_options[equip_item_mask], item_anvil_pending[equip_item_mask],
+                    item_inventory_target_fit[equip_item_mask], item_anvil_options[equip_item_mask],
+                    item_anvil_pending[equip_item_mask],
                 ), inventory_mask
             )
             self._validate_selected_actions(item_index, inventory_mask, "item_inventory")
