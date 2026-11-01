@@ -1,6 +1,6 @@
 import pytest
 
-from training_config import TrainingConfig
+from training_config import TrainingConfig, cosine_lr_factor
 
 
 def test_defaults_are_valid_and_exposed():
@@ -62,3 +62,15 @@ def test_invalid_configuration_is_rejected(overrides):
 def test_unknown_parameter_is_rejected():
     with pytest.raises(ValueError, match="desconhecidos"):
         TrainingConfig.from_env({"lr": 1e-4})
+
+
+def test_cosine_lr_schedule_reaches_floor_and_never_rebounds():
+    assert cosine_lr_factor(0, 3e-4, 5e-5, 1000) == pytest.approx(1.0)
+    assert cosine_lr_factor(1000, 3e-4, 5e-5, 1000) == pytest.approx(5e-5 / 3e-4)
+    assert cosine_lr_factor(1500, 3e-4, 5e-5, 1000) == pytest.approx(5e-5 / 3e-4)
+    assert cosine_lr_factor(500, 3e-4, 5e-5, 1000) < 1.0
+
+
+def test_cosine_lr_schedule_rejects_invalid_horizon():
+    with pytest.raises(ValueError):
+        cosine_lr_factor(0, 3e-4, 5e-5, 0)
