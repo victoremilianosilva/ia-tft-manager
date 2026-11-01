@@ -87,6 +87,14 @@ constexpr std::size_t kStrategicCandidateObservationDim =
 constexpr std::size_t kAnvilOptionCount = 9;
 constexpr std::size_t kAnvilOptionFeatureDim = 11;
 constexpr std::size_t kAnvilObservationDim = 3 + kAnvilOptionCount * kAnvilOptionFeatureDim;
+// Semantic item-state block: component counts, bag item definitions, craftable
+// recipe definitions, and per-unit target profiles. It is appended before the
+// fixed strategic-candidate tail so legacy checkpoints can migrate by insertion.
+constexpr std::size_t kItemSemanticFeatureDim = 15;
+constexpr std::size_t kItemTargetFeatureDim = 18;
+constexpr std::size_t kItemStateObservationDim =
+    10 + 9 * kItemSemanticFeatureDim + 100 * kItemSemanticFeatureDim +
+    (kBoardSlots + kBenchSlots) * kItemTargetFeatureDim;
 constexpr std::size_t kActionMemoryObservationDim = 1 + kBoardSlots;
 constexpr std::uint32_t kActionMemoryHorizon = 10;
 
@@ -1030,7 +1038,8 @@ struct TFTEngine::Impl {
             2 * observation_trait_names.size() + kCompositionUnitSlots +
             kActionMemoryObservationDim +
             observation_trait_names.size() + 2 +
-            kAnvilObservationDim + kStrategicCandidateObservationDim;
+            kAnvilObservationDim + kItemStateObservationDim +
+            kStrategicCandidateObservationDim;
     }
 
     std::vector<float> build_observations() const {
@@ -1341,7 +1350,117 @@ struct TFTEngine::Impl {
                 for (const float feature : features) out[offset++] = feature;
             }
 
-            // 16) PER-CANDIDATE DECISION FEATURES. These are explicit slot-local
+            // 16) SEMANTIC ITEM STATE. Masks express legality only; this block
+            // gives PPO the actual component/item identities and stats, recipe
+            // outcomes, and the role/location/profile of every possible target.
+            const auto* item_state = player_envs[i].item_engine.get();
+            const auto encode_item = [](const items::ItemDefinition& item) {
+                return std::array<float, kItemSemanticFeatureDim>{
+                    static_cast<float>(std::clamp(item.attack_damage / 100.0, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.attack_speed / 2.0, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.ability_power / 100.0, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.critical_strike_chance, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.critical_strike_damage / 2.0, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.max_health / 2000.0, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.armor / 100.0, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.magic_resist / 100.0, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.omnivamp, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.damage_amplification, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.damage_reduction, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.mana / 100.0, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.carry_weight, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.tank_weight, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.support_weight + item.utility_weight, 0.0, 1.0))
+                };
+            };
+
+            for (std::size_t component = 0; component < 10; ++component) {
+                double count = 0.0;
+                if (item_state && item_catalog && component < item_catalog->components.size()) {
+                    const auto& id = item_catalog->components[component].first;
+                    count = static_cast<double>(std::count(
+                        item_state->components().begin(), item_state->components().end(), id));
+                }
+                out[offset++] = static_cast<float>(std::clamp(count / 6.0, 0.0, 1.0));
+            }
+
+            for (std::size_t slot = 0; slot < 9; ++slot) {
+                std::array<float, kItemSemanticFeatureDim> features{};
+                if (item_state && slot < item_state->inventory().size()) {
+                    if (const auto* definition = item_state->find(item_state->inventory()[slot]))
+                        features = encode_item(*definition);
+                }
+                for (const float feature : features) out[offset++] = feature;
+            }
+
+            // Recipe features are indexed [first_component * 10 + second].
+            // Both orders are populated because the recipe contract is symmetric.
+            std::array<std::array<float, kItemSemanticFeatureDim>, 100> recipe_features{};
+            if (item_catalog) {
+                for (const auto& definition : item_catalog->items) {
+                    if (definition.recipe_components[0].empty() ||
+                        definition.recipe_components[1].empty()) continue;
+                    const auto first = std::find_if(item_catalog->components.begin(),
+                        item_catalog->components.end(), [&](const auto& entry) {
+                            return entry.first == definition.recipe_components[0];
+                        });
+                    const auto second = std::find_if(item_catalog->components.begin(),
+                        item_catalog->components.end(), [&](const auto& entry) {
+                            return entry.first == definition.recipe_components[1];
+                        });
+                    if (first == item_catalog->components.end() ||
+                        second == item_catalog->components.end()) continue;
+                    const auto a = static_cast<std::size_t>(
+                        std::distance(item_catalog->components.begin(), first));
+                    const auto b = static_cast<std::size_t>(
+                        std::distance(item_catalog->components.begin(), second));
+                    if (a >= 10 || b >= 10) continue;
+                    const auto encoded = encode_item(definition);
+                    recipe_features[a * 10 + b] = encoded;
+                    recipe_features[b * 10 + a] = encoded;
+                }
+            }
+            for (const auto& recipe : recipe_features)
+                for (const float feature : recipe) out[offset++] = feature;
+
+            for (std::size_t target = 0; target < kBoardSlots + kBenchSlots; ++target) {
+                std::array<float, kItemTargetFeatureDim> features{};
+                const auto* unit = item_target_unit(i, target);
+                if (unit) {
+                    const auto* definition = catalog->find_by_id(unit->champion_internal_id);
+                    if (definition) {
+                        const bool on_board = target < kBoardSlots;
+                        const auto row = on_board ? target / 7 : 0;
+                        const int role = std::clamp(definition->combat_profile.role, 0, 4);
+                        const auto& stats = definition->stats;
+                        const auto& combat = definition->combat_profile;
+                        const auto fit = unit_composition_score(strategy, *definition,
+                            unit->star, trait_milestones);
+                        features[0] = 1.0f;
+                        features[1] = on_board ? 1.0f : 0.0f;
+                        features[2] = on_board ? 0.0f : 1.0f;
+                        features[3] = static_cast<float>(std::clamp(unit->star / 3.0, 0.0, 1.0));
+                        features[4 + role] = 1.0f;
+                        features[9] = on_board && row <= 1 ? 1.0f : 0.0f;
+                        features[10] = on_board && row >= 2 ? 1.0f : 0.0f;
+                        features[11] = static_cast<float>(std::clamp(fit / 32.5, 0.0, 1.0));
+                        features[12] = static_cast<float>(std::clamp(
+                            (combat.attack_damage > 0.0 ? combat.attack_damage : stats.attack_damage) / 200.0, 0.0, 1.0));
+                        features[13] = static_cast<float>(std::clamp(
+                            (combat.attack_speed > 0.0 ? combat.attack_speed : stats.attack_speed) / 2.0, 0.0, 1.0));
+                        features[14] = static_cast<float>(std::clamp(
+                            (combat.max_hp > 0.0 ? combat.max_hp : stats.max_hp) / 2000.0, 0.0, 1.0));
+                        features[15] = static_cast<float>(std::clamp(stats.armor / 150.0, 0.0, 1.0));
+                        features[16] = static_cast<float>(std::clamp(stats.magic_resist / 150.0, 0.0, 1.0));
+                        const auto equipped_count = item_state
+                            ? item_state->equipped(unit->uuid).size() : unit->items.size();
+                        features[17] = static_cast<float>(std::clamp(equipped_count / 3.0, 0.0, 1.0));
+                    }
+                }
+                for (const float feature : features) out[offset++] = feature;
+            }
+
+            // 17) PER-CANDIDATE DECISION FEATURES. These are explicit slot-local
             // features so the policy can compare offers/sale candidates rather than
             // infer which global features correspond to each output index.
             // Precompute owned copies once per player. Candidate features below
