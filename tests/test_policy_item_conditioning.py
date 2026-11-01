@@ -97,19 +97,31 @@ def test_inventory_candidate_scorer_uses_item_semantics():
     assert logits[0, 1] > logits[0, 0]
 
 
-def test_new_item_candidate_heads_migrate_missing_legacy_weights_as_neutral():
-    policy, _ = _policy_with_native_item_block()
+def test_old_checkpoint_migrates_item_observation_and_neutral_candidate_heads():
+    new_policy, _ = _policy_with_native_item_block()
+    old_obs_dim = new_policy.obs_dim - new_policy.item_state_observation_dim
+    old_policy = TFTPolicy(
+        obs_dim=old_obs_dim, action_dims=ACTION_DIMS, hidden_size=64
+    )
     legacy_state = {
         key: value.detach().clone()
-        for key, value in policy.state_dict().items()
+        for key, value in old_policy.state_dict().items()
         if not key.startswith((
             "item_inventory_candidate_head.",
             "item_component_candidate_head.",
             "item_target_candidate_head.",
         ))
     }
+
     restored, _ = _policy_with_native_item_block()
     assert restored.load_compatible_state_dict(legacy_state)
+    old_global_input = old_policy.state_dict()["global_mlp.0.weight"].shape[1]
+    insertion = old_global_input - restored.candidate_observation_dim
+    added_columns = restored.item_state_observation_dim
+    migrated_global = restored.state_dict()["global_mlp.0.weight"]
+    assert torch.count_nonzero(
+        migrated_global[:, insertion:insertion + added_columns]
+    ) == 0
     for head in (
         restored.item_inventory_candidate_head,
         restored.item_component_candidate_head,
@@ -117,7 +129,6 @@ def test_new_item_candidate_heads_migrate_missing_legacy_weights_as_neutral():
     ):
         assert torch.count_nonzero(head[-1].weight) == 0
         assert torch.count_nonzero(head[-1].bias) == 0
-
 
 def test_item_sampling_and_ppo_replay_use_identical_conditioned_distributions():
     policy, obs = _policy_with_native_item_block()
