@@ -45,6 +45,8 @@ Também é possível sobrescrever parâmetros por variáveis de ambiente:
 | `TFT_PPO_BATCH_SIZE` | `batch_size` |
 | `TFT_PPO_EPOCHS` | `ppo_epochs` |
 | `TFT_ROLLOUT_STEPS` | `rollout_steps` |
+| `TFT_NUM_LOBBIES` | `num_lobbies` |
+| `TFT_TOTAL_UPDATES` | `total_updates` |
 | `TFT_PPO_GAMMA` | `gamma` |
 | `TFT_PPO_GAE_LAMBDA` | `gae_lambda` |
 | `TFT_CHECKPOINT_PATH` | `checkpoint_path` |
