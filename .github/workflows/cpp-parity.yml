@@ -19,7 +19,7 @@ jobs:
           cache: pip
 
       - name: Install test dependencies
-        run: python -m pip install --upgrade pip numpy pytest pybind11 tensorboard
+        run: python -m pip install --upgrade pip numpy pytest pybind11 tensorboard "rich>=13.7,<15"
 
       - name: Install CPU PyTorch for PPO integration tests
         run: python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
