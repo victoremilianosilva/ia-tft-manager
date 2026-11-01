@@ -145,10 +145,10 @@ class TFTPolicy(nn.Module):
     def load_compatible_state_dict(self, state_dict):
         """Load current weights or migrate supported input-shape changes.
 
-        New global observation features must be inserted immediately before the
-        fixed candidate tail. Existing global encoder columns are shifted around
-        that insertion; new columns and new bench-target conditioning columns start
-        at zero so inference initially preserves the old logits.
+        Native item features are inserted before the derived economic context and
+        fixed candidate tail. Existing economic/candidate columns are shifted to
+        retain their semantic alignment; new columns and candidate scorers start
+        neutral so inference initially preserves the old logits.
         """
         target = self.state_dict()
         item_head_keys = {key for key in target if key.startswith((
@@ -257,8 +257,8 @@ class TFTPolicy(nn.Module):
         # Extrai a seção geométrica do tabuleiro usando o deslocamento inicial fixo
         board_part = obs[:, self.pre_board_dim : self.pre_board_dim + self.board_flat_dim]
 
-        # Keep candidate records at the tail; the compatible-checkpoint loader
-        # inserts the five derived economic features immediately before them.
+        # Keep candidate records at the tail. Native item semantics live in the
+        # middle block; derived economic context follows it before candidate slots.
         pre_part = obs[:, :self.pre_board_dim]
         post_part = obs[:, self.pre_board_dim + self.board_flat_dim :]
         candidate_tail = post_part[:, -self.candidate_observation_dim:]
