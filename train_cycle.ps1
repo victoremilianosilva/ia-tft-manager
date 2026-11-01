@@ -90,9 +90,16 @@ Write-Host "Checkpoint:     $env:TFT_CHECKPOINT_PATH"
 Write-Host "Log:            $logFile"
 Write-Host ""
 
-# Executa o ciclo e preserva a saida completa em arquivo.
-& $python -u trainer.py 2>&1 | Tee-Object -FilePath $logFile
-$trainingExitCode = $LASTEXITCODE
+# Start-Transcript registra a saida sem colocar Tee-Object no pipeline
+# do processo Python, preservando a renderizacao dinamica do Rich.
+Start-Transcript -Path $logFile -Force | Out-Null
+try {
+    & $python -u trainer.py
+    $trainingExitCode = $LASTEXITCODE
+}
+finally {
+    Stop-Transcript | Out-Null
+}
 
 Write-Host ""
 if ($trainingExitCode -ne 0) {
