@@ -138,6 +138,16 @@ int main() {
                   "useful shop offers take priority over surplus XP");
     require_close(surplus_xp_spending_reward(54, 50, 4, 3, false), 0.0,
                   "SLOWROLL never receives the surplus XP fallback");
+    require_close(surplus_xp_spending_reward(103, 99, 5, 3, false), 0.0,
+                  "even a large surplus must not turn SLOWROLL into a leveling strategy");
+    const double late_surplus_xp =
+        surplus_xp_spending_reward(103, 99, 5, 1, false);
+    const double late_surplus_pass =
+        pass_opportunity_penalty(103, 80.0, 5, false);
+    if (!(late_surplus_xp > late_surplus_pass)) {
+        throw std::runtime_error(
+            "late-game surplus XP progress must be preferred over passive hoarding");
+    }
     if (!(unit_purchase_timing_reward(5, 50, 2, 1, 0.7, 80.0, false, false) > 0.0)) {
         throw std::runtime_error("useful unit purchase with capped gold should be rewarded in mid-game");
     }
