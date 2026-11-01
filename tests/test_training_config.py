@@ -52,6 +52,7 @@ def test_target_kl_can_be_disabled(monkeypatch):
     {"learning_rate": 0}, {"min_learning_rate": 1e-3},
     {"batch_size": 0}, {"ppo_epochs": 0}, {"target_kl": 0},
     {"gamma": 1.1}, {"clip_coef": 1.0},
+    {"batch_size": 1.5}, {"total_updates": 2.5},
 ])
 def test_invalid_configuration_is_rejected(overrides):
     with pytest.raises(ValueError):
