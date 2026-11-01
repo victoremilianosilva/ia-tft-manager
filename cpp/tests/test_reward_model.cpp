@@ -288,7 +288,29 @@ int main() {
         throw std::runtime_error("passing with a useful offer, high gold and low HP must be discouraged");
     }
     require_close(pass_opportunity_penalty(50, 20.0, 6, false),
-                  0.0, "must not force spending when the shop has no useful offer");
+                  0.0, "the interest floor itself must not trigger a surplus-hoarding penalty");
+    if (!(pass_opportunity_penalty(125, 80.0, 6, false) <
+          pass_opportunity_penalty(125, 80.0, 2, false))) {
+        throw std::runtime_error("late-game surplus hoarding must be penalized more than opening-game saving");
+    }
+    require_close(phase_xp_progress_reward(54, 50, 6, 6, 0, 4, 80.0, 4, 1, false),
+                  0.04725, "stage 4 rewards safe XP progress toward level 7");
+    require_close(phase_xp_progress_reward(103, 99, 7, 7, 0, 4, 80.0, 5, 0, false),
+                  0.045, "stage 5 rewards safe XP progress toward level 8");
+    require_close(phase_xp_progress_reward(103, 99, 7, 7, 0, 4, 80.0, 6, 2, true),
+                  0.0378, "FAST8 values XP while preserving priority for a useful shop offer");
+    require_close(phase_xp_progress_reward(103, 99, 6, 6, 0, 4, 80.0, 4, 3, false),
+                  0.0, "SLOWROLL keeps its three-star economy");
+    require_close(phase_xp_progress_reward(40, 36, 6, 6, 0, 4, 80.0, 5, 0, false),
+                  0.0, "healthy XP spending below 50 must preserve interest");
+    if (!(phase_xp_progress_reward(40, 36, 7, 7, 0, 4, 25.0, 5, 1, false) > 0.0)) {
+        throw std::runtime_error("critical HP may justify XP spending below the interest floor");
+    }
+    require_close(economy_phase_target_level(2), 5.0, "stage 2 target level");
+    require_close(economy_phase_target_level(3), 6.0, "stage 3 target level");
+    require_close(economy_phase_target_level(4), 7.0, "stage 4 target level");
+    require_close(economy_phase_target_level(5), 8.0, "stage 5 target level");
+    require_close(economy_phase_target_level(6), 9.0, "stage 6 target level");
     require_close(item_crafting_bonus(-0.02), 0.0,
                   "poor item craft should not receive a crafting bonus");
     if (!(item_crafting_bonus(0.15) > 0.0 && item_crafting_bonus(0.15) <= 0.08)) {
