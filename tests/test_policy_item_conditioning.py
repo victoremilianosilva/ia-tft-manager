@@ -50,6 +50,7 @@ def test_item_observation_exposes_components_inventory_recipes_and_all_targets()
     assert inventory_target_fit[0, 2, 4].item() == 0.7
     assert recipe_target_fit[0, 5, 6].item() == 0.8
     assert pending_anvil.tolist() == [False]
+    assert policy.encode(obs).shape == (1, 64)
 
 
 def test_item_target_scorer_uses_each_candidates_role_and_position_features():
