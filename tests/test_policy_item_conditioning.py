@@ -9,7 +9,7 @@ ACTION_DIMS = [9, 5, 9, 28, 28, 28]
 def _policy_with_native_item_block():
     hidden = 64
     candidate_dim = (ACTION_DIMS[2] + ACTION_DIMS[1]) * 8
-    item_dim = 10 + 9 * 17 + 100 * 17 + 37 * 18
+    item_dim = 10 + 9 * 17 + 100 * 17 + 37 * 18 + (9 + 100) * 37
     anvil_dim = 3 + 9 * 11
     obs_dim = 22 + 4 * 7 * 5 + anvil_dim + item_dim + candidate_dim
     policy = TFTPolicy(obs_dim=obs_dim, action_dims=ACTION_DIMS, hidden_size=hidden)
@@ -27,17 +27,28 @@ def test_item_observation_exposes_components_inventory_recipes_and_all_targets()
     obs[0, recipe_start + 4 * 17 + 2] = 0.6  # recipe [0,4], AP feature
     target_start = recipe_start + 100 * 17
     obs[0, target_start + 28 * 18 + 4 + 1] = 1.0  # first bench target role
+    inventory_fit_start = target_start + 37 * 18
+    recipe_fit_start = inventory_fit_start + 9 * 37
+    obs[0, inventory_fit_start + 2 * 37 + 4] = 0.7
+    obs[0, recipe_fit_start + 5 * 37 + 6] = 0.8
 
-    components, inventory, recipes, targets, pending_anvil = policy._item_state_features(obs)
+    (
+        components, inventory, recipes, targets,
+        inventory_target_fit, recipe_target_fit, pending_anvil,
+    ) = policy._item_state_features(obs)
 
     assert components.shape == (1, 10)
     assert inventory.shape == (1, 9, 17)
     assert recipes.shape == (1, 100, 17)
     assert targets.shape == (1, 37, 18)
+    assert inventory_target_fit.shape == (1, 9, 37)
+    assert recipe_target_fit.shape == (1, 100, 37)
     assert components[0, 0].item() == 0.5
     assert inventory[0, 0, 0].item() == 0.75
     assert recipes[0, 4, 2].item() == 0.6
     assert targets[0, 28, 5].item() == 1.0
+    assert inventory_target_fit[0, 2, 4].item() == 0.7
+    assert recipe_target_fit[0, 5, 6].item() == 0.8
     assert pending_anvil.tolist() == [False]
 
 
@@ -121,7 +132,7 @@ def test_old_checkpoint_migrates_item_observation_and_neutral_candidate_heads():
         old_global_input - restored.candidate_observation_dim
         - restored.economic_context_dim
     )
-    added_columns = restored.item_state_observation_dim
+    added_columns = restored.item_global_observation_dim
     migrated_global = restored.state_dict()["global_mlp.0.weight"]
     assert torch.count_nonzero(
         migrated_global[:, insertion:insertion + added_columns]
@@ -170,7 +181,7 @@ def test_checkpoint_without_derived_economic_context_migrates_both_insertions():
     assert restored.load_compatible_state_dict(legacy_state)
     source = legacy_state["global_mlp.0.weight"]
     insertion = source.shape[1] - restored.candidate_observation_dim
-    added = restored.item_state_observation_dim + restored.economic_context_dim
+    added = restored.item_global_observation_dim + restored.economic_context_dim
     migrated = restored.state_dict()["global_mlp.0.weight"]
     assert torch.count_nonzero(migrated[:, insertion:insertion + added]) == 0
     assert torch.equal(migrated[:, :insertion], source[:, :insertion])
