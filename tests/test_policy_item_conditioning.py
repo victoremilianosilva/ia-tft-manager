@@ -142,6 +142,32 @@ def test_inventory_candidate_scorer_uses_item_semantics():
     assert logits[0, 1] > logits[0, 0]
 
 
+def test_inventory_choice_uses_best_available_item_target_fit():
+    policy, _ = _policy_with_native_item_block()
+    conditioned = torch.zeros(1, 64 + len(ACTION_DIMS))
+    inventory_features = torch.zeros(1, 9, 17)
+    target_fit = torch.zeros(1, 9, 37)
+    target_fit[0, 0, 0] = 0.1
+    target_fit[0, 1, 0] = 0.9
+    first = policy.item_inventory_candidate_head[0]
+    last = policy.item_inventory_candidate_head[-1]
+    with torch.no_grad():
+        policy.item_inventory_head.weight.zero_()
+        policy.item_inventory_head.bias.zero_()
+        first.weight.zero_()
+        first.bias.zero_()
+        first.weight[0, -2] = 1.0  # maximum compatibility with any target
+        last.weight.zero_()
+        last.bias.zero_()
+        last.weight[0, 0] = 1.0
+
+    logits = policy._item_inventory_logits(
+        conditioned, inventory_features, target_fit,
+        torch.zeros(1, 9, 11), torch.tensor([False])
+    )
+    assert logits[0, 1] > logits[0, 0]
+
+
 def test_anvil_candidate_scorer_uses_anvil_option_features():
     policy, _ = _policy_with_native_item_block()
     conditioned = torch.zeros(1, 64 + len(ACTION_DIMS))
