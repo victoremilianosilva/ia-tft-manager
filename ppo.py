@@ -72,6 +72,14 @@ class PPOTrainer:
 
         self.max_grad_norm = max_grad_norm
         self.target_kl = target_kl
+        if not 0.0 < float(clip_coef) < 1.0:
+            raise ValueError("clip_coef deve estar entre 0 e 1.")
+        if float(vf_coef) < 0.0 or float(max_grad_norm) <= 0.0:
+            raise ValueError("vf_coef deve ser >= 0 e max_grad_norm deve ser > 0.")
+        if target_kl is not None and float(target_kl) <= 0.0:
+            raise ValueError("target_kl deve ser > 0 ou None.")
+        if float(ent_coef) < 0.0:
+            raise ValueError("ent_coef deve ser >= 0.")
 
         # ============================================================
         # TENSORBOARD
