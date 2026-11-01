@@ -34,7 +34,9 @@ def test_anvil_choice_is_not_logged_as_normal_equipment():
     )
     assert decision["is_anvil_choice"] is True
     assert decision["anvil_kind"] == "component"
-    assert decision["selected_item_id"] == "RecurveBow"
+    assert decision["selected_id"] == "RecurveBow"
+    assert decision["selected_item_id"] is None
+    assert decision["selected_component_id"] == "RecurveBow"
     assert decision["target"] is None
 
 
