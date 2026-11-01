@@ -956,9 +956,15 @@ int main(int argc, char** argv) {
                 return std::any_of(result.events.begin(), result.events.end(),
                     [&](const std::string& event) { return event.rfind(prefix, 0) == 0; });
             };
-            const auto resolve_anvil = [&](std::size_t expected_options) {
+            const auto resolve_anvil = [&](std::size_t expected_options,
+                                                std::int32_t expected_kind) {
                 const auto masks = anvil_engine.get_action_masks();
+                const auto pending_snapshot = anvil_engine.get_audit_snapshot();
                 for (std::size_t player = 0; player < tft::kPlayersPerLobby; ++player) {
+                    require(pending_snapshot.players[player].pending_anvil &&
+                            pending_snapshot.players[player].pending_anvil_kind == expected_kind &&
+                            pending_snapshot.players[player].pending_anvil_options.size() == expected_options,
+                            "Snapshot de auditoria nao identificou o tipo e as opcoes da bigorna.");
                     const auto& mask = masks[player];
                     require(mask.type_mask[6] == 0 && mask.type_mask[7] == 1 &&
                             std::count(mask.type_mask.begin(), mask.type_mask.end(), 1) == 1,
@@ -971,14 +977,24 @@ int main(int argc, char** argv) {
                             "Bigorna nao expos exatamente a quantidade esperada de opcoes.");
                 }
                 std::array<tft::PlayerAction, tft::kPlayersPerLobby> choices{};
+                std::string selected_option;
                 for (std::size_t player = 0; player < tft::kPlayersPerLobby; ++player) {
                     const auto& option_mask = masks[player].item_inventory_mask;
                     const auto option = std::find(option_mask.begin(), option_mask.end(), 1);
                     require(option != option_mask.end(), "Bigorna nao possui opcao selecionavel.");
-                    choices[player].values = {7, static_cast<std::int32_t>(
-                        std::distance(option_mask.begin(), option)), 0, 0, 0, 0};
+                    const auto option_index = static_cast<std::size_t>(
+                        std::distance(option_mask.begin(), option));
+                    if (player == 0)
+                        selected_option = pending_snapshot.players[player].pending_anvil_options[option_index];
+                    choices[player].values = {7, static_cast<std::int32_t>(option_index), 0, 0, 0, 0};
                 }
                 (void)anvil_engine.step(choices);
+                const auto selected_snapshot = anvil_engine.get_audit_snapshot();
+                require(selected_snapshot.players[0].last_item_action_kind ==
+                            (expected_kind == 0 ? "anvil_component_choice" : "anvil_completed_item_choice") &&
+                        selected_snapshot.players[0].last_item_id == selected_option &&
+                        selected_snapshot.players[0].last_item_target_uuid.empty(),
+                        "Escolha da bigorna foi confundida com equipagem normal no snapshot.");
                 tft::StepResult result;
                 for (int action = 1; action < 15; ++action)
                     result = step_with_pending_anvils(anvil_engine, pass_actions);
@@ -1001,12 +1017,12 @@ int main(int argc, char** argv) {
             while (anvil_engine.round() < 25) round_result = finish_round();
             require(contains_event(round_result, "COMPONENT_ANVIL_GRANTED:"),
                     "A rodada 4-7 nao concedeu bigorna de componentes.");
-            resolve_anvil(3);
+            resolve_anvil(3, 0);
 
             while (anvil_engine.round() < 32) round_result = finish_round();
             require(contains_event(round_result, "COMPLETED_ITEM_ANVIL_GRANTED:"),
                     "A rodada 5-7 nao concedeu bigorna de itens completos.");
-            resolve_anvil(4);
+            resolve_anvil(4, 1);
 
             while (anvil_engine.round() < 39) round_result = finish_round();
             require(contains_event(round_result, "COMPLETED_ITEM_ANVIL_GRANTED:"),
