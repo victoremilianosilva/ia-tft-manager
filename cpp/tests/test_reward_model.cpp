@@ -179,9 +179,9 @@ int main() {
     }
     if (!(unit_purchase_timing_reward(4, 51, 2, 1, 0.8, 80.0, false, false) > 0.0))
         throw std::runtime_error("stage 4 useful purchases may spend through the interest breakpoint");
-    if (!(unit_purchase_timing_reward(4, 52, 2, 1, 0.8, 80.0, false, false) > 0.08)) {
-        throw std::runtime_error("useful purchase may convert surplus while preserving 50 gold");
-    }
+    require_close(unit_purchase_timing_reward(4, 52, 2, 1, 0.8, 80.0, false, false),
+                  0.0853065,
+                  "small surplus purchase nudge stays bounded while preserving 50 gold");
     if (!(unit_purchase_timing_reward(5, 25, 2, 1, 0.7, 80.0, false, false) > 0.0))
         throw std::runtime_error("stage 5 should convert idle gold into useful board strength");
     if (!(unit_purchase_timing_reward(6, 25, 2, 1, 0.7, 25.0, false, false) > 0.0)) {
