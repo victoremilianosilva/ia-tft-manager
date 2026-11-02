@@ -520,8 +520,11 @@ inline double unit_purchase_timing_reward(
         : (bench_count <= 5 ? 0.75 : 0.40);
     const double strategy_scale = active_strategy == 2 ? 1.10
         : (active_strategy == 1 || active_strategy == 4 ? 1.05 : 1.0);
+    // Tiny calibration nudge: convert a little more genuine surplus into
+    // useful board strength, without lowering the phase reserve or rewarding
+    // low-fit buys. The increase is deliberately limited to about 4-5%.
     return std::min(0.24,
-        (0.12 * liquidity * urgency + 0.10 * surplus) *
+        (0.125 * liquidity * urgency + 0.105 * surplus) *
         quality * bench_capacity * strategy_scale);
 }
 
