@@ -267,3 +267,31 @@ def test_single_tft_input_discovers_its_json_sidecar(tmp_path):
 
     assert text_log in tft_files
     assert sidecar in json_files
+
+
+
+def test_econ_unit_buys_below_50_are_not_flagged_but_non_unit_spend_is_reviewed(tmp_path):
+    from scripts.audit_viewer_match import audit_text
+
+    log = tmp_path / "player_1_log.tft"
+    log.write_text(
+        "[12:00:00] COMPROU: Ahri | Custo 4 | Rew: +0.10\n"
+        "    STRATEGY: ECON | COMP DIRECTION: CompA | FOCUS: CarryA\n"
+        "    GOLD: 21 | renda base +5 | juros +2 | sequência +0 | vitória +0\n"
+        "[12:00:01] COMPROU XP | Rew: -0.02\n"
+        "    STRATEGY: ECON | COMP DIRECTION: CompA | FOCUS: CarryA\n"
+        "    GOLD: 17 | renda base +5 | juros +0 | sequência +0 | vitória +0\n",
+        encoding="utf-8",
+    )
+    report = {"players_seen": set(), "log_files": [], "issues": []}
+
+    audit_text(log, report)
+
+    candidates = [issue["code"] for issue in report["issues"]]
+    assert "ECON_NON_UNIT_SPEND_BELOW_50_REVIEW" in candidates
+    assert "ECON_SPEND_BELOW_50_REVIEW" not in candidates
+    timeline = report["text_log_metrics"]["Jogador 1"]["timeline"]
+    assert timeline[0]["action"] == "BUY"
+    assert timeline[0].get("conformity_candidate") is None
+    assert timeline[1]["action"] == "BUY_XP"
+    assert timeline[1]["conformity_candidate"] == "ECON_NON_UNIT_SPEND_BELOW_50_REVIEW"

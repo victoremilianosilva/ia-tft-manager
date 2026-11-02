@@ -141,7 +141,7 @@ class UnifiedAuditRegressionTests(unittest.TestCase):
             "entries_read": 0, "diagnostics_missing": 0, "issues": [],
             "notes": [], "decision_timeline": [],
         })
-        self.assertIn("Decisões com timeline: 0", full)
+        self.assertIn("Decisões únicas estruturadas: 0", full)
 
 
 if __name__ == "__main__":
