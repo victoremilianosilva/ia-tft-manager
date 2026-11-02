@@ -251,7 +251,9 @@ def test_combined_audit_keeps_structured_and_text_evidence_together(tmp_path):
     assert "Jogador 1" in report.get("decision_audit_metrics", {})
     assert "Jogador 1" in report.get("text_log_metrics", {})
     assert report["text_log_metrics"]["Jogador 1"]["actions"] == 1
-    assert len(report["decision_timeline"]) >= 1
+    assert report["text_log_metrics"]["Jogador 1"]["strategies_seen"]["STABILIZE"] >= 1
+    assert len(report["text_decision_timeline"]) == 1
+    assert len(report["decision_timeline"]) == 1
 
 
 def test_single_tft_input_discovers_its_json_sidecar(tmp_path):
