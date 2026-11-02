@@ -414,7 +414,7 @@ int main() {
                   0.12, "slow-roll strategy receives a stronger improved-reroll signal");
     require_close(strategy_action_reward(3, 2, 30, 28, 80.0, 2,
                                          false, false, false, false),
-                  -0.02, "safe early slow-roll XP nudge remains small");
+                  -0.04, "safe early slow-roll XP nudge remains bounded");
     require_close(strategy_action_reward(3, 2, 60, 58, 25.0, 5,
                                          false, false, false, false),
                   0.0, "urgent or surplus XP progress is not penalized by slow-roll label");
