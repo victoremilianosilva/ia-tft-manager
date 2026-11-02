@@ -7,7 +7,7 @@ from scripts.audit_viewer_match import (
 
 def test_action_validation_fallback_checks_conditional_parameters():
     mask = {
-        "type_mask": [1, 0, 0, 1, 0, 0, 1],
+        "type_mask": [1, 0, 0, 1, 0, 0, 1, 1, 1],
         "shop_mask": [1, 0, 1],
         "bench_to_board_target_masks": [[0, 0, 0], [0, 0, 1]],
     }
