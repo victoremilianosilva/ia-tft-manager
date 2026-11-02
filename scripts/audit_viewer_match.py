@@ -1017,7 +1017,7 @@ def audit_item_state(entries: list[dict], player: str, report: dict) -> None:
                 component_observations[str(value)] += 1
         item_audit = payload.get("item_audit") or {}
         decision = item_audit.get("decision") or {}
-        if decision.get("operation") in ("craft_and_equip", "anvil_component_choice", "anvil_completed_item_choice") or payload.get("action_name") == "CRAFT_AND_EQUIP":
+        if decision.get("operation") == "craft_and_equip" or payload.get("action_name") == "CRAFT_AND_EQUIP":
             craft_actions += 1
         if decision.get("is_anvil_choice"):
             options = decision.get("anvil_options_before") or []
@@ -1045,7 +1045,7 @@ def audit_item_state(entries: list[dict], player: str, report: dict) -> None:
                           get_round(entry), entry.get("step"),
                           "A bigorna registrou uma seleção que não aparece nas opções disponíveis.",
                           record)
-    bag_count = len(bag) if isinstance(bag, list) else 0
+        bag_count = len(bag) if isinstance(bag, list) else 0
         component_count = len(components) if isinstance(components, list) else 0
         peaks["equipped"] = max(peaks["equipped"], len(equipped))
         peaks["bag"] = max(peaks["bag"], bag_count)
