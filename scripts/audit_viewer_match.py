@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Auditoria offline dos logs de uma partida TFT gerados pelo Viewer.
 
-Aceita player_*_log.json estruturados e player_*_log.tft legados.
-Gera audit_report.json e audit_report.md; não altera os logs originais.
+Aceita exclusivamente os arquivos player_*_log.tft da sessão.
+Ignora sidecars JSON e não altera os logs originais.
 
 Exemplos:
-  python audit_viewer_match.py viewer/sessions/match-20261016-203216-43b53954
-  python audit_viewer_match.py caminho/player_1_log.json --out-dir auditoria
+  python audit_viewer_match.py viewer/sessions/match-20261102-100200-75e2f079
+  python audit_viewer_match.py caminho/player_1_log.tft --out-dir auditoria
   python audit_viewer_match.py viewer/sessions/match-... --strict
 """
 from __future__ import annotations
