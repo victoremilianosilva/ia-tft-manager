@@ -965,6 +965,8 @@ def audit_item_state(entries: list[dict], player: str, report: dict) -> None:
     component_rounds = defaultdict(set)
     component_observations = Counter()
     craft_actions = 0
+    successful_crafts = 0
+    craft_actions_without_observed_conversion = 0
     final = None
     peaks = {"equipped": 0, "bag": 0, "components": 0}
 
@@ -1019,6 +1021,16 @@ def audit_item_state(entries: list[dict], player: str, report: dict) -> None:
         decision = item_audit.get("decision") or {}
         if decision.get("operation") == "craft_and_equip" or payload.get("action_name") == "CRAFT_AND_EQUIP":
             craft_actions += 1
+            item_before = item_audit.get("before") or {}
+            item_after = item_audit.get("after") or {}
+            components_before = item_before.get("components") or []
+            components_after = item_after.get("components") or []
+            equipped_before = item_before.get("equipped") or []
+            equipped_after = item_after.get("equipped") or []
+            if len(components_after) < len(components_before) and len(equipped_after) > len(equipped_before):
+                successful_crafts += 1
+            else:
+                craft_actions_without_observed_conversion += 1
         if decision.get("is_anvil_choice"):
             options = decision.get("anvil_options_before") or []
             selected = (decision.get("selected_id") or decision.get("selected_item_id")
@@ -1084,6 +1096,8 @@ def audit_item_state(entries: list[dict], player: str, report: dict) -> None:
         "anvil_decisions": anvil_decisions,
         "anvil_choices": len(anvil_decisions),
         "craft_actions": craft_actions,
+        "successful_crafts": successful_crafts,
+        "craft_actions_without_observed_conversion": craft_actions_without_observed_conversion,
         "components_persisted_multiple_rounds": [
             component for component, rounds in sorted(component_rounds.items())
             if len(rounds) >= 2
@@ -1900,6 +1914,31 @@ def markdown_report(report: dict) -> str:
         lines += [f"- Decisões analisadas enquanto os jogadores estavam vivos: **{active}**",
                   f"- Entradas posteriores à eliminação ignoradas: **{ignored}**",
                   "- A ação que causa a eliminação permanece válida; o estado terminal não é usado como economia final.", ""]
+    focus_players = ("Jogador 4", "Jogador 6", "Jogador 7")
+    if any(
+        player in report.get(bucket, {})
+        for bucket in ("team_progression_metrics", "xp_stabilization_metrics",
+                       "purchase_sequence_metrics", "item_state_metrics")
+        for player in focus_players
+    ):
+        lines += ["## Revisão prioritária — jogadores 4, 6 e 7", "",
+                  "| Jogador | Ouro final | Nível final | XP purchases | Janelas XP/stabilização | Vendas para revisar | Vendas compensadas | Componentes sem craft observado | Bigornas |",
+                  "|---|---:|---:|---:|---:|---:|---:|---:|---:|"]
+        for player in focus_players:
+            team = report.get("team_progression_metrics", {}).get(player, {})
+            xp = report.get("xp_stabilization_metrics", {}).get(player, {})
+            sales = report.get("purchase_sequence_metrics", {}).get(player, {})
+            items = report.get("item_state_metrics", {}).get(player, {})
+            lines.append(
+                f"| {player} | {team.get('final_gold', '—')} | {team.get('final_level', '—')} | "
+                f"{xp.get('xp_purchases', '—')} | {xp.get('review_window_count', '—')} | "
+                f"{sales.get('sales_requiring_review', '—')} | "
+                f"{sales.get('sales_with_demonstrated_compensation', '—')} | "
+                f"{'sim' if items.get('component_conversion_review') else 'não/inconclusivo'} | "
+                f"{items.get('anvil_choices', '—')} |"
+            )
+        lines += ["", "A tabela prioriza a inspeção desses três jogadores; as tabelas completas abaixo continuam incluindo os oito participantes.", ""]
+
     if report.get("text_log_metrics"):
         lines += ["## Reconstrução de decisões dos logs legados", "",
                   "Esta seção usa o que está explícito em cada linha de ação. HP, nível, máscara legal e canais separados de recompensa não são inferidos quando o log não os registra.", "",
@@ -2064,7 +2103,8 @@ def markdown_report(report: dict) -> str:
             lines.append(f"- {player} — IDs equipados observados: {item_ids}; eventos: {events}.")
             lines.append(
                 f"- {player} — bigornas: {metrics.get('anvil_choices', 0)} escolhas; "
-                f"craft/equip: {metrics.get('craft_actions', 0)}; componentes persistentes entre rounds: "
+                f"craft/equip: {metrics.get('craft_actions', 0)} "
+                f"(conversões observadas: {metrics.get('successful_crafts', 0)}); componentes persistentes entre rounds: "
                 f"{', '.join(metrics.get('components_persisted_multiple_rounds', [])) or 'nenhum observado'}."
             )
             if metrics.get("component_conversion_review"):
