@@ -89,10 +89,10 @@ int main() {
                                          false, false, true, true),
                   0.0,
                   "SLOWROLL XP that secures a level-up is not penalized");
-    require_close(strategy_action_reward(0, 2, 17, 13, 80.0, 5,
+    require_close(strategy_action_reward(0, 2, 17, 13, 80.0, 2,
                                          false, false, false, true),
                   -0.04,
-                  "ECON discourages non-leveling XP below the 50-gold reserve even with a comp target");
+                  "early ECON discourages non-leveling XP below the 50-gold reserve even with a comp target");
     require_close(strategy_action_reward(0, 2, 17, 13, 30.0, 5,
                                          false, false, false, true),
                   0.0,
