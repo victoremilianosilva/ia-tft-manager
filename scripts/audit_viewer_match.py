@@ -2357,6 +2357,14 @@ def discover_session_inputs(source: Path) -> tuple[list[Path], list[Path], Path]
     return tft_files, json_files, root
 
 
+def _looks_like_json_document(path: Path) -> bool:
+    try:
+        with path.open("r", encoding="utf-8-sig") as stream:
+            return stream.read(4096).lstrip().startswith("{")
+    except OSError:
+        return False
+
+
 def _player_log_key(path: Path) -> str:
     match = re.search(r"player_(\\d+)_log", path.name)
     return match.group(1) if match else path.stem
@@ -2370,7 +2378,7 @@ def audit_session_inputs(tft_files: list[Path], json_files: list[Path], report: 
     for text_path in tft_files:
         player_key = _player_log_key(text_path)
         sidecar = json_by_player.get(player_key)
-        text_doc = read_json(text_path)
+        text_doc = read_json(text_path) if _looks_like_json_document(text_path) else None
         if sidecar is not None:
             doc = read_json(sidecar)
             if doc:
