@@ -275,12 +275,12 @@ def test_econ_unit_buys_below_50_are_not_flagged_but_non_unit_spend_is_reviewed(
 
     log = tmp_path / "player_1_log.tft"
     log.write_text(
-        "[12:00:00] COMPROU: Ahri | Custo 4 | Rew: +0.10\\n"
-        "    STRATEGY: ECON | COMP DIRECTION: CompA | FOCUS: CarryA\\n"
-        "    GOLD: 21 | renda base +5 | juros +2 | sequência +0 | vitória +0\\n"
-        "[12:00:01] COMPROU XP | Rew: -0.02\\n"
-        "    STRATEGY: ECON | COMP DIRECTION: CompA | FOCUS: CarryA\\n"
-        "    GOLD: 17 | renda base +5 | juros +0 | sequência +0 | vitória +0\\n",
+        "[12:00:00] COMPROU: Ahri | Custo 4 | Rew: +0.10\n"
+        "    STRATEGY: ECON | COMP DIRECTION: CompA | FOCUS: CarryA\n"
+        "    GOLD: 21 | renda base +5 | juros +2 | sequência +0 | vitória +0\n"
+        "[12:00:01] COMPROU XP | Rew: -0.02\n"
+        "    STRATEGY: ECON | COMP DIRECTION: CompA | FOCUS: CarryA\n"
+        "    GOLD: 17 | renda base +5 | juros +0 | sequência +0 | vitória +0\n",
         encoding="utf-8",
     )
     report = {"players_seen": set(), "log_files": [], "issues": []}
