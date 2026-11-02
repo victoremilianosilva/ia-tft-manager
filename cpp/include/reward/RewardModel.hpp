@@ -121,10 +121,11 @@ inline double strategy_action_reward(
             if (new_gold >= 50 && old_gold < 50 && stage <= 2) reward += 0.04;
             if (old_gold >= 50 && action_type == 0 && useful_purchase)
                 reward += 0.04;
-            if (stage <= 2 && new_gold < 50 && new_gold < old_gold &&
+            if (new_gold < 50 && new_gold < old_gold &&
                 hp > 40.0 && !has_composition_target) {
-                if (action_type == 2) reward -= 0.015;
-                else if (action_type == 0 && !useful_purchase) reward -= 0.06;
+                if (action_type == 2 && !leveled) reward -= 0.04;
+                else if (action_type == 0 && !useful_purchase &&
+                         stage <= 2) reward -= 0.06;
             }
             break;
         case 1: // STABILIZE: favor playable-board upgrades over routine leveling.
