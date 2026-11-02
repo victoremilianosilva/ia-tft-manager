@@ -543,20 +543,36 @@ def audit_composition_direction_changes(entries: list[dict], player: str, report
         payload = entry.get("payload") or {}
         diagnostics = payload.get("composition_diagnostics") or {}
         event = diagnostics.get("direction_event")
-        if not isinstance(event, dict):
-            continue
         before = payload.get("state_before") or {}
         after = payload.get("state_after") or {}
-        strength_delta = (
-            float(after.get("composition_strength", 0.0) or 0.0)
-            - float(event.get("from_strength", before.get("composition_strength", 0.0)) or 0.0)
+        if not isinstance(event, dict):
+            before_direction = str(before.get("comp_direction") or before.get("composition_direction") or "").strip()
+            after_direction = str(after.get("comp_direction") or after.get("composition_direction") or "").strip()
+            if not before_direction or not after_direction or before_direction == after_direction:
+                continue
+            event = {
+                "from": before_direction, "to": after_direction,
+                "reason": "state_transition_fallback",
+                "was_locked": before.get("composition_locked"),
+                "from_strength": before.get("composition_strength"),
+            }
+
+        def numeric_delta(after_state: dict, before_state: dict, key: str, before_fallback=None):
+            left = after_state.get(key)
+            right = before_state.get(key) if before_fallback is None else before_fallback
+            if left is None or right is None:
+                return None
+            try:
+                return float(left) - float(right)
+            except (TypeError, ValueError):
+                return None
+
+        strength_delta = numeric_delta(
+            after, before, "composition_strength",
+            event.get("from_strength") if event.get("from_strength") is not None else None,
         )
-        board_delta = float(after.get("board_power", 0.0) or 0.0) - float(
-            before.get("board_power", 0.0) or 0.0
-        )
-        synergy_delta = float(after.get("synergy_score", 0.0) or 0.0) - float(
-            before.get("synergy_score", 0.0) or 0.0
-        )
+        board_delta = numeric_delta(after, before, "board_power")
+        synergy_delta = numeric_delta(after, before, "synergy_score")
         economic = payload.get("economic_diagnostics") or {}
         synergy_milestones = economic.get("synergy_milestones_changed") or {}
         fit = diagnostics.get("unit_fit") or {}
@@ -565,8 +581,10 @@ def audit_composition_direction_changes(entries: list[dict], player: str, report
             and (bool(fit.get("core_unit_match")) or float(fit.get("focus_fit_score", 0.0) or 0.0) > 0.0)
         )
         measurable_gain = (
-            strength_delta > 1e-6 or board_delta > 1e-6
-            or synergy_delta > 1e-6 or bool(synergy_milestones) or compatibility_gain
+            (strength_delta is not None and strength_delta > 1e-6)
+            or (board_delta is not None and board_delta > 1e-6)
+            or (synergy_delta is not None and synergy_delta > 1e-6)
+            or bool(synergy_milestones) or compatibility_gain
         )
         metrics["direction_changes"] += 1
         metrics["changes_with_measurable_gain"] += int(measurable_gain)
@@ -578,9 +596,9 @@ def audit_composition_direction_changes(entries: list[dict], player: str, report
             "to": event.get("to"),
             "reason": event.get("reason"),
             "was_locked": event.get("was_locked"),
-            "strength_delta": round(strength_delta, 4),
-            "board_power_delta": round(board_delta, 4),
-            "synergy_delta": round(synergy_delta, 4),
+            "strength_delta": round(strength_delta, 4) if strength_delta is not None else None,
+            "board_power_delta": round(board_delta, 4) if board_delta is not None else None,
+            "synergy_delta": round(synergy_delta, 4) if synergy_delta is not None else None,
             "synergy_milestones_changed": synergy_milestones,
             "compatibility_gain": compatibility_gain,
             "measurable_gain": measurable_gain,
@@ -631,7 +649,8 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
     totals = {
         "actions_with_metrics": 0, "positive_quality_delta": 0,
         "negative_quality_delta": 0, "neutral_quality_delta": 0,
-        "quality_delta_sum": 0.0, "structural_delta_sum": 0.0,
+        "quality_delta_sum": 0.0, "positional_delta_sum": 0.0,
+        "positional_delta_samples": 0, "structural_delta_sum": 0.0,
         "structural_samples": 0, "structural_score_sum": 0.0,
         "positional_samples": 0, "role_diagnostic_samples": 0,
         "positional_score_sum": 0.0, "exposed_carries_sum": 0,
@@ -678,6 +697,15 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
         else:
             totals["neutral_quality_delta"] += 1
 
+        positional_after_raw = after.get("board_positional_score")
+        positional_before_raw = before.get("board_positional_score")
+        if positional_after_raw is not None and positional_before_raw is not None:
+            try:
+                totals["positional_delta_sum"] += float(positional_after_raw) - float(positional_before_raw)
+                totals["positional_delta_samples"] += 1
+            except (TypeError, ValueError):
+                pass
+
         structural_after = after.get("board_structural_score")
         structural_before_raw = before.get("board_structural_score")
         if _board_eval_snapshot_valid(after) and _board_eval_snapshot_valid(before):
@@ -721,6 +749,10 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
     n = totals["actions_with_metrics"]
     structural_n = totals["structural_samples"]
     totals["mean_quality_delta"] = totals["quality_delta_sum"] / n if n else 0.0
+    positional_delta_n = totals["positional_delta_samples"]
+    totals["mean_positional_delta"] = (
+        totals["positional_delta_sum"] / positional_delta_n if positional_delta_n else None
+    )
     totals["mean_structural_delta"] = totals["structural_delta_sum"] / structural_n if structural_n else None
     totals["mean_structural_score"] = totals["structural_score_sum"] / structural_n if structural_n else None
     positional_n = totals["positional_samples"]
@@ -877,6 +909,7 @@ def audit_team_progression(entries: list[dict], player: str, report: dict) -> No
     gold_spent_total = 0
     previous_direction = None
     final_state = {}
+    final_placement = None
     for entry in actions:
         payload = entry.get("payload") or {}
         before, after = payload.get("state_before") or {}, payload.get("state_after") or {}
@@ -919,6 +952,10 @@ def audit_team_progression(entries: list[dict], player: str, report: dict) -> No
         })
         current = snap_after
         initial = snap_before or current
+        if after.get("placement") is not None:
+            final_placement = after.get("placement")
+        elif payload.get("placement") is not None:
+            final_placement = payload.get("placement")
         stage["actions"] += 1
         if stage["board_strength_start"] is None:
             stage["board_strength_start"] = float(initial.get("board_strength", _board_power(before)) or 0.0)
@@ -1011,7 +1048,7 @@ def audit_team_progression(entries: list[dict], player: str, report: dict) -> No
         "final_gold": final_state.get("gold"),
         "final_level": final_state.get("level"),
         "final_hp": final_state.get("hp"),
-        "final_placement": final_state.get("placement"),
+        "final_placement": final_placement if final_placement is not None else final_state.get("placement"),
         "interpretation": "Bench strength and pairs are future potential, not current combat strength. Heuristic changes require validation against combat results.",
     }
 
@@ -1137,6 +1174,35 @@ def _decision_units(state: dict) -> dict[str, dict]:
     return result
 
 
+def _validate_action_from_mask(action: Any, mask: dict) -> bool | None:
+    """Validate known action parameters against the exact pre-action conditional masks."""
+    if not isinstance(action, (list, tuple)) or not action or not isinstance(mask, dict):
+        return None
+    try:
+        action_type = int(action[0])
+        type_mask = mask.get("type_mask") or []
+        if action_type < 0 or action_type >= len(type_mask) or int(type_mask[action_type]) != 1:
+            return False
+        if action_type in (1, 2, 6):
+            return True
+        if action_type == 0:
+            values, slot = mask.get("shop_mask") or [], int(action[1])
+            return 0 <= slot < len(values) and int(values[slot]) == 1
+        if action_type == 3:
+            matrix, source, target = mask.get("bench_to_board_target_masks") or [], int(action[2]), int(action[3])
+            return 0 <= source < len(matrix) and 0 <= target < len(matrix[source]) and int(matrix[source][target]) == 1
+        if action_type == 4:
+            matrix, source, target = mask.get("board_move_target_masks") or [], int(action[4]), int(action[5])
+            return 0 <= source < len(matrix) and 0 <= target < len(matrix[source]) and int(matrix[source][target]) == 1
+        if action_type == 5:
+            values, slot = mask.get("bench_source_mask") or [], int(action[2])
+            return 0 <= slot < len(values) and int(values[slot]) == 1
+    except (IndexError, TypeError, ValueError, KeyError):
+        return False
+    # Item actions have multiple conditional stages; a partial mask is insufficient.
+    return None
+
+
 def audit_decision_context(entries: list[dict], player: str, report: dict) -> None:
     timeline = report.setdefault("decision_timeline", [])
     stats = report.setdefault("decision_audit_metrics", {}).setdefault(player, {
@@ -1170,6 +1236,11 @@ def audit_decision_context(entries: list[dict], player: str, report: dict) -> No
                       {"action": p.get("action"), "action_name": action_name, "strategy": strategy,
                        "legal_action_types": mask.get("legal_action_types")})
         full = mask.get("chosen_action_fully_validated")
+        if full is None:
+            raw_mask = mask.get("raw_mask")
+            if not isinstance(raw_mask, dict):
+                raw_mask = p.get("action_mask_before")
+            full = _validate_action_from_mask(p.get("action"), raw_mask or {})
         if full is not None:
             stats["full_action_validation_available"] += 1
             if full is False:
@@ -1711,8 +1782,8 @@ def markdown_report(report: dict) -> str:
 
     if report.get("board_quality_metrics"):
         lines += ["## Qualidade estrutural e posicionamento do tabuleiro", "",
-                  "| Jogador | Ações com métrica | Ganhos | Pioras | Neutras | Δ médio qualidade | Estrutural médio | Δ estrutural médio | Posicional médio | Δ qualidade combate + | Δ qualidade combate - |",
-                  "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+                  "| Jogador | Ações com métrica | Ganhos | Pioras | Neutras | Δ score combinado | Estrutural médio | Δ estrutural médio | Posicional médio | Δ posicional médio | Δ score c/ combate + | Δ score c/ combate - |",
+                  "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
         for player, metrics in sorted(report["board_quality_metrics"].items()):
             structural_delta = metrics.get("mean_structural_delta")
             structural_score = metrics.get("mean_structural_score")
@@ -1933,18 +2004,16 @@ def main() -> int:
         parser.error("--loop-window precisa ser >= 4 e --comp-window >= 3")
     source = args.input
     if source.is_file():
+        if source.suffix.lower() != ".tft":
+            parser.error("a auditoria desta sessão aceita exclusivamente arquivos .tft")
         files = [source]
         default_out = source.parent / "audit"
     elif source.is_dir():
-        json_files = sorted(source.glob("player_*_log.json"))
-        tft_files = sorted(source.glob("player_*_log.tft"))
-        if not json_files:
-            json_files = sorted(source.rglob("player_*_log.json"))
-        if not tft_files:
-            tft_files = sorted(source.rglob("player_*_log.tft"))
-        # Structured JSON sidecars are authoritative; avoid double-counting matching .tft files.
-        json_stems = {p.stem for p in json_files}
-        files = json_files + [p for p in tft_files if p.stem not in json_stems]
+        files = sorted(source.glob("player_*_log.tft"))
+        if not files:
+            files = sorted(source.rglob("player_*_log.tft"))
+        if not files:
+            parser.error(f"nenhum player_*_log.tft encontrado em: {source}")
         default_out = source / "audit"
     else:
         parser.error(f"caminho não existe: {source}")
