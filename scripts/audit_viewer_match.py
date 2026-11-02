@@ -1970,6 +1970,18 @@ def markdown_report(report: dict) -> str:
             lines.append(f"- {player} — gasto por ação: {action_breakdown}")
             lines.append(f"- {player} — gasto por estágio: {stage_breakdown}")
         lines += ["", "Os motivos ficam em economic_diagnostics.reason_code. 'Sem ganho imediato' não significa automaticamente uma decisão ruim; o relatório não modifica a recompensa PPO.", ""]
+    if report.get("xp_stabilization_metrics"):
+        lines += ["### Janelas de XP e estabilização para revisão", "",
+                  "| Jogador | Compras de XP | Janelas de revisão |", "|---|---:|---:|"]
+        for player, metrics in sorted(report["xp_stabilization_metrics"].items()):
+            lines.append(f"| {player} | {metrics['xp_purchases']} | {metrics['review_window_count']} |")
+            for window in metrics.get("review_windows", []):
+                lines.append(
+                    f"- {player} · {window['round']} · step {window['step']}: {window['action']} "
+                    f"com {window['gold_before']}g, HP {window.get('hp_before') or '—'}, "
+                    f"nível {window['level_before']}/{window['target_level']} ({window['strategy']})."
+                )
+        lines += ["", "Janelas candidatas não são penalidades nem provam que XP era a melhor ação. Compare loja, pares, upgrades, HP, nível-alvo, reserva de juros e estratégia; SLOWROLL é excluído.", ""]
 
     if report.get("composition_direction_metrics"):
         lines += ["## Auditoria de mudanças de composição", "",
@@ -2011,8 +2023,27 @@ def markdown_report(report: dict) -> str:
                 for name, values in sorted(metrics.get("by_action", {}).items())
             ) or "nenhuma ação com métrica"
             lines.append(f"- {player} — ganho médio por ação: {breakdown}")
-        lines += ["", "A pontuação é uma heurística para auditoria, não uma verdade absoluta. "
-                  "Compare-a com recompensas e resultados de combate; correlação não prova causalidade.", ""]
+        for player, metrics in sorted(report["board_quality_metrics"].items()):
+            structural_corr = metrics.get("structural_combat_correlation")
+            positional_corr = metrics.get("positional_combat_correlation")
+            structural_corr_text = f"{structural_corr:.3f}" if structural_corr is not None else "insuficiente"
+            positional_corr_text = f"{positional_corr:.3f}" if positional_corr is not None else "insuficiente"
+            lines.append(
+                f"- {player} — rounds avaliados: {metrics.get('combat_round_samples', 0)}; "
+                f"correlação estrutural/combate: {structural_corr_text}; "
+                f"posicional/combate: {positional_corr_text}."
+            )
+            for outcome in ("positive", "negative"):
+                structural_mean = metrics.get(f"mean_structural_score_before_{outcome}_combat")
+                positional_mean = metrics.get(f"mean_positional_score_before_{outcome}_combat")
+                lines.append(
+                    f"- {player} — combate {outcome}: score estrutural prévio "
+                    f"{structural_mean:.3f}" if structural_mean is not None
+                    else f"- {player} — combate {outcome}: sem amostra estrutural prévia"
+                )
+                if positional_mean is not None:
+                    lines.append(f"  score posicional prévio {positional_mean:.3f}")
+        lines += ["", "A pontuação é uma heurística para auditoria. A correlação usa o estado pré-combate e a recompensa real do round; amostras pequenas são descritivas e correlação não prova causalidade.", ""]
 
     if report.get("item_state_metrics"):
         lines += ["## Auditoria de itens e componentes", "",
@@ -2031,6 +2062,20 @@ def markdown_report(report: dict) -> str:
             item_ids = ", ".join(metrics.get("distinct_equipped_item_ids", [])) or "nenhum observado"
             events = ", ".join(f"{name}: {count}" for name, count in sorted(metrics.get("item_events", {}).items())) or "nenhum evento"
             lines.append(f"- {player} — IDs equipados observados: {item_ids}; eventos: {events}.")
+            lines.append(
+                f"- {player} — bigornas: {metrics.get('anvil_choices', 0)} escolhas; "
+                f"craft/equip: {metrics.get('craft_actions', 0)}; componentes persistentes entre rounds: "
+                f"{', '.join(metrics.get('components_persisted_multiple_rounds', [])) or 'nenhum observado'}."
+            )
+            if metrics.get("component_conversion_review"):
+                lines.append(f"- {player} — revisão de conversão: componentes foram observados, mas nenhuma ação de craft/equip foi registrada; isso não prova receita viável.")
+            for choice in metrics.get("anvil_decisions", []):
+                lines.append(
+                    f"- {player} — bigorna {choice.get('round')} step {choice.get('step')}: "
+                    f"seleção {choice.get('selected') or '—'} entre {', '.join(choice.get('options', [])) or 'opções ausentes'}; "
+                    f"consistente: {choice.get('selection_in_options') if choice.get('selection_in_options') is not None else 'inconclusivo'}; "
+                    f"fit {choice.get('item_fit') if choice.get('item_fit') is not None else '—'}."
+                )
         lines += ["", "Os totais finais vêm do último snapshot disponível; picos e IDs distintos são métricas de observação, não inventário atual.", ""]
 
     if report.get("team_progression_metrics"):
@@ -2072,10 +2117,20 @@ def markdown_report(report: dict) -> str:
             f"{player}: {metrics.get('composition_decision_round') or 'sem decisão observada'}"
             for player, metrics in sorted(report["purchase_sequence_metrics"].items())
         )
+        for player, metrics in sorted(report["purchase_sequence_metrics"].items()):
+            for sale in metrics.get("sale_review_records", []):
+                comp = sale.get("compensation") or {}
+                lines.append(
+                    f"- {player} — venda {sale.get('champion')} ({sale.get('round')}, step {sale.get('step')}): "
+                    f"core={sale.get('core_sale_candidate')}, par={sale.get('pair_loss_candidate')}, "
+                    f"compensada={sale.get('compensated')}; ganho tabuleiro={comp.get('immediate_board_gain')}, "
+                    f"sinergia={comp.get('immediate_synergy_gain')}, posicionamento={comp.get('immediate_positioning_gain')}, "
+                    f"compensações posteriores={len(comp.get('future', []))}."
+                )
         lines += ["", f"Vendas de core/pares ignoradas antes da decisão da composição: **{ignored_pre_decision}**.",
                   f"Round da decisão por jogador: {decisions}.",
                   "As classificações detalhadas e sequências correlacionadas permanecem nos dados estruturados de origem.",
-                  "Uma venda sem compra correspondente na janela é UNKNOWN; sequências ambíguas não são penalizadas automaticamente.", ""]
+                  "Uma venda sem compra correspondente na janela é UNKNOWN; sequências ambíguas não são penalizadas automaticamente. Ganhos nas três ações seguintes do mesmo round podem compensar uma venda; falta de ganho imediato isoladamente não gera penalidade.", ""]
     if report["issues"]:
         lines += ["## Achados", "", "| Severidade | Jogador | Round | Step | Código | Descrição |",
                   "|---|---|---:|---:|---|---|"]
