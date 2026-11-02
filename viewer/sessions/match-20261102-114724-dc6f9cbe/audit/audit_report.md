@@ -3,8 +3,8 @@
 - Arquivos lidos: **16**
 - Jogadores encontrados: **8** (1, 2, 3, 4, 5, 6, 7, 8)
 - Registros estruturados analisados: **3610**
-- Achados: **125**
-- CRITICAL: 0 | HIGH: 4 | MEDIUM: 82 | LOW: 39
+- Achados: **118**
+- CRITICAL: 0 | HIGH: 4 | MEDIUM: 75 | LOW: 39
 
 ## Metadados da sessão
 
@@ -268,7 +268,7 @@ Esta seção usa o que está explícito em cada linha de ação. HP, nível, má
 | Jogador 2 | 3-6 | 11:49:24 | BUY XP | FAST8 | FAST8: composição planejada exige nível 8 | 4 | 0 | Colosso | DA_Amumu18 | -0.0100 |  |
 | Jogador 2 | 3-6 | 11:49:24 | BUY XP | FAST8 | FAST8: composição planejada exige nível 8 | 0 | 0 | Colosso | DA_Amumu18 | -0.0100 |  |
 | Jogador 2 | 3-6 | 11:49:25 | PASSOU TURNO | FAST8 | FAST8: composição planejada exige nível 8 | 0 | 0 | Colosso | DA_Amumu18 | 0.0000 |  |
-| Jogador 2 | 3-7 | 11:49:31 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 4 | 0 | Colosso | DA_Amumu18 | 0.0900 | ECON_SPEND_BELOW_50_REVIEW |
+| Jogador 2 | 3-7 | 11:49:31 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 4 | 0 | Colosso | DA_Amumu18 | 0.0900 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW |
 | Jogador 2 | 3-7 | 11:49:32 | MOVE Bench -> Board: Zyra (i:8.0) <-> Vazio | WINSTREAK | WINSTREAK: preservar vantagem atual | 4 | 0 | Colosso | DA_Amumu18 | 0.6800 |  |
 | Jogador 2 | 3-7 | 11:49:32 | COMPROU: Ezreal (Custo 4 \| i:8.0) | WINSTREAK | WINSTREAK: preservar vantagem atual | 0 | 0 | Colosso | DA_Amumu18 | -0.2900 |  |
 | Jogador 2 | 3-7 | 11:49:32 | PASSOU TURNO | WINSTREAK | WINSTREAK: preservar vantagem atual | 0 | 0 | Colosso | DA_Amumu18 | 0.0000 |  |
@@ -302,35 +302,35 @@ Esta seção usa o que está explícito em cada linha de ação. HP, nível, má
 | Jogador 2 | 5-1 | 11:50:33 | PASSOU TURNO | WINSTREAK | WINSTREAK: preservar vantagem atual | 9 | 0 | Colosso | DA_18_Ashe | 0.0000 |  |
 | Jogador 2 | 5-2 | 11:50:41 | VENDEU: Lux (Solar) (i:10.0) | ECON | ECON: acumular até o limite de juros de 50 | 19 | 0 | Colosso | DA_18_Ashe | -0.3800 |  |
 | Jogador 2 | 5-2 | 11:50:41 | VENDEU: Ashe (i:10.0) | ECON | ECON: acumular até o limite de juros de 50 | 24 | 0 | Colosso | DA_Amumu18 | -0.3800 |  |
-| Jogador 2 | 5-2 | 11:50:41 | COMPROU: Master Yi (Custo 3 \| i:6.0) | ECON | ECON: acumular até o limite de juros de 50 | 21 | 0 | Colosso | DA_18_MasterYi_AD | 0.8700 | ECON_SPEND_BELOW_50_REVIEW |
+| Jogador 2 | 5-2 | 11:50:41 | COMPROU: Master Yi (Custo 3 \| i:6.0) | ECON | ECON: acumular até o limite de juros de 50 | 21 | 0 | Colosso | DA_18_MasterYi_AD | 0.8700 |  |
 | Jogador 2 | 5-2 | 11:50:42 | MOVE Bench -> Board: Master Yi (i:12.0) <-> Vazio | ECON | ECON: acumular até o limite de juros de 50 | 21 | 0 | Colosso | DA_18_MasterYi_AD | 0.5500 |  |
-| Jogador 2 | 5-2 | 11:50:42 | COMPROU: Ahri (Custo 4 \| i:8.0) | ECON | ECON: acumular até o limite de juros de 50 | 17 | 0 | Colosso | DA_18_MasterYi_AD | 0.0900 | ECON_SPEND_BELOW_50_REVIEW |
-| Jogador 2 | 5-2 | 11:50:42 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 13 | 0 | Colosso | DA_18_MasterYi_AD | -0.0300 | ECON_SPEND_BELOW_50_REVIEW |
-| Jogador 2 | 5-2 | 11:50:42 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 9 | 0 | Colosso | DA_18_MasterYi_AD | -0.1100 | ECON_SPEND_BELOW_50_REVIEW |
-| Jogador 2 | 5-2 | 11:50:42 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 5 | 0 | Colosso | DA_18_MasterYi_AD | -0.0300 | ECON_SPEND_BELOW_50_REVIEW |
-| Jogador 2 | 5-2 | 11:50:43 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 1 | 0 | Colosso | DA_18_MasterYi_AD | -0.0300 | ECON_SPEND_BELOW_50_REVIEW |
+| Jogador 2 | 5-2 | 11:50:42 | COMPROU: Ahri (Custo 4 \| i:8.0) | ECON | ECON: acumular até o limite de juros de 50 | 17 | 0 | Colosso | DA_18_MasterYi_AD | 0.0900 |  |
+| Jogador 2 | 5-2 | 11:50:42 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 13 | 0 | Colosso | DA_18_MasterYi_AD | -0.0300 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW |
+| Jogador 2 | 5-2 | 11:50:42 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 9 | 0 | Colosso | DA_18_MasterYi_AD | -0.1100 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW |
+| Jogador 2 | 5-2 | 11:50:42 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 5 | 0 | Colosso | DA_18_MasterYi_AD | -0.0300 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW |
+| Jogador 2 | 5-2 | 11:50:43 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 1 | 0 | Colosso | DA_18_MasterYi_AD | -0.0300 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW |
 | Jogador 2 | 5-2 | 11:50:44 | PASSOU TURNO | ECON | ECON: acumular até o limite de juros de 50 | 1 | 0 | Colosso | DA_18_MasterYi_AD | 0.0000 |  |
-| Jogador 2 | 5-3 | 11:50:49 | COMPROU: Master Yi (Custo 3 \| i:6.0) | ECON | ECON: acumular até o limite de juros de 50 | 4 | 0 | Colosso | DA_18_MasterYi_AD | 0.2100 | ECON_SPEND_BELOW_50_REVIEW |
-| Jogador 2 | 5-3 | 11:50:50 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 0 | 0 | Colosso | DA_18_MasterYi_AD | -0.0300 | ECON_SPEND_BELOW_50_REVIEW |
+| Jogador 2 | 5-3 | 11:50:49 | COMPROU: Master Yi (Custo 3 \| i:6.0) | ECON | ECON: acumular até o limite de juros de 50 | 4 | 0 | Colosso | DA_18_MasterYi_AD | 0.2100 |  |
+| Jogador 2 | 5-3 | 11:50:50 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 0 | 0 | Colosso | DA_18_MasterYi_AD | -0.0300 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW |
 | Jogador 2 | 5-3 | 11:50:50 | PASSOU TURNO | ECON | ECON: acumular até o limite de juros de 50 | 0 | 0 | Colosso | DA_18_MasterYi_AD | 0.0000 |  |
 | Jogador 2 | 5-3 | 11:50:54 | MOVE Bench -> Board: Ahri (i:8.0) <-> Vazio | ECON | ECON: acumular até o limite de juros de 50 | 0 | 0 | Colosso | DA_18_MasterYi_AD | 0.3900 |  |
 | Jogador 2 | 5-4 | 11:50:58 | PASSOU TURNO | ECON | ECON: acumular até o limite de juros de 50 | 6 | 0 | Colosso | DA_18_MasterYi_AD | 0.0000 |  |
 | Jogador 2 | 5-5 | 11:51:06 | PASSOU TURNO | ECON | ECON: acumular até o limite de juros de 50 | 12 | 0 | Colosso | DA_18_MasterYi_AD | 0.0000 |  |
-| Jogador 2 | 5-6 | 11:51:15 | COMPROU: Ahri (Custo 4 \| i:8.0) | ECON | ECON: acumular até o limite de juros de 50 | 14 | 1 | Colosso | DA_18_MasterYi_AD | 0.7800 | ECON_SPEND_BELOW_50_REVIEW |
+| Jogador 2 | 5-6 | 11:51:15 | COMPROU: Ahri (Custo 4 \| i:8.0) | ECON | ECON: acumular até o limite de juros de 50 | 14 | 1 | Colosso | DA_18_MasterYi_AD | 0.7800 |  |
 | Jogador 2 | 5-6 | 11:51:15 | PASSOU TURNO | ECON | ECON: acumular até o limite de juros de 50 | 14 | 1 | Colosso | DA_18_MasterYi_AD | 0.0000 |  |
 | Jogador 2 | 5-7 | 11:51:23 | BIGORNA: escolheu item completo TFT_Item_IonicSpark | ECON | ECON: acumular até o limite de juros de 50 | 20 | 1 | Colosso | DA_18_MasterYi_AD | 0.0000 |  |
 | Jogador 2 | 5-7 | 11:51:24 | EQUIP_FROM_INVENTORY: TFT_Item_IonicSpark -> Amumu (i:8.0) (tabuleiro slot 10) | ECON | ECON: acumular até o limite de juros de 50 | 20 | 1 | Colosso | DA_18_MasterYi_AD | 0.1300 |  |
-| Jogador 2 | 5-7 | 11:51:24 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 16 | 1 | Colosso | DA_18_MasterYi_AD | -0.0900 | ECON_SPEND_BELOW_50_REVIEW |
-| Jogador 2 | 5-7 | 11:51:24 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 12 | 1 | Colosso | DA_18_MasterYi_AD | -0.0100 | ECON_SPEND_BELOW_50_REVIEW |
-| Jogador 2 | 5-7 | 11:51:24 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 8 | 1 | Colosso | DA_18_MasterYi_AD | -0.0900 | ECON_SPEND_BELOW_50_REVIEW |
-| Jogador 2 | 5-7 | 11:51:24 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 4 | 1 | Colosso | DA_18_MasterYi_AD | -0.0100 | ECON_SPEND_BELOW_50_REVIEW |
-| Jogador 2 | 5-7 | 11:51:25 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 0 | 1 | Colosso | DA_18_MasterYi_AD | -0.0100 | ECON_SPEND_BELOW_50_REVIEW |
+| Jogador 2 | 5-7 | 11:51:24 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 16 | 1 | Colosso | DA_18_MasterYi_AD | -0.0900 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW |
+| Jogador 2 | 5-7 | 11:51:24 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 12 | 1 | Colosso | DA_18_MasterYi_AD | -0.0100 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW |
+| Jogador 2 | 5-7 | 11:51:24 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 8 | 1 | Colosso | DA_18_MasterYi_AD | -0.0900 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW |
+| Jogador 2 | 5-7 | 11:51:24 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 4 | 1 | Colosso | DA_18_MasterYi_AD | -0.0100 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW |
+| Jogador 2 | 5-7 | 11:51:25 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 0 | 1 | Colosso | DA_18_MasterYi_AD | -0.0100 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW |
 | Jogador 2 | 5-7 | 11:51:25 | PASSOU TURNO | ECON | ECON: acumular até o limite de juros de 50 | 0 | 1 | Colosso | DA_18_MasterYi_AD | 0.0000 |  |
 | Jogador 2 | 6-1 | 11:51:32 | PASSOU TURNO | ECON | ECON: acumular até o limite de juros de 50 | 5 | 0 | Colosso | DA_18_MasterYi_AD | 0.0000 |  |
-| Jogador 2 | 6-2 | 11:51:40 | COMPROU: Ahri (Custo 4 \| i:8.0) | ECON | ECON: acumular até o limite de juros de 50 | 7 | 0 | Colosso | DA_18_Ahri | 0.7600 | ECON_SPEND_BELOW_50_REVIEW |
+| Jogador 2 | 6-2 | 11:51:40 | COMPROU: Ahri (Custo 4 \| i:8.0) | ECON | ECON: acumular até o limite de juros de 50 | 7 | 0 | Colosso | DA_18_Ahri | 0.7600 |  |
 | Jogador 2 | 6-2 | 11:51:40 | PASSOU TURNO | ECON | ECON: acumular até o limite de juros de 50 | 7 | 0 | Colosso | DA_18_Ahri | 0.0000 |  |
 | Jogador 2 | 6-2 | 11:51:45 | MOVE Bench -> Board: Master Yi (i:6.0) <-> Vazio | ECON | ECON: acumular até o limite de juros de 50 | 7 | 0 | Colosso | DA_18_Ahri | 0.5800 |  |
-| Jogador 2 | 6-3 | 11:51:48 | COMPROU: Ahri (Custo 4 \| i:8.0) | ECON | ECON: acumular até o limite de juros de 50 | 8 | 0 | Colosso | DA_18_Ahri | 0.2000 | ECON_SPEND_BELOW_50_REVIEW |
+| Jogador 2 | 6-3 | 11:51:48 | COMPROU: Ahri (Custo 4 \| i:8.0) | ECON | ECON: acumular até o limite de juros de 50 | 8 | 0 | Colosso | DA_18_Ahri | 0.2000 |  |
 | Jogador 2 | 6-3 | 11:51:48 | PASSOU TURNO | ECON | ECON: acumular até o limite de juros de 50 | 8 | 0 | Colosso | DA_18_Ahri | 0.0000 |  |
 | Jogador 2 | 6-4 | 11:51:55 | PASSOU TURNO | ECON | ECON: acumular até o limite de juros de 50 | 13 | 0 | Colosso | DA_18_Ahri | 0.0000 |  |
 | Jogador 3 | ? | 11:47:28 | MOVE Bench -> Board: Akali (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.6000 |  |
@@ -840,15 +840,15 @@ Esta seção usa o que está explícito em cada linha de ação. HP, nível, má
 | Jogador 8 | 5-2 | 11:50:41 | BUY XP | WINSTREAK | WINSTREAK: preservar vantagem atual | 4 | 0 | Colosso | DA_18_Lux_Elderwood | -0.0100 |  |
 | Jogador 8 | 5-2 | 11:50:41 | BUY XP | WINSTREAK | WINSTREAK: preservar vantagem atual | 0 | 0 | Colosso | DA_18_Lux_Elderwood | -0.0100 |  |
 | Jogador 8 | 5-2 | 11:50:42 | PASSOU TURNO | WINSTREAK | WINSTREAK: preservar vantagem atual | 0 | 0 | Colosso | DA_18_Lux_Elderwood | 0.0000 |  |
-| Jogador 8 | 5-3 | 11:50:49 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 1 | 0 | Colosso | DA_18_Lux_Elderwood | -0.0100 | ECON_SPEND_BELOW_50_REVIEW |
+| Jogador 8 | 5-3 | 11:50:49 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 1 | 0 | Colosso | DA_18_Lux_Elderwood | -0.0100 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW |
 | Jogador 8 | 5-3 | 11:50:50 | PASSOU TURNO | ECON | ECON: acumular até o limite de juros de 50 | 1 | 0 | Colosso | DA_18_Lux_Elderwood | 0.0000 |  |
-| Jogador 8 | 5-4 | 11:50:58 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 2 | 0 | Colosso | DA_18_Lux_Elderwood | -0.0100 | ECON_SPEND_BELOW_50_REVIEW |
+| Jogador 8 | 5-4 | 11:50:58 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 2 | 0 | Colosso | DA_18_Lux_Elderwood | -0.0100 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW |
 | Jogador 8 | 5-4 | 11:50:58 | PASSOU TURNO | ECON | ECON: acumular até o limite de juros de 50 | 2 | 0 | Colosso | DA_18_Lux_Elderwood | 0.0000 |  |
-| Jogador 8 | 5-5 | 11:51:06 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 4 | 0 | Colosso | DA_18_Lux_Elderwood | 0.0600 | ECON_SPEND_BELOW_50_REVIEW |
+| Jogador 8 | 5-5 | 11:51:06 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 4 | 0 | Colosso | DA_18_Lux_Elderwood | 0.0600 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW |
 | Jogador 8 | 5-5 | 11:51:07 | PASSOU TURNO | ECON | ECON: acumular até o limite de juros de 50 | 4 | 0 | Colosso | DA_18_Lux_Elderwood | 0.0000 |  |
 | Jogador 8 | 5-5 | 11:51:11 | MOVE Bench -> Board: Master Yi (i:6.0) <-> Vazio | ECON | ECON: acumular até o limite de juros de 50 | 4 | 0 | Colosso | DA_18_Lux_Elderwood | -0.0500 |  |
-| Jogador 8 | 5-6 | 11:51:15 | COMPROU: Dragão Ancião (Custo 5 \| i:10.0) | ECON | ECON: acumular até o limite de juros de 50 | 5 | 0 | Colosso | DA_18_ElderDragon | 0.0500 | ECON_SPEND_BELOW_50_REVIEW |
-| Jogador 8 | 5-6 | 11:51:15 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 1 | 0 | Colosso | DA_18_ElderDragon | -0.0100 | ECON_SPEND_BELOW_50_REVIEW |
+| Jogador 8 | 5-6 | 11:51:15 | COMPROU: Dragão Ancião (Custo 5 \| i:10.0) | ECON | ECON: acumular até o limite de juros de 50 | 5 | 0 | Colosso | DA_18_ElderDragon | 0.0500 |  |
+| Jogador 8 | 5-6 | 11:51:15 | BUY XP | ECON | ECON: acumular até o limite de juros de 50 | 1 | 0 | Colosso | DA_18_ElderDragon | -0.0100 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW |
 | Jogador 8 | 5-6 | 11:51:15 | PASSOU TURNO | ECON | ECON: acumular até o limite de juros de 50 | 1 | 0 | Colosso | DA_18_ElderDragon | 0.0000 |  |
 | Jogador 8 | 5-7 | 11:51:23 | BIGORNA: escolheu item completo TFT_Item_LastWhisper | ECON | ECON: acumular até o limite de juros de 50 | 6 | 0 | Colosso | DA_18_ElderDragon | 0.0000 |  |
 | Jogador 8 | 5-7 | 11:51:24 | EQUIP_FROM_INVENTORY: TFT_Item_LastWhisper -> Azuporã (i:8.0) (tabuleiro slot 10) | ECON | ECON: acumular até o limite de juros de 50 | 6 | 0 | Colosso | DA_18_ElderDragon | 0.1100 |  |
@@ -2218,23 +2218,17 @@ Uma venda sem compra correspondente na janela é UNKNOWN; sequências ambíguas 
 | MEDIUM | Jogador 2 | 2-3 | 505 | SLOWROLL_BUY_XP_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
 | MEDIUM | Jogador 2 | 2-3 | 516 | SLOWROLL_BUY_XP_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
 | MEDIUM | Jogador 2 | 2-4 | 562 | SLOWROLL_BUY_XP_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
-| MEDIUM | Jogador 2 | 3-7 | 1293 | ECON_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
-| MEDIUM | Jogador 2 | 5-2 | 1898 | ECON_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
-| MEDIUM | Jogador 2 | 5-2 | 1923 | ECON_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
-| MEDIUM | Jogador 2 | 5-2 | 1935 | ECON_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
-| MEDIUM | Jogador 2 | 5-2 | 1946 | ECON_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
-| MEDIUM | Jogador 2 | 5-2 | 1957 | ECON_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
-| MEDIUM | Jogador 2 | 5-2 | 1968 | ECON_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
-| MEDIUM | Jogador 2 | 5-3 | 2014 | ECON_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
-| MEDIUM | Jogador 2 | 5-3 | 2027 | ECON_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
-| MEDIUM | Jogador 2 | 5-6 | 2155 | ECON_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
-| MEDIUM | Jogador 2 | 5-7 | 2230 | ECON_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
-| MEDIUM | Jogador 2 | 5-7 | 2241 | ECON_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
-| MEDIUM | Jogador 2 | 5-7 | 2252 | ECON_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
-| MEDIUM | Jogador 2 | 5-7 | 2263 | ECON_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
-| MEDIUM | Jogador 2 | 5-7 | 2274 | ECON_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
-| MEDIUM | Jogador 2 | 6-2 | 2355 | ECON_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
-| MEDIUM | Jogador 2 | 6-3 | 2415 | ECON_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 2 | 3-7 | 1293 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 2 | 5-2 | 1935 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 2 | 5-2 | 1946 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 2 | 5-2 | 1957 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 2 | 5-2 | 1968 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 2 | 5-3 | 2027 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 2 | 5-7 | 2230 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 2 | 5-7 | 2241 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 2 | 5-7 | 2252 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 2 | 5-7 | 2263 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 2 | 5-7 | 2274 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
 | LOW | Jogador 3 | 1-1 | 44 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem backline. |
 | LOW | Jogador 3 | 1-2 | 127 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem backline. |
 | LOW | Jogador 3 | 1-3 | 186 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem backline. |
@@ -2315,11 +2309,10 @@ Uma venda sem compra correspondente na janela é UNKNOWN; sequências ambíguas 
 | LOW | Jogador 8 | 6-3 | 2318 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
 | LOW | Jogador 8 | 6-3 | 2319 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem backline. |
 | MEDIUM | Jogador 8 | 2-4 | 572 | SLOWROLL_BUY_XP_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
-| MEDIUM | Jogador 8 | 5-3 | 1936 | ECON_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
-| MEDIUM | Jogador 8 | 5-4 | 1982 | ECON_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
-| MEDIUM | Jogador 8 | 5-5 | 2028 | ECON_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
-| MEDIUM | Jogador 8 | 5-6 | 2088 | ECON_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
-| MEDIUM | Jogador 8 | 5-6 | 2101 | ECON_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-3 | 1936 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-4 | 1982 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-5 | 2028 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-6 | 2101 | ECON_NON_UNIT_SPEND_BELOW_50_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
 
 ## Como interpretar
 
