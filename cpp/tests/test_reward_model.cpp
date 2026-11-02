@@ -77,6 +77,18 @@ int main() {
                   "SLOWROLL positive XP shaping is reduced by ten percent");
     require_close(xp_strategy_reward_scale(2), 1.0,
                   "FAST8 XP shaping remains unchanged");
+    require_close(strategy_action_reward(3, 2, 12, 8, 80.0, 2,
+                                         false, false, false, true),
+                  -0.04,
+                  "non-leveling early XP during healthy SLOWROLL is discouraged");
+    require_close(strategy_action_reward(3, 2, 12, 8, 30.0, 2,
+                                         false, false, false, true),
+                  0.0,
+                  "urgent low-health SLOWROLL XP remains available");
+    require_close(strategy_action_reward(3, 2, 12, 8, 80.0, 2,
+                                         false, false, true, true),
+                  0.0,
+                  "SLOWROLL XP that secures a level-up is not penalized");
     const double neutral_xp = xp_level_transition_value(60, 56, 80.0, 4, 7, 8, 0.0, 0);
     const double stabilize_xp = xp_level_transition_value(60, 56, 80.0, 4, 7, 8, 0.0, 1);
     const double slowroll_xp = xp_level_transition_value(60, 56, 80.0, 4, 7, 8, 0.0, 3);
