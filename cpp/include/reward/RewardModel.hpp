@@ -121,10 +121,13 @@ inline double strategy_action_reward(
             if (new_gold >= 50 && old_gold < 50 && stage <= 2) reward += 0.04;
             if (old_gold >= 50 && action_type == 0 && useful_purchase)
                 reward += 0.04;
-            if (stage <= 2 && new_gold < 50 && new_gold < old_gold &&
-                hp > 40.0 && !has_composition_target) {
-                if (action_type == 2) reward -= 0.015;
-                else if (action_type == 0 && !useful_purchase) reward -= 0.06;
+            if (new_gold < 50 && new_gold < old_gold && hp > 40.0) {
+                // A comp target can justify buying units, not routine XP that
+                // fails to reach a level. Keep the purchase-specific exception.
+                if (action_type == 2 && !leveled && stage <= 2) reward -= 0.04;
+                else if (action_type == 0 && !useful_purchase &&
+                         stage <= 2 && !has_composition_target)
+                    reward -= 0.06;
             }
             break;
         case 1: // STABILIZE: favor playable-board upgrades over routine leveling.
@@ -143,11 +146,12 @@ inline double strategy_action_reward(
             break;
         case 3: // SLOWROLL: reward improved rolls without blocking useful XP progress.
             if (action_type == 1) reward += reroll_improved ? 0.12 : -0.025;
-            // Buying XP without an immediate level-up is progress, not proof of
-            // waste. Keep only a small early/safe-game nudge against leaving the
-            // intended slow-roll plan; gold/interest cost remains the main signal.
+            // In the observed match, repeated non-leveling XP purchases drained
+            // SLOWROLL players to near-zero gold while the 3-star plan was active.
+            // Strengthen the nudge without masking the action: urgent HP states,
+            // later stages, level-ups, and the 50-gold reserve remain exempt.
             if (action_type == 2 && !leveled && stage <= 3 &&
-                hp > 50.0 && old_gold < 50) reward -= 0.02;
+                hp > 50.0 && old_gold < 50) reward -= 0.04;
             break;
         case 4: // ALL_IN: useful immediate strength over passive saving.
             if (action_type == 1) reward -= 0.08;
@@ -516,8 +520,11 @@ inline double unit_purchase_timing_reward(
         : (bench_count <= 5 ? 0.75 : 0.40);
     const double strategy_scale = active_strategy == 2 ? 1.10
         : (active_strategy == 1 || active_strategy == 4 ? 1.05 : 1.0);
+    // Tiny calibration nudge: convert a little more genuine surplus into
+    // useful board strength, without lowering the phase reserve or rewarding
+    // low-fit buys. The increase is deliberately limited to about 4-5%.
     return std::min(0.24,
-        (0.12 * liquidity * urgency + 0.10 * surplus) *
+        (0.125 * liquidity * urgency + 0.105 * surplus) *
         quality * bench_capacity * strategy_scale);
 }
 
