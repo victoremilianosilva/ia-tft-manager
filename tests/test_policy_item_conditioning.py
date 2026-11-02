@@ -48,7 +48,7 @@ def test_item_observation_exposes_components_inventory_recipes_and_all_targets()
     assert anvil_options.shape == (1, 9, 11)
     assert components[0, 0].item() == 0.5
     assert inventory[0, 0, 0].item() == 0.75
-    assert recipes[0, 4, 2].item() == 0.6
+    assert torch.isclose(recipes[0, 4, 2], torch.tensor(0.6), atol=1e-6)
     assert targets[0, 28, 5].item() == 1.0
     assert inventory_target_fit[0, 2, 4].item() == 0.7
     assert recipe_target_fit[0, 5, 6].item() == 0.8
@@ -59,7 +59,7 @@ def test_item_observation_exposes_components_inventory_recipes_and_all_targets()
 
 def test_item_target_scorer_uses_each_candidates_role_and_position_features():
     policy, _ = _policy_with_native_item_block()
-    conditioned = torch.zeros(1, 64 + len(ACTION_DIMS) * 0 + 9)
+    conditioned = torch.zeros(1, 64 + ACTION_DIMS[0] * 0 + 9)
     target_context = torch.zeros(1, 20)
     item_features = torch.zeros(1, 17)
     target_features = torch.zeros(1, 37, 18)
@@ -91,7 +91,7 @@ def test_item_target_scorer_uses_each_candidates_role_and_position_features():
 
 def test_target_scorer_uses_exact_item_to_unit_compatibility():
     policy, _ = _policy_with_native_item_block()
-    conditioned = torch.zeros(1, 64 + len(ACTION_DIMS))
+    conditioned = torch.zeros(1, 64 + ACTION_DIMS[0])
     target_context = torch.zeros(1, 20)
     item_features = torch.zeros(1, 17)
     target_features = torch.zeros(1, 37, 18)
@@ -119,7 +119,7 @@ def test_target_scorer_uses_exact_item_to_unit_compatibility():
 
 def test_inventory_candidate_scorer_uses_item_semantics():
     policy, _ = _policy_with_native_item_block()
-    conditioned = torch.zeros(1, 64 + len(ACTION_DIMS))
+    conditioned = torch.zeros(1, 64 + ACTION_DIMS[0])
     inventory_features = torch.zeros(1, 9, 17)
     inventory_features[0, 0, 0] = 0.1
     inventory_features[0, 1, 0] = 0.9
@@ -144,7 +144,7 @@ def test_inventory_candidate_scorer_uses_item_semantics():
 
 def test_inventory_choice_uses_best_available_item_target_fit():
     policy, _ = _policy_with_native_item_block()
-    conditioned = torch.zeros(1, 64 + len(ACTION_DIMS))
+    conditioned = torch.zeros(1, 64 + ACTION_DIMS[0])
     inventory_features = torch.zeros(1, 9, 17)
     target_fit = torch.zeros(1, 9, 37)
     target_fit[0, 0, 0] = 0.1
@@ -170,7 +170,7 @@ def test_inventory_choice_uses_best_available_item_target_fit():
 
 def test_anvil_candidate_scorer_uses_anvil_option_features():
     policy, _ = _policy_with_native_item_block()
-    conditioned = torch.zeros(1, 64 + len(ACTION_DIMS))
+    conditioned = torch.zeros(1, 64 + ACTION_DIMS[0])
     inventory_features = torch.zeros(1, 9, 17)
     inventory_features[0, 0, 0] = 1.0  # deliberately attractive bag feature
     anvil_features = torch.zeros(1, 9, 11)
