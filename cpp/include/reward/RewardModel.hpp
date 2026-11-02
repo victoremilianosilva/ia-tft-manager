@@ -143,11 +143,12 @@ inline double strategy_action_reward(
             break;
         case 3: // SLOWROLL: reward improved rolls without blocking useful XP progress.
             if (action_type == 1) reward += reroll_improved ? 0.12 : -0.025;
-            // Buying XP without an immediate level-up is progress, not proof of
-            // waste. Keep only a small early/safe-game nudge against leaving the
-            // intended slow-roll plan; gold/interest cost remains the main signal.
+            // In the observed match, repeated non-leveling XP purchases drained
+            // SLOWROLL players to near-zero gold while the 3-star plan was active.
+            // Strengthen the nudge without masking the action: urgent HP states,
+            // later stages, level-ups, and the 50-gold reserve remain exempt.
             if (action_type == 2 && !leveled && stage <= 3 &&
-                hp > 50.0 && old_gold < 50) reward -= 0.02;
+                hp > 50.0 && old_gold < 50) reward -= 0.04;
             break;
         case 4: // ALL_IN: useful immediate strength over passive saving.
             if (action_type == 1) reward -= 0.08;
