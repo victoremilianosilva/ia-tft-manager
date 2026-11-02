@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Auditoria offline dos logs de uma partida TFT gerados pelo Viewer.
 
-Aceita exclusivamente os arquivos player_*_log.tft da sessão.
-Ignora sidecars JSON e não altera os logs originais.
+Aceita logs .tft e sidecars JSON locais da sessão.
+Usa JSON estruturado e .tft como evidência complementar, sem alterar os logs originais.
 
 Exemplos:
   python audit_viewer_match.py viewer/sessions/match-20261102-100200-75e2f079
@@ -1868,8 +1868,15 @@ def audit_text(path: Path, report: dict, max_actions: int | None = None) -> None
     for action in metrics["timeline"]:
         if action["strategy"] == "STABILIZE" and action["action"] == "PASS" and action.get("gold_after") is not None and action["gold_after"] >= 10:
             action["conformity_candidate"] = "STABILIZE_PASS_WITH_GOLD_REVIEW"
-        if action["strategy"] == "ECON" and action["action"] in ("BUY", "BUY_XP", "REROLL") and action.get("gold_after") is not None and action["gold_after"] < 50:
-            action["conformity_candidate"] = "ECON_SPEND_BELOW_50_REVIEW"
+        # Unit purchases are a valid ECON use of gold below 50: they can
+        # complete pairs/upgrades or preserve a useful shop opportunity.
+        # Only non-unit spending remains a review candidate, and it is not
+        # automatically a violation because XP/reroll value is contextual.
+        if (action["strategy"] == "ECON"
+                and action["action"] in ("BUY_XP", "REROLL")
+                and action.get("gold_after") is not None
+                and action["gold_after"] < 50):
+            action["conformity_candidate"] = "ECON_NON_UNIT_SPEND_BELOW_50_REVIEW"
         if action.get("conformity_candidate"):
             add_issue(report, "MEDIUM", action["conformity_candidate"], player, action.get("round"),
                       action.get("line"), "Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado.",
@@ -2329,9 +2336,8 @@ def markdown_full_report(report: dict) -> str:
         "",
         f"- Jogadores analisados: {len(report.get('players_seen', []))}",
         f"- Entradas analisadas: {report.get('entries_read', 0)}",
-        f"- Decisões com timeline: {len(report.get('decision_timeline', [])) + len(report.get('text_decision_timeline', []))}",
-        f"- Decisões estruturadas: {len(report.get('decision_timeline', []))}",
-        f"- Eventos reconstruídos do texto: {len(report.get('text_decision_timeline', []))}",
+        f"- Decisões únicas estruturadas: {len(report.get('decision_timeline', []))}",
+        f"- Reconstruções textuais corroborativas (não somadas): {len(report.get('text_decision_timeline', []))}",
         f"- Achados: {len(issues)}",
         "- Os arquivos estruturados de origem permanecem separados deste relatório.",
         "- Campos ausentes são exibidos como “—”; não são inferidos como zero.",
