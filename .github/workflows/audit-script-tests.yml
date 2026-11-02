@@ -7,6 +7,7 @@ on:
       - 'viewer/player_logs.py'
       - 'tests/test_purchase_sequence_audit.py'
       - 'tests/test_board_quality_audit.py'
+      - 'tests/test_audit_metric_reconciliation.py'
       - 'scripts/test_audit_viewer_match.py'
       - 'viewer/audit_window.py'
       - 'viewer/player_logs.py'
@@ -38,4 +39,4 @@ jobs:
       - name: Run audit regression tests
         run: |
           python -m unittest -v scripts/test_audit_viewer_match.py
-          python -m pytest -q tests/test_purchase_sequence_audit.py tests/test_board_quality_audit.py
+          python -m pytest -q tests/test_purchase_sequence_audit.py tests/test_board_quality_audit.py tests/test_audit_metric_reconciliation.py
