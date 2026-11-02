@@ -1,0 +1,1763 @@
+==========================================================
+TFT AI LOG · JOGADOR 7
+Partida: dc6f9cbe-2e81-4044-a664-06571e49d691
+Seed: 20261016 | Política: determinística
+Checkpoint SHA-256: 8cf3067091353b9d76ede6b21f2c988ffc15c7f382c2654a4fd553f7adf4f766
+Impacto (i): custo × estrelas × 2 (contribuição nativa da engine)
+==========================================================
+--- INÍCIO DA PARTIDA · JOGADOR 7 ---
+[11:47:28] MOVE Bench -> Board: Akali (i:2.0) <-> Vazio | Rew: +0.60
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 3.33, Devastador 3.33, Inferno 3.33
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD | CORE TRAITS: —
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=— -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=não | fit=0.00 | nenhum trait de foco
+[11:47:28] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Adaptador 3.33, Devastador 3.33, Inferno 3.33
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD | CORE TRAITS: —
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +0 | juros +0 | sequência +0 | vitória +0
+
+[11:47:34] --- FIM DO ROUND 1-1 | GOLD: 2 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Adaptador 3.33, Devastador 3.33, Inferno 3.33
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:47:34] 🛒 LOJA: Rek'Sai(i:2.0), Kobuko(i:2.0), Rek'Sai(i:2.0), Varus(i:2.0), Ornn(i:2.0)
+[11:47:34] COMPROU: Varus (Custo 1 | i:2.0) | Rew: +0.26
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 3.36, Adaptador 3.29, Devastador 3.29, Fumegante 0.07
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Varus | CORE TRAITS: Inferno
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Varus | core=não | fit=3.33 | Inferno=3.33
+[11:47:34] MOVE Bench -> Board: Varus (i:2.0) <-> Akali (i:2.0) | Rew: -0.99
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 3.37, Adaptador 3.26, Devastador 3.26, Fumegante 0.10
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Varus | CORE TRAITS: Inferno
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Varus | core=SIM | fit=3.43 | Inferno=3.36, Fumegante=0.07
+[11:47:35] MOVE Bench -> Board: Akali (i:2.0) <-> Vazio | Rew: +0.56
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 3.48, Adaptador 3.20, Devastador 3.20, Fumegante 0.13
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Varus | CORE TRAITS: Inferno
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=9.90 | Inferno=3.37, Adaptador=3.26, Devastador=3.26
+[11:47:35] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 3.58, Adaptador 3.13, Devastador 3.13, Fumegante 0.16
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Varus | CORE TRAITS: Inferno
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 1 | renda base +2 | juros +0 | sequência +0 | vitória +0
+
+[11:47:40] --- FIM DO ROUND 1-2 | GOLD: 3 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 5.33, Adaptador 2.02, Devastador 2.02, Fumegante 0.64
+    RENDA PRÓXIMO ROUND: +2 base, +0 juros, +0 sequência, +0 vitória (total: +2)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:2.0]  [Var|F|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:47:40] 🛒 LOJA: Elise(i:4.0), Akali(i:2.0), Yorick(i:2.0), Caitlyn(i:4.0), Aronguejo(i:4.0)
+[11:47:40] COMPROU: Akali (Custo 1 | i:2.0) | Rew: +1.05
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 5.33, Adaptador 2.02, Devastador 2.02, Fumegante 0.64
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Varus | CORE TRAITS: Inferno, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=9.36 | Inferno=5.33, Adaptador=2.02, Devastador=2.02
+[11:47:40]  ⬆️ SINERGIA: INFERNO nível 1
+[11:47:40] MOVE Bench -> Board: Akali (i:2.0) <-> Varus (i:2.0) | Rew: +0.20
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 5.20, Adaptador 2.07, Devastador 2.07, Fumegante 0.66
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Varus | CORE TRAITS: Inferno, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=9.36 | Inferno=5.33, Adaptador=2.02, Devastador=2.02
+[11:47:41] MOVE Bench -> Board: Varus (i:2.0) <-> Vazio | Rew: +0.35
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 5.16, Adaptador 2.10, Devastador 2.10, Fumegante 0.64
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Varus | CORE TRAITS: Inferno, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Varus | core=SIM | fit=5.86 | Inferno=5.20, Fumegante=0.66
+[11:47:42] MOVE Board -> Board: Varus (i:2.0) <-> Vazio | Rew: -0.32
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 5.11, Adaptador 2.14, Devastador 2.14, Fumegante 0.61
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Varus | CORE TRAITS: Inferno, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +2 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Varus | core=SIM | fit=5.79 | Inferno=5.16, Fumegante=0.64
+[11:47:42] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 5.07, Adaptador 2.17, Devastador 2.17, Fumegante 0.60
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Varus | CORE TRAITS: Inferno, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 2 | renda base +2 | juros +0 | sequência +0 | vitória +0
+
+[11:47:46] --- FIM DO ROUND 1-3 | GOLD: 5 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 4.67, Adaptador 2.46, Devastador 2.46, Fumegante 0.41
+    RENDA PRÓXIMO ROUND: +3 base, +0 juros, +0 sequência, +0 vitória (total: +3)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Var|F|1*|i:2.0]       [ . ]        [Aka|F|1*|i:2.0]  [Aka|F|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:47:46] 🛒 LOJA: Elise(i:4.0), Varus(i:2.0), Camille(i:2.0), Veigar(i:2.0), Cascalho(i:2.0)
+[11:47:47] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 4.67, Adaptador 2.46, Devastador 2.46, Fumegante 0.41
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Varus | CORE TRAITS: Inferno, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 5 | renda base +3 | juros +0 | sequência +0 | vitória +0
+
+[11:47:53] --- FIM DO ROUND 1-4 | GOLD: 9 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 4.62, Adaptador 2.50, Devastador 2.50, Fumegante 0.39
+    RENDA PRÓXIMO ROUND: +4 base, +0 juros, +0 sequência, +0 vitória (total: +4)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Var|F|1*|i:2.0]       [ . ]        [Aka|F|1*|i:2.0]  [Aka|F|1*|i:2.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:47:53] 🛒 LOJA: Alistar(i:4.0), Leona(i:2.0), Shen(i:4.0), Lobo Trevoguari(i:4.0), Yorick(i:2.0)
+[11:47:53] COMPROU: Shen (Custo 2 | i:4.0) | Rew: +0.27
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 4.62, Adaptador 2.46, Devastador 2.46, Fumegante 0.38, Defendente 0.07
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Shen, DA_18_Varus | CORE TRAITS: Inferno, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Shen | core=não | fit=4.62 | Inferno=4.62
+[11:47:53] MOVE Bench -> Board: Shen (i:4.0) <-> Akali (i:2.0) | Rew: -0.19
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 4.74, Adaptador 2.39, Devastador 2.39, Fumegante 0.39, Defendente 0.09
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Shen, DA_18_Varus | CORE TRAITS: Inferno, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Shen | core=SIM | fit=4.69 | Inferno=4.62, Defendente=0.07
+[11:47:54] MOVE Bench -> Board: Akali (i:2.0) <-> Vazio | Rew: +0.52
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 4.73, Adaptador 2.38, Devastador 2.38, Fumegante 0.38, Defendente 0.12
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Shen, DA_18_Varus | CORE TRAITS: Inferno, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 7 | renda base +4 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=9.52 | Inferno=4.74, Adaptador=2.39, Devastador=2.39
+[11:47:54] BUY XP                       | Rew: -0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 4.73, Adaptador 2.38, Devastador 2.38, Fumegante 0.38, Defendente 0.14
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Shen, DA_18_Varus | CORE TRAITS: Inferno, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +4 | juros +0 | sequência +0 | vitória +0
+[11:47:55] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 4.72, Adaptador 2.37, Devastador 2.37, Fumegante 0.38, Defendente 0.16
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Shen, DA_18_Varus | CORE TRAITS: Inferno, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 3 | renda base +4 | juros +0 | sequência +0 | vitória +0
+
+[11:47:59] --- FIM DO ROUND 2-1 | GOLD: 8 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 4.65, Adaptador 2.33, Devastador 2.33, Fumegante 0.36, Defendente 0.33
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Var|F|1*|i:2.0]       [ . ]        [Aka|F|1*|i:2.0]  [She|F|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:47:59] 🛒 LOJA: Akali(i:2.0), Rek'Sai(i:2.0), Kobuko(i:2.0), Hecarim(i:6.0), Rubrivirim(i:2.0)
+[11:48:00] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 4.65, Adaptador 2.33, Devastador 2.33, Fumegante 0.36, Defendente 0.33
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Shen, DA_18_Varus | CORE TRAITS: Inferno, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 8 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[11:48:06] --- FIM DO ROUND 2-2 | GOLD: 14 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 4.64, Adaptador 2.32, Devastador 2.32, Fumegante 0.36, Defendente 0.36
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Var|F|1*|i:2.0]       [ . ]        [Aka|F|1*|i:2.0]  [She|F|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:48:06] 🛒 LOJA: Cassiopeia(i:6.0), Camille(i:2.0), Varus(i:2.0), Rek'Sai(i:2.0), Alistar(i:4.0)
+[11:48:06] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 4.64, Adaptador 2.32, Devastador 2.32, Fumegante 0.36, Defendente 0.36
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_18_Akali_AD, DA_18_Shen, DA_18_Varus | CORE TRAITS: Inferno, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_18_Akali_AD | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 14 | renda base +5 | juros +0 | sequência +0 | vitória +1
+
+[11:48:12] --- FIM DO ROUND 2-3 | GOLD: 20 ---
+    STRATEGY: SLOWROLL | COMP DIRECTION: — | FOCUS: DA_18_Akali_AD | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 4.64, Adaptador 2.32, Devastador 2.32, Fumegante 0.36, Defendente 0.36
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +0 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Var|F|1*|i:2.0]       [ . ]        [Aka|F|1*|i:2.0]  [She|F|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:48:12] 🛒 LOJA: Kog'Maw(i:6.0), Leona(i:2.0), Ornn(i:2.0), Aronguejo(i:4.0), Azuporã(i:8.0)
+[11:48:13] COMPROU: Azuporã (Custo 4 | i:8.0) | Rew: -0.02
+    STRATEGY: SLOWROLL | COMP DIRECTION: — | FOCUS: DA_Sentinel18 | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 4.64, Adaptador 2.32, Devastador 2.32, Fumegante 0.36, Defendente 0.36
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_18_Akali_AD, DA_18_Shen | CORE TRAITS: Inferno, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_18_Akali_AD -> DA_Sentinel18 | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 16 | renda base +5 | juros +1 | sequência +0 | vitória +0
+    FIT UNIDADE: Azuporã | core=não | fit=0.00 | nenhum trait de foco
+[11:48:13] MOVE Bench -> Board: Azuporã (i:8.0) <-> Vazio | Rew: +0.61
+    STRATEGY: SLOWROLL | COMP DIRECTION: — | FOCUS: DA_Sentinel18 | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 4.64, Adaptador 2.32, Devastador 2.32, Fumegante 0.36, Defendente 0.36
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_18_Akali_AD, DA_18_Shen | CORE TRAITS: Inferno, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 16 | renda base +5 | juros +1 | sequência +0 | vitória +0
+    FIT UNIDADE: Azuporã | core=SIM | fit=0.00 | nenhum trait de foco
+[11:48:14] BUY XP                       | Rew: -0.06
+    STRATEGY: SLOWROLL | COMP DIRECTION: — | FOCUS: DA_Sentinel18 | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 4.64, Adaptador 2.32, Devastador 2.32, Fumegante 0.36, Defendente 0.36
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_18_Akali_AD, DA_18_Shen | CORE TRAITS: Inferno, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 12 | renda base +5 | juros +1 | sequência +0 | vitória +0
+[11:48:14] BUY XP                       | Rew: -0.14
+    STRATEGY: SLOWROLL | COMP DIRECTION: — | FOCUS: DA_Sentinel18 | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 4.64, Adaptador 2.32, Devastador 2.32, Fumegante 0.36, Defendente 0.36
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_18_Akali_AD, DA_18_Shen | CORE TRAITS: Inferno, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 8 | renda base +5 | juros +1 | sequência +0 | vitória +0
+[11:48:14] BUY XP                       | Rew: -0.06
+    STRATEGY: SLOWROLL | COMP DIRECTION: — | FOCUS: DA_Sentinel18 | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 4.64, Adaptador 2.32, Devastador 2.32, Fumegante 0.36, Defendente 0.36
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_18_Akali_AD, DA_18_Shen | CORE TRAITS: Inferno, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 4 | renda base +5 | juros +1 | sequência +0 | vitória +0
+[11:48:15] BUY XP                       | Rew: -0.06
+    STRATEGY: SLOWROLL | COMP DIRECTION: — | FOCUS: DA_Sentinel18 | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 4.64, Adaptador 2.32, Devastador 2.32, Fumegante 0.36, Defendente 0.36
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_18_Akali_AD, DA_18_Shen | CORE TRAITS: Inferno, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +1 | sequência +0 | vitória +0
+[11:48:15] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: SLOWROLL | COMP DIRECTION: — | FOCUS: DA_Sentinel18 | LOCK: OPEN | STRENGTH: 0.00
+FOCUS WEIGHTS: Inferno 4.64, Adaptador 2.32, Devastador 2.32, Fumegante 0.36, Defendente 0.36
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_18_Akali_AD, DA_18_Shen | CORE TRAITS: Inferno, Devastador, Adaptador
+    COMPOSITION PLAN [WAITING_FOR_DIRECTION]: target=8 | units=— | traits=— | carry_id=-1 | score=0.00
+    PLAN NOTE: waiting for a valid composition direction
+    ACQUISITION CHECK: no missing-unit estimate available
+    OP.GG META AUDIT: no catalog decision diagnostic exposed by engine
+    COMP BEFORE -> AFTER: dir=— -> — | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=False -> False | strength=0.00 -> 0.00
+    GOLD: 0 | renda base +5 | juros +1 | sequência +0 | vitória +0
+
+[11:48:19] --- FIM DO ROUND 2-4 | GOLD: 5 ---
+    STRATEGY: SLOWROLL | COMP DIRECTION: — | FOCUS: DA_Sentinel18 | LOCK: OPEN | STRENGTH: 0.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 4.64, Adaptador 2.32, Devastador 2.32, Fumegante 0.36, Defendente 0.36
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Var|F|1*|i:2.0]       [ . ]        [Aka|F|1*|i:2.0]  [She|F|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Azu|F|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:48:19] 🛒 LOJA: Mamãe Bicuda(i:6.0), Rengar(i:6.0), Veigar(i:2.0), Karma(i:2.0), Xayah(i:2.0)
+[11:48:20] BUY XP                       | Rew: +0.02
+    STRATEGY: SLOWROLL | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: OPEN | STRENGTH: 5.37
+FOCUS WEIGHTS: Inferno 6.13, Adaptador 1.78, Devastador 1.78, Fumegante 0.16, Defendente 0.16
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_18_Akali_AD, DA_18_Shen | CORE TRAITS: Inferno, Devastador, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_Fiddlesticks18, DA_KogMaw18_AD, DA_18_Xayah, DA_CrimsonRaptor18, DA_Sentinel18 | traits=Inferno, Fumegante, Adaptador | carry_id=10 | score=41.37
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_KogMaw18_AD (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_18_Xayah (currently_in_shop; immediate acquisition available), DA_CrimsonRaptor18 (currently_in_shop; immediate acquisition available), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Gromp18_AP (cost=2, chance_now~12%, chance_horizon~10%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.074634; native_score=14.824280; native_ids=10,0,23,30,33,12,35,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,30,33,12,35,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.074634; native_score=14.824280; native_ids=10,0,23,30,33,12,35,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,30,33,12,35,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=— -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=False -> False | strength=0.00 -> 5.37
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[11:48:20] COMPROU: Xayah (Custo 1 | i:2.0) | Rew: +0.28
+    STRATEGY: SLOWROLL | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: OPEN | STRENGTH: 5.37
+FOCUS WEIGHTS: Inferno 7.81, Adaptador 0.98, Devastador 0.98, Fumegante 0.13, Defendente 0.09
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_18_Akali_AD, DA_18_Shen | CORE TRAITS: Inferno, Fumegante, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_18_Xayah, DA_Fiddlesticks18, DA_KogMaw18_AD, DA_CrimsonRaptor18, DA_Sentinel18 | traits=Inferno, Fumegante, Adaptador | carry_id=10 | score=42.07
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_KogMaw18_AD (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_CrimsonRaptor18 (currently_in_shop; immediate acquisition available), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Gromp18_AP (cost=2, chance_now~12%, chance_horizon~10%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.074634; native_score=15.604280; native_ids=10,0,23,12,30,33,35,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,12,30,33,35,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.074634; native_score=15.604280; native_ids=10,0,23,12,30,33,35,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,12,30,33,35,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=False -> False | strength=5.37 -> 5.37
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Xayah | core=não | fit=0.16 | Fumegante=0.16
+[11:48:21] MOVE Board -> Board: Akali (i:2.0) <-> Vazio | Rew: +0.02
+    STRATEGY: SLOWROLL | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: OPEN | STRENGTH: 5.18
+FOCUS WEIGHTS: Inferno 7.81, Adaptador 1.00, Devastador 1.00, Fumegante 0.13, Defendente 0.07
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_18_Akali_AD, DA_18_Shen | CORE TRAITS: Inferno, Fumegante, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_18_Xayah, DA_Fiddlesticks18, DA_KogMaw18_AD, DA_CrimsonRaptor18, DA_Sentinel18 | traits=Inferno, Fumegante, Adaptador | carry_id=10 | score=42.07
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_KogMaw18_AD (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_CrimsonRaptor18 (currently_in_shop; immediate acquisition available), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Gromp18_AP (cost=2, chance_now~12%, chance_horizon~10%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.074634; native_score=15.604280; native_ids=10,0,23,12,30,33,35,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,12,30,33,35,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.074634; native_score=15.604280; native_ids=10,0,23,12,30,33,35,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,12,30,33,35,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=False -> False | strength=5.37 -> 5.18
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Akali | core=SIM | fit=9.77 | Inferno=7.81, Adaptador=0.98, Devastador=0.98
+[11:48:21] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: SLOWROLL | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: OPEN | STRENGTH: 5.18
+FOCUS WEIGHTS: Inferno 8.67, Adaptador 0.58, Devastador 0.58, Fumegante 0.11, Defendente 0.05
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_18_Akali_AD, DA_18_Shen | CORE TRAITS: Inferno, Fumegante, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_18_Xayah, DA_Fiddlesticks18, DA_KogMaw18_AD, DA_CrimsonRaptor18, DA_Sentinel18 | traits=Inferno, Fumegante, Adaptador | carry_id=10 | score=41.80
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_KogMaw18_AD (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_CrimsonRaptor18 (currently_in_shop; immediate acquisition available), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Gromp18_AP (cost=2, chance_now~12%, chance_horizon~10%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.112215; native_score=15.604280; native_ids=10,0,23,12,30,33,35,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,12,30,33,35,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.112215; native_score=15.604280; native_ids=10,0,23,12,30,33,35,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,12,30,33,35,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=False -> False | strength=5.18 -> 5.18
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[11:48:25] MOVE Bench -> Board: Xayah (i:2.0) <-> Vazio | Rew: +0.36
+    STRATEGY: SLOWROLL | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: OPEN | STRENGTH: 4.58
+FOCUS WEIGHTS: Inferno 7.90, Adaptador 0.74, Devastador 0.74, Fumegante 0.56, Feérico 0.06
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_18_Akali_AD, DA_18_Shen | CORE TRAITS: Inferno, Fumegante, Devastador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_18_Xayah, DA_Fiddlesticks18, DA_KogMaw18_AD, DA_CrimsonRaptor18, DA_Sentinel18 | traits=Inferno, Fumegante, Adaptador | carry_id=10 | score=42.18
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_KogMaw18_AD (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_CrimsonRaptor18 (currently_in_shop; immediate acquisition available), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Gromp18_AP (cost=2, chance_now~12%, chance_horizon~10%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.112215; native_score=15.604280; native_ids=10,0,23,12,30,33,35,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,12,30,33,35,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.112215; native_score=15.604280; native_ids=10,0,23,12,30,33,35,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,12,30,33,35,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=False -> False | strength=5.11 -> 4.58
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+    FIT UNIDADE: Xayah | core=não | fit=0.18 | Feérico=0.07, Fumegante=0.11
+
+[11:48:26] --- FIM DO ROUND 2-5 | GOLD: 6 ---
+    STRATEGY: SLOWROLL | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: OPEN | STRENGTH: 4.59 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 7.83, Adaptador 0.73, Devastador 0.73, Fumegante 0.69, Defendente 0.02
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +1 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Var|F|1*|i:2.0]       [ . ]        [Aka|F|1*|i:2.0]  [She|F|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Azu|F|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Xay|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:48:26] 🛒 LOJA: LeBlanc(i:4.0), Kog'Maw(i:6.0), Teemo(i:4.0), Shen(i:4.0), Elise(i:4.0)
+[11:48:26] COMPROU: Kog'Maw (Custo 3 | i:6.0) | Rew: +0.32
+    STRATEGY: SLOWROLL | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: OPEN | STRENGTH: 4.59
+FOCUS WEIGHTS: Inferno 8.59, Adaptador 0.48, Devastador 0.45, Fumegante 0.43, Emanador 0.05
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Akali_AD | CORE TRAITS: Inferno, Adaptador, Fumegante
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Devastador | carry_id=10 | score=43.84
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_18_Diana (cost=3, chance_now~9%, chance_horizon~11%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~10%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~10%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=11.746167; native_score=17.869280; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=11.746167; native_score=17.869280; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=False -> False | strength=4.59 -> 4.59
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+    FIT UNIDADE: Kog'Maw | core=não | fit=0.73 | Adaptador=0.73
+[11:48:26]  ⬆️ SINERGIA: ADAPTADOR nível 1
+[11:48:27] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: SLOWROLL | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: OPEN | STRENGTH: 4.82
+FOCUS WEIGHTS: Inferno 7.61, Adaptador 0.92, Devastador 0.70, Fumegante 0.70, Emanador 0.06
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Akali_AD | CORE TRAITS: Inferno, Adaptador, Fumegante
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Devastador | carry_id=10 | score=44.24
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_18_Diana (cost=3, chance_now~9%, chance_horizon~11%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~10%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~10%, chance_horizon~8%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=11.746167; native_score=17.869280; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=11.746167; native_score=17.869280; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=False -> False | strength=4.59 -> 4.82
+    GOLD: 3 | renda base +5 | juros +0 | sequência +0 | vitória +1
+
+[11:48:32] --- FIM DO ROUND 2-6 | GOLD: 8 ---
+    STRATEGY: SLOWROLL | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: OPEN | STRENGTH: 4.83 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 8.43, Adaptador 0.60, Fumegante 0.44, Devastador 0.43, Emanador 0.10
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Var|F|1*|i:2.0]       [ . ]        [Aka|F|1*|i:2.0]  [She|F|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Azu|F|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Xay|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Kog|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: nenhum
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:48:32] 🛒 LOJA: Lobo Trevoguari(i:4.0), Kobuko(i:2.0), Rammus(i:6.0), Ornn(i:2.0), Warwick(i:4.0)
+[11:48:33] BUY XP                       | Rew: -0.06
+    STRATEGY: SLOWROLL | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: OPEN | STRENGTH: 4.83
+FOCUS WEIGHTS: Inferno 7.54, Adaptador 0.97, Fumegante 0.70, Devastador 0.69, Emanador 0.11
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Akali_AD | CORE TRAITS: Inferno, Adaptador, Fumegante
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_18_Warwick, DA_Sentinel18 | traits=Inferno, Adaptador, Fumegante | carry_id=10 | score=43.92
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~10%, chance_horizon~12%, low_odds), DA_18_Warwick (currently_in_shop; immediate acquisition available), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~10%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~10%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.119410; native_score=18.363061; native_ids=10,0,23,33,12,30,25,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,25,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.119410; native_score=18.363061; native_ids=10,0,23,33,12,30,25,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,25,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=False -> False | strength=4.83 -> 4.83
+    GOLD: 4 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[11:48:33] BUY XP                       | Rew: -0.06
+    STRATEGY: SLOWROLL | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: OPEN | STRENGTH: 4.83
+FOCUS WEIGHTS: Inferno 8.43, Adaptador 0.60, Fumegante 0.44, Devastador 0.43, Emanador 0.10
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Akali_AD | CORE TRAITS: Inferno, Adaptador, Fumegante
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_18_Warwick, DA_Sentinel18 | traits=Inferno, Adaptador, Fumegante | carry_id=10 | score=43.55
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~10%, chance_horizon~12%, low_odds), DA_18_Warwick (currently_in_shop; immediate acquisition available), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~10%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~10%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.119410; native_score=18.363061; native_ids=10,0,23,33,12,30,25,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,25,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.119410; native_score=18.363061; native_ids=10,0,23,33,12,30,25,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,25,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=False -> False | strength=4.83 -> 4.83
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[11:48:34] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: SLOWROLL | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: OPEN | STRENGTH: 4.83
+FOCUS WEIGHTS: Inferno 7.54, Adaptador 0.97, Fumegante 0.70, Devastador 0.69, Emanador 0.11
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Akali_AD | CORE TRAITS: Inferno, Adaptador, Fumegante
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_18_Warwick, DA_Sentinel18 | traits=Inferno, Adaptador, Fumegante | carry_id=10 | score=43.92
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~10%, chance_horizon~12%, low_odds), DA_18_Warwick (currently_in_shop; immediate acquisition available), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~10%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~10%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.119410; native_score=18.363061; native_ids=10,0,23,33,12,30,25,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,25,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.119410; native_score=18.363061; native_ids=10,0,23,33,12,30,25,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,25,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=False -> False | strength=4.83 -> 4.83
+    GOLD: 0 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[11:48:40] --- FIM DO ROUND 2-7 | GOLD: 5 ---
+    STRATEGY: SLOWROLL | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: OPEN | STRENGTH: 4.83 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 7.54, Adaptador 0.97, Fumegante 0.70, Devastador 0.69, Emanador 0.11
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +0 sequência, +0 vitória (total: +5)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Var|F|1*|i:2.0]       [ . ]        [Aka|F|1*|i:2.0]  [She|F|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Azu|F|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Xay|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Kog|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:48:40] 🛒 LOJA: Ornn(i:2.0), Aronguejo(i:4.0), Diana(i:6.0), Karma(i:2.0), Yunara(i:4.0)
+[11:48:41] BUY XP                       | Rew: -0.03
+    STRATEGY: SLOWROLL | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: OPEN | STRENGTH: 4.83
+FOCUS WEIGHTS: Inferno 8.52, Adaptador 0.55, Fumegante 0.42, Devastador 0.41, Emanador 0.09
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Akali_AD | CORE TRAITS: Inferno, Adaptador, Fumegante
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_18_Diana, DA_Sentinel18 | traits=Inferno, Adaptador, Fumegante | carry_id=10 | score=45.50
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~10%, chance_horizon~12%, low_odds), DA_18_Diana (currently_in_shop; immediate acquisition available), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Veigar (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.153045; native_score=18.666405; native_ids=10,0,23,33,12,30,29,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,29,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.153045; native_score=18.666405; native_ids=10,0,23,33,12,30,29,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,29,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=False -> False | strength=4.83 -> 4.83
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+[11:48:41] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: SLOWROLL | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Inferno 8.92, Adaptador 0.38, Fumegante 0.30, Devastador 0.30, Emanador 0.09
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Akali_AD | CORE TRAITS: Inferno, Adaptador, Fumegante
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_18_Diana, DA_Sentinel18 | traits=Inferno, Adaptador, Fumegante | carry_id=10 | score=45.33
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~10%, chance_horizon~11%, low_odds), DA_18_Diana (currently_in_shop; immediate acquisition available), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Veigar (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.142235; native_score=18.662283; native_ids=10,0,23,33,12,30,29,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,29,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.142235; native_score=18.662283; native_ids=10,0,23,33,12,30,29,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,29,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=False -> True | strength=4.83 -> 10.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +0 | vitória +0
+
+[11:48:47] --- FIM DO ROUND 3-1 | GOLD: 7 ---
+    STRATEGY: SLOWROLL | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 9.33, Adaptador 0.23, Fumegante 0.19, Devastador 0.19, Emanador 0.07
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Var|F|1*|i:2.0]       [ . ]        [Aka|F|1*|i:2.0]  [She|F|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Azu|F|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Xay|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Kog|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:48:47] 🛒 LOJA: Master Yi(i:6.0), Vi(i:6.0), Lobo Trevoguari(i:4.0), Lobo Trevoguari(i:4.0), Ornn(i:2.0)
+[11:48:48] BUY XP                       | Rew: -0.03
+    STRATEGY: SLOWROLL | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Inferno 9.20, Adaptador 0.27, Fumegante 0.22, Devastador 0.22, Emanador 0.08
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Akali_AD | CORE TRAITS: Inferno, Adaptador, Fumegante
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Fumegante | carry_id=10 | score=43.62
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_18_Diana (cost=3, chance_now~10%, chance_horizon~11%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~10%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.203469; native_score=16.235154; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.203469; native_score=16.235154; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[11:48:48] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: SLOWROLL | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Inferno 9.33, Adaptador 0.23, Fumegante 0.19, Devastador 0.19, Emanador 0.07
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Akali_AD | CORE TRAITS: Inferno, Adaptador, Fumegante
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Fumegante | carry_id=10 | score=43.57
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~9%, chance_horizon~11%, low_odds), DA_18_Diana (cost=3, chance_now~10%, chance_horizon~11%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~10%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.203469; native_score=16.235154; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.203469; native_score=16.235154; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 3 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[11:48:54] --- FIM DO ROUND 3-2 | GOLD: 9 ---
+    STRATEGY: SLOWROLL | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 10.00 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 9.20, Adaptador 0.27, Devastador 0.22, Fumegante 0.22, Emanador 0.08
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Var|F|1*|i:2.0]       [ . ]        [Aka|F|1*|i:2.0]  [She|F|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Azu|F|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Xay|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Kog|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:48:54] 🛒 LOJA: Fiddlesticks(i:6.0), Camille(i:2.0), Yorick(i:2.0), Grompe(i:4.0), Rek'Sai(i:2.0)
+[11:48:55] BUY XP                       | Rew: -0.03
+    STRATEGY: SLOWROLL | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Inferno 9.33, Adaptador 0.23, Devastador 0.19, Fumegante 0.19, Emanador 0.07
+    STRATEGY REASON: SLOWROLL: composição tem alvo de 3 estrelas | CONF: 0.60
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Akali_AD | CORE TRAITS: Inferno, Adaptador, Fumegante
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_Fiddlesticks18, DA_18_Xayah, DA_Gromp18_AP, DA_Sentinel18 | traits=Inferno, Adaptador, Fumegante | carry_id=10 | score=44.83
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (currently_in_shop; immediate acquisition available), DA_Gromp18_AP (currently_in_shop; immediate acquisition available), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~11%, chance_horizon~8%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~11%, chance_horizon~9%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.301204; native_score=21.135000; native_ids=10,0,23,33,30,12,18,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,18,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.301204; native_score=21.135000; native_ids=10,0,23,33,30,12,18,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,18,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 5 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[11:48:56] BUY XP                       | Rew: +0.04
+    STRATEGY: STABILIZE | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Inferno 9.20, Adaptador 0.27, Devastador 0.22, Fumegante 0.22, Emanador 0.08
+    STRATEGY REASON: STABILIZE: tabuleiro fraco sob pressão | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Akali_AD | CORE TRAITS: Inferno, Adaptador, Fumegante
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_Fiddlesticks18, DA_18_Xayah, DA_Gromp18_AP, DA_Sentinel18 | traits=Inferno, Adaptador, Fumegante | carry_id=10 | score=44.88
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (currently_in_shop; immediate acquisition available), DA_Gromp18_AP (currently_in_shop; immediate acquisition available), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.108382; native_score=21.135000; native_ids=10,0,23,33,30,12,18,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,18,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.108382; native_score=21.135000; native_ids=10,0,23,33,30,12,18,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,18,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+[11:48:56] MOVE Bench -> Board: Kog'Maw (i:6.0) <-> Vazio | Rew: +0.78
+    STRATEGY: FAST8 | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 10.00
+FOCUS WEIGHTS: Inferno 9.19, Adaptador 0.30, Devastador 0.19, Fumegante 0.19, Emanador 0.14
+    STRATEGY REASON: FAST8: composição planejada exige nível 8 | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Akali_AD | CORE TRAITS: Inferno, Adaptador, Fumegante
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_Fiddlesticks18, DA_18_Xayah, DA_Gromp18_AP, DA_Sentinel18 | traits=Inferno, Adaptador, Fumegante | carry_id=10 | score=44.90
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (currently_in_shop; immediate acquisition available), DA_Gromp18_AP (currently_in_shop; immediate acquisition available), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.100336; native_score=21.135000; native_ids=10,0,23,33,30,12,18,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,18,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.100336; native_score=21.135000; native_ids=10,0,23,33,30,12,18,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,18,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=10.00 -> 10.00
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Kog'Maw | core=SIM | fit=0.35 | Adaptador=0.27, Emanador=0.08
+[11:48:57] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: FAST8 | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 6.02
+FOCUS WEIGHTS: Inferno 8.36, Adaptador 1.05, Devastador 0.20, Fumegante 0.20, Emanador 0.19
+    STRATEGY REASON: FAST8: composição planejada exige nível 8 | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Akali_AD | CORE TRAITS: Inferno, Adaptador, Fumegante
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_Fiddlesticks18, DA_18_Xayah, DA_Gromp18_AP, DA_Sentinel18 | traits=Inferno, Adaptador, Fumegante | carry_id=10 | score=45.38
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (currently_in_shop; immediate acquisition available), DA_Gromp18_AP (currently_in_shop; immediate acquisition available), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.100336; native_score=21.135000; native_ids=10,0,23,33,30,12,18,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,18,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.100336; native_score=21.135000; native_ids=10,0,23,33,30,12,18,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,18,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=10.00 -> 6.02
+    GOLD: 1 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[11:49:01] --- FIM DO ROUND 3-3 | GOLD: 7 ---
+    STRATEGY: FAST8 | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 6.09 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 8.27, Adaptador 1.14, Devastador 0.20, Fumegante 0.20, Emanador 0.20
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Var|F|1*|i:2.0]       [ . ]        [Aka|F|1*|i:2.0]  [She|F|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Azu|F|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Xay|F|1*|i:2.0]       [ . ]             [ . ]        [Kog|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:49:01] 🛒 LOJA: Aphelios(i:8.0), Kog'Maw(i:6.0), Aronguejo(i:4.0), Shen(i:4.0), Rakan(i:2.0)
+[11:49:02] COMPROU: Kog'Maw (Custo 3 | i:6.0) | Rew: +0.73
+    STRATEGY: FAST8 | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 6.09
+FOCUS WEIGHTS: Inferno 8.84, Adaptador 0.60, Emanador 0.20, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: FAST8: composição planejada exige nível 8 | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Akali_AD | CORE TRAITS: Inferno, Adaptador, Emanador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_18_Rakan, DA_Sentinel18 | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=45.85
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~13%, chance_horizon~11%, low_odds), DA_18_Rakan (currently_in_shop; immediate acquisition available), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~6%, chance_horizon~5%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=16.135355; native_score=20.662970; native_ids=10,0,23,33,12,30,7,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,7,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=16.135355; native_score=20.662970; native_ids=10,0,23,33,12,30,7,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,7,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=6.09 -> 6.09
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +0
+    FIT UNIDADE: Kog'Maw | core=SIM | fit=1.34 | Adaptador=1.14, Emanador=0.20
+[11:49:02]  ⬆️ SINERGIA: EMANADOR nível 1
+[11:49:02] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: FAST8 | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 6.27
+FOCUS WEIGHTS: Inferno 8.12, Adaptador 1.25, Emanador 0.23, Devastador 0.20, Fumegante 0.20
+    STRATEGY REASON: FAST8: composição planejada exige nível 8 | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Akali_AD | CORE TRAITS: Inferno, Adaptador, Emanador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_18_Rakan, DA_Sentinel18 | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=46.13
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~13%, chance_horizon~11%, low_odds), DA_18_Rakan (currently_in_shop; immediate acquisition available), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~6%, chance_horizon~5%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=16.135355; native_score=20.662970; native_ids=10,0,23,33,12,30,7,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,7,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=16.135355; native_score=20.662970; native_ids=10,0,23,33,12,30,7,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,7,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=6.09 -> 6.27
+    GOLD: 4 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[11:49:08] --- FIM DO ROUND 3-4 | GOLD: 10 ---
+    STRATEGY: FAST8 | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 6.28 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 8.11, Adaptador 1.27, Emanador 0.23, Devastador 0.19, Fumegante 0.19
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +1 sequência, +0 vitória (total: +6)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Var|F|1*|i:2.0]       [ . ]        [Aka|F|1*|i:2.0]  [She|F|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Azu|F|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Xay|F|1*|i:2.0]       [ . ]             [ . ]        [Kog|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Kog|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:49:08] 🛒 LOJA: Xayah(i:2.0), Diana(i:6.0), Kayle(i:4.0), LeBlanc(i:4.0), Alistar(i:4.0)
+[11:49:09] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: FAST8 | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 6.28
+FOCUS WEIGHTS: Inferno 8.78, Adaptador 0.64, Emanador 0.21, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: FAST8: composição planejada exige nível 8 | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Akali_AD | CORE TRAITS: Inferno, Adaptador, Emanador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_Fiddlesticks18, DA_18_Xayah, DA_18_Diana, DA_Sentinel18 | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=45.99
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~15%, chance_horizon~13%, low_odds), DA_18_Diana (currently_in_shop; immediate acquisition available), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~7%, chance_horizon~5%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=17.038439; native_score=20.625698; native_ids=10,0,23,33,30,12,29,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,29,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=17.038439; native_score=20.625698; native_ids=10,0,23,33,30,12,29,44; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,29,44; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=6.28 -> 6.28
+    GOLD: 10 | renda base +5 | juros +0 | sequência +1 | vitória +0
+
+[11:49:16] --- FIM DO ROUND 3-5 | GOLD: 18 ---
+    STRATEGY: FAST8 | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 6.28 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 8.11, Adaptador 1.27, Emanador 0.23, Devastador 0.19, Fumegante 0.19
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +2 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Var|F|1*|i:2.0]       [ . ]        [Aka|F|1*|i:2.0]  [She|F|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Azu|F|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Xay|F|1*|i:2.0]       [ . ]             [ . ]        [Kog|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Kog|1*|i:6.0]   [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:49:16] 🛒 LOJA: Morgana(i:8.0), Aphelios(i:8.0), Tristana(i:6.0), Ezreal(i:8.0), Aphelios(i:8.0)
+[11:49:17] COMPROU: Morgana (Custo 4 | i:8.0) | Rew: -0.08
+    STRATEGY: FAST8 | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 6.28
+FOCUS WEIGHTS: Inferno 8.78, Adaptador 0.64, Emanador 0.22, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: FAST8: composição planejada exige nível 8 | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Inferno, Adaptador, Emanador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=44.29
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~13%, chance_horizon~11%, low_odds), DA_18_Diana (cost=3, chance_now~14%, chance_horizon~12%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.370400; native_score=16.496683; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.370400; native_score=16.496683; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=6.28 -> 6.28
+    GOLD: 14 | renda base +5 | juros +1 | sequência +2 | vitória +0
+    FIT UNIDADE: Morgana | core=não | fit=0.23 | Emanador=0.23
+[11:49:17] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: FAST8 | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 6.28
+FOCUS WEIGHTS: Inferno 8.10, Adaptador 1.27, Emanador 0.24, Devastador 0.19, Fumegante 0.19
+    STRATEGY REASON: FAST8: composição planejada exige nível 8 | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Inferno, Adaptador, Emanador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=44.56
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~13%, chance_horizon~11%, low_odds), DA_18_Diana (cost=3, chance_now~14%, chance_horizon~12%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.370400; native_score=16.496683; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.370400; native_score=16.496683; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=6.28 -> 6.28
+    GOLD: 14 | renda base +5 | juros +1 | sequência +2 | vitória +0
+
+[11:49:23] --- FIM DO ROUND 3-6 | GOLD: 23 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 6.28 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 8.10, Adaptador 1.27, Emanador 0.24, Devastador 0.19, Fumegante 0.19
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +3 sequência, +0 vitória (total: +9)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Var|F|1*|i:2.0]       [ . ]        [Aka|F|1*|i:2.0]  [She|F|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Azu|F|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Xay|F|1*|i:2.0]       [ . ]             [ . ]        [Kog|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Kog|1*|i:6.0][Mor|1*|i:8.0]   [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:49:23] 🛒 LOJA: Grompe(i:4.0), Aronguejo(i:4.0), Azuporã(i:8.0), Rengar(i:6.0), Cascalho(i:2.0)
+[11:49:24] COMPROU: Azuporã (Custo 4 | i:8.0) | Rew: +0.77
+    STRATEGY: STABILIZE | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 6.28
+FOCUS WEIGHTS: Inferno 8.77, Adaptador 0.64, Emanador 0.23, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: STABILIZE: pressão de vida | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_Fiddlesticks18, DA_18_Xayah, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=44.97
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Veigar (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.033874; native_score=16.842707; native_ids=10,0,23,33,30,12,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.033874; native_score=16.842707; native_ids=10,0,23,33,30,12,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=6.28 -> 6.28
+    GOLD: 19 | renda base +5 | juros +1 | sequência +3 | vitória +0
+    FIT UNIDADE: Azuporã | core=SIM | fit=0.24 | Emanador=0.24
+[11:49:24] BUY XP                       | Rew: -0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.93
+FOCUS WEIGHTS: Inferno 7.71, Adaptador 1.20, Emanador 0.72, Devastador 0.19, Fumegante 0.19
+    STRATEGY REASON: STABILIZE: pressão de vida | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_Fiddlesticks18, DA_18_Xayah, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=45.39
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Veigar (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.033874; native_score=16.842707; native_ids=10,0,23,33,30,12,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.033874; native_score=16.842707; native_ids=10,0,23,33,30,12,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=6.28 -> 4.93
+    GOLD: 15 | renda base +5 | juros +1 | sequência +3 | vitória +0
+[11:49:24] BUY XP                       | Rew: -0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.93
+FOCUS WEIGHTS: Inferno 8.64, Adaptador 0.63, Emanador 0.38, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: STABILIZE: pressão de vida | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_Fiddlesticks18, DA_18_Xayah, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=45.02
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Veigar (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.033874; native_score=16.842707; native_ids=10,0,23,33,30,12,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.033874; native_score=16.842707; native_ids=10,0,23,33,30,12,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=4.93 -> 4.93
+    GOLD: 11 | renda base +5 | juros +1 | sequência +3 | vitória +0
+[11:49:25] BUY XP                       | Rew: -0.09
+    STRATEGY: STABILIZE | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95
+FOCUS WEIGHTS: Inferno 7.67, Adaptador 1.19, Emanador 0.77, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: STABILIZE: pressão de vida | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_Fiddlesticks18, DA_18_Xayah, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=45.41
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Veigar (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.033874; native_score=16.842707; native_ids=10,0,23,33,30,12,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.033874; native_score=16.842707; native_ids=10,0,23,33,30,12,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=4.93 -> 4.95
+    GOLD: 7 | renda base +5 | juros +1 | sequência +3 | vitória +0
+[11:49:25] BUY XP                       | Rew: -0.01
+    STRATEGY: STABILIZE | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.62, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: STABILIZE: pressão de vida | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_Fiddlesticks18, DA_18_Xayah, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=45.03
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Veigar (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.033874; native_score=16.842707; native_ids=10,0,23,33,30,12,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.033874; native_score=16.842707; native_ids=10,0,23,33,30,12,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=4.95 -> 4.95
+    GOLD: 3 | renda base +5 | juros +1 | sequência +3 | vitória +0
+[11:49:25] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95
+FOCUS WEIGHTS: Inferno 7.67, Adaptador 1.19, Emanador 0.77, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: STABILIZE: pressão de vida | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_Fiddlesticks18, DA_18_Xayah, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=45.41
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_18_Veigar (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.033874; native_score=16.842707; native_ids=10,0,23,33,30,12,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=9.033874; native_score=16.842707; native_ids=10,0,23,33,30,12,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=4.95 -> 4.95
+    GOLD: 3 | renda base +5 | juros +1 | sequência +3 | vitória +0
+
+[11:49:30] --- FIM DO ROUND 3-7 | GOLD: 11 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 7.67, Adaptador 1.19, Emanador 0.77, Devastador 0.18, Fumegante 0.18
+    RENDA PRÓXIMO ROUND: +5 base, +0 juros, +3 sequência, +0 vitória (total: +8)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Var|F|1*|i:2.0]       [ . ]        [Aka|F|1*|i:2.0]  [She|F|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Azu|F|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Xay|F|1*|i:2.0]       [ . ]             [ . ]        [Kog|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Kog|1*|i:6.0][Mor|1*|i:8.0][Azu|1*|i:8.0]
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves, TFT_Item_Spatula
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:49:30] 🛒 LOJA: Azir(i:6.0), Ornn(i:2.0), Master Yi(i:6.0), Rengar(i:6.0), Ornn(i:2.0)
+[11:49:31] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: STABILIZE | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: STABILIZE: pressão de vida | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=44.89
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=8.902813; native_score=16.774967; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=8.902813; native_score=16.774967; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=4.95 -> 4.95
+    GOLD: 11 | renda base +5 | juros +0 | sequência +3 | vitória +0
+
+[11:49:37] --- FIM DO ROUND 4-1 | GOLD: 20 ---
+    STRATEGY: STABILIZE | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    RENDA PRÓXIMO ROUND: +5 base, +1 juros, +3 sequência, +0 vitória (total: +9)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Var|F|1*|i:2.0]       [ . ]        [Aka|F|1*|i:2.0]  [She|F|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Azu|F|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Xay|F|1*|i:2.0]       [ . ]             [ . ]        [Kog|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Kog|1*|i:6.0][Mor|1*|i:8.0][Azu|1*|i:8.0]
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves, TFT_Item_Spatula
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:49:37] 🛒 LOJA: Warwick(i:4.0), Elise(i:4.0), Lobo Trevoguari(i:4.0), Sejuani(i:4.0), Yunara(i:4.0)
+[11:49:39] PASSOU TURNO                 | Rew: -0.12
+    STRATEGY: STABILIZE | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95
+FOCUS WEIGHTS: Inferno 7.68, Adaptador 1.18, Emanador 0.77, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: STABILIZE: pressão de vida | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_Fiddlesticks18, DA_18_Xayah, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=45.55
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~15%, chance_horizon~13%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.664485; native_score=16.916049; native_ids=10,0,23,33,30,12,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.664485; native_score=16.916049; native_ids=10,0,23,33,30,12,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,30,12,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=4.95 -> 4.95
+    GOLD: 20 | renda base +5 | juros +1 | sequência +3 | vitória +0
+
+[11:49:45] --- FIM DO ROUND 4-2 | GOLD: 30 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 7.68, Adaptador 1.18, Emanador 0.77, Devastador 0.18, Fumegante 0.18
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +3 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]        [Var|F|1*|i:2.0]       [ . ]        [Aka|F|1*|i:2.0]  [She|F|1*|i:4.0]       [ . ]       
+      [ . ]             [ . ]             [ . ]        [Azu|F|1*|i:8.0]       [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]        [Aka|F|1*|i:2.0]       [ . ]             [ . ]             [ . ]       
+ [Xay|F|1*|i:2.0]       [ . ]             [ . ]        [Kog|F|1*|i:6.0]       [ . ]             [ . ]             [ . ]       
+----------------------------------
+✅ posicionamento parece consistente
+
+--- ESTADO DO BANCO ---
+[Kog|1*|i:6.0][Mor|1*|i:8.0][Azu|1*|i:8.0]
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves, TFT_Item_Spatula
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:49:45] 🛒 LOJA: Soraka(i:8.0), Rammus(i:6.0), Alistar(i:4.0), Kayle(i:4.0), LeBlanc(i:4.0)
+[11:49:46] PASSOU TURNO                 | Rew: -0.27
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=44.99
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~6%, chance_horizon~5%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.238907; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.238907; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=4.95 -> 4.95
+    GOLD: 30 | renda base +5 | juros +2 | sequência +3 | vitória +0
+[11:49:52] ELIMINADO · colocação final #8 · HP 0.0
+
+[11:49:52] --- FIM DO ROUND 4-3 | GOLD: 30 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +3 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves, TFT_Item_Spatula
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:49:52] 🛒 LOJA: None, None, None, None, None
+[11:49:52]  ⬇️ SINERGIA: ADAPTADOR nível 0
+[11:49:52]  ⬇️ SINERGIA: EMANADOR nível 0
+[11:49:52]  ⬇️ SINERGIA: INFERNO nível 0
+[11:49:53] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=44.99
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~6%, chance_horizon~5%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=4.95 -> 4.95
+    GOLD: 30 | renda base +5 | juros +2 | sequência +3 | vitória +0
+
+[11:49:59] --- FIM DO ROUND 4-4 | GOLD: 30 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +3 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves, TFT_Item_Spatula
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:49:59] 🛒 LOJA: None, None, None, None, None
+[11:50:01] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=44.99
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~6%, chance_horizon~5%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=4.95 -> 4.95
+    GOLD: 30 | renda base +5 | juros +2 | sequência +3 | vitória +0
+
+[11:50:07] --- FIM DO ROUND 4-5 | GOLD: 30 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +3 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves, TFT_Item_Spatula
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:50:07] 🛒 LOJA: None, None, None, None, None
+[11:50:09] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=44.99
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~6%, chance_horizon~5%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=4.95 -> 4.95
+    GOLD: 30 | renda base +5 | juros +2 | sequência +3 | vitória +0
+
+[11:50:15] --- FIM DO ROUND 4-6 | GOLD: 30 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +3 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves, TFT_Item_Spatula
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:50:15] 🛒 LOJA: None, None, None, None, None
+[11:50:16] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=44.99
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~6%, chance_horizon~5%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=4.95 -> 4.95
+    GOLD: 30 | renda base +5 | juros +2 | sequência +3 | vitória +0
+
+[11:50:23] --- FIM DO ROUND 4-7 | GOLD: 30 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +3 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves, TFT_Item_Spatula
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:50:23] 🛒 LOJA: None, None, None, None, None
+[11:50:24] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=44.99
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~6%, chance_horizon~5%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=4.95 -> 4.95
+    GOLD: 30 | renda base +5 | juros +2 | sequência +3 | vitória +0
+
+[11:50:31] --- FIM DO ROUND 5-1 | GOLD: 30 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +3 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves, TFT_Item_Spatula
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:50:31] 🛒 LOJA: None, None, None, None, None
+[11:50:33] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=44.99
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~6%, chance_horizon~5%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=4.95 -> 4.95
+    GOLD: 30 | renda base +5 | juros +2 | sequência +3 | vitória +0
+
+[11:50:39] --- FIM DO ROUND 5-2 | GOLD: 30 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +3 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves, TFT_Item_Spatula
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:50:39] 🛒 LOJA: None, None, None, None, None
+[11:50:41] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=44.99
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~6%, chance_horizon~5%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=4.95 -> 4.95
+    GOLD: 30 | renda base +5 | juros +2 | sequência +3 | vitória +0
+
+[11:50:48] --- FIM DO ROUND 5-3 | GOLD: 30 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +3 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves, TFT_Item_Spatula
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:50:48] 🛒 LOJA: None, None, None, None, None
+[11:50:49] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=44.99
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~6%, chance_horizon~5%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=4.95 -> 4.95
+    GOLD: 30 | renda base +5 | juros +2 | sequência +3 | vitória +0
+
+[11:50:56] --- FIM DO ROUND 5-4 | GOLD: 30 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +3 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves, TFT_Item_Spatula
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:50:56] 🛒 LOJA: None, None, None, None, None
+[11:50:58] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=44.99
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~6%, chance_horizon~5%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=4.95 -> 4.95
+    GOLD: 30 | renda base +5 | juros +2 | sequência +3 | vitória +0
+
+[11:51:05] --- FIM DO ROUND 5-5 | GOLD: 30 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +3 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves, TFT_Item_Spatula
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:51:05] 🛒 LOJA: None, None, None, None, None
+[11:51:06] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=44.99
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~6%, chance_horizon~5%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=4.95 -> 4.95
+    GOLD: 30 | renda base +5 | juros +2 | sequência +3 | vitória +0
+
+[11:51:13] --- FIM DO ROUND 5-6 | GOLD: 30 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +3 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves, TFT_Item_Spatula
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:51:13] 🛒 LOJA: None, None, None, None, None
+[11:51:15] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=44.99
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~6%, chance_horizon~5%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=4.95 -> 4.95
+    GOLD: 30 | renda base +5 | juros +2 | sequência +3 | vitória +0
+
+[11:51:22] --- FIM DO ROUND 5-7 | GOLD: 30 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +3 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves, TFT_Item_Spatula
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:51:22] 🛒 LOJA: None, None, None, None, None
+[11:51:23] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=44.99
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~6%, chance_horizon~5%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=4.95 -> 4.95
+    GOLD: 30 | renda base +5 | juros +2 | sequência +3 | vitória +0
+
+[11:51:30] --- FIM DO ROUND 6-1 | GOLD: 30 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +3 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves, TFT_Item_Spatula
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:51:30] 🛒 LOJA: None, None, None, None, None
+[11:51:32] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=44.99
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~6%, chance_horizon~5%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=4.95 -> 4.95
+    GOLD: 30 | renda base +5 | juros +2 | sequência +3 | vitória +0
+
+[11:51:38] --- FIM DO ROUND 6-2 | GOLD: 30 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +3 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves, TFT_Item_Spatula
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:51:38] 🛒 LOJA: None, None, None, None, None
+[11:51:40] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=44.99
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~6%, chance_horizon~5%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=4.95 -> 4.95
+    GOLD: 30 | renda base +5 | juros +2 | sequência +3 | vitória +0
+
+[11:51:46] --- FIM DO ROUND 6-3 | GOLD: 30 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +3 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves, TFT_Item_Spatula
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:51:46] 🛒 LOJA: None, None, None, None, None
+[11:51:48] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=44.99
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~6%, chance_horizon~5%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=4.95 -> 4.95
+    GOLD: 30 | renda base +5 | juros +2 | sequência +3 | vitória +0
+
+[11:51:54] --- FIM DO ROUND 6-4 | GOLD: 30 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +3 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves, TFT_Item_Spatula
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:51:54] 🛒 LOJA: None, None, None, None, None
+[11:51:55] PASSOU TURNO                 | Rew: +0.00
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    STRATEGY REASON: HP crítico: gastar para sobreviver | CONF: 0.99
+    CORE UNITS: DA_Sentinel18, DA_KogMaw18_AD, DA_18_Morgana | CORE TRAITS: Emanador, Inferno, Adaptador
+    COMPOSITION PLAN [LEVEL_8_CORE]: target=8 | units=DA_18_Varus, DA_18_Akali_AD, DA_18_Shen, DA_KogMaw18_AD, DA_18_Xayah, DA_Fiddlesticks18, DA_Sentinel18, DA_18_Diana | traits=Inferno, Adaptador, Emanador | carry_id=10 | score=44.99
+    PLAN NOTE: level 1-8 targets the same 8-unit core; the planner is recalculated as direction/focus/owned copies change
+    ACQUISITION CHECK: DA_Fiddlesticks18 (cost=3, chance_now~14%, chance_horizon~12%, low_odds), DA_18_Diana (cost=3, chance_now~15%, chance_horizon~13%, low_odds), NOT_SELECTED_CARRY: DA_18_Sentry (cost=1, chance_now~6%, chance_horizon~5%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Karma18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), NOT_SELECTED_CARRY: DA_Cinderling18 (cost=1, chance_now~7%, chance_horizon~6%, hard_to_find; alternative carry preferred), OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    OP.GG META AUDIT: OPGG_META_AUDIT: status=candidate_below_native_margin; catalog_candidates=10; context_candidates=1; unmapped_units=0; low_coverage_candidates=0; best=Fumegante Kayle; best_score=13.264110; native_score=16.823857; native_ids=10,0,23,33,12,30,44,29; candidate_ids=5,10,19,22,23,29,43,42; confirmed_ids=10,0,23,33,12,30,44,29; confirmed_carry_id=10; rule=meta weighted 1.20, native comparison weighted 0.80; margin 0.25-0.50
+    COMP BEFORE -> AFTER: dir=Inferno -> Inferno | foco=DA_Sentinel18 -> DA_Sentinel18 | lock=True -> True | strength=4.95 -> 4.95
+    GOLD: 30 | renda base +5 | juros +2 | sequência +3 | vitória +0
+
+[11:52:02] --- FIM DO ROUND 6-5 | GOLD: 30 ---
+    STRATEGY: ALL_IN | COMP DIRECTION: Inferno | FOCUS: DA_Sentinel18 | LOCK: LOCKED | STRENGTH: 4.95 | FONTE COMP: NATIVE
+FOCUS WEIGHTS: Inferno 8.62, Adaptador 0.63, Emanador 0.40, Devastador 0.18, Fumegante 0.18
+    RENDA PRÓXIMO ROUND: +5 base, +2 juros, +3 sequência, +0 vitória (total: +10)
+
+--- CONFIGURAÇÃO DO TABULEIRO ---
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+      [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]             [ . ]       
+----------------------------------
+⚠️ sem frontline
+⚠️ sem backline
+
+--- ESTADO DO BANCO ---
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+   [VAZIO]       [VAZIO]       [VAZIO]    
+----------------------------------
+--- ITENS ---
+  Componentes: TFT_Item_SparringGloves, TFT_Item_Spatula
+  Itens na bag: nenhum
+  Itens equipados: nenhum
+[11:52:02] 🛒 LOJA: None, None, None, None, None
+
+========================================
+ GAME OVER - RELATÓRIO FINAL
+========================================
+  VENCEDOR DA PARTIDA: JOGADOR 2
+  COLOCAÇÃO FINAL: #8
+  HP final: 0.0 | Ouro final: 30 | Nível: 7
+  Vitórias: 2 | Derrotas: 11
