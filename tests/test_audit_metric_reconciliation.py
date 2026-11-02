@@ -206,7 +206,7 @@ def test_session_discovery_uses_metadata_and_untracked_json_sidecars(tmp_path):
         encoding="utf-8",
     )
     (tmp_path / "player_1_log.tft").write_text(
-        "[12:00:00] PASSOU TURNO | Rew: +0.00\\n", encoding="utf-8"
+        "[12:00:00] PASSOU TURNO | Rew: +0.00\n", encoding="utf-8"
     )
     # Deliberately create a local sidecar; it need not be tracked by Git.
     (tmp_path / "player_1_log.json").write_text(
@@ -224,9 +224,9 @@ def test_combined_audit_keeps_structured_and_text_evidence_together(tmp_path):
     text_log = tmp_path / "player_1_log.tft"
     sidecar = tmp_path / "player_1_log.json"
     text_log.write_text(
-        "[12:00:00] PASSOU TURNO | Rew: +0.00\\n"
-        "    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: CarryA\\n"
-        "    STRATEGY REASON: weak board | CONF: 0.90\\n",
+        "[12:00:00] PASSOU TURNO | Rew: +0.00\n"
+        "    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: CarryA\n"
+        "    STRATEGY REASON: weak board | CONF: 0.90\n",
         encoding="utf-8",
     )
     sidecar.write_text(
