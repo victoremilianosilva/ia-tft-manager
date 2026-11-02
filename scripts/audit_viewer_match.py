@@ -1540,6 +1540,7 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
         "entries_total": len(doc["entries"]),
         "entries_analyzed_while_alive": len(entries),
         "entries_ignored_after_elimination": ignored_after_elimination,
+        "active_action_count": sum(1 for entry in entries if entry.get("event_type") == "action"),
     }
     audit_purchase_sequences(entries, player, report)
     audit_economic_actions(entries, player, report)
@@ -1694,7 +1695,7 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
         report["mask_note_added"] = True
 
 
-def audit_text(path: Path, report: dict) -> None:
+def audit_text(path: Path, report: dict, max_actions: int | None = None) -> None:
     """Extract every available event from legacy .tft text logs.
 
     These logs do not contain full per-action state snapshots. The timeline therefore
@@ -1737,6 +1738,8 @@ def audit_text(path: Path, report: dict) -> None:
     item_section = False
     shop_section = False
     for line_no, line in enumerate(content.splitlines(), 1):
+        if max_actions is not None and metrics["actions"] >= max_actions and action_line.search(line):
+            break
         rm = round_line.search(line)
         if rm:
             current_round = f"{rm.group('stage')}-{rm.group('round')}"
@@ -2428,7 +2431,9 @@ def audit_session_inputs(tft_files: list[Path], json_files: list[Path], report: 
         # Keep text-only context even when the structured sidecar is available.
         if not text_doc:
             timeline_start = len(report.setdefault("decision_timeline", []))
-            audit_text(text_path, report)
+            player_metrics = report.get("elimination_filter", {}).get(f"Jogador {player_key}", {})
+            max_active_actions = player_metrics.get("active_action_count") if sidecar is not None else None
+            audit_text(text_path, report, max_actions=max_active_actions)
             text_events = report["decision_timeline"][timeline_start:]
             if text_events:
                 del report["decision_timeline"][timeline_start:]
