@@ -1540,7 +1540,7 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
         "entries_total": len(doc["entries"]),
         "entries_analyzed_while_alive": len(entries),
         "entries_ignored_after_elimination": ignored_after_elimination,
-        "active_action_count": sum(1 for entry in entries if entry.get("event_type") == "action"),
+        "active_action_count": sum(1 for entry in entries if isinstance(entry, dict) and entry.get("event_type") == "action"),
     }
     audit_purchase_sequences(entries, player, report)
     audit_economic_actions(entries, player, report)
