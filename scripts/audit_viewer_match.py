@@ -1540,6 +1540,7 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
         "entries_total": len(doc["entries"]),
         "entries_analyzed_while_alive": len(entries),
         "entries_ignored_after_elimination": ignored_after_elimination,
+        "active_action_count": sum(1 for entry in entries if isinstance(entry, dict) and entry.get("event_type") == "action"),
     }
     audit_purchase_sequences(entries, player, report)
     audit_economic_actions(entries, player, report)
@@ -1694,7 +1695,7 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
         report["mask_note_added"] = True
 
 
-def audit_text(path: Path, report: dict) -> None:
+def audit_text(path: Path, report: dict, max_actions: int | None = None) -> None:
     """Extract every available event from legacy .tft text logs.
 
     These logs do not contain full per-action state snapshots. The timeline therefore
@@ -1737,6 +1738,8 @@ def audit_text(path: Path, report: dict) -> None:
     item_section = False
     shop_section = False
     for line_no, line in enumerate(content.splitlines(), 1):
+        if max_actions is not None and metrics["actions"] >= max_actions and action_line.search(line):
+            break
         rm = round_line.search(line)
         if rm:
             current_round = f"{rm.group('stage')}-{rm.group('round')}"
@@ -1863,7 +1866,7 @@ def audit_text(path: Path, report: dict) -> None:
             current_event["conformity_candidate"] = "SLOWROLL_BUY_XP_REVIEW"
 
     for action in metrics["timeline"]:
-        if action["strategy"] == "STABILIZE" and action["action"] == "PASS" and action.get("gold_after", 0) >= 10:
+        if action["strategy"] == "STABILIZE" and action["action"] == "PASS" and action.get("gold_after") is not None and action["gold_after"] >= 10:
             action["conformity_candidate"] = "STABILIZE_PASS_WITH_GOLD_REVIEW"
         if action["strategy"] == "ECON" and action["action"] in ("BUY", "BUY_XP", "REROLL") and action.get("gold_after") is not None and action["gold_after"] < 50:
             action["conformity_candidate"] = "ECON_SPEND_BELOW_50_REVIEW"
@@ -1906,6 +1909,18 @@ def markdown_report(report: dict) -> str:
         f"- Achados: **{len(report['issues'])}**",
         f"- CRITICAL: {counts['CRITICAL']} | HIGH: {counts['HIGH']} | MEDIUM: {counts['MEDIUM']} | LOW: {counts['LOW']}", "",
     ]
+    metadata = report.get("session_metadata") or {}
+    if metadata:
+        lines += [
+            "## Metadados da sessão",
+            "",
+            f"- Match ID: {metadata.get('match_id', '—')}",
+            f"- Seed: {metadata.get('seed', '—')} | Engine: {metadata.get('engine', '—')} | Política determinística: {metadata.get('deterministic', '—')}",
+            f"- Checkpoint SHA-256: {metadata.get('checkpoint_sha256', '—')}",
+            f"- Policy: {metadata.get('policy_class', '—')} | Observation dim: {metadata.get('observation_dim', '—')} | Action dims: {metadata.get('action_dims', '—')}",
+            f"- Sidecars estruturados descobertos: {report.get('input_inventory', {}).get('structured_sidecars_discovered', 0)}",
+            "",
+        ]
     if report.get("elimination_filter"):
         ignored = sum(int(value.get("entries_ignored_after_elimination", 0))
                       for value in report["elimination_filter"].values())
@@ -1966,7 +1981,7 @@ def markdown_report(report: dict) -> str:
         lines += ["", "### Timeline por decisão", "",
                   "| Jogador | Round | Horário | Ação | Estratégia | Motivo | Ouro observado | Juros | Comp direction | Focus | Recompensa | Sinal para revisar |",
                   "|---|---|---|---|---|---|---:|---:|---|---|---:|---|"]
-        for event in report.get("decision_timeline", []):
+        for event in report.get("text_decision_timeline", report.get("decision_timeline", [])):
             income = event.get("income") or {}
             note = event.get("conformity_candidate", "")
             safe = lambda value: str(value if value is not None else "—").replace("|", "\\|").replace("\n", " ")
@@ -1977,6 +1992,26 @@ def markdown_report(report: dict) -> str:
                 f"{safe(event.get('comp_focus'))} | {float(event.get('reward') or 0):.4f} | {safe(note)} |"
             )
         lines += ["", "As flags FAST8/SLOWROLL/STABILIZE/ECON são candidatos de revisão, não violações definitivas: logs legados não incluem a máscara legal completa nem sempre registram HP, nível e alternativas no mesmo instante.", ""]
+
+    if report.get("text_log_metrics"):
+        lines += [
+            "### Evidência adicional dos logs do Viewer",
+            "",
+            "| Jogador | Rounds observados | Snapshots de loja | Ofertas vistas | Snapshots de itens | Itens não vazios | Observações de ouro | Transições comp/foco | Warnings de posição |",
+            "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
+        ]
+        for player, metrics in sorted(report["text_log_metrics"].items()):
+            lines.append(
+                f"| {player} | {len(metrics.get('rounds', []))} | {metrics.get('shop_snapshots', 0)} | "
+                f"{metrics.get('shop_offers', 0)} | {metrics.get('item_snapshots', 0)} | "
+                f"{metrics.get('item_nonempty_snapshots', 0)} | {len(metrics.get('gold_observations', []))} | "
+                f"{metrics.get('composition_changes', 0)} | {sum(metrics.get('position_warnings', {}).values())} |"
+            )
+        lines += [
+            "",
+            "Essas contagens complementam os snapshots estruturados: ofertas e avisos textuais não provam, isoladamente, que uma compra, venda ou posição era a melhor decisão.",
+            "",
+        ]
 
     if report.get("decision_audit_metrics"):
         lines += ["## Auditoria decisão por decisão", "",
@@ -2294,13 +2329,128 @@ def markdown_full_report(report: dict) -> str:
         "",
         f"- Jogadores analisados: {len(report.get('players_seen', []))}",
         f"- Entradas analisadas: {report.get('entries_read', 0)}",
-        f"- Decisões com timeline: {len(report.get('decision_timeline', []))}",
+        f"- Decisões com timeline: {len(report.get('decision_timeline', [])) + len(report.get('text_decision_timeline', []))}",
+        f"- Decisões estruturadas: {len(report.get('decision_timeline', []))}",
+        f"- Eventos reconstruídos do texto: {len(report.get('text_decision_timeline', []))}",
         f"- Achados: {len(issues)}",
         "- Os arquivos estruturados de origem permanecem separados deste relatório.",
         "- Campos ausentes são exibidos como “—”; não são inferidos como zero.",
         "",
     ]
     return "\\n".join(lines)
+
+
+def discover_session_inputs(source: Path) -> tuple[list[Path], list[Path], Path]:
+    """Find text logs and structured JSON sidecars, including untracked local files."""
+    if source.is_file():
+        if source.suffix.lower() not in (".tft", ".json"):
+            raise ValueError("a entrada precisa ser uma pasta de sessão, .tft ou .json")
+        root = source.parent
+        tft_files = [source] if source.suffix.lower() == ".tft" else []
+        json_files = [source] if source.suffix.lower() == ".json" else []
+        stem = source.stem
+        if stem.endswith("_log"):
+            sibling_tft = root / f"{stem}.tft"
+            sibling_json = root / f"{stem}.json"
+            if sibling_tft.exists() and sibling_tft not in tft_files:
+                tft_files.append(sibling_tft)
+            if sibling_json.exists() and sibling_json not in json_files:
+                json_files.append(sibling_json)
+        return sorted(set(tft_files)), sorted(set(json_files)), root
+
+    if not source.is_dir():
+        raise ValueError(f"caminho não existe: {source}")
+
+    root = source
+    metadata_path = root / "metadata.json"
+    metadata = {}
+    if metadata_path.is_file():
+        try:
+            loaded = json.loads(metadata_path.read_text(encoding="utf-8-sig"))
+            if isinstance(loaded, dict):
+                metadata = loaded
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"[WARN] Falha lendo metadados {metadata_path}: {exc}", file=sys.stderr)
+
+    def listed_paths(key: str) -> list[Path]:
+        values = metadata.get(key) or []
+        result = []
+        if isinstance(values, list):
+            for value in values:
+                if isinstance(value, str) and value.strip():
+                    candidate = root / value
+                    if candidate.is_file():
+                        result.append(candidate)
+        return result
+
+    tft_files = listed_paths("player_log_files")
+    json_files = listed_paths("structured_player_log_files")
+    # Union with discovery: sidecars may be local/untracked or absent from older manifests.
+    tft_files = sorted(set(tft_files + list(root.glob("player_*_log.tft"))))
+    json_files = sorted(set(json_files + list(root.glob("player_*_log.json"))))
+    if not tft_files and not json_files:
+        tft_files = sorted(root.rglob("player_*_log.tft"))
+        json_files = sorted(root.rglob("player_*_log.json"))
+    return tft_files, json_files, root
+
+
+def _looks_like_json_document(path: Path) -> bool:
+    try:
+        with path.open("r", encoding="utf-8-sig") as stream:
+            return stream.read(4096).lstrip().startswith("{")
+    except OSError:
+        return False
+
+
+def _player_log_key(path: Path) -> str:
+    match = re.search(r"player_(\d+)_log", path.name)
+    return match.group(1) if match else path.stem
+
+
+def audit_session_inputs(tft_files: list[Path], json_files: list[Path], report: dict,
+                         loop_window: int, comp_window: int) -> None:
+    """Use JSON for full decision evidence and .tft for complementary Viewer context."""
+    json_by_player = {_player_log_key(path): path for path in json_files}
+    processed_json = set()
+    for text_path in tft_files:
+        player_key = _player_log_key(text_path)
+        sidecar = json_by_player.get(player_key)
+        text_doc = read_json(text_path) if _looks_like_json_document(text_path) else None
+        if sidecar is not None:
+            doc = read_json(sidecar)
+            if doc:
+                audit_json(sidecar, doc, report, loop_window, comp_window)
+                processed_json.add(sidecar)
+            else:
+                report.setdefault("notes", []).append(
+                    f"{sidecar.name}: sidecar estruturado inválido; análise estruturada indisponível."
+                )
+        elif text_doc:
+            audit_json(text_path, text_doc, report, loop_window, comp_window)
+
+        # Keep text-only context even when the structured sidecar is available.
+        if not text_doc:
+            timeline_start = len(report.setdefault("decision_timeline", []))
+            player_metrics = report.get("elimination_filter", {}).get(f"Jogador {player_key}", {})
+            max_active_actions = player_metrics.get("active_action_count") if sidecar is not None else None
+            audit_text(text_path, report, max_actions=max_active_actions)
+            text_events = report["decision_timeline"][timeline_start:]
+            if text_events:
+                del report["decision_timeline"][timeline_start:]
+                report.setdefault("text_decision_timeline", []).extend(text_events)
+        elif sidecar is not None:
+            report.setdefault("notes", []).append(
+                f"{text_path.name}: JSON estruturado duplicado; priorizado {sidecar.name}."
+            )
+
+    for path in json_files:
+        if path in processed_json:
+            continue
+        if any(_player_log_key(tft) == _player_log_key(path) for tft in tft_files):
+            continue
+        doc = read_json(path)
+        if doc:
+            audit_json(path, doc, report, loop_window, comp_window)
 
 
 def main() -> int:
@@ -2314,20 +2464,13 @@ def main() -> int:
     if args.loop_window < 4 or args.comp_window < 3:
         parser.error("--loop-window precisa ser >= 4 e --comp-window >= 3")
     source = args.input
-    if source.is_file():
-        if source.suffix.lower() != ".tft":
-            parser.error("a auditoria desta sessão aceita exclusivamente arquivos .tft")
-        files = [source]
-        default_out = source.parent / "audit"
-    elif source.is_dir():
-        files = sorted(source.glob("player_*_log.tft"))
-        if not files:
-            files = sorted(source.rglob("player_*_log.tft"))
-        if not files:
-            parser.error(f"nenhum player_*_log.tft encontrado em: {source}")
-        default_out = source / "audit"
-    else:
-        parser.error(f"caminho não existe: {source}")
+    try:
+        tft_files, json_files, session_root = discover_session_inputs(source)
+    except ValueError as exc:
+        parser.error(str(exc))
+    if not tft_files and not json_files:
+        parser.error(f"nenhum player_*_log.tft ou player_*_log.json encontrado em: {source}")
+    default_out = session_root / "audit"
     report = {"source": str(source), "log_files": [], "players_seen": set(),
               "purchase_sequence_metrics": {}, "economic_action_metrics": {},
               "composition_direction_metrics": {},
@@ -2335,20 +2478,27 @@ def main() -> int:
               "team_progression_metrics": {},
               "decision_audit_metrics": {}, "decision_timeline": [],
               "entries_read": 0, "diagnostics_missing": 0, "issues": [], "notes": [],
-              "mask_note_added": False}
-    for path in files:
-        if path.suffix.lower() == ".json":
-            doc = read_json(path)
-            if doc:
-                audit_json(path, doc, report, args.loop_window, args.comp_window)
-        elif path.suffix.lower() == ".tft":
-            # Current PlayerJsonLogWriter stores structured JSON documents in .tft
-            # files. Prefer structured analysis; fall back to legacy text parsing.
-            doc = read_json(path)
-            if doc:
-                audit_json(path, doc, report, args.loop_window, args.comp_window)
-            else:
-                audit_text(path, report)
+              "mask_note_added": False,
+              "input_inventory": {
+                  "text_logs_discovered": len(tft_files),
+                  "structured_sidecars_discovered": len(json_files),
+                  "metadata_manifest_found": (session_root / "metadata.json").is_file(),
+              }}
+    metadata_path = session_root / "metadata.json"
+    if metadata_path.is_file():
+        try:
+            raw_metadata = json.loads(metadata_path.read_text(encoding="utf-8-sig"))
+            if isinstance(raw_metadata, dict):
+                report["session_metadata"] = {
+                    key: raw_metadata.get(key) for key in (
+                        "match_id", "seed", "engine", "deterministic", "created_at",
+                        "checkpoint_sha256", "policy_class", "observation_dim",
+                        "action_dims", "log_format",
+                    ) if raw_metadata.get(key) is not None
+                }
+        except (OSError, json.JSONDecodeError):
+            report.setdefault("notes", []).append("metadata.json indisponível ou inválido.")
+    audit_session_inputs(tft_files, json_files, report, args.loop_window, args.comp_window)
     unique, seen = [], set()
     for item in report["issues"]:
         key = (item["severity"], item["code"], item["player"], item["round"], item["step"], item["message"])
