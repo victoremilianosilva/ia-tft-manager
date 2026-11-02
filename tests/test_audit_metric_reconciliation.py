@@ -103,11 +103,11 @@ def test_xp_review_windows_prioritize_stabilization_but_exclude_slowroll():
     metrics = report["xp_stabilization_metrics"]["Jogador 4"]
     assert metrics["review_window_count"] == 1
     assert metrics["review_windows"][0]["action"] == "PASS"
-    assert "não prova" in metrics["interpretation"]
+    assert "não são penalidades" in metrics["interpretation"]
 
 
 def test_anvil_selection_is_checked_against_logged_options():
-    report = {}
+    report = {"issues": []}
     entries = [{
         "event_type": "action", "sequence_id": 1, "step": 20,
         "stage": 3, "round_in_stage": 4,
@@ -146,12 +146,12 @@ def test_structural_and_positional_scores_are_correlated_with_round_combat():
     audit_board_quality(entries, "Jogador 1", report)
     metrics = report["board_quality_metrics"]["Jogador 1"]
     assert metrics["combat_round_samples"] == 4
-    assert metrics["structural_combat_correlation"] == 1.0
-    assert metrics["positional_combat_correlation"] == 1.0
+    assert abs(metrics["structural_combat_correlation"] - 1.0) < 1e-9
+    assert abs(metrics["positional_combat_correlation"] - 1.0) < 1e-9
 
 
 def test_core_sale_is_not_flagged_when_near_term_board_gain_compensates():
-    report = {}
+    report = {"issues": []}
     entries = [
         {
             "event_type": "action", "sequence_id": 1, "step": 1,
@@ -242,7 +242,7 @@ def test_combined_audit_keeps_structured_and_text_evidence_together(tmp_path):
     report = {
         "source": str(tmp_path), "log_files": [], "players_seen": set(),
         "entries_read": 0, "diagnostics_missing": 0, "issues": [], "notes": [],
-        "decision_timeline": [],
+        "decision_timeline": [], "mask_note_added": False,
     }
 
     audit_session_inputs([text_log], [sidecar], report, 8, 8)
