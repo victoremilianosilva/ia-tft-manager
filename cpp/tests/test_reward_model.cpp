@@ -77,6 +77,30 @@ int main() {
                   "SLOWROLL positive XP shaping is reduced by ten percent");
     require_close(xp_strategy_reward_scale(2), 1.0,
                   "FAST8 XP shaping remains unchanged");
+    require_close(strategy_action_reward(3, 2, 12, 8, 80.0, 2,
+                                         false, false, false, true),
+                  -0.04,
+                  "non-leveling early XP during healthy SLOWROLL is discouraged");
+    require_close(strategy_action_reward(3, 2, 12, 8, 30.0, 2,
+                                         false, false, false, true),
+                  0.0,
+                  "urgent low-health SLOWROLL XP remains available");
+    require_close(strategy_action_reward(3, 2, 12, 8, 80.0, 2,
+                                         false, false, true, true),
+                  0.0,
+                  "SLOWROLL XP that secures a level-up is not penalized");
+    require_close(strategy_action_reward(0, 2, 17, 13, 80.0, 2,
+                                         false, false, false, true),
+                  -0.04,
+                  "early ECON discourages non-leveling XP below the 50-gold reserve even with a comp target");
+    require_close(strategy_action_reward(0, 2, 17, 13, 30.0, 5,
+                                         false, false, false, true),
+                  0.0,
+                  "urgent low-health ECON XP remains available");
+    require_close(strategy_action_reward(0, 2, 17, 13, 80.0, 5,
+                                         false, false, true, true),
+                  0.0,
+                  "ECON XP that secures a level-up is not penalized");
     const double neutral_xp = xp_level_transition_value(60, 56, 80.0, 4, 7, 8, 0.0, 0);
     const double stabilize_xp = xp_level_transition_value(60, 56, 80.0, 4, 7, 8, 0.0, 1);
     const double slowroll_xp = xp_level_transition_value(60, 56, 80.0, 4, 7, 8, 0.0, 3);
@@ -155,9 +179,9 @@ int main() {
     }
     if (!(unit_purchase_timing_reward(4, 51, 2, 1, 0.8, 80.0, false, false) > 0.0))
         throw std::runtime_error("stage 4 useful purchases may spend through the interest breakpoint");
-    if (!(unit_purchase_timing_reward(4, 52, 2, 1, 0.8, 80.0, false, false) > 0.08)) {
-        throw std::runtime_error("useful purchase may convert surplus while preserving 50 gold");
-    }
+    require_close(unit_purchase_timing_reward(4, 52, 2, 1, 0.8, 80.0, false, false),
+                  0.0853065,
+                  "small surplus purchase nudge stays bounded while preserving 50 gold");
     if (!(unit_purchase_timing_reward(5, 25, 2, 1, 0.7, 80.0, false, false) > 0.0))
         throw std::runtime_error("stage 5 should convert idle gold into useful board strength");
     if (!(unit_purchase_timing_reward(6, 25, 2, 1, 0.7, 25.0, false, false) > 0.0)) {
@@ -390,7 +414,7 @@ int main() {
                   0.12, "slow-roll strategy receives a stronger improved-reroll signal");
     require_close(strategy_action_reward(3, 2, 30, 28, 80.0, 2,
                                          false, false, false, false),
-                  -0.02, "safe early slow-roll XP nudge remains small");
+                  -0.04, "safe early slow-roll XP nudge remains bounded");
     require_close(strategy_action_reward(3, 2, 60, 58, 25.0, 5,
                                          false, false, false, false),
                   0.0, "urgent or surplus XP progress is not penalized by slow-roll label");
