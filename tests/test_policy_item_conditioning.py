@@ -50,8 +50,8 @@ def test_item_observation_exposes_components_inventory_recipes_and_all_targets()
     assert inventory[0, 0, 0].item() == 0.75
     assert torch.isclose(recipes[0, 4, 2], torch.tensor(0.6), atol=1e-6)
     assert targets[0, 28, 5].item() == 1.0
-    assert inventory_target_fit[0, 2, 4].item() == 0.7
-    assert recipe_target_fit[0, 5, 6].item() == 0.8
+    assert torch.isclose(inventory_target_fit[0, 2, 4], torch.tensor(0.7), atol=1e-6)
+    assert torch.isclose(recipe_target_fit[0, 5, 6], torch.tensor(0.8), atol=1e-6)
     assert anvil_options[0, 0, 0].item() == 0.3
     assert pending_anvil.tolist() == [False]
     assert policy.encode(obs).shape == (1, 64)
