@@ -89,6 +89,18 @@ int main() {
                                          false, false, true, true),
                   0.0,
                   "SLOWROLL XP that secures a level-up is not penalized");
+    require_close(strategy_action_reward(0, 2, 17, 13, 80.0, 5,
+                                         false, false, false, true),
+                  -0.04,
+                  "ECON discourages non-leveling XP below the 50-gold reserve even with a comp target");
+    require_close(strategy_action_reward(0, 2, 17, 13, 30.0, 5,
+                                         false, false, false, true),
+                  0.0,
+                  "urgent low-health ECON XP remains available");
+    require_close(strategy_action_reward(0, 2, 17, 13, 80.0, 5,
+                                         false, false, true, true),
+                  0.0,
+                  "ECON XP that secures a level-up is not penalized");
     const double neutral_xp = xp_level_transition_value(60, 56, 80.0, 4, 7, 8, 0.0, 0);
     const double stabilize_xp = xp_level_transition_value(60, 56, 80.0, 4, 7, 8, 0.0, 1);
     const double slowroll_xp = xp_level_transition_value(60, 56, 80.0, 4, 7, 8, 0.0, 3);
