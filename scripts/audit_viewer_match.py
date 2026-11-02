@@ -1791,11 +1791,13 @@ def markdown_report(report: dict) -> str:
             structural_text = f"{structural_delta:.4f}" if structural_delta is not None else "—"
             structural_score_text = f"{structural_score:.4f}" if structural_score is not None else "—"
             positional_score_text = f"{positional_score:.4f}" if positional_score is not None else "—"
+            positional_delta = metrics.get("mean_positional_delta")
+            positional_delta_text = f"{positional_delta:.4f}" if positional_delta is not None else "—"
             lines.append(
                 f"| {player} | {metrics['actions_with_metrics']} | "
                 f"{metrics['positive_quality_delta']} | {metrics['negative_quality_delta']} | "
                 f"{metrics['neutral_quality_delta']} | {metrics['mean_quality_delta']:.4f} | "
-                f"{structural_score_text} | {structural_text} | {positional_score_text} | "
+                f"{structural_score_text} | {structural_text} | {positional_score_text} | {positional_delta_text} | "
                 f"{metrics['mean_quality_delta_when_combat_reward_positive']:.4f} | "
                 f"{metrics['mean_quality_delta_when_combat_reward_negative']:.4f} |"
             )
