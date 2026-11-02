@@ -2366,7 +2366,7 @@ def _looks_like_json_document(path: Path) -> bool:
 
 
 def _player_log_key(path: Path) -> str:
-    match = re.search(r"player_(\\d+)_log", path.name)
+    match = re.search(r"player_(\d+)_log", path.name)
     return match.group(1) if match else path.stem
 
 
