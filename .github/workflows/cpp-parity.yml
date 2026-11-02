@@ -66,6 +66,7 @@ jobs:
           tests/test_action_mask_validation.py
           tests/test_ppo_mask_consistency.py
           tests/test_policy_bench_target_conditioning.py
+          tests/test_policy_item_conditioning.py
           tests/test_strategic_policy.py
           tests/test_evaluate_checkpoints.py
           tests/test_audit_item_system_e2e.py
@@ -73,6 +74,7 @@ jobs:
           tests/test_viewer_policy_diagnostics.py
           tests/test_viewer_preparation.py
           tests/test_viewer_player_logs.py
+          tests/test_viewer_item_and_result_logging.py
 
       - name: Publish native test reports
         if: always()
