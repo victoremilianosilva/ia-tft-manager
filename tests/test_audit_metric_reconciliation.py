@@ -3,6 +3,7 @@ from scripts.audit_viewer_match import (
     audit_board_quality,
     audit_composition_direction_changes,
     audit_item_state,
+    audit_purchase_sequences,
     audit_team_progression,
     audit_xp_stabilization_opportunities,
 )
@@ -145,3 +146,51 @@ def test_structural_and_positional_scores_are_correlated_with_round_combat():
     assert metrics["combat_round_samples"] == 4
     assert metrics["structural_combat_correlation"] == 1.0
     assert metrics["positional_combat_correlation"] == 1.0
+
+
+def test_core_sale_is_not_flagged_when_near_term_board_gain_compensates():
+    report = {}
+    entries = [
+        {
+            "event_type": "action", "sequence_id": 1, "step": 1,
+            "stage": 2, "round_in_stage": 1,
+            "payload": {
+                "action": [6], "action_name": "PASS",
+                "state_before": {"board": [], "bench": [], "gold": 20},
+                "state_after": {"board": [], "bench": [], "gold": 20, "comp_direction": "CompA"},
+            },
+        },
+        {
+            "event_type": "action", "sequence_id": 2, "step": 2,
+            "stage": 2, "round_in_stage": 1,
+            "payload": {
+                "action": [5, 0, 0], "action_name": "SELL",
+                "state_before": {
+                    "board": [], "bench": [{"occupied": True, "champion_id": "CoreUnit", "star": 1, "cost": 3}],
+                    "core_units": ["CoreUnit"], "comp_direction": "CompA", "gold": 20,
+                },
+                "state_after": {
+                    "board": [], "bench": [], "core_units": ["CoreUnit"],
+                    "comp_direction": "CompA", "gold": 23,
+                },
+            },
+        },
+        {
+            "event_type": "action", "sequence_id": 3, "step": 3,
+            "stage": 2, "round_in_stage": 1,
+            "payload": {
+                "action": [0, 0], "action_name": "BUY",
+                "state_before": {"board": [], "bench": [], "shop": []},
+                "state_after": {
+                    "board": [{"occupied": True, "champion_id": "Replacement", "star": 2, "cost": 4}],
+                    "bench": [], "comp_direction": "CompA",
+                },
+            },
+        },
+    ]
+    audit_purchase_sequences(entries, "Jogador 4", report)
+    metrics = report["purchase_sequence_metrics"]["Jogador 4"]
+    assert metrics["sales_with_demonstrated_compensation"] == 1
+    assert metrics["sales_requiring_review"] == 0
+    assert metrics["sale_review_records"][0]["compensation"]["future"]
+    assert not any(issue["code"] == "SOLD_CORE_UNIT" for issue in report["issues"])
