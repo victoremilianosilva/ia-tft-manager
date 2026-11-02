@@ -230,10 +230,11 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
         "composition_decision_found": decision_start_index is not None,
         "composition_decision_round": decision_round,
         "composition_decision_action_index": decision_start_index,
-        "classified_sales": {}, "purchase_records": [],
+        "classified_sales": {}, "purchase_records": [], "sale_review_records": [],
     }
     purchases = []
     classifications = Counter()
+    sale_review_records = []
     for idx, (entry, payload, action) in enumerate(actions):
         before, after = payload.get("state_before") or {}, payload.get("state_after") or {}
         name = str(payload.get("action_name") or ACTION_NAMES.get(action[0], "UNKNOWN"))
@@ -315,7 +316,9 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
                 and higher_star_after <= higher_star_before
             )
 
-            # A sale can be correct when it produces a measurable board benefit.
+            # Do not penalize a core/pair sale if its replacement benefit appears
+            # in the same decision or in the next few actions of the same round.
+            core_sale_candidate, pair_lost_candidate = core_sale, pair_lost
             try:
                 synergy_gain = (before.get("synergy_score") is not None
                                 and after.get("synergy_score") is not None
@@ -328,9 +331,50 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
                                     and float(after["positioning_score"]) > float(before["positioning_score"]) + 0.25)
             except (TypeError, ValueError):
                 positioning_gain = False
-            compensated_sale = synergy_gain or positioning_gain
-            core_sale = core_sale and not compensated_sale
-            pair_lost = pair_lost and not compensated_sale
+            immediate_board_gain = _board_power(after) > _board_power(before) + 0.5
+            future_compensation = []
+            for later_entry, later_payload, _later_action in actions[idx + 1:idx + 4]:
+                if get_round(later_entry) != rnd:
+                    break
+                later_state = later_payload.get("state_after") or {}
+                if not later_state:
+                    continue
+                board_delta = _board_power(later_state) - _board_power(after)
+                upgrade_delta = _star_counts(later_state)[2] - _star_counts(after)[2]
+                try:
+                    later_synergy_gain = (
+                        later_state.get("synergy_score") is not None
+                        and after.get("synergy_score") is not None
+                        and float(later_state["synergy_score"]) > float(after["synergy_score"]) + 1e-6
+                    )
+                except (TypeError, ValueError):
+                    later_synergy_gain = False
+                if board_delta > 0.5 or upgrade_delta > 0 or later_synergy_gain:
+                    future_compensation.append({
+                        "step": later_entry.get("step"), "board_power_delta": round(board_delta, 4),
+                        "upgrade_delta": upgrade_delta, "synergy_gain": later_synergy_gain,
+                    })
+            compensated_sale = (
+                synergy_gain or positioning_gain or immediate_board_gain or bool(future_compensation)
+            )
+            core_sale = core_sale_candidate and not compensated_sale
+            pair_lost = pair_lost_candidate and not compensated_sale
+            if core_sale_candidate or pair_lost_candidate:
+                sale_review_records.append({
+                    "step": step, "round": rnd, "champion": champion,
+                    "core_sale_candidate": core_sale_candidate,
+                    "pair_loss_candidate": pair_lost_candidate,
+                    "compensated": compensated_sale,
+                    "compensation": {
+                        "immediate_synergy_gain": synergy_gain,
+                        "immediate_positioning_gain": positioning_gain,
+                        "immediate_board_gain": immediate_board_gain,
+                        "future": future_compensation,
+                    },
+                    "copies_before": copies_before, "copies_after": copies_after,
+                    "same_star_before": same_star_before, "same_star_after": same_star_after,
+                    "board_power_before": _board_power(before), "board_power_after": _board_power(after),
+                })
             if not after_comp_decision and (
                 (sold_star in (1, 2) and same_star_before >= 2 and same_star_after < 2)
                 or champion_key in core_keys
@@ -414,6 +458,13 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
                            "sale_gold_delta": match["sale_gold_delta"],
                            "net_gold_lost": match["net_gold_lost"], "fit_score": match["fit_score"]})
     metrics["classified_sales"] = dict(classifications)
+    metrics["sale_review_records"] = sale_review_records
+    metrics["sales_requiring_review"] = sum(
+        1 for item in sale_review_records if not item["compensated"]
+    )
+    metrics["sales_with_demonstrated_compensation"] = sum(
+        1 for item in sale_review_records if item["compensated"]
+    )
     values = [float(record.get("strategic_value", 0.0)) for record in metrics["purchase_records"]]
     metrics["average_strategic_value_per_purchase"] = round(sum(values) / len(values), 4) if values else 0.0
     buys = max(1, metrics["buys"])
@@ -522,6 +573,63 @@ def audit_economic_actions(entries: list[dict], player: str, report: dict) -> No
         "final_board_power": final_board_power,
         "action_reward_samples": reward_component_samples,
         "interpretation": "No-immediate-gain is a diagnostic, not proof that an action was strategically wrong.",
+    }
+
+
+def audit_xp_stabilization_opportunities(entries: list[dict], player: str, report: dict) -> None:
+    """Surface XP/stabilization decision windows without assuming an action was mandatory."""
+    ordered = sorted(
+        (entry for entry in entries if isinstance(entry, dict)
+         and entry.get("event_type") == "action"),
+        key=lambda e: (e.get("sequence_id", 0), e.get("step", 0)),
+    )
+    xp_buys = []
+    review_windows = []
+    for index, entry in enumerate(ordered):
+        payload = entry.get("payload") or {}
+        before = payload.get("state_before") or {}
+        after = payload.get("state_after") or {}
+        econ = payload.get("economic_diagnostics") or {}
+        context = payload.get("decision_context") or {}
+        action = str(payload.get("action_name") or "UNKNOWN")
+        strategy = str(context.get("strategy") or before.get("strategy_name") or "").upper()
+        try:
+            gold = int(before.get("gold", econ.get("gold_before", 0)) or 0)
+            level = int(before.get("level", econ.get("level_before", 0)) or 0)
+            hp = int(before.get("hp", context.get("hp", 0)) or 0)
+            target_level = int(before.get("target_level") or before.get("level_target") or 8)
+        except (TypeError, ValueError):
+            continue
+        target_level = max(1, min(10, target_level))
+        if action == "BUY_XP":
+            xp_buys.append({
+                "round": get_round(entry), "step": entry.get("step"),
+                "gold_before": gold, "gold_after": after.get("gold"),
+                "level_before": level, "level_after": after.get("level"),
+                "xp_before": before.get("xp"), "xp_after": after.get("xp"),
+                "reason_code": econ.get("reason_code"),
+                "strategy": strategy or "UNKNOWN", "hp_before": hp or None,
+            })
+        if action not in ("PASS", "REROLL") or gold < 4 or level >= target_level:
+            continue
+        is_slowroll = "SLOWROLL" in strategy
+        stabilization_context = (
+            hp > 0 and hp <= 40
+        ) or any(token in strategy for token in ("STABILIZE", "FAST8", "FAST_8"))
+        if is_slowroll or not stabilization_context:
+            continue
+        review_windows.append({
+            "round": get_round(entry), "step": entry.get("step"), "action": action,
+            "strategy": strategy or "UNKNOWN", "gold_before": gold, "hp_before": hp or None,
+            "level_before": level, "target_level": target_level,
+            "board_units": len(_occupied_units(before, "board")),
+            "reason_code": econ.get("reason_code"),
+            "interpretation": "janela para revisar XP/estabilização; não prova que comprar XP era melhor que comprar unidades ou preservar juros",
+        })
+    report.setdefault("xp_stabilization_metrics", {})[player] = {
+        "xp_purchases": len(xp_buys), "xp_purchase_records": xp_buys,
+        "review_windows": review_windows, "review_window_count": len(review_windows),
+        "interpretation": "candidatos contextuais; não são penalidades e SLOWROLL é excluído",
     }
 
 
@@ -666,6 +774,7 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
         "actions": 0, "quality_delta_sum": 0.0, "positive_gains": 0,
         "structural_delta_sum": 0.0, "structural_samples": 0,
     })
+    combat_round_samples = []
     for entry in actions:
         payload = entry.get("payload") or {}
         before = payload.get("state_before") or {}
@@ -746,6 +855,51 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
             totals["quality_delta_when_combat_reward_negative"] += delta
             totals["negative_combat_samples"] += 1
 
+    for entry in entries:
+        if not isinstance(entry, dict) or entry.get("event_type") != "round_finished":
+            continue
+        payload = entry.get("payload") or {}
+        before = payload.get("state_before") or {}
+        reward_components = payload.get("reward_components") or {}
+        combat_raw = reward_components.get("combat", payload.get("combat_reward"))
+        structural_raw = before.get("board_structural_score")
+        positional_raw = before.get("board_positional_score", before.get("positioning_score"))
+        if combat_raw is None or (structural_raw is None and positional_raw is None):
+            continue
+        try:
+            combat_value = float(combat_raw)
+            structural_value = float(structural_raw) if structural_raw is not None else None
+            positional_value = float(positional_raw) if positional_raw is not None else None
+        except (TypeError, ValueError):
+            continue
+        combat_round_samples.append({
+            "round": get_round(entry), "step": entry.get("step"),
+            "combat_reward": combat_value, "structural_score_before": structural_value,
+            "positional_score_before": positional_value,
+            "outcome": "positive" if combat_value > 1e-6 else "negative" if combat_value < -1e-6 else "neutral",
+        })
+
+    def pearson(samples, key):
+        pairs = [(item[key], item["combat_reward"]) for item in samples if item.get(key) is not None]
+        if len(pairs) < 3:
+            return None
+        xs, ys = [p[0] for p in pairs], [p[1] for p in pairs]
+        mean_x, mean_y = sum(xs) / len(xs), sum(ys) / len(ys)
+        numerator = sum((x - mean_x) * (y - mean_y) for x, y in pairs)
+        denom_x = sum((x - mean_x) ** 2 for x in xs) ** 0.5
+        denom_y = sum((y - mean_y) ** 2 for y in ys) ** 0.5
+        return numerator / (denom_x * denom_y) if denom_x > 1e-12 and denom_y > 1e-12 else None
+
+    for label in ("positive", "negative"):
+        subset = [item for item in combat_round_samples if item["outcome"] == label]
+        for field, output in (("structural_score_before", "structural"), ("positional_score_before", "positional")):
+            values = [item[field] for item in subset if item.get(field) is not None]
+            totals[f"mean_{output}_score_before_{label}_combat"] = sum(values) / len(values) if values else None
+    totals["combat_round_samples"] = len(combat_round_samples)
+    totals["structural_combat_correlation"] = pearson(combat_round_samples, "structural_score_before")
+    totals["positional_combat_correlation"] = pearson(combat_round_samples, "positional_score_before")
+    totals["combat_round_details"] = combat_round_samples
+
     n = totals["actions_with_metrics"]
     structural_n = totals["structural_samples"]
     totals["mean_quality_delta"] = totals["quality_delta_sum"] / n if n else 0.0
@@ -807,6 +961,10 @@ def audit_item_state(entries: list[dict], player: str, report: dict) -> None:
     component_ids_seen = set()
     bag_item_ids_seen = set()
     item_events = Counter()
+    anvil_decisions = []
+    component_rounds = defaultdict(set)
+    component_observations = Counter()
+    craft_actions = 0
     final = None
     peaks = {"equipped": 0, "bag": 0, "components": 0}
 
@@ -854,7 +1012,40 @@ def audit_item_state(entries: list[dict], player: str, report: dict) -> None:
             bag_item_ids_seen.update(str(value) for value in bag if isinstance(value, str))
         if isinstance(components, list):
             component_ids_seen.update(str(value) for value in components if isinstance(value, str))
-        bag_count = len(bag) if isinstance(bag, list) else 0
+            for value in components:
+                component_rounds[str(value)].add(get_round(entry))
+                component_observations[str(value)] += 1
+        item_audit = payload.get("item_audit") or {}
+        decision = item_audit.get("decision") or {}
+        if decision.get("operation") in ("craft_and_equip", "anvil_component_choice", "anvil_completed_item_choice") or payload.get("action_name") == "CRAFT_AND_EQUIP":
+            craft_actions += 1
+        if decision.get("is_anvil_choice"):
+            options = decision.get("anvil_options_before") or []
+            selected = (decision.get("selected_id") or decision.get("selected_item_id")
+                        or decision.get("selected_component_id"))
+            option_ids = [
+                str(value.get("id") or value.get("api_name") or value.get("apiName") or value.get("name"))
+                if isinstance(value, dict) else str(value)
+                for value in options
+            ]
+            valid = bool(options and selected is not None and str(selected) in option_ids)
+            record = {
+                "round": get_round(entry), "step": entry.get("step"),
+                "kind": decision.get("anvil_kind"), "options": option_ids,
+                "selected": selected, "selection_in_options": valid if options and selected is not None else None,
+                "item_fit": decision.get("item_fit"),
+                "estimated_immediate_strength": decision.get("estimated_immediate_strength"),
+                "role_alignment": decision.get("role_alignment"),
+                "assignment_reward": decision.get("assignment_reward"),
+                "target": decision.get("target"),
+            }
+            anvil_decisions.append(record)
+            if record["selection_in_options"] is False:
+                add_issue(report, "HIGH", "ANVIL_SELECTION_NOT_IN_OPTIONS", player,
+                          get_round(entry), entry.get("step"),
+                          "A bigorna registrou uma seleção que não aparece nas opções disponíveis.",
+                          record)
+    bag_count = len(bag) if isinstance(bag, list) else 0
         component_count = len(components) if isinstance(components, list) else 0
         peaks["equipped"] = max(peaks["equipped"], len(equipped))
         peaks["bag"] = max(peaks["bag"], bag_count)
@@ -890,6 +1081,19 @@ def audit_item_state(entries: list[dict], player: str, report: dict) -> None:
         "peak_components": peaks["components"],
         "final_snapshot": final,
         "item_events": dict(item_events),
+        "anvil_decisions": anvil_decisions,
+        "anvil_choices": len(anvil_decisions),
+        "craft_actions": craft_actions,
+        "components_persisted_multiple_rounds": [
+            component for component, rounds in sorted(component_rounds.items())
+            if len(rounds) >= 2
+        ],
+        "component_observations": dict(component_observations),
+        "component_conversion_review": bool(component_ids_seen and craft_actions == 0),
+        "component_conversion_interpretation": (
+            "componentes sem ação de craft observada merecem revisão; sem catálogo de receitas e contexto da partida, "
+            "não se presume que havia combinação viável ou que guardar era errado"
+        ),
     }
 
 
@@ -1325,6 +1529,7 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
     }
     audit_purchase_sequences(entries, player, report)
     audit_economic_actions(entries, player, report)
+    audit_xp_stabilization_opportunities(entries, player, report)
     audit_composition_direction_changes(entries, player, report)
     audit_board_quality(entries, player, report)
     audit_item_state(entries, player, report)
