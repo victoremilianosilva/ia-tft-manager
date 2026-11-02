@@ -79,11 +79,18 @@ int main(int argc, char** argv) {
             }
         }
         const std::size_t legacy_observation_dim = 248 + trait_order.size();
+        const std::size_t item_global_observation_dim =
+            10 + 9 * 17 + 100 * 17 + (tft::kBoardSlots + tft::kBenchSlots) * 18;
+        const std::size_t item_compatibility_observation_dim =
+            (9 + 100) * (tft::kBoardSlots + tft::kBenchSlots);
+        const std::size_t item_state_observation_dim =
+            item_global_observation_dim + item_compatibility_observation_dim;
         const std::size_t expected_observation_dim =
             legacy_observation_dim + 2 * trait_order.size() +
             tft::kBoardSlots + tft::kBenchSlots + tft::kShopSlots +
             1 + tft::kBoardSlots + trait_order.size() + 2 +
             3 + 9 * 11 + // pending-anvil state and nine option feature records
+            item_state_observation_dim +
             8 * (tft::kBenchSlots + tft::kShopSlots);
         require(engine.observation_dim() == expected_observation_dim,
                 "Dimensao PPO nao inclui os novos recursos de composicao.");
@@ -128,7 +135,8 @@ int main(int argc, char** argv) {
         const std::size_t candidate_features_offset =
             expected_observation_dim - 8 * (tft::kBenchSlots + tft::kShopSlots);
         const std::size_t focus_weights_offset =
-            candidate_features_offset - (3 + 9 * 11) - trait_order.size() - 2;
+            candidate_features_offset - item_state_observation_dim -
+            (3 + 9 * 11) - trait_order.size() - 2;
         const std::size_t locked_offset = focus_weights_offset + trait_order.size();
         const std::size_t strength_offset = locked_offset + 1;
         for (std::size_t trait_index = 0;
@@ -160,6 +168,12 @@ int main(int argc, char** argv) {
         require(candidate_features_offset + 8 * (tft::kBenchSlots + tft::kShopSlots) ==
                     expected_observation_dim,
                 "Features de candidatos deixaram de ocupar a cauda da observacao.");
+        const std::size_t item_target_features_offset =
+            candidate_features_offset - item_state_observation_dim +
+            10 + 9 * 17 + 100 * 17;
+        require(player_observation[item_target_features_offset] == 1.0f &&
+                player_observation[item_target_features_offset + 1] == 1.0f,
+                "Observacao de item nao expoe unidade ocupada no tabuleiro como alvo.");
         require(player_observation[candidate_features_offset] > 0.0f,
                 "Features estrategicas da primeira unidade do banco ausentes.");
         const std::size_t shop_candidate_offset =
@@ -804,6 +818,40 @@ int main(int argc, char** argv) {
             require(item_action_engine.add_item_component_for_testing(0, "sword") &&
                     item_action_engine.add_item_component_for_testing(0, "bow"),
                     "Nao foi possivel carregar componentes de fixture.");
+            require(item_action_engine.add_completed_item_for_testing(0, "guard_plate"),
+                    "Nao foi possivel carregar item completo para testar observacao semantica.");
+            const auto initial_item_audit = item_action_engine.get_audit_snapshot();
+            require(std::find(initial_item_audit.players[0].item_component_catalog.begin(),
+                              initial_item_audit.players[0].item_component_catalog.end(), "sword") !=
+                        initial_item_audit.players[0].item_component_catalog.end(),
+                    "Snapshot nao expoe catalogo ordenado de componentes.");
+            const auto item_observations = item_action_engine.get_observations();
+            const auto* item_observation = item_observations.data();
+            const auto item_candidate_offset = item_action_engine.observation_dim() -
+                8 * (tft::kBenchSlots + tft::kShopSlots);
+            const auto item_block_offset = item_candidate_offset - item_state_observation_dim;
+            const auto bag_feature_offset = item_block_offset + 10;
+            const auto recipe_feature_offset = bag_feature_offset + 9 * 17;
+            const auto target_feature_offset = recipe_feature_offset + 100 * 17;
+            require(item_observation[item_block_offset] > 0.0f &&
+                    item_observation[item_block_offset + 1] > 0.0f,
+                    "Contagens de componentes nao chegaram a observacao PPO.");
+            require(item_observation[bag_feature_offset + 5] > 0.0f,
+                    "Atributos do item completo na bag nao chegaram a observacao PPO.");
+            require(std::any_of(item_observation + recipe_feature_offset,
+                                item_observation + target_feature_offset,
+                                [](float value) { return value > 0.0f; }),
+                    "Atributos dos resultados de receitas nao chegaram a observacao PPO.");
+            require(item_observation[target_feature_offset] == 1.0f,
+                    "Perfil da unidade-alvo nao chegou a observacao PPO.");
+            const auto inventory_fit_offset =
+                target_feature_offset + (tft::kBoardSlots + tft::kBenchSlots) * 18;
+            const auto recipe_fit_offset = inventory_fit_offset +
+                9 * (tft::kBoardSlots + tft::kBenchSlots);
+            require(item_observation[inventory_fit_offset] > 0.0f,
+                    "Compatibilidade do item da bag com o alvo nao chegou a observacao PPO.");
+            require(item_observation[recipe_fit_offset + 37] > 0.0f,
+                    "Compatibilidade do item craftavel com o alvo nao chegou a observacao PPO.");
             auto masks = item_action_engine.get_action_masks();
             require(masks[0].type_mask[8] == 1,
                     "CRAFT_AND_EQUIP deveria estar habilitada com receita e alvo validos.");
@@ -815,9 +863,16 @@ int main(int argc, char** argv) {
             require(item_audit.players[0].board[0].item_ids.size() == 1 &&
                     item_audit.players[0].board[0].item_ids[0] == "damage_blade",
                     "CRAFT_AND_EQUIP nao integrou o item ao CombatUnit da instancia.");
+            require(item_audit.players[0].last_item_action_kind == "craft_and_equip" &&
+                    item_audit.players[0].last_item_id == "damage_blade" &&
+                    item_audit.players[0].last_item_first_component == "sword" &&
+                    item_audit.players[0].last_item_second_component == "bow" &&
+                    item_audit.players[0].last_item_target_on_board &&
+                    item_audit.players[0].last_item_target_slot == 0 &&
+                    !item_audit.players[0].last_item_target_uuid.empty() &&
+                    item_audit.players[0].last_item_fit > 0.0,
+                    "Auditoria nao preservou receita, item, alvo e compatibilidade do craft.");
 
-            require(item_action_engine.add_completed_item_for_testing(0, "guard_plate"),
-                    "Nao foi possivel adicionar item pronto via evento de loot de fixture.");
             masks = item_action_engine.get_action_masks();
             require(masks[0].type_mask[7] == 1,
                     "EQUIP_FROM_INVENTORY deveria estar habilitada com item e alvo validos.");
@@ -826,6 +881,13 @@ int main(int argc, char** argv) {
             item_audit = item_action_engine.get_audit_snapshot();
             require(item_audit.players[0].board[0].item_ids.size() == 2,
                     "EQUIP_FROM_INVENTORY nao anexou o item ao estado de combate.");
+            require(item_audit.players[0].last_item_action_kind == "equip_inventory_item" &&
+                    item_audit.players[0].last_item_id == "guard_plate" &&
+                    item_audit.players[0].last_item_target_on_board &&
+                    item_audit.players[0].last_item_target_slot == 0 &&
+                    item_audit.players[0].last_item_target_uuid ==
+                        item_audit.players[0].board[0].uuid,
+                    "Auditoria nao identificou item e alvo da equipagem normal.");
 
             // End-to-end: read the exact CombatTeam assembled by the same
             // conversion used by normal PvP resolution, then run CombatEngine.
@@ -906,9 +968,15 @@ int main(int argc, char** argv) {
                 return std::any_of(result.events.begin(), result.events.end(),
                     [&](const std::string& event) { return event.rfind(prefix, 0) == 0; });
             };
-            const auto resolve_anvil = [&](std::size_t expected_options) {
+            const auto resolve_anvil = [&](std::size_t expected_options,
+                                                std::int32_t expected_kind) {
                 const auto masks = anvil_engine.get_action_masks();
+                const auto pending_snapshot = anvil_engine.get_audit_snapshot();
                 for (std::size_t player = 0; player < tft::kPlayersPerLobby; ++player) {
+                    require(pending_snapshot.players[player].pending_anvil &&
+                            pending_snapshot.players[player].pending_anvil_kind == expected_kind &&
+                            pending_snapshot.players[player].pending_anvil_options.size() == expected_options,
+                            "Snapshot de auditoria nao identificou o tipo e as opcoes da bigorna.");
                     const auto& mask = masks[player];
                     require(mask.type_mask[6] == 0 && mask.type_mask[7] == 1 &&
                             std::count(mask.type_mask.begin(), mask.type_mask.end(), 1) == 1,
@@ -921,14 +989,24 @@ int main(int argc, char** argv) {
                             "Bigorna nao expos exatamente a quantidade esperada de opcoes.");
                 }
                 std::array<tft::PlayerAction, tft::kPlayersPerLobby> choices{};
+                std::string selected_option;
                 for (std::size_t player = 0; player < tft::kPlayersPerLobby; ++player) {
                     const auto& option_mask = masks[player].item_inventory_mask;
                     const auto option = std::find(option_mask.begin(), option_mask.end(), 1);
                     require(option != option_mask.end(), "Bigorna nao possui opcao selecionavel.");
-                    choices[player].values = {7, static_cast<std::int32_t>(
-                        std::distance(option_mask.begin(), option)), 0, 0, 0, 0};
+                    const auto option_index = static_cast<std::size_t>(
+                        std::distance(option_mask.begin(), option));
+                    if (player == 0)
+                        selected_option = pending_snapshot.players[player].pending_anvil_options[option_index];
+                    choices[player].values = {7, static_cast<std::int32_t>(option_index), 0, 0, 0, 0};
                 }
                 (void)anvil_engine.step(choices);
+                const auto selected_snapshot = anvil_engine.get_audit_snapshot();
+                require(selected_snapshot.players[0].last_item_action_kind ==
+                            (expected_kind == 0 ? "anvil_component_choice" : "anvil_completed_item_choice") &&
+                        selected_snapshot.players[0].last_item_id == selected_option &&
+                        selected_snapshot.players[0].last_item_target_uuid.empty(),
+                        "Escolha da bigorna foi confundida com equipagem normal no snapshot.");
                 tft::StepResult result;
                 for (int action = 1; action < 15; ++action)
                     result = step_with_pending_anvils(anvil_engine, pass_actions);
@@ -951,17 +1029,17 @@ int main(int argc, char** argv) {
             while (anvil_engine.round() < 25) round_result = finish_round();
             require(contains_event(round_result, "COMPONENT_ANVIL_GRANTED:"),
                     "A rodada 4-7 nao concedeu bigorna de componentes.");
-            resolve_anvil(3);
+            resolve_anvil(3, 0);
 
             while (anvil_engine.round() < 32) round_result = finish_round();
             require(contains_event(round_result, "COMPLETED_ITEM_ANVIL_GRANTED:"),
                     "A rodada 5-7 nao concedeu bigorna de itens completos.");
-            resolve_anvil(4);
+            resolve_anvil(4, 1);
 
             while (anvil_engine.round() < 39) round_result = finish_round();
             require(contains_event(round_result, "COMPLETED_ITEM_ANVIL_GRANTED:"),
                     "A rodada 6-7 nao concedeu bigorna de itens completos.");
-            resolve_anvil(4);
+            resolve_anvil(4, 1);
         }
 
         std::cout << "TFTEngine + loja/economia/ActionMask/AntiLoop/CompLock: OK\n";

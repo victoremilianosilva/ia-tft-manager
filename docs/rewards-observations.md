@@ -22,6 +22,21 @@ A observação PPO inclui, após os campos anteriores:
 
 Esses campos tornam a direção e a compatibilidade visíveis à policy, em vez de mantê-las apenas como metadados de diagnóstico. A implantação/substituição no tabuleiro recebe sinais pequenos e limitados relativos ao estado anterior: mudança de posicionamento, progresso de sinergia e diferença de compatibilidade em relação à unidade substituída ou à média do tabuleiro. O bônus por preencher uma vaga só é concedido quando há melhora de composição, sinergia ou posicionamento (ou quando a primeira unidade é implantada). Assim, uma ação que apenas ocupa uma vaga sem melhorar o estado não recebe um bônus automático, deixando espaço para o PPO aprender quando PASS é preferível. Esses sinais não substituem as recompensas de combate e colocação.
 
+### Estado semântico de itens e condicionamento de alvos
+
+A cauda de candidatos continua reservada às features de banco/loja. Imediatamente antes dela, a engine agora expõe um bloco de itens com:
+- contagem normalizada dos dez primeiros componentes do catálogo ativo;
+- atributos de combate, pesos de função e indicador de emblema para cada um dos nove slots de itens completos na bag;
+- atributos dos itens produzidos pelas receitas, indexados pelo par ordenado de componentes;
+- perfil de cada um dos 37 alvos possíveis (28 posições do tabuleiro e nove do banco), incluindo localização, estrelas, função, linha, compatibilidade com a composição, atributos básicos e slots de item ocupados;
+- matrizes de compatibilidade item/alvo para os nove itens completos na bag e para os 100 resultados de receita, cada um comparado com os 37 alvos. As receitas só recebem compatibilidade não-zero quando o par de componentes está disponível para craft naquele estado.
+
+A policy mantém as cabeças categóricas existentes, mas soma scores compartilhados por candidato para inventário, opções de bigorna, componentes e alvo. A cabeça de inventário usa features da bag e o melhor/médio fit entre os alvos possíveis em equipagem normal; quando há bigorna pendente, usa as features específicas das opções da bigorna. O score de alvo combina atributos do item/receita, perfil da unidade e a compatibilidade calculada pela engine; assim, a seleção deixa de depender apenas do índice do slot. Os scores auxiliares começam zerados para preservar os logits de checkpoints antigos durante a migração. O bloco bruto acrescenta 6.562 floats à observação nativa; 2.529 features semânticas entram no global encoder e as 4.033 compatibilidades ficam fora dele, alimentando somente o scorer autorregressivo do alvo. Checkpoints antigos carregam com colunas e cabeças auxiliares neutras, mas precisam de fine-tuning para aprender essas relações.
+
+A compatibilidade de emblemas compara o ID estável do item com os nomes canônicos dos traits, removendo o prefixo do set, e favorece traits planejadas/ativas que o campeão ainda não possui. Não concede o mesmo bônus genérico a qualquer emblema.
+
+A auditoria nativa também registra catálogo ordenado de componentes, estado/opções de bigorna e a última decisão de item: operação, item/receita, UUID e localização do alvo, compatibilidade estimada, força imediata estimada, alinhamento de função e reward de atribuição. A escolha de bigorna é identificada como concessão de opção, não como equipamento. Esses campos são diagnósticos e não alteram a recompensa nem a legalidade das ações.
+
 ### Sinais econômicos e features por candidato
 
 A policy deriva cinco features econômicas determinísticas dos campos nativos já presentes na observação (ouro, HP, nível, rodada e one-hot da estratégia): nível-alvo da fase/plano, distância até o alvo, reserva mínima dinâmica, ouro disponível acima dessa reserva e pressão de progressão. Elas são inseridas no encoder global imediatamente antes da cauda de candidatos. Assim, a policy e o value head recebem explicitamente o contexto econômico; a amostragem e o replay PPO usam a mesma derivação, sem alterar o contrato do vetor C++.

@@ -264,6 +264,68 @@ class PlayerJsonLogWriter:
             "components": list(audit.get("item_components", []) or []),
             "inventory": list(audit.get("item_inventory", []) or []),
             "equipped": equipped,
+            "pending_anvil": {
+                "kind": audit.get("pending_anvil_kind", -1),
+                "options": list(audit.get("pending_anvil_options", []) or []),
+            } if audit.get("pending_anvil") else None,
+        }
+
+    @staticmethod
+    def _item_action_diagnostics(action, before_audit, before_state, after_state,
+                                 item_before, item_after) -> dict:
+        action_type = int(action[0])
+        if action_type not in (7, 8):
+            return {}
+        kind = str(after_state.get("last_item_action_kind") or "")
+        is_anvil = kind.startswith("anvil_")
+        target_value = after_state.get("last_item_target_slot", -1)
+        target_slot = int(target_value if target_value is not None else -1)
+        target_on_board = bool(after_state.get("last_item_target_on_board", False))
+        target_location = "board" if target_on_board else "bench"
+        target_units = after_state.get(target_location, []) or []
+        target = target_units[target_slot] if 0 <= target_slot < len(target_units) else None
+        return {
+            "operation": kind or ("anvil_choice" if is_anvil else ACTION_NAMES.get(action_type, "UNKNOWN")),
+            "is_anvil_choice": is_anvil,
+            "anvil_kind": (
+                "component" if kind == "anvil_component_choice"
+                else "completed_item" if kind == "anvil_completed_item_choice" else None
+            ),
+            "anvil_options_before": list(before_audit.get("pending_anvil_options", []) or []),
+            "selected_id": after_state.get("last_item_id") or None,
+            "selected_item_id": (
+                after_state.get("last_item_id") or None
+                if kind != "anvil_component_choice" else None
+            ),
+            "selected_component_id": (
+                after_state.get("last_item_id") or None
+                if kind == "anvil_component_choice" else None
+            ),
+            "first_component_id": after_state.get("last_item_first_component") or None,
+            "second_component_id": after_state.get("last_item_second_component") or None,
+            "target": ({
+                "uuid": after_state.get("last_item_target_uuid") or target.get("uuid"),
+                "champion_id": target.get("champion_id"),
+                "name": target.get("name") or target.get("champion_id"),
+                "star": target.get("star"),
+                "location": target_location,
+                "slot": target_slot,
+                "items_after": list(target.get("items", []) or []),
+            } if target else None),
+            "item_fit": float(after_state.get("last_item_fit", 0.0) or 0.0),
+            "estimated_immediate_strength": float(
+                after_state.get("last_item_immediate_strength", 0.0) or 0.0
+            ),
+            "role_alignment": float(after_state.get("last_item_role_alignment", 0.0) or 0.0),
+            "assignment_reward": float(
+                after_state.get("last_item_assignment_reward", 0.0) or 0.0
+            ),
+            "components_before": list(item_before.get("components", []) or []),
+            "components_after": list(item_after.get("components", []) or []),
+            "inventory_before": list(item_before.get("inventory", []) or []),
+            "inventory_after": list(item_after.get("inventory", []) or []),
+            "equipped_before": list(item_before.get("equipped", []) or []),
+            "equipped_after": list(item_after.get("equipped", []) or []),
         }
 
     def _player_snapshot(self, audit: dict, public: dict) -> dict:
@@ -357,6 +419,24 @@ class PlayerJsonLogWriter:
             "shop": [self._unit_info(u, i, "shop") for i, u in enumerate(audit.get("shop", []))],
             "item_components": list(audit.get("item_components", []) or []),
             "item_inventory": list(audit.get("item_inventory", []) or []),
+            "item_component_catalog": list(audit.get("item_component_catalog", []) or []),
+            "pending_anvil": bool(audit.get("pending_anvil", False)),
+            "pending_anvil_kind": audit.get("pending_anvil_kind", -1),
+            "pending_anvil_options": list(audit.get("pending_anvil_options", []) or []),
+            "last_item_action_kind": audit.get("last_item_action_kind", ""),
+            "last_item_id": audit.get("last_item_id", ""),
+            "last_item_first_component": audit.get("last_item_first_component", ""),
+            "last_item_second_component": audit.get("last_item_second_component", ""),
+            "last_item_target_uuid": audit.get("last_item_target_uuid", ""),
+            "last_item_target_slot": int(
+                audit.get("last_item_target_slot", -1)
+                if audit.get("last_item_target_slot") is not None else -1
+            ),
+            "last_item_target_on_board": bool(audit.get("last_item_target_on_board", False)),
+            "last_item_fit": float(audit.get("last_item_fit", 0.0) or 0.0),
+            "last_item_immediate_strength": float(audit.get("last_item_immediate_strength", 0.0) or 0.0),
+            "last_item_role_alignment": float(audit.get("last_item_role_alignment", 0.0) or 0.0),
+            "last_item_assignment_reward": float(audit.get("last_item_assignment_reward", 0.0) or 0.0),
         }
 
 
@@ -760,9 +840,39 @@ class PlayerJsonLogWriter:
                 return f"VENDEU: {info['name']} (i:{info['impact']:.1f})"
             return "VENDEU Vazio"
         if action_type == 7:
-            return f"EQUIP_FROM_INVENTORY (ação={action})"
+            if before_audit.get("pending_anvil"):
+                options = list(before_audit.get("pending_anvil_options", []) or [])
+                option = int(action[1])
+                selected = options[option] if 0 <= option < len(options) else "opção inválida"
+                kind = "componente" if int(before_audit.get("pending_anvil_kind", -1)) == 0 else "item completo"
+                return f"BIGORNA: escolheu {kind} {selected}"
+            inventory = list(before_audit.get("item_inventory", []) or [])
+            item = inventory[int(action[1])] if 0 <= int(action[1]) < len(inventory) else "item desconhecido"
+            target_index = int(action[2])
+            on_board = target_index < 28
+            slot = target_index if on_board else target_index - 28
+            units = board if on_board else bench
+            target = self._unit_at(units, slot)
+            location = "tabuleiro" if on_board else "banco"
+            return (
+                f"EQUIP_FROM_INVENTORY: {item} -> "
+                f"{self._compact_unit(target, slot, 'board' if on_board else 'bench')} "
+                f"({location} slot {slot})"
+            ) if inventory else f"EQUIP_FROM_INVENTORY (ação={action})"
         if action_type == 8:
-            return f"CRAFT_AND_EQUIP (ação={action})"
+            component_catalog = list(before_audit.get("item_component_catalog", []) or [])
+            first, second = int(action[1]), int(action[2])
+            first_id = component_catalog[first] if 0 <= first < len(component_catalog) else f"#{first}"
+            second_id = component_catalog[second] if 0 <= second < len(component_catalog) else f"#{second}"
+            target_index = int(action[3])
+            on_board = target_index < 28
+            slot = target_index if on_board else target_index - 28
+            units = board if on_board else bench
+            target = self._unit_at(units, slot)
+            return (
+                f"CRAFT_AND_EQUIP: {first_id} + {second_id} -> "
+                f"{self._compact_unit(target, slot, 'board' if on_board else 'bench')}"
+            ) if component_catalog else f"CRAFT_AND_EQUIP (ação={action})"
         return f"AÇÃO DESCONHECIDA (ação={action})" if action_type != 6 else "PASSOU TURNO"
 
     def _board_snapshot_keyed(self, audit: dict) -> dict[str, dict]:
@@ -955,6 +1065,13 @@ class PlayerJsonLogWriter:
         inventory = list(after_state.get("item_inventory") or [])
         item_lines.append("  Componentes: " + (", ".join(map(str, components)) if components else "nenhum"))
         item_lines.append("  Itens na bag: " + (", ".join(map(str, inventory)) if inventory else "nenhum"))
+        pending = after_state.get("pending_anvil")
+        if pending:
+            kind = "componentes" if int(after_state.get("pending_anvil_kind", -1)) == 0 else "itens completos"
+            item_lines.append(
+                "  BIGORNA PENDENTE (" + kind + "): "
+                + ", ".join(map(str, after_state.get("pending_anvil_options", []) or []))
+            )
         equipped_lines = []
         for location in ("board", "bench"):
             for unit in after_state.get(location, []) or []:
@@ -1067,6 +1184,11 @@ class PlayerJsonLogWriter:
                 "after": item_after,
                 "changed": item_before != item_after,
             }
+            item_audit["decision"] = self._item_action_diagnostics(
+                action, before_audit, before_state, after_state, item_before, item_after
+            )
+            if item_audit["decision"].get("is_anvil_choice"):
+                item_audit["action_name"] = "ANVIL_CHOICE"
             was_alive = bool(before_state.get("alive")) and not bool(before_state.get("eliminated"))
             after_alive = after_state.get("alive")
             is_eliminated = bool(after_state.get("eliminated")) or (
@@ -1119,7 +1241,10 @@ class PlayerJsonLogWriter:
             else:
                 economic_diagnostics["cost_source"] = "gold_delta_fallback"
             primary_data = {
-                "action": action, "action_name": ACTION_NAMES.get(action_type, "UNKNOWN"),
+                "action": action, "action_name": (
+                    "ANVIL_CHOICE" if item_audit.get("decision", {}).get("is_anvil_choice")
+                    else ACTION_NAMES.get(action_type, "UNKNOWN")
+                ),
                 "reward": reward,
                 "action_reward": action_rewards[player_id] if isinstance(action_rewards, list) and player_id < len(action_rewards) else None,
                 "combat_reward": combat_rewards[player_id] if isinstance(combat_rewards, list) and player_id < len(combat_rewards) else None,
@@ -1266,11 +1391,20 @@ class PlayerJsonLogWriter:
                     + self._unit_composition_fit_text(primary_data["composition_diagnostics"]["unit_fit"])
                 )
                 if action_type in (7, 8) or item_audit["changed"]:
+                    decision = item_audit.get("decision", {})
                     line += (
                         "    ITEM AUDIT: "
-                        f"componentes {item_before['components']} -> {item_after['components']} | "
-                        f"bag {item_before['inventory']} -> {item_after['inventory']} | "
-                        f"equipados {item_before['equipped']} -> {item_after['equipped']}\n"
+                        f"op={decision.get('operation') or 'unknown'} | "
+                        f"selecionado={decision.get('selected_id') or '—'} | "
+                        f"receita={decision.get('first_component_id') or '—'} + "
+                        f"{decision.get('second_component_id') or '—'} | "
+                        f"alvo={decision.get('target') or '—'} | "
+                        f"fit={decision.get('item_fit', 0.0):.3f} | "
+                        f"força_estimada={decision.get('estimated_immediate_strength', 0.0):.3f} | "
+                        f"reward_atribuição={decision.get('assignment_reward', 0.0):.3f}\n"
+                        f"    COMPONENTES {item_before['components']} -> {item_after['components']} | "
+                        f"BAG {item_before['inventory']} -> {item_after['inventory']} | "
+                        f"EQUIPADOS {item_before['equipped']} -> {item_after['equipped']}\n"
                     )
                 self._append_entry(
                     player_id, timestamp=timestamp, timestamp_iso=timestamp_iso, step=step,

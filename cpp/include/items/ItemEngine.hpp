@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cctype>
 #include <iterator>
 #include <optional>
 #include <stdexcept>
@@ -60,6 +61,8 @@ struct UnitProfile {
     double armor{0.0};
     double magic_resist{0.0};
     double composition_fit{0.0}; // normalized [0,1]
+    std::vector<std::string> traits;
+    std::vector<std::string> preferred_traits;
 };
 
 struct ItemActionResult {
@@ -346,10 +349,44 @@ public:
         if (unit.role == 1 || unit.role == 4 || unit.backline) role_fit += item->carry_weight;
         if (unit.role == 2) role_fit += item->support_weight;
         if (unit.role == 3) role_fit += 0.5 * (item->tank_weight + item->carry_weight);
-        // A trait emblem has strategic value even when its numeric stats are
-        // zero; scale it by composition fit without forcing a particular trait.
-        if (!item->grants_trait.empty())
-            role_fit += 0.5 + std::clamp(unit.composition_fit, 0.0, 1.0);
+        // A trait emblem receives meaningful value only when it advances the
+        // selected composition; an already-native trait has little marginal value.
+        if (!item->grants_trait.empty()) {
+            const auto normalize_trait_key = [](const std::string& value) {
+                std::string normalized;
+                normalized.reserve(value.size());
+                for (const unsigned char ch : value) {
+                    if (std::isalnum(ch))
+                        normalized.push_back(static_cast<char>(std::tolower(ch)));
+                }
+                return normalized;
+            };
+            const auto matches_granted_trait = [&](const std::vector<std::string>& traits) {
+                const auto separator = item->grants_trait.find_last_of('_');
+                const auto suffix = separator == std::string::npos
+                    ? item->grants_trait : item->grants_trait.substr(separator + 1);
+                const auto normalized_id = normalize_trait_key(item->grants_trait);
+                const auto normalized_suffix = normalize_trait_key(suffix);
+                return std::any_of(traits.begin(), traits.end(), [&](const std::string& trait) {
+                    const auto normalized_trait = normalize_trait_key(trait);
+                    return trait == item->grants_trait ||
+                        normalized_trait == normalized_id ||
+                        normalized_trait == normalized_suffix;
+                });
+            };
+            const bool matches_plan = matches_granted_trait(unit.preferred_traits);
+            const bool already_has_trait = matches_granted_trait(unit.traits);
+            // Item catalogs store stable API IDs (e.g. DA_18_Blackthorn), while
+            // champion/strategy traits use canonical names (e.g. Blackthorn).
+            // Compare normalized API suffixes so set prefixes do not hide a match.
+            if (matches_plan && !already_has_trait) {
+                role_fit += 0.75 + std::clamp(unit.composition_fit, 0.0, 1.0);
+            } else if (matches_plan) {
+                role_fit += 0.15;
+            } else if (already_has_trait) {
+                role_fit += 0.05;
+            }
+        }
         return damage_fit + durability_fit + role_fit +
             0.25 * std::clamp(unit.composition_fit, 0.0, 1.0);
     }

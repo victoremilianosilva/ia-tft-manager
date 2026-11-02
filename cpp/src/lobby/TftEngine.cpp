@@ -87,6 +87,18 @@ constexpr std::size_t kStrategicCandidateObservationDim =
 constexpr std::size_t kAnvilOptionCount = 9;
 constexpr std::size_t kAnvilOptionFeatureDim = 11;
 constexpr std::size_t kAnvilObservationDim = 3 + kAnvilOptionCount * kAnvilOptionFeatureDim;
+// Semantic item-state block: component counts, bag item definitions, craftable
+// recipe definitions, and per-unit target profiles. It is appended before the
+// fixed strategic-candidate tail so legacy checkpoints can migrate by insertion.
+constexpr std::size_t kItemSemanticFeatureDim = 17;
+constexpr std::size_t kItemTargetFeatureDim = 18;
+constexpr std::size_t kItemCompatibilityObservationDim =
+    (9 + 100) * (kBoardSlots + kBenchSlots);
+constexpr std::size_t kItemGlobalObservationDim =
+    10 + 9 * kItemSemanticFeatureDim + 100 * kItemSemanticFeatureDim +
+    (kBoardSlots + kBenchSlots) * kItemTargetFeatureDim;
+constexpr std::size_t kItemStateObservationDim =
+    kItemGlobalObservationDim + kItemCompatibilityObservationDim;
 constexpr std::size_t kActionMemoryObservationDim = 1 + kBoardSlots;
 constexpr std::uint32_t kActionMemoryHorizon = 10;
 
@@ -395,6 +407,20 @@ struct TFTEngine::Impl {
         };
         std::uint64_t action_serial{0};
         std::vector<RecentPurchase> recent_purchases;
+        struct ItemActionAudit {
+            std::string kind;
+            std::string item_id;
+            std::string first_component;
+            std::string second_component;
+            std::string target_uuid;
+            std::int32_t target_slot{-1};
+            bool target_on_board{false};
+            double fit{0.0};
+            double immediate_strength{0.0};
+            double role_alignment{0.0};
+            double assignment_reward{0.0};
+        };
+        ItemActionAudit last_item_action{};
 
         PlayerTransition step(
             TFTEngine::Impl& lobby,
@@ -639,6 +665,21 @@ struct TFTEngine::Impl {
             const auto& combat = def->combat_profile;
             const auto strategy = player.strategy.empty() ? StrategyInfo{} : player.strategy.back();
             const double fit = unit_composition_score(strategy, *def, unit.star, trait_milestones);
+            std::vector<std::string> preferred_traits = strategy.core_traits;
+            preferred_traits.insert(preferred_traits.end(),
+                strategy.planned_traits.begin(), strategy.planned_traits.end());
+            if (!strategy.composition_direction.empty())
+                preferred_traits.push_back(strategy.composition_direction);
+            for (const auto& [trait, weight] : strategy.composition_focus_weights) {
+                if (weight > 0.1) preferred_traits.push_back(trait);
+            }
+            for (const auto& [trait, count] : strategy.active_traits) {
+                if (count > 0) preferred_traits.push_back(trait);
+            }
+            std::sort(preferred_traits.begin(), preferred_traits.end());
+            preferred_traits.erase(
+                std::unique(preferred_traits.begin(), preferred_traits.end()),
+                preferred_traits.end());
             profiles.push_back(items::UnitProfile{
                 unit.uuid, unit.star, std::clamp(combat.role, 0, 4),
                 frontline, backline,
@@ -648,7 +689,9 @@ struct TFTEngine::Impl {
                 combat.max_hp > 0.0 ? combat.max_hp : stats.max_hp,
                 combat.armor > 0.0 ? combat.armor : stats.armor,
                 combat.magic_resist > 0.0 ? combat.magic_resist : stats.magic_resist,
-                std::clamp(fit / 32.5, 0.0, 1.0)
+                std::clamp(fit / 32.5, 0.0, 1.0),
+                def->traits,
+                std::move(preferred_traits)
             });
         };
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
@@ -1030,7 +1073,8 @@ struct TFTEngine::Impl {
             2 * observation_trait_names.size() + kCompositionUnitSlots +
             kActionMemoryObservationDim +
             observation_trait_names.size() + 2 +
-            kAnvilObservationDim + kStrategicCandidateObservationDim;
+            kAnvilObservationDim + kItemStateObservationDim +
+            kStrategicCandidateObservationDim;
     }
 
     std::vector<float> build_observations() const {
@@ -1341,7 +1385,168 @@ struct TFTEngine::Impl {
                 for (const float feature : features) out[offset++] = feature;
             }
 
-            // 16) PER-CANDIDATE DECISION FEATURES. These are explicit slot-local
+            // 16) SEMANTIC ITEM STATE. Masks express legality only; this block
+            // gives PPO the actual component/item identities and stats, recipe
+            // outcomes, and the role/location/profile of every possible target.
+            const auto* item_state = player_envs[i].item_engine.get();
+            const auto encode_item = [](const items::ItemDefinition& item) {
+                return std::array<float, kItemSemanticFeatureDim>{
+                    static_cast<float>(std::clamp(item.attack_damage / 100.0, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.attack_speed / 2.0, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.ability_power / 100.0, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.critical_strike_chance, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.critical_strike_damage / 2.0, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.max_health / 2000.0, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.armor / 100.0, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.magic_resist / 100.0, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.omnivamp, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.damage_amplification, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.damage_reduction, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.mana / 100.0, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.carry_weight, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.tank_weight, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.support_weight, 0.0, 1.0)),
+                    static_cast<float>(std::clamp(item.utility_weight, 0.0, 1.0)),
+                    item.grants_trait.empty() ? 0.0f : 1.0f
+                };
+            };
+
+            for (std::size_t component = 0; component < 10; ++component) {
+                double count = 0.0;
+                if (item_state && item_catalog && component < item_catalog->components.size()) {
+                    const auto& id = item_catalog->components[component].first;
+                    count = static_cast<double>(std::count(
+                        item_state->components().begin(), item_state->components().end(), id));
+                }
+                out[offset++] = static_cast<float>(std::clamp(count / 6.0, 0.0, 1.0));
+            }
+
+            for (std::size_t slot = 0; slot < 9; ++slot) {
+                std::array<float, kItemSemanticFeatureDim> features{};
+                if (item_state && slot < item_state->inventory().size()) {
+                    if (const auto* definition = item_state->find(item_state->inventory()[slot]))
+                        features = encode_item(*definition);
+                }
+                for (const float feature : features) out[offset++] = feature;
+            }
+
+            // Recipe features are indexed [first_component * 10 + second].
+            // Both orders are populated because the recipe contract is symmetric.
+            std::array<std::array<float, kItemSemanticFeatureDim>, 100> recipe_features{};
+            std::array<std::string, 100> recipe_item_ids{};
+            if (item_catalog) {
+                for (const auto& definition : item_catalog->items) {
+                    if (definition.recipe_components[0].empty() ||
+                        definition.recipe_components[1].empty()) continue;
+                    const auto first = std::find_if(item_catalog->components.begin(),
+                        item_catalog->components.end(), [&](const auto& entry) {
+                            return entry.first == definition.recipe_components[0];
+                        });
+                    const auto second = std::find_if(item_catalog->components.begin(),
+                        item_catalog->components.end(), [&](const auto& entry) {
+                            return entry.first == definition.recipe_components[1];
+                        });
+                    if (first == item_catalog->components.end() ||
+                        second == item_catalog->components.end()) continue;
+                    const auto a = static_cast<std::size_t>(
+                        std::distance(item_catalog->components.begin(), first));
+                    const auto b = static_cast<std::size_t>(
+                        std::distance(item_catalog->components.begin(), second));
+                    if (a >= 10 || b >= 10) continue;
+                    const auto encoded = encode_item(definition);
+                    recipe_features[a * 10 + b] = encoded;
+                    recipe_features[b * 10 + a] = encoded;
+                    recipe_item_ids[a * 10 + b] = definition.id;
+                    recipe_item_ids[b * 10 + a] = definition.id;
+                }
+            }
+            for (const auto& recipe : recipe_features)
+                for (const float feature : recipe) out[offset++] = feature;
+
+            for (std::size_t target = 0; target < kBoardSlots + kBenchSlots; ++target) {
+                std::array<float, kItemTargetFeatureDim> features{};
+                const auto* unit = item_target_unit(i, target);
+                if (unit) {
+                    const auto* definition = catalog->find_by_id(unit->champion_internal_id);
+                    if (definition) {
+                        const bool on_board = target < kBoardSlots;
+                        const auto row = on_board ? target / 7 : 0;
+                        const int role = std::clamp(definition->combat_profile.role, 0, 4);
+                        const auto& stats = definition->stats;
+                        const auto& combat = definition->combat_profile;
+                        const auto fit = unit_composition_score(strategy, *definition,
+                            unit->star, trait_milestones);
+                        features[0] = 1.0f;
+                        features[1] = on_board ? 1.0f : 0.0f;
+                        features[2] = on_board ? 0.0f : 1.0f;
+                        features[3] = static_cast<float>(std::clamp(unit->star / 3.0, 0.0, 1.0));
+                        features[4 + role] = 1.0f;
+                        features[9] = on_board && row <= 1 ? 1.0f : 0.0f;
+                        features[10] = on_board && row >= 2 ? 1.0f : 0.0f;
+                        features[11] = static_cast<float>(std::clamp(fit / 32.5, 0.0, 1.0));
+                        features[12] = static_cast<float>(std::clamp(
+                            (combat.attack_damage > 0.0 ? combat.attack_damage : stats.attack_damage) / 200.0, 0.0, 1.0));
+                        features[13] = static_cast<float>(std::clamp(
+                            (combat.attack_speed > 0.0 ? combat.attack_speed : stats.attack_speed) / 2.0, 0.0, 1.0));
+                        features[14] = static_cast<float>(std::clamp(
+                            (combat.max_hp > 0.0 ? combat.max_hp : stats.max_hp) / 2000.0, 0.0, 1.0));
+                        features[15] = static_cast<float>(std::clamp(stats.armor / 150.0, 0.0, 1.0));
+                        features[16] = static_cast<float>(std::clamp(stats.magic_resist / 150.0, 0.0, 1.0));
+                        const auto equipped_count = item_state
+                            ? item_state->equipped(unit->uuid).size() : unit->items.size();
+                        features[17] = static_cast<float>(std::clamp(equipped_count / 3.0, 0.0, 1.0));
+                    }
+                }
+                for (const float feature : features) out[offset++] = feature;
+            }
+
+            // Exact item-to-target compatibility for the currently held items
+            // and every possible craft result. These matrices are consumed only
+            // by the autoregressive target scorer, not the global encoder.
+            std::unordered_map<std::string, const items::UnitProfile*> profile_by_uuid;
+            profile_by_uuid.reserve(item_profiles.size());
+            for (const auto& profile : item_profiles)
+                profile_by_uuid.emplace(profile.uuid, &profile);
+
+            for (std::size_t item_slot = 0; item_slot < 9; ++item_slot) {
+                const std::string* item_id =
+                    item_state && item_slot < item_state->inventory().size()
+                    ? &item_state->inventory()[item_slot] : nullptr;
+                for (std::size_t target = 0; target < kBoardSlots + kBenchSlots; ++target) {
+                    double fit = 0.0;
+                    const auto* unit = item_target_unit(i, target);
+                    if (item_id && unit) {
+                        const auto profile = profile_by_uuid.find(unit->uuid);
+                        if (profile != profile_by_uuid.end())
+                            fit = item_state->item_fit(*item_id, *profile->second);
+                    }
+                    out[offset++] = static_cast<float>(std::clamp(fit / 50.0, 0.0, 1.0));
+                }
+            }
+
+            for (std::size_t recipe = 0; recipe < recipe_item_ids.size(); ++recipe) {
+                const auto& item_id = recipe_item_ids[recipe];
+                const auto first_component = recipe / 10;
+                const auto second_component = recipe % 10;
+                const bool recipe_available = item_state && item_catalog &&
+                    first_component < item_catalog->components.size() &&
+                    second_component < item_catalog->components.size() &&
+                    item_state->can_craft(
+                        item_catalog->components[first_component].first,
+                        item_catalog->components[second_component].first);
+                for (std::size_t target = 0; target < kBoardSlots + kBenchSlots; ++target) {
+                    double fit = 0.0;
+                    const auto* unit = item_target_unit(i, target);
+                    if (recipe_available && !item_id.empty() && unit) {
+                        const auto profile = profile_by_uuid.find(unit->uuid);
+                        if (profile != profile_by_uuid.end())
+                            fit = item_state->item_fit(item_id, *profile->second);
+                    }
+                    out[offset++] = static_cast<float>(std::clamp(fit / 50.0, 0.0, 1.0));
+                }
+            }
+
+            // 17) PER-CANDIDATE DECISION FEATURES. These are explicit slot-local
             // features so the policy can compare offers/sale candidates rather than
             // infer which global features correspond to each output index.
             // Precompute owned copies once per player. Candidate features below
@@ -2976,6 +3181,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         const auto& action = player_action.values;
 
         const auto type = action[0];
+        last_item_action = {};
 
         const auto shop_slot = action[1];
         actions_taken_this_round = std::min<std::uint32_t>(
@@ -3479,10 +3685,16 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             if (type == 7 && this->item_engine->has_pending_anvil()) {
                 // The option index is the only meaningful argument while an
                 // anvil is pending; target-head index zero is a masked sentinel.
-                if (!this->item_engine->choose_anvil_option(static_cast<std::size_t>(action[1])))
+                const auto* pending = this->item_engine->pending_anvil();
+                const auto option = static_cast<std::size_t>(action[1]);
+                if (!pending || option >= pending->options.size())
+                    throw std::invalid_argument("Opcao de bigorna fora das opcoes oferecidas.");
+                last_item_action.kind = pending->kind == items::ItemAnvilKind::COMPONENT
+                    ? "anvil_component_choice" : "anvil_completed_item_choice";
+                last_item_action.item_id = pending->options[option];
+                if (!this->item_engine->choose_anvil_option(option))
                     throw std::invalid_argument("Escolha de opcao da bigorna rejeitada.");
-                // Item value is learned through subsequent combat, not by
-                // forcing a handcrafted preference at the choice boundary.
+                // Anvil selection is a grant, not an equip or craft operation.
             } else {
                 const auto target_index = static_cast<std::size_t>(type == 7 ? action[2] : action[3]);
                 auto* target_unit = lobby.item_target_unit(player_id, target_index);
@@ -3492,10 +3704,16 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 command.operation = type == 7 ? items::ItemOperation::EQUIP_FROM_INVENTORY
                                                : items::ItemOperation::CRAFT_AND_EQUIP;
                 command.target_unit_uuid = target_unit->uuid;
+                last_item_action.kind = type == 7 ? "equip_inventory_item" : "craft_and_equip";
+                last_item_action.target_uuid = target_unit->uuid;
+                last_item_action.target_slot = static_cast<std::int32_t>(target_index < kBoardSlots
+                    ? target_index : target_index - kBoardSlots);
+                last_item_action.target_on_board = target_index < kBoardSlots;
                 if (type == 7) {
                     const auto slot = static_cast<std::size_t>(action[1]);
                     if (slot >= this->item_engine->inventory().size()) throw std::invalid_argument("Indice de item fora do inventario.");
                     command.item_id = this->item_engine->inventory()[slot];
+                    last_item_action.item_id = command.item_id;
                 } else {
                     const auto first = static_cast<std::size_t>(action[1]);
                     const auto second = static_cast<std::size_t>(action[2]);
@@ -3504,6 +3722,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         throw std::invalid_argument("Indice de tipo de componente fora do catalogo.");
                     command.first_component_id = lobby.item_catalog->components[first].first;
                     command.second_component_id = lobby.item_catalog->components[second].first;
+                    last_item_action.first_component = command.first_component_id;
+                    last_item_action.second_component = command.second_component_id;
                 }
                 const auto result = this->item_engine->apply_action(command, profiles);
                 if (!result.success) throw std::invalid_argument("Acao de item rejeitada: " + result.reason);
@@ -3547,6 +3767,12 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             item_assignment_reward +=
                                 reward_model::item_crafting_bonus(item_assignment_reward);
                         }
+                        last_item_action.item_id = item_definition->id;
+                        last_item_action.fit = this->item_engine->item_fit(
+                            item_definition->id, *target_profile);
+                        last_item_action.immediate_strength = immediate_strength;
+                        last_item_action.role_alignment = role_alignment;
+                        last_item_action.assignment_reward = item_assignment_reward;
                     }
                 }
                 lobby.sync_unit_items_from_engine(player_id, target_unit->uuid);
@@ -4620,7 +4846,27 @@ AuditSnapshot TFTEngine::get_audit_snapshot() const {
         if (source.item_engine) {
             target.item_components = source.item_engine->components();
             target.item_inventory = source.item_engine->inventory();
+            if (impl_->item_catalog) {
+                for (const auto& component : impl_->item_catalog->components)
+                    target.item_component_catalog.push_back(component.first);
+            }
+            if (const auto* pending = source.item_engine->pending_anvil()) {
+                target.pending_anvil = true;
+                target.pending_anvil_kind = static_cast<std::int32_t>(pending->kind);
+                target.pending_anvil_options = pending->options;
+            }
         }
+        target.last_item_action_kind = source.last_item_action.kind;
+        target.last_item_id = source.last_item_action.item_id;
+        target.last_item_first_component = source.last_item_action.first_component;
+        target.last_item_second_component = source.last_item_action.second_component;
+        target.last_item_target_uuid = source.last_item_action.target_uuid;
+        target.last_item_target_slot = source.last_item_action.target_slot;
+        target.last_item_target_on_board = source.last_item_action.target_on_board;
+        target.last_item_fit = source.last_item_action.fit;
+        target.last_item_immediate_strength = source.last_item_action.immediate_strength;
+        target.last_item_role_alignment = source.last_item_action.role_alignment;
+        target.last_item_assignment_reward = source.last_item_action.assignment_reward;
     }
     return snapshot;
 }

@@ -62,7 +62,7 @@ int main() {
             "id": "catalog_emblem", "name": "Catalog Emblem",
             "recipe_components": [],
             "stats": {}, "weights": {"utility": 1.0},
-            "grants_trait": "TestTrait",
+            "grants_trait": "DA_18_TestTrait",
             "granted_trait_active_count": 1,
             "combat_effects": []
         }]
@@ -78,7 +78,7 @@ int main() {
         [](const ItemDefinition& item) { return item.id == "catalog_emblem"; });
     require(emblem != loaded_catalog.items.end() &&
             emblem->recipe_components[0].empty() &&
-            emblem->grants_trait == "TestTrait",
+            emblem->grants_trait == "DA_18_TestTrait",
             "non-craftable trait item should load without a recipe");
     ItemEngine loaded_engine(loaded_catalog.items, {"sword", "bow"});
     require(loaded_engine.add_completed_item("catalog_emblem"),
@@ -87,6 +87,18 @@ int main() {
                               30.0, 0.8, 20.0, 900.0, 30.0, 30.0, 0.8};
     require(loaded_engine.item_fit("catalog_emblem", emblem_target) > 0.0,
             "trait emblem should have strategic value despite zero numeric stats");
+    auto planned_emblem_target = emblem_target;
+    planned_emblem_target.preferred_traits = {"Test Trait"};
+    auto unrelated_emblem_target = emblem_target;
+    unrelated_emblem_target.preferred_traits = {"Other Trait"};
+    auto natural_emblem_target = planned_emblem_target;
+    natural_emblem_target.traits = {"Test Trait"};
+    require(loaded_engine.item_fit("catalog_emblem", planned_emblem_target) >
+                loaded_engine.item_fit("catalog_emblem", unrelated_emblem_target) + 0.5,
+            "emblem compatibility must favor a trait selected by the current composition");
+    require(loaded_engine.item_fit("catalog_emblem", planned_emblem_target) >
+                loaded_engine.item_fit("catalog_emblem", natural_emblem_target),
+            "an emblem should have lower marginal value on a unit that already has that trait");
 
     std::istringstream inert_catalog_json(R"json({
         "schema_version": 1,

@@ -680,6 +680,21 @@ PYBIND11_MODULE(tft_engine, module) {
                     p["shop"] = shop;
                     p["item_components"] = player.item_components;
                     p["item_inventory"] = player.item_inventory;
+                    p["item_component_catalog"] = player.item_component_catalog;
+                    p["pending_anvil"] = player.pending_anvil;
+                    p["pending_anvil_kind"] = player.pending_anvil_kind;
+                    p["pending_anvil_options"] = player.pending_anvil_options;
+                    p["last_item_action_kind"] = player.last_item_action_kind;
+                    p["last_item_id"] = player.last_item_id;
+                    p["last_item_first_component"] = player.last_item_first_component;
+                    p["last_item_second_component"] = player.last_item_second_component;
+                    p["last_item_target_uuid"] = player.last_item_target_uuid;
+                    p["last_item_target_slot"] = player.last_item_target_slot;
+                    p["last_item_target_on_board"] = player.last_item_target_on_board;
+                    p["last_item_fit"] = player.last_item_fit;
+                    p["last_item_immediate_strength"] = player.last_item_immediate_strength;
+                    p["last_item_role_alignment"] = player.last_item_role_alignment;
+                    p["last_item_assignment_reward"] = player.last_item_assignment_reward;
                     p["action_masks"] = masks_to_dict(player.masks);
                     players.append(p);
                 }
