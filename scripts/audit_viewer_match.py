@@ -1866,7 +1866,7 @@ def audit_text(path: Path, report: dict, max_actions: int | None = None) -> None
             current_event["conformity_candidate"] = "SLOWROLL_BUY_XP_REVIEW"
 
     for action in metrics["timeline"]:
-        if action["strategy"] == "STABILIZE" and action["action"] == "PASS" and action.get("gold_after", 0) >= 10:
+        if action["strategy"] == "STABILIZE" and action["action"] == "PASS" and action.get("gold_after") is not None and action["gold_after"] >= 10:
             action["conformity_candidate"] = "STABILIZE_PASS_WITH_GOLD_REVIEW"
         if action["strategy"] == "ECON" and action["action"] in ("BUY", "BUY_XP", "REROLL") and action.get("gold_after") is not None and action["gold_after"] < 50:
             action["conformity_candidate"] = "ECON_SPEND_BELOW_50_REVIEW"
