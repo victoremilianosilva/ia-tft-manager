@@ -2303,6 +2303,104 @@ def markdown_full_report(report: dict) -> str:
     return "\\n".join(lines)
 
 
+def discover_session_inputs(source: Path) -> tuple[list[Path], list[Path], Path]:
+    """Find text logs and structured JSON sidecars, including untracked local files."""
+    if source.is_file():
+        if source.suffix.lower() not in (".tft", ".json"):
+            raise ValueError("a entrada precisa ser uma pasta de sessão, .tft ou .json")
+        root = source.parent
+        tft_files = [source] if source.suffix.lower() == ".tft" else []
+        json_files = [source] if source.suffix.lower() == ".json" else []
+        stem = source.stem
+        if stem.endswith("_log"):
+            sibling_tft = root / f"{stem}.tft"
+            sibling_json = root / f"{stem}.json"
+            if sibling_tft.exists() and sibling_tft not in tft_files:
+                tft_files.append(sibling_tft)
+            if sibling_json.exists() and sibling_json not in json_files:
+                json_files.append(sibling_json)
+        return sorted(set(tft_files)), sorted(set(json_files)), root
+
+    if not source.is_dir():
+        raise ValueError(f"caminho não existe: {source}")
+
+    root = source
+    metadata_path = root / "metadata.json"
+    metadata = {}
+    if metadata_path.is_file():
+        try:
+            loaded = json.loads(metadata_path.read_text(encoding="utf-8-sig"))
+            if isinstance(loaded, dict):
+                metadata = loaded
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"[WARN] Falha lendo metadados {metadata_path}: {exc}", file=sys.stderr)
+
+    def listed_paths(key: str) -> list[Path]:
+        values = metadata.get(key) or []
+        result = []
+        if isinstance(values, list):
+            for value in values:
+                if isinstance(value, str) and value.strip():
+                    candidate = root / value
+                    if candidate.is_file():
+                        result.append(candidate)
+        return result
+
+    tft_files = listed_paths("player_log_files")
+    json_files = listed_paths("structured_player_log_files")
+    # Union with discovery: sidecars may be local/untracked or absent from older manifests.
+    tft_files = sorted(set(tft_files + list(root.glob("player_*_log.tft"))))
+    json_files = sorted(set(json_files + list(root.glob("player_*_log.json"))))
+    if not tft_files and not json_files:
+        tft_files = sorted(root.rglob("player_*_log.tft"))
+        json_files = sorted(root.rglob("player_*_log.json"))
+    return tft_files, json_files, root
+
+
+def _player_log_key(path: Path) -> str:
+    match = re.search(r"player_(\\d+)_log", path.name)
+    return match.group(1) if match else path.stem
+
+
+def audit_session_inputs(tft_files: list[Path], json_files: list[Path], report: dict,
+                         loop_window: int, comp_window: int) -> None:
+    """Use JSON for full decision evidence and .tft for complementary Viewer context."""
+    json_by_player = {_player_log_key(path): path for path in json_files}
+    processed_json = set()
+    for text_path in tft_files:
+        player_key = _player_log_key(text_path)
+        sidecar = json_by_player.get(player_key)
+        text_doc = read_json(text_path)
+        if sidecar is not None:
+            doc = read_json(sidecar)
+            if doc:
+                audit_json(sidecar, doc, report, loop_window, comp_window)
+                processed_json.add(sidecar)
+            else:
+                report.setdefault("notes", []).append(
+                    f"{sidecar.name}: sidecar estruturado inválido; análise estruturada indisponível."
+                )
+        elif text_doc:
+            audit_json(text_path, text_doc, report, loop_window, comp_window)
+
+        # Keep text-only context even when the structured sidecar is available.
+        if not text_doc:
+            audit_text(text_path, report)
+        elif sidecar is not None:
+            report.setdefault("notes", []).append(
+                f"{text_path.name}: JSON estruturado duplicado; priorizado {sidecar.name}."
+            )
+
+    for path in json_files:
+        if path in processed_json:
+            continue
+        if any(_player_log_key(tft) == _player_log_key(path) for tft in tft_files):
+            continue
+        doc = read_json(path)
+        if doc:
+            audit_json(path, doc, report, loop_window, comp_window)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("input", type=Path, help="pasta da sessão ou arquivo player log")
@@ -2314,20 +2412,13 @@ def main() -> int:
     if args.loop_window < 4 or args.comp_window < 3:
         parser.error("--loop-window precisa ser >= 4 e --comp-window >= 3")
     source = args.input
-    if source.is_file():
-        if source.suffix.lower() != ".tft":
-            parser.error("a auditoria desta sessão aceita exclusivamente arquivos .tft")
-        files = [source]
-        default_out = source.parent / "audit"
-    elif source.is_dir():
-        files = sorted(source.glob("player_*_log.tft"))
-        if not files:
-            files = sorted(source.rglob("player_*_log.tft"))
-        if not files:
-            parser.error(f"nenhum player_*_log.tft encontrado em: {source}")
-        default_out = source / "audit"
-    else:
-        parser.error(f"caminho não existe: {source}")
+    try:
+        tft_files, json_files, session_root = discover_session_inputs(source)
+    except ValueError as exc:
+        parser.error(str(exc))
+    if not tft_files and not json_files:
+        parser.error(f"nenhum player_*_log.tft ou player_*_log.json encontrado em: {source}")
+    default_out = session_root / "audit"
     report = {"source": str(source), "log_files": [], "players_seen": set(),
               "purchase_sequence_metrics": {}, "economic_action_metrics": {},
               "composition_direction_metrics": {},
@@ -2335,20 +2426,13 @@ def main() -> int:
               "team_progression_metrics": {},
               "decision_audit_metrics": {}, "decision_timeline": [],
               "entries_read": 0, "diagnostics_missing": 0, "issues": [], "notes": [],
-              "mask_note_added": False}
-    for path in files:
-        if path.suffix.lower() == ".json":
-            doc = read_json(path)
-            if doc:
-                audit_json(path, doc, report, args.loop_window, args.comp_window)
-        elif path.suffix.lower() == ".tft":
-            # Current PlayerJsonLogWriter stores structured JSON documents in .tft
-            # files. Prefer structured analysis; fall back to legacy text parsing.
-            doc = read_json(path)
-            if doc:
-                audit_json(path, doc, report, args.loop_window, args.comp_window)
-            else:
-                audit_text(path, report)
+              "mask_note_added": False,
+              "input_inventory": {
+                  "text_logs_discovered": len(tft_files),
+                  "structured_sidecars_discovered": len(json_files),
+                  "metadata_manifest_found": (session_root / "metadata.json").is_file(),
+              }}
+    audit_session_inputs(tft_files, json_files, report, args.loop_window, args.comp_window)
     unique, seen = [], set()
     for item in report["issues"]:
         key = (item["severity"], item["code"], item["player"], item["round"], item["step"], item["message"])
