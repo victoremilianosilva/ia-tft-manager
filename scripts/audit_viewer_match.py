@@ -1922,16 +1922,25 @@ def markdown_report(report: dict) -> str:
         for player in focus_players
     ):
         lines += ["## Revisão prioritária — jogadores 4, 6 e 7", "",
-                  "| Jogador | Ouro final | Nível final | XP purchases | Janelas XP/stabilização | Vendas para revisar | Vendas compensadas | Componentes sem craft observado | Bigornas |",
-                  "|---|---:|---:|---:|---:|---:|---:|---:|---:|"]
+                  "| Jogador | Ouro final | Nível final | XP purchases | Janelas XP/stabilização | Compras com valor identificado | Vendas para revisar | Vendas compensadas | Componentes sem craft observado | Bigornas |",
+                  "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
         for player in focus_players:
             team = report.get("team_progression_metrics", {}).get(player, {})
             xp = report.get("xp_stabilization_metrics", {}).get(player, {})
             sales = report.get("purchase_sequence_metrics", {}).get(player, {})
             items = report.get("item_state_metrics", {}).get(player, {})
+            useful_classes = {
+                "IMMEDIATE_UPGRADE", "PAIR_POTENTIAL", "SYNERGY_MILESTONE",
+                "BOARD_STRENGTH_GAIN", "COMPOSITION_COMPATIBILITY", "BENCH_POTENTIAL_ONLY",
+            }
+            useful_buys = sum(
+                1 for record in team.get("purchase_records", [])
+                if record.get("classification") in useful_classes
+            )
             lines.append(
                 f"| {player} | {team.get('final_gold', '—')} | {team.get('final_level', '—')} | "
                 f"{xp.get('xp_purchases', '—')} | {xp.get('review_window_count', '—')} | "
+                f"{useful_buys if 'purchase_records' in team else '—'} | "
                 f"{sales.get('sales_requiring_review', '—')} | "
                 f"{sales.get('sales_with_demonstrated_compensation', '—')} | "
                 f"{'sim' if items.get('component_conversion_review') else 'não/inconclusivo'} | "
