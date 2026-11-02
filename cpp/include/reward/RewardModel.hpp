@@ -124,7 +124,7 @@ inline double strategy_action_reward(
             if (new_gold < 50 && new_gold < old_gold && hp > 40.0) {
                 // A comp target can justify buying units, not routine XP that
                 // fails to reach a level. Keep the purchase-specific exception.
-                if (action_type == 2 && !leveled) reward -= 0.04;
+                if (action_type == 2 && !leveled && stage <= 2) reward -= 0.04;
                 else if (action_type == 0 && !useful_purchase &&
                          stage <= 2 && !has_composition_target)
                     reward -= 0.06;
