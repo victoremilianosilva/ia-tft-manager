@@ -1978,7 +1978,7 @@ def markdown_report(report: dict) -> str:
         lines += ["", "### Timeline por decisão", "",
                   "| Jogador | Round | Horário | Ação | Estratégia | Motivo | Ouro observado | Juros | Comp direction | Focus | Recompensa | Sinal para revisar |",
                   "|---|---|---|---|---|---|---:|---:|---|---|---:|---|"]
-        for event in report.get("decision_timeline", []):
+        for event in report.get("text_decision_timeline", report.get("decision_timeline", [])):
             income = event.get("income") or {}
             note = event.get("conformity_candidate", "")
             safe = lambda value: str(value if value is not None else "—").replace("|", "\\|").replace("\n", " ")
@@ -2425,7 +2425,12 @@ def audit_session_inputs(tft_files: list[Path], json_files: list[Path], report: 
 
         # Keep text-only context even when the structured sidecar is available.
         if not text_doc:
+            timeline_start = len(report.setdefault("decision_timeline", []))
             audit_text(text_path, report)
+            text_events = report["decision_timeline"][timeline_start:]
+            if text_events:
+                del report["decision_timeline"][timeline_start:]
+                report.setdefault("text_decision_timeline", []).extend(text_events)
         elif sidecar is not None:
             report.setdefault("notes", []).append(
                 f"{text_path.name}: JSON estruturado duplicado; priorizado {sidecar.name}."
