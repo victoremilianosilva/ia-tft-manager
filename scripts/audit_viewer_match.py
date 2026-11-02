@@ -1906,6 +1906,18 @@ def markdown_report(report: dict) -> str:
         f"- Achados: **{len(report['issues'])}**",
         f"- CRITICAL: {counts['CRITICAL']} | HIGH: {counts['HIGH']} | MEDIUM: {counts['MEDIUM']} | LOW: {counts['LOW']}", "",
     ]
+    metadata = report.get("session_metadata") or {}
+    if metadata:
+        lines += [
+            "## Metadados da sessão",
+            "",
+            f"- Match ID: {metadata.get('match_id', '—')}",
+            f"- Seed: {metadata.get('seed', '—')} | Engine: {metadata.get('engine', '—')} | Política determinística: {metadata.get('deterministic', '—')}",
+            f"- Checkpoint SHA-256: {metadata.get('checkpoint_sha256', '—')}",
+            f"- Policy: {metadata.get('policy_class', '—')} | Observation dim: {metadata.get('observation_dim', '—')} | Action dims: {metadata.get('action_dims', '—')}",
+            f"- Sidecars estruturados descobertos: {report.get('input_inventory', {}).get('structured_sidecars_discovered', 0)}",
+            "",
+        ]
     if report.get("elimination_filter"):
         ignored = sum(int(value.get("entries_ignored_after_elimination", 0))
                       for value in report["elimination_filter"].values())
@@ -1977,6 +1989,26 @@ def markdown_report(report: dict) -> str:
                 f"{safe(event.get('comp_focus'))} | {float(event.get('reward') or 0):.4f} | {safe(note)} |"
             )
         lines += ["", "As flags FAST8/SLOWROLL/STABILIZE/ECON são candidatos de revisão, não violações definitivas: logs legados não incluem a máscara legal completa nem sempre registram HP, nível e alternativas no mesmo instante.", ""]
+
+    if report.get("text_log_metrics"):
+        lines += [
+            "### Evidência adicional dos logs do Viewer",
+            "",
+            "| Jogador | Rounds observados | Snapshots de loja | Ofertas vistas | Snapshots de itens | Itens não vazios | Observações de ouro | Transições comp/foco | Warnings de posição |",
+            "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
+        ]
+        for player, metrics in sorted(report["text_log_metrics"].items()):
+            lines.append(
+                f"| {player} | {len(metrics.get('rounds', []))} | {metrics.get('shop_snapshots', 0)} | "
+                f"{metrics.get('shop_offers', 0)} | {metrics.get('item_snapshots', 0)} | "
+                f"{metrics.get('item_nonempty_snapshots', 0)} | {len(metrics.get('gold_observations', []))} | "
+                f"{metrics.get('composition_changes', 0)} | {sum(metrics.get('position_warnings', {}).values())} |"
+            )
+        lines += [
+            "",
+            "Essas contagens complementam os snapshots estruturados: ofertas e avisos textuais não provam, isoladamente, que uma compra, venda ou posição era a melhor decisão.",
+            "",
+        ]
 
     if report.get("decision_audit_metrics"):
         lines += ["## Auditoria decisão por decisão", "",
@@ -2440,6 +2472,20 @@ def main() -> int:
                   "structured_sidecars_discovered": len(json_files),
                   "metadata_manifest_found": (session_root / "metadata.json").is_file(),
               }}
+    metadata_path = session_root / "metadata.json"
+    if metadata_path.is_file():
+        try:
+            raw_metadata = json.loads(metadata_path.read_text(encoding="utf-8-sig"))
+            if isinstance(raw_metadata, dict):
+                report["session_metadata"] = {
+                    key: raw_metadata.get(key) for key in (
+                        "match_id", "seed", "engine", "deterministic", "created_at",
+                        "checkpoint_sha256", "policy_class", "observation_dim",
+                        "action_dims", "log_format",
+                    ) if raw_metadata.get(key) is not None
+                }
+        except (OSError, json.JSONDecodeError):
+            report.setdefault("notes", []).append("metadata.json indisponível ou inválido.")
     audit_session_inputs(tft_files, json_files, report, args.loop_window, args.comp_window)
     unique, seen = [], set()
     for item in report["issues"]:
