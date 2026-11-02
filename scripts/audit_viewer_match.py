@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Auditoria offline dos logs de uma partida TFT gerados pelo Viewer.
 
-Aceita player_*_log.json estruturados e player_*_log.tft legados.
-Gera audit_report.json e audit_report.md; não altera os logs originais.
+Aceita exclusivamente os arquivos player_*_log.tft da sessão.
+Ignora sidecars JSON e não altera os logs originais.
 
 Exemplos:
-  python audit_viewer_match.py viewer/sessions/match-20261016-203216-43b53954
-  python audit_viewer_match.py caminho/player_1_log.json --out-dir auditoria
+  python audit_viewer_match.py viewer/sessions/match-20261102-100200-75e2f079
+  python audit_viewer_match.py caminho/player_1_log.tft --out-dir auditoria
   python audit_viewer_match.py viewer/sessions/match-... --strict
 """
 from __future__ import annotations
@@ -230,10 +230,11 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
         "composition_decision_found": decision_start_index is not None,
         "composition_decision_round": decision_round,
         "composition_decision_action_index": decision_start_index,
-        "classified_sales": {}, "purchase_records": [],
+        "classified_sales": {}, "purchase_records": [], "sale_review_records": [],
     }
     purchases = []
     classifications = Counter()
+    sale_review_records = []
     for idx, (entry, payload, action) in enumerate(actions):
         before, after = payload.get("state_before") or {}, payload.get("state_after") or {}
         name = str(payload.get("action_name") or ACTION_NAMES.get(action[0], "UNKNOWN"))
@@ -315,7 +316,9 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
                 and higher_star_after <= higher_star_before
             )
 
-            # A sale can be correct when it produces a measurable board benefit.
+            # Do not penalize a core/pair sale if its replacement benefit appears
+            # in the same decision or in the next few actions of the same round.
+            core_sale_candidate, pair_lost_candidate = core_sale, pair_lost
             try:
                 synergy_gain = (before.get("synergy_score") is not None
                                 and after.get("synergy_score") is not None
@@ -328,9 +331,50 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
                                     and float(after["positioning_score"]) > float(before["positioning_score"]) + 0.25)
             except (TypeError, ValueError):
                 positioning_gain = False
-            compensated_sale = synergy_gain or positioning_gain
-            core_sale = core_sale and not compensated_sale
-            pair_lost = pair_lost and not compensated_sale
+            immediate_board_gain = _board_power(after) > _board_power(before) + 0.5
+            future_compensation = []
+            for later_entry, later_payload, _later_action in actions[idx + 1:idx + 4]:
+                if get_round(later_entry) != rnd:
+                    break
+                later_state = later_payload.get("state_after") or {}
+                if not later_state:
+                    continue
+                board_delta = _board_power(later_state) - _board_power(after)
+                upgrade_delta = _star_counts(later_state)[2] - _star_counts(after)[2]
+                try:
+                    later_synergy_gain = (
+                        later_state.get("synergy_score") is not None
+                        and after.get("synergy_score") is not None
+                        and float(later_state["synergy_score"]) > float(after["synergy_score"]) + 1e-6
+                    )
+                except (TypeError, ValueError):
+                    later_synergy_gain = False
+                if board_delta > 0.5 or upgrade_delta > 0 or later_synergy_gain:
+                    future_compensation.append({
+                        "step": later_entry.get("step"), "board_power_delta": round(board_delta, 4),
+                        "upgrade_delta": upgrade_delta, "synergy_gain": later_synergy_gain,
+                    })
+            compensated_sale = (
+                synergy_gain or positioning_gain or immediate_board_gain or bool(future_compensation)
+            )
+            core_sale = core_sale_candidate and not compensated_sale
+            pair_lost = pair_lost_candidate and not compensated_sale
+            if core_sale_candidate or pair_lost_candidate:
+                sale_review_records.append({
+                    "step": step, "round": rnd, "champion": champion,
+                    "core_sale_candidate": core_sale_candidate,
+                    "pair_loss_candidate": pair_lost_candidate,
+                    "compensated": compensated_sale,
+                    "compensation": {
+                        "immediate_synergy_gain": synergy_gain,
+                        "immediate_positioning_gain": positioning_gain,
+                        "immediate_board_gain": immediate_board_gain,
+                        "future": future_compensation,
+                    },
+                    "copies_before": copies_before, "copies_after": copies_after,
+                    "same_star_before": same_star_before, "same_star_after": same_star_after,
+                    "board_power_before": _board_power(before), "board_power_after": _board_power(after),
+                })
             if not after_comp_decision and (
                 (sold_star in (1, 2) and same_star_before >= 2 and same_star_after < 2)
                 or champion_key in core_keys
@@ -414,6 +458,13 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
                            "sale_gold_delta": match["sale_gold_delta"],
                            "net_gold_lost": match["net_gold_lost"], "fit_score": match["fit_score"]})
     metrics["classified_sales"] = dict(classifications)
+    metrics["sale_review_records"] = sale_review_records
+    metrics["sales_requiring_review"] = sum(
+        1 for item in sale_review_records if not item["compensated"]
+    )
+    metrics["sales_with_demonstrated_compensation"] = sum(
+        1 for item in sale_review_records if item["compensated"]
+    )
     values = [float(record.get("strategic_value", 0.0)) for record in metrics["purchase_records"]]
     metrics["average_strategic_value_per_purchase"] = round(sum(values) / len(values), 4) if values else 0.0
     buys = max(1, metrics["buys"])
@@ -525,6 +576,63 @@ def audit_economic_actions(entries: list[dict], player: str, report: dict) -> No
     }
 
 
+def audit_xp_stabilization_opportunities(entries: list[dict], player: str, report: dict) -> None:
+    """Surface XP/stabilization decision windows without assuming an action was mandatory."""
+    ordered = sorted(
+        (entry for entry in entries if isinstance(entry, dict)
+         and entry.get("event_type") == "action"),
+        key=lambda e: (e.get("sequence_id", 0), e.get("step", 0)),
+    )
+    xp_buys = []
+    review_windows = []
+    for index, entry in enumerate(ordered):
+        payload = entry.get("payload") or {}
+        before = payload.get("state_before") or {}
+        after = payload.get("state_after") or {}
+        econ = payload.get("economic_diagnostics") or {}
+        context = payload.get("decision_context") or {}
+        action = str(payload.get("action_name") or "UNKNOWN")
+        strategy = str(context.get("strategy") or before.get("strategy_name") or "").upper()
+        try:
+            gold = int(before.get("gold", econ.get("gold_before", 0)) or 0)
+            level = int(before.get("level", econ.get("level_before", 0)) or 0)
+            hp = int(before.get("hp", context.get("hp", 0)) or 0)
+            target_level = int(before.get("target_level") or before.get("level_target") or 8)
+        except (TypeError, ValueError):
+            continue
+        target_level = max(1, min(10, target_level))
+        if action == "BUY_XP":
+            xp_buys.append({
+                "round": get_round(entry), "step": entry.get("step"),
+                "gold_before": gold, "gold_after": after.get("gold"),
+                "level_before": level, "level_after": after.get("level"),
+                "xp_before": before.get("xp"), "xp_after": after.get("xp"),
+                "reason_code": econ.get("reason_code"),
+                "strategy": strategy or "UNKNOWN", "hp_before": hp or None,
+            })
+        if action not in ("PASS", "REROLL") or gold < 4 or level >= target_level:
+            continue
+        is_slowroll = "SLOWROLL" in strategy
+        stabilization_context = (
+            hp > 0 and hp <= 40
+        ) or any(token in strategy for token in ("STABILIZE", "FAST8", "FAST_8"))
+        if is_slowroll or not stabilization_context:
+            continue
+        review_windows.append({
+            "round": get_round(entry), "step": entry.get("step"), "action": action,
+            "strategy": strategy or "UNKNOWN", "gold_before": gold, "hp_before": hp or None,
+            "level_before": level, "target_level": target_level,
+            "board_units": len(_occupied_units(before, "board")),
+            "reason_code": econ.get("reason_code"),
+            "interpretation": "janela para revisar XP/estabilização; não prova que comprar XP era melhor que comprar unidades ou preservar juros",
+        })
+    report.setdefault("xp_stabilization_metrics", {})[player] = {
+        "xp_purchases": len(xp_buys), "xp_purchase_records": xp_buys,
+        "review_windows": review_windows, "review_window_count": len(review_windows),
+        "interpretation": "candidatos contextuais; não são penalidades e SLOWROLL é excluído",
+    }
+
+
 def audit_composition_direction_changes(entries: list[dict], player: str, report: dict) -> None:
     """Measure direction transitions with observable strength/synergy/board/fit gains."""
     metrics = {
@@ -543,20 +651,36 @@ def audit_composition_direction_changes(entries: list[dict], player: str, report
         payload = entry.get("payload") or {}
         diagnostics = payload.get("composition_diagnostics") or {}
         event = diagnostics.get("direction_event")
-        if not isinstance(event, dict):
-            continue
         before = payload.get("state_before") or {}
         after = payload.get("state_after") or {}
-        strength_delta = (
-            float(after.get("composition_strength", 0.0) or 0.0)
-            - float(event.get("from_strength", before.get("composition_strength", 0.0)) or 0.0)
+        if not isinstance(event, dict):
+            before_direction = str(before.get("comp_direction") or before.get("composition_direction") or "").strip()
+            after_direction = str(after.get("comp_direction") or after.get("composition_direction") or "").strip()
+            if not before_direction or not after_direction or before_direction == after_direction:
+                continue
+            event = {
+                "from": before_direction, "to": after_direction,
+                "reason": "state_transition_fallback",
+                "was_locked": before.get("composition_locked"),
+                "from_strength": before.get("composition_strength"),
+            }
+
+        def numeric_delta(after_state: dict, before_state: dict, key: str, before_fallback=None):
+            left = after_state.get(key)
+            right = before_state.get(key) if before_fallback is None else before_fallback
+            if left is None or right is None:
+                return None
+            try:
+                return float(left) - float(right)
+            except (TypeError, ValueError):
+                return None
+
+        strength_delta = numeric_delta(
+            after, before, "composition_strength",
+            event.get("from_strength") if event.get("from_strength") is not None else None,
         )
-        board_delta = float(after.get("board_power", 0.0) or 0.0) - float(
-            before.get("board_power", 0.0) or 0.0
-        )
-        synergy_delta = float(after.get("synergy_score", 0.0) or 0.0) - float(
-            before.get("synergy_score", 0.0) or 0.0
-        )
+        board_delta = numeric_delta(after, before, "board_power")
+        synergy_delta = numeric_delta(after, before, "synergy_score")
         economic = payload.get("economic_diagnostics") or {}
         synergy_milestones = economic.get("synergy_milestones_changed") or {}
         fit = diagnostics.get("unit_fit") or {}
@@ -565,8 +689,10 @@ def audit_composition_direction_changes(entries: list[dict], player: str, report
             and (bool(fit.get("core_unit_match")) or float(fit.get("focus_fit_score", 0.0) or 0.0) > 0.0)
         )
         measurable_gain = (
-            strength_delta > 1e-6 or board_delta > 1e-6
-            or synergy_delta > 1e-6 or bool(synergy_milestones) or compatibility_gain
+            (strength_delta is not None and strength_delta > 1e-6)
+            or (board_delta is not None and board_delta > 1e-6)
+            or (synergy_delta is not None and synergy_delta > 1e-6)
+            or bool(synergy_milestones) or compatibility_gain
         )
         metrics["direction_changes"] += 1
         metrics["changes_with_measurable_gain"] += int(measurable_gain)
@@ -578,9 +704,9 @@ def audit_composition_direction_changes(entries: list[dict], player: str, report
             "to": event.get("to"),
             "reason": event.get("reason"),
             "was_locked": event.get("was_locked"),
-            "strength_delta": round(strength_delta, 4),
-            "board_power_delta": round(board_delta, 4),
-            "synergy_delta": round(synergy_delta, 4),
+            "strength_delta": round(strength_delta, 4) if strength_delta is not None else None,
+            "board_power_delta": round(board_delta, 4) if board_delta is not None else None,
+            "synergy_delta": round(synergy_delta, 4) if synergy_delta is not None else None,
             "synergy_milestones_changed": synergy_milestones,
             "compatibility_gain": compatibility_gain,
             "measurable_gain": measurable_gain,
@@ -631,7 +757,8 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
     totals = {
         "actions_with_metrics": 0, "positive_quality_delta": 0,
         "negative_quality_delta": 0, "neutral_quality_delta": 0,
-        "quality_delta_sum": 0.0, "structural_delta_sum": 0.0,
+        "quality_delta_sum": 0.0, "positional_delta_sum": 0.0,
+        "positional_delta_samples": 0, "structural_delta_sum": 0.0,
         "structural_samples": 0, "structural_score_sum": 0.0,
         "positional_samples": 0, "role_diagnostic_samples": 0,
         "positional_score_sum": 0.0, "exposed_carries_sum": 0,
@@ -647,6 +774,7 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
         "actions": 0, "quality_delta_sum": 0.0, "positive_gains": 0,
         "structural_delta_sum": 0.0, "structural_samples": 0,
     })
+    combat_round_samples = []
     for entry in actions:
         payload = entry.get("payload") or {}
         before = payload.get("state_before") or {}
@@ -677,6 +805,15 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
             totals["negative_quality_delta"] += 1
         else:
             totals["neutral_quality_delta"] += 1
+
+        positional_after_raw = after.get("board_positional_score")
+        positional_before_raw = before.get("board_positional_score")
+        if positional_after_raw is not None and positional_before_raw is not None:
+            try:
+                totals["positional_delta_sum"] += float(positional_after_raw) - float(positional_before_raw)
+                totals["positional_delta_samples"] += 1
+            except (TypeError, ValueError):
+                pass
 
         structural_after = after.get("board_structural_score")
         structural_before_raw = before.get("board_structural_score")
@@ -718,9 +855,58 @@ def audit_board_quality(entries: list[dict], player: str, report: dict) -> None:
             totals["quality_delta_when_combat_reward_negative"] += delta
             totals["negative_combat_samples"] += 1
 
+    for entry in entries:
+        if not isinstance(entry, dict) or entry.get("event_type") != "round_finished":
+            continue
+        payload = entry.get("payload") or {}
+        before = payload.get("state_before") or {}
+        reward_components = payload.get("reward_components") or {}
+        combat_raw = reward_components.get("combat", payload.get("combat_reward"))
+        structural_raw = before.get("board_structural_score")
+        positional_raw = before.get("board_positional_score", before.get("positioning_score"))
+        if combat_raw is None or (structural_raw is None and positional_raw is None):
+            continue
+        try:
+            combat_value = float(combat_raw)
+            structural_value = float(structural_raw) if structural_raw is not None else None
+            positional_value = float(positional_raw) if positional_raw is not None else None
+        except (TypeError, ValueError):
+            continue
+        combat_round_samples.append({
+            "round": get_round(entry), "step": entry.get("step"),
+            "combat_reward": combat_value, "structural_score_before": structural_value,
+            "positional_score_before": positional_value,
+            "outcome": "positive" if combat_value > 1e-6 else "negative" if combat_value < -1e-6 else "neutral",
+        })
+
+    def pearson(samples, key):
+        pairs = [(item[key], item["combat_reward"]) for item in samples if item.get(key) is not None]
+        if len(pairs) < 3:
+            return None
+        xs, ys = [p[0] for p in pairs], [p[1] for p in pairs]
+        mean_x, mean_y = sum(xs) / len(xs), sum(ys) / len(ys)
+        numerator = sum((x - mean_x) * (y - mean_y) for x, y in pairs)
+        denom_x = sum((x - mean_x) ** 2 for x in xs) ** 0.5
+        denom_y = sum((y - mean_y) ** 2 for y in ys) ** 0.5
+        return numerator / (denom_x * denom_y) if denom_x > 1e-12 and denom_y > 1e-12 else None
+
+    for label in ("positive", "negative"):
+        subset = [item for item in combat_round_samples if item["outcome"] == label]
+        for field, output in (("structural_score_before", "structural"), ("positional_score_before", "positional")):
+            values = [item[field] for item in subset if item.get(field) is not None]
+            totals[f"mean_{output}_score_before_{label}_combat"] = sum(values) / len(values) if values else None
+    totals["combat_round_samples"] = len(combat_round_samples)
+    totals["structural_combat_correlation"] = pearson(combat_round_samples, "structural_score_before")
+    totals["positional_combat_correlation"] = pearson(combat_round_samples, "positional_score_before")
+    totals["combat_round_details"] = combat_round_samples
+
     n = totals["actions_with_metrics"]
     structural_n = totals["structural_samples"]
     totals["mean_quality_delta"] = totals["quality_delta_sum"] / n if n else 0.0
+    positional_delta_n = totals["positional_delta_samples"]
+    totals["mean_positional_delta"] = (
+        totals["positional_delta_sum"] / positional_delta_n if positional_delta_n else None
+    )
     totals["mean_structural_delta"] = totals["structural_delta_sum"] / structural_n if structural_n else None
     totals["mean_structural_score"] = totals["structural_score_sum"] / structural_n if structural_n else None
     positional_n = totals["positional_samples"]
@@ -775,6 +961,12 @@ def audit_item_state(entries: list[dict], player: str, report: dict) -> None:
     component_ids_seen = set()
     bag_item_ids_seen = set()
     item_events = Counter()
+    anvil_decisions = []
+    component_rounds = defaultdict(set)
+    component_observations = Counter()
+    craft_actions = 0
+    successful_crafts = 0
+    craft_actions_without_observed_conversion = 0
     final = None
     peaks = {"equipped": 0, "bag": 0, "components": 0}
 
@@ -822,6 +1014,49 @@ def audit_item_state(entries: list[dict], player: str, report: dict) -> None:
             bag_item_ids_seen.update(str(value) for value in bag if isinstance(value, str))
         if isinstance(components, list):
             component_ids_seen.update(str(value) for value in components if isinstance(value, str))
+            for value in components:
+                component_rounds[str(value)].add(get_round(entry))
+                component_observations[str(value)] += 1
+        item_audit = payload.get("item_audit") or {}
+        decision = item_audit.get("decision") or {}
+        if decision.get("operation") == "craft_and_equip" or payload.get("action_name") == "CRAFT_AND_EQUIP":
+            craft_actions += 1
+            item_before = item_audit.get("before") or {}
+            item_after = item_audit.get("after") or {}
+            components_before = item_before.get("components") or []
+            components_after = item_after.get("components") or []
+            equipped_before = item_before.get("equipped") or []
+            equipped_after = item_after.get("equipped") or []
+            if len(components_after) < len(components_before) and len(equipped_after) > len(equipped_before):
+                successful_crafts += 1
+            else:
+                craft_actions_without_observed_conversion += 1
+        if decision.get("is_anvil_choice"):
+            options = decision.get("anvil_options_before") or []
+            selected = (decision.get("selected_id") or decision.get("selected_item_id")
+                        or decision.get("selected_component_id"))
+            option_ids = [
+                str(value.get("id") or value.get("api_name") or value.get("apiName") or value.get("name"))
+                if isinstance(value, dict) else str(value)
+                for value in options
+            ]
+            valid = bool(options and selected is not None and str(selected) in option_ids)
+            record = {
+                "round": get_round(entry), "step": entry.get("step"),
+                "kind": decision.get("anvil_kind"), "options": option_ids,
+                "selected": selected, "selection_in_options": valid if options and selected is not None else None,
+                "item_fit": decision.get("item_fit"),
+                "estimated_immediate_strength": decision.get("estimated_immediate_strength"),
+                "role_alignment": decision.get("role_alignment"),
+                "assignment_reward": decision.get("assignment_reward"),
+                "target": decision.get("target"),
+            }
+            anvil_decisions.append(record)
+            if record["selection_in_options"] is False:
+                add_issue(report, "HIGH", "ANVIL_SELECTION_NOT_IN_OPTIONS", player,
+                          get_round(entry), entry.get("step"),
+                          "A bigorna registrou uma seleção que não aparece nas opções disponíveis.",
+                          record)
         bag_count = len(bag) if isinstance(bag, list) else 0
         component_count = len(components) if isinstance(components, list) else 0
         peaks["equipped"] = max(peaks["equipped"], len(equipped))
@@ -858,6 +1093,21 @@ def audit_item_state(entries: list[dict], player: str, report: dict) -> None:
         "peak_components": peaks["components"],
         "final_snapshot": final,
         "item_events": dict(item_events),
+        "anvil_decisions": anvil_decisions,
+        "anvil_choices": len(anvil_decisions),
+        "craft_actions": craft_actions,
+        "successful_crafts": successful_crafts,
+        "craft_actions_without_observed_conversion": craft_actions_without_observed_conversion,
+        "components_persisted_multiple_rounds": [
+            component for component, rounds in sorted(component_rounds.items())
+            if len(rounds) >= 2
+        ],
+        "component_observations": dict(component_observations),
+        "component_conversion_review": bool(component_ids_seen and craft_actions == 0),
+        "component_conversion_interpretation": (
+            "componentes sem ação de craft observada merecem revisão; sem catálogo de receitas e contexto da partida, "
+            "não se presume que havia combinação viável ou que guardar era errado"
+        ),
     }
 
 
@@ -877,6 +1127,7 @@ def audit_team_progression(entries: list[dict], player: str, report: dict) -> No
     gold_spent_total = 0
     previous_direction = None
     final_state = {}
+    final_placement = None
     for entry in actions:
         payload = entry.get("payload") or {}
         before, after = payload.get("state_before") or {}, payload.get("state_after") or {}
@@ -919,6 +1170,10 @@ def audit_team_progression(entries: list[dict], player: str, report: dict) -> No
         })
         current = snap_after
         initial = snap_before or current
+        if after.get("placement") is not None:
+            final_placement = after.get("placement")
+        elif payload.get("placement") is not None:
+            final_placement = payload.get("placement")
         stage["actions"] += 1
         if stage["board_strength_start"] is None:
             stage["board_strength_start"] = float(initial.get("board_strength", _board_power(before)) or 0.0)
@@ -1011,7 +1266,7 @@ def audit_team_progression(entries: list[dict], player: str, report: dict) -> No
         "final_gold": final_state.get("gold"),
         "final_level": final_state.get("level"),
         "final_hp": final_state.get("hp"),
-        "final_placement": final_state.get("placement"),
+        "final_placement": final_placement if final_placement is not None else final_state.get("placement"),
         "interpretation": "Bench strength and pairs are future potential, not current combat strength. Heuristic changes require validation against combat results.",
     }
 
@@ -1137,6 +1392,35 @@ def _decision_units(state: dict) -> dict[str, dict]:
     return result
 
 
+def _validate_action_from_mask(action: Any, mask: dict) -> bool | None:
+    """Validate known action parameters against the exact pre-action conditional masks."""
+    if not isinstance(action, (list, tuple)) or not action or not isinstance(mask, dict):
+        return None
+    try:
+        action_type = int(action[0])
+        type_mask = mask.get("type_mask") or []
+        if action_type < 0 or action_type >= len(type_mask) or int(type_mask[action_type]) != 1:
+            return False
+        if action_type in (1, 2, 6):
+            return True
+        if action_type == 0:
+            values, slot = mask.get("shop_mask") or [], int(action[1])
+            return 0 <= slot < len(values) and int(values[slot]) == 1
+        if action_type == 3:
+            matrix, source, target = mask.get("bench_to_board_target_masks") or [], int(action[2]), int(action[3])
+            return 0 <= source < len(matrix) and 0 <= target < len(matrix[source]) and int(matrix[source][target]) == 1
+        if action_type == 4:
+            matrix, source, target = mask.get("board_move_target_masks") or [], int(action[4]), int(action[5])
+            return 0 <= source < len(matrix) and 0 <= target < len(matrix[source]) and int(matrix[source][target]) == 1
+        if action_type == 5:
+            values, slot = mask.get("bench_source_mask") or [], int(action[2])
+            return 0 <= slot < len(values) and int(values[slot]) == 1
+    except (IndexError, TypeError, ValueError, KeyError):
+        return False
+    # Item actions have multiple conditional stages; a partial mask is insufficient.
+    return None
+
+
 def audit_decision_context(entries: list[dict], player: str, report: dict) -> None:
     timeline = report.setdefault("decision_timeline", [])
     stats = report.setdefault("decision_audit_metrics", {}).setdefault(player, {
@@ -1170,6 +1454,11 @@ def audit_decision_context(entries: list[dict], player: str, report: dict) -> No
                       {"action": p.get("action"), "action_name": action_name, "strategy": strategy,
                        "legal_action_types": mask.get("legal_action_types")})
         full = mask.get("chosen_action_fully_validated")
+        if full is None:
+            raw_mask = mask.get("raw_mask")
+            if not isinstance(raw_mask, dict):
+                raw_mask = p.get("action_mask_before")
+            full = _validate_action_from_mask(p.get("action"), raw_mask or {})
         if full is not None:
             stats["full_action_validation_available"] += 1
             if full is False:
@@ -1254,6 +1543,7 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
     }
     audit_purchase_sequences(entries, player, report)
     audit_economic_actions(entries, player, report)
+    audit_xp_stabilization_opportunities(entries, player, report)
     audit_composition_direction_changes(entries, player, report)
     audit_board_quality(entries, player, report)
     audit_item_state(entries, player, report)
@@ -1624,6 +1914,40 @@ def markdown_report(report: dict) -> str:
         lines += [f"- Decisões analisadas enquanto os jogadores estavam vivos: **{active}**",
                   f"- Entradas posteriores à eliminação ignoradas: **{ignored}**",
                   "- A ação que causa a eliminação permanece válida; o estado terminal não é usado como economia final.", ""]
+    focus_players = ("Jogador 4", "Jogador 6", "Jogador 7")
+    if any(
+        player in report.get(bucket, {})
+        for bucket in ("team_progression_metrics", "xp_stabilization_metrics",
+                       "purchase_sequence_metrics", "item_state_metrics")
+        for player in focus_players
+    ):
+        lines += ["## Revisão prioritária — jogadores 4, 6 e 7", "",
+                  "| Jogador | Ouro final | Nível final | XP purchases | Janelas XP/stabilização | Compras com valor identificado | Vendas para revisar | Vendas compensadas | Componentes sem craft observado | Bigornas |",
+                  "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+        for player in focus_players:
+            team = report.get("team_progression_metrics", {}).get(player, {})
+            xp = report.get("xp_stabilization_metrics", {}).get(player, {})
+            sales = report.get("purchase_sequence_metrics", {}).get(player, {})
+            items = report.get("item_state_metrics", {}).get(player, {})
+            useful_classes = {
+                "IMMEDIATE_UPGRADE", "PAIR_POTENTIAL", "SYNERGY_MILESTONE",
+                "BOARD_STRENGTH_GAIN", "COMPOSITION_COMPATIBILITY", "BENCH_POTENTIAL_ONLY",
+            }
+            useful_buys = sum(
+                1 for record in team.get("purchase_records", [])
+                if record.get("classification") in useful_classes
+            )
+            lines.append(
+                f"| {player} | {team.get('final_gold', '—')} | {team.get('final_level', '—')} | "
+                f"{xp.get('xp_purchases', '—')} | {xp.get('review_window_count', '—')} | "
+                f"{useful_buys if 'purchase_records' in team else '—'} | "
+                f"{sales.get('sales_requiring_review', '—')} | "
+                f"{sales.get('sales_with_demonstrated_compensation', '—')} | "
+                f"{'sim' if items.get('component_conversion_review') else 'não/inconclusivo'} | "
+                f"{items.get('anvil_choices', '—')} |"
+            )
+        lines += ["", "A tabela prioriza a inspeção desses três jogadores; as tabelas completas abaixo continuam incluindo os oito participantes.", ""]
+
     if report.get("text_log_metrics"):
         lines += ["## Reconstrução de decisões dos logs legados", "",
                   "Esta seção usa o que está explícito em cada linha de ação. HP, nível, máscara legal e canais separados de recompensa não são inferidos quando o log não os registra.", "",
@@ -1694,6 +2018,18 @@ def markdown_report(report: dict) -> str:
             lines.append(f"- {player} — gasto por ação: {action_breakdown}")
             lines.append(f"- {player} — gasto por estágio: {stage_breakdown}")
         lines += ["", "Os motivos ficam em economic_diagnostics.reason_code. 'Sem ganho imediato' não significa automaticamente uma decisão ruim; o relatório não modifica a recompensa PPO.", ""]
+    if report.get("xp_stabilization_metrics"):
+        lines += ["### Janelas de XP e estabilização para revisão", "",
+                  "| Jogador | Compras de XP | Janelas de revisão |", "|---|---:|---:|"]
+        for player, metrics in sorted(report["xp_stabilization_metrics"].items()):
+            lines.append(f"| {player} | {metrics['xp_purchases']} | {metrics['review_window_count']} |")
+            for window in metrics.get("review_windows", []):
+                lines.append(
+                    f"- {player} · {window['round']} · step {window['step']}: {window['action']} "
+                    f"com {window['gold_before']}g, HP {window.get('hp_before') or '—'}, "
+                    f"nível {window['level_before']}/{window['target_level']} ({window['strategy']})."
+                )
+        lines += ["", "Janelas candidatas não são penalidades nem provam que XP era a melhor ação. Compare loja, pares, upgrades, HP, nível-alvo, reserva de juros e estratégia; SLOWROLL é excluído.", ""]
 
     if report.get("composition_direction_metrics"):
         lines += ["## Auditoria de mudanças de composição", "",
@@ -1711,8 +2047,8 @@ def markdown_report(report: dict) -> str:
 
     if report.get("board_quality_metrics"):
         lines += ["## Qualidade estrutural e posicionamento do tabuleiro", "",
-                  "| Jogador | Ações com métrica | Ganhos | Pioras | Neutras | Δ médio qualidade | Estrutural médio | Δ estrutural médio | Posicional médio | Δ qualidade combate + | Δ qualidade combate - |",
-                  "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+                  "| Jogador | Ações com métrica | Ganhos | Pioras | Neutras | Δ score combinado | Estrutural médio | Δ estrutural médio | Posicional médio | Δ posicional médio | Δ score c/ combate + | Δ score c/ combate - |",
+                  "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
         for player, metrics in sorted(report["board_quality_metrics"].items()):
             structural_delta = metrics.get("mean_structural_delta")
             structural_score = metrics.get("mean_structural_score")
@@ -1720,11 +2056,13 @@ def markdown_report(report: dict) -> str:
             structural_text = f"{structural_delta:.4f}" if structural_delta is not None else "—"
             structural_score_text = f"{structural_score:.4f}" if structural_score is not None else "—"
             positional_score_text = f"{positional_score:.4f}" if positional_score is not None else "—"
+            positional_delta = metrics.get("mean_positional_delta")
+            positional_delta_text = f"{positional_delta:.4f}" if positional_delta is not None else "—"
             lines.append(
                 f"| {player} | {metrics['actions_with_metrics']} | "
                 f"{metrics['positive_quality_delta']} | {metrics['negative_quality_delta']} | "
                 f"{metrics['neutral_quality_delta']} | {metrics['mean_quality_delta']:.4f} | "
-                f"{structural_score_text} | {structural_text} | {positional_score_text} | "
+                f"{structural_score_text} | {structural_text} | {positional_score_text} | {positional_delta_text} | "
                 f"{metrics['mean_quality_delta_when_combat_reward_positive']:.4f} | "
                 f"{metrics['mean_quality_delta_when_combat_reward_negative']:.4f} |"
             )
@@ -1733,8 +2071,27 @@ def markdown_report(report: dict) -> str:
                 for name, values in sorted(metrics.get("by_action", {}).items())
             ) or "nenhuma ação com métrica"
             lines.append(f"- {player} — ganho médio por ação: {breakdown}")
-        lines += ["", "A pontuação é uma heurística para auditoria, não uma verdade absoluta. "
-                  "Compare-a com recompensas e resultados de combate; correlação não prova causalidade.", ""]
+        for player, metrics in sorted(report["board_quality_metrics"].items()):
+            structural_corr = metrics.get("structural_combat_correlation")
+            positional_corr = metrics.get("positional_combat_correlation")
+            structural_corr_text = f"{structural_corr:.3f}" if structural_corr is not None else "insuficiente"
+            positional_corr_text = f"{positional_corr:.3f}" if positional_corr is not None else "insuficiente"
+            lines.append(
+                f"- {player} — rounds avaliados: {metrics.get('combat_round_samples', 0)}; "
+                f"correlação estrutural/combate: {structural_corr_text}; "
+                f"posicional/combate: {positional_corr_text}."
+            )
+            for outcome in ("positive", "negative"):
+                structural_mean = metrics.get(f"mean_structural_score_before_{outcome}_combat")
+                positional_mean = metrics.get(f"mean_positional_score_before_{outcome}_combat")
+                lines.append(
+                    f"- {player} — combate {outcome}: score estrutural prévio "
+                    f"{structural_mean:.3f}" if structural_mean is not None
+                    else f"- {player} — combate {outcome}: sem amostra estrutural prévia"
+                )
+                if positional_mean is not None:
+                    lines.append(f"  score posicional prévio {positional_mean:.3f}")
+        lines += ["", "A pontuação é uma heurística para auditoria. A correlação usa o estado pré-combate e a recompensa real do round; amostras pequenas são descritivas e correlação não prova causalidade.", ""]
 
     if report.get("item_state_metrics"):
         lines += ["## Auditoria de itens e componentes", "",
@@ -1753,6 +2110,21 @@ def markdown_report(report: dict) -> str:
             item_ids = ", ".join(metrics.get("distinct_equipped_item_ids", [])) or "nenhum observado"
             events = ", ".join(f"{name}: {count}" for name, count in sorted(metrics.get("item_events", {}).items())) or "nenhum evento"
             lines.append(f"- {player} — IDs equipados observados: {item_ids}; eventos: {events}.")
+            lines.append(
+                f"- {player} — bigornas: {metrics.get('anvil_choices', 0)} escolhas; "
+                f"craft/equip: {metrics.get('craft_actions', 0)} "
+                f"(conversões observadas: {metrics.get('successful_crafts', 0)}); componentes persistentes entre rounds: "
+                f"{', '.join(metrics.get('components_persisted_multiple_rounds', [])) or 'nenhum observado'}."
+            )
+            if metrics.get("component_conversion_review"):
+                lines.append(f"- {player} — revisão de conversão: componentes foram observados, mas nenhuma ação de craft/equip foi registrada; isso não prova receita viável.")
+            for choice in metrics.get("anvil_decisions", []):
+                lines.append(
+                    f"- {player} — bigorna {choice.get('round')} step {choice.get('step')}: "
+                    f"seleção {choice.get('selected') or '—'} entre {', '.join(choice.get('options', [])) or 'opções ausentes'}; "
+                    f"consistente: {choice.get('selection_in_options') if choice.get('selection_in_options') is not None else 'inconclusivo'}; "
+                    f"fit {choice.get('item_fit') if choice.get('item_fit') is not None else '—'}."
+                )
         lines += ["", "Os totais finais vêm do último snapshot disponível; picos e IDs distintos são métricas de observação, não inventário atual.", ""]
 
     if report.get("team_progression_metrics"):
@@ -1794,10 +2166,20 @@ def markdown_report(report: dict) -> str:
             f"{player}: {metrics.get('composition_decision_round') or 'sem decisão observada'}"
             for player, metrics in sorted(report["purchase_sequence_metrics"].items())
         )
+        for player, metrics in sorted(report["purchase_sequence_metrics"].items()):
+            for sale in metrics.get("sale_review_records", []):
+                comp = sale.get("compensation") or {}
+                lines.append(
+                    f"- {player} — venda {sale.get('champion')} ({sale.get('round')}, step {sale.get('step')}): "
+                    f"core={sale.get('core_sale_candidate')}, par={sale.get('pair_loss_candidate')}, "
+                    f"compensada={sale.get('compensated')}; ganho tabuleiro={comp.get('immediate_board_gain')}, "
+                    f"sinergia={comp.get('immediate_synergy_gain')}, posicionamento={comp.get('immediate_positioning_gain')}, "
+                    f"compensações posteriores={len(comp.get('future', []))}."
+                )
         lines += ["", f"Vendas de core/pares ignoradas antes da decisão da composição: **{ignored_pre_decision}**.",
                   f"Round da decisão por jogador: {decisions}.",
                   "As classificações detalhadas e sequências correlacionadas permanecem nos dados estruturados de origem.",
-                  "Uma venda sem compra correspondente na janela é UNKNOWN; sequências ambíguas não são penalizadas automaticamente.", ""]
+                  "Uma venda sem compra correspondente na janela é UNKNOWN; sequências ambíguas não são penalizadas automaticamente. Ganhos nas três ações seguintes do mesmo round podem compensar uma venda; falta de ganho imediato isoladamente não gera penalidade.", ""]
     if report["issues"]:
         lines += ["## Achados", "", "| Severidade | Jogador | Round | Step | Código | Descrição |",
                   "|---|---|---:|---:|---|---|"]
@@ -1933,18 +2315,16 @@ def main() -> int:
         parser.error("--loop-window precisa ser >= 4 e --comp-window >= 3")
     source = args.input
     if source.is_file():
+        if source.suffix.lower() != ".tft":
+            parser.error("a auditoria desta sessão aceita exclusivamente arquivos .tft")
         files = [source]
         default_out = source.parent / "audit"
     elif source.is_dir():
-        json_files = sorted(source.glob("player_*_log.json"))
-        tft_files = sorted(source.glob("player_*_log.tft"))
-        if not json_files:
-            json_files = sorted(source.rglob("player_*_log.json"))
-        if not tft_files:
-            tft_files = sorted(source.rglob("player_*_log.tft"))
-        # Structured JSON sidecars are authoritative; avoid double-counting matching .tft files.
-        json_stems = {p.stem for p in json_files}
-        files = json_files + [p for p in tft_files if p.stem not in json_stems]
+        files = sorted(source.glob("player_*_log.tft"))
+        if not files:
+            files = sorted(source.rglob("player_*_log.tft"))
+        if not files:
+            parser.error(f"nenhum player_*_log.tft encontrado em: {source}")
         default_out = source / "audit"
     else:
         parser.error(f"caminho não existe: {source}")
