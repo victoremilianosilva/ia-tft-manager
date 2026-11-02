@@ -226,7 +226,8 @@ def test_combined_audit_keeps_structured_and_text_evidence_together(tmp_path):
     text_log.write_text(
         "[12:00:00] PASSOU TURNO | Rew: +0.00\n"
         "    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: CarryA\n"
-        "    STRATEGY REASON: weak board | CONF: 0.90\n",
+        "    STRATEGY REASON: weak board | CONF: 0.90\n"
+        "[12:00:01] PASSOU TURNO | Rew: +0.00\n",
         encoding="utf-8",
     )
     sidecar.write_text(
