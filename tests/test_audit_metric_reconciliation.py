@@ -6,6 +6,8 @@ from scripts.audit_viewer_match import (
     audit_purchase_sequences,
     audit_team_progression,
     audit_xp_stabilization_opportunities,
+    audit_session_inputs,
+    discover_session_inputs,
 )
 
 
@@ -194,3 +196,71 @@ def test_core_sale_is_not_flagged_when_near_term_board_gain_compensates():
     assert metrics["sales_requiring_review"] == 0
     assert metrics["sale_review_records"][0]["compensation"]["future"]
     assert not any(issue["code"] == "SOLD_CORE_UNIT" for issue in report["issues"])
+
+
+
+def test_session_discovery_uses_metadata_and_untracked_json_sidecars(tmp_path):
+    (tmp_path / "metadata.json").write_text(
+        '{"player_log_files":["player_1_log.tft"],'
+        '"structured_player_log_files":["player_1_log.json"]}',
+        encoding="utf-8",
+    )
+    (tmp_path / "player_1_log.tft").write_text(
+        "[12:00:00] PASSOU TURNO | Rew: +0.00\\n", encoding="utf-8"
+    )
+    # Deliberately create a local sidecar; it need not be tracked by Git.
+    (tmp_path / "player_1_log.json").write_text(
+        '{"player_number":1,"entries":[]}', encoding="utf-8"
+    )
+
+    tft_files, json_files, root = discover_session_inputs(tmp_path)
+
+    assert root == tmp_path
+    assert [path.name for path in tft_files] == ["player_1_log.tft"]
+    assert [path.name for path in json_files] == ["player_1_log.json"]
+
+
+def test_combined_audit_keeps_structured_and_text_evidence_together(tmp_path):
+    text_log = tmp_path / "player_1_log.tft"
+    sidecar = tmp_path / "player_1_log.json"
+    text_log.write_text(
+        "[12:00:00] PASSOU TURNO | Rew: +0.00\\n"
+        "    STRATEGY: STABILIZE | COMP DIRECTION: — | FOCUS: CarryA\\n"
+        "    STRATEGY REASON: weak board | CONF: 0.90\\n",
+        encoding="utf-8",
+    )
+    sidecar.write_text(
+        '{"player_number":1,"entries":[{'
+        '"event_type":"action","sequence_id":1,"step":1,"stage":1,"round_in_stage":1,'
+        '"payload":{"action_name":"PASS","action":[6],'
+        '"state_before":{"gold":12,"level":3,"hp":80,"board":[],"bench":[]},'
+        '"state_after":{"gold":12,"level":3,"hp":80,"board":[],"bench":[],"alive":true}}'
+        '}]}',
+        encoding="utf-8",
+    )
+    report = {
+        "source": str(tmp_path), "log_files": [], "players_seen": set(),
+        "entries_read": 0, "diagnostics_missing": 0, "issues": [], "notes": [],
+        "decision_timeline": [],
+    }
+
+    audit_session_inputs([text_log], [sidecar], report, 8, 8)
+
+    assert report["entries_read"] == 1
+    assert "1" in report["players_seen"]
+    assert "Jogador 1" in report.get("decision_audit_metrics", {})
+    assert "Jogador 1" in report.get("text_log_metrics", {})
+    assert report["text_log_metrics"]["Jogador 1"]["actions"] == 1
+    assert len(report["decision_timeline"]) >= 1
+
+
+def test_single_tft_input_discovers_its_json_sidecar(tmp_path):
+    text_log = tmp_path / "player_2_log.tft"
+    sidecar = tmp_path / "player_2_log.json"
+    text_log.write_text("legacy text", encoding="utf-8")
+    sidecar.write_text('{"player_number":2,"entries":[]}', encoding="utf-8")
+
+    tft_files, json_files, _ = discover_session_inputs(text_log)
+
+    assert text_log in tft_files
+    assert sidecar in json_files
