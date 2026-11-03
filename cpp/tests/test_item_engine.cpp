@@ -145,6 +145,45 @@ int main() {
             std::abs(combat_damage.omnivamp - 0.10f) < 0.001f,
             "item catalog definition should map to combat item stats");
 
+    // Supported special passives must contribute to compatibility even when
+    // the item has no flat stats. Offensive passives favor carries; defensive
+    // passives favor frontline recipients.
+    ItemDefinition passive_damage;
+    passive_damage.id = "passive_damage";
+    passive_damage.name = "Passive Damage";
+    tft::CombatEffectDefinition damage_effect;
+    damage_effect.trigger = "on_attack";
+    damage_effect.operation = "bonus_damage";
+    damage_effect.target = "self";
+    damage_effect.damage_type = tft::DamageType::MAGIC;
+    damage_effect.value = 0.08f;
+    damage_effect.percent_of_max_health = true;
+    passive_damage.combat_effects.push_back(damage_effect);
+
+    ItemDefinition passive_guard;
+    passive_guard.id = "passive_guard";
+    passive_guard.name = "Passive Guard";
+    tft::CombatEffectDefinition guard_effect;
+    guard_effect.trigger = "combat_start";
+    guard_effect.operation = "add_stat";
+    guard_effect.stat = "damage_reduction";
+    guard_effect.target = "self";
+    guard_effect.condition = "role_tank";
+    guard_effect.value = 0.10f;
+    passive_guard.combat_effects.push_back(guard_effect);
+
+    ItemEngine passive_engine({passive_damage, passive_guard});
+    require(passive_engine.item_effect_strength("passive_damage", carry) > 0.0,
+            "supported special damage passive should have a compatibility score");
+    require(passive_engine.item_fit("passive_damage", carry) >
+                passive_engine.item_fit("passive_damage", tank),
+            "special offensive passive should favor a carry over a tank");
+    require(passive_engine.item_effect_strength("passive_guard", tank) >
+                passive_engine.item_effect_strength("passive_guard", carry),
+            "role-conditioned defensive passive should favor its eligible tank role");
+    require(passive_engine.item_effect_strength("missing_item", carry) == 0.0,
+            "unknown items must not receive special-effect compatibility value");
+
     ItemEngine engine({damage, guard, double_component});
     require(!engine.add_component("unknown_component"),
             "component IDs outside the loaded recipe catalog must be rejected");
