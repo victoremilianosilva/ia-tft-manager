@@ -490,9 +490,7 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
             economic_need = _sale_funds_next_action(
                 actions, idx, rnd, int(before.get("gold") or 0), int(after.get("gold") or 0)
             )
-            if match["upgrade_completed"] or match.get("pair_built"):
-                classification = "PAIR_OR_UPGRADE"
-            elif bench_was_full:
+            if bench_was_full:
                 classification = "BENCH_CAPACITY"
             elif economic_need:
                 classification = "ECONOMIC_NEED"
@@ -500,6 +498,8 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
                 classification = "COMP_TRANSITION"
             elif better_alternative:
                 classification = "EXPERIMENTAL_REPLACED"
+            elif match["upgrade_completed"] or match.get("pair_built"):
+                classification = "PAIR_OR_UPGRADE"
             elif deployed:
                 classification = "DEPLOYED_THEN_SOLD"
             elif (
