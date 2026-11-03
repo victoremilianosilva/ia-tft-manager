@@ -21,6 +21,8 @@ This branch continues from the item contract already merged to `main`. It does n
 
 The repository includes the normalized Set18 catalog at `data/itens.json`, generated from the CommunityDragon source, plus `data/item_effects.json` for explicit set-specific metadata. The normalized fixture at `cpp/tests/fixtures/items_test_catalog.json` remains test-only. The runtime loader validates set identity, component IDs, recipes, stats, and combat-effect operation/trigger pairs. Effects without a CombatEngine handler are rejected rather than accepted as inert metadata.
 
+Items whose source effects act on the player rather than a champion are classified with `unit_equipable=false`. The three current army-size/economy items (Force of Nature, Tactician's Ring, and Tactician's Scepter) are intentionally excluded from unit recipes, equipment, and completed-item anvils until player-level army-cap/economy behavior is implemented. This prevents false equipment transitions; it does not claim those strategic effects are implemented.
+
 Each player owns one `ItemEngine`. Masks are built from its actual component stack, completed-item inventory, recipe table, and the current board/bench UUIDs. The policy selects catalog component types (not transient component-stack positions), then C++ resolves the target index to the unit UUID and validates the same legal transition before mutation.
 
 Runtime mask contract:
