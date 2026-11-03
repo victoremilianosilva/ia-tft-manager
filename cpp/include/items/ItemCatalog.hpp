@@ -110,6 +110,20 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                     "Unsupported combat effect trigger (not implemented by CombatEngine): " +
                     effect.trigger);
             }
+            const bool supported_pair =
+                (effect.operation == "add_stat" &&
+                    (effect.trigger == "combat_start" || effect.trigger == "after_delay" ||
+                     effect.trigger == "while_hp_below" || effect.trigger == "on_ally_shield")) ||
+                (effect.operation == "bonus_damage" && effect.trigger == "on_attack") ||
+                (effect.operation == "heal_max_hp_pct" && effect.trigger == "on_kill") ||
+                (effect.operation == "grant_charges" && effect.trigger == "on_kill") ||
+                (effect.operation == "mana_regen" &&
+                    (effect.trigger.empty() || effect.trigger == "combat_start"));
+            if (!supported_pair) {
+                throw std::invalid_argument(
+                    "Unsupported combat effect operation/trigger pair: " +
+                    effect.operation + "/" + effect.trigger);
+            }
             const auto read_string = [&](const char* key, std::string& output) {
                 if (!raw.contains(key)) return;
                 if (!raw[key].is_string()) {
