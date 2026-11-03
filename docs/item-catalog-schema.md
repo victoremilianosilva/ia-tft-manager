@@ -61,6 +61,16 @@ The current header-only loader is `cpp/include/items/ItemCatalog.hpp` and accept
 - Percentage-like bonuses are represented as fractions where applicable (for example, `0.15` means +15%). The source adapter must normalize the source format to this contract.
 - This schema describes data, not yet a full live item economy. Item drops, lobby persistence, PPO actions/masks and Viewer telemetry are separate integration tasks.
 
+## Source-effect coverage metadata
+
+Generated items include `effect_coverage` with four arrays:
+- `source_keys`: non-zero source keys retained from CommunityDragon.
+- `generic_stat_keys`: keys normalized into the generic numeric stat fields.
+- `generic_combat_keys`: keys normalized into generic CombatEngine effects.
+- `not_generic_normalized_keys`: source keys that need a separate review for a tested item-specific handler or future generic implementation.
+
+The last list is **not automatically a list of broken items**: some entries are parameters for a passive or are covered by existing ID-specific handlers in `CombatEngine.cpp`. It makes the coverage gap explicit per item and prevents raw source metadata from being mistaken for a normalized combat effect.
+
 ## Supported combat-effect contract
 
 The runtime loader accepts only effects that have a matching handler in `CombatEngine`. Supported operations are:
