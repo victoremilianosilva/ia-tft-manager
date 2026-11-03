@@ -707,7 +707,11 @@ inline double upgrade_path_strength(
 inline bool protects_upgrade_path(
     int sold_star, int same_star_copies, int one_star_copies
 ) noexcept {
-    return upgrade_path_strength(sold_star, same_star_copies, one_star_copies) >= 0.45;
+    // 0.15 * 3 can be represented just below 0.45 in binary floating
+    // point; use a tiny tolerance so the documented three-copy threshold
+    // does not depend on rounding.
+    return upgrade_path_strength(sold_star, same_star_copies, one_star_copies) +
+        1e-9 >= 0.45;
 }
 
 // Selling should be attractive for low-value clutter, but not intrinsically
