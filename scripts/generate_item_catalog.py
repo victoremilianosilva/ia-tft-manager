@@ -386,6 +386,56 @@ def build_catalog(
     }
 
 
+def _combat_effect_is_supported(effect: Any) -> bool:
+    """Mirror the C++ CombatEngine operation/trigger contract."""
+    if not isinstance(effect, dict):
+        return False
+    trigger = effect.get("trigger")
+    operation = effect.get("operation")
+    pairs = {
+        "add_stat": {"combat_start", "after_delay", "while_hp_below", "on_ally_shield"},
+        "bonus_damage": {"on_attack"},
+        "heal_max_hp_pct": {"on_attack", "on_kill"},
+        "grant_charges": {"on_kill"},
+        "mana_regen": {"", "combat_start"},
+    }
+    if operation not in pairs or trigger not in pairs[operation]:
+        return False
+
+    target = effect.get("target", "")
+    if target not in {"", "self", "allies", "allies_same_row_within_1"}:
+        return False
+    condition = effect.get("condition", "")
+    if condition not in {
+        "", "has_trait", "trait_count_at_least",
+        "role_tank", "role_fighter", "role_assassin", "role_other",
+    }:
+        return False
+    if condition in {"has_trait", "trait_count_at_least"} and not effect.get("condition_trait"):
+        return False
+    if condition == "trait_count_at_least":
+        if not isinstance(effect.get("min_trait_count"), int) or effect["min_trait_count"] <= 0:
+            return False
+
+    if operation == "add_stat" and effect.get("stat") not in {
+        "attack_damage", "attack_speed", "ability_power", "armor",
+        "magic_resist", "omnivamp", "damage_amplification",
+        "damage_reduction", "max_hp",
+    }:
+        return False
+    if operation == "bonus_damage" and effect.get("percent_of_stat"):
+        if effect.get("stat") not in {
+            "attack_damage", "attack_speed", "ability_power",
+            "max_hp", "armor", "magic_resist",
+        }:
+            return False
+    if operation == "grant_charges" and not effect.get("stack_key"):
+        return False
+    if operation == "heal_max_hp_pct" and trigger == "on_attack" and not effect.get("stack_key"):
+        return False
+    return True
+
+
 def validate_catalog_semantics(catalog: dict[str, Any]) -> None:
     """Reject structurally valid catalogs that would make finished items inert.
 
@@ -419,7 +469,15 @@ def validate_catalog_semantics(catalog: dict[str, Any]) -> None:
             for key in stat_keys
         )
         effects = item.get("combat_effects")
-        has_effects = isinstance(effects, list) and bool(effects)
+        if not isinstance(effects, list):
+            raise ValueError("combat_effects precisa ser uma lista em %s." % item.get("id", "<sem id>"))
+        unsupported = [effect for effect in effects if not _combat_effect_is_supported(effect)]
+        if unsupported:
+            raise ValueError(
+                "Efeito sem handler/contrato suportado em %s: %s"
+                % (item.get("id", "<sem id>"), unsupported)
+            )
+        has_effects = bool(effects)
         return has_stats or has_effects
 
     usable = sum(1 for item in ordinary if has_applied_value(item))
