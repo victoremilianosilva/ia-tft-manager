@@ -323,11 +323,24 @@ def build_catalog(
         component = item_by_id.get(component_id)
         if component is None:
             raise ValueError(f"Componente referenciado por uma receita, mas ausente na origem: {component_id}")
+        source_effects = component.get("effects") or {}
+        # Only ordinary stat-bearing base components enter random PvE drops.
+        # Special components remain recipe dimensions but are excluded from
+        # the basic component pool through explicit normalized metadata.
+        basic_component_effects = {
+            "AD", "Armor", "Health", "AP", "MagicResist", "MR",
+            "AS", "CritChance", "ManaRegen",
+        }
+        pve_loot_eligible = bool(source_effects) and any(
+            key in basic_component_effects and _finite_number(value) and float(value) != 0.0
+            for key, value in source_effects.items()
+        )
         components.append({
             "id": component_id,
+            "pve_loot_eligible": pve_loot_eligible,
             "name": str(component.get("name") or component_id),
             "source_api_name": component_id,
-            "source_effects": component.get("effects") or {},
+            "source_effects": source_effects,
         })
 
     recipes: dict[tuple[str, str], str] = {}
