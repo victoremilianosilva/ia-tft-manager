@@ -1519,6 +1519,17 @@ struct TFTEngine::Impl {
             profile_by_uuid.reserve(item_profiles.size());
             for (const auto& profile : item_profiles)
                 profile_by_uuid.emplace(profile.uuid, &profile);
+            // Resolve each board/bench target once. The inventory and 100 recipe
+            // rows reuse this compact slot table instead of repeating UUID lookups.
+            std::array<const items::UnitProfile*, kBoardSlots + kBenchSlots>
+                profile_by_target{};
+            for (std::size_t target = 0; target < profile_by_target.size(); ++target) {
+                const auto* unit = item_target_unit(i, target);
+                if (!unit) continue;
+                const auto profile = profile_by_uuid.find(unit->uuid);
+                if (profile != profile_by_uuid.end())
+                    profile_by_target[target] = profile->second;
+            }
 
             for (std::size_t item_slot = 0; item_slot < 9; ++item_slot) {
                 const std::string* item_id =
@@ -1526,12 +1537,9 @@ struct TFTEngine::Impl {
                     ? &item_state->inventory()[item_slot] : nullptr;
                 for (std::size_t target = 0; target < kBoardSlots + kBenchSlots; ++target) {
                     double fit = 0.0;
-                    const auto* unit = item_target_unit(i, target);
-                    if (item_id && unit) {
-                        const auto profile = profile_by_uuid.find(unit->uuid);
-                        if (profile != profile_by_uuid.end())
-                            fit = item_fit_cache.get(*item_id, *profile->second);
-                    }
+                    const auto* profile = profile_by_target[target];
+                    if (item_id && profile)
+                        fit = item_fit_cache.get(*item_id, *profile);
                     out[offset++] = static_cast<float>(std::clamp(fit / 50.0, 0.0, 1.0));
                 }
             }
@@ -1559,12 +1567,9 @@ struct TFTEngine::Impl {
                 const bool recipe_available = recipe_available_cache[recipe];
                 for (std::size_t target = 0; target < kBoardSlots + kBenchSlots; ++target) {
                     double fit = 0.0;
-                    const auto* unit = item_target_unit(i, target);
-                    if (recipe_available && !item_id.empty() && unit) {
-                        const auto profile = profile_by_uuid.find(unit->uuid);
-                        if (profile != profile_by_uuid.end())
-                            fit = item_fit_cache.get(item_id, *profile->second);
-                    }
+                    const auto* profile = profile_by_target[target];
+                    if (recipe_available && !item_id.empty() && profile)
+                        fit = item_fit_cache.get(item_id, *profile);
                     out[offset++] = static_cast<float>(std::clamp(fit / 50.0, 0.0, 1.0));
                 }
             }
