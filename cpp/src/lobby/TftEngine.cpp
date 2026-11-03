@@ -783,8 +783,9 @@ struct TFTEngine::Impl {
 
         if (current_stage == 5 || current_stage == 6) { // 5-7 / 6-7: completed item.
             std::vector<std::string> item_pool;
-            for (const auto& item : item_catalog->items)
-                item_pool.push_back(item.id);
+            for (const auto& item : item_catalog->items) {
+                if (item.unit_equipable) item_pool.push_back(item.id);
+            }
             if (item_pool.empty()) return;
 
             for (const auto player_index : living) {
