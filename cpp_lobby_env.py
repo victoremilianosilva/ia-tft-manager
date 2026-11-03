@@ -16,12 +16,20 @@ import numpy as np
 
 
 _REPO_ROOT = Path(__file__).resolve().parent
+# CMake builds may live at the repository root (build/) or under cpp/.
+# The extension can be emitted directly in the build directory or in bin/
+# (and, on multi-config generators such as Visual Studio, bin/Release).
 _CPP_BUILD_DIRS = (
+    _REPO_ROOT / "build" / "bin" / "Release",
+    _REPO_ROOT / "build" / "bin",
+    _REPO_ROOT / "build",
     _REPO_ROOT / "cpp" / "build" / "bin" / "Release",
     _REPO_ROOT / "cpp" / "build" / "bin",
+    _REPO_ROOT / "cpp" / "build",
 )
-for _build_dir in _CPP_BUILD_DIRS:
-    if _build_dir.exists() and str(_build_dir) not in sys.path:
+# Preserve the priority order above: insert() prepends to sys.path.
+for _build_dir in reversed(_CPP_BUILD_DIRS):
+    if _build_dir.is_dir() and str(_build_dir) not in sys.path:
         sys.path.insert(0, str(_build_dir))
 
 try:
