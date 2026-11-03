@@ -432,9 +432,9 @@ int main() {
                 inventory_before_release + carry_equipped_before_release - 1,
             "re-equipping consumes exactly one returned item");
 
-    // Set 18 PvE loot tables: weighted outcomes reproduce the published
-    // per-stage component averages, and the personal pool removes each drawn
-    // component until the next stage refresh.
+    // Set 18 PvE loot tables: weighted direct component rewards preserve the
+    // published per-stage component averages without creating orb drops; the
+    // personal pool removes each drawn component until the next stage refresh.
     {
         std::mt19937_64 rng(180018ULL);
         constexpr std::size_t samples = 50000;
