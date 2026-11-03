@@ -36,7 +36,17 @@ The current header-only loader is `cpp/include/items/ItemCatalog.hpp` and accept
         "tank": 0,
         "support": 0,
         "utility": 0
-      }
+      },
+      "combat_effects": [
+        {
+          "trigger": "combat_start",
+          "operation": "add_stat",
+          "stat": "attack_damage",
+          "target": "self",
+          "value": 0.15,
+          "percent_of_stat": true
+        }
+      ]
     }
   ]
 }
@@ -50,3 +60,17 @@ The current header-only loader is `cpp/include/items/ItemCatalog.hpp` and accept
 - Stats and weights are optional and default to zero; supplied values must be finite, numeric and non-negative.
 - Percentage-like bonuses are represented as fractions where applicable (for example, `0.15` means +15%). The source adapter must normalize the source format to this contract.
 - This schema describes data, not yet a full live item economy. Item drops, lobby persistence, PPO actions/masks and Viewer telemetry are separate integration tasks.
+
+## Supported combat-effect contract
+
+The runtime loader accepts only effects that have a matching handler in `CombatEngine`. Supported operations are:
+
+- `add_stat`: `combat_start`, `after_delay`, `while_hp_below`, `on_ally_shield`.
+- `bonus_damage`: `on_attack`.
+- `heal_max_hp_pct`: `on_attack` (charged healing) or `on_kill`.
+- `grant_charges`: `on_kill`.
+- `mana_regen`: empty trigger or `combat_start`.
+
+Supported conditions are `has_trait`, `trait_count_at_least`, `role_tank`, `role_fighter`, `role_assassin`, and `role_other`. Supported targets are empty, `self`, `allies`, and `allies_same_row_within_1`. For `add_stat`, the runtime supports attack damage, attack speed, ability power, armor, magic resistance, omnivamp, damage amplification, damage reduction, and max HP.
+
+Unknown operations, unsupported operation/trigger pairs, stat names, conditions, or targets are rejected by the C++ loader. This is intentional: raw `source_effects` are provenance, not proof that an effect is implemented. A source passive must not be treated as active until it is normalized into this contract or covered by a tested item-specific CombatEngine handler.
