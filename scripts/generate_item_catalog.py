@@ -423,6 +423,10 @@ def _combat_effect_is_supported(effect: Any) -> bool:
         if not isinstance(effect.get("min_trait_count"), int) or effect["min_trait_count"] <= 0:
             return False
 
+    if operation == "add_stat" and effect.get("percent_of_max_health"):
+        return False
+    if operation == "bonus_damage" and effect.get("percent_of_max_health") and effect.get("percent_of_stat"):
+        return False
     if operation == "add_stat" and effect.get("stat") not in {
         "attack_damage", "attack_speed", "ability_power", "armor",
         "magic_resist", "omnivamp", "damage_amplification",
