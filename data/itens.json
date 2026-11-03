@@ -1065,8 +1065,7 @@
       "effect_coverage": {
         "source_keys": [
           "AD",
-          "CritChance",
-          "CritDamageToGive"
+          "CritChance"
         ],
         "generic_stat_keys": [
           "CritChance"
@@ -1074,9 +1073,7 @@
         "generic_combat_keys": [
           "AD"
         ],
-        "not_generic_normalized_keys": [
-          "CritDamageToGive"
-        ]
+        "not_generic_normalized_keys": []
       }
     },
     {
@@ -1184,17 +1181,14 @@
       "effect_coverage": {
         "source_keys": [
           "AP",
-          "CritChance",
-          "CritDamageToGive"
+          "CritChance"
         ],
         "generic_stat_keys": [
           "AP",
           "CritChance"
         ],
         "generic_combat_keys": [],
-        "not_generic_normalized_keys": [
-          "CritDamageToGive"
-        ]
+        "not_generic_normalized_keys": []
       }
     },
     {
