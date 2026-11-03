@@ -202,26 +202,6 @@ float unit_strength(const ChampionDefinition& def, const UnitInstance& unit) {
     return std::min(1.0f, cost / 5.0f * 0.5f + star / 3.0f * 0.5f);
 }
 
-double cached_unit_composition_score(
-    const StrategyInfo& strategy,
-    const ChampionDefinition& def,
-    std::int32_t star,
-    const std::unordered_map<std::string, std::vector<int>>& trait_milestones,
-    std::unordered_map<std::uint64_t, double>& cache
-) {
-    // The cache is scoped to one player's observation, where strategy and
-    // trait milestones are immutable. Champion ID + star uniquely identifies
-    // the remaining inputs to unit_composition_score().
-    const auto key =
-        (static_cast<std::uint64_t>(static_cast<std::uint32_t>(def.internal_id)) << 8) |
-        static_cast<std::uint8_t>(star);
-    const auto found = cache.find(key);
-    if (found != cache.end()) return found->second;
-    const double score = unit_composition_score(strategy, def, star, trait_milestones);
-    cache.emplace(key, score);
-    return score;
-}
-
 double unit_composition_score(
     const StrategyInfo& strategy, const ChampionDefinition& def, std::int32_t star,
     const std::unordered_map<std::string, std::vector<int>>& trait_milestones
@@ -280,6 +260,26 @@ double unit_composition_score(
         score -= 1.2;
         if (strategy.composition_locked) score -= 2.0;
     }
+    return score;
+}
+
+double cached_unit_composition_score(
+    const StrategyInfo& strategy,
+    const ChampionDefinition& def,
+    std::int32_t star,
+    const std::unordered_map<std::string, std::vector<int>>& trait_milestones,
+    std::unordered_map<std::uint64_t, double>& cache
+) {
+    // The cache is scoped to one player's observation, where strategy and
+    // trait milestones are immutable. Champion ID + star uniquely identifies
+    // the remaining inputs to unit_composition_score().
+    const auto key =
+        (static_cast<std::uint64_t>(static_cast<std::uint32_t>(def.internal_id)) << 8) |
+        static_cast<std::uint8_t>(star);
+    const auto found = cache.find(key);
+    if (found != cache.end()) return found->second;
+    const double score = unit_composition_score(strategy, def, star, trait_milestones);
+    cache.emplace(key, score);
     return score;
 }
 
