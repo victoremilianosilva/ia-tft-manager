@@ -3890,8 +3890,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             reversed_purchase_prior_reward = recent->reward;
                         }
                     }
+                    const auto& current_strategy = strategy_before;
                     if (!this->strategy.empty()) {
-                        const auto& current_strategy = this->strategy.back();
                         const auto& core_unit_ids = current_strategy.core_unit_ids;
                         const auto& planned_unit_ids = current_strategy.planned_unit_ids;
                         sold_core_unit =
