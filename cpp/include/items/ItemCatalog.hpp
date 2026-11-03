@@ -19,6 +19,10 @@ namespace tft::items {
 struct ItemCatalog {
     std::string set_id;
     std::vector<std::pair<std::string, std::string>> components;
+    // Subset eligible for the active set's normal PvE component pool.
+    // Special components (for example, Set 18's Pan/Spatula) remain valid
+    // recipe dimensions but are not ordinary PvE component drops.
+    std::vector<std::string> pve_loot_components;
     std::vector<ItemDefinition> items;
 };
 
@@ -66,6 +70,17 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             throw std::invalid_argument("Empty or duplicate item component id/name");
         }
         catalog.components.emplace_back(id, name);
+        bool pve_loot_eligible = true; // schema-v1 legacy fixtures remain compatible
+        if (component.contains("pve_loot_eligible")) {
+            if (!component["pve_loot_eligible"].is_boolean())
+                throw std::invalid_argument("pve_loot_eligible must be boolean");
+            pve_loot_eligible = component["pve_loot_eligible"].get<bool>();
+        }
+        if (pve_loot_eligible) catalog.pve_loot_components.push_back(id);
+    }
+
+    if (catalog.pve_loot_components.size() > 8) {
+        throw std::invalid_argument("PvE component loot pool cannot exceed eight basic components");
     }
 
     if (catalog.components.size() > 10) {
