@@ -44,6 +44,9 @@ struct ItemDefinition {
     double utility_weight{0.0};
     std::string grants_trait;
     int granted_trait_active_count{1};
+    // Player-scope items (for example, army-size bonuses) must not be
+    // attached to a champion until the lobby models their player-level effect.
+    bool unit_equipable{true};
     std::vector<CombatEffectDefinition> combat_effects;
     std::vector<std::string> deferred_stats;
 };
