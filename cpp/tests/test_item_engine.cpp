@@ -200,6 +200,10 @@ int main() {
     guard_effect.value = 0.10f;
     passive_guard.combat_effects.push_back(guard_effect);
 
+    const auto combat_passive = to_combat_item(passive_damage);
+    require(combat_passive.effects.size() == 1 &&
+            combat_passive.effects.front().operation == "bonus_damage",
+            "adapter must preserve normalized passive definitions into CombatInput");
     ItemEngine passive_engine({passive_damage, passive_guard});
     require(passive_engine.item_effect_strength("passive_damage", carry) > 0.0,
             "supported special damage passive should have a compatibility score");
