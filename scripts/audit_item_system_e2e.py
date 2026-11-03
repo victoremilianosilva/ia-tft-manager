@@ -218,6 +218,8 @@ def run_audit(
     }
     action_counts = Counter()
     item_counts = Counter()
+    item_pipeline_counts = Counter()
+    item_actions_by_kind = Counter()
     total_events = 0
     complete = False
     try:
@@ -297,6 +299,25 @@ def run_audit(
                     player_metric["reward_steps"] += 1
                 events = info.get("events", []) if isinstance(info, dict) else []
                 total_events += len(events) if isinstance(events, list) else 0
+                if isinstance(events, list):
+                    for event in events:
+                        if not isinstance(event, str):
+                            continue
+                        event_type = event.split(":", 1)[0]
+                        if event_type in {
+                            "COMPONENT_LOOT_GRANTED",
+                            "COMPONENT_ANVIL_GRANTED",
+                            "COMPLETED_ITEM_ANVIL_GRANTED",
+                            "ITEM_ANVIL_CHOSEN",
+                            "ITEM_ACTION_APPLIED",
+                        }:
+                            item_pipeline_counts[event_type] += 1
+                        if event_type == "ITEM_ACTION_APPLIED":
+                            for field in event.split(","):
+                                key, separator, value = field.strip().partition("=")
+                                if separator and key == "kind":
+                                    item_actions_by_kind[value] += 1
+                                    break
                 trace.write(json.dumps({
                     "step": step,
                     "round": info.get("round") if isinstance(info, dict) else None,
@@ -319,6 +340,14 @@ def run_audit(
             "EQUIP_FROM_INVENTORY": int(item_counts["EQUIP_FROM_INVENTORY"]),
             "CRAFT_AND_EQUIP": int(item_counts["CRAFT_AND_EQUIP"]),
             "total_item_actions": int(item_counts["EQUIP_FROM_INVENTORY"] + item_counts["CRAFT_AND_EQUIP"]),
+        }
+        report["item_pipeline"] = {
+            "acquisition_and_usage_events": dict(item_pipeline_counts),
+            "applied_action_kinds": dict(item_actions_by_kind),
+        }
+        report["item_pipeline"] = {
+            "acquisition_and_usage_events": dict(item_pipeline_counts),
+            "applied_action_kinds": dict(item_actions_by_kind),
         }
         report["native_event_count"] = total_events
         report["complete_match"] = complete
