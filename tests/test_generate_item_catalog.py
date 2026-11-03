@@ -159,6 +159,11 @@ def test_normalizes_supported_stats_and_preserves_raw_effects():
     assert item["stats"]["critical_strike_chance"] == pytest.approx(0.35)
     assert item["stats"]["attack_damage"] == 0
     assert item["source_effects"]["AD"] == pytest.approx(0.3)
+    assert item["effect_coverage"]["generic_stat_keys"] == [
+        "AP", "AS", "CritChance",
+    ]
+    assert item["effect_coverage"]["generic_combat_keys"] == ["AD", "ManaRegen"]
+    assert item["effect_coverage"]["not_generic_normalized_keys"] == []
     assert {
         "trigger": "combat_start",
         "operation": "add_stat",
