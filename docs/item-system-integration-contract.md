@@ -51,7 +51,8 @@ The C++ item-engine and lobby integration tests use normalized catalogs to verif
 3. a completed item grant enables `EQUIP_FROM_INVENTORY`;
 4. item effects influence compatibility scores when their handlers are supported;
 5. catalog loading rejects unsupported operation/trigger pairs;
-6. combat tests observe supported generic and item-specific effects in damage, healing, survival, or team-aura results.
+6. a full component -> recipe -> inventory -> UUID equipment -> CombatItem -> CombatEngine test verifies that the final item changes real combat damage;
+7. combat tests observe supported generic and item-specific effects in damage, healing, survival, or team-aura results.
 
 The native lobby emits `ITEM_ANVIL_CHOSEN` and `ITEM_ACTION_APPLIED` events. The end-to-end audit aggregates component loot, anvil grants/choices, and applied action kinds so acquisition is no longer conflated with equipment.
 
