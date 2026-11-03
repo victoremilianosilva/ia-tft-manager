@@ -1611,6 +1611,27 @@ struct TFTEngine::Impl {
                 const auto it = owned_copies.find(candidate.champion_internal_id);
                 return it == owned_copies.end() ? 0 : it->second;
             };
+
+            // Count trait presence once per owned unit. Candidate scoring can
+            // then answer overlap queries in O(1), instead of rescanning the
+            // entire board and bench for every candidate trait.
+            std::unordered_map<std::string, int> owned_trait_presence;
+            owned_trait_presence.reserve(32);
+            const auto add_owned_traits = [&](const UnitInstance& existing) {
+                const auto* existing_def = catalog->find_by_id(existing.champion_internal_id);
+                if (!existing_def) return;
+                std::unordered_set<std::string> unique_traits;
+                unique_traits.reserve(existing_def->traits.size());
+                for (const auto& trait : existing_def->traits) {
+                    if (unique_traits.insert(trait).second)
+                        ++owned_trait_presence[trait];
+                }
+            };
+            for (const auto& existing : player_envs[i].board)
+                if (existing) add_owned_traits(*existing);
+            for (const auto& existing : player_envs[i].bench)
+                if (existing) add_owned_traits(*existing);
+
             const auto append_candidate_features = [&](const UnitInstance* unit, bool sale_candidate) {
                 if (!unit) {
                     for (std::size_t n = 0; n < kCandidateFeatureDim; ++n)
@@ -1631,28 +1652,15 @@ struct TFTEngine::Impl {
                 const int copies = count_same_champion(*unit);
                 int trait_overlap = 0;
                 for (const auto& trait : def->traits) {
-                    bool shared = false;
-                    for (const auto& existing : player_envs[i].board) {
-                        if (!existing || &*existing == unit) continue;
-                        const auto* existing_def = catalog->find_by_id(existing->champion_internal_id);
-                        if (existing_def && std::find(existing_def->traits.begin(),
-                            existing_def->traits.end(), trait) != existing_def->traits.end()) {
-                            shared = true;
-                            break;
-                        }
-                    }
-                    if (!shared) {
-                        for (const auto& existing : player_envs[i].bench) {
-                            if (!existing || &*existing == unit) continue;
-                            const auto* existing_def = catalog->find_by_id(existing->champion_internal_id);
-                            if (existing_def && std::find(existing_def->traits.begin(),
-                                existing_def->traits.end(), trait) != existing_def->traits.end()) {
-                                shared = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (shared) ++trait_overlap;
+                    const auto presence = owned_trait_presence.find(trait);
+                    int other_units = presence == owned_trait_presence.end()
+                        ? 0 : presence->second;
+                    // Bench sale candidates are already included in the
+                    // precomputed counts; preserve the old pointer-based
+                    // exclusion of the candidate itself. Shop candidates are
+                    // not owned and therefore subtract nothing.
+                    if (sale_candidate && other_units > 0) --other_units;
+                    if (other_units > 0) ++trait_overlap;
                 }
                 out[offset++] = static_cast<float>(std::clamp(fit / 22.5, 0.0, 1.0));
                 out[offset++] = static_cast<float>(def->cost) / 5.0f;
