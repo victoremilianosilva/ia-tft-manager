@@ -29,6 +29,7 @@
 #include "strategy/SynergyCounter.hpp"
 #include "strategy/PositioningEngine.hpp"
 #include "strategy/BoardEvaluation.hpp"
+#include "strategy/UnitCombatClassifier.hpp"
 #include "reward/RewardModel.hpp"
 #include "strategy/CompositionDirectionPolicy.hpp"
 #include "strategy/StrategyPolicy.hpp"
@@ -1924,6 +1925,24 @@ struct TFTEngine::Impl {
 
     strategy::BoardEvaluationResult board_evaluation(
         std::size_t player_index) const {
+        const StrategyInfo active_strategy = player_envs[player_index].strategy.empty()
+            ? StrategyInfo{} : player_envs[player_index].strategy.back();
+        const auto classify_unit = [&](const UnitInstance& unit, const ChampionDefinition& def) {
+            strategy::UnitCombatSignals signals;
+            signals.base_role = def.combat_profile.role;
+            signals.attack_range = def.stats.attack_range > 0.0 ? def.stats.attack_range : def.combat_profile.attack_range;
+            signals.max_health = def.stats.max_hp; signals.armor = def.stats.armor;
+            signals.magic_resist = def.stats.magic_resist; signals.attack_damage = def.stats.attack_damage;
+            signals.attack_speed = def.stats.attack_speed; signals.ability_text = def.ability.description + " " + def.ability.name;
+            signals.planned_main_carry = unit.champion_internal_id == active_strategy.planned_main_carry_id;
+            for (const auto& item : unit.items) {
+                signals.item_health += item.health; signals.item_armor += item.armor;
+                signals.item_magic_resist += item.magic_resist; signals.item_attack_damage += item.attack_damage;
+                signals.item_attack_speed += item.attack_speed; signals.item_ability_power += item.ability_power;
+                signals.item_crit += item.critical_strike_chance;
+            }
+            return strategy::UnitCombatClassifier::classify(signals);
+        };
         std::vector<int> board_roles(kBoardSlots, -1);
         std::vector<strategy::BoardUnitProfile> board_profiles(kBoardSlots);
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
@@ -1931,7 +1950,7 @@ struct TFTEngine::Impl {
             if (!unit) continue;
             const auto* def = catalog->find_by_id(unit->champion_internal_id);
             if (def) {
-                board_roles[slot] = std::clamp(def->combat_profile.role, 0, 4);
+                board_roles[slot] = classify_unit(*unit, *def).positioning_role;
                 auto& profile = board_profiles[slot];
                 profile.champion_id = unit->champion_internal_id;
                 profile.role = board_roles[slot];
@@ -1949,8 +1968,6 @@ struct TFTEngine::Impl {
             }
         }
 
-        const StrategyInfo active_strategy = player_envs[player_index].strategy.empty()
-            ? StrategyInfo{} : player_envs[player_index].strategy.back();
         strategy::StrategicBoardContext strategic_context;
         strategic_context.level = player_envs[player_index].economy.level;
         strategic_context.direction = active_strategy.composition_direction;
