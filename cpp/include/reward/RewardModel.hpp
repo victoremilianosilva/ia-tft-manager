@@ -696,13 +696,15 @@ inline bool protects_upgrade_path(
 // Gold recovery is shaped separately by gold_change_reward().
 inline double sale_quality(double fit_score, bool core_unit,
                            bool protects_upgrade, bool frees_bench_space,
-                           bool compensated_by_board_gain = false) noexcept {
+                           bool compensated_by_board_gain = false,
+                           bool justified_by_context = false) noexcept {
     const double fit = std::clamp(fit_score, 0.0, 1.0);
-    // Sale proceeds are already represented by gold_change_reward. Protect
-    // core/upgrade copies unless the same action produces a measurable board gain.
-    return 0.015 - 0.24 * fit -
-        (core_unit && !compensated_by_board_gain ? 0.34 : 0.0) -
-        (protects_upgrade && !compensated_by_board_gain ? 0.36 : 0.0) +
+    // A verified replacement, composition transition, full bench, or urgent
+    // economic sale deserves a softer cost, but core/pair retention still matters.
+    const double context_factor = justified_by_context ? 0.5 : 1.0;
+    return 0.015 - 0.24 * fit * context_factor -
+        (core_unit && !compensated_by_board_gain ? 0.34 * context_factor : 0.0) -
+        (protects_upgrade && !compensated_by_board_gain ? 0.36 * context_factor : 0.0) +
         (frees_bench_space ? 0.06 : 0.0);
 }
 
