@@ -703,9 +703,38 @@ inline double sale_quality(double fit_score, bool core_unit,
         (frees_bench_space ? 0.06 : 0.0);
 }
 
-// Shared no-progress penalty for both board repositioning and bench-to-board
-// replacement. Negative deltas add proportional cost instead of being flattened
-// by a fixed assignment in the action executor.
+// Potential-based movement shaping. Using the difference of bounded absolute
+// potentials (rather than tanh of each local delta) makes a sequence telescope:
+// the sum of intermediate rewards equals the net start-to-finish board change.
+inline double movement_sequence_potential(
+    double positioning_score,
+    double synergy_score
+) noexcept {
+    return 0.18 * std::tanh(positioning_score / 0.20) +
+        0.10 * std::tanh(synergy_score);
+}
+
+inline double movement_sequence_reward(
+    double before_positioning,
+    double before_synergy,
+    double after_positioning,
+    double after_synergy
+) noexcept {
+    return movement_sequence_potential(after_positioning, after_synergy) -
+        movement_sequence_potential(before_positioning, before_synergy);
+}
+
+// First movement is free. The next four successful movements pay a tiny
+// incremental cost; longer sequences do not accumulate an unbounded penalty.
+inline double movement_sequence_action_cost(
+    std::uint32_t prior_successful_moves
+) noexcept {
+    return prior_successful_moves >= 1 && prior_successful_moves <= 4
+        ? -0.015 : 0.0;
+}
+
+// Shared no-progress penalty for bench-to-board replacement. Negative deltas add
+// proportional cost instead of being flattened by a fixed assignment.
 // Penalize replacing a planned/core board unit with an equivalent or
 // weaker bench unit. Clear composition upgrades remain allowed.
 inline double core_displacement_penalty(

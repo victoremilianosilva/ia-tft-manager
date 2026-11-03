@@ -392,6 +392,11 @@ struct TFTEngine::Impl {
         double round_reward_total{0.0};
         double total_reward{0.0};
         bool placement_reward_given{false};
+        // Consecutive successful board movements are shaped as a telescoping
+        // potential delta. Reset at every round boundary and non-movement action.
+        std::uint32_t movement_sequence_length{0};
+        std::uint32_t movement_sequence_round{0};
+        bool movement_sequence_round_initialized{false};
         struct RecentPurchase {
             std::string uuid;
             std::int32_t champion_id{-1};
@@ -3181,6 +3186,12 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         const auto& action = player_action.values;
 
         const auto type = action[0];
+        if (!movement_sequence_round_initialized ||
+            movement_sequence_round != lobby.round) {
+            movement_sequence_round = lobby.round;
+            movement_sequence_round_initialized = true;
+            movement_sequence_length = 0;
+        }
         last_item_action = {};
 
         const auto shop_slot = action[1];
@@ -4163,15 +4174,14 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 const double synergy_delta =
                     lobby.synergy_score(player_id) - old_synergy_score;
 
-                // Both deployments and board-to-board moves must earn reward
-                // from an actual improvement. A successful layout mutation is
-                // not progress by itself: this was the source of repeated
-                // Nasus/Briar shuffling (+0.02 for every board move).
-                // The unified board evaluator feeds observations, diagnostics and
-                // action rewards. Scale tactical deltas so meaningful improvements
-                // are learnable, while the tanh bound prevents reward domination.
-                action_reward += 0.18 * std::tanh(positioning_delta / 0.20);
-                action_reward += 0.10 * std::tanh(synergy_delta);
+                // Potential-based shaping makes consecutive movement rewards
+                // telescope: intermediate improvements cannot be farmed and a
+                // sequence is judged by its net final board state.
+                action_reward += reward_model::movement_sequence_reward(
+                    old_positioning_score,
+                    old_synergy_score,
+                    lobby.positioning_score(player_id),
+                    lobby.synergy_score(player_id));
 
                 if (type == 3) {
                     action_reward += 0.10 * std::tanh(
@@ -4205,14 +4215,6 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         action_reward += reward_model::core_displacement_penalty(
                             displaced_core_unit, composition_quality_delta);
                     }
-                } else if (
-                    positioning_delta <= 1e-6 &&
-                    synergy_delta <= 1e-6
-                ) {
-                    // Preserve the delta-based shaping above and add a baseline
-                    // cost plus extra penalty proportional to actual degradation.
-                    action_reward += reward_model::movement_no_progress_penalty(
-                        0.0, synergy_delta, positioning_delta);
                 }
             }
         } else if (type == 5) {
@@ -4297,6 +4299,23 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             // Small additional opportunity cost: discourage marginal rolls,
             // without suppressing genuinely useful rolls under pressure.
             action_reward -= 0.07;
+        }
+
+        // Charge a small, bounded action cost only for extra consecutive
+        // movements. This preserves useful multi-step repositioning while
+        // discouraging long shuffling sequences. A non-move or failed move
+        // closes the sequence; the next round starts a fresh one.
+        if (type == 3 || type == 4) {
+            if (success && !board_capacity_violation && !anti_loop_blocked) {
+                action_reward += reward_model::movement_sequence_action_cost(
+                    movement_sequence_length);
+                movement_sequence_length = std::min<std::uint32_t>(
+                    movement_sequence_length + 1, 15);
+            } else {
+                movement_sequence_length = 0;
+            }
+        } else {
+            movement_sequence_length = 0;
         }
 
         const double action_gold_reward =

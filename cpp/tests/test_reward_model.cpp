@@ -575,6 +575,24 @@ int main() {
     if (!(slowroll_reroll > slowroll_xp_action_reward))
         throw std::runtime_error("only SLOWROLL should prefer an improved reroll over XP");
 
+    // Consecutive movement shaping is a potential difference, so any
+    // intermediate route telescopes to the same net reward as the direct move.
+    const double seq_ab = movement_sequence_reward(0.10, 0.10, 0.35, 0.40);
+    const double seq_bc = movement_sequence_reward(0.35, 0.40, 0.20, 0.25);
+    const double seq_ac = movement_sequence_reward(0.10, 0.10, 0.20, 0.25);
+    require_close(seq_ab + seq_bc, seq_ac,
+                  "movement sequence reward telescopes to net board gain");
+    require_close(movement_sequence_reward(0.25, 0.50, 0.25, 0.50),
+                  0.0, "neutral movement sequence has no potential reward");
+    require_close(movement_sequence_action_cost(0), 0.0,
+                  "first movement in sequence has no extra action cost");
+    require_close(movement_sequence_action_cost(1), -0.015,
+                  "second movement receives a small bounded sequence cost");
+    require_close(movement_sequence_action_cost(4), -0.015,
+                  "fifth movement receives the final sequence cost");
+    require_close(movement_sequence_action_cost(5), 0.0,
+                  "sequence cost is capped after four extra movements");
+
     std::cout << "[PASS] C++ reward formulas and deterministic action sequence.\n";
     return EXIT_SUCCESS;
 }
