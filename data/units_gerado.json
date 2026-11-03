@@ -13,14 +13,14 @@
       "Devastador"
     ],
     "stats": {
-      "max_hp": 650.0,
-      "attack_damage": 40.0,
+      "max_hp": 650,
+      "attack_damage": 40,
       "attack_speed": 0.75,
-      "armor": 35.0,
-      "magic_resist": 35.0,
-      "attack_range": 1.0,
-      "max_mana": 25.0,
-      "initial_mana": 0.0
+      "armor": 35,
+      "magic_resist": 35,
+      "attack_range": 1,
+      "max_mana": 25,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Ataque de Kunai",
@@ -29,7 +29,25 @@
       "variables": []
     },
     "role": 3,
-    "role_name": "fighter"
+    "role_name": "fighter",
+    "combat_profile": {
+      "role": 3,
+      "role_name": "fighter",
+      "frontline": true,
+      "backline": false,
+      "is_tank": false,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": true,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.75,
+      "attack_damage": 40,
+      "armor": 35,
+      "magic_resist": 35,
+      "max_hp": 650,
+      "max_mana": 25
+    }
   },
   {
     "apiName": "DA_18_Camille",
@@ -44,14 +62,14 @@
       "Devastador"
     ],
     "stats": {
-      "max_hp": 700.0,
-      "attack_damage": 40.0,
+      "max_hp": 700,
+      "attack_damage": 40,
       "attack_speed": 0.75,
-      "armor": 40.0,
-      "magic_resist": 40.0,
-      "attack_range": 1.0,
-      "max_mana": 25.0,
-      "initial_mana": 0.0
+      "armor": 40,
+      "magic_resist": 40,
+      "attack_range": 1,
+      "max_mana": 25,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Varredura Defensiva",
@@ -60,7 +78,25 @@
       "variables": []
     },
     "role": 3,
-    "role_name": "fighter"
+    "role_name": "fighter",
+    "combat_profile": {
+      "role": 3,
+      "role_name": "fighter",
+      "frontline": true,
+      "backline": false,
+      "is_tank": false,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": true,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.75,
+      "attack_damage": 40,
+      "armor": 40,
+      "magic_resist": 40,
+      "max_hp": 700,
+      "max_mana": 25
+    }
   },
   {
     "apiName": "DA_18_Sentry",
@@ -75,14 +111,14 @@
       "Emanador"
     ],
     "stats": {
-      "max_hp": 500.0,
-      "attack_damage": 35.0,
+      "max_hp": 500,
+      "attack_damage": 35,
       "attack_speed": 0.800000011920929,
-      "armor": 25.0,
-      "magic_resist": 25.0,
-      "attack_range": 4.0,
-      "max_mana": 70.0,
-      "initial_mana": 30.0
+      "armor": 25,
+      "magic_resist": 25,
+      "attack_range": 4,
+      "max_mana": 70,
+      "initial_mana": 30
     },
     "ability": {
       "name": "Laser Cerúleo",
@@ -90,8 +126,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 1,
+    "role_name": "carry",
+    "combat_profile": {
+      "role": 1,
+      "role_name": "carry",
+      "frontline": false,
+      "backline": true,
+      "is_tank": false,
+      "is_carry": true,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.800000011920929,
+      "attack_damage": 35,
+      "armor": 25,
+      "magic_resist": 25,
+      "max_hp": 500,
+      "max_mana": 70
+    }
   },
   {
     "apiName": "DA_Karma18",
@@ -106,14 +160,14 @@
       "Enfeitiçador"
     ],
     "stats": {
-      "max_hp": 500.0,
-      "attack_damage": 25.0,
+      "max_hp": 500,
+      "attack_damage": 25,
       "attack_speed": 0.699999988079071,
-      "armor": 25.0,
-      "magic_resist": 25.0,
-      "attack_range": 4.0,
-      "max_mana": 40.0,
-      "initial_mana": 0.0
+      "armor": 25,
+      "magic_resist": 25,
+      "attack_range": 4,
+      "max_mana": 40,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Vínculo Kármico",
@@ -121,8 +175,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 1,
+    "role_name": "carry",
+    "combat_profile": {
+      "role": 1,
+      "role_name": "carry",
+      "frontline": false,
+      "backline": true,
+      "is_tank": false,
+      "is_carry": true,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.699999988079071,
+      "attack_damage": 25,
+      "armor": 25,
+      "magic_resist": 25,
+      "max_hp": 500,
+      "max_mana": 40
+    }
   },
   {
     "apiName": "DA_18_Kobuko",
@@ -137,14 +209,14 @@
       "Lutador"
     ],
     "stats": {
-      "max_hp": 700.0,
-      "attack_damage": 55.0,
+      "max_hp": 700,
+      "attack_damage": 55,
       "attack_speed": 0.6499999761581421,
-      "armor": 40.0,
-      "magic_resist": 40.0,
-      "attack_range": 1.0,
-      "max_mana": 90.0,
-      "initial_mana": 30.0
+      "armor": 40,
+      "magic_resist": 40,
+      "attack_range": 1,
+      "max_mana": 90,
+      "initial_mana": 30
     },
     "ability": {
       "name": "Dança da Vida",
@@ -154,37 +226,37 @@
         {
           "name": "PermanentHealthPerInterest",
           "value": [
-            30.0,
-            10.0,
-            12.0,
-            20.0,
-            30.0,
-            30.0,
-            30.0
+            30,
+            10,
+            12,
+            20,
+            30,
+            30,
+            30
           ]
         },
         {
           "name": "Duration",
           "value": [
-            2.0,
-            2.0,
-            2.0,
-            2.0,
-            2.0,
-            2.0,
-            2.0
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
           ]
         },
         {
           "name": "Heal",
           "value": [
-            60.0,
-            350.0,
-            400.0,
-            475.0,
-            100.0,
-            110.0,
-            120.0
+            60,
+            350,
+            400,
+            475,
+            100,
+            110,
+            120
           ]
         },
         {
@@ -202,19 +274,37 @@
         {
           "name": "HRHealthPerRound",
           "value": [
-            15.0,
-            60.0,
-            80.0,
-            200.0,
-            15.0,
-            15.0,
-            15.0
+            15,
+            60,
+            80,
+            200,
+            15,
+            15,
+            15
           ]
         }
       ]
     },
     "role": 3,
-    "role_name": "fighter"
+    "role_name": "fighter",
+    "combat_profile": {
+      "role": 3,
+      "role_name": "fighter",
+      "frontline": true,
+      "backline": false,
+      "is_tank": false,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": true,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.6499999761581421,
+      "attack_damage": 55,
+      "armor": 40,
+      "magic_resist": 40,
+      "max_hp": 700,
+      "max_mana": 90
+    }
   },
   {
     "apiName": "DA_18_Leona",
@@ -229,14 +319,14 @@
       "Defendente"
     ],
     "stats": {
-      "max_hp": 750.0,
-      "attack_damage": 50.0,
+      "max_hp": 750,
+      "attack_damage": 50,
       "attack_speed": 0.6499999761581421,
-      "armor": 40.0,
-      "magic_resist": 40.0,
-      "attack_range": 1.0,
-      "max_mana": 90.0,
-      "initial_mana": 30.0
+      "armor": 40,
+      "magic_resist": 40,
+      "attack_range": 1,
+      "max_mana": 90,
+      "initial_mana": 30
     },
     "ability": {
       "name": "Golpe de Escudo",
@@ -245,7 +335,25 @@
       "variables": []
     },
     "role": 3,
-    "role_name": "fighter"
+    "role_name": "fighter",
+    "combat_profile": {
+      "role": 3,
+      "role_name": "fighter",
+      "frontline": true,
+      "backline": false,
+      "is_tank": false,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": true,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.6499999761581421,
+      "attack_damage": 50,
+      "armor": 40,
+      "magic_resist": 40,
+      "max_hp": 750,
+      "max_mana": 90
+    }
   },
   {
     "apiName": "DA_18_Ornn",
@@ -260,14 +368,14 @@
       "Defendente"
     ],
     "stats": {
-      "max_hp": 700.0,
-      "attack_damage": 40.0,
+      "max_hp": 700,
+      "attack_damage": 40,
       "attack_speed": 0.6000000238418579,
-      "armor": 40.0,
-      "magic_resist": 40.0,
-      "attack_range": 1.0,
-      "max_mana": 100.0,
-      "initial_mana": 40.0
+      "armor": 40,
+      "magic_resist": 40,
+      "attack_range": 1,
+      "max_mana": 100,
+      "initial_mana": 40
     },
     "ability": {
       "name": "Fôlego do Fole",
@@ -276,7 +384,25 @@
       "variables": []
     },
     "role": 3,
-    "role_name": "fighter"
+    "role_name": "fighter",
+    "combat_profile": {
+      "role": 3,
+      "role_name": "fighter",
+      "frontline": true,
+      "backline": false,
+      "is_tank": false,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": true,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.6000000238418579,
+      "attack_damage": 40,
+      "armor": 40,
+      "magic_resist": 40,
+      "max_hp": 700,
+      "max_mana": 100
+    }
   },
   {
     "apiName": "DA_18_Rakan",
@@ -292,14 +418,14 @@
       "Vanguarda"
     ],
     "stats": {
-      "max_hp": 700.0,
-      "attack_damage": 45.0,
+      "max_hp": 700,
+      "attack_damage": 45,
       "attack_speed": 0.6000000238418579,
-      "armor": 35.0,
-      "magic_resist": 35.0,
-      "attack_range": 1.0,
-      "max_mana": 105.0,
-      "initial_mana": 35.0
+      "armor": 35,
+      "magic_resist": 35,
+      "attack_range": 1,
+      "max_mana": 105,
+      "initial_mana": 35
     },
     "ability": {
       "name": "Dança Deslumbrante",
@@ -308,7 +434,25 @@
       "variables": []
     },
     "role": 3,
-    "role_name": "fighter"
+    "role_name": "fighter",
+    "combat_profile": {
+      "role": 3,
+      "role_name": "fighter",
+      "frontline": true,
+      "backline": false,
+      "is_tank": false,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": true,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.6000000238418579,
+      "attack_damage": 45,
+      "armor": 35,
+      "magic_resist": 35,
+      "max_hp": 700,
+      "max_mana": 105
+    }
   },
   {
     "apiName": "DA_18_RekSai",
@@ -323,14 +467,14 @@
       "Lutador"
     ],
     "stats": {
-      "max_hp": 700.0,
-      "attack_damage": 50.0,
+      "max_hp": 700,
+      "attack_damage": 50,
       "attack_speed": 0.550000011920929,
-      "armor": 40.0,
-      "magic_resist": 40.0,
-      "attack_range": 1.0,
-      "max_mana": 100.0,
-      "initial_mana": 40.0
+      "armor": 40,
+      "magic_resist": 40,
+      "attack_range": 1,
+      "max_mana": 100,
+      "initial_mana": 40
     },
     "ability": {
       "name": "Arrancar pela Raiz",
@@ -339,7 +483,25 @@
       "variables": []
     },
     "role": 3,
-    "role_name": "fighter"
+    "role_name": "fighter",
+    "combat_profile": {
+      "role": 3,
+      "role_name": "fighter",
+      "frontline": true,
+      "backline": false,
+      "is_tank": false,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": true,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.550000011920929,
+      "attack_damage": 50,
+      "armor": 40,
+      "magic_resist": 40,
+      "max_hp": 700,
+      "max_mana": 100
+    }
   },
   {
     "apiName": "DA_Cinderling18",
@@ -354,14 +516,14 @@
       "Caçador"
     ],
     "stats": {
-      "max_hp": 500.0,
-      "attack_damage": 40.0,
+      "max_hp": 500,
+      "attack_damage": 40,
       "attack_speed": 0.699999988079071,
-      "armor": 25.0,
-      "magic_resist": 25.0,
-      "attack_range": 4.0,
-      "max_mana": 50.0,
-      "initial_mana": 0.0
+      "armor": 25,
+      "magic_resist": 25,
+      "attack_range": 4,
+      "max_mana": 50,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Folhas-Navalha",
@@ -369,8 +531,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 1,
+    "role_name": "carry",
+    "combat_profile": {
+      "role": 1,
+      "role_name": "carry",
+      "frontline": false,
+      "backline": true,
+      "is_tank": false,
+      "is_carry": true,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.699999988079071,
+      "attack_damage": 40,
+      "armor": 25,
+      "magic_resist": 25,
+      "max_hp": 500,
+      "max_mana": 50
+    }
   },
   {
     "apiName": "DA_18_Varus",
@@ -385,14 +565,14 @@
       "Fumegante"
     ],
     "stats": {
-      "max_hp": 500.0,
-      "attack_damage": 40.0,
+      "max_hp": 500,
+      "attack_damage": 40,
       "attack_speed": 0.75,
-      "armor": 25.0,
-      "magic_resist": 25.0,
-      "attack_range": 4.0,
-      "max_mana": 110.0,
-      "initial_mana": 20.0
+      "armor": 25,
+      "magic_resist": 25,
+      "attack_range": 4,
+      "max_mana": 110,
+      "initial_mana": 20
     },
     "ability": {
       "name": "Flecha Perfurante",
@@ -400,8 +580,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 1,
+    "role_name": "carry",
+    "combat_profile": {
+      "role": 1,
+      "role_name": "carry",
+      "frontline": false,
+      "backline": true,
+      "is_tank": false,
+      "is_carry": true,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.75,
+      "attack_damage": 40,
+      "armor": 25,
+      "magic_resist": 25,
+      "max_hp": 500,
+      "max_mana": 110
+    }
   },
   {
     "apiName": "DA_18_Veigar",
@@ -417,14 +615,14 @@
       "Enfeitiçador"
     ],
     "stats": {
-      "max_hp": 500.0,
-      "attack_damage": 25.0,
+      "max_hp": 500,
+      "attack_damage": 25,
       "attack_speed": 0.699999988079071,
-      "armor": 25.0,
-      "magic_resist": 25.0,
-      "attack_range": 4.0,
-      "max_mana": 30.0,
-      "initial_mana": 0.0
+      "armor": 25,
+      "magic_resist": 25,
+      "attack_range": 4,
+      "max_mana": 30,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Explosão Primordial",
@@ -432,8 +630,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 1,
+    "role_name": "carry",
+    "combat_profile": {
+      "role": 1,
+      "role_name": "carry",
+      "frontline": false,
+      "backline": true,
+      "is_tank": false,
+      "is_carry": true,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.699999988079071,
+      "attack_damage": 25,
+      "armor": 25,
+      "magic_resist": 25,
+      "max_hp": 500,
+      "max_mana": 30
+    }
   },
   {
     "apiName": "DA_18_Xayah",
@@ -449,14 +665,14 @@
       "Fumegante"
     ],
     "stats": {
-      "max_hp": 450.0,
-      "attack_damage": 45.0,
+      "max_hp": 450,
+      "attack_damage": 45,
       "attack_speed": 0.699999988079071,
-      "armor": 25.0,
-      "magic_resist": 25.0,
-      "attack_range": 4.0,
-      "max_mana": 50.0,
-      "initial_mana": 0.0
+      "armor": 25,
+      "magic_resist": 25,
+      "attack_range": 4,
+      "max_mana": 50,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Plumagem Mortífera",
@@ -464,8 +680,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 1,
+    "role_name": "carry",
+    "combat_profile": {
+      "role": 1,
+      "role_name": "carry",
+      "frontline": false,
+      "backline": true,
+      "is_tank": false,
+      "is_carry": true,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.699999988079071,
+      "attack_damage": 45,
+      "armor": 25,
+      "magic_resist": 25,
+      "max_hp": 450,
+      "max_mana": 50
+    }
   },
   {
     "apiName": "DA_18_Yorick",
@@ -481,14 +715,14 @@
       "Invocador"
     ],
     "stats": {
-      "max_hp": 650.0,
-      "attack_damage": 50.0,
+      "max_hp": 650,
+      "attack_damage": 50,
       "attack_speed": 0.6000000238418579,
-      "armor": 35.0,
-      "magic_resist": 35.0,
-      "attack_range": 1.0,
-      "max_mana": 110.0,
-      "initial_mana": 50.0
+      "armor": 35,
+      "magic_resist": 35,
+      "attack_range": 1,
+      "max_mana": 110,
+      "initial_mana": 50
     },
     "ability": {
       "name": "Extrema-Unção",
@@ -497,7 +731,25 @@
       "variables": []
     },
     "role": 3,
-    "role_name": "fighter"
+    "role_name": "fighter",
+    "combat_profile": {
+      "role": 3,
+      "role_name": "fighter",
+      "frontline": true,
+      "backline": false,
+      "is_tank": false,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": true,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.6000000238418579,
+      "attack_damage": 50,
+      "armor": 35,
+      "magic_resist": 35,
+      "max_hp": 650,
+      "max_mana": 110
+    }
   },
   {
     "apiName": "DA_18_Alistar",
@@ -512,14 +764,14 @@
       "Lutador"
     ],
     "stats": {
-      "max_hp": 950.0,
-      "attack_damage": 50.0,
+      "max_hp": 950,
+      "attack_damage": 50,
       "attack_speed": 0.6000000238418579,
-      "armor": 45.0,
-      "magic_resist": 45.0,
-      "attack_range": 1.0,
-      "max_mana": 90.0,
-      "initial_mana": 30.0
+      "armor": 45,
+      "magic_resist": 45,
+      "attack_range": 1,
+      "max_mana": 90,
+      "initial_mana": 30
     },
     "ability": {
       "name": "Urro Triunfante",
@@ -527,8 +779,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.6000000238418579,
+      "attack_damage": 50,
+      "armor": 45,
+      "magic_resist": 45,
+      "max_hp": 950,
+      "max_mana": 90
+    }
   },
   {
     "apiName": "DA_Scuttlecrab18",
@@ -543,14 +813,14 @@
       "Colosso"
     ],
     "stats": {
-      "max_hp": 950.0,
-      "attack_damage": 50.0,
+      "max_hp": 950,
+      "attack_damage": 50,
       "attack_speed": 0.6499999761581421,
-      "armor": 45.0,
-      "magic_resist": 45.0,
-      "attack_range": 1.0,
-      "max_mana": 100.0,
-      "initial_mana": 40.0
+      "armor": 45,
+      "magic_resist": 45,
+      "attack_range": 1,
+      "max_mana": 100,
+      "initial_mana": 40
     },
     "ability": {
       "name": "Escavação Ritmada",
@@ -558,8 +828,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.6499999761581421,
+      "attack_damage": 50,
+      "armor": 45,
+      "magic_resist": 45,
+      "max_hp": 950,
+      "max_mana": 100
+    }
   },
   {
     "apiName": "DA_18_Caitlyn",
@@ -574,14 +862,14 @@
       "Caçador"
     ],
     "stats": {
-      "max_hp": 550.0,
-      "attack_damage": 50.0,
+      "max_hp": 550,
+      "attack_damage": 50,
       "attack_speed": 0.699999988079071,
-      "armor": 30.0,
-      "magic_resist": 30.0,
-      "attack_range": 4.0,
-      "max_mana": 3.0,
-      "initial_mana": 0.0
+      "armor": 30,
+      "magic_resist": 30,
+      "attack_range": 4,
+      "max_mana": 3,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Bem na Mira",
@@ -589,8 +877,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 1,
+    "role_name": "carry",
+    "combat_profile": {
+      "role": 1,
+      "role_name": "carry",
+      "frontline": false,
+      "backline": true,
+      "is_tank": false,
+      "is_carry": true,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.699999988079071,
+      "attack_damage": 50,
+      "armor": 30,
+      "magic_resist": 30,
+      "max_hp": 550,
+      "max_mana": 3
+    }
   },
   {
     "apiName": "DA_18_Elise",
@@ -605,14 +911,14 @@
       "Vanguarda"
     ],
     "stats": {
-      "max_hp": 900.0,
-      "attack_damage": 20.0,
+      "max_hp": 900,
+      "attack_damage": 20,
       "attack_speed": 0.6499999761581421,
-      "armor": 45.0,
-      "magic_resist": 45.0,
-      "attack_range": 1.0,
-      "max_mana": 70.0,
-      "initial_mana": 20.0
+      "armor": 45,
+      "magic_resist": 45,
+      "attack_range": 1,
+      "max_mana": 70,
+      "initial_mana": 20
     },
     "ability": {
       "name": "Aranha Rainha",
@@ -620,8 +926,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.6499999761581421,
+      "attack_damage": 20,
+      "armor": 45,
+      "magic_resist": 45,
+      "max_hp": 900,
+      "max_mana": 70
+    }
   },
   {
     "apiName": "DA_Gromp18_AP",
@@ -636,14 +960,14 @@
       "Adaptador"
     ],
     "stats": {
-      "max_hp": 550.0,
-      "attack_damage": 30.0,
+      "max_hp": 550,
+      "attack_damage": 30,
       "attack_speed": 0.699999988079071,
-      "armor": 30.0,
-      "magic_resist": 30.0,
-      "attack_range": 4.0,
-      "max_mana": 45.0,
-      "initial_mana": 0.0
+      "armor": 30,
+      "magic_resist": 30,
+      "attack_range": 4,
+      "max_mana": 45,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Bolha Arrotada",
@@ -651,8 +975,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 1,
+    "role_name": "carry",
+    "combat_profile": {
+      "role": 1,
+      "role_name": "carry",
+      "frontline": false,
+      "backline": true,
+      "is_tank": false,
+      "is_carry": true,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.699999988079071,
+      "attack_damage": 30,
+      "armor": 30,
+      "magic_resist": 30,
+      "max_hp": 550,
+      "max_mana": 45
+    }
   },
   {
     "apiName": "DA_18_Kayle",
@@ -667,14 +1009,14 @@
       "Fumegante"
     ],
     "stats": {
-      "max_hp": 550.0,
-      "attack_damage": 0.0,
+      "max_hp": 550,
+      "attack_damage": 0,
       "attack_speed": 0.75,
-      "armor": 30.0,
-      "magic_resist": 30.0,
-      "attack_range": 4.0,
-      "max_mana": 0.0,
-      "initial_mana": 0.0
+      "armor": 30,
+      "magic_resist": 30,
+      "attack_range": 4,
+      "max_mana": 0,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Julgamento Solar",
@@ -682,8 +1024,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 1,
+    "role_name": "carry",
+    "combat_profile": {
+      "role": 1,
+      "role_name": "carry",
+      "frontline": false,
+      "backline": true,
+      "is_tank": false,
+      "is_carry": true,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.75,
+      "attack_damage": 0,
+      "armor": 30,
+      "magic_resist": 30,
+      "max_hp": 550,
+      "max_mana": 0
+    }
   },
   {
     "apiName": "DA_18_LeBlanc",
@@ -698,14 +1058,14 @@
       "Enfeitiçador"
     ],
     "stats": {
-      "max_hp": 550.0,
-      "attack_damage": 30.0,
+      "max_hp": 550,
+      "attack_damage": 30,
       "attack_speed": 0.699999988079071,
-      "armor": 30.0,
-      "magic_resist": 30.0,
-      "attack_range": 4.0,
-      "max_mana": 40.0,
-      "initial_mana": 0.0
+      "armor": 30,
+      "magic_resist": 30,
+      "attack_range": 4,
+      "max_mana": 40,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Imagem-Espelho",
@@ -713,8 +1073,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 1,
+    "role_name": "carry",
+    "combat_profile": {
+      "role": 1,
+      "role_name": "carry",
+      "frontline": false,
+      "backline": true,
+      "is_tank": false,
+      "is_carry": true,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.699999988079071,
+      "attack_damage": 30,
+      "armor": 30,
+      "magic_resist": 30,
+      "max_hp": 550,
+      "max_mana": 40
+    }
   },
   {
     "apiName": "DA_Murkwolf18",
@@ -729,14 +1107,14 @@
       "Devastador"
     ],
     "stats": {
-      "max_hp": 700.0,
-      "attack_damage": 50.0,
+      "max_hp": 700,
+      "attack_damage": 50,
       "attack_speed": 0.75,
-      "armor": 40.0,
-      "magic_resist": 40.0,
-      "attack_range": 1.0,
-      "max_mana": 40.0,
-      "initial_mana": 0.0
+      "armor": 40,
+      "magic_resist": 40,
+      "attack_range": 1,
+      "max_mana": 40,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Garras Laceradoras",
@@ -745,7 +1123,25 @@
       "variables": []
     },
     "role": 3,
-    "role_name": "fighter"
+    "role_name": "fighter",
+    "combat_profile": {
+      "role": 3,
+      "role_name": "fighter",
+      "frontline": true,
+      "backline": false,
+      "is_tank": false,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": true,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.75,
+      "attack_damage": 50,
+      "armor": 40,
+      "magic_resist": 40,
+      "max_hp": 700,
+      "max_mana": 40
+    }
   },
   {
     "apiName": "DA_18_Sejuani",
@@ -760,14 +1156,14 @@
       "Colosso"
     ],
     "stats": {
-      "max_hp": 900.0,
-      "attack_damage": 50.0,
+      "max_hp": 900,
+      "attack_damage": 50,
       "attack_speed": 0.6000000238418579,
-      "armor": 45.0,
-      "magic_resist": 45.0,
-      "attack_range": 1.0,
-      "max_mana": 100.0,
-      "initial_mana": 40.0
+      "armor": 45,
+      "magic_resist": 45,
+      "attack_range": 1,
+      "max_mana": 100,
+      "initial_mana": 40
     },
     "ability": {
       "name": "Ira do Sol",
@@ -775,8 +1171,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.6000000238418579,
+      "attack_damage": 50,
+      "armor": 45,
+      "magic_resist": 45,
+      "max_hp": 900,
+      "max_mana": 100
+    }
   },
   {
     "apiName": "DA_18_Shen",
@@ -791,14 +1205,14 @@
       "Defendente"
     ],
     "stats": {
-      "max_hp": 900.0,
-      "attack_damage": 50.0,
+      "max_hp": 900,
+      "attack_damage": 50,
       "attack_speed": 0.6499999761581421,
-      "armor": 45.0,
-      "magic_resist": 45.0,
-      "attack_range": 1.0,
-      "max_mana": 90.0,
-      "initial_mana": 30.0
+      "armor": 45,
+      "magic_resist": 45,
+      "attack_range": 1,
+      "max_mana": 90,
+      "initial_mana": 30
     },
     "ability": {
       "name": "Barreira de Ki",
@@ -806,8 +1220,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.6499999761581421,
+      "attack_damage": 50,
+      "armor": 45,
+      "magic_resist": 45,
+      "max_hp": 900,
+      "max_mana": 90
+    }
   },
   {
     "apiName": "DA_18_Teemo",
@@ -822,14 +1254,14 @@
       "Emanador"
     ],
     "stats": {
-      "max_hp": 550.0,
-      "attack_damage": 35.0,
+      "max_hp": 550,
+      "attack_damage": 35,
       "attack_speed": 0.75,
-      "armor": 30.0,
-      "magic_resist": 30.0,
-      "attack_range": 4.0,
-      "max_mana": 50.0,
-      "initial_mana": 0.0
+      "armor": 30,
+      "magic_resist": 30,
+      "attack_range": 4,
+      "max_mana": 50,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Vai Fundo no Fungo",
@@ -837,8 +1269,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 2,
+    "role_name": "support",
+    "combat_profile": {
+      "role": 2,
+      "role_name": "support",
+      "frontline": false,
+      "backline": true,
+      "is_tank": false,
+      "is_carry": false,
+      "is_support": true,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.75,
+      "attack_damage": 35,
+      "armor": 30,
+      "magic_resist": 30,
+      "max_hp": 550,
+      "max_mana": 50
+    }
   },
   {
     "apiName": "DA_18_Warwick",
@@ -853,14 +1303,14 @@
       "Devastador"
     ],
     "stats": {
-      "max_hp": 750.0,
-      "attack_damage": 45.0,
+      "max_hp": 750,
+      "attack_damage": 45,
       "attack_speed": 0.75,
-      "armor": 45.0,
-      "magic_resist": 45.0,
-      "attack_range": 1.0,
-      "max_mana": 40.0,
-      "initial_mana": 0.0
+      "armor": 45,
+      "magic_resist": 45,
+      "attack_range": 1,
+      "max_mana": 40,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Presas da Fera",
@@ -869,7 +1319,25 @@
       "variables": []
     },
     "role": 3,
-    "role_name": "fighter"
+    "role_name": "fighter",
+    "combat_profile": {
+      "role": 3,
+      "role_name": "fighter",
+      "frontline": true,
+      "backline": false,
+      "is_tank": false,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": true,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.75,
+      "attack_damage": 45,
+      "armor": 45,
+      "magic_resist": 45,
+      "max_hp": 750,
+      "max_mana": 40
+    }
   },
   {
     "apiName": "DA_18_Yunara",
@@ -884,14 +1352,14 @@
       "Carrasco"
     ],
     "stats": {
-      "max_hp": 550.0,
-      "attack_damage": 42.0,
+      "max_hp": 550,
+      "attack_damage": 42,
       "attack_speed": 0.75,
-      "armor": 30.0,
-      "magic_resist": 30.0,
-      "attack_range": 4.0,
-      "max_mana": 35.0,
-      "initial_mana": 0.0
+      "armor": 30,
+      "magic_resist": 30,
+      "attack_range": 4,
+      "max_mana": 35,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Cultivação do Espírito",
@@ -899,8 +1367,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 1,
+    "role_name": "carry",
+    "combat_profile": {
+      "role": 1,
+      "role_name": "carry",
+      "frontline": false,
+      "backline": true,
+      "is_tank": false,
+      "is_carry": true,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.75,
+      "attack_damage": 42,
+      "armor": 30,
+      "magic_resist": 30,
+      "max_hp": 550,
+      "max_mana": 35
+    }
   },
   {
     "apiName": "DA_18_Azir",
@@ -916,14 +1402,14 @@
       "Invocador"
     ],
     "stats": {
-      "max_hp": 650.0,
-      "attack_damage": 30.0,
+      "max_hp": 650,
+      "attack_damage": 30,
       "attack_speed": 0.75,
-      "armor": 35.0,
-      "magic_resist": 35.0,
-      "attack_range": 4.0,
-      "max_mana": 35.0,
-      "initial_mana": 0.0
+      "armor": 35,
+      "magic_resist": 35,
+      "attack_range": 4,
+      "max_mana": 35,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Surja!",
@@ -931,8 +1417,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 1,
+    "role_name": "carry",
+    "combat_profile": {
+      "role": 1,
+      "role_name": "carry",
+      "frontline": false,
+      "backline": true,
+      "is_tank": false,
+      "is_carry": true,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.75,
+      "attack_damage": 30,
+      "armor": 35,
+      "magic_resist": 35,
+      "max_hp": 650,
+      "max_mana": 35
+    }
   },
   {
     "apiName": "DA_18_Cassiopeia",
@@ -947,14 +1451,14 @@
       "Enfeitiçador"
     ],
     "stats": {
-      "max_hp": 650.0,
-      "attack_damage": 30.0,
+      "max_hp": 650,
+      "attack_damage": 30,
       "attack_speed": 0.75,
-      "armor": 35.0,
-      "magic_resist": 35.0,
-      "attack_range": 4.0,
-      "max_mana": 30.0,
-      "initial_mana": 0.0
+      "armor": 35,
+      "magic_resist": 35,
+      "attack_range": 4,
+      "max_mana": 30,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Explosão Venenosa",
@@ -962,8 +1466,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 1,
+    "role_name": "carry",
+    "combat_profile": {
+      "role": 1,
+      "role_name": "carry",
+      "frontline": false,
+      "backline": true,
+      "is_tank": false,
+      "is_carry": true,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.75,
+      "attack_damage": 30,
+      "armor": 35,
+      "magic_resist": 35,
+      "max_hp": 650,
+      "max_mana": 30
+    }
   },
   {
     "apiName": "DA_18_Diana",
@@ -979,14 +1501,14 @@
       "Vanguarda"
     ],
     "stats": {
-      "max_hp": 850.0,
-      "attack_damage": 30.0,
+      "max_hp": 850,
+      "attack_damage": 30,
       "attack_speed": 0.800000011920929,
-      "armor": 50.0,
-      "magic_resist": 50.0,
-      "attack_range": 1.0,
-      "max_mana": 40.0,
-      "initial_mana": 0.0
+      "armor": 50,
+      "magic_resist": 50,
+      "attack_range": 1,
+      "max_mana": 40,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Barreira Pálida",
@@ -995,7 +1517,25 @@
       "variables": []
     },
     "role": 3,
-    "role_name": "fighter"
+    "role_name": "fighter",
+    "combat_profile": {
+      "role": 3,
+      "role_name": "fighter",
+      "frontline": true,
+      "backline": false,
+      "is_tank": false,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": true,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.800000011920929,
+      "attack_damage": 30,
+      "armor": 50,
+      "magic_resist": 50,
+      "max_hp": 850,
+      "max_mana": 40
+    }
   },
   {
     "apiName": "DA_Fiddlesticks18",
@@ -1011,14 +1551,14 @@
       "Enfeitiçador"
     ],
     "stats": {
-      "max_hp": 1000.0,
-      "attack_damage": 50.0,
+      "max_hp": 1000,
+      "attack_damage": 50,
       "attack_speed": 0.6499999761581421,
-      "armor": 55.0,
-      "magic_resist": 55.0,
-      "attack_range": 1.0,
-      "max_mana": 90.0,
-      "initial_mana": 30.0
+      "armor": 55,
+      "magic_resist": 55,
+      "attack_range": 1,
+      "max_mana": 90,
+      "initial_mana": 30
     },
     "ability": {
       "name": "Colheita",
@@ -1026,8 +1566,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.6499999761581421,
+      "attack_damage": 50,
+      "armor": 55,
+      "magic_resist": 55,
+      "max_hp": 1000,
+      "max_mana": 90
+    }
   },
   {
     "apiName": "DA_18_Hecarim",
@@ -1042,14 +1600,14 @@
       "Vanguarda"
     ],
     "stats": {
-      "max_hp": 1100.0,
-      "attack_damage": 50.0,
+      "max_hp": 1100,
+      "attack_damage": 50,
       "attack_speed": 0.6499999761581421,
-      "armor": 50.0,
-      "magic_resist": 50.0,
-      "attack_range": 1.0,
-      "max_mana": 110.0,
-      "initial_mana": 50.0
+      "armor": 50,
+      "magic_resist": 50,
+      "attack_range": 1,
+      "max_mana": 110,
+      "initial_mana": 50
     },
     "ability": {
       "name": "Espírito do Pavor",
@@ -1057,8 +1615,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.6499999761581421,
+      "attack_damage": 50,
+      "armor": 50,
+      "magic_resist": 50,
+      "max_hp": 1100,
+      "max_mana": 110
+    }
   },
   {
     "apiName": "DA_18_KhaZix",
@@ -1072,14 +1648,14 @@
       "Rival"
     ],
     "stats": {
-      "max_hp": 950.0,
-      "attack_damage": 40.0,
+      "max_hp": 950,
+      "attack_damage": 40,
       "attack_speed": 0.8500000238418579,
-      "armor": 55.0,
-      "magic_resist": 55.0,
-      "attack_range": 1.0,
-      "max_mana": 25.0,
-      "initial_mana": 0.0
+      "armor": 55,
+      "magic_resist": 55,
+      "attack_range": 1,
+      "max_mana": 25,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Sabor de Medo",
@@ -1087,8 +1663,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.8500000238418579,
+      "attack_damage": 40,
+      "armor": 55,
+      "magic_resist": 55,
+      "max_hp": 950,
+      "max_mana": 25
+    }
   },
   {
     "apiName": "DA_KogMaw18_AD",
@@ -1104,14 +1698,14 @@
       "Emanador"
     ],
     "stats": {
-      "max_hp": 650.0,
-      "attack_damage": 40.0,
+      "max_hp": 650,
+      "attack_damage": 40,
       "attack_speed": 0.800000011920929,
-      "armor": 35.0,
-      "magic_resist": 35.0,
-      "attack_range": 4.0,
-      "max_mana": 55.0,
-      "initial_mana": 15.0
+      "armor": 35,
+      "magic_resist": 35,
+      "attack_range": 4,
+      "max_mana": 55,
+      "initial_mana": 15
     },
     "ability": {
       "name": "Chuva de Artilharia",
@@ -1119,8 +1713,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 1,
+    "role_name": "carry",
+    "combat_profile": {
+      "role": 1,
+      "role_name": "carry",
+      "frontline": false,
+      "backline": true,
+      "is_tank": false,
+      "is_carry": true,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.800000011920929,
+      "attack_damage": 40,
+      "armor": 35,
+      "magic_resist": 35,
+      "max_hp": 650,
+      "max_mana": 55
+    }
   },
   {
     "apiName": "DA_Krug18",
@@ -1135,14 +1747,14 @@
       "Lutador"
     ],
     "stats": {
-      "max_hp": 1100.0,
-      "attack_damage": 55.0,
+      "max_hp": 1100,
+      "attack_damage": 55,
       "attack_speed": 0.6000000238418579,
-      "armor": 40.0,
-      "magic_resist": 40.0,
-      "attack_range": 1.0,
-      "max_mana": 135.0,
-      "initial_mana": 80.0
+      "armor": 40,
+      "magic_resist": 40,
+      "attack_range": 1,
+      "max_mana": 135,
+      "initial_mana": 80
     },
     "ability": {
       "name": "Lá Vem Pedrada",
@@ -1151,7 +1763,25 @@
       "variables": []
     },
     "role": 3,
-    "role_name": "fighter"
+    "role_name": "fighter",
+    "combat_profile": {
+      "role": 3,
+      "role_name": "fighter",
+      "frontline": true,
+      "backline": false,
+      "is_tank": false,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": true,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.6000000238418579,
+      "attack_damage": 55,
+      "armor": 40,
+      "magic_resist": 40,
+      "max_hp": 1100,
+      "max_mana": 135
+    }
   },
   {
     "apiName": "DA_CrimsonRaptor18",
@@ -1167,14 +1797,14 @@
       "Fumegante"
     ],
     "stats": {
-      "max_hp": 650.0,
-      "attack_damage": 60.0,
+      "max_hp": 650,
+      "attack_damage": 60,
       "attack_speed": 0.75,
-      "armor": 35.0,
-      "magic_resist": 35.0,
-      "attack_range": 4.0,
-      "max_mana": 60.0,
-      "initial_mana": 20.0
+      "armor": 35,
+      "magic_resist": 35,
+      "attack_range": 4,
+      "max_mana": 60,
+      "initial_mana": 20
     },
     "ability": {
       "name": "Bando Familiar",
@@ -1182,8 +1812,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 1,
+    "role_name": "carry",
+    "combat_profile": {
+      "role": 1,
+      "role_name": "carry",
+      "frontline": false,
+      "backline": true,
+      "is_tank": false,
+      "is_carry": true,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.75,
+      "attack_damage": 60,
+      "armor": 35,
+      "magic_resist": 35,
+      "max_hp": 650,
+      "max_mana": 60
+    }
   },
   {
     "apiName": "DA_18_MasterYi_AD",
@@ -1198,14 +1846,14 @@
       "Adaptador"
     ],
     "stats": {
-      "max_hp": 850.0,
-      "attack_damage": 63.0,
+      "max_hp": 850,
+      "attack_damage": 63,
       "attack_speed": 0.800000011920929,
-      "armor": 55.0,
-      "magic_resist": 55.0,
-      "attack_range": 1.0,
-      "max_mana": 3.0,
-      "initial_mana": 0.0
+      "armor": 55,
+      "magic_resist": 55,
+      "attack_range": 1,
+      "max_mana": 3,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Estilo Wuju",
@@ -1213,8 +1861,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.800000011920929,
+      "attack_damage": 63,
+      "armor": 55,
+      "magic_resist": 55,
+      "max_hp": 850,
+      "max_mana": 3
+    }
   },
   {
     "apiName": "DA_18_Rammus",
@@ -1229,14 +1895,14 @@
       "Defendente"
     ],
     "stats": {
-      "max_hp": 1100.0,
-      "attack_damage": 50.0,
+      "max_hp": 1100,
+      "attack_damage": 50,
       "attack_speed": 0.6000000238418579,
-      "armor": 50.0,
-      "magic_resist": 50.0,
-      "attack_range": 1.0,
-      "max_mana": 80.0,
-      "initial_mana": 30.0
+      "armor": 50,
+      "magic_resist": 50,
+      "attack_range": 1,
+      "max_mana": 80,
+      "initial_mana": 30
     },
     "ability": {
       "name": "Bola Curva Defensiva",
@@ -1244,8 +1910,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.6000000238418579,
+      "attack_damage": 50,
+      "armor": 50,
+      "magic_resist": 50,
+      "max_hp": 1100,
+      "max_mana": 80
+    }
   },
   {
     "apiName": "DA_18_Rengar",
@@ -1259,14 +1943,14 @@
       "Rival"
     ],
     "stats": {
-      "max_hp": 900.0,
-      "attack_damage": 60.0,
+      "max_hp": 900,
+      "attack_damage": 60,
       "attack_speed": 0.75,
-      "armor": 55.0,
-      "magic_resist": 55.0,
-      "attack_range": 1.0,
-      "max_mana": 50.0,
-      "initial_mana": 10.0
+      "armor": 55,
+      "magic_resist": 55,
+      "attack_range": 1,
+      "max_mana": 50,
+      "initial_mana": 10
     },
     "ability": {
       "name": "Selvageria",
@@ -1274,8 +1958,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.75,
+      "attack_damage": 60,
+      "armor": 55,
+      "magic_resist": 55,
+      "max_hp": 900,
+      "max_mana": 50
+    }
   },
   {
     "apiName": "DA_18_Tristana",
@@ -1291,14 +1993,14 @@
       "Caçador"
     ],
     "stats": {
-      "max_hp": 650.0,
-      "attack_damage": 55.0,
+      "max_hp": 650,
+      "attack_damage": 55,
       "attack_speed": 0.75,
-      "armor": 35.0,
-      "magic_resist": 35.0,
-      "attack_range": 4.0,
-      "max_mana": 50.0,
-      "initial_mana": 0.0
+      "armor": 35,
+      "magic_resist": 35,
+      "attack_range": 4,
+      "max_mana": 50,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Carga Explosiva",
@@ -1306,8 +2008,26 @@
       "icon": "assets/characters/tft18_tristana/hud/icons2d/tft18_tristana_e.tex",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 1,
+    "role_name": "carry",
+    "combat_profile": {
+      "role": 1,
+      "role_name": "carry",
+      "frontline": false,
+      "backline": true,
+      "is_tank": false,
+      "is_carry": true,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.75,
+      "attack_damage": 55,
+      "armor": 35,
+      "magic_resist": 35,
+      "max_hp": 650,
+      "max_mana": 50
+    }
   },
   {
     "apiName": "DA_Vi18",
@@ -1322,14 +2042,14 @@
       "Colosso"
     ],
     "stats": {
-      "max_hp": 1100.0,
-      "attack_damage": 45.0,
+      "max_hp": 1100,
+      "attack_damage": 45,
       "attack_speed": 0.75,
-      "armor": 50.0,
-      "magic_resist": 50.0,
-      "attack_range": 1.0,
-      "max_mana": 60.0,
-      "initial_mana": 0.0
+      "armor": 50,
+      "magic_resist": 50,
+      "attack_range": 1,
+      "max_mana": 60,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Punhos Furiosos",
@@ -1338,7 +2058,25 @@
       "variables": []
     },
     "role": 3,
-    "role_name": "fighter"
+    "role_name": "fighter",
+    "combat_profile": {
+      "role": 3,
+      "role_name": "fighter",
+      "frontline": true,
+      "backline": false,
+      "is_tank": false,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": true,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.75,
+      "attack_damage": 45,
+      "armor": 50,
+      "magic_resist": 50,
+      "max_hp": 1100,
+      "max_mana": 60
+    }
   },
   {
     "apiName": "DA_18_Ahri",
@@ -1353,14 +2091,14 @@
       "Enfeitiçador"
     ],
     "stats": {
-      "max_hp": 850.0,
-      "attack_damage": 40.0,
+      "max_hp": 850,
+      "attack_damage": 40,
       "attack_speed": 0.800000011920929,
-      "armor": 40.0,
-      "magic_resist": 40.0,
-      "attack_range": 4.0,
-      "max_mana": 100.0,
-      "initial_mana": 20.0
+      "armor": 40,
+      "magic_resist": 40,
+      "attack_range": 4,
+      "max_mana": 100,
+      "initial_mana": 20
     },
     "ability": {
       "name": "Bomba Espiritual",
@@ -1368,8 +2106,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 1,
+    "role_name": "carry",
+    "combat_profile": {
+      "role": 1,
+      "role_name": "carry",
+      "frontline": false,
+      "backline": true,
+      "is_tank": false,
+      "is_carry": true,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.800000011920929,
+      "attack_damage": 40,
+      "armor": 40,
+      "magic_resist": 40,
+      "max_hp": 850,
+      "max_mana": 100
+    }
   },
   {
     "apiName": "DA_Amumu18",
@@ -1384,14 +2140,14 @@
       "Colosso"
     ],
     "stats": {
-      "max_hp": 1300.0,
-      "attack_damage": 70.0,
+      "max_hp": 1300,
+      "attack_damage": 70,
       "attack_speed": 0.699999988079071,
-      "armor": 60.0,
-      "magic_resist": 60.0,
-      "attack_range": 1.0,
-      "max_mana": 125.0,
-      "initial_mana": 30.0
+      "armor": 60,
+      "magic_resist": 60,
+      "attack_range": 1,
+      "max_mana": 125,
+      "initial_mana": 30
     },
     "ability": {
       "name": "Chilique",
@@ -1399,8 +2155,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.699999988079071,
+      "attack_damage": 70,
+      "armor": 60,
+      "magic_resist": 60,
+      "max_hp": 1300,
+      "max_mana": 125
+    }
   },
   {
     "apiName": "DA_18_Aphelios",
@@ -1415,14 +2189,14 @@
       "Fumegante"
     ],
     "stats": {
-      "max_hp": 850.0,
-      "attack_damage": 60.0,
+      "max_hp": 850,
+      "attack_damage": 60,
       "attack_speed": 0.800000011920929,
-      "armor": 40.0,
-      "magic_resist": 40.0,
-      "attack_range": 4.0,
-      "max_mana": 70.0,
-      "initial_mana": 20.0
+      "armor": 40,
+      "magic_resist": 40,
+      "attack_range": 4,
+      "max_mana": 70,
+      "initial_mana": 20
     },
     "ability": {
       "name": "Massacre Lunar",
@@ -1430,8 +2204,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 1,
+    "role_name": "carry",
+    "combat_profile": {
+      "role": 1,
+      "role_name": "carry",
+      "frontline": false,
+      "backline": true,
+      "is_tank": false,
+      "is_carry": true,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.800000011920929,
+      "attack_damage": 60,
+      "armor": 40,
+      "magic_resist": 40,
+      "max_hp": 850,
+      "max_mana": 70
+    }
   },
   {
     "apiName": "DA_Sentinel18",
@@ -1447,14 +2239,14 @@
       "Emanador"
     ],
     "stats": {
-      "max_hp": 1300.0,
-      "attack_damage": 75.0,
+      "max_hp": 1300,
+      "attack_damage": 75,
       "attack_speed": 0.6000000238418579,
-      "armor": 60.0,
-      "magic_resist": 60.0,
-      "attack_range": 1.0,
-      "max_mana": 150.0,
-      "initial_mana": 60.0
+      "armor": 60,
+      "magic_resist": 60,
+      "attack_range": 1,
+      "max_mana": 150,
+      "initial_mana": 60
     },
     "ability": {
       "name": "Onda de Choque Cerúlea",
@@ -1462,8 +2254,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.6000000238418579,
+      "attack_damage": 75,
+      "armor": 60,
+      "magic_resist": 60,
+      "max_hp": 1300,
+      "max_mana": 150
+    }
   },
   {
     "apiName": "DA_18_Ezreal",
@@ -1478,14 +2288,14 @@
       "Carrasco"
     ],
     "stats": {
-      "max_hp": 850.0,
-      "attack_damage": 45.0,
+      "max_hp": 850,
+      "attack_damage": 45,
       "attack_speed": 0.75,
-      "armor": 40.0,
-      "magic_resist": 40.0,
-      "attack_range": 4.0,
-      "max_mana": 30.0,
-      "initial_mana": 0.0
+      "armor": 40,
+      "magic_resist": 40,
+      "attack_range": 4,
+      "max_mana": 30,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Rajada da Floresta",
@@ -1493,8 +2303,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.75,
+      "attack_damage": 45,
+      "armor": 40,
+      "magic_resist": 40,
+      "max_hp": 850,
+      "max_mana": 30
+    }
   },
   {
     "apiName": "DA_18_Lillia",
@@ -1509,14 +2337,14 @@
       "Defendente"
     ],
     "stats": {
-      "max_hp": 1300.0,
-      "attack_damage": 40.0,
+      "max_hp": 1300,
+      "attack_damage": 40,
       "attack_speed": 0.6499999761581421,
-      "armor": 60.0,
-      "magic_resist": 60.0,
-      "attack_range": 1.0,
-      "max_mana": 140.0,
-      "initial_mana": 40.0
+      "armor": 60,
+      "magic_resist": 60,
+      "attack_range": 1,
+      "max_mana": 140,
+      "initial_mana": 40
     },
     "ability": {
       "name": "Cadência de Ninar",
@@ -1524,8 +2352,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.6499999761581421,
+      "attack_damage": 40,
+      "armor": 60,
+      "magic_resist": 60,
+      "max_hp": 1300,
+      "max_mana": 140
+    }
   },
   {
     "apiName": "DA_18_Malphite",
@@ -1540,14 +2386,14 @@
       "Monólito"
     ],
     "stats": {
-      "max_hp": 1300.0,
-      "attack_damage": 70.0,
+      "max_hp": 1300,
+      "attack_damage": 70,
       "attack_speed": 0.550000011920929,
-      "armor": 70.0,
-      "magic_resist": 70.0,
-      "attack_range": 1.0,
-      "max_mana": 80.0,
-      "initial_mana": 30.0
+      "armor": 70,
+      "magic_resist": 70,
+      "attack_range": 1,
+      "max_mana": 80,
+      "initial_mana": 30
     },
     "ability": {
       "name": "Casca Petrificada",
@@ -1555,8 +2401,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.550000011920929,
+      "attack_damage": 70,
+      "armor": 70,
+      "magic_resist": 70,
+      "max_hp": 1300,
+      "max_mana": 80
+    }
   },
   {
     "apiName": "DA_18_Morgana",
@@ -1571,14 +2435,14 @@
       "Emanador"
     ],
     "stats": {
-      "max_hp": 1100.0,
-      "attack_damage": 45.0,
+      "max_hp": 1100,
+      "attack_damage": 45,
       "attack_speed": 0.75,
-      "armor": 60.0,
-      "magic_resist": 60.0,
-      "attack_range": 2.0,
-      "max_mana": 65.0,
-      "initial_mana": 0.0
+      "armor": 60,
+      "magic_resist": 60,
+      "attack_range": 2,
+      "max_mana": 65,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Maldição Enfraquecedora",
@@ -1586,8 +2450,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 2,
+      "attack_speed": 0.75,
+      "attack_damage": 45,
+      "armor": 60,
+      "magic_resist": 60,
+      "max_hp": 1100,
+      "max_mana": 65
+    }
   },
   {
     "apiName": "DA_Nidalee18_AP",
@@ -1602,14 +2484,14 @@
       "Adaptador"
     ],
     "stats": {
-      "max_hp": 850.0,
-      "attack_damage": 35.0,
+      "max_hp": 850,
+      "attack_damage": 35,
       "attack_speed": 0.800000011920929,
-      "armor": 30.0,
-      "magic_resist": 30.0,
-      "attack_range": 1.0,
-      "max_mana": 45.0,
-      "initial_mana": 0.0
+      "armor": 30,
+      "magic_resist": 30,
+      "attack_range": 1,
+      "max_mana": 45,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Arremessar Lança",
@@ -1618,7 +2500,25 @@
       "variables": []
     },
     "role": 3,
-    "role_name": "fighter"
+    "role_name": "fighter",
+    "combat_profile": {
+      "role": 3,
+      "role_name": "fighter",
+      "frontline": true,
+      "backline": false,
+      "is_tank": false,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": true,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.800000011920929,
+      "attack_damage": 35,
+      "armor": 30,
+      "magic_resist": 30,
+      "max_hp": 850,
+      "max_mana": 45
+    }
   },
   {
     "apiName": "DA_Brambleback18",
@@ -1633,14 +2533,14 @@
       "Devastador"
     ],
     "stats": {
-      "max_hp": 1100.0,
-      "attack_damage": 120.0,
+      "max_hp": 1100,
+      "attack_damage": 120,
       "attack_speed": 0.550000011920929,
-      "armor": 65.0,
-      "magic_resist": 65.0,
-      "attack_range": 1.0,
-      "max_mana": 40.0,
-      "initial_mana": 0.0
+      "armor": 65,
+      "magic_resist": 65,
+      "attack_range": 1,
+      "max_mana": 40,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Fúria Carmesim",
@@ -1648,8 +2548,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.550000011920929,
+      "attack_damage": 120,
+      "armor": 65,
+      "magic_resist": 65,
+      "max_hp": 1100,
+      "max_mana": 40
+    }
   },
   {
     "apiName": "DA_18_Sett",
@@ -1664,14 +2582,14 @@
       "Lutador"
     ],
     "stats": {
-      "max_hp": 1200.0,
-      "attack_damage": 80.0,
+      "max_hp": 1200,
+      "attack_damage": 80,
       "attack_speed": 0.6499999761581421,
-      "armor": 60.0,
-      "magic_resist": 60.0,
-      "attack_range": 1.0,
-      "max_mana": 135.0,
-      "initial_mana": 60.0
+      "armor": 60,
+      "magic_resist": 60,
+      "attack_range": 1,
+      "max_mana": 135,
+      "initial_mana": 60
     },
     "ability": {
       "name": "Casca-Grossa",
@@ -1679,8 +2597,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.6499999761581421,
+      "attack_damage": 80,
+      "armor": 60,
+      "magic_resist": 60,
+      "max_hp": 1200,
+      "max_mana": 135
+    }
   },
   {
     "apiName": "DA_18_Sivir",
@@ -1695,14 +2631,14 @@
       "Caçador"
     ],
     "stats": {
-      "max_hp": 850.0,
-      "attack_damage": 50.0,
+      "max_hp": 850,
+      "attack_damage": 50,
       "attack_speed": 0.800000011920929,
-      "armor": 40.0,
-      "magic_resist": 40.0,
-      "attack_range": 4.0,
-      "max_mana": 40.0,
-      "initial_mana": 0.0
+      "armor": 40,
+      "magic_resist": 40,
+      "attack_range": 4,
+      "max_mana": 40,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Lâmina Bumerangue",
@@ -1710,8 +2646,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 1,
+    "role_name": "carry",
+    "combat_profile": {
+      "role": 1,
+      "role_name": "carry",
+      "frontline": false,
+      "backline": true,
+      "is_tank": false,
+      "is_carry": true,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.800000011920929,
+      "attack_damage": 50,
+      "armor": 40,
+      "magic_resist": 40,
+      "max_hp": 850,
+      "max_mana": 40
+    }
   },
   {
     "apiName": "DA_18_Soraka",
@@ -1726,14 +2680,14 @@
       "Carrasco"
     ],
     "stats": {
-      "max_hp": 850.0,
-      "attack_damage": 30.0,
+      "max_hp": 850,
+      "attack_damage": 30,
       "attack_speed": 0.75,
-      "armor": 40.0,
-      "magic_resist": 40.0,
-      "attack_range": 4.0,
-      "max_mana": 30.0,
-      "initial_mana": 0.0
+      "armor": 40,
+      "magic_resist": 40,
+      "attack_range": 4,
+      "max_mana": 30,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Chamado Estelar",
@@ -1741,8 +2695,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.75,
+      "attack_damage": 30,
+      "armor": 40,
+      "magic_resist": 40,
+      "max_hp": 850,
+      "max_mana": 30
+    }
   },
   {
     "apiName": "DA_18_Zyra",
@@ -1757,14 +2729,14 @@
       "Invocador"
     ],
     "stats": {
-      "max_hp": 850.0,
-      "attack_damage": 40.0,
+      "max_hp": 850,
+      "attack_damage": 40,
       "attack_speed": 0.75,
-      "armor": 40.0,
-      "magic_resist": 40.0,
-      "attack_range": 4.0,
-      "max_mana": 45.0,
-      "initial_mana": 0.0
+      "armor": 40,
+      "magic_resist": 40,
+      "attack_range": 4,
+      "max_mana": 45,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Crescimento Desenfreado",
@@ -1772,8 +2744,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.75,
+      "attack_damage": 40,
+      "armor": 40,
+      "magic_resist": 40,
+      "max_hp": 850,
+      "max_mana": 45
+    }
   },
   {
     "apiName": "DA_18_Alune",
@@ -1789,14 +2779,14 @@
       "Enfeitiçador"
     ],
     "stats": {
-      "max_hp": 900.0,
-      "attack_damage": 40.0,
+      "max_hp": 900,
+      "attack_damage": 40,
       "attack_speed": 0.8500000238418579,
-      "armor": 45.0,
-      "magic_resist": 45.0,
-      "attack_range": 4.0,
-      "max_mana": 35.0,
-      "initial_mana": 0.0
+      "armor": 45,
+      "magic_resist": 45,
+      "attack_range": 4,
+      "max_mana": 35,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Chuva Lunar",
@@ -1806,49 +2796,49 @@
         {
           "name": "MagicDamage",
           "value": [
-            0.0,
-            380.0,
-            570.0,
-            900.0,
-            0.0,
-            0.0,
-            0.0
+            0,
+            380,
+            570,
+            900,
+            0,
+            0,
+            0
           ]
         },
         {
           "name": "ShredDuration",
           "value": [
-            6.0,
-            6.0,
-            6.0,
-            6.0,
-            6.0,
-            6.0,
-            6.0
+            6,
+            6,
+            6,
+            6,
+            6,
+            6,
+            6
           ]
         },
         {
           "name": "ShredPercent",
           "value": [
-            20.0,
-            20.0,
-            20.0,
-            20.0,
-            20.0,
-            20.0,
-            20.0
+            20,
+            20,
+            20,
+            20,
+            20,
+            20,
+            20
           ]
         },
         {
           "name": "PrimaryMagicDamage",
           "value": [
-            0.0,
-            160.0,
-            240.0,
-            380.0,
-            0.0,
-            0.0,
-            0.0
+            0,
+            160,
+            240,
+            380,
+            0,
+            0,
+            0
           ]
         },
         {
@@ -1866,19 +2856,37 @@
         {
           "name": "AttackSpeedDuration",
           "value": [
-            5.0,
-            5.0,
-            5.0,
-            5.0,
-            5.0,
-            5.0,
-            5.0
+            5,
+            5,
+            5,
+            5,
+            5,
+            5,
+            5
           ]
         }
       ]
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 4,
+      "attack_speed": 0.8500000238418579,
+      "attack_damage": 40,
+      "armor": 45,
+      "magic_resist": 45,
+      "max_hp": 900,
+      "max_mana": 35
+    }
   },
   {
     "apiName": "DA_18_Ashe",
@@ -1893,14 +2901,14 @@
       "Caçador"
     ],
     "stats": {
-      "max_hp": 900.0,
-      "attack_damage": 75.0,
+      "max_hp": 900,
+      "attack_damage": 75,
       "attack_speed": 0.800000011920929,
-      "armor": 45.0,
-      "magic_resist": 45.0,
-      "attack_range": 6.0,
-      "max_mana": 80.0,
-      "initial_mana": 0.0
+      "armor": 45,
+      "magic_resist": 45,
+      "attack_range": 6,
+      "max_mana": 80,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Fenda Espiritual",
@@ -1908,8 +2916,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 1,
+    "role_name": "carry",
+    "combat_profile": {
+      "role": 1,
+      "role_name": "carry",
+      "frontline": false,
+      "backline": true,
+      "is_tank": false,
+      "is_carry": true,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 6,
+      "attack_speed": 0.800000011920929,
+      "attack_damage": 75,
+      "armor": 45,
+      "magic_resist": 45,
+      "max_hp": 900,
+      "max_mana": 80
+    }
   },
   {
     "apiName": "DA_18_ElderDragon",
@@ -1924,14 +2950,14 @@
       "Fera do Rift"
     ],
     "stats": {
-      "max_hp": 1800.0,
-      "attack_damage": 125.0,
+      "max_hp": 1800,
+      "attack_damage": 125,
       "attack_speed": 0.5,
-      "armor": 75.0,
-      "magic_resist": 75.0,
-      "attack_range": 2.0,
-      "max_mana": 60.0,
-      "initial_mana": 20.0
+      "armor": 75,
+      "magic_resist": 75,
+      "attack_range": 2,
+      "max_mana": 60,
+      "initial_mana": 20
     },
     "ability": {
       "name": "Calor Inigualável",
@@ -1939,8 +2965,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 2,
+      "attack_speed": 0.5,
+      "attack_damage": 125,
+      "armor": 75,
+      "magic_resist": 75,
+      "max_hp": 1800,
+      "max_mana": 60
+    }
   },
   {
     "apiName": "DA_Draven18",
@@ -1954,14 +2998,14 @@
       "Caça-recompensas"
     ],
     "stats": {
-      "max_hp": 900.0,
-      "attack_damage": 48.0,
+      "max_hp": 900,
+      "attack_damage": 48,
       "attack_speed": 0.8500000238418579,
-      "armor": 45.0,
-      "magic_resist": 45.0,
-      "attack_range": 6.0,
-      "max_mana": 110.0,
-      "initial_mana": 0.0
+      "armor": 45,
+      "magic_resist": 45,
+      "attack_range": 6,
+      "max_mana": 110,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Reta da Morte",
@@ -1969,8 +3013,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 6,
+      "attack_speed": 0.8500000238418579,
+      "attack_damage": 48,
+      "armor": 45,
+      "magic_resist": 45,
+      "max_hp": 900,
+      "max_mana": 110
+    }
   },
   {
     "apiName": "DA_18_GnarSmall",
@@ -1986,14 +3048,14 @@
       "Lutador"
     ],
     "stats": {
-      "max_hp": 900.0,
-      "attack_damage": 100.0,
+      "max_hp": 900,
+      "attack_damage": 100,
       "attack_speed": 0.8999999761581421,
-      "armor": 55.0,
-      "magic_resist": 55.0,
-      "attack_range": 2.0,
-      "max_mana": 70.0,
-      "initial_mana": 0.0
+      "armor": 55,
+      "magic_resist": 55,
+      "attack_range": 2,
+      "max_mana": 70,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Fúria Genética",
@@ -2001,8 +3063,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 2,
+      "attack_speed": 0.8999999761581421,
+      "attack_damage": 100,
+      "armor": 55,
+      "magic_resist": 55,
+      "max_hp": 900,
+      "max_mana": 70
+    }
   },
   {
     "apiName": "DA_18_Ivern",
@@ -2016,14 +3096,14 @@
       "Pai do Verde"
     ],
     "stats": {
-      "max_hp": 1000.0,
-      "attack_damage": 60.0,
+      "max_hp": 1000,
+      "attack_damage": 60,
       "attack_speed": 0.800000011920929,
-      "armor": 55.0,
-      "magic_resist": 55.0,
-      "attack_range": 3.0,
-      "max_mana": 80.0,
-      "initial_mana": 50.0
+      "armor": 55,
+      "magic_resist": 55,
+      "attack_range": 3,
+      "max_mana": 80,
+      "initial_mana": 50
     },
     "ability": {
       "name": "Semente Engatilhada",
@@ -2031,8 +3111,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 3,
+      "attack_speed": 0.800000011920929,
+      "attack_damage": 60,
+      "armor": 55,
+      "magic_resist": 55,
+      "max_hp": 1000,
+      "max_mana": 80
+    }
   },
   {
     "apiName": "DA_18_Kennen",
@@ -2047,14 +3145,14 @@
       "Carrasco"
     ],
     "stats": {
-      "max_hp": 1200.0,
-      "attack_damage": 50.0,
+      "max_hp": 1200,
+      "attack_damage": 50,
       "attack_speed": 0.8500000238418579,
-      "armor": 60.0,
-      "magic_resist": 60.0,
-      "attack_range": 2.0,
-      "max_mana": 40.0,
-      "initial_mana": 0.0
+      "armor": 60,
+      "magic_resist": 60,
+      "attack_range": 2,
+      "max_mana": 40,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Tempestade de Fogo",
@@ -2062,8 +3160,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 2,
+      "attack_speed": 0.8500000238418579,
+      "attack_damage": 50,
+      "armor": 60,
+      "magic_resist": 60,
+      "max_hp": 1200,
+      "max_mana": 40
+    }
   },
   {
     "apiName": "DA_Lux18_Base",
@@ -2077,14 +3193,14 @@
       "Avatar"
     ],
     "stats": {
-      "max_hp": 900.0,
-      "attack_damage": 40.0,
+      "max_hp": 900,
+      "attack_damage": 40,
       "attack_speed": 0.800000011920929,
-      "armor": 40.0,
-      "magic_resist": 40.0,
-      "attack_range": 6.0,
-      "max_mana": 70.0,
-      "initial_mana": 20.0
+      "armor": 40,
+      "magic_resist": 40,
+      "attack_range": 6,
+      "max_mana": 70,
+      "initial_mana": 20
     },
     "ability": {
       "name": "Centelha Final",
@@ -2092,8 +3208,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 1,
+    "role_name": "carry",
+    "combat_profile": {
+      "role": 1,
+      "role_name": "carry",
+      "frontline": false,
+      "backline": true,
+      "is_tank": false,
+      "is_carry": true,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 6,
+      "attack_speed": 0.800000011920929,
+      "attack_damage": 40,
+      "armor": 40,
+      "magic_resist": 40,
+      "max_hp": 900,
+      "max_mana": 70
+    }
   },
   {
     "apiName": "DA_18_Lux_Coven",
@@ -2108,14 +3242,14 @@
       "Avatar"
     ],
     "stats": {
-      "max_hp": 900.0,
-      "attack_damage": 40.0,
+      "max_hp": 900,
+      "attack_damage": 40,
       "attack_speed": 0.800000011920929,
-      "armor": 45.0,
-      "magic_resist": 45.0,
-      "attack_range": 6.0,
-      "max_mana": 70.0,
-      "initial_mana": 20.0
+      "armor": 45,
+      "magic_resist": 45,
+      "attack_range": 6,
+      "max_mana": 70,
+      "initial_mana": 20
     },
     "ability": {
       "name": "Centelha Final",
@@ -2123,8 +3257,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 6,
+      "attack_speed": 0.800000011920929,
+      "attack_damage": 40,
+      "armor": 45,
+      "magic_resist": 45,
+      "max_hp": 900,
+      "max_mana": 70
+    }
   },
   {
     "apiName": "DA_Lux18_Blackthorn",
@@ -2139,14 +3291,14 @@
       "Avatar"
     ],
     "stats": {
-      "max_hp": 900.0,
-      "attack_damage": 40.0,
+      "max_hp": 900,
+      "attack_damage": 40,
       "attack_speed": 0.800000011920929,
-      "armor": 45.0,
-      "magic_resist": 45.0,
-      "attack_range": 6.0,
-      "max_mana": 70.0,
-      "initial_mana": 20.0
+      "armor": 45,
+      "magic_resist": 45,
+      "attack_range": 6,
+      "max_mana": 70,
+      "initial_mana": 20
     },
     "ability": {
       "name": "Centelha Final",
@@ -2154,8 +3306,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 6,
+      "attack_speed": 0.800000011920929,
+      "attack_damage": 40,
+      "armor": 45,
+      "magic_resist": 45,
+      "max_hp": 900,
+      "max_mana": 70
+    }
   },
   {
     "apiName": "DA_18_Lux_Fae",
@@ -2170,14 +3340,14 @@
       "Avatar"
     ],
     "stats": {
-      "max_hp": 900.0,
-      "attack_damage": 40.0,
+      "max_hp": 900,
+      "attack_damage": 40,
       "attack_speed": 0.800000011920929,
-      "armor": 45.0,
-      "magic_resist": 45.0,
-      "attack_range": 6.0,
-      "max_mana": 70.0,
-      "initial_mana": 20.0
+      "armor": 45,
+      "magic_resist": 45,
+      "attack_range": 6,
+      "max_mana": 70,
+      "initial_mana": 20
     },
     "ability": {
       "name": "Centelha Final",
@@ -2185,8 +3355,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 6,
+      "attack_speed": 0.800000011920929,
+      "attack_damage": 40,
+      "armor": 45,
+      "magic_resist": 45,
+      "max_hp": 900,
+      "max_mana": 70
+    }
   },
   {
     "apiName": "DA_Lux18_Blossom",
@@ -2201,14 +3389,14 @@
       "Avatar"
     ],
     "stats": {
-      "max_hp": 900.0,
-      "attack_damage": 40.0,
+      "max_hp": 900,
+      "attack_damage": 40,
       "attack_speed": 0.800000011920929,
-      "armor": 45.0,
-      "magic_resist": 45.0,
-      "attack_range": 6.0,
-      "max_mana": 70.0,
-      "initial_mana": 20.0
+      "armor": 45,
+      "magic_resist": 45,
+      "attack_range": 6,
+      "max_mana": 70,
+      "initial_mana": 20
     },
     "ability": {
       "name": "Centelha Final",
@@ -2216,8 +3404,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 6,
+      "attack_speed": 0.800000011920929,
+      "attack_damage": 40,
+      "armor": 45,
+      "magic_resist": 45,
+      "max_hp": 900,
+      "max_mana": 70
+    }
   },
   {
     "apiName": "DA_18_Lux_Inferno",
@@ -2232,14 +3438,14 @@
       "Avatar"
     ],
     "stats": {
-      "max_hp": 900.0,
-      "attack_damage": 40.0,
+      "max_hp": 900,
+      "attack_damage": 40,
       "attack_speed": 0.800000011920929,
-      "armor": 45.0,
-      "magic_resist": 45.0,
-      "attack_range": 6.0,
-      "max_mana": 70.0,
-      "initial_mana": 20.0
+      "armor": 45,
+      "magic_resist": 45,
+      "attack_range": 6,
+      "max_mana": 70,
+      "initial_mana": 20
     },
     "ability": {
       "name": "Centelha Final",
@@ -2247,8 +3453,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 6,
+      "attack_speed": 0.800000011920929,
+      "attack_damage": 40,
+      "armor": 45,
+      "magic_resist": 45,
+      "max_hp": 900,
+      "max_mana": 70
+    }
   },
   {
     "apiName": "DA_18_Lux_Moonbeam",
@@ -2263,14 +3487,14 @@
       "Avatar"
     ],
     "stats": {
-      "max_hp": 900.0,
-      "attack_damage": 40.0,
+      "max_hp": 900,
+      "attack_damage": 40,
       "attack_speed": 0.800000011920929,
-      "armor": 45.0,
-      "magic_resist": 45.0,
-      "attack_range": 6.0,
-      "max_mana": 70.0,
-      "initial_mana": 20.0
+      "armor": 45,
+      "magic_resist": 45,
+      "attack_range": 6,
+      "max_mana": 70,
+      "initial_mana": 20
     },
     "ability": {
       "name": "Centelha Final",
@@ -2278,8 +3502,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 6,
+      "attack_speed": 0.800000011920929,
+      "attack_damage": 40,
+      "armor": 45,
+      "magic_resist": 45,
+      "max_hp": 900,
+      "max_mana": 70
+    }
   },
   {
     "apiName": "DA_18_Lux_Primal",
@@ -2294,14 +3536,14 @@
       "Avatar"
     ],
     "stats": {
-      "max_hp": 900.0,
-      "attack_damage": 40.0,
+      "max_hp": 900,
+      "attack_damage": 40,
       "attack_speed": 0.800000011920929,
-      "armor": 45.0,
-      "magic_resist": 45.0,
-      "attack_range": 6.0,
-      "max_mana": 70.0,
-      "initial_mana": 20.0
+      "armor": 45,
+      "magic_resist": 45,
+      "attack_range": 6,
+      "max_mana": 70,
+      "initial_mana": 20
     },
     "ability": {
       "name": "Centelha Final",
@@ -2309,8 +3551,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 6,
+      "attack_speed": 0.800000011920929,
+      "attack_damage": 40,
+      "armor": 45,
+      "magic_resist": 45,
+      "max_hp": 900,
+      "max_mana": 70
+    }
   },
   {
     "apiName": "DA_18_Lux_Elderwood",
@@ -2325,14 +3585,14 @@
       "Avatar"
     ],
     "stats": {
-      "max_hp": 900.0,
-      "attack_damage": 40.0,
+      "max_hp": 900,
+      "attack_damage": 40,
       "attack_speed": 0.800000011920929,
-      "armor": 45.0,
-      "magic_resist": 45.0,
-      "attack_range": 6.0,
-      "max_mana": 70.0,
-      "initial_mana": 20.0
+      "armor": 45,
+      "magic_resist": 45,
+      "attack_range": 6,
+      "max_mana": 70,
+      "initial_mana": 20
     },
     "ability": {
       "name": "Centelha Final",
@@ -2340,8 +3600,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 6,
+      "attack_speed": 0.800000011920929,
+      "attack_damage": 40,
+      "armor": 45,
+      "magic_resist": 45,
+      "max_hp": 900,
+      "max_mana": 70
+    }
   },
   {
     "apiName": "DA_18_Lux_Sunbeam",
@@ -2356,14 +3634,14 @@
       "Avatar"
     ],
     "stats": {
-      "max_hp": 900.0,
-      "attack_damage": 40.0,
+      "max_hp": 900,
+      "attack_damage": 40,
       "attack_speed": 0.800000011920929,
-      "armor": 45.0,
-      "magic_resist": 45.0,
-      "attack_range": 6.0,
-      "max_mana": 70.0,
-      "initial_mana": 20.0
+      "armor": 45,
+      "magic_resist": 45,
+      "attack_range": 6,
+      "max_mana": 70,
+      "initial_mana": 20
     },
     "ability": {
       "name": "Centelha Final",
@@ -2371,8 +3649,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 6,
+      "attack_speed": 0.800000011920929,
+      "attack_damage": 40,
+      "armor": 45,
+      "magic_resist": 45,
+      "max_hp": 900,
+      "max_mana": 70
+    }
   },
   {
     "apiName": "DA_18_Maokai",
@@ -2387,14 +3683,14 @@
       "Colosso"
     ],
     "stats": {
-      "max_hp": 1150.0,
-      "attack_damage": 80.0,
+      "max_hp": 1150,
+      "attack_damage": 80,
       "attack_speed": 0.6499999761581421,
-      "armor": 60.0,
-      "magic_resist": 60.0,
-      "attack_range": 1.0,
-      "max_mana": 100.0,
-      "initial_mana": 30.0
+      "armor": 60,
+      "magic_resist": 60,
+      "attack_range": 1,
+      "max_mana": 100,
+      "initial_mana": 30
     },
     "ability": {
       "name": "Semear",
@@ -2402,8 +3698,26 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.6499999761581421,
+      "attack_damage": 80,
+      "armor": 60,
+      "magic_resist": 60,
+      "max_hp": 1150,
+      "max_mana": 100
+    }
   },
   {
     "apiName": "DA_Taric18",
@@ -2418,14 +3732,14 @@
       "Vanguarda"
     ],
     "stats": {
-      "max_hp": 1300.0,
-      "attack_damage": 55.0,
+      "max_hp": 1300,
+      "attack_damage": 55,
       "attack_speed": 0.75,
-      "armor": 65.0,
-      "magic_resist": 70.0,
-      "attack_range": 1.0,
-      "max_mana": 70.0,
-      "initial_mana": 0.0
+      "armor": 65,
+      "magic_resist": 70,
+      "attack_range": 1,
+      "max_mana": 70,
+      "initial_mana": 0
     },
     "ability": {
       "name": "Resplandecência Esmeralda",
@@ -2433,7 +3747,25 @@
       "icon": "None",
       "variables": []
     },
-    "role": 3,
-    "role_name": "fighter"
+    "role": 0,
+    "role_name": "tank",
+    "combat_profile": {
+      "role": 0,
+      "role_name": "tank",
+      "frontline": true,
+      "backline": false,
+      "is_tank": true,
+      "is_carry": false,
+      "is_support": false,
+      "is_fighter": false,
+      "is_assassin": false,
+      "attack_range": 1,
+      "attack_speed": 0.75,
+      "attack_damage": 55,
+      "armor": 65,
+      "magic_resist": 70,
+      "max_hp": 1300,
+      "max_mana": 70
+    }
   }
 ]

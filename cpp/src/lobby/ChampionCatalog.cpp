@@ -1,6 +1,5 @@
 
 #include "lobby/ChampionCatalog.hpp"
-#include "combat/CombatProfileEngine.hpp"
 
 #include <nlohmann/json.hpp>
 
@@ -220,57 +219,6 @@ ChampionAbility parse_ability(const Json& json) {
     return ability;
 }
 
-std::pair<std::int32_t, std::string> infer_role(
-    const ChampionStats& stats,
-    const ChampionCombatProfile& profile,
-    const ChampionAbility& ability
-) {
-    // Use the same classifier as the public native combat-profile API. Keeping
-    // a second keyword/score implementation here caused role drift between
-    // catalog planning and runtime positioning.
-    const auto value_or = [](double profile_value, double stat_value) {
-        return profile_value != 0.0 ? profile_value : stat_value;
-    };
-    const CombatProfileInput input{
-        !ability.description.empty() ? ability.description : ability.name,
-        value_or(profile.attack_range, stats.attack_range),
-        value_or(profile.attack_speed, stats.attack_speed),
-        value_or(profile.attack_damage, stats.attack_damage),
-        value_or(profile.armor, stats.armor),
-        value_or(profile.magic_resist, stats.magic_resist),
-        value_or(profile.max_hp, stats.max_hp),
-        profile.max_mana
-    };
-    const auto role = static_cast<std::int32_t>(CombatProfileEngine::infer_role(input));
-    static const std::array<std::string, 5> names{
-        "tank", "carry", "support", "fighter", "assassin"
-    };
-    return {role, names[static_cast<std::size_t>(role)]};
-}
-
-void apply_inferred_role(ChampionDefinition& champion) {
-    const auto [role, name] = infer_role(
-        champion.stats, champion.combat_profile, champion.ability);
-    champion.role = role;
-    champion.role_name = name;
-    auto& profile = champion.combat_profile;
-    profile.role = role;
-    profile.role_name = name;
-    profile.frontline = role == 0 || role == 3;
-    profile.backline = role == 1 || role == 2 || role == 4;
-    profile.is_tank = role == 0;
-    profile.is_carry = role == 1;
-    profile.is_support = role == 2;
-    profile.is_fighter = role == 3;
-    profile.is_assassin = role == 4;
-    if (profile.max_hp == 0.0) profile.max_hp = champion.stats.max_hp;
-    if (profile.attack_damage == 0.0) profile.attack_damage = champion.stats.attack_damage;
-    if (profile.attack_speed == 0.0) profile.attack_speed = champion.stats.attack_speed;
-    if (profile.armor == 0.0) profile.armor = champion.stats.armor;
-    if (profile.magic_resist == 0.0) profile.magic_resist = champion.stats.magic_resist;
-    if (profile.attack_range == 0.0) profile.attack_range = champion.stats.attack_range;
-}
-
 ChampionDefinition parse_champion(
     const Json& json,
     std::size_t index
@@ -320,9 +268,41 @@ ChampionDefinition parse_champion(
     champion.square_icon = get_string(json, "squareIcon");
     champion.tile_icon = get_string(json, "tileIcon");
 
-    // Infer roles from the same ability keywords and stats as Python.
-    // Do not trust potentially stale precomputed role fields in the JSON.
-    apply_inferred_role(champion);
+    // The generator is authoritative for all static combat-profile fields.
+    // C++ only deserializes them; it must not infer or repair catalog values.
+    if (!json.contains("combat_profile") || !json["combat_profile"].is_object()) {
+        throw std::runtime_error("combat_profile ausente para " + champion.api_name);
+    }
+    if (!json.contains("role") || !json["role"].is_number_integer() ||
+        !json.contains("role_name") || !json["role_name"].is_string()) {
+        throw std::runtime_error("role/role_name precomputados ausentes para " + champion.api_name);
+    }
+    const auto& profile = json["combat_profile"];
+    if (!profile.contains("role") || !profile["role"].is_number_integer() ||
+        !profile.contains("role_name") || !profile["role_name"].is_string()) {
+        throw std::runtime_error("combat_profile.role/role_name ausentes para " + champion.api_name);
+    }
+    const std::array<const char*, 7> required_booleans{
+        "frontline", "backline", "is_tank", "is_carry",
+        "is_support", "is_fighter", "is_assassin"
+    };
+    for (const auto* field : required_booleans) {
+        if (!profile.contains(field) || !profile[field].is_boolean()) {
+            throw std::runtime_error(std::string("combat_profile booleano ausente: ") + field);
+        }
+    }
+    const std::array<const char*, 7> required_numbers{
+        "attack_range", "attack_speed", "attack_damage", "armor",
+        "magic_resist", "max_hp", "max_mana"
+    };
+    for (const auto* field : required_numbers) {
+        if (!profile.contains(field) || !profile[field].is_number()) {
+            throw std::runtime_error(std::string("combat_profile numerico ausente: ") + field);
+        }
+    }
+    if (champion.role < 0 || champion.role > 4 || champion.role_name.empty()) {
+        throw std::runtime_error("role precomputado invalido para " + champion.api_name);
+    }
 
     return champion;
 }

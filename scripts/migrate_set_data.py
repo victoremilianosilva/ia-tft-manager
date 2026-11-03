@@ -54,6 +54,102 @@ def _number(value: Any, default: float = 0.0) -> float:
     return float(value)
 
 
+
+def _infer_combat_role(ability_text: str, stats: dict[str, float]) -> tuple[int, str]:
+    """Precompute the native CombatProfileEngine role using identical scoring."""
+    text = (ability_text or "").casefold()
+    attack_range = stats["attack_range"]
+    attack_speed = stats["attack_speed"]
+    attack_damage = stats["attack_damage"]
+    armor = stats["armor"]
+    magic_resist = stats["magic_resist"]
+    max_hp = stats["max_hp"]
+    max_mana = stats["max_mana"]
+
+    if not text and all(value <= 0.0 for value in (
+        attack_range, attack_speed, attack_damage, armor,
+        magic_resist, max_hp, max_mana,
+    )):
+        return 3, "fighter"
+
+    scores = [0.0] * 5
+    keyword_groups = (
+        (("taunt", "damage reduction", "increased armor", "bonus armor",
+          "fortify", "unbreakable"), 0),
+        (("attack damage", "critical", "crit", "projectile",
+          "rapid fire", "attack speed"), 1),
+        (("heal", "healing", "shield allies", "buff allies", "all allies",
+          "restore health", "grant mana"), 2),
+        (("melee", "strike", "lifesteal", "physical attack"), 3),
+    )
+    for keywords, role in keyword_groups:
+        scores[role] += sum(1.0 for keyword in keywords if keyword in text)
+
+    defensive_signals = (
+        int(max_hp >= 850.0) + int(armor >= 45.0) + int(magic_resist >= 45.0)
+    )
+    if max_hp >= 850.0:
+        scores[0] += 0.75
+    if defensive_signals >= 2:
+        scores[0] += 1.75
+    if max_hp >= 1150.0 and defensive_signals >= 2:
+        scores[0] += 0.75
+    if armor >= 55.0 and magic_resist >= 55.0:
+        scores[0] += 0.75
+
+    if attack_damage >= 70.0:
+        scores[1] += 1.75
+    if attack_speed >= 0.8:
+        scores[1] += 1.25
+    if attack_range >= 3.0:
+        scores[1] += 0.75
+    if 0.0 < attack_range <= 1.0:
+        scores[3] += 1.25
+        if attack_damage >= 55.0 or attack_speed >= 0.75:
+            scores[3] += 0.75
+        if armor >= 30.0 or max_hp >= 700.0:
+            scores[3] += 0.5
+    if attack_range >= 3.0:
+        scores[2] += 0.15
+    if any(keyword in text for keyword in (
+        "dash", "jump", "backline", "lowest health", "furthest", "farther",
+    )):
+        scores[4] += 2.0
+
+    # Strict comparison and fighter tie-break match the C++ implementation.
+    best = 3
+    for role in range(5):
+        if scores[role] > scores[best]:
+            best = role
+    return best, ("tank", "carry", "support", "fighter", "assassin")[best]
+
+
+def _build_combat_profile(
+    stats: dict[str, float], ability: dict[str, Any],
+) -> tuple[int, str, dict[str, Any]]:
+    ability_text = str(ability.get("desc") or ability.get("name") or "")
+    role, role_name = _infer_combat_role(ability_text, stats)
+    profile = {
+        "role": role,
+        "role_name": role_name,
+        "frontline": role in (0, 3),
+        "backline": role in (1, 2, 4),
+        "is_tank": role == 0,
+        "is_carry": role == 1,
+        "is_support": role == 2,
+        "is_fighter": role == 3,
+        "is_assassin": role == 4,
+        "attack_range": stats["attack_range"],
+        "attack_speed": stats["attack_speed"],
+        "attack_damage": stats["attack_damage"],
+        "armor": stats["armor"],
+        "magic_resist": stats["magic_resist"],
+        "max_hp": stats["max_hp"],
+        "max_mana": stats["max_mana"],
+    }
+    return role, role_name, profile
+
+
 def build_units(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
     by_api: dict[str, dict[str, Any]] = {}
     trait_names: dict[str, str] = {}
@@ -80,6 +176,25 @@ def build_units(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
             stats = champ.get("stats") if isinstance(champ.get("stats"), dict) else {}
             ability = champ.get("ability") if isinstance(champ.get("ability"), dict) else {}
             api_traits = [str(trait) for trait in traits if isinstance(trait, str)]
+            normalized_stats = {
+                "max_hp": _number(stats.get("hp")),
+                "attack_damage": _number(stats.get("damage")),
+                "attack_speed": _number(stats.get("attackSpeed")),
+                "armor": _number(stats.get("armor")),
+                "magic_resist": _number(stats.get("magicResist")),
+                "attack_range": _number(stats.get("range")),
+                "max_mana": _number(stats.get("mana")),
+                "initial_mana": _number(stats.get("initialMana")),
+            }
+            normalized_ability = {
+                "name": str(ability.get("name") or ""),
+                "desc": str(ability.get("desc") or ""),
+                "icon": str(ability.get("icon") or ""),
+                "variables": ability.get("variables") if isinstance(ability.get("variables"), list) else [],
+            }
+            role, role_name, combat_profile = _build_combat_profile(
+                normalized_stats, normalized_ability
+            )
             by_api[api] = {
                 "apiName": api,
                 "characterName": str(champ.get("characterName") or api),
@@ -89,24 +204,11 @@ def build_units(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "squareIcon": str(champ.get("squareIcon") or champ.get("icon") or ""),
                 "tileIcon": str(champ.get("tileIcon") or champ.get("squareIcon") or champ.get("icon") or ""),
                 "traits": api_traits,
-                "stats": {
-                    "max_hp": _number(stats.get("hp")),
-                    "attack_damage": _number(stats.get("damage")),
-                    "attack_speed": _number(stats.get("attackSpeed")),
-                    "armor": _number(stats.get("armor")),
-                    "magic_resist": _number(stats.get("magicResist")),
-                    "attack_range": _number(stats.get("range")),
-                    "max_mana": _number(stats.get("mana")),
-                    "initial_mana": _number(stats.get("initialMana")),
-                },
-                "ability": {
-                    "name": str(ability.get("name") or ""),
-                    "desc": str(ability.get("desc") or ""),
-                    "icon": str(ability.get("icon") or ""),
-                    "variables": ability.get("variables") if isinstance(ability.get("variables"), list) else [],
-                },
-                "role": 3,
-                "role_name": "fighter",
+                "stats": normalized_stats,
+                "ability": normalized_ability,
+                "role": role,
+                "role_name": role_name,
+                "combat_profile": combat_profile,
             }
     units = list(by_api.values())
     if not units:
