@@ -280,9 +280,6 @@ def run_audit(
                         action_counts[action_name] += 1
                         player_metric = report["player_metrics"][str(player_id)]
                         player_metric["actions"] += 1
-                        if int(values[0]) in (7, 8):
-                            item_counts[action_name] += 1
-                            player_metric["item_actions"] += 1
                         step_actions.append(action_dict(values))
                     else:
                         step_actions.append({"type": 6})
@@ -313,11 +310,20 @@ def run_audit(
                         }:
                             item_pipeline_counts[event_type] += 1
                         if event_type == "ITEM_ACTION_APPLIED":
+                            event_fields = {}
                             for field in event.split(","):
                                 key, separator, value = field.strip().partition("=")
-                                if separator and key == "kind":
-                                    item_actions_by_kind[value] += 1
-                                    break
+                                if separator:
+                                    event_fields[key] = value
+                            kind = event_fields.get("kind", "")
+                            player_id = event_fields.get("player", "")
+                            item_actions_by_kind[kind] += 1
+                            if kind == "equip_inventory_item":
+                                item_counts["EQUIP_FROM_INVENTORY"] += 1
+                            elif kind == "craft_and_equip":
+                                item_counts["CRAFT_AND_EQUIP"] += 1
+                            if player_id in report["player_metrics"]:
+                                report["player_metrics"][player_id]["item_actions"] += 1
                 trace.write(json.dumps({
                     "step": step,
                     "round": info.get("round") if isinstance(info, dict) else None,
