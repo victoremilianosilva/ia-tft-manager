@@ -4,6 +4,10 @@
 #include <cmath>
 #include <cstddef>
 #include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
 
 #include "strategy/PositioningEngine.hpp"
 
@@ -12,6 +16,25 @@ namespace tft::strategy {
 struct BenchUnitProfile {
     int role{-1};
     int star{1};
+};
+
+struct BoardUnitProfile {
+    int champion_id{-1};
+    int role{-1};
+    int star{1};
+    int cost{1};
+    std::vector<std::string> traits;
+};
+
+struct StrategicBoardContext {
+    int level{1};
+    std::string direction;
+    std::vector<std::pair<std::string, double>> focus_weights;
+    std::vector<std::int32_t> core_unit_ids;
+    std::vector<std::int32_t> planned_unit_ids;
+    std::vector<std::string> core_traits;
+    std::vector<std::string> planned_traits;
+    std::unordered_map<std::string, std::vector<int>> trait_milestones;
 };
 
 struct BoardEvaluationResult {
@@ -30,6 +53,12 @@ struct BoardEvaluationResult {
     int isolated_frontline_count{0};
     int important_bench_units_unplayed{0};
     bool specialized_assassin_board{false};
+    double strategic_fit_score{0.0};
+    double unit_quality_score{0.0};
+    double trait_coherence_score{0.0};
+    int active_trait_count{0};
+    int missing_frontline_count{0};
+    int missing_backline_count{0};
 };
 
 class BoardEvaluation {
@@ -44,7 +73,9 @@ public:
         const Roles& board,
         const std::vector<BenchUnitProfile>& bench = {},
         double active_synergy_score = 0.0,
-        const std::vector<int>& main_carry_positions = {}) {
+        const std::vector<int>& main_carry_positions = {},
+        const std::vector<BoardUnitProfile>& unit_profiles = {},
+        const StrategicBoardContext& context = {}) {
         BoardEvaluationResult result{};
         const int slots = std::min(static_cast<int>(board.size()), PositioningEngine::size);
         Roles normalized(PositioningEngine::size, -1);
@@ -180,6 +211,79 @@ public:
                 }
             }
         }
+
+        // Bounded lineup-level evaluation: role coverage, unit investment,
+        // trait milestones and fit with the active composition.
+        int carries = 0, backliners = 0, supports = 0, tanks = 0, fighters = 0;
+        std::unordered_set<int> seen_champions;
+        std::unordered_map<std::string, int> trait_counts;
+        std::unordered_map<std::string, double> focus;
+        for (const auto& [trait, weight] : context.focus_weights)
+            if (!trait.empty() && std::isfinite(weight)) focus[trait] = std::max(0.0, weight);
+        const double maturity = std::clamp((std::clamp(context.level, 1, 10) - 2.0) / 6.0, 0.0, 1.0);
+        for (std::size_t slot = 0; slot < unit_profiles.size() &&
+             slot < static_cast<std::size_t>(slots); ++slot) {
+            const auto& unit = unit_profiles[slot];
+            if (unit.champion_id < 0 || normalized[slot] < 0) continue;
+            const int role = normalized[slot];
+            carries += role == PositioningEngine::carry;
+            supports += role == PositioningEngine::support;
+            tanks += role == PositioningEngine::tank;
+            fighters += role == PositioningEngine::fighter;
+            backliners += role == PositioningEngine::carry ||
+                role == PositioningEngine::support || role == PositioningEngine::assassin;
+            if (!seen_champions.insert(unit.champion_id).second) continue;
+            for (const auto& trait : unit.traits) if (!trait.empty()) ++trait_counts[trait];
+            result.unit_quality_score +=
+                (std::clamp(unit.star, 1, 3) - 1) * 0.16 +
+                std::clamp(unit.cost, 1, 5) * 0.035;
+            const bool core = std::find(context.core_unit_ids.begin(),
+                context.core_unit_ids.end(), unit.champion_id) != context.core_unit_ids.end();
+            const bool planned = std::find(context.planned_unit_ids.begin(),
+                context.planned_unit_ids.end(), unit.champion_id) != context.planned_unit_ids.end();
+            if (core) result.strategic_fit_score += 0.22;
+            else if (planned) result.strategic_fit_score += 0.14;
+            else if (!context.direction.empty()) result.strategic_fit_score -= 0.025;
+        }
+        const int frontline = tanks + fighters;
+        const int expected_frontline = result.unit_count >= 6 ? 2 : 1;
+        if (frontline < expected_frontline) {
+            result.missing_frontline_count = expected_frontline - frontline;
+            penalty += maturity * 0.12 * result.missing_frontline_count;
+        }
+        if (result.unit_count >= 4 && backliners == 0) {
+            result.missing_backline_count = 1;
+            penalty += maturity * 0.10;
+        }
+        if (result.unit_count >= 5 && carries == 0) penalty += maturity * 0.10;
+        if (result.unit_count >= 6 && carries > 2)
+            penalty += maturity * 0.035 * (carries - 2);
+        if (supports > 0 && frontline == 0 && !result.specialized_assassin_board)
+            penalty += maturity * 0.04;
+
+        for (const auto& [trait, count] : trait_counts) {
+            const auto found = context.trait_milestones.find(trait);
+            if (found == context.trait_milestones.end() || found->second.empty()) continue;
+            int reached = 0, next = 0;
+            for (const int milestone : found->second) {
+                if (milestone > 0 && count >= milestone) ++reached;
+                else if (milestone > count && (next == 0 || milestone < next)) next = milestone;
+            }
+            if (reached > 0) ++result.active_trait_count;
+            const double progress = next > 0
+                ? std::clamp(static_cast<double>(count) / next, 0.0, 1.0) : 1.0;
+            const bool aligned = trait == context.direction ||
+                std::find(context.core_traits.begin(), context.core_traits.end(), trait) != context.core_traits.end() ||
+                std::find(context.planned_traits.begin(), context.planned_traits.end(), trait) != context.planned_traits.end() ||
+                focus.count(trait) != 0;
+            result.trait_coherence_score +=
+                (reached > 0 ? 0.035 : 0.012 * progress) * (aligned ? 1.35 : 1.0);
+        }
+        result.trait_coherence_score = std::min(0.16, result.trait_coherence_score);
+        result.strategic_fit_score = std::clamp(result.strategic_fit_score, -0.20, 0.45);
+        result.unit_quality_score = std::min(0.28, result.unit_quality_score * 0.18);
+        bonus += result.trait_coherence_score + result.unit_quality_score +
+            result.strategic_fit_score * (0.35 + 0.65 * maturity);
 
         result.structural_score = bonus - penalty;
         result.synergy_score = std::max(0.0, active_synergy_score);
