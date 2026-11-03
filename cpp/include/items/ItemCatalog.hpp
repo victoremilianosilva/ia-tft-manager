@@ -384,6 +384,12 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             item.granted_trait_active_count =
                 entry["granted_trait_active_count"].get<int>();
         }
+        if (entry.contains("unit_equipable")) {
+            if (!entry["unit_equipable"].is_boolean()) {
+                throw std::invalid_argument("unit_equipable must be a boolean");
+            }
+            item.unit_equipable = entry["unit_equipable"].get<bool>();
+        }
         if (entry.contains("combat_effects")) {
             item.combat_effects = parse_effects(entry["combat_effects"]);
         }
