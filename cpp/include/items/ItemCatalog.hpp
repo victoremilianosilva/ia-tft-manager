@@ -115,7 +115,8 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                     (effect.trigger == "combat_start" || effect.trigger == "after_delay" ||
                      effect.trigger == "while_hp_below" || effect.trigger == "on_ally_shield")) ||
                 (effect.operation == "bonus_damage" && effect.trigger == "on_attack") ||
-                (effect.operation == "heal_max_hp_pct" && effect.trigger == "on_kill") ||
+                (effect.operation == "heal_max_hp_pct" &&
+                    (effect.trigger == "on_kill" || effect.trigger == "on_attack")) ||
                 (effect.operation == "grant_charges" && effect.trigger == "on_kill") ||
                 (effect.operation == "mana_regen" &&
                     (effect.trigger.empty() || effect.trigger == "combat_start"));
@@ -153,14 +154,14 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                         effect.stat);
                 }
             }
-            if (effect.operation == "grant_charges" &&
-                (effect.stack_key.empty() || effect.max_stacks <= 0)) {
-                // max_stacks is parsed below, so only the stable key can be
-                // checked here; the numeric bound is validated after parsing.
-                if (effect.stack_key.empty()) {
-                    throw std::invalid_argument(
-                        "grant_charges requires a non-empty stack_key");
-                }
+            if (effect.operation == "grant_charges" && effect.stack_key.empty()) {
+                throw std::invalid_argument(
+                    "grant_charges requires a non-empty stack_key");
+            }
+            if (effect.operation == "heal_max_hp_pct" &&
+                effect.trigger == "on_attack" && effect.stack_key.empty()) {
+                throw std::invalid_argument(
+                    "on_attack heal_max_hp_pct requires a non-empty stack_key");
             }
             if (raw.contains("damage_type")) {
                 if (!raw["damage_type"].is_string()) {
