@@ -136,6 +136,32 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             read_string("condition", effect.condition);
             read_string("condition_trait", effect.condition_trait);
             read_string("stack_key", effect.stack_key);
+            if (effect.operation == "add_stat") {
+                const bool supported_stat =
+                    effect.stat == "attack_damage" ||
+                    effect.stat == "attack_speed" ||
+                    effect.stat == "ability_power" ||
+                    effect.stat == "armor" ||
+                    effect.stat == "magic_resist" ||
+                    effect.stat == "omnivamp" ||
+                    effect.stat == "damage_amplification" ||
+                    effect.stat == "damage_reduction" ||
+                    effect.stat == "max_hp";
+                if (!supported_stat) {
+                    throw std::invalid_argument(
+                        "Unsupported add_stat target (not implemented by CombatEngine): " +
+                        effect.stat);
+                }
+            }
+            if (effect.operation == "grant_charges" &&
+                (effect.stack_key.empty() || effect.max_stacks <= 0)) {
+                // max_stacks is parsed below, so only the stable key can be
+                // checked here; the numeric bound is validated after parsing.
+                if (effect.stack_key.empty()) {
+                    throw std::invalid_argument(
+                        "grant_charges requires a non-empty stack_key");
+                }
+            }
             if (raw.contains("damage_type")) {
                 if (!raw["damage_type"].is_string()) {
                     throw std::invalid_argument("combat effect damage_type must be a string");
