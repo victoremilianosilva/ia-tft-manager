@@ -45,7 +45,9 @@ def _effect_coverage(effects: dict[str, Any]) -> dict[str, list[str]]:
     """Expose source keys that still need an explicit generic or legacy handler audit."""
     active_keys = sorted(
         str(key) for key, value in effects.items()
-        if not (_finite_number(value) and float(value) == 0.0)
+        if value is not None
+        and not (isinstance(value, bool) and not value)
+        and not (_finite_number(value) and float(value) == 0.0)
     )
     stat_fields = {
         "AS": "attack_speed", "AttackSpeed": "attack_speed",
