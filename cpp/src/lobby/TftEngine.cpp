@@ -3710,11 +3710,6 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 last_item_action.item_id = pending->options[option];
                 if (!this->item_engine->choose_anvil_option(option))
                     throw std::invalid_argument("Escolha de opcao da bigorna rejeitada.");
-                events.emplace_back(
-                    "ITEM_ANVIL_CHOSEN: player=" + std::to_string(player_id) +
-                    ", kind=" + last_item_action.kind +
-                    ", item=" + last_item_action.item_id +
-                    ", stage=" + std::to_string(lobby.stage));
                 // Anvil selection is a grant, not an equip or craft operation.
             } else {
                 const auto target_index = static_cast<std::size_t>(type == 7 ? action[2] : action[3]);
