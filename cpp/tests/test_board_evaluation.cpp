@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <utility>
 
 namespace {
 void require(bool condition, const std::string& message) {
@@ -194,6 +195,19 @@ int main() {
             "planned/core units should improve strategic fit");
     require(coherent_eval.active_trait_count >= 2,
             "active trait milestones should be counted from unique champion traits");
+
+    // Early boards remain flexible; the same role gap matters more once
+    // the lineup is mature and its strategic direction should be established.
+    auto early_context = strategic_context;
+    early_context.level = 2;
+    auto mature_context = strategic_context;
+    mature_context.level = 8;
+    const auto early_eval = BoardEvaluation::evaluate(
+        carry_only_roles, {}, 0.0, {}, coherent_profiles, early_context);
+    const auto mature_eval = BoardEvaluation::evaluate(
+        carry_only_roles, {}, 0.0, {}, coherent_profiles, mature_context);
+    require(mature_eval.structural_score < early_eval.structural_score,
+            "structural role gaps should matter more as the composition matures");
 
     // Star/cost quality is bounded and should not overwhelm structural fit.
     auto upgraded_profiles = coherent_profiles;
