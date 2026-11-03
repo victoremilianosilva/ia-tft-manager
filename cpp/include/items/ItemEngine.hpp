@@ -320,12 +320,93 @@ public:
         return it->second;
     }
 
-    // Estimate only marginal item value. Actual combat remains the source of
-    // truth; composition fit and current role are inputs, not fixed labels.
+    // Score only effects that CombatEngine currently interprets. This keeps
+    // unsupported source passives from being rewarded as if they were active.
+    // The score is deliberately bounded and role-aware; it is shaping, not a
+    // hard target selector.
+    [[nodiscard]] double item_effect_strength(
+        const std::string& item_id, const UnitProfile& unit
+    ) const noexcept {
+        const auto* item = find(item_id);
+        if (!item || unit.uuid.empty()) return 0.0;
+
+        double total = 0.0;
+        for (const auto& effect : item->combat_effects) {
+            if (effect.value <= 0.0f) continue;
+            if (effect.condition == "role_tank" && unit.role != 0) continue;
+            if (effect.condition == "role_fighter" && unit.role != 3) continue;
+            if (effect.condition == "role_assassin" && unit.role != 4) continue;
+            if (effect.condition == "role_other" &&
+                (unit.role == 0 || unit.role == 3 || unit.role == 4)) continue;
+            if (effect.condition == "has_trait" &&
+                std::find(unit.traits.begin(), unit.traits.end(),
+                          effect.condition_trait) == unit.traits.end()) continue;
+
+            double semantic_weight = 0.0;
+            if (effect.operation == "add_stat") {
+                if (effect.stat == "attack_damage" ||
+                    effect.stat == "attack_speed" ||
+                    effect.stat == "ability_power" ||
+                    effect.stat == "critical_strike_chance" ||
+                    effect.stat == "critical_strike_damage") {
+                    semantic_weight = 0.30;
+                } else if (effect.stat == "armor" ||
+                           effect.stat == "magic_resist" ||
+                           effect.stat == "max_hp" ||
+                           effect.stat == "damage_reduction") {
+                    semantic_weight = 0.30;
+                } else if (effect.stat == "omnivamp" ||
+                           effect.stat == "damage_amplification") {
+                    semantic_weight = 0.28;
+                }
+            } else if (effect.operation == "bonus_damage") {
+                semantic_weight = 0.34;
+            } else if (effect.operation == "heal_max_hp_pct") {
+                semantic_weight = 0.30;
+            } else if (effect.operation == "mana_regen") {
+                semantic_weight = 0.24;
+            } else if (effect.operation == "grant_charges") {
+                semantic_weight = 0.18;
+            }
+            if (semantic_weight <= 0.0) continue;
+
+            const bool offensive = effect.operation == "bonus_damage" ||
+                effect.stat == "attack_damage" ||
+                effect.stat == "attack_speed" ||
+                effect.stat == "ability_power" ||
+                effect.stat == "damage_amplification";
+            const bool defensive = effect.stat == "armor" ||
+                effect.stat == "magic_resist" || effect.stat == "max_hp" ||
+                effect.stat == "damage_reduction";
+            const bool supportive = effect.operation == "heal_max_hp_pct" ||
+                effect.target == "allies" ||
+                effect.target == "lowest_health_ally";
+
+            double role_multiplier = 0.75;
+            if (supportive) role_multiplier = unit.role == 2 ? 1.0 : 0.85;
+            else if (offensive) role_multiplier =
+                (unit.role == 1 || unit.role == 4 || unit.backline) ? 1.0 : 0.75;
+            else if (defensive) role_multiplier =
+                (unit.role == 0 || unit.role == 3 || unit.frontline) ? 1.0 : 0.75;
+
+            // Percent-of-stat effects scale with the recipient's relevant stat;
+            // fixed-value effects use a bounded magnitude factor.
+            double magnitude = std::clamp(static_cast<double>(effect.value), 0.0, 1.0);
+            if (effect.percent_of_stat) magnitude = std::clamp(magnitude * 2.0, 0.0, 1.0);
+            if (effect.percent_of_max_health) magnitude =
+                std::clamp(magnitude * 4.0, 0.0, 1.0);
+            total += semantic_weight * role_multiplier * (0.5 + 0.5 * magnitude);
+        }
+        return std::clamp(total, 0.0, 1.0);
+    }
+
+    // Estimate marginal item value from numeric stats, supported special
+    // effects, role and composition. Combat remains the source of truth.
     [[nodiscard]] double item_fit(const std::string& item_id,
                                   const UnitProfile& unit) const noexcept {
         const auto* item = find(item_id);
         if (!item || unit.uuid.empty()) return -1.0;
+        const double effect_fit = item_effect_strength(item_id, unit);
         const double damage_fit =
             std::max(0.0, item->attack_damage) * std::max(0.0, unit.attack_damage) / 100.0 +
             std::max(0.0, item->attack_speed) * std::max(0.0, unit.attack_speed) +
@@ -388,7 +469,8 @@ public:
             }
         }
         return damage_fit + durability_fit + role_fit +
-            0.25 * std::clamp(unit.composition_fit, 0.0, 1.0);
+            0.25 * std::clamp(unit.composition_fit, 0.0, 1.0) +
+            12.0 * effect_fit;
     }
 
     // Execute an item action selected by the main policy. There is no
