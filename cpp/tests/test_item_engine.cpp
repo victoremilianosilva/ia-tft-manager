@@ -4,6 +4,7 @@
 #include "items/ItemCatalog.hpp"
 #include "items/PveLootDistribution.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
