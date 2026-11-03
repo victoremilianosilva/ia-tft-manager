@@ -41,7 +41,7 @@ void test_blocks_reverse_move_for_same_unit() {
     AntiLoopEngine engine;
     const auto nasus = make_unit("nasus-1", 1);
 
-    engine.register_move("board_move", 4, 12, nasus);
+    (void)engine.register_move("board_move", 4, 12, nasus);
 
     assert(engine.is_reverse_move("board_move", 12, 4, nasus));
     assert(engine.should_block_move("board_move", 12, 4, nasus));
@@ -56,7 +56,7 @@ void test_blocks_reverse_swap_with_different_unit_identity() {
     const auto nasus = make_unit("nasus-1", 1);
     const auto teemo = make_unit("teemo-1", 2);
 
-    engine.register_move("board_swap", 3, 10, nasus);
+    (void)engine.register_move("board_swap", 3, 10, nasus);
 
     // Um swap reverso é identificado pelo par de posições,
     // mesmo que a outra unidade esteja agora na posição de origem.
@@ -68,7 +68,7 @@ void test_blocks_explicitly_repeated_move() {
     AntiLoopEngine engine;
     const auto nasus = make_unit("nasus-1", 1);
 
-    engine.block_move("board_move", 4, 12, nasus);
+    (void)engine.block_move("board_move", 4, 12, nasus);
 
     assert(engine.is_move_blocked("board_move", 4, 12, nasus));
     assert(engine.should_block_move("board_move", 4, 12, nasus));
@@ -87,9 +87,9 @@ void test_detects_repeated_position_oscillation() {
     const auto nasus = make_unit("nasus-1", 1);
 
     // Histórico: 4 -> 12 -> 4 -> 12.
-    engine.register_move("board_move", 4, 12, nasus);
-    engine.register_move("board_move", 12, 4, nasus);
-    engine.register_move("board_move", 4, 12, nasus);
+    (void)engine.register_move("board_move", 4, 12, nasus);
+    (void)engine.register_move("board_move", 12, 4, nasus);
+    (void)engine.register_move("board_move", 4, 12, nasus);
 
     // A tentativa 12 -> 4 repetiria a oscilação.
     assert(engine.is_oscillating(nasus, 12, 4, "board_move"));
@@ -107,7 +107,7 @@ void test_detects_bench_board_oscillation() {
     const auto lissandra = make_unit("lissandra-1", 2);
     // The executor records a replacement as bench_to_board and stores the
     // displaced unit, rather than emitting a separate board_to_bench action.
-    engine.register_move("MOVE_BENCH_TO_BOARD", 2, 12, lissandra, nasus);
+    (void)engine.register_move("MOVE_BENCH_TO_BOARD", 2, 12, lissandra, nasus);
 
     assert(
         engine.is_bench_board_loop(
@@ -136,8 +136,8 @@ void test_allows_first_cycle_closure() {
     AntiLoopEngine engine;
     const auto nasus = make_unit("nasus-1", 1);
 
-    engine.register_move("board_move", 3, 10, nasus);
-    engine.register_move("board_move", 10, 12, nasus);
+    (void)engine.register_move("board_move", 3, 10, nasus);
+    (void)engine.register_move("board_move", 10, 12, nasus);
 
     // Ainda não houve um ciclo completo no histórico.
     assert(!engine.is_cycle_move("board_move", 12, 3, nasus));
@@ -150,12 +150,12 @@ void test_blocks_candidate_closing_loop_after_unit_revisits_position() {
 
     // Nasus revisits slot 3 (0 -> 3 -> 5 -> 3). Teemo's moves are
     // interleaved and must not reset Nasus's trajectory.
-    engine.register_move("board_move", 0, 3, nasus);
-    engine.register_move("board_move", 1, 4, teemo);
-    engine.register_move("board_move", 3, 5, nasus);
-    engine.register_move("board_move", 4, 6, teemo);
-    engine.register_move("board_move", 5, 3, nasus);
-    engine.register_move("board_move", 6, 7, teemo);
+    (void)engine.register_move("board_move", 0, 3, nasus);
+    (void)engine.register_move("board_move", 1, 4, teemo);
+    (void)engine.register_move("board_move", 3, 5, nasus);
+    (void)engine.register_move("board_move", 4, 6, teemo);
+    (void)engine.register_move("board_move", 5, 3, nasus);
+    (void)engine.register_move("board_move", 6, 7, teemo);
 
     // Returning Nasus from 3 to 0 would repeat the path after the prior
     // revisit; the first, not-yet-repeated cycle closure remains allowed.
@@ -169,13 +169,13 @@ void test_blocks_persistent_three_position_cycle() {
     const auto nasus = make_unit("nasus-1", 1);
 
     // Primeira volta: 3 -> 10 -> 12 -> 3.
-    engine.register_move("board_move", 3, 10, nasus);
-    engine.register_move("board_move", 10, 12, nasus);
-    engine.register_move("board_move", 12, 3, nasus);
+    (void)engine.register_move("board_move", 3, 10, nasus);
+    (void)engine.register_move("board_move", 10, 12, nasus);
+    (void)engine.register_move("board_move", 12, 3, nasus);
 
     // Repetição parcial do mesmo percurso.
-    engine.register_move("board_move", 3, 10, nasus);
-    engine.register_move("board_move", 10, 12, nasus);
+    (void)engine.register_move("board_move", 3, 10, nasus);
+    (void)engine.register_move("board_move", 10, 12, nasus);
 
     assert(engine.is_cycle_move("board_move", 12, 3, nasus));
     assert(engine.should_block_move("board_move", 12, 3, nasus));
@@ -189,11 +189,11 @@ void test_allows_move_to_new_position_after_cycle() {
     AntiLoopEngine engine;
     const auto nasus = make_unit("nasus-1", 1);
 
-    engine.register_move("board_move", 3, 10, nasus);
-    engine.register_move("board_move", 10, 12, nasus);
-    engine.register_move("board_move", 12, 3, nasus);
-    engine.register_move("board_move", 3, 10, nasus);
-    engine.register_move("board_move", 10, 12, nasus);
+    (void)engine.register_move("board_move", 3, 10, nasus);
+    (void)engine.register_move("board_move", 10, 12, nasus);
+    (void)engine.register_move("board_move", 12, 3, nasus);
+    (void)engine.register_move("board_move", 3, 10, nasus);
+    (void)engine.register_move("board_move", 10, 12, nasus);
 
     // O destino 15 não fecha o ciclo anterior.
     assert(!engine.is_cycle_move("board_move", 12, 15, nasus));
@@ -208,15 +208,15 @@ void test_different_units_have_independent_move_histories() {
     const auto nasus = make_unit("nasus-1", 1);
     const auto teemo = make_unit("teemo-1", 2);
 
-    engine.register_move("board_move", 4, 12, nasus);
+    (void)engine.register_move("board_move", 4, 12, nasus);
 
     // Um movimento semelhante de outra unidade não é reversão
     // nem bloqueio explícito do movimento do Nasus.
     assert(!engine.is_reverse_move("board_move", 12, 4, teemo));
     assert(!engine.should_block_move("board_move", 5, 13, teemo));
 
-    engine.register_move("board_move", 3, 10, nasus);
-    engine.register_move("board_move", 10, 12, nasus);
+    (void)engine.register_move("board_move", 3, 10, nasus);
+    (void)engine.register_move("board_move", 10, 12, nasus);
 
     // O histórico de ciclo do Nasus não deve bloquear o Teemo.
     assert(!engine.is_cycle_move("board_move", 12, 3, teemo));
@@ -227,7 +227,7 @@ void test_same_move_by_different_unit_is_not_explicitly_blocked() {
     const auto nasus = make_unit("nasus-1", 1);
     const auto teemo = make_unit("teemo-1", 2);
 
-    engine.block_move("board_move", 4, 12, nasus);
+    (void)engine.block_move("board_move", 4, 12, nasus);
 
     assert(engine.is_move_blocked("board_move", 4, 12, nasus));
     assert(!engine.is_move_blocked("board_move", 4, 12, teemo));
@@ -244,14 +244,14 @@ void test_state_change_releases_explicit_move_block() {
     const auto original_state = make_signature(nasus, 3);
     const auto changed_state = make_signature(nasus, 4);
 
-    engine.register_state(original_state);
-    engine.block_move("board_move", 4, 12, nasus);
+    (void)engine.register_state(original_state);
+    (void)engine.block_move("board_move", 4, 12, nasus);
 
     assert(engine.is_move_blocked("board_move", 4, 12, nasus));
 
     // Registrar um novo estado deve tornar inativo o bloqueio
     // vinculado à assinatura anterior.
-    engine.register_state(changed_state);
+    (void)engine.register_state(changed_state);
 
     assert(!engine.is_move_blocked("board_move", 4, 12, nasus));
 }
@@ -260,7 +260,7 @@ void test_move_queries_do_not_mutate_history() {
     AntiLoopEngine engine;
     const auto nasus = make_unit("nasus-1", 1);
 
-    engine.register_move("board_move", 4, 12, nasus);
+    (void)engine.register_move("board_move", 4, 12, nasus);
 
     const auto before = engine.get_state();
 
@@ -312,7 +312,7 @@ void test_blocks_bench_board_replacement_oscillation_between_units() {
                 );
             }
             // Lissandra entra no board e desloca Nasus para o bench.
-            engine.register_move(
+            (void)engine.register_move(
                 move_type, bench_slot, board_position, unit, nasus
             );
             continue;
@@ -330,7 +330,7 @@ void test_blocks_bench_board_replacement_oscillation_between_units() {
             break;
         }
 
-        engine.register_move(move_type, bench_slot, board_position, unit);
+        (void)engine.register_move(move_type, bench_slot, board_position, unit);
     }
 
     // O teste só é bem-sucedido se a sequência for interrompida pelo bloqueio.
@@ -415,9 +415,9 @@ void test_round_window_expires_old_states_and_preserves_recent_movement() {
     AntiLoopEngine engine;
     const auto nasus = make_unit("nasus-1", 1);
     const auto signature = make_signature(nasus, 3);
-    engine.register_move("board_move", 3, 4, nasus);
-    engine.block_move("board_move", 4, 12, nasus);
-    engine.register_state(signature);
+    (void)engine.register_move("board_move", 3, 4, nasus);
+    (void)engine.block_move("board_move", 4, 12, nasus);
+    (void)engine.register_state(signature);
 
     engine.begin_round(2);
     assert(engine.get_state().move_history_size == 1);
@@ -439,8 +439,8 @@ void test_reset_clears_move_and_state_history() {
     AntiLoopEngine engine;
     const auto nasus = make_unit("nasus-1", 1);
 
-    engine.register_move("board_move", 4, 12, nasus);
-    engine.register_state(make_signature(nasus, 3));
+    (void)engine.register_move("board_move", 4, 12, nasus);
+    (void)engine.register_state(make_signature(nasus, 3));
 
     engine.reset();
 
@@ -464,6 +464,7 @@ int main() {
     test_blocks_bench_board_replacement_oscillation_between_units();
 
     test_allows_first_cycle_closure();
+    test_blocks_candidate_closing_loop_after_unit_revisits_position();
     test_blocks_persistent_three_position_cycle();
     test_allows_move_to_new_position_after_cycle();
 
