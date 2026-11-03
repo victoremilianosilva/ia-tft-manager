@@ -449,7 +449,7 @@ float effect_attack_bonus(const CombatUnit& unit, DamageType damage_type) {
         for (const auto& effect : effects) {
             if (effect.trigger == "on_attack" && effect.operation == "bonus_damage" &&
                 effect.damage_type == damage_type &&
-                effect_condition_matches(unit, effect))
+                effect_condition_matches(unit, effect)) {
                 if (effect.percent_of_max_health) {
                     bonus += unit.max_hp * effect.value;
                 } else if (effect.percent_of_stat) {
@@ -464,6 +464,7 @@ float effect_attack_bonus(const CombatUnit& unit, DamageType damage_type) {
                 } else {
                     bonus += effect.value;
                 }
+            }
         }
     };
     for (const auto& item : unit.items) accumulate(item.effects);
@@ -581,7 +582,7 @@ void update_conditional_effects(RuntimeUnit& runtime, float now) {
     });
 }
 
-void apply_ally_shield_effects(std::vector<RuntimeUnit>& units,
+[[maybe_unused]] void apply_ally_shield_effects(std::vector<RuntimeUnit>& units,
                                std::size_t shielded_index) {
     if (shielded_index >= units.size()) return;
     const auto team = units[shielded_index].unit.team;
@@ -794,7 +795,10 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 return false;
             }
 
-            units.push_back(RuntimeUnit{effective_unit, effective_unit.hp});
+            RuntimeUnit loaded_unit{};
+            loaded_unit.unit = effective_unit;
+            loaded_unit.initial_hp = effective_unit.hp;
+            units.push_back(std::move(loaded_unit));
             auto& loaded = units.back();
             loaded.base_attack_speed = loaded.unit.attack_speed;
             loaded.titans_base_ad = loaded.unit.attack_damage;
@@ -931,15 +935,13 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
     );
     std::uniform_real_distribution<float> roll(0.0f, 1.0f);
 
-    // Start with enough backing storage for the initial event per unit.
-    // The priority queue keeps the same comparator and push/pop order.
-    std::vector<ScheduledEvent> scheduled_events;
-    scheduled_events.reserve(units.size());
+    // Default construction avoids a GCC 13 false-positive aggressive-loop
+    // warning in priority_queue's empty-range heap construction.
     std::priority_queue<
         ScheduledEvent,
         std::vector<ScheduledEvent>,
         LaterEvent
-    > queue(LaterEvent{}, std::move(scheduled_events));
+    > queue;
 
     std::uint64_t sequence = 0;
     auto schedule = [&](std::size_t index, float time) {
