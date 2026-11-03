@@ -454,6 +454,8 @@ int main() {
                   "sale protects core unit and upgrade copies");
     require_close(sale_quality(1.0, true, true, false, true), -0.225,
                   "measurable board gain removes the core and pair sale penalties");
+    require_close(sale_quality(1.0, true, true, false, false, true), -0.455,
+                  "verified replacement or urgent sale halves, but does not erase, retention cost");
     if (!(sale_quality(0.0, false, false, false) >
           sale_quality(0.5, false, false, false) &&
           sale_quality(0.5, false, false, false) >
