@@ -131,7 +131,27 @@
           "operation": "mana_regen",
           "value": 3
         }
-      ]
+      ],
+      "effect_coverage": {
+        "source_keys": [
+          "BacklineADAP",
+          "FrontlineResists",
+          "MagicResist",
+          "ManaPercIncrease",
+          "ManaRegen"
+        ],
+        "generic_stat_keys": [
+          "MagicResist"
+        ],
+        "generic_combat_keys": [
+          "ManaRegen"
+        ],
+        "not_generic_normalized_keys": [
+          "BacklineADAP",
+          "FrontlineResists",
+          "ManaPercIncrease"
+        ]
+      }
     },
     {
       "id": "TFT_Item_ArchangelsStaff",
@@ -176,7 +196,25 @@
           "operation": "mana_regen",
           "value": 1
         }
-      ]
+      ],
+      "effect_coverage": {
+        "source_keys": [
+          "AP",
+          "APPerInterval",
+          "IntervalSeconds",
+          "ManaRegen"
+        ],
+        "generic_stat_keys": [
+          "AP"
+        ],
+        "generic_combat_keys": [
+          "ManaRegen"
+        ],
+        "not_generic_normalized_keys": [
+          "APPerInterval",
+          "IntervalSeconds"
+        ]
+      }
     },
     {
       "id": "TFT_Item_Bloodthirster",
@@ -228,7 +266,33 @@
           "value": 0.15000000596046448,
           "percent_of_stat": true
         }
-      ]
+      ],
+      "effect_coverage": {
+        "source_keys": [
+          "AD",
+          "AP",
+          "HealthThreshold",
+          "LifeSteal",
+          "MagicResist",
+          "ShieldDuration",
+          "ShieldHealthPercent",
+          "StatOmnivamp"
+        ],
+        "generic_stat_keys": [
+          "AP",
+          "MagicResist",
+          "StatOmnivamp"
+        ],
+        "generic_combat_keys": [
+          "AD"
+        ],
+        "not_generic_normalized_keys": [
+          "HealthThreshold",
+          "LifeSteal",
+          "ShieldDuration",
+          "ShieldHealthPercent"
+        ]
+      }
     },
     {
       "id": "TFT_Item_BlueBuff",
@@ -281,7 +345,25 @@
           "operation": "mana_regen",
           "value": 5
         }
-      ]
+      ],
+      "effect_coverage": {
+        "source_keys": [
+          "AD",
+          "AP",
+          "ManaRegen",
+          "ModifiedADAP"
+        ],
+        "generic_stat_keys": [
+          "AP"
+        ],
+        "generic_combat_keys": [
+          "AD",
+          "ManaRegen"
+        ],
+        "not_generic_normalized_keys": [
+          "ModifiedADAP"
+        ]
+      }
     },
     {
       "id": "TFT_Item_BrambleVest",
@@ -325,7 +407,34 @@
         "{6688a0d5}": 100
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": []
+      "combat_effects": [],
+      "effect_coverage": {
+        "source_keys": [
+          "1StarAoEDamage",
+          "2StarAoEDamage",
+          "3StarAoEDamage",
+          "4StarAoEDamage",
+          "Armor",
+          "AutoDamageReduction",
+          "ICD",
+          "PercentMaxHP",
+          "{6688a0d5}"
+        ],
+        "generic_stat_keys": [
+          "Armor"
+        ],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
+          "1StarAoEDamage",
+          "2StarAoEDamage",
+          "3StarAoEDamage",
+          "4StarAoEDamage",
+          "AutoDamageReduction",
+          "ICD",
+          "PercentMaxHP",
+          "{6688a0d5}"
+        ]
+      }
     },
     {
       "id": "TFT_Item_Crownguard",
@@ -366,7 +475,28 @@
         "ShieldSize": 25
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": []
+      "combat_effects": [],
+      "effect_coverage": {
+        "source_keys": [
+          "AP",
+          "Armor",
+          "Health",
+          "ShieldBonusAP",
+          "ShieldDuration",
+          "ShieldSize"
+        ],
+        "generic_stat_keys": [
+          "AP",
+          "Armor",
+          "Health"
+        ],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
+          "ShieldBonusAP",
+          "ShieldDuration",
+          "ShieldSize"
+        ]
+      }
     },
     {
       "id": "TFT_Item_Deathblade",
@@ -413,7 +543,22 @@
           "value": 0.550000011920929,
           "percent_of_stat": true
         }
-      ]
+      ],
+      "effect_coverage": {
+        "source_keys": [
+          "AD",
+          "BonusDamage",
+          "{1543aa48}"
+        ],
+        "generic_stat_keys": [],
+        "generic_combat_keys": [
+          "AD"
+        ],
+        "not_generic_normalized_keys": [
+          "BonusDamage",
+          "{1543aa48}"
+        ]
+      }
     },
     {
       "id": "TFT_Item_DragonsClaw",
@@ -453,7 +598,26 @@
         "PercentMaxHP": 0.05999999865889549
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": []
+      "combat_effects": [],
+      "effect_coverage": {
+        "source_keys": [
+          "HealthRegenInterval",
+          "ICD",
+          "MagicResist",
+          "PercentHealthDamage",
+          "PercentMaxHP"
+        ],
+        "generic_stat_keys": [
+          "MagicResist"
+        ],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
+          "HealthRegenInterval",
+          "ICD",
+          "PercentHealthDamage",
+          "PercentMaxHP"
+        ]
+      }
     },
     {
       "id": "TFT_Item_ForceOfNature",
@@ -490,7 +654,19 @@
         "PercentGoldChance": 10
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": []
+      "combat_effects": [],
+      "effect_coverage": {
+        "source_keys": [
+          "MaxArmySizeIncrease",
+          "PercentGoldChance"
+        ],
+        "generic_stat_keys": [],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
+          "MaxArmySizeIncrease",
+          "PercentGoldChance"
+        ]
+      }
     },
     {
       "id": "TFT_Item_FrozenHeart",
@@ -539,7 +715,33 @@
           "operation": "mana_regen",
           "value": 1
         }
-      ]
+      ],
+      "effect_coverage": {
+        "source_keys": [
+          "Armor",
+          "CombatStartMana",
+          "HealthThreshold",
+          "MagicResist",
+          "ManaRegen",
+          "ShieldDuration",
+          "ShieldHealthPercent",
+          "TriggerMana"
+        ],
+        "generic_stat_keys": [
+          "Armor",
+          "MagicResist"
+        ],
+        "generic_combat_keys": [
+          "ManaRegen"
+        ],
+        "not_generic_normalized_keys": [
+          "CombatStartMana",
+          "HealthThreshold",
+          "ShieldDuration",
+          "ShieldHealthPercent",
+          "TriggerMana"
+        ]
+      }
     },
     {
       "id": "TFT_Item_GargoyleStoneplate",
@@ -581,7 +783,30 @@
         "{4dc0582f}": 20
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": []
+      "combat_effects": [],
+      "effect_coverage": {
+        "source_keys": [
+          "Armor",
+          "ArmorPerEnemy",
+          "Health",
+          "MRPerEnemy",
+          "MagicResist",
+          "SizeIncrease",
+          "{4dc0582f}"
+        ],
+        "generic_stat_keys": [
+          "Armor",
+          "Health",
+          "MagicResist"
+        ],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
+          "ArmorPerEnemy",
+          "MRPerEnemy",
+          "SizeIncrease",
+          "{4dc0582f}"
+        ]
+      }
     },
     {
       "id": "TFT_Item_GuardianAngel",
@@ -633,7 +858,33 @@
           "value": 0.10000000149011612,
           "percent_of_stat": true
         }
-      ]
+      ],
+      "effect_coverage": {
+        "source_keys": [
+          "AD",
+          "AP",
+          "AS",
+          "Armor",
+          "DamageReduction",
+          "HealthThreshold",
+          "MissingHealthRestore",
+          "StealthDuration"
+        ],
+        "generic_stat_keys": [
+          "AP",
+          "AS",
+          "Armor",
+          "DamageReduction"
+        ],
+        "generic_combat_keys": [
+          "AD"
+        ],
+        "not_generic_normalized_keys": [
+          "HealthThreshold",
+          "MissingHealthRestore",
+          "StealthDuration"
+        ]
+      }
     },
     {
       "id": "TFT_Item_GuinsoosRageblade",
@@ -671,7 +922,22 @@
         "AttackSpeedPerStack": 7
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": []
+      "combat_effects": [],
+      "effect_coverage": {
+        "source_keys": [
+          "AP",
+          "AS",
+          "AttackSpeedPerStack"
+        ],
+        "generic_stat_keys": [
+          "AP",
+          "AS"
+        ],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
+          "AttackSpeedPerStack"
+        ]
+      }
     },
     {
       "id": "TFT_Item_HextechGunblade",
@@ -726,7 +992,29 @@
           "operation": "mana_regen",
           "value": 1
         }
-      ]
+      ],
+      "effect_coverage": {
+        "source_keys": [
+          "AD",
+          "AP",
+          "AllyHealing",
+          "ManaRegen",
+          "Omnivamp",
+          "StatOmnivamp"
+        ],
+        "generic_stat_keys": [
+          "AP",
+          "Omnivamp",
+          "StatOmnivamp"
+        ],
+        "generic_combat_keys": [
+          "AD",
+          "ManaRegen"
+        ],
+        "not_generic_normalized_keys": [
+          "AllyHealing"
+        ]
+      }
     },
     {
       "id": "TFT_Item_InfinityEdge",
@@ -773,7 +1061,23 @@
           "value": 0.3499999940395355,
           "percent_of_stat": true
         }
-      ]
+      ],
+      "effect_coverage": {
+        "source_keys": [
+          "AD",
+          "CritChance",
+          "CritDamageToGive"
+        ],
+        "generic_stat_keys": [
+          "CritChance"
+        ],
+        "generic_combat_keys": [
+          "AD"
+        ],
+        "not_generic_normalized_keys": [
+          "CritDamageToGive"
+        ]
+      }
     },
     {
       "id": "TFT_Item_IonicSpark",
@@ -815,7 +1119,30 @@
         "ManaRatio": 150
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": []
+      "combat_effects": [],
+      "effect_coverage": {
+        "source_keys": [
+          "AP",
+          "Damage",
+          "Health",
+          "HexRange",
+          "MRShred",
+          "MagicResist",
+          "ManaRatio"
+        ],
+        "generic_stat_keys": [
+          "AP",
+          "Health",
+          "MagicResist"
+        ],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
+          "Damage",
+          "HexRange",
+          "MRShred",
+          "ManaRatio"
+        ]
+      }
     },
     {
       "id": "TFT_Item_JeweledGauntlet",
@@ -853,7 +1180,22 @@
         "CritDamageToGive": null
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": []
+      "combat_effects": [],
+      "effect_coverage": {
+        "source_keys": [
+          "AP",
+          "CritChance",
+          "CritDamageToGive"
+        ],
+        "generic_stat_keys": [
+          "AP",
+          "CritChance"
+        ],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
+          "CritDamageToGive"
+        ]
+      }
     },
     {
       "id": "TFT_Item_LastWhisper",
@@ -902,7 +1244,27 @@
           "value": 0.15000000596046448,
           "percent_of_stat": true
         }
-      ]
+      ],
+      "effect_coverage": {
+        "source_keys": [
+          "AD",
+          "AS",
+          "ArmorBreakDuration",
+          "ArmorReductionPercent",
+          "CritChance"
+        ],
+        "generic_stat_keys": [
+          "AS",
+          "CritChance"
+        ],
+        "generic_combat_keys": [
+          "AD"
+        ],
+        "not_generic_normalized_keys": [
+          "ArmorBreakDuration",
+          "ArmorReductionPercent"
+        ]
+      }
     },
     {
       "id": "TFT_Item_Leviathan",
@@ -943,7 +1305,28 @@
         "ManaOnCrit": 4
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": []
+      "combat_effects": [],
+      "effect_coverage": {
+        "source_keys": [
+          "AP",
+          "AS",
+          "BaseManaOnHit",
+          "CritChance",
+          "Health",
+          "ManaOnCrit"
+        ],
+        "generic_stat_keys": [
+          "AP",
+          "AS",
+          "CritChance",
+          "Health"
+        ],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
+          "BaseManaOnHit",
+          "ManaOnCrit"
+        ]
+      }
     },
     {
       "id": "TFT_Item_MadredsBloodrazor",
@@ -993,7 +1376,29 @@
           "value": 0.15000000596046448,
           "percent_of_stat": true
         }
-      ]
+      ],
+      "effect_coverage": {
+        "source_keys": [
+          "AD",
+          "AP",
+          "AS",
+          "DamageAmp",
+          "{1543aa48}",
+          "{abb9f4ce}"
+        ],
+        "generic_stat_keys": [
+          "AP",
+          "AS",
+          "DamageAmp"
+        ],
+        "generic_combat_keys": [
+          "AD"
+        ],
+        "not_generic_normalized_keys": [
+          "{1543aa48}",
+          "{abb9f4ce}"
+        ]
+      }
     },
     {
       "id": "TFT_Item_Morellonomicon",
@@ -1042,7 +1447,33 @@
           "operation": "mana_regen",
           "value": 1
         }
-      ]
+      ],
+      "effect_coverage": {
+        "source_keys": [
+          "AP",
+          "BurnDuration",
+          "BurnPercent",
+          "GrievousWoundsPercent",
+          "Health",
+          "ManaRegen",
+          "MonsterCap",
+          "TicksPerSecond"
+        ],
+        "generic_stat_keys": [
+          "AP",
+          "Health"
+        ],
+        "generic_combat_keys": [
+          "ManaRegen"
+        ],
+        "not_generic_normalized_keys": [
+          "BurnDuration",
+          "BurnPercent",
+          "GrievousWoundsPercent",
+          "MonsterCap",
+          "TicksPerSecond"
+        ]
+      }
     },
     {
       "id": "TFT_Item_NightHarvester",
@@ -1083,7 +1514,28 @@
         "ThresholdForEmpower": 0.5
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": []
+      "combat_effects": [],
+      "effect_coverage": {
+        "source_keys": [
+          "Armor",
+          "BaseDurability",
+          "CritChance",
+          "EmpoweredDurability",
+          "Health",
+          "ThresholdForEmpower"
+        ],
+        "generic_stat_keys": [
+          "Armor",
+          "CritChance",
+          "Health"
+        ],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
+          "BaseDurability",
+          "EmpoweredDurability",
+          "ThresholdForEmpower"
+        ]
+      }
     },
     {
       "id": "TFT_Item_PowerGauntlet",
@@ -1125,7 +1577,30 @@
         "{1543aa48}": 0.10000000149011612
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": []
+      "combat_effects": [],
+      "effect_coverage": {
+        "source_keys": [
+          "AS",
+          "BuffDamageAmp",
+          "CritChance",
+          "Duration",
+          "Health",
+          "MaxStacks",
+          "{1543aa48}"
+        ],
+        "generic_stat_keys": [
+          "AS",
+          "CritChance",
+          "Health"
+        ],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
+          "BuffDamageAmp",
+          "Duration",
+          "MaxStacks",
+          "{1543aa48}"
+        ]
+      }
     },
     {
       "id": "TFT_Item_Quicksilver",
@@ -1165,7 +1640,26 @@
         "SpellShieldDuration": 18
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": []
+      "combat_effects": [],
+      "effect_coverage": {
+        "source_keys": [
+          "AS",
+          "CritChance",
+          "MagicResist",
+          "ProcAttackSpeed",
+          "SpellShieldDuration"
+        ],
+        "generic_stat_keys": [
+          "AS",
+          "CritChance",
+          "MagicResist"
+        ],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
+          "ProcAttackSpeed",
+          "SpellShieldDuration"
+        ]
+      }
     },
     {
       "id": "TFT_Item_RabadonsDeathcap",
@@ -1203,7 +1697,22 @@
         "{1543aa48}": 0.15000000596046448
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": []
+      "combat_effects": [],
+      "effect_coverage": {
+        "source_keys": [
+          "AP",
+          "BonusDamage",
+          "{1543aa48}"
+        ],
+        "generic_stat_keys": [
+          "AP"
+        ],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
+          "BonusDamage",
+          "{1543aa48}"
+        ]
+      }
     },
     {
       "id": "TFT_Item_RapidFireCannon",
@@ -1246,7 +1755,32 @@
         "{9f5117db}": 100
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": []
+      "combat_effects": [],
+      "effect_coverage": {
+        "source_keys": [
+          "AS",
+          "BonusDamage",
+          "BurnPercent",
+          "Duration",
+          "HealingReductionPct",
+          "HexRangeIncrease",
+          "{1543aa48}",
+          "{9f5117db}"
+        ],
+        "generic_stat_keys": [
+          "AS"
+        ],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
+          "BonusDamage",
+          "BurnPercent",
+          "Duration",
+          "HealingReductionPct",
+          "HexRangeIncrease",
+          "{1543aa48}",
+          "{9f5117db}"
+        ]
+      }
     },
     {
       "id": "TFT_Item_RedBuff",
@@ -1290,7 +1824,34 @@
         "MonsterCap": 100
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": []
+      "combat_effects": [],
+      "effect_coverage": {
+        "source_keys": [
+          "Armor",
+          "BonusPercentHP",
+          "BurnDuration",
+          "BurnPercent",
+          "GrievousWoundsPercent",
+          "Health",
+          "HexRange",
+          "ICD",
+          "MonsterCap"
+        ],
+        "generic_stat_keys": [
+          "Armor",
+          "Health"
+        ],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
+          "BonusPercentHP",
+          "BurnDuration",
+          "BurnPercent",
+          "GrievousWoundsPercent",
+          "HexRange",
+          "ICD",
+          "MonsterCap"
+        ]
+      }
     },
     {
       "id": "TFT_Item_Redemption",
@@ -1337,7 +1898,29 @@
           "operation": "mana_regen",
           "value": 2
         }
-      ]
+      ],
+      "effect_coverage": {
+        "source_keys": [
+          "HealTickRate",
+          "Health",
+          "ManaRegen",
+          "MaxHeal",
+          "MissingHealthHeal",
+          "{cd951938}"
+        ],
+        "generic_stat_keys": [
+          "Health"
+        ],
+        "generic_combat_keys": [
+          "ManaRegen"
+        ],
+        "not_generic_normalized_keys": [
+          "HealTickRate",
+          "MaxHeal",
+          "MissingHealthHeal",
+          "{cd951938}"
+        ]
+      }
     },
     {
       "id": "TFT_Item_RunaansHurricane",
@@ -1387,7 +1970,29 @@
           "value": 0.10000000149011612,
           "percent_of_stat": true
         }
-      ]
+      ],
+      "effect_coverage": {
+        "source_keys": [
+          "AD",
+          "ADOnAttack",
+          "AS",
+          "ASCapstone",
+          "MagicResist",
+          "MaxStacks"
+        ],
+        "generic_stat_keys": [
+          "AS",
+          "MagicResist"
+        ],
+        "generic_combat_keys": [
+          "AD"
+        ],
+        "not_generic_normalized_keys": [
+          "ADOnAttack",
+          "ASCapstone",
+          "MaxStacks"
+        ]
+      }
     },
     {
       "id": "TFT_Item_SpearOfShojin",
@@ -1440,7 +2045,25 @@
           "operation": "mana_regen",
           "value": 1
         }
-      ]
+      ],
+      "effect_coverage": {
+        "source_keys": [
+          "AD",
+          "AP",
+          "FlatManaRestore",
+          "ManaRegen"
+        ],
+        "generic_stat_keys": [
+          "AP"
+        ],
+        "generic_combat_keys": [
+          "AD",
+          "ManaRegen"
+        ],
+        "not_generic_normalized_keys": [
+          "FlatManaRestore"
+        ]
+      }
     },
     {
       "id": "TFT_Item_SpectralGauntlet",
@@ -1481,7 +2104,28 @@
         "MagicResist": 20
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": []
+      "combat_effects": [],
+      "effect_coverage": {
+        "source_keys": [
+          "ARReductionAmount",
+          "BonusResistDuration",
+          "BonusResists",
+          "Health",
+          "HexRange",
+          "MagicResist"
+        ],
+        "generic_stat_keys": [
+          "Health",
+          "MagicResist"
+        ],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
+          "ARReductionAmount",
+          "BonusResistDuration",
+          "BonusResists",
+          "HexRange"
+        ]
+      }
     },
     {
       "id": "TFT_Item_StatikkShiv",
@@ -1527,7 +2171,27 @@
           "operation": "mana_regen",
           "value": 1
         }
-      ]
+      ],
+      "effect_coverage": {
+        "source_keys": [
+          "AP",
+          "AS",
+          "MRShred",
+          "MRShredDuration",
+          "ManaRegen"
+        ],
+        "generic_stat_keys": [
+          "AP",
+          "AS"
+        ],
+        "generic_combat_keys": [
+          "ManaRegen"
+        ],
+        "not_generic_normalized_keys": [
+          "MRShred",
+          "MRShredDuration"
+        ]
+      }
     },
     {
       "id": "TFT_Item_SteraksGage",
@@ -1576,7 +2240,27 @@
           "value": 0.44999998807907104,
           "percent_of_stat": true
         }
-      ]
+      ],
+      "effect_coverage": {
+        "source_keys": [
+          "AD",
+          "Health",
+          "HealthThreshold",
+          "PercentHealthShield",
+          "ShieldDuration"
+        ],
+        "generic_stat_keys": [
+          "Health"
+        ],
+        "generic_combat_keys": [
+          "AD"
+        ],
+        "not_generic_normalized_keys": [
+          "HealthThreshold",
+          "PercentHealthShield",
+          "ShieldDuration"
+        ]
+      }
     },
     {
       "id": "TFT_Item_TacticiansRing",
@@ -1614,7 +2298,21 @@
         "Timer": 10
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": []
+      "combat_effects": [],
+      "effect_coverage": {
+        "source_keys": [
+          "MaxArmySizeIncrease",
+          "PercentGoldChance",
+          "Timer"
+        ],
+        "generic_stat_keys": [],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
+          "MaxArmySizeIncrease",
+          "PercentGoldChance",
+          "Timer"
+        ]
+      }
     },
     {
       "id": "TFT_Item_TacticiansScepter",
@@ -1651,7 +2349,19 @@
         "PercentGoldChance": 10
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": []
+      "combat_effects": [],
+      "effect_coverage": {
+        "source_keys": [
+          "MaxArmySizeIncrease",
+          "PercentGoldChance"
+        ],
+        "generic_stat_keys": [],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
+          "MaxArmySizeIncrease",
+          "PercentGoldChance"
+        ]
+      }
     },
     {
       "id": "TFT_Item_ThiefsGloves",
@@ -1688,7 +2398,19 @@
         "Health": 150
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": []
+      "combat_effects": [],
+      "effect_coverage": {
+        "source_keys": [
+          "CritChance",
+          "Health"
+        ],
+        "generic_stat_keys": [
+          "CritChance",
+          "Health"
+        ],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": []
+      }
     },
     {
       "id": "TFT_Item_TitansResolve",
@@ -1729,7 +2451,28 @@
         "StackingSP": 2
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": []
+      "combat_effects": [],
+      "effect_coverage": {
+        "source_keys": [
+          "AS",
+          "Armor",
+          "StackCap",
+          "StackedAmp",
+          "StackingAD",
+          "StackingSP"
+        ],
+        "generic_stat_keys": [
+          "AS",
+          "Armor"
+        ],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
+          "StackCap",
+          "StackedAmp",
+          "StackingAD",
+          "StackingSP"
+        ]
+      }
     },
     {
       "id": "TFT_Item_UnstableConcoction",
@@ -1777,7 +2520,31 @@
           "operation": "mana_regen",
           "value": 1
         }
-      ]
+      ],
+      "effect_coverage": {
+        "source_keys": [
+          "AD_NotStatBar",
+          "AP_NotStatBar",
+          "CritChance",
+          "HealthThreshold",
+          "ManaRegen",
+          "StatOmnivamp_NotStatBar",
+          "{f23e83fc}"
+        ],
+        "generic_stat_keys": [
+          "CritChance"
+        ],
+        "generic_combat_keys": [
+          "ManaRegen"
+        ],
+        "not_generic_normalized_keys": [
+          "AD_NotStatBar",
+          "AP_NotStatBar",
+          "HealthThreshold",
+          "StatOmnivamp_NotStatBar",
+          "{f23e83fc}"
+        ]
+      }
     },
     {
       "id": "TFT_Item_WarmogsArmor",
@@ -1814,7 +2581,20 @@
         "Health": 500
       },
       "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
-      "combat_effects": []
+      "combat_effects": [],
+      "effect_coverage": {
+        "source_keys": [
+          "BonusPercentHP",
+          "Health"
+        ],
+        "generic_stat_keys": [
+          "Health"
+        ],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": [
+          "BonusPercentHP"
+        ]
+      }
     },
     {
       "id": "DA_18_EmblemBlackthorn",
@@ -1847,7 +2627,13 @@
       "combat_effects": [],
       "grants_trait": "DA_18_Blackthorn",
       "granted_trait_active_count": 1,
-      "weight_basis": "explicit_set_item_metadata"
+      "weight_basis": "explicit_set_item_metadata",
+      "effect_coverage": {
+        "source_keys": [],
+        "generic_stat_keys": [],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": []
+      }
     },
     {
       "id": "DA_18_EmblemBlossom",
@@ -1880,7 +2666,13 @@
       "combat_effects": [],
       "grants_trait": "DA_18_Blossom",
       "granted_trait_active_count": 1,
-      "weight_basis": "explicit_set_item_metadata"
+      "weight_basis": "explicit_set_item_metadata",
+      "effect_coverage": {
+        "source_keys": [],
+        "generic_stat_keys": [],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": []
+      }
     },
     {
       "id": "DA_18_EmblemBrawler",
@@ -1913,7 +2705,13 @@
       "combat_effects": [],
       "grants_trait": "DA_18_Brawler",
       "granted_trait_active_count": 1,
-      "weight_basis": "explicit_set_item_metadata"
+      "weight_basis": "explicit_set_item_metadata",
+      "effect_coverage": {
+        "source_keys": [],
+        "generic_stat_keys": [],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": []
+      }
     },
     {
       "id": "DA_18_EmblemElderwood",
@@ -1946,7 +2744,13 @@
       "combat_effects": [],
       "grants_trait": "DA_18_Elderwood",
       "granted_trait_active_count": 1,
-      "weight_basis": "explicit_set_item_metadata"
+      "weight_basis": "explicit_set_item_metadata",
+      "effect_coverage": {
+        "source_keys": [],
+        "generic_stat_keys": [],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": []
+      }
     },
     {
       "id": "DA_18_EmblemExecutioner",
@@ -1979,7 +2783,13 @@
       "combat_effects": [],
       "grants_trait": "DA_18_Executioner",
       "granted_trait_active_count": 1,
-      "weight_basis": "explicit_set_item_metadata"
+      "weight_basis": "explicit_set_item_metadata",
+      "effect_coverage": {
+        "source_keys": [],
+        "generic_stat_keys": [],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": []
+      }
     },
     {
       "id": "DA_18_EmblemFae",
@@ -2012,7 +2822,13 @@
       "combat_effects": [],
       "grants_trait": "DA_18_Fae",
       "granted_trait_active_count": 1,
-      "weight_basis": "explicit_set_item_metadata"
+      "weight_basis": "explicit_set_item_metadata",
+      "effect_coverage": {
+        "source_keys": [],
+        "generic_stat_keys": [],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": []
+      }
     },
     {
       "id": "DA_18_EmblemHunter",
@@ -2045,7 +2861,13 @@
       "combat_effects": [],
       "grants_trait": "DA_18_Hunter",
       "granted_trait_active_count": 1,
-      "weight_basis": "explicit_set_item_metadata"
+      "weight_basis": "explicit_set_item_metadata",
+      "effect_coverage": {
+        "source_keys": [],
+        "generic_stat_keys": [],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": []
+      }
     },
     {
       "id": "DA_18_EmblemInferno",
@@ -2078,7 +2900,13 @@
       "combat_effects": [],
       "grants_trait": "DA_18_Inferno",
       "granted_trait_active_count": 1,
-      "weight_basis": "explicit_set_item_metadata"
+      "weight_basis": "explicit_set_item_metadata",
+      "effect_coverage": {
+        "source_keys": [],
+        "generic_stat_keys": [],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": []
+      }
     },
     {
       "id": "DA_18_EmblemInvoker",
@@ -2111,7 +2939,13 @@
       "combat_effects": [],
       "grants_trait": "DA_18_Invoker",
       "granted_trait_active_count": 1,
-      "weight_basis": "explicit_set_item_metadata"
+      "weight_basis": "explicit_set_item_metadata",
+      "effect_coverage": {
+        "source_keys": [],
+        "generic_stat_keys": [],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": []
+      }
     },
     {
       "id": "DA_18_EmblemLunar",
@@ -2144,7 +2978,13 @@
       "combat_effects": [],
       "grants_trait": "DA_18_Lunar",
       "granted_trait_active_count": 1,
-      "weight_basis": "explicit_set_item_metadata"
+      "weight_basis": "explicit_set_item_metadata",
+      "effect_coverage": {
+        "source_keys": [],
+        "generic_stat_keys": [],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": []
+      }
     },
     {
       "id": "DA_18_EmblemPrimal",
@@ -2177,7 +3017,13 @@
       "combat_effects": [],
       "grants_trait": "DA_Primal18",
       "granted_trait_active_count": 1,
-      "weight_basis": "explicit_set_item_metadata"
+      "weight_basis": "explicit_set_item_metadata",
+      "effect_coverage": {
+        "source_keys": [],
+        "generic_stat_keys": [],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": []
+      }
     },
     {
       "id": "DA_18_EmblemRapidfire",
@@ -2210,7 +3056,13 @@
       "combat_effects": [],
       "grants_trait": "DA_18_Rapidfire",
       "granted_trait_active_count": 1,
-      "weight_basis": "explicit_set_item_metadata"
+      "weight_basis": "explicit_set_item_metadata",
+      "effect_coverage": {
+        "source_keys": [],
+        "generic_stat_keys": [],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": []
+      }
     },
     {
       "id": "DA_18_EmblemSlayer",
@@ -2243,7 +3095,13 @@
       "combat_effects": [],
       "grants_trait": "DA_18_Slayer",
       "granted_trait_active_count": 1,
-      "weight_basis": "explicit_set_item_metadata"
+      "weight_basis": "explicit_set_item_metadata",
+      "effect_coverage": {
+        "source_keys": [],
+        "generic_stat_keys": [],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": []
+      }
     },
     {
       "id": "DA_18_EmblemSpellweaver",
@@ -2276,7 +3134,13 @@
       "combat_effects": [],
       "grants_trait": "DA_18_Spellweaver",
       "granted_trait_active_count": 1,
-      "weight_basis": "explicit_set_item_metadata"
+      "weight_basis": "explicit_set_item_metadata",
+      "effect_coverage": {
+        "source_keys": [],
+        "generic_stat_keys": [],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": []
+      }
     },
     {
       "id": "DA_18_EmblemSprykin",
@@ -2309,7 +3173,13 @@
       "combat_effects": [],
       "grants_trait": "DA_18_Sprykin",
       "granted_trait_active_count": 1,
-      "weight_basis": "explicit_set_item_metadata"
+      "weight_basis": "explicit_set_item_metadata",
+      "effect_coverage": {
+        "source_keys": [],
+        "generic_stat_keys": [],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": []
+      }
     },
     {
       "id": "DA_18_EmblemVanguard",
@@ -2342,7 +3212,13 @@
       "combat_effects": [],
       "grants_trait": "DA_18_Vanguard",
       "granted_trait_active_count": 1,
-      "weight_basis": "explicit_set_item_metadata"
+      "weight_basis": "explicit_set_item_metadata",
+      "effect_coverage": {
+        "source_keys": [],
+        "generic_stat_keys": [],
+        "generic_combat_keys": [],
+        "not_generic_normalized_keys": []
+      }
     }
   ],
   "normalization_notes": [
