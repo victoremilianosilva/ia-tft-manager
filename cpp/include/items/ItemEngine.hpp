@@ -330,6 +330,15 @@ public:
         const auto* item = find(item_id);
         if (!item || unit.uuid.empty()) return 0.0;
 
+        const auto normalize_trait = [](const std::string& value) {
+            std::string normalized;
+            normalized.reserve(value.size());
+            for (const unsigned char ch : value) {
+                if (std::isalnum(ch))
+                    normalized.push_back(static_cast<char>(std::tolower(ch)));
+            }
+            return normalized;
+        };
         double total = 0.0;
         for (const auto& effect : item->combat_effects) {
             if (effect.value <= 0.0f) continue;
@@ -338,9 +347,24 @@ public:
             if (effect.condition == "role_assassin" && unit.role != 4) continue;
             if (effect.condition == "role_other" &&
                 (unit.role == 0 || unit.role == 3 || unit.role == 4)) continue;
-            if (effect.condition == "has_trait" &&
-                std::find(unit.traits.begin(), unit.traits.end(),
-                          effect.condition_trait) == unit.traits.end()) continue;
+            // The profile has trait identities but not live lobby trait counts.
+            // Do not reward a threshold-gated passive without enough information.
+            if (effect.condition == "trait_count_at_least") continue;
+            if (effect.condition == "has_trait") {
+                const auto separator = effect.condition_trait.find_last_of('_');
+                const auto suffix = separator == std::string::npos
+                    ? effect.condition_trait
+                    : effect.condition_trait.substr(separator + 1);
+                const auto full_key = normalize_trait(effect.condition_trait);
+                const auto suffix_key = normalize_trait(suffix);
+                const bool has_condition_trait = std::any_of(
+                    unit.traits.begin(), unit.traits.end(),
+                    [&](const std::string& trait) {
+                        const auto key = normalize_trait(trait);
+                        return key == full_key || key == suffix_key;
+                    });
+                if (!has_condition_trait) continue;
+            }
 
             double semantic_weight = 0.0;
             if (effect.operation == "add_stat") {
