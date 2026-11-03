@@ -1,9 +1,6 @@
 #pragma once
 
-#include <algorithm>
-#include <array>
 #include <cstddef>
-#include <cstdint>
 #include <random>
 #include <stdexcept>
 #include <string>
@@ -11,15 +8,10 @@
 
 namespace tft::items {
 
-// Set 18 PvE loot rows, as published for patch 18.5.
-// Percentages are normalized by discrete_distribution because the source
-// rounds some rows (stage 3/4 totals are slightly above 100%).
+// Set 18 patch 18.5 weighted PvE component counts. Orb rewards are
+// intentionally resolved as direct stage rewards by the lobby, never spawned.
 struct PveLootOutcome {
     unsigned components;
-    unsigned gray_orbs;
-    unsigned blue_orbs;
-    unsigned gold_orbs;
-    unsigned prismatic_orbs;
 };
 
 struct WeightedPveLoot {
@@ -29,34 +21,22 @@ struct WeightedPveLoot {
 
 inline const std::vector<WeightedPveLoot>& set18_pve_loot_table(unsigned stage) {
     static const std::vector<WeightedPveLoot> stage1{
-        {35,{3,3,0,0,0}}, {35,{3,0,1,0,0}},
-        {8,{2,3,1,0,0}}, {8,{2,0,2,0,0}},
-        {3,{5,3,0,0,0}}, {3,{5,0,1,0,0}},
-        {3,{4,0,1,0,0}}, {2,{3,0,2,0,0}},
-        {2,{1,3,2,0,0}}, {1,{3,5,0,0,0}}
+        {35,{3}}, {35,{3}}, {8,{2}}, {8,{2}}, {3,{5}},
+        {3,{5}}, {3,{4}}, {2,{3}}, {2,{1}}, {1,{3}}
     };
     static const std::vector<WeightedPveLoot> stage2{
-        {20,{3,1,0,0,0}}, {17,{2,1,0,0,0}},
-        {17,{2,0,1,0,0}}, {15,{3,0,1,0,0}},
-        {13,{2,2,0,0,0}}, {5,{3,3,0,0,0}},
-        {4,{2,1,0,1,0}}, {4,{2,1,1,0,0}},
-        {4,{2,0,2,0,0}}, {1,{2,0,1,1,0}}
+        {20,{3}}, {17,{2}}, {17,{2}}, {15,{3}}, {13,{2}},
+        {5,{3}}, {4,{2}}, {4,{2}}, {4,{2}}, {1,{2}}
     };
     static const std::vector<WeightedPveLoot> stage3{
-        {20,{4,1,0,0,0}}, {20,{4,2,0,0,0}},
-        {17,{3,1,1,0,0}}, {13,{3,3,0,0,0}},
-        {13,{3,0,2,0,0}}, {5,{4,0,1,0,0}},
-        {4,{5,1,0,0,0}}, {3,{3,1,0,1,0}},
-        {2,{3,1,0,0,1}}, {2,{2,0,2,0,0}},
-        {1,{3,0,1,1,0}}, {0.25,{4,1,0,1,0}}
+        {20,{4}}, {20,{4}}, {17,{3}}, {13,{3}}, {13,{3}},
+        {5,{4}}, {4,{5}}, {3,{3}}, {2,{3}}, {2,{2}},
+        {1,{3}}, {0.25,{4}}
     };
     static const std::vector<WeightedPveLoot> stage4{
-        {18,{3,2,0,0,0}}, {18,{3,1,1,0,0}},
-        {18,{2,2,1,0,0}}, {15,{4,1,0,0,0}},
-        {13,{3,3,0,0,0}}, {5,{5,1,0,0,0}},
-        {4,{4,1,1,0,0}}, {4,{3,1,0,1,0}},
-        {3,{2,0,2,0,0}}, {2,{2,2,0,0,1}},
-        {1,{3,0,2,1,0}}, {0.03,{2,0,0,1,1}}
+        {18,{3}}, {18,{3}}, {18,{2}}, {15,{4}}, {13,{3}},
+        {5,{5}}, {4,{4}}, {4,{3}}, {3,{2}}, {2,{2}},
+        {1,{3}}, {0.03,{2}}
     };
     switch (stage) {
         case 1: return stage1;
@@ -77,9 +57,8 @@ inline PveLootOutcome roll_set18_pve_loot(unsigned stage, Rng& rng) {
     return table[choose(rng)].outcome;
 }
 
-// Personal component pool: one copy of each component initially, then one
-// additional copy of each before stages 2, 3 and 4. Augment/carousel components
-// must not be inserted here because they do not consume this PvE pool.
+// Per-player pool: one copy of each basic component initially, then one
+// additional copy of each before stages 2, 3 and 4.
 class Set18ComponentPool {
 public:
     void initialize(const std::vector<std::string>& component_ids) {
