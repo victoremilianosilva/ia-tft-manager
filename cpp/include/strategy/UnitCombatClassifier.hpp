@@ -22,9 +22,9 @@ public:
   const std::string text=lower(s.ability_text); const double range=std::max(0.0,s.attack_range);
   const double hp=s.max_health+s.item_health, armor=s.armor+s.item_armor, mr=s.magic_resist+s.item_magic_resist;
   const double ad=s.attack_damage+s.item_attack_damage, as=s.attack_speed+s.item_attack_speed, ap=s.ability_power+s.item_ability_power;
-  const bool support=contains(text,{"heal","healing","shield allies","buff allies","all allies","restore health","grant mana","cura","curar","cura aliados","escudo aliados","concede escudo","protege aliados"});
+  const bool support=contains(text,{"heal allies","heals allies","healing allies","shield allies","buff allies","all allies","restore health to allies","grant mana to allies","grant mana","cura aliados","cura os aliados","escudo aliados","escudo aos aliados","concede escudo aos aliados","restaura vida dos aliados","concede mana aos aliados"});
   const bool tank=(hp>=850.0&&(armor>=40.0||mr>=40.0))||(armor>=55.0&&mr>=55.0)||(s.base_role==0&&hp>=650.0);
-  if(s.base_role==2||support) return {UnitArchetype::SUPPORT,2,false,false,support?0.90:0.72};
+  if(support||(s.base_role==2&&text.empty())) return {UnitArchetype::SUPPORT,2,false,false,support?0.90:0.72};
   if(s.base_role==0||tank) return {UnitArchetype::TANK,0,false,false,tank?0.90:0.72};
   if(s.base_role==4) return {UnitArchetype::FLEXIBLE,4,false,false,0.65};
   const bool phys_text=contains(text,{"physical damage","dano físico","dano fisico","scalead","attack damage","dano de ataque"});
