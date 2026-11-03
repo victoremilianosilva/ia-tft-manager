@@ -587,7 +587,7 @@ void grant_on_kill_effect_charges(RuntimeUnit& actor) {
 
 float apply_charged_attack_healing(RuntimeUnit& actor, float now) {
     float total = 0.0f;
-    visit_generic_effects(actor.unit, [&](const CombatEffectDefinition& effect,
+    visit_generic_effects(actor, [&](const CombatEffectDefinition& effect,
                                          const std::string& prefix) {
         if (effect.trigger != "on_attack" || effect.operation != "heal_max_hp_pct" ||
             effect.stack_key.empty() || !effect_condition_matches(actor.unit, effect)) return;
