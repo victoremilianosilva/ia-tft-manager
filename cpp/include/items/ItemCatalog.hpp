@@ -137,6 +137,32 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             read_string("condition", effect.condition);
             read_string("condition_trait", effect.condition_trait);
             read_string("stack_key", effect.stack_key);
+            const bool supported_condition =
+                effect.condition.empty() ||
+                effect.condition == "has_trait" ||
+                effect.condition == "trait_count_at_least" ||
+                effect.condition == "role_tank" ||
+                effect.condition == "role_fighter" ||
+                effect.condition == "role_assassin" ||
+                effect.condition == "role_other";
+            if (!supported_condition) {
+                throw std::invalid_argument(
+                    "Unsupported combat effect condition: " + effect.condition);
+            }
+            if ((effect.condition == "has_trait" ||
+                 effect.condition == "trait_count_at_least") &&
+                effect.condition_trait.empty()) {
+                throw std::invalid_argument(
+                    "Trait-conditioned combat effect requires condition_trait");
+            }
+            const bool supported_target =
+                effect.target.empty() || effect.target == "self" ||
+                effect.target == "allies" ||
+                effect.target == "allies_same_row_within_1";
+            if (!supported_target) {
+                throw std::invalid_argument(
+                    "Unsupported combat effect target: " + effect.target);
+            }
             if (effect.operation == "add_stat") {
                 const bool supported_stat =
                     effect.stat == "attack_damage" ||
@@ -213,6 +239,24 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             };
             read_bool("percent_of_max_health", effect.percent_of_max_health);
             read_bool("percent_of_stat", effect.percent_of_stat);
+            if (effect.operation == "bonus_damage" && effect.percent_of_stat) {
+                const bool supported_damage_stat =
+                    effect.stat == "attack_damage" ||
+                    effect.stat == "attack_speed" ||
+                    effect.stat == "ability_power" ||
+                    effect.stat == "max_hp" ||
+                    effect.stat == "armor" ||
+                    effect.stat == "magic_resist";
+                if (!supported_damage_stat) {
+                    throw std::invalid_argument(
+                        "bonus_damage percent_of_stat requires a supported stat");
+                }
+            }
+            if (effect.condition == "trait_count_at_least" &&
+                effect.min_trait_count <= 0) {
+                throw std::invalid_argument(
+                    "trait_count_at_least requires positive min_trait_count");
+            }
             parsed.push_back(std::move(effect));
         }
         return parsed;
