@@ -24,12 +24,12 @@ struct GenericEffectDescriptor {
 
 struct RuntimeUnit {
     CombatUnit unit;
+    float initial_hp = 0.0f;
     // Immutable descriptors point into unit.items/unit.traits, whose effect
     // vectors remain stable for the lifetime of this combat simulation.
     std::vector<GenericEffectDescriptor> generic_effect_descriptors;
     std::vector<std::size_t> delayed_effect_indices;
     std::vector<std::size_t> conditional_effect_indices;
-    float initial_hp = 0.0f;
     float damage_dealt = 0.0f;
     float damage_taken = 0.0f;
     float healing_done = 0.0f;
