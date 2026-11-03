@@ -342,10 +342,14 @@ public:
         double total = 0.0;
         for (const auto& effect : item->combat_effects) {
             if (effect.value <= 0.0f) continue;
-            if (effect.condition == "role_tank" && unit.role != 0) continue;
-            if (effect.condition == "role_fighter" && unit.role != 3) continue;
-            if (effect.condition == "role_assassin" && unit.role != 4) continue;
-            if (effect.condition == "role_other" &&
+            const bool team_target = effect.target == "allies" ||
+                effect.target == "allies_same_row_within_1";
+            // For team auras, role conditions filter allied recipients in
+            // CombatEngine, not the item holder whose profile is being scored.
+            if (!team_target && effect.condition == "role_tank" && unit.role != 0) continue;
+            if (!team_target && effect.condition == "role_fighter" && unit.role != 3) continue;
+            if (!team_target && effect.condition == "role_assassin" && unit.role != 4) continue;
+            if (!team_target && effect.condition == "role_other" &&
                 (unit.role == 0 || unit.role == 3 || unit.role == 4)) continue;
             // The profile has trait identities but not live lobby trait counts.
             // Do not reward a threshold-gated passive without enough information.
