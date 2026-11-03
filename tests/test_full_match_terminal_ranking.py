@@ -65,8 +65,8 @@ def test_native_match_finishes_with_unique_ordered_placements_and_one_reward_eac
         cumulative_placement_rewards = np.zeros(8, dtype=np.float64)
         saw_combat = False
         saw_elimination = False
-        saw_component_anvil = False
-        saw_completed_item_anvil = False
+        saw_component_loot = False
+        saw_completed_item_loot = False
 
         # Deploy each player's real starter using the legal conditional mask.
         masks = engine.get_action_masks()
@@ -101,11 +101,11 @@ def test_native_match_finishes_with_unique_ordered_placements_and_one_reward_eac
             events = [str(event) for event in result.get("events", [])]
             saw_combat |= any(event.startswith("COMBAT:") for event in events)
             saw_elimination |= any(event.startswith("ELIMINATED:") for event in events)
-            saw_component_anvil |= any(
-                event.startswith("COMPONENT_ANVIL_GRANTED:") for event in events
+            saw_component_loot |= any(
+                event.startswith("COMPONENT_LOOT_GRANTED:") for event in events
             )
-            saw_completed_item_anvil |= any(
-                event.startswith("COMPLETED_ITEM_ANVIL_GRANTED:") for event in events
+            saw_completed_item_loot |= any(
+                event.startswith("COMPLETED_ITEM_GRANTED:") for event in events
             )
         else:
             diagnostic_state = engine.get_public_state()
@@ -123,7 +123,7 @@ def test_native_match_finishes_with_unique_ordered_placements_and_one_reward_eac
         assert state["finished"] is True
         assert saw_combat, "The terminal test must exercise real combat"
         assert saw_elimination, "The terminal test must exercise player elimination"
-        assert saw_component_anvil, "The complete match must resolve the 4-7 component anvil"
+        assert saw_component_loot, "The complete match must grant direct PvE component loot (no orb/anvil event)"
 
         ranking = [int(player_id) for player_id in state["ranking"]]
         assert len(ranking) == 8
