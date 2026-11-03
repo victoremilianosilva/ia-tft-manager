@@ -118,6 +118,7 @@ class ItemSystemE2EAuditTests(unittest.TestCase):
             "ITEM_ANVIL_CHOSEN: player=0, kind=anvil_component_choice, item=DA_Component_Bow, stage=4",
             "ITEM_ACTION_APPLIED: player=0, kind=equip_inventory_item, item=TFT_Item_Deathblade, target_uuid=unit-0, fit=4.0, reward=0.1, stage=5",
             "ITEM_ACTION_APPLIED: player=1, kind=craft_and_equip, item=TFT_Item_GargoyleStoneplate, target_uuid=unit-1, fit=3.0, reward=0.08, stage=5",
+            "COMBAT_ITEM_INPUT: player=0, unit_id=7, item=TFT_Item_Deathblade",
         ]
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -140,6 +141,8 @@ class ItemSystemE2EAuditTests(unittest.TestCase):
             self.assertEqual(report["item_action_counts"]["CRAFT_AND_EQUIP"], 1)
             self.assertEqual(report["player_metrics"]["0"]["item_actions"], 1)
             self.assertEqual(report["player_metrics"]["1"]["item_actions"], 1)
+            self.assertEqual(report["item_pipeline"]["combat_item_input_count"], 1)
+            self.assertEqual(report["item_pipeline"]["cycle_status"], "item_reached_combat_input")
 
     def test_truncated_match_is_failure_not_success(self):
         with tempfile.TemporaryDirectory() as directory:
