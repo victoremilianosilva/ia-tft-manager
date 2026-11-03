@@ -212,6 +212,27 @@ int main() {
     require(passive_engine.item_effect_strength("missing_item", carry) == 0.0,
             "unknown items must not receive special-effect compatibility value");
 
+    ItemDefinition trait_passive;
+    trait_passive.id = "trait_passive";
+    trait_passive.name = "Trait Passive";
+    tft::CombatEffectDefinition trait_effect;
+    trait_effect.trigger = "combat_start";
+    trait_effect.operation = "add_stat";
+    trait_effect.stat = "ability_power";
+    trait_effect.target = "self";
+    trait_effect.condition = "has_trait";
+    trait_effect.condition_trait = "DA_18_Invoker";
+    trait_effect.value = 15.0f;
+    trait_passive.combat_effects.push_back(trait_effect);
+    ItemEngine trait_passive_engine({trait_passive});
+    auto invoker_profile = carry;
+    invoker_profile.traits = {"Invoker"};
+    auto unrelated_profile = carry;
+    unrelated_profile.traits = {"Vanguard"};
+    require(trait_passive_engine.item_effect_strength("trait_passive", invoker_profile) >
+                trait_passive_engine.item_effect_strength("trait_passive", unrelated_profile),
+            "trait-conditioned passives should match canonical trait suffixes");
+
     ItemEngine engine({damage, guard, double_component});
     require(!engine.add_component("unknown_component"),
             "component IDs outside the loaded recipe catalog must be rejected");
