@@ -640,9 +640,9 @@ inline double pass_opportunity_penalty(
         0.0, 0.45);
 }
 
-// A low-fit purchase sold almost immediately is usually a wasted buy.
-// Fit is normalized to [0, 1]; legitimate exceptions are explicit so a real
-// upgrade, deployment, comp transition, or full bench is not punished.
+// A recent buy/sell sequence is not automatically a mistake. Penalize only
+// low-fit acquisitions with no concrete strategic, experimental, composition,
+// or economic justification. Fit is normalized to [0, 1].
 inline constexpr double kRecentPurchaseLowFitThreshold = 0.20;
 // Keep purchase provenance long enough to associate a sale after intervening
 // shop/position actions, without carrying stale intent across a whole round.
@@ -653,14 +653,17 @@ inline bool should_penalize_reversed_purchase(
     bool completed_upgrade,
     bool was_deployed,
     bool bench_was_full,
-    bool composition_changed
+    bool composition_changed,
+    bool built_pair = false,
+    bool better_alternative_found = false,
+    bool economic_need = false
 ) noexcept {
-    // Selling a recently acquired unit without deploying/merging it is itself
-    // evidence of a wasted buy, even if its initial fit score looked acceptable.
-    // Keep explicit exceptions for a full bench and a genuine comp transition.
-    (void)normalized_fit;
-    return !completed_upgrade && !was_deployed && !bench_was_full &&
-        !composition_changed;
+    if (completed_upgrade || built_pair || was_deployed || bench_was_full ||
+        composition_changed || better_alternative_found || economic_need) {
+        return false;
+    }
+    return std::clamp(normalized_fit, 0.0, 1.0) <=
+        kRecentPurchaseLowFitThreshold;
 }
 
 inline double reversed_purchase_penalty() noexcept {
