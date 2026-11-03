@@ -209,10 +209,21 @@ def test_semantic_validation_accepts_normalized_stats_or_explicit_effects():
     catalog = {
         "items": [
             {"id": "Item_A", "stats": {"attack_speed": 0.1}, "combat_effects": []},
-            {"id": "Item_B", "stats": {}, "combat_effects": [{"trigger": "COMBAT_START", "operation": "GRANT_SHIELD"}]},
+            {"id": "Item_B", "stats": {}, "combat_effects": [{"trigger": "on_attack", "operation": "bonus_damage", "damage_type": "MAGIC", "value": 0.05}]},
         ]
     }
     validate_catalog_semantics(catalog)
+
+def test_semantic_validation_rejects_effect_without_combat_handler():
+    catalog = {
+        "items": [
+            {"id": "Item_A", "stats": {"attack_speed": 0.1}, "combat_effects": []},
+            {"id": "Item_B", "stats": {}, "combat_effects": [{"trigger": "combat_start", "operation": "grant_shield", "value": 100}]},
+        ]
+    }
+    with pytest.raises(ValueError, match="Efeito sem handler/contrato suportado"):
+        validate_catalog_semantics(catalog)
+
 
 
 def test_explicit_trait_metadata_can_add_non_craftable_items():
