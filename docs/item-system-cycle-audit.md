@@ -44,8 +44,8 @@ A decisão continua sendo da policy unificada: ação 7 equipa do inventário; a
 1. **Compatibilidade:** `ItemEngine::item_effect_strength` pontua efeitos suportados por operação, alvo, função e condições; `item_fit` inclui esse valor na compatibilidade usada pelas observações.
 2. **Recompensa:** a qualidade imediata de equip/craft combina força numérica e força de passivas suportadas por composição multiplicativa, evitando dupla contagem aditiva.
 3. **Contrato catálogo/combate:** o loader C++ aceita somente operações e pares trigger/operação com handlers existentes no `CombatEngine`. Operações como `grant_shield` sem handler não são mais aceitas como se fossem funcionais.
-4. **Telemetria:** o lobby emite `ITEM_ANVIL_CHOSEN` e `ITEM_ACTION_APPLIED`, incluindo jogador, tipo, item, unidade-alvo, fit, recompensa e etapa.
-5. **Auditoria:** `audit_item_system_e2e.py` agrega eventos de loot, bigorna e transições aplicadas, além de contagens por tipo de ação.
+4. **Telemetria:** o lobby emite `ITEM_ANVIL_CHOSEN`, `ITEM_ACTION_APPLIED` e `COMBAT_ITEM_INPUT`, incluindo jogador, tipo, item, unidade-alvo, fit, recompensa e etapa.
+5. **Auditoria:** `audit_item_system_e2e.py` agrega eventos de loot, bigorna, transições aplicadas e itens realmente enviados ao `CombatInput`. O status do ciclo distingue ausência de aquisição, item adquirido sem equip, item equipado sem entrada no combate e item que chegou ao combate.
 6. **Ciclo de combate:** foi adicionado teste determinístico que coleta dois componentes, crafta, equipa por UUID, converte para `CombatItem` e verifica aumento do dano real no `CombatEngine`.
 
 ## Limite conhecido de cobertura
