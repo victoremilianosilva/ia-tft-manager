@@ -987,22 +987,32 @@ int main(int argc, char** argv) {
             };
 
             tft::StepResult round_result;
-            while (loot_engine.round() < 11) round_result = finish_round();
+            const auto advance_until = [&](std::uint32_t target_round) {
+                std::vector<std::string> accumulated_events;
+                while (loot_engine.round() < target_round) {
+                    auto step = finish_round();
+                    accumulated_events.insert(accumulated_events.end(),
+                                               step.events.begin(), step.events.end());
+                }
+                round_result.events = std::move(accumulated_events);
+            };
+
+            advance_until(11);
             require(contains_event(round_result, "COMPONENT_LOOT_GRANTED:"),
                     "O loot normal de 2-7 nao concedeu componente diretamente.");
             require_no_pending_choice();
 
-            while (loot_engine.round() < 25) round_result = finish_round();
+            advance_until(25);
             require(contains_event(round_result, "COMPONENT_LOOT_GRANTED:"),
                     "A rodada 4-7 nao concedeu componentes diretamente.");
             require_no_pending_choice();
 
-            while (loot_engine.round() < 32) round_result = finish_round();
+            advance_until(32);
             require(contains_event(round_result, "COMPLETED_ITEM_GRANTED:"),
                     "A rodada 5-7 nao concedeu item completo diretamente.");
             require_no_pending_choice();
 
-            while (loot_engine.round() < 39) round_result = finish_round();
+            advance_until(39);
             require(contains_event(round_result, "COMPLETED_ITEM_GRANTED:"),
                     "A rodada 6-7 nao concedeu item completo diretamente.");
             require_no_pending_choice();
