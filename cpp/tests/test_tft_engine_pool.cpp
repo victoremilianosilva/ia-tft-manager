@@ -753,6 +753,7 @@ int main(int argc, char** argv) {
             reversal_actions[0].values = {0, 0, 0, 0, 0, 0};
             const auto buy_result = step_with_pending_anvils(reversal_engine, reversal_actions);
             const float buy_reward = buy_result.action_rewards[0];
+            (void)buy_reward; // Used by assert-based diagnostics in debug builds.
 
             const auto after_buy = reversal_engine.get_audit_snapshot();
             std::int32_t purchased_slot = -1;
