@@ -634,4 +634,32 @@ private:
     }
 };
 
+
+// Observation-local memoization for item compatibility. The cache is created
+// from one immutable UnitProfile snapshot and discarded with that observation.
+class ItemFitCache {
+public:
+    explicit ItemFitCache(const ItemEngine* engine) noexcept : engine_(engine) {}
+
+    [[nodiscard]] double get(const std::string& item_id, const UnitProfile& unit) {
+        if (!engine_) return -1.0;
+        auto& by_item = values_[unit.uuid];
+        const auto found = by_item.find(item_id);
+        if (found != by_item.end()) return found->second;
+        const double value = engine_->item_fit(item_id, unit);
+        by_item.emplace(item_id, value);
+        ++evaluation_count_;
+        return value;
+    }
+
+    [[nodiscard]] std::size_t evaluation_count() const noexcept {
+        return evaluation_count_;
+    }
+
+private:
+    const ItemEngine* engine_{nullptr};
+    std::unordered_map<std::string, std::unordered_map<std::string, double>> values_;
+    std::size_t evaluation_count_{0};
+};
+
 } // namespace tft::items

@@ -1343,6 +1343,8 @@ struct TFTEngine::Impl {
                 pending_anvil->kind == items::ItemAnvilKind::COMPLETED_ITEM ? 1.0f : 0.0f;
             const auto item_profiles = player_envs[i].item_engine
                 ? item_unit_profiles(i) : std::vector<items::UnitProfile>{};
+            // Scoped to this observation so changed unit stats/traits never reuse stale fits.
+            items::ItemFitCache item_fit_cache(player_envs[i].item_engine.get());
             for (std::size_t option_index = 0; option_index < kAnvilOptionCount; ++option_index) {
                 std::array<float, kAnvilOptionFeatureDim> features{};
                 if (pending_anvil && option_index < pending_anvil->options.size() && item_catalog) {
@@ -1364,7 +1366,7 @@ struct TFTEngine::Impl {
                                 candidate_item.recipe_components[1] != option_id) continue;
                             for (const auto& profile : item_profiles)
                                 best_fit = std::max(best_fit,
-                                    player_envs[i].item_engine->item_fit(candidate_item.id, profile));
+                                    item_fit_cache.get(candidate_item.id, profile));
                         }
                     } else {
                         const auto* definition = player_envs[i].item_engine->find(option_id);
@@ -1386,7 +1388,7 @@ struct TFTEngine::Impl {
                                     std::clamp(stats[stat], 0.0, 1.0));
                             for (const auto& profile : item_profiles)
                                 best_fit = std::max(best_fit,
-                                    player_envs[i].item_engine->item_fit(option_id, profile));
+                                    item_fit_cache.get(option_id, profile));
                         }
                     }
                     features[10] = static_cast<float>(
@@ -1528,29 +1530,40 @@ struct TFTEngine::Impl {
                     if (item_id && unit) {
                         const auto profile = profile_by_uuid.find(unit->uuid);
                         if (profile != profile_by_uuid.end())
-                            fit = item_state->item_fit(*item_id, *profile->second);
+                            fit = item_fit_cache.get(*item_id, *profile->second);
                     }
                     out[offset++] = static_cast<float>(std::clamp(fit / 50.0, 0.0, 1.0));
                 }
             }
 
+            // Recipe availability is symmetric: check each unordered pair once.
+            std::array<bool, 100> recipe_available_cache{};
+            if (item_state && item_catalog) {
+                for (std::size_t first = 0; first < 10; ++first) {
+                    for (std::size_t second = first; second < 10; ++second) {
+                        bool available = false;
+                        if (first < item_catalog->components.size() &&
+                            second < item_catalog->components.size()) {
+                            available = item_state->can_craft(
+                                item_catalog->components[first].first,
+                                item_catalog->components[second].first);
+                        }
+                        recipe_available_cache[first * 10 + second] = available;
+                        recipe_available_cache[second * 10 + first] = available;
+                    }
+                }
+            }
+
             for (std::size_t recipe = 0; recipe < recipe_item_ids.size(); ++recipe) {
                 const auto& item_id = recipe_item_ids[recipe];
-                const auto first_component = recipe / 10;
-                const auto second_component = recipe % 10;
-                const bool recipe_available = item_state && item_catalog &&
-                    first_component < item_catalog->components.size() &&
-                    second_component < item_catalog->components.size() &&
-                    item_state->can_craft(
-                        item_catalog->components[first_component].first,
-                        item_catalog->components[second_component].first);
+                const bool recipe_available = recipe_available_cache[recipe];
                 for (std::size_t target = 0; target < kBoardSlots + kBenchSlots; ++target) {
                     double fit = 0.0;
                     const auto* unit = item_target_unit(i, target);
                     if (recipe_available && !item_id.empty() && unit) {
                         const auto profile = profile_by_uuid.find(unit->uuid);
                         if (profile != profile_by_uuid.end())
-                            fit = item_state->item_fit(item_id, *profile->second);
+                            fit = item_fit_cache.get(item_id, *profile->second);
                     }
                     out[offset++] = static_cast<float>(std::clamp(fit / 50.0, 0.0, 1.0));
                 }

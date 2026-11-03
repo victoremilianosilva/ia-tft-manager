@@ -261,6 +261,25 @@ int main() {
             "player-scope items must not receive unit compatibility scores");
 
     ItemEngine engine({damage, guard, double_component});
+    {
+        ItemFitCache cache(&engine);
+        const double direct = engine.item_fit("damage_blade", carry);
+        require(cache.get("damage_blade", carry) == direct &&
+                cache.get("damage_blade", carry) == direct,
+                "cached item compatibility must preserve the exact direct score");
+        require(cache.evaluation_count() == 1,
+                "duplicate item/unit compatibility must be evaluated only once");
+        require(cache.get("damage_blade", tank) == engine.item_fit("damage_blade", tank) &&
+                cache.evaluation_count() == 2,
+                "cache keys must distinguish unit UUIDs");
+        UnitProfile changed = carry;
+        changed.attack_damage += 10.0;
+        ItemFitCache next_observation(&engine);
+        require(next_observation.get("damage_blade", changed) ==
+                    engine.item_fit("damage_blade", changed) &&
+                next_observation.evaluation_count() == 1,
+                "a new observation cache must recompute against its updated profile");
+    }
     require(!engine.add_component("unknown_component"),
             "component IDs outside the loaded recipe catalog must be rejected");
 
