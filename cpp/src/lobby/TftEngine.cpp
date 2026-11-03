@@ -4619,6 +4619,7 @@ StepResult TFTEngine::step(
     std::array<std::int32_t, kPlayersPerLobby> level_after_actions{};
     std::array<std::int32_t, kPlayersPerLobby> xp_before_actions{};
     std::array<std::int32_t, kPlayersPerLobby> xp_after_actions{};
+    std::vector<std::string> item_action_events;
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
         const auto transition = impl_->player_envs[i].step(*impl_, i, effective_actions[i]);
         if (!transition.acted) {
