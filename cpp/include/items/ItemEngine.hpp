@@ -185,7 +185,8 @@ public:
 
     // Called by game loot/armory events, never by the policy action decoder.
     bool add_completed_item(const std::string& item_id) {
-        if (!find(item_id)) {
+        const auto* definition = find(item_id);
+        if (!definition || !definition->unit_equipable) {
             ++metrics_.invalid_actions;
             return false;
         }
@@ -196,7 +197,8 @@ public:
     [[nodiscard]] bool can_craft(const std::string& first,
                                 const std::string& second) const {
         const auto recipe = craftable_item(first, second);
-        if (!recipe) return false;
+        const auto* definition = recipe ? find(*recipe) : nullptr;
+        if (!definition || !definition->unit_equipable) return false;
         const auto count = [this](const std::string& id) {
             return static_cast<std::size_t>(std::count(
                 components_.begin(), components_.end(), id));
@@ -207,7 +209,9 @@ public:
 
     [[nodiscard]] bool can_equip(const std::string& item_id,
                                 const std::string& unit_uuid) const {
-        return !unit_uuid.empty() && has_item(item_id) &&
+        const auto* definition = find(item_id);
+        return definition && definition->unit_equipable &&
+            !unit_uuid.empty() && has_item(item_id) &&
             equipped(unit_uuid).size() < kMaxItemsPerUnit;
     }
 
@@ -219,6 +223,11 @@ public:
         }
         const auto recipe = recipes_.find(recipe_key(first, second));
         if (recipe == recipes_.end()) {
+            ++metrics_.invalid_actions;
+            return std::nullopt;
+        }
+        const auto* crafted_definition = find(recipe->second);
+        if (!crafted_definition || !crafted_definition->unit_equipable) {
             ++metrics_.invalid_actions;
             return std::nullopt;
         }
@@ -254,7 +263,9 @@ public:
         const auto target_items = equipped_.find(target.uuid);
         const std::size_t target_count = target_items == equipped_.end()
             ? 0U : target_items->second.size();
-        if (!has_item(item_id) || target.uuid.empty() ||
+        const auto* definition = find(item_id);
+        if (!definition || !definition->unit_equipable ||
+            !has_item(item_id) || target.uuid.empty() ||
             target_count >= kMaxItemsPerUnit) {
             ++metrics_.invalid_actions;
             return false;
@@ -434,7 +445,7 @@ public:
     [[nodiscard]] double item_fit(const std::string& item_id,
                                   const UnitProfile& unit) const noexcept {
         const auto* item = find(item_id);
-        if (!item || unit.uuid.empty()) return -1.0;
+        if (!item || !item->unit_equipable || unit.uuid.empty()) return -1.0;
         const double effect_fit = item_effect_strength(item_id, unit);
         const double damage_fit =
             std::max(0.0, item->attack_damage) * std::max(0.0, unit.attack_damage) / 100.0 +
@@ -599,9 +610,11 @@ private:
         std::unordered_set<std::string> seen;
         seen.reserve(options.size());
         for (const auto& option : options) {
+            const auto* completed_item = kind == ItemAnvilKind::COMPLETED_ITEM
+                ? find(option) : nullptr;
             const bool known = kind == ItemAnvilKind::COMPONENT
                 ? component_ids_.contains(option)
-                : find(option) != nullptr;
+                : completed_item && completed_item->unit_equipable;
             if (option.empty() || !known || !seen.insert(option).second) {
                 ++metrics_.invalid_actions;
                 return false;
