@@ -64,6 +64,51 @@ def test_build_units_normalizes_engine_contract_and_filters_non_shop_units():
     assert unit["ability"]["name"] == "Test Spell"
 
 
+
+def test_build_units_precomputes_complete_combat_profile_from_source():
+    _, entries = select_set(source_data(), 18)
+    unit = build_units(entries)[0]
+    assert unit["role"] == 3
+    assert unit["role_name"] == "fighter"
+    assert unit["combat_profile"] == {
+        "role": 3, "role_name": "fighter",
+        "frontline": True, "backline": False,
+        "is_tank": False, "is_carry": False, "is_support": False,
+        "is_fighter": True, "is_assassin": False,
+        "attack_range": 1.0, "attack_speed": 0.7,
+        "attack_damage": 45.0, "armor": 30.0,
+        "magic_resist": 30.0, "max_hp": 700.0, "max_mana": 100.0,
+    }
+
+
+def test_precomputed_role_matches_native_scoring_rules():
+    from scripts.migrate_set_data import _infer_combat_role
+
+    stats = {
+        "attack_range": 4.0, "attack_speed": 0.9, "attack_damage": 80.0,
+        "armor": 20.0, "magic_resist": 20.0, "max_hp": 700.0, "max_mana": 100.0,
+    }
+    assert _infer_combat_role("Rapid fire projectile attack damage", stats) == (1, "carry")
+    tank = dict(stats, attack_range=1.0, attack_speed=0.5, attack_damage=40.0,
+                armor=60.0, magic_resist=60.0, max_hp=1200.0)
+    assert _infer_combat_role("Taunt and damage reduction", tank) == (0, "tank")
+    support = dict(stats, attack_range=2.0, attack_speed=0.5, attack_damage=40.0,
+                   armor=20.0, magic_resist=20.0, max_hp=700.0)
+    assert _infer_combat_role("Heal allies and grant mana", support) == (2, "support")
+    assassin = dict(stats, attack_range=1.0, attack_speed=0.5, attack_damage=40.0,
+                    armor=20.0, magic_resist=20.0, max_hp=700.0)
+    assert _infer_combat_role("Dash to the furthest enemy", assassin) == (4, "assassin")
+
+
+def test_empty_profile_uses_fighter_as_neutral_fallback():
+    from scripts.migrate_set_data import _infer_combat_role
+    empty = {key: 0.0 for key in (
+        "attack_range", "attack_speed", "attack_damage", "armor",
+        "magic_resist", "max_hp", "max_mana",
+    )}
+    assert _infer_combat_role("", empty) == (3, "fighter")
+
+
 def test_build_traits_references_units_by_canonical_api_name():
     _, entries = select_set(source_data(), 18)
     units = build_units(entries)
