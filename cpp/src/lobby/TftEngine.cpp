@@ -1990,8 +1990,9 @@ struct TFTEngine::Impl {
         for (const auto& unit : env.bench) add_unit(unit, false);
         add_int(env.economy.level);
 
-        const StrategyInfo active = env.strategy.empty()
-            ? StrategyInfo{} : env.strategy.back();
+        const StrategyInfo empty_strategy{};
+        const StrategyInfo& active = env.strategy.empty()
+            ? empty_strategy : env.strategy.back();
         add_int(active.planned_main_carry_id);
         add_string(active.composition_direction);
         for (const auto& [trait, weight] : active.composition_focus_weights) {
