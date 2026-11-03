@@ -3805,34 +3805,76 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
 
                 if (definition) {
                     const std::string sold_uuid = unit.uuid;
+                    const auto sell_value = EconomyEngine::get_sell_value(
+                        definition->cost, unit.star);
                     const auto recent = std::find_if(
                         this->recent_purchases.rbegin(), this->recent_purchases.rend(),
                         [&sold_uuid](const RecentPurchase& purchase) {
                             return !sold_uuid.empty() && purchase.uuid == sold_uuid;
                         });
                     if (recent != this->recent_purchases.rend()) {
-                        // A changed direction label alone is not proof that the
-                        // purchase was strategically useful. Only concrete exceptions
-                        // (upgrade, deployment, or a previously full bench) exempt it.
                         const bool bench_was_full =
                             old_bench_count >= static_cast<int>(kBenchSlots);
-                        // A fresh purchase sold within the action window is a
-                        // reversal unless it was deployed, merged, or required
-                        // to resolve a full bench. Do not limit this to low-fit
-                        // purchases: the buy/sell loop itself wastes liquidity.
-                        const bool immediate_reversal =
-                            this->action_serial - recent->action_serial <=
-                                reward_model::kRecentPurchaseHistoryActions &&
-                            !recent->completed_upgrade &&
-                            !recent->was_deployed &&
-                            !bench_was_full;
-                        if (immediate_reversal ||
-                            reward_model::should_penalize_reversed_purchase(
+                        const auto& current_strategy = this->strategy.empty()
+                            ? StrategyInfo{} : this->strategy.back();
+                        const bool still_core_or_planned =
+                            std::find(current_strategy.core_unit_ids.begin(),
+                                      current_strategy.core_unit_ids.end(),
+                                      unit.champion_internal_id) != current_strategy.core_unit_ids.end() ||
+                            std::find(current_strategy.planned_unit_ids.begin(),
+                                      current_strategy.planned_unit_ids.end(),
+                                      unit.champion_internal_id) != current_strategy.planned_unit_ids.end();
+                        const bool composition_changed =
+                            !recent->comp_direction.empty() &&
+                            !current_strategy.composition_direction.empty() &&
+                            recent->comp_direction != current_strategy.composition_direction &&
+                            !still_core_or_planned;
+
+                        // An experiment is justified when a later, better-fit
+                        // purchase is still owned. This preserves flexibility:
+                        // discovering a stronger option is not a buy/sell mistake.
+                        const auto is_still_owned = [this](const std::string& uuid) {
+                            if (uuid.empty()) return false;
+                            const auto in_board = std::any_of(
+                                this->board.begin(), this->board.end(),
+                                [&uuid](const auto& candidate) {
+                                    return candidate && candidate->uuid == uuid;
+                                });
+                            const auto in_bench = std::any_of(
+                                this->bench.begin(), this->bench.end(),
+                                [&uuid](const auto& candidate) {
+                                    return candidate && candidate->uuid == uuid;
+                                });
+                            return in_board || in_bench;
+                        };
+                        const bool better_alternative_found = std::any_of(
+                            this->recent_purchases.begin(), this->recent_purchases.end(),
+                            [&](const RecentPurchase& candidate) {
+                                return candidate.uuid != sold_uuid &&
+                                    candidate.action_serial > recent->action_serial &&
+                                    candidate.fit_score >= recent->fit_score + 0.10 &&
+                                    is_still_owned(candidate.uuid);
+                            });
+
+                        // Selling to cross a meaningful spending threshold is an
+                        // economic decision, not an impulsive reversal. The sale
+                        // must make a 2g reroll or 4g XP purchase affordable.
+                        const int gold_after_sale = old_gold + sell_value;
+                        const bool economic_need =
+                            (old_gold < EconomyEngine::REROLL_COST &&
+                             gold_after_sale >= EconomyEngine::REROLL_COST) ||
+                            (old_gold < EconomyEngine::BUY_XP_COST &&
+                             gold_after_sale >= EconomyEngine::BUY_XP_COST);
+
+                        if (reward_model::should_penalize_reversed_purchase(
                                 recent->fit_score,
                                 recent->completed_upgrade,
                                 recent->was_deployed,
                                 bench_was_full,
-                                false)) {
+                                composition_changed,
+                                recent->built_pair,
+                                better_alternative_found,
+                                economic_need)) {
                             purchase_was_recently_reversed = true;
                             reversed_purchase_prior_reward = recent->reward;
                         }
@@ -3868,12 +3910,6 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     // 1-star copies also represent a concrete route to another 2-star.
                     sold_unit_protects_upgrade = reward_model::protects_upgrade_path(
                         unit.star, same_star_copies, one_star_copies);
-                    const auto sell_value =
-                        EconomyEngine::get_sell_value(
-                            definition->cost,
-                            unit.star
-                        );
-
                     // Só confirma a venda se a devolução ao pool
                     // for aceita.
                     bool returned_all_copies = true;
