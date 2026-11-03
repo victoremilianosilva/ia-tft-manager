@@ -15,8 +15,20 @@
 namespace tft {
 namespace {
 
+struct GenericEffectDescriptor {
+    const CombatEffectDefinition* effect = nullptr;
+    std::string prefix;
+    std::string delayed_key;
+    std::string conditional_key;
+};
+
 struct RuntimeUnit {
     CombatUnit unit;
+    // Immutable descriptors point into unit.items/unit.traits, whose effect
+    // vectors remain stable for the lifetime of this combat simulation.
+    std::vector<GenericEffectDescriptor> generic_effect_descriptors;
+    std::vector<std::size_t> delayed_effect_indices;
+    std::vector<std::size_t> conditional_effect_indices;
     float initial_hp = 0.0f;
     float damage_dealt = 0.0f;
     float damage_taken = 0.0f;
@@ -509,8 +521,60 @@ void visit_generic_effects(CombatUnit& unit, Callback callback) {
     }
 }
 
+void prepare_generic_effect_descriptors(RuntimeUnit& runtime) {
+    auto& unit = runtime.unit;
+    std::size_t total = 0;
+    for (const auto& item : unit.items) total += item.effects.size();
+    for (const auto& trait : unit.traits)
+        if (trait.active || trait.active_count > 0) total += trait.effects.size();
+
+    runtime.generic_effect_descriptors.reserve(total);
+    runtime.delayed_effect_indices.reserve(total);
+    runtime.conditional_effect_indices.reserve(total);
+
+    const auto append = [&](const CombatEffectDefinition& effect, std::string prefix) {
+        GenericEffectDescriptor descriptor;
+        descriptor.effect = &effect;
+        descriptor.prefix = std::move(prefix);
+        if (effect.trigger == "after_delay" && effect.operation == "add_stat") {
+            descriptor.delayed_key = descriptor.prefix + "delayed:" + effect.stat + ":" +
+                std::to_string(effect.delay) + ":" + std::to_string(effect.value);
+        }
+        if (effect.trigger == "while_hp_below" && effect.operation == "add_stat" &&
+            effect.health_threshold > 0.0f) {
+            descriptor.conditional_key = descriptor.prefix + "conditional:" + effect.stat + ":" +
+                std::to_string(effect.health_threshold) + ":" + std::to_string(effect.value);
+        }
+        const std::size_t index = runtime.generic_effect_descriptors.size();
+        runtime.generic_effect_descriptors.push_back(std::move(descriptor));
+        const auto& stored = runtime.generic_effect_descriptors.back();
+        if (!stored.delayed_key.empty()) runtime.delayed_effect_indices.push_back(index);
+        if (!stored.conditional_key.empty()) runtime.conditional_effect_indices.push_back(index);
+    };
+
+    for (std::size_t item_index = 0; item_index < unit.items.size(); ++item_index) {
+        const auto& item = unit.items[item_index];
+        const std::string prefix = "item:" + item.api_name + ":" +
+            std::to_string(item_index) + ":";
+        for (const auto& effect : item.effects) append(effect, prefix);
+    }
+    for (std::size_t trait_index = 0; trait_index < unit.traits.size(); ++trait_index) {
+        const auto& trait = unit.traits[trait_index];
+        if (!trait.active && trait.active_count <= 0) continue;
+        const std::string prefix = "trait:" + trait.api_name + ":" +
+            std::to_string(trait_index) + ":";
+        for (const auto& effect : trait.effects) append(effect, prefix);
+    }
+}
+
+template <typename Callback>
+void visit_generic_effects(RuntimeUnit& runtime, Callback callback) {
+    for (const auto& descriptor : runtime.generic_effect_descriptors)
+        callback(*descriptor.effect, descriptor.prefix);
+}
+
 void grant_on_kill_effect_charges(RuntimeUnit& actor) {
-    visit_generic_effects(actor.unit, [&](const CombatEffectDefinition& effect,
+    visit_generic_effects(actor, [&](const CombatEffectDefinition& effect,
                                          const std::string& prefix) {
         if (effect.trigger != "on_kill" || effect.operation != "grant_charges" ||
             effect.stack_key.empty() || !effect_condition_matches(actor.unit, effect)) return;
@@ -536,25 +600,21 @@ float apply_charged_attack_healing(RuntimeUnit& actor, float now) {
 }
 
 void apply_delayed_effects(RuntimeUnit& runtime, float now) {
-    visit_generic_effects(runtime.unit, [&](const CombatEffectDefinition& effect,
-                                           const std::string& prefix) {
-        if (effect.trigger != "after_delay" || effect.operation != "add_stat" ||
-            now < effect.delay || !effect_condition_matches(runtime.unit, effect)) return;
-        const std::string key = prefix + "delayed:" + effect.stat + ":" +
-            std::to_string(effect.delay) + ":" + std::to_string(effect.value);
-        if (runtime.generic_effects_applied.insert(key).second)
+    for (const std::size_t index : runtime.delayed_effect_indices) {
+        const auto& descriptor = runtime.generic_effect_descriptors[index];
+        const auto& effect = *descriptor.effect;
+        if (now < effect.delay || !effect_condition_matches(runtime.unit, effect)) continue;
+        if (runtime.generic_effects_applied.insert(descriptor.delayed_key).second)
             apply_effect_stat(runtime.unit, effect);
-    });
+    }
 }
 
 void update_conditional_effects(RuntimeUnit& runtime, float now) {
-    visit_generic_effects(runtime.unit, [&](const CombatEffectDefinition& effect,
-                                           const std::string& prefix) {
-        if (effect.trigger != "while_hp_below" || effect.operation != "add_stat" ||
-            effect.health_threshold <= 0.0f ||
-            !effect_condition_matches(runtime.unit, effect)) return;
-        const std::string key = prefix + "conditional:" + effect.stat + ":" +
-            std::to_string(effect.health_threshold) + ":" + std::to_string(effect.value);
+    for (const std::size_t index : runtime.conditional_effect_indices) {
+        const auto& descriptor = runtime.generic_effect_descriptors[index];
+        const auto& effect = *descriptor.effect;
+        if (!effect_condition_matches(runtime.unit, effect)) continue;
+        const auto& key = descriptor.conditional_key;
         const bool below = runtime.unit.hp / runtime.unit.max_hp <= effect.health_threshold;
         const bool active = runtime.generic_effects_active.contains(key);
         const bool triggered = runtime.generic_effects_triggered.contains(key);
@@ -578,7 +638,7 @@ void update_conditional_effects(RuntimeUnit& runtime, float now) {
                 if (condition_ended) runtime.generic_effects_triggered.erase(key);
             }
         }
-    });
+    }
 }
 
 void apply_ally_shield_effects(std::vector<RuntimeUnit>& units,
@@ -587,7 +647,7 @@ void apply_ally_shield_effects(std::vector<RuntimeUnit>& units,
     const auto team = units[shielded_index].unit.team;
     for (auto& recipient : units) {
         if (recipient.unit.team != team || !is_alive(recipient)) continue;
-        visit_generic_effects(recipient.unit,
+        visit_generic_effects(recipient,
             [&](const CombatEffectDefinition& effect, const std::string&) {
                 if (effect.trigger == "on_ally_shield" &&
                     effect.operation == "add_stat" &&
@@ -845,6 +905,10 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
     // teams are present, so ally targeting is independent of input order.
     for (auto& runtime : units) apply_start_combat_effects(runtime.unit);
     apply_start_combat_team_effects(units);
+
+    // Effects are immutable during combat. Build their ordered descriptors
+    // once so event updates reuse stable IDs and only visit relevant effects.
+    for (auto& runtime : units) prepare_generic_effect_descriptors(runtime);
 
     std::unordered_map<int, std::size_t> index_by_id;
     index_by_id.reserve(units.size());
