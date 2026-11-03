@@ -163,6 +163,19 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
                 throw std::invalid_argument(
                     "Unsupported combat effect target: " + effect.target);
             }
+            if ((effect.operation == "mana_regen" ||
+                 effect.operation == "grant_charges" ||
+                 effect.operation == "heal_max_hp_pct") &&
+                !effect.target.empty() && effect.target != "self") {
+                throw std::invalid_argument(
+                    "This combat effect operation only supports the self target: " +
+                    effect.operation);
+            }
+            if (effect.operation == "bonus_damage" &&
+                effect.target == "allies_same_row_within_1") {
+                throw std::invalid_argument(
+                    "bonus_damage does not support allies_same_row_within_1");
+            }
             if (effect.operation == "add_stat") {
                 const bool supported_stat =
                     effect.stat == "attack_damage" ||
