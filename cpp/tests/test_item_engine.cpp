@@ -86,7 +86,7 @@ int main() {
     require(loaded_engine.add_completed_item("catalog_emblem"),
             "non-craftable emblem should be a valid inventory item");
     UnitProfile emblem_target{"emblem-target", 1, 2, false, true,
-                              30.0, 0.8, 20.0, 900.0, 30.0, 30.0, 0.8};
+                              30.0, 0.8, 20.0, 900.0, 30.0, 30.0, 0.8, {}, {}};
     require(loaded_engine.item_fit("catalog_emblem", emblem_target) > 0.0,
             "trait emblem should have strategic value despite zero numeric stats");
     auto planned_emblem_target = emblem_target;
@@ -175,8 +175,8 @@ int main() {
             std::abs(combat_damage.omnivamp - 0.10f) < 0.001f,
             "item catalog definition should map to combat item stats");
 
-    UnitProfile carry{"carry-1", 2, 1, false, true, 80.0, 1.2, 0.0, 900.0, 30.0, 30.0, 0.9};
-    UnitProfile tank{"tank-1", 2, 0, true, false, 35.0, 0.7, 0.0, 1800.0, 70.0, 60.0, 0.8};
+    UnitProfile carry{"carry-1", 2, 1, false, true, 80.0, 1.2, 0.0, 900.0, 30.0, 30.0, 0.9, {}, {}};
+    UnitProfile tank{"tank-1", 2, 0, true, false, 35.0, 0.7, 0.0, 1800.0, 70.0, 60.0, 0.8, {}, {}};
 
     // Supported special passives must contribute to compatibility even when
     // the item has no flat stats. Offensive passives favor carries; defensive
@@ -366,9 +366,9 @@ int main() {
     // Auto-merge lifecycle: equipment moves to the upgraded unit; if the
     // three-slot cap is reached, overflow returns to the bag instead of vanishing.
     ItemEngine merge_engine({damage, guard});
-    UnitProfile merge_target{"merge-target", 2, 1, false, true, 80.0, 1.2, 0.0, 900.0, 30.0, 30.0, 0.9};
-    UnitProfile merge_source_a{"merge-source-a", 1, 0, true, false, 35.0, 0.7, 0.0, 1800.0, 70.0, 60.0, 0.8};
-    UnitProfile merge_source_b{"merge-source-b", 1, 0, true, false, 35.0, 0.7, 0.0, 1800.0, 70.0, 60.0, 0.8};
+    UnitProfile merge_target{"merge-target", 2, 1, false, true, 80.0, 1.2, 0.0, 900.0, 30.0, 30.0, 0.9, {}, {}};
+    UnitProfile merge_source_a{"merge-source-a", 1, 0, true, false, 35.0, 0.7, 0.0, 1800.0, 70.0, 60.0, 0.8, {}, {}};
+    UnitProfile merge_source_b{"merge-source-b", 1, 0, true, false, 35.0, 0.7, 0.0, 1800.0, 70.0, 60.0, 0.8, {}, {}};
     for (const auto* id : {"damage_blade", "damage_blade", "guard_plate", "damage_blade"}) {
         require(merge_engine.add_completed_item(id), "merge fixture item enters inventory");
     }
