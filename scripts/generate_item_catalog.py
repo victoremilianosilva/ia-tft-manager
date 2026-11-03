@@ -399,11 +399,17 @@ def _combat_effect_is_supported(effect: Any) -> bool:
         "grant_charges": {"on_kill"},
         "mana_regen": {"", "combat_start"},
     }
+    if not isinstance(operation, str) or not isinstance(trigger, str):
+        return False
     if operation not in pairs or trigger not in pairs[operation]:
         return False
 
     target = effect.get("target", "")
-    if target not in {"", "self", "allies", "allies_same_row_within_1"}:
+    if not isinstance(target, str) or target not in {"", "self", "allies", "allies_same_row_within_1"}:
+        return False
+    if operation in {"mana_regen", "grant_charges", "heal_max_hp_pct"} and target not in {"", "self"}:
+        return False
+    if operation == "bonus_damage" and target == "allies_same_row_within_1":
         return False
     condition = effect.get("condition", "")
     if condition not in {
