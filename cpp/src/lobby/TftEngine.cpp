@@ -4671,6 +4671,8 @@ StepResult TFTEngine::step(
     // ========================================================
 
     std::vector<std::string> round_events;
+    round_events.insert(round_events.end(),
+                        item_action_events.begin(), item_action_events.end());
     bool round_resolved = false;
 
     // In viewer/runtime mode the wall-clock timer owns the preparation phase.
