@@ -1,6 +1,7 @@
 #pragma once
 #include <algorithm>
 #include <cctype>
+#include <initializer_list>
 #include <string>
 #include <string_view>
 namespace tft::strategy {
