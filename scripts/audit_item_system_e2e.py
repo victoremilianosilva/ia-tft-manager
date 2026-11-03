@@ -312,7 +312,8 @@ def run_audit(
                             item_pipeline_counts[event_type] += 1
                         if event_type == "ITEM_ACTION_APPLIED":
                             event_fields = {}
-                            for field in event.split(","):
+                            event_payload = event.split(":", 1)[1] if ":" in event else event
+                            for field in event_payload.split(","):
                                 key, separator, value = field.strip().partition("=")
                                 if separator:
                                     event_fields[key] = value
