@@ -873,13 +873,13 @@
         "generic_stat_keys": [
           "AP",
           "AS",
-          "Armor",
-          "DamageReduction"
+          "Armor"
         ],
         "generic_combat_keys": [
           "AD"
         ],
         "not_generic_normalized_keys": [
+          "DamageReduction",
           "HealthThreshold",
           "MissingHealthRestore",
           "StealthDuration"
