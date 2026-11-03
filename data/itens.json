@@ -151,7 +151,8 @@
           "FrontlineResists",
           "ManaPercIncrease"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_ArchangelsStaff",
@@ -214,7 +215,8 @@
           "APPerInterval",
           "IntervalSeconds"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_Bloodthirster",
@@ -292,7 +294,8 @@
           "ShieldDuration",
           "ShieldHealthPercent"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_BlueBuff",
@@ -363,7 +366,8 @@
         "not_generic_normalized_keys": [
           "ModifiedADAP"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_BrambleVest",
@@ -434,7 +438,8 @@
           "PercentMaxHP",
           "{6688a0d5}"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_Crownguard",
@@ -496,7 +501,8 @@
           "ShieldDuration",
           "ShieldSize"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_Deathblade",
@@ -558,7 +564,8 @@
           "BonusDamage",
           "{1543aa48}"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_DragonsClaw",
@@ -617,7 +624,8 @@
           "PercentHealthDamage",
           "PercentMaxHP"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_ForceOfNature",
@@ -666,7 +674,8 @@
           "MaxArmySizeIncrease",
           "PercentGoldChance"
         ]
-      }
+      },
+      "unit_equipable": false
     },
     {
       "id": "TFT_Item_FrozenHeart",
@@ -741,7 +750,8 @@
           "ShieldHealthPercent",
           "TriggerMana"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_GargoyleStoneplate",
@@ -806,7 +816,8 @@
           "SizeIncrease",
           "{4dc0582f}"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_GuardianAngel",
@@ -884,7 +895,8 @@
           "MissingHealthRestore",
           "StealthDuration"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_GuinsoosRageblade",
@@ -937,7 +949,8 @@
         "not_generic_normalized_keys": [
           "AttackSpeedPerStack"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_HextechGunblade",
@@ -1014,7 +1027,8 @@
         "not_generic_normalized_keys": [
           "AllyHealing"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_InfinityEdge",
@@ -1074,7 +1088,8 @@
           "AD"
         ],
         "not_generic_normalized_keys": []
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_IonicSpark",
@@ -1139,7 +1154,8 @@
           "MRShred",
           "ManaRatio"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_JeweledGauntlet",
@@ -1189,7 +1205,8 @@
         ],
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_LastWhisper",
@@ -1258,7 +1275,8 @@
           "ArmorBreakDuration",
           "ArmorReductionPercent"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_Leviathan",
@@ -1320,7 +1338,8 @@
           "BaseManaOnHit",
           "ManaOnCrit"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_MadredsBloodrazor",
@@ -1392,7 +1411,8 @@
           "{1543aa48}",
           "{abb9f4ce}"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_Morellonomicon",
@@ -1467,7 +1487,8 @@
           "MonsterCap",
           "TicksPerSecond"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_NightHarvester",
@@ -1529,7 +1550,8 @@
           "EmpoweredDurability",
           "ThresholdForEmpower"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_PowerGauntlet",
@@ -1594,7 +1616,8 @@
           "MaxStacks",
           "{1543aa48}"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_Quicksilver",
@@ -1653,7 +1676,8 @@
           "ProcAttackSpeed",
           "SpellShieldDuration"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_RabadonsDeathcap",
@@ -1706,7 +1730,8 @@
           "BonusDamage",
           "{1543aa48}"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_RapidFireCannon",
@@ -1774,7 +1799,8 @@
           "{1543aa48}",
           "{9f5117db}"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_RedBuff",
@@ -1845,7 +1871,8 @@
           "ICD",
           "MonsterCap"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_Redemption",
@@ -1914,7 +1941,8 @@
           "MissingHealthHeal",
           "{cd951938}"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_RunaansHurricane",
@@ -1986,7 +2014,8 @@
           "ASCapstone",
           "MaxStacks"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_SpearOfShojin",
@@ -2057,7 +2086,8 @@
         "not_generic_normalized_keys": [
           "FlatManaRestore"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_SpectralGauntlet",
@@ -2119,7 +2149,8 @@
           "BonusResists",
           "HexRange"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_StatikkShiv",
@@ -2185,7 +2216,8 @@
           "MRShred",
           "MRShredDuration"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_SteraksGage",
@@ -2254,7 +2286,8 @@
           "PercentHealthShield",
           "ShieldDuration"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_TacticiansRing",
@@ -2306,7 +2339,8 @@
           "PercentGoldChance",
           "Timer"
         ]
-      }
+      },
+      "unit_equipable": false
     },
     {
       "id": "TFT_Item_TacticiansScepter",
@@ -2355,7 +2389,8 @@
           "MaxArmySizeIncrease",
           "PercentGoldChance"
         ]
-      }
+      },
+      "unit_equipable": false
     },
     {
       "id": "TFT_Item_ThiefsGloves",
@@ -2404,7 +2439,8 @@
         ],
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_TitansResolve",
@@ -2466,7 +2502,8 @@
           "StackingAD",
           "StackingSP"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_UnstableConcoction",
@@ -2538,7 +2575,8 @@
           "StatOmnivamp_NotStatBar",
           "{f23e83fc}"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "TFT_Item_WarmogsArmor",
@@ -2588,7 +2626,8 @@
         "not_generic_normalized_keys": [
           "BonusPercentHP"
         ]
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "DA_18_EmblemBlackthorn",
@@ -2627,7 +2666,8 @@
         "generic_stat_keys": [],
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "DA_18_EmblemBlossom",
@@ -2666,7 +2706,8 @@
         "generic_stat_keys": [],
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "DA_18_EmblemBrawler",
@@ -2705,7 +2746,8 @@
         "generic_stat_keys": [],
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "DA_18_EmblemElderwood",
@@ -2744,7 +2786,8 @@
         "generic_stat_keys": [],
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "DA_18_EmblemExecutioner",
@@ -2783,7 +2826,8 @@
         "generic_stat_keys": [],
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "DA_18_EmblemFae",
@@ -2822,7 +2866,8 @@
         "generic_stat_keys": [],
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "DA_18_EmblemHunter",
@@ -2861,7 +2906,8 @@
         "generic_stat_keys": [],
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "DA_18_EmblemInferno",
@@ -2900,7 +2946,8 @@
         "generic_stat_keys": [],
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "DA_18_EmblemInvoker",
@@ -2939,7 +2986,8 @@
         "generic_stat_keys": [],
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "DA_18_EmblemLunar",
@@ -2978,7 +3026,8 @@
         "generic_stat_keys": [],
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "DA_18_EmblemPrimal",
@@ -3017,7 +3066,8 @@
         "generic_stat_keys": [],
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "DA_18_EmblemRapidfire",
@@ -3056,7 +3106,8 @@
         "generic_stat_keys": [],
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "DA_18_EmblemSlayer",
@@ -3095,7 +3146,8 @@
         "generic_stat_keys": [],
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "DA_18_EmblemSpellweaver",
@@ -3134,7 +3186,8 @@
         "generic_stat_keys": [],
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "DA_18_EmblemSprykin",
@@ -3173,7 +3226,8 @@
         "generic_stat_keys": [],
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
-      }
+      },
+      "unit_equipable": true
     },
     {
       "id": "DA_18_EmblemVanguard",
@@ -3212,7 +3266,8 @@
         "generic_stat_keys": [],
         "generic_combat_keys": [],
         "not_generic_normalized_keys": []
-      }
+      },
+      "unit_equipable": true
     }
   ],
   "normalization_notes": [
