@@ -13,7 +13,8 @@
       "source_api_name": "TFT_Item_BFSword",
       "source_effects": {
         "AD": 0.10000000149011612
-      }
+      },
+      "pve_loot_eligible": true
     },
     {
       "id": "TFT_Item_ChainVest",
@@ -21,13 +22,15 @@
       "source_api_name": "TFT_Item_ChainVest",
       "source_effects": {
         "Armor": 20
-      }
+      },
+      "pve_loot_eligible": true
     },
     {
       "id": "TFT_Item_FryingPan",
       "name": "Frigideira",
       "source_api_name": "TFT_Item_FryingPan",
-      "source_effects": {}
+      "source_effects": {},
+      "pve_loot_eligible": false
     },
     {
       "id": "TFT_Item_GiantsBelt",
@@ -35,7 +38,8 @@
       "source_api_name": "TFT_Item_GiantsBelt",
       "source_effects": {
         "Health": 150
-      }
+      },
+      "pve_loot_eligible": true
     },
     {
       "id": "TFT_Item_NeedlesslyLargeRod",
@@ -43,7 +47,8 @@
       "source_api_name": "TFT_Item_NeedlesslyLargeRod",
       "source_effects": {
         "AP": 10
-      }
+      },
+      "pve_loot_eligible": true
     },
     {
       "id": "TFT_Item_NegatronCloak",
@@ -51,7 +56,8 @@
       "source_api_name": "TFT_Item_NegatronCloak",
       "source_effects": {
         "MagicResist": 20
-      }
+      },
+      "pve_loot_eligible": true
     },
     {
       "id": "TFT_Item_RecurveBow",
@@ -59,7 +65,8 @@
       "source_api_name": "TFT_Item_RecurveBow",
       "source_effects": {
         "AS": 10
-      }
+      },
+      "pve_loot_eligible": true
     },
     {
       "id": "TFT_Item_SparringGloves",
@@ -67,7 +74,8 @@
       "source_api_name": "TFT_Item_SparringGloves",
       "source_effects": {
         "CritChance": 20
-      }
+      },
+      "pve_loot_eligible": true
     },
     {
       "id": "TFT_Item_Spatula",
@@ -75,7 +83,8 @@
       "source_api_name": "TFT_Item_Spatula",
       "source_effects": {
         "{fe9818ef}": 5
-      }
+      },
+      "pve_loot_eligible": false
     },
     {
       "id": "TFT_Item_TearOfTheGoddess",
@@ -83,7 +92,8 @@
       "source_api_name": "TFT_Item_TearOfTheGoddess",
       "source_effects": {
         "ManaRegen": 1
-      }
+      },
+      "pve_loot_eligible": true
     }
   ],
   "items": [
