@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
 
         if (catalog.pve_loot_components.size() != 8) {
             std::cerr << "active set must expose exactly eight ordinary PvE components; got "
-                      << catalog.pve_loot_components.size() << '\\n';
+                      << catalog.pve_loot_components.size() << '\n';
             return 12;
         }
         std::set<std::string> item_ids;
@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
                 [&](const auto& item) { return item.id == player_scope_id; });
             if (found == catalog.items.end() || found->unit_equipable) {
                 std::cerr << "player-scope item must not be unit equipment: "
-                          << player_scope_id << '\\n';
+                          << player_scope_id << '\n';
                 return 11;
             }
         }
