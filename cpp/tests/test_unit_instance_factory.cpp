@@ -7,7 +7,7 @@
 #include <stdexcept>
 
 int main(int argc, char** argv) {
-    assert(argc == 2);
+    (void)argc; // argc is otherwise referenced only by assert in Release.
 
     tft::ChampionCatalog catalog(argv[1]);
     tft::UnitInstanceFactory factory(catalog, 12345);
@@ -41,6 +41,7 @@ int main(int argc, char** argv) {
     }
 
     assert(rejected);
+    (void)rejected; // assert may be compiled out by the build configuration.
 
     std::cout << "UnitInstanceFactory: OK\n";
     return 0;
