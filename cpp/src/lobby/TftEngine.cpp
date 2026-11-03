@@ -1620,10 +1620,14 @@ struct TFTEngine::Impl {
             const auto add_owned_traits = [&](const UnitInstance& existing) {
                 const auto* existing_def = catalog->find_by_id(existing.champion_internal_id);
                 if (!existing_def) return;
-                std::unordered_set<std::string> unique_traits;
-                unique_traits.reserve(existing_def->traits.size());
-                for (const auto& trait : existing_def->traits) {
-                    if (unique_traits.insert(trait).second)
+                for (std::size_t trait_index = 0;
+                     trait_index < existing_def->traits.size(); ++trait_index) {
+                    const auto& trait = existing_def->traits[trait_index];
+                    // Count a trait once per unit, matching the old find()
+                    // semantics even if malformed catalog data repeats it.
+                    if (std::find(existing_def->traits.begin(),
+                                  existing_def->traits.begin() + trait_index,
+                                  trait) == existing_def->traits.begin() + trait_index)
                         ++owned_trait_presence[trait];
                 }
             };
