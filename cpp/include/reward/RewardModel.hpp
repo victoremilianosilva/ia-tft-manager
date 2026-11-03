@@ -699,7 +699,7 @@ inline double upgrade_path_strength(
         if (same_star_copies >= 1)
             return std::min(1.0, 0.65 + 0.15 * (same_star_copies - 1));
         if (one_star_copies >= 3)
-            return std::min(0.45, 0.15 * (one_star_copies / 3));
+            return std::min(0.45, 0.15 * static_cast<double>(one_star_copies));
     }
     return 0.0;
 }
