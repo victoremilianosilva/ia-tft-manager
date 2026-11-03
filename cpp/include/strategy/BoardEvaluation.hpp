@@ -247,7 +247,7 @@ public:
             else if (!context.direction.empty()) result.strategic_fit_score -= 0.025;
         }
         const int frontline = tanks + fighters;
-        const int expected_frontline = result.unit_count >= 6 ? 2 : 1;
+        const int expected_frontline = result.specialized_assassin_board ? 0 : (result.unit_count >= 6 ? 2 : 1);
         if (frontline < expected_frontline) {
             result.missing_frontline_count = expected_frontline - frontline;
             penalty += maturity * 0.12 * result.missing_frontline_count;
