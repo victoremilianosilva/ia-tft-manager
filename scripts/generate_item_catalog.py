@@ -41,16 +41,6 @@ UTILITY_EFFECTS = {
     "StealthDuration",
 }
 
-GENERIC_STAT_SOURCE_KEYS = {
-    "AS", "AttackSpeed", "AP", "AbilityPower", "CritChance",
-    "CriticalStrikeChance", "CritDamage", "CriticalStrikeDamage",
-    "Health", "HP", "BonusHealth", "Armor", "MagicResist", "MR",
-    "Mana", "StatOmnivamp", "Omnivamp", "DamageAmp",
-    "DamageAmplification", "DamageReduction",
-}
-GENERIC_COMBAT_SOURCE_KEYS = {"AD", "BonusAD", "ManaRegen"}
-
-
 def _effect_coverage(effects: dict[str, Any]) -> dict[str, list[str]]:
     """Expose source keys that still need an explicit generic or legacy handler audit."""
     active_keys = sorted(
