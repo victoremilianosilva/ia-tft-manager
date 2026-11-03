@@ -144,7 +144,7 @@ int main(int argc, char** argv) {
             std::cerr << "strong, mapped meta comp with owned core units and good statistics "
                          "should beat native planner even without live item/position context: "
                       << (meta_audit == meta_without_live_context.acquisition_notes.end()
-                          ? "no audit note" : *meta_audit) << '\\n';
+                          ? "no audit note" : *meta_audit) << '\n';
             return 6;
         }
     }
