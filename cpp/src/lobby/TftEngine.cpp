@@ -1925,18 +1925,41 @@ struct TFTEngine::Impl {
     strategy::BoardEvaluationResult board_evaluation(
         std::size_t player_index) const {
         std::vector<int> board_roles(kBoardSlots, -1);
+        std::vector<strategy::BoardUnitProfile> board_profiles(kBoardSlots);
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
             const auto& unit = player_envs[player_index].board[slot];
             if (!unit) continue;
             const auto* def = catalog->find_by_id(unit->champion_internal_id);
             if (def) {
-                board_roles[slot] =
-                    std::clamp(def->combat_profile.role, 0, 4);
+                board_roles[slot] = std::clamp(def->combat_profile.role, 0, 4);
+                auto& profile = board_profiles[slot];
+                profile.champion_id = unit->champion_internal_id;
+                profile.role = board_roles[slot];
+                profile.star = unit->star;
+                profile.cost = def->cost;
+                profile.traits = def->traits;
+                // Emblems and other trait-granting items are part of the
+                // effective board identity for synergy and strategic fit.
+                for (const auto& item : unit->items) {
+                    if (!item.grants_trait.empty() &&
+                        std::find(profile.traits.begin(), profile.traits.end(),
+                                  item.grants_trait) == profile.traits.end())
+                        profile.traits.push_back(item.grants_trait);
+                }
             }
         }
 
         const StrategyInfo active_strategy = player_envs[player_index].strategy.empty()
             ? StrategyInfo{} : player_envs[player_index].strategy.back();
+        strategy::StrategicBoardContext strategic_context;
+        strategic_context.level = player_envs[player_index].economy.level;
+        strategic_context.direction = active_strategy.composition_direction;
+        strategic_context.focus_weights = active_strategy.composition_focus_weights;
+        strategic_context.core_unit_ids = active_strategy.core_unit_ids;
+        strategic_context.planned_unit_ids = active_strategy.planned_unit_ids;
+        strategic_context.core_traits = active_strategy.core_traits;
+        strategic_context.planned_traits = active_strategy.planned_traits;
+        strategic_context.trait_milestones = trait_milestones;
         std::vector<int> main_carry_positions;
         int fallback_carry_slot = -1;
         double fallback_carry_fit = -std::numeric_limits<double>::infinity();
@@ -1989,10 +2012,11 @@ struct TFTEngine::Impl {
             });
         }
 
-        // Synergy has its own reward component. Keep it out of this score so
-        // a formation change cannot receive the same synergy signal twice.
+        // Trait milestones contribute a bounded coherence diagnostic. The
+        // separate synergy reward remains the primary active-trait signal.
         return strategy::BoardEvaluation::evaluate(
-            board_roles, bench_profiles, 0.0, main_carry_positions);
+            board_roles, bench_profiles, 0.0, main_carry_positions,
+            board_profiles, strategic_context);
     }
 
     double positioning_score(std::size_t player_index) const {
