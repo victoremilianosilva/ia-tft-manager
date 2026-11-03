@@ -360,6 +360,13 @@ def build_catalog(
             "source_effects": effects,
             "combat_effects": _normalise_combat_effects(effects),
             "effect_coverage": _effect_coverage(effects),
+            # Army-size/economy items act on the player, not on a champion.
+            # Until that player-level effect is modeled, never expose them as
+            # unit equipment or ordinary completed-item anvil choices.
+            "unit_equipable": not (
+                _nonnegative_effect(effects, "MaxArmySizeIncrease") > 0.0 or
+                _nonnegative_effect(effects, "PercentGoldChance") > 0.0
+            ),
             "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
         }
         # Special/trait mechanics are set data, not API-name branches in C++.
