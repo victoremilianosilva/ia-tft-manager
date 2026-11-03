@@ -3939,7 +3939,6 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         // Selling to cross a meaningful spending threshold is an
                         // economic decision, not an impulsive reversal. The sale
                         // must make a 2g reroll or 4g XP purchase affordable.
-                        const int gold_after_sale = old_gold + sell_value;
                         sale_has_legitimate_context = sale_has_legitimate_context ||
                             better_alternative_found;
                         if (reward_model::should_penalize_reversed_purchase(
@@ -5464,12 +5463,34 @@ double TFTEngine::get_unit_comp_score(
     return unit_composition_score(list.back(), *def, star, impl_->trait_milestones);
 }
 bool TFTEngine::is_core_unit(std::int32_t player_id, const std::string& champion_api_name) const {
-    if (!impl_ || player_id < 0 || player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) return false; impl_->ensure_open(); const auto* def = impl_->catalog->find_by_api_name(champion_api_name); if (!def) return false;
-    const auto& list = impl_->player_envs[static_cast<std::size_t>(player_id)].strategy; return !list.empty() && std::find(list.back().core_unit_ids.begin(), list.back().core_unit_ids.end(), def->internal_id) != list.back().core_unit_ids.end();
+    if (!impl_ || player_id < 0 ||
+        player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) {
+        return false;
+    }
+    impl_->ensure_open();
+    const auto* def = impl_->catalog->find_by_api_name(champion_api_name);
+    if (!def) return false;
+
+    const auto& list =
+        impl_->player_envs[static_cast<std::size_t>(player_id)].strategy;
+    return !list.empty() &&
+        std::find(list.back().core_unit_ids.begin(),
+                  list.back().core_unit_ids.end(),
+                  def->internal_id) != list.back().core_unit_ids.end();
 }
+
 bool TFTEngine::is_core_trait(std::int32_t player_id, const std::string& trait) const {
-    if (!impl_ || player_id < 0 || player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) return false; impl_->ensure_open(); const auto& list = impl_->player_envs[static_cast<std::size_t>(player_id)].strategy;
-    return !list.empty() && std::find(list.back().core_traits.begin(), list.back().core_traits.end(), trait) != list.back().core_traits.end();
+    if (!impl_ || player_id < 0 ||
+        player_id >= static_cast<std::int32_t>(kPlayersPerLobby)) {
+        return false;
+    }
+    impl_->ensure_open();
+    const auto& list =
+        impl_->player_envs[static_cast<std::size_t>(player_id)].strategy;
+    return !list.empty() &&
+        std::find(list.back().core_traits.begin(),
+                  list.back().core_traits.end(),
+                  trait) != list.back().core_traits.end();
 }
 
 std::array<AntiLoopMetrics, kPlayersPerLobby>
