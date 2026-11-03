@@ -240,6 +240,24 @@ int main() {
                 trait_passive_engine.item_effect_strength("trait_passive", unrelated_profile),
             "trait-conditioned passives should match canonical trait suffixes");
 
+    ItemDefinition player_scope_item;
+    player_scope_item.id = "player_scope_item";
+    player_scope_item.name = "Player Scope Item";
+    player_scope_item.recipe_components = {"spatula", "pan"};
+    player_scope_item.unit_equipable = false;
+    ItemEngine player_scope_engine({player_scope_item}, {"spatula", "pan"});
+    require(player_scope_engine.add_component("spatula") &&
+            player_scope_engine.add_component("pan"),
+            "player-scope recipe components may still be acquired");
+    require(!player_scope_engine.can_craft("spatula", "pan") &&
+            !player_scope_engine.craft("spatula", "pan"),
+            "player-scope items must not be exposed as unit craft-and-equip actions");
+    require(!player_scope_engine.add_completed_item("player_scope_item") &&
+            !player_scope_engine.grant_completed_item_anvil({"player_scope_item"}),
+            "player-scope items must not enter the champion equipment inventory/anvil");
+    require(player_scope_engine.item_fit("player_scope_item", carry) < 0.0,
+            "player-scope items must not receive unit compatibility scores");
+
     ItemEngine engine({damage, guard, double_component});
     require(!engine.add_component("unknown_component"),
             "component IDs outside the loaded recipe catalog must be rejected");
