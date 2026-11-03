@@ -82,6 +82,32 @@ pressure, and sales that unlock the 2g/4g spending thresholds are exempt. This
 does not prevent the policy from buying, testing, or changing its mind; it
 reduces the reward for demonstrably wasteful low-value buy/sell loops.
 
+
+## Core units and upgrade-path sale potential
+
+Selling is never blocked solely because a champion is marked core or because
+copies exist. The native reward uses a graduated retention cost:
+
+- Composition importance is based on the unit's normalized fit with the active
+  plan; a core label with weak actual fit receives less protection than a
+  high-fit core unit.
+- Upgrade potential is based on remaining same-champion, same-star copies.
+  Selling one of exactly two 1-star copies has the highest immediate pair
+  opportunity cost; additional copies reduce that cost because a pair may
+  remain. A 2-star copy is valued for a same-star 3-star route, while three
+  1-star copies are treated as a weaker route to another 2-star.
+- A materially better-fit unit already owned, a confirmed composition/focus
+  transition, a measurable board improvement, full bench pressure, or a sale
+  that unlocks a real 2g reroll / 4g XP purchase softens the retention cost.
+- Gold recovery remains represented by the economy reward and is not treated
+  as proof that every sale was strategically correct.
+
+The audit records copy counts, star tier, estimated upgrade-path strength,
+core status, composition-decision status, and bench capacity for every sale.
+Core/pair findings are still checked for immediate or near-term board,
+synergy, positioning, and upgrade compensation. This is reward shaping and
+diagnostics, not a hard sale prohibition.
+
 ## Reports and metrics
 
 Run the viewer on a match, then audit the resulting session directory:
