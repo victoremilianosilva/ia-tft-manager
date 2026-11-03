@@ -54,7 +54,7 @@ The C++ item-engine and lobby integration tests use normalized catalogs to verif
 6. a full component -> recipe -> inventory -> UUID equipment -> CombatItem -> CombatEngine test verifies that the final item changes real combat damage;
 7. combat tests observe supported generic and item-specific effects in damage, healing, survival, or team-aura results.
 
-The native lobby emits `ITEM_ANVIL_CHOSEN` and `ITEM_ACTION_APPLIED` events. The end-to-end audit aggregates component loot, anvil grants/choices, and applied action kinds so acquisition is no longer conflated with equipment.
+The native lobby emits `ITEM_ANVIL_CHOSEN`, `ITEM_ACTION_APPLIED`, and `COMBAT_ITEM_INPUT` events. The end-to-end audit aggregates component loot, anvil grants/choices, successful equipment transitions, and items actually projected into combat. Its cycle status distinguishes acquisition without use from equipment that reached combat.
 
 Python tests verify the nine-way type mask, item masks, action sampling, and parity between collected and reevaluated PPO log-probabilities. Old seven-row type-head checkpoints are migrated by copying the original seven rows and initializing the two new rows; new item heads use their module initialization when loading an older checkpoint.
 
