@@ -22,6 +22,36 @@ int main() {
     using Roles = BoardEvaluation::Roles;
     using PE = tft::PositioningEngine;
 
+    // Repeated reads of an unchanged snapshot reuse the exact evaluation.
+    // A changed signature forces a fresh evaluation of the updated board.
+    tft::strategy::BoardEvaluationCache evaluation_cache;
+    std::uint32_t evaluations = 0;
+    Roles cache_board(PE::size, -1);
+    cache_board[24] = PE::carry;
+    const auto evaluate_snapshot = [&](std::uint64_t signature, const Roles& roles) {
+        if (!evaluation_cache.matches(signature)) {
+            evaluation_cache.store(
+                signature, BoardEvaluation::evaluate(roles));
+            ++evaluations;
+        }
+        return evaluation_cache.value().total_score;
+    };
+    const double cached_initial = evaluate_snapshot(1001U, cache_board);
+    require(evaluate_snapshot(1001U, cache_board) == cached_initial &&
+            evaluations == 1,
+            "unchanged board snapshot must reuse the cached score");
+    Roles changed_cache_board = cache_board;
+    changed_cache_board[17] = PE::tank;
+    const double expected_changed =
+        BoardEvaluation::evaluate(changed_cache_board).total_score;
+    const double cached_changed = evaluate_snapshot(1002U, changed_cache_board);
+    require(evaluations == 2 && cached_changed == expected_changed &&
+            cached_changed != cached_initial,
+            "changed board snapshot must recompute and return the updated score");
+    evaluation_cache.invalidate();
+    require(!evaluation_cache.matches(1002U),
+            "explicit cache invalidation must force recomputation");
+
     // Same carry: a tank in front and adjacent improves safety.
     Roles exposed(PE::size, -1);
     exposed[3 * PE::cols + 3] = PE::carry;

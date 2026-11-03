@@ -62,6 +62,33 @@ struct BoardEvaluationResult {
     int missing_backline_count{0};
 };
 
+// One-entry cache for an immutable board/strategy snapshot. The caller
+// supplies a signature over all evaluator inputs; a changed signature forces
+// a fresh evaluation and replaces the previous result.
+class BoardEvaluationCache {
+public:
+    [[nodiscard]] bool matches(std::uint64_t signature) const noexcept {
+        return valid_ && signature_ == signature;
+    }
+
+    [[nodiscard]] const BoardEvaluationResult& value() const noexcept {
+        return value_;
+    }
+
+    void store(std::uint64_t signature, const BoardEvaluationResult& value) noexcept {
+        signature_ = signature;
+        value_ = value;
+        valid_ = true;
+    }
+
+    void invalidate() noexcept { valid_ = false; }
+
+private:
+    std::uint64_t signature_{0};
+    BoardEvaluationResult value_{};
+    bool valid_{false};
+};
+
 class BoardEvaluation {
 public:
     using Roles = std::vector<int>;
