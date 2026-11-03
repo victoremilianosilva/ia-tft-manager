@@ -402,7 +402,7 @@ public:
                 effect.stat == "damage_reduction";
             const bool supportive = effect.operation == "heal_max_hp_pct" ||
                 effect.target == "allies" ||
-                effect.target == "lowest_health_ally";
+                effect.target == "allies_same_row_within_1";
 
             double role_multiplier = 0.75;
             if (supportive) role_multiplier = unit.role == 2 ? 1.0 : 0.85;
