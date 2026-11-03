@@ -41,6 +41,7 @@
 #include "decision/DecisionTypes.hpp"
 #include "items/ItemCatalog.hpp"
 #include "items/ItemEngine.hpp"
+#include "items/PveLootDistribution.hpp"
 #include "items/CombatItemAdapter.hpp"
 
 #ifndef TFT_DEFAULT_ITEM_CATALOG_PATH
@@ -371,6 +372,7 @@ struct TFTEngine::Impl {
         // Estado e serviços pertencentes exclusivamente a um jogador.
         std::unique_ptr<ShopEngine> shop;
         std::unique_ptr<items::ItemEngine> item_engine;
+        items::Set18ComponentPool pve_component_pool;
         std::array<std::optional<UnitInstance>, kBenchSlots> bench{};
         std::array<std::optional<UnitInstance>, kBoardSlots> board{};
         // Temporal context for the feed-forward policy: actions left this round
@@ -735,11 +737,25 @@ struct TFTEngine::Impl {
         std::uint32_t current_round_number,
         std::vector<std::string>& events
     ) {
-        if (!item_catalog || current_round_number <= 4) return;
+        if (!item_catalog || item_catalog->components.size() != 8 || current_round_number == 0)
+            return;
 
         const auto current_stage = stage_for_round(current_round_number);
-        const auto round_in_stage = ((current_round_number - 5) % kRoundsPerStage) + 1;
-        if (round_in_stage != 7 || current_stage < 2 || current_stage > 6) return;
+        const auto round_in_stage = current_round_number <= 4
+            ? current_round_number
+            : ((current_round_number - 5) % kRoundsPerStage) + 1;
+
+        // Set 18's opening PvE loot is rolled after 1-4. Later random
+        // component tables resolve after 2-7, 3-7 and 4-7.
+        const bool random_component_round =
+            (current_stage == 1 && current_round_number == 4) ||
+            (current_stage >= 2 && current_stage <= 4 && round_in_stage == 7);
+
+        // From 5-7 onward the PvE boss encounter gives the two threshold orbs
+        // and, on victory, a completed-item anvil. There are no random
+        // component drops after stage 4.
+        const bool boss_loot_round = current_stage >= 5 && round_in_stage == 7;
+        if (!random_component_round && !boss_loot_round) return;
 
         std::vector<std::size_t> living;
         for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
@@ -748,89 +764,89 @@ struct TFTEngine::Impl {
         }
         if (living.empty()) return;
 
-        const auto player_rng = [this, current_round_number](std::size_t player_index) {
-            const auto mixed_seed = seed ^
-                (episode_id * 0xD1B54A32D192ED03ULL) ^
-                (static_cast<std::uint64_t>(current_round_number) << 16U) ^
-                static_cast<std::uint64_t>(player_index);
-            return std::mt19937_64(mixed_seed);
-        };
+        std::vector<std::string> component_ids;
+        component_ids.reserve(item_catalog->components.size());
+        for (const auto& component : item_catalog->components)
+            component_ids.push_back(component.first);
 
-        // Standard anvil milestones are choices for every living player, not
-        // a catch-up reward restricted to the two lowest-health players.
-        // Keep normal PvE component drops separate from these forced choices.
-        if (current_stage == 4) { // 4-7: choose one of three components.
-            std::vector<std::string> component_pool;
-            for (const auto& component : item_catalog->components)
-                component_pool.push_back(component.first);
-            if (component_pool.empty()) return;
+        const auto mixed_seed = seed ^
+            (episode_id * 0xD1B54A32D192ED03ULL) ^
+            (static_cast<std::uint64_t>(current_round_number) << 16U) ^
+            0x53455431385F4C54ULL;
+        if (random_component_round) {
+            // All players receive the same loot quality/count distribution;
+            // only the component identities are rolled from each player's
+            // own pool, matching TFT's per-player component contents.
+            std::mt19937_64 outcome_rng(mixed_seed);
+            const auto outcome = items::roll_set18_pve_loot(current_stage, outcome_rng);
+
+            events.emplace_back(
+                "PVE_LOOT_ROLLED: stage=" + std::to_string(current_stage) +
+                ", round=" + std::to_string(current_round_number) +
+                ", components=" + std::to_string(outcome.components) +
+                ", gray_orbs=" + std::to_string(outcome.gray_orbs) +
+                ", blue_orbs=" + std::to_string(outcome.blue_orbs) +
+                ", gold_orbs=" + std::to_string(outcome.gold_orbs) +
+                ", prismatic_orbs=" + std::to_string(outcome.prismatic_orbs) +
+                ", source=set18_weighted_table");
 
             for (const auto player_index : living) {
-                auto options = component_pool;
-                auto loot_rng = player_rng(player_index);
-                std::shuffle(options.begin(), options.end(), loot_rng);
-                options.resize(std::min<std::size_t>(3, options.size()));
                 auto& player = player_envs[player_index];
-                if (player.item_engine->grant_component_anvil(std::move(options))) {
+                auto& pool = player.pve_component_pool;
+                if (current_stage == 1) {
+                    if (pool.empty()) pool.initialize(component_ids);
+                } else {
+                    if (pool.empty()) pool.initialize(component_ids);
+                    pool.add_stage_refresh(component_ids);
+                }
+
+                auto component_rng = std::mt19937_64(
+                    mixed_seed ^ (static_cast<std::uint64_t>(player_index) *
+                                  0x9E3779B97F4A7C15ULL));
+                std::size_t granted_count = 0;
+                for (unsigned drop = 0; drop < outcome.components && !pool.empty(); ++drop) {
+                    const auto component_id = pool.draw(component_rng);
+                    if (!component_id.empty() && player.item_engine->add_component(component_id))
+                        ++granted_count;
+                }
+                if (granted_count > 0) {
                     events.emplace_back(
-                        "COMPONENT_ANVIL_GRANTED: player=" + std::to_string(player_index) +
-                        ", stage=4, source=pve_4_7");
+                        "COMPONENT_LOOT_GRANTED: player=" + std::to_string(player_index) +
+                        ", stage=" + std::to_string(current_stage) +
+                        ", count=" + std::to_string(granted_count) +
+                        ", pool_remaining=" + std::to_string(pool.remaining()) +
+                        ", source=set18_pve_component_pool");
                 }
                 refresh_masks(player_index);
             }
             return;
         }
 
-        if (current_stage == 5 || current_stage == 6) { // 5-7 / 6-7: completed item.
+        for (const auto player_index : living) {
+            auto& player = player_envs[player_index];
+            events.emplace_back(
+                "PVE_BOSS_ORBS_GRANTED: player=" + std::to_string(player_index) +
+                ", stage=" + std::to_string(current_stage) +
+                ", thresholds=66,33, source=set18_boss_encounter");
+
             std::vector<std::string> item_pool;
+            item_pool.reserve(item_catalog->items.size());
             for (const auto& item : item_catalog->items) {
                 if (item.unit_equipable) item_pool.push_back(item.id);
             }
-            if (item_pool.empty()) return;
-
-            for (const auto player_index : living) {
+            if (!item_pool.empty()) {
                 auto options = item_pool;
-                auto loot_rng = player_rng(player_index);
+                auto loot_rng = std::mt19937_64(
+                    mixed_seed ^ (static_cast<std::uint64_t>(player_index) *
+                                  0x9E3779B97F4A7C15ULL));
                 std::shuffle(options.begin(), options.end(), loot_rng);
                 options.resize(std::min<std::size_t>(4, options.size()));
-                auto& player = player_envs[player_index];
                 if (player.item_engine->grant_completed_item_anvil(std::move(options))) {
                     events.emplace_back(
                         "COMPLETED_ITEM_ANVIL_GRANTED: player=" + std::to_string(player_index) +
                         ", stage=" + std::to_string(current_stage) +
-                        ", source=pve_stage_end");
+                        ", source=set18_pve_boss_victory");
                 }
-                refresh_masks(player_index);
-            }
-            return;
-        }
-
-        // Ordinary PvE loot goes directly to the component bag: no Pengu/armory
-        // offer and no forced policy action. Stages 2 and 3 each grant one
-        // component; stage 4+ uses the explicit anvil events above.
-        const std::size_t component_count =
-            (current_stage == 2 || current_stage == 3) ? 1U : 0U;
-        if (component_count == 0 || item_catalog->components.empty()) return;
-
-        std::vector<std::string> component_pool;
-        for (const auto& component : item_catalog->components)
-            component_pool.push_back(component.first);
-        for (const auto player_index : living) {
-            auto pool = component_pool;
-            auto loot_rng = player_rng(player_index);
-            std::shuffle(pool.begin(), pool.end(), loot_rng);
-            auto& player = player_envs[player_index];
-            std::size_t granted_count = 0;
-            for (std::size_t drop = 0; drop < component_count && !pool.empty(); ++drop) {
-                if (player.item_engine->add_component(pool[drop % pool.size()]))
-                    ++granted_count;
-            }
-            if (granted_count > 0) {
-                events.emplace_back(
-                    "COMPONENT_LOOT_GRANTED: player=" + std::to_string(player_index) +
-                    ", stage=" + std::to_string(current_stage) +
-                    ", count=" + std::to_string(granted_count) +
-                    ", source=pve_direct_drop");
             }
             refresh_masks(player_index);
         }
