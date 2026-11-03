@@ -122,6 +122,34 @@ int main() {
     require(inert_catalog_rejected,
             "runtime loader must reject a structurally valid but inert item catalog");
 
+    std::istringstream unsupported_effect_catalog_json(R"json({
+        "schema_version": 1,
+        "set_id": "synthetic-unsupported-effect-test",
+        "components": [
+            {"id": "sword", "name": "Test Sword"},
+            {"id": "bow", "name": "Test Bow"}
+        ],
+        "items": [{
+            "id": "unsupported_effect_item", "name": "Unsupported Effect",
+            "recipe_components": ["sword", "bow"],
+            "stats": {}, "weights": {},
+            "combat_effects": [{
+                "trigger": "combat_start",
+                "operation": "grant_shield",
+                "target": "self",
+                "value": 100.0
+            }]
+        }]
+    })json");
+    bool unsupported_effect_rejected = false;
+    try {
+        (void)load_item_catalog(unsupported_effect_catalog_json);
+    } catch (const std::invalid_argument&) {
+        unsupported_effect_rejected = true;
+    }
+    require(unsupported_effect_rejected,
+            "catalog loader must reject a passive whose operation has no CombatEngine handler");
+
     std::istringstream mismatched_set_json(R"json({
         "schema_version": 1,
         "set_id": "Set17",
