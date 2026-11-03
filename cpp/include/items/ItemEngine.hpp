@@ -346,9 +346,7 @@ public:
             if (effect.operation == "add_stat") {
                 if (effect.stat == "attack_damage" ||
                     effect.stat == "attack_speed" ||
-                    effect.stat == "ability_power" ||
-                    effect.stat == "critical_strike_chance" ||
-                    effect.stat == "critical_strike_damage") {
+                    effect.stat == "ability_power") {
                     semantic_weight = 0.30;
                 } else if (effect.stat == "armor" ||
                            effect.stat == "magic_resist" ||
