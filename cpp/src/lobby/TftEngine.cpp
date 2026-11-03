@@ -3909,7 +3909,12 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 const auto target_index = static_cast<std::size_t>(type == 7 ? action[2] : action[3]);
                 auto* target_unit = lobby.item_target_unit(player_id, target_index);
                 if (!target_unit) throw std::invalid_argument("Alvo de item nao existe.");
-                const auto profiles = lobby.item_unit_profiles(player_id);
+                const auto& current_strategy = this->strategy.empty()
+                    ? StrategyInfo{} : this->strategy.back();
+                std::unordered_map<std::uint64_t, double> action_composition_score_cache;
+                action_composition_score_cache.reserve(kBoardSlots + kBenchSlots);
+                const auto profiles = lobby.item_unit_profiles(
+                    player_id, current_strategy, action_composition_score_cache);
                 items::ItemActionCommand command;
                 command.operation = type == 7 ? items::ItemOperation::EQUIP_FROM_INVENTORY
                                                : items::ItemOperation::CRAFT_AND_EQUIP;
