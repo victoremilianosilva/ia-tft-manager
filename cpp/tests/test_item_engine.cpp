@@ -2,6 +2,7 @@
 #include "items/ItemActionContract.hpp"
 #include "items/CombatItemAdapter.hpp"
 #include "items/ItemCatalog.hpp"
+#include "items/PveLootDistribution.hpp"
 
 #include <cmath>
 #include <cstdlib>
@@ -429,6 +430,54 @@ int main() {
     require(engine.inventory().size() ==
                 inventory_before_release + carry_equipped_before_release - 1,
             "re-equipping consumes exactly one returned item");
+
+    // Set 18 PvE loot tables: weighted outcomes reproduce the published
+    // per-stage component averages, and the personal pool removes each drawn
+    // component until the next stage refresh.
+    {
+        std::mt19937_64 rng(180018ULL);
+        constexpr std::size_t samples = 50000;
+        const auto average_components = [&](unsigned stage) {
+            std::mt19937_64 sample_rng(180000ULL + stage);
+            std::uint64_t total = 0;
+            for (std::size_t i = 0; i < samples; ++i)
+                total += roll_set18_pve_loot(stage, sample_rng).components;
+            return static_cast<double>(total) / static_cast<double>(samples);
+        };
+        require(std::abs(average_components(1) - 3.0) < 0.12,
+                "Set 18 stage 1 loot should average about three components");
+        require(std::abs(average_components(2) - 2.4) < 0.10,
+                "Set 18 stage 2 loot should average about 2.4 components");
+        require(std::abs(average_components(3) - 3.5) < 0.12,
+                "Set 18 stage 3 loot should average about 3.5 components");
+        require(std::abs(average_components(4) - 3.1) < 0.12,
+                "Set 18 stage 4 loot should average about 3.1 components");
+
+        const std::vector<std::string> basic_components{
+            "sword", "bow", "rod", "tear", "belt", "chain", "cloak", "glove"
+        };
+        Set18ComponentPool pool;
+        pool.initialize(basic_components);
+        std::vector<std::string> first_stage_draws;
+        for (int i = 0; i < 5; ++i) first_stage_draws.push_back(pool.draw(rng));
+        std::sort(first_stage_draws.begin(), first_stage_draws.end());
+        require(std::adjacent_find(first_stage_draws.begin(), first_stage_draws.end()) ==
+                    first_stage_draws.end(),
+                "Set 18 stage 1 pool must not drop the same basic component twice");
+        require(pool.remaining() == 3,
+                "Set 18 component pool must retain undropped components");
+        pool.add_stage_refresh(basic_components);
+        require(pool.remaining() == 11,
+                "Set 18 must add one of each component before stages 2, 3 and 4");
+        for (unsigned stage = 1; stage <= 4; ++stage)
+            require(!set18_pve_loot_table(stage).empty(),
+                    "each Set 18 PvE stage must have a loot distribution table");
+        bool later_stage_rejected = false;
+        try { (void)set18_pve_loot_table(5); }
+        catch (const std::out_of_range&) { later_stage_rejected = true; }
+        require(later_stage_rejected,
+                "random component loot tables must stop after stage 4");
+    }
 
     std::cout << "[PASS] Item inventory, recipes, equip, and decision tests.\n";
     return EXIT_SUCCESS;
