@@ -745,17 +745,16 @@ struct TFTEngine::Impl {
             ? current_round_number
             : ((current_round_number - 5) % kRoundsPerStage) + 1;
 
-        // Set 18's opening PvE loot is rolled after 1-4. Later random
-        // component tables resolve after 2-7, 3-7 and 4-7.
-        const bool random_component_round =
+        // Stages 1-4 resolve their weighted PvE package directly into
+        // components. No orb entities or orb telemetry are created.
+        const bool component_reward_round =
             (current_stage == 1 && current_round_number == 4) ||
             (current_stage >= 2 && current_stage <= 4 && round_in_stage == 7);
 
-        // From 5-7 onward the PvE boss encounter gives the two threshold orbs
-        // and, on victory, a completed-item anvil. There are no random
-        // component drops after stage 4.
-        const bool boss_loot_round = current_stage >= 5 && round_in_stage == 7;
-        if (!random_component_round && !boss_loot_round) return;
+        // From stage 5 onward, the PvE boss reward is a direct completed item.
+        const bool completed_item_reward_round =
+            current_stage >= 5 && round_in_stage == 7;
+        if (!component_reward_round && !completed_item_reward_round) return;
 
         std::vector<std::size_t> living;
         for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
@@ -764,30 +763,25 @@ struct TFTEngine::Impl {
         }
         if (living.empty()) return;
 
-        std::vector<std::string> component_ids;
-        component_ids.reserve(item_catalog->components.size());
-        for (const auto& component : item_catalog->components)
-            component_ids.push_back(component.first);
-
         const auto mixed_seed = seed ^
             (episode_id * 0xD1B54A32D192ED03ULL) ^
             (static_cast<std::uint64_t>(current_round_number) << 16U) ^
             0x53455431385F4C54ULL;
-        if (random_component_round) {
-            // All players receive the same loot quality/count distribution;
-            // only the component identities are rolled from each player's
-            // own pool, matching TFT's per-player component contents.
+
+        if (component_reward_round) {
+            std::vector<std::string> component_ids;
+            component_ids.reserve(item_catalog->components.size());
+            for (const auto& component : item_catalog->components)
+                component_ids.push_back(component.first);
+
+            // All players share the weighted component-count roll; component
+            // identities are drawn independently from each player's pool.
             std::mt19937_64 outcome_rng(mixed_seed);
             const auto outcome = items::roll_set18_pve_loot(current_stage, outcome_rng);
-
             events.emplace_back(
-                "PVE_LOOT_ROLLED: stage=" + std::to_string(current_stage) +
+                "PVE_COMPONENT_REWARD_ROLLED: stage=" + std::to_string(current_stage) +
                 ", round=" + std::to_string(current_round_number) +
                 ", components=" + std::to_string(outcome.components) +
-                ", gray_orbs=" + std::to_string(outcome.gray_orbs) +
-                ", blue_orbs=" + std::to_string(outcome.blue_orbs) +
-                ", gold_orbs=" + std::to_string(outcome.gold_orbs) +
-                ", prismatic_orbs=" + std::to_string(outcome.prismatic_orbs) +
                 ", source=set18_weighted_table");
 
             for (const auto player_index : living) {
@@ -822,36 +816,29 @@ struct TFTEngine::Impl {
             return;
         }
 
+        std::vector<std::string> item_pool;
+        item_pool.reserve(item_catalog->items.size());
+        for (const auto& item : item_catalog->items)
+            if (item.unit_equipable) item_pool.push_back(item.id);
+        if (item_pool.empty()) return;
+
         for (const auto player_index : living) {
             auto& player = player_envs[player_index];
-            events.emplace_back(
-                "PVE_BOSS_ORBS_GRANTED: player=" + std::to_string(player_index) +
-                ", stage=" + std::to_string(current_stage) +
-                ", thresholds=66,33, source=set18_boss_encounter");
-
-            std::vector<std::string> item_pool;
-            item_pool.reserve(item_catalog->items.size());
-            for (const auto& item : item_catalog->items) {
-                if (item.unit_equipable) item_pool.push_back(item.id);
-            }
-            if (!item_pool.empty()) {
-                auto options = item_pool;
-                auto loot_rng = std::mt19937_64(
-                    mixed_seed ^ (static_cast<std::uint64_t>(player_index) *
-                                  0x9E3779B97F4A7C15ULL));
-                std::shuffle(options.begin(), options.end(), loot_rng);
-                options.resize(std::min<std::size_t>(4, options.size()));
-                if (player.item_engine->grant_completed_item_anvil(std::move(options))) {
-                    events.emplace_back(
-                        "COMPLETED_ITEM_ANVIL_GRANTED: player=" + std::to_string(player_index) +
-                        ", stage=" + std::to_string(current_stage) +
-                        ", source=set18_pve_boss_victory");
-                }
+            auto loot_rng = std::mt19937_64(
+                mixed_seed ^ (static_cast<std::uint64_t>(player_index) *
+                              0x9E3779B97F4A7C15ULL));
+            std::uniform_int_distribution<std::size_t> pick(0, item_pool.size() - 1);
+            const auto& item_id = item_pool[pick(loot_rng)];
+            if (player.item_engine->add_completed_item(item_id)) {
+                events.emplace_back(
+                    "COMPLETED_ITEM_GRANTED: player=" + std::to_string(player_index) +
+                    ", stage=" + std::to_string(current_stage) +
+                    ", item=" + item_id +
+                    ", source=set18_pve_boss_reward");
             }
             refresh_masks(player_index);
         }
     }
-
     void sync_unit_items_from_engine(std::size_t player_index, const std::string& uuid) {
         auto& player = player_envs[player_index];
         if (!player.item_engine || uuid.empty()) return;
