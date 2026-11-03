@@ -57,6 +57,7 @@ The current header-only loader is `cpp/include/items/ItemCatalog.hpp` and accept
 
 - `set_id` identifies the source set; the loader does not infer or choose a set.
 - Component and finished-item IDs must be unique and non-empty.
+- Components may set `pve_loot_eligible` (boolean). This separates recipe/action dimensions from ordinary PvE drops: special components remain craftable but are excluded from the normal component pool. When omitted, schema-v1 fixtures default to `true` for backward compatibility. The active Set 18 catalog marks its eight basic components eligible and Pan/Spatula ineligible.
 - Every finished item must name exactly two known components. Duplicate recipes are rejected.
 - Stats and weights are optional and default to zero; supplied values must be finite, numeric and non-negative.
 - Percentage-like bonuses are represented as fractions where applicable (for example, `0.15` means +15%). The source adapter must normalize the source format to this contract.
