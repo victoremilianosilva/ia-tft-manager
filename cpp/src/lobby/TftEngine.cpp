@@ -454,14 +454,9 @@ struct TFTEngine::Impl {
     std::unique_ptr<UnitPool> pool;
     std::unique_ptr<UnitInstanceFactory> unit_factory;
 
-    struct BoardEvaluationCacheEntry {
-        std::uint64_t signature{0};
-        strategy::BoardEvaluationResult result{};
-        bool valid{false};
-    };
     // Board evaluation is read by observations, rewards and viewer snapshots.
     // The signature covers every mutable input used by the evaluator.
-    mutable std::array<BoardEvaluationCacheEntry, kPlayersPerLobby>
+    mutable std::array<strategy::BoardEvaluationCache, kPlayersPerLobby>
         board_evaluation_cache{};
 
     // Uma instância C++ por jogador; o lobby coordena as oito.
@@ -2021,8 +2016,8 @@ struct TFTEngine::Impl {
         std::size_t player_index) const {
         auto& cached = board_evaluation_cache[player_index];
         const auto signature = board_evaluation_signature(player_index);
-        if (cached.valid && cached.signature == signature)
-            return cached.result;
+        if (cached.matches(signature))
+            return cached.value();
         const StrategyInfo active_strategy = player_envs[player_index].strategy.empty()
             ? StrategyInfo{} : player_envs[player_index].strategy.back();
         const auto classify_unit = [&](const UnitInstance& unit, const ChampionDefinition& def) {
@@ -2132,9 +2127,7 @@ struct TFTEngine::Impl {
         const auto result = strategy::BoardEvaluation::evaluate(
             board_roles, bench_profiles, 0.0, main_carry_positions,
             board_profiles, strategic_context);
-        cached.signature = signature;
-        cached.result = result;
-        cached.valid = true;
+        cached.store(signature, result);
         return result;
     }
 
