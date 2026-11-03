@@ -41,6 +41,35 @@ UTILITY_EFFECTS = {
     "StealthDuration",
 }
 
+GENERIC_STAT_SOURCE_KEYS = {
+    "AS", "AttackSpeed", "AP", "AbilityPower", "CritChance",
+    "CriticalStrikeChance", "CritDamage", "CriticalStrikeDamage",
+    "Health", "HP", "BonusHealth", "Armor", "MagicResist", "MR",
+    "Mana", "StatOmnivamp", "Omnivamp", "DamageAmp",
+    "DamageAmplification", "DamageReduction",
+}
+GENERIC_COMBAT_SOURCE_KEYS = {"AD", "BonusAD", "ManaRegen"}
+
+
+def _effect_coverage(effects: dict[str, Any]) -> dict[str, list[str]]:
+    """Expose source keys that still need an explicit generic or legacy handler audit."""
+    active_keys = sorted(
+        str(key) for key, value in effects.items()
+        if not (_finite_number(value) and float(value) == 0.0)
+    )
+    generic_stat = sorted(key for key in active_keys if key in GENERIC_STAT_SOURCE_KEYS)
+    generic_combat = sorted(key for key in active_keys if key in GENERIC_COMBAT_SOURCE_KEYS)
+    not_generic = sorted(
+        key for key in active_keys
+        if key not in GENERIC_STAT_SOURCE_KEYS and key not in GENERIC_COMBAT_SOURCE_KEYS
+    )
+    return {
+        "source_keys": active_keys,
+        "generic_stat_keys": generic_stat,
+        "generic_combat_keys": generic_combat,
+        "not_generic_normalized_keys": not_generic,
+    }
+
 
 def _finite_number(value: Any) -> bool:
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(float(value))
@@ -317,6 +346,7 @@ def build_catalog(
             "source_icon": source_item.get("icon") or "",
             "source_effects": effects,
             "combat_effects": _normalise_combat_effects(effects),
+            "effect_coverage": _effect_coverage(effects),
             "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
         }
         # Special/trait mechanics are set data, not API-name branches in C++.
@@ -357,6 +387,7 @@ def build_catalog(
             "source_icon": "",
             "source_effects": {},
             "combat_effects": metadata.get("combat_effects", []),
+            "effect_coverage": _effect_coverage({}),
             "grants_trait": metadata["grants_trait"],
             "granted_trait_active_count": metadata.get("granted_trait_active_count", 1),
             "weight_basis": "explicit_set_item_metadata",
