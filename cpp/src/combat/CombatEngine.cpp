@@ -17,9 +17,9 @@ namespace {
 
 struct RuntimeUnit {
     CombatUnit unit;
+    float initial_hp = 0.0f;
     // Immutable item identity lookup; dynamic item stats remain on CombatUnit.
     std::unordered_set<std::string> item_presence;
-    float initial_hp = 0.0f;
     float damage_dealt = 0.0f;
     float damage_taken = 0.0f;
     float healing_done = 0.0f;
