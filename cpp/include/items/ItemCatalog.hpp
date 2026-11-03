@@ -252,6 +252,15 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             };
             read_bool("percent_of_max_health", effect.percent_of_max_health);
             read_bool("percent_of_stat", effect.percent_of_stat);
+            if (effect.operation == "add_stat" && effect.percent_of_max_health) {
+                throw std::invalid_argument(
+                    "add_stat does not support percent_of_max_health; use percent_of_stat");
+            }
+            if (effect.operation == "bonus_damage" &&
+                effect.percent_of_max_health && effect.percent_of_stat) {
+                throw std::invalid_argument(
+                    "bonus_damage cannot combine percent_of_max_health and percent_of_stat");
+            }
             if (effect.operation == "bonus_damage" && effect.percent_of_stat) {
                 const bool supported_damage_stat =
                     effect.stat == "attack_damage" ||
