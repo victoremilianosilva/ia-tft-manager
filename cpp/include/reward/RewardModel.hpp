@@ -681,14 +681,33 @@ inline double reversed_sequence_adjustment(
 // Protect a real same-star pair. A 2-star also remains valuable when three
 // 1-star copies can create another 2-star, but a lone 1-star beside a 2-star
 // is not a pair and should not be artificially locked on the bench.
+inline double upgrade_path_strength(
+    int sold_star, int same_star_copies, int one_star_copies
+) noexcept {
+    same_star_copies = std::max(0, same_star_copies);
+    one_star_copies = std::max(0, one_star_copies);
+    if (sold_star == 1) {
+        // Selling one of exactly two copies destroys the immediate pair.
+        // Extra copies reduce the opportunity cost because a pair remains.
+        if (same_star_copies <= 0) return 0.0;
+        return same_star_copies == 1 ? 1.0 :
+            1.0 / static_cast<double>(same_star_copies);
+    }
+    if (sold_star == 2) {
+        // A second 2-star copy contributes to a 3-star route; three 1-stars
+        // are a viable, but less immediate, replacement path to another 2-star.
+        if (same_star_copies >= 1)
+            return std::min(1.0, 0.65 + 0.15 * (same_star_copies - 1));
+        if (one_star_copies >= 3)
+            return std::min(0.45, 0.15 * (one_star_copies / 3));
+    }
+    return 0.0;
+}
+
 inline bool protects_upgrade_path(
     int sold_star, int same_star_copies, int one_star_copies
 ) noexcept {
-    if (sold_star == 1)
-        return same_star_copies >= 1;
-    if (sold_star == 2)
-        return same_star_copies >= 1 || one_star_copies >= 3;
-    return false;
+    return upgrade_path_strength(sold_star, same_star_copies, one_star_copies) >= 0.45;
 }
 
 // Selling should be attractive for low-value clutter, but not intrinsically
@@ -697,14 +716,22 @@ inline bool protects_upgrade_path(
 inline double sale_quality(double fit_score, bool core_unit,
                            bool protects_upgrade, bool frees_bench_space,
                            bool compensated_by_board_gain = false,
-                           bool justified_by_context = false) noexcept {
+                           bool justified_by_context = false,
+                           double upgrade_strength = -1.0) noexcept {
     const double fit = std::clamp(fit_score, 0.0, 1.0);
-    // A verified replacement, composition transition, full bench, or urgent
-    // economic sale deserves a softer cost, but core/pair retention still matters.
+    // Preserve the old boolean behavior for callers without copy-count data.
+    const double upgrade_pressure = upgrade_strength < 0.0
+        ? (protects_upgrade ? 1.0 : 0.0)
+        : std::clamp(upgrade_strength, 0.0, 1.0);
+    // Strategic importance is continuous: a core label alone is not enough;
+    // actual composition fit and a concrete upgrade path determine retention.
+    const double core_pressure = core_unit ? (0.20 + 0.80 * fit) : 0.0;
     const double context_factor = justified_by_context ? 0.5 : 1.0;
     return 0.015 - 0.24 * fit * context_factor -
-        (core_unit && !compensated_by_board_gain ? 0.34 * context_factor : 0.0) -
-        (protects_upgrade && !compensated_by_board_gain ? 0.36 * context_factor : 0.0) +
+        (core_pressure > 0.0 && !compensated_by_board_gain
+            ? 0.34 * core_pressure * context_factor : 0.0) -
+        (upgrade_pressure > 0.0 && !compensated_by_board_gain
+            ? 0.36 * upgrade_pressure * context_factor : 0.0) +
         (frees_bench_space ? 0.06 : 0.0);
 }
 
