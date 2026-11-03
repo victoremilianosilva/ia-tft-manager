@@ -3800,14 +3800,6 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     }
                 }
                 lobby.sync_unit_items_from_engine(player_id, target_unit->uuid);
-                events.emplace_back(
-                    "ITEM_ACTION_APPLIED: player=" + std::to_string(player_id) +
-                    ", kind=" + last_item_action.kind +
-                    ", item=" + last_item_action.item_id +
-                    ", target_uuid=" + target_unit->uuid +
-                    ", fit=" + std::to_string(last_item_action.fit) +
-                    ", reward=" + std::to_string(last_item_action.assignment_reward) +
-                    ", stage=" + std::to_string(lobby.stage));
             }
         } else if (type == 5) {
             // SELL: vender unidade do banco
