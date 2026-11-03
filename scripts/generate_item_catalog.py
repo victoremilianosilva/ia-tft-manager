@@ -408,6 +408,7 @@ def build_catalog(
             "source_effects": {},
             "combat_effects": metadata.get("combat_effects", []),
             "effect_coverage": _effect_coverage({}),
+            "unit_equipable": True,
             "grants_trait": metadata["grants_trait"],
             "granted_trait_active_count": metadata.get("granted_trait_active_count", 1),
             "weight_basis": "explicit_set_item_metadata",
@@ -515,6 +516,9 @@ def validate_catalog_semantics(catalog: dict[str, Any]) -> None:
     ]
     if not ordinary:
         raise ValueError("Catálogo não contém itens craftáveis comuns para validar.")
+    for item in ordinary:
+        if "unit_equipable" in item and not isinstance(item["unit_equipable"], bool):
+            raise ValueError("unit_equipable precisa ser boolean em %s." % item.get("id", "<sem id>"))
 
     stat_keys = (
         "attack_damage", "attack_speed", "ability_power",
