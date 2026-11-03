@@ -409,6 +409,7 @@ struct TFTEngine::Impl {
             double fit_score{0.0};
             double reward{0.0};
             std::string comp_direction;
+            std::string comp_focus;
         };
         std::uint64_t action_serial{0};
         std::vector<RecentPurchase> recent_purchases;
@@ -3457,7 +3458,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                                 false,
                                 std::clamp(std::max(0.0, candidate_comp_score) / 40.0, 0.0, 1.0),
                                 0.0,
-                                strategy_before.composition_direction
+                                strategy_before.composition_direction,
+                                strategy_before.composition_focus
                             });
                         }
                         lobby.register_position_state(player_id);
@@ -3825,9 +3827,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                                       current_strategy.planned_unit_ids.end(),
                                       unit.champion_internal_id) != current_strategy.planned_unit_ids.end();
                         const bool composition_changed =
-                            !recent->comp_direction.empty() &&
-                            !current_strategy.composition_direction.empty() &&
-                            recent->comp_direction != current_strategy.composition_direction &&
+                            (recent->comp_direction != current_strategy.composition_direction ||
+                             recent->comp_focus != current_strategy.composition_focus) &&
+                            (!recent->comp_direction.empty() || !recent->comp_focus.empty()) &&
                             !still_core_or_planned;
 
                         // An experiment is justified when a later, better-fit
@@ -4386,6 +4388,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                  it != this->recent_purchases.rend(); ++it) {
                 if (it->action_serial == this->action_serial) {
                     it->comp_direction = this->strategy.back().composition_direction;
+                    it->comp_focus = this->strategy.back().composition_focus;
                     break;
                 }
             }
