@@ -22,6 +22,7 @@ int main() {
 
     assert(invalid_input.has_error());
     assert(static_cast<bool>(invalid_input));
+    (void)unknown; // Also used by assert in debug builds.
     assert(
         invalid_input.code == DecisionErrorCode::INVALID_INPUT
     );
