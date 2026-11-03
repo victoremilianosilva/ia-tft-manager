@@ -23,32 +23,24 @@ int main() {
     using PE = tft::PositioningEngine;
 
     // Repeated reads of an unchanged snapshot reuse the exact evaluation.
-    // A changed signature must force recomputation instead of returning stale data.
+    // A changed signature forces the evaluator to run again and replace the score.
     tft::strategy::BoardEvaluationCache evaluation_cache;
     std::uint32_t evaluations = 0;
-    tft::strategy::BoardEvaluationResult first_result{};
-    first_result.total_score = 1.25;
-    ++evaluations;
-    evaluation_cache.store(1001U, first_result);
-    require(evaluation_cache.matches(1001U) &&
-            evaluation_cache.value().total_score == first_result.total_score,
-            "board evaluation cache should retain the computed snapshot result");
-    if (!evaluation_cache.matches(1001U)) {
-        ++evaluations;
-        evaluation_cache.store(1001U, first_result);
-    }
-    require(evaluations == 1,
-            "unchanged board snapshot must not evaluate the board twice");
-    require(!evaluation_cache.matches(1002U),
-            "a changed board snapshot signature must invalidate the cached result");
-    if (!evaluation_cache.matches(1002U)) {
-        tft::strategy::BoardEvaluationResult changed{};
-        changed.total_score = 2.75;
-        ++evaluations;
-        evaluation_cache.store(1002U, changed);
-    }
-    require(evaluations == 2 && evaluation_cache.value().total_score == 2.75,
-            "changed board snapshot must return a freshly evaluated score");
+    const auto evaluate_snapshot = [&](std::uint64_t signature, double score) {
+        if (!evaluation_cache.matches(signature)) {
+            tft::strategy::BoardEvaluationResult result{};
+            result.total_score = score;
+            ++evaluations;
+            evaluation_cache.store(signature, result);
+        }
+        return evaluation_cache.value().total_score;
+    };
+    require(evaluate_snapshot(1001U, 1.25) == 1.25,
+            "first board snapshot should be evaluated and cached");
+    require(evaluate_snapshot(1001U, 9.99) == 1.25 && evaluations == 1,
+            "unchanged board snapshot must reuse the cached score");
+    require(evaluate_snapshot(1002U, 2.75) == 2.75 && evaluations == 2,
+            "changed board snapshot must recompute and return the updated score");
     evaluation_cache.invalidate();
     require(!evaluation_cache.matches(1002U),
             "explicit cache invalidation must force recomputation");
