@@ -23,23 +23,30 @@ int main() {
     using PE = tft::PositioningEngine;
 
     // Repeated reads of an unchanged snapshot reuse the exact evaluation.
-    // A changed signature forces the evaluator to run again and replace the score.
+    // A changed signature forces a fresh evaluation of the updated board.
     tft::strategy::BoardEvaluationCache evaluation_cache;
     std::uint32_t evaluations = 0;
-    const auto evaluate_snapshot = [&](std::uint64_t signature, double score) {
+    Roles cache_board(PE::size, -1);
+    cache_board[24] = PE::carry;
+    const auto evaluate_snapshot = [&](std::uint64_t signature, const Roles& roles) {
         if (!evaluation_cache.matches(signature)) {
-            tft::strategy::BoardEvaluationResult result{};
-            result.total_score = score;
+            evaluation_cache.store(
+                signature, BoardEvaluation::evaluate(roles));
             ++evaluations;
-            evaluation_cache.store(signature, result);
         }
         return evaluation_cache.value().total_score;
     };
-    require(evaluate_snapshot(1001U, 1.25) == 1.25,
-            "first board snapshot should be evaluated and cached");
-    require(evaluate_snapshot(1001U, 9.99) == 1.25 && evaluations == 1,
+    const double cached_initial = evaluate_snapshot(1001U, cache_board);
+    require(evaluate_snapshot(1001U, cache_board) == cached_initial &&
+            evaluations == 1,
             "unchanged board snapshot must reuse the cached score");
-    require(evaluate_snapshot(1002U, 2.75) == 2.75 && evaluations == 2,
+    Roles changed_cache_board = cache_board;
+    changed_cache_board[17] = PE::tank;
+    const double expected_changed =
+        BoardEvaluation::evaluate(changed_cache_board).total_score;
+    const double cached_changed = evaluate_snapshot(1002U, changed_cache_board);
+    require(evaluations == 2 && cached_changed == expected_changed &&
+            cached_changed != cached_initial,
             "changed board snapshot must recompute and return the updated score");
     evaluation_cache.invalidate();
     require(!evaluation_cache.matches(1002U),
