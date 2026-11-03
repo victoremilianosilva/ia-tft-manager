@@ -3237,6 +3237,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         bool bought_unit_successfully = false;
         bool bought_upgrade = false;
         bool purchase_was_recently_reversed = false;
+        bool sale_has_legitimate_context = false;
         double reversed_purchase_prior_reward = 0.0;
         bool board_capacity_violation = false;
         bool anti_loop_blocked = false;
@@ -3809,14 +3810,22 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     const std::string sold_uuid = unit.uuid;
                     const auto sell_value = EconomyEngine::get_sell_value(
                         definition->cost, unit.star);
+                    const bool sale_bench_was_full =
+                        old_bench_count >= static_cast<int>(kBenchSlots);
+                    const int gold_after_sale = old_gold + sell_value;
+                    const bool sale_economic_need =
+                        (old_gold < EconomyEngine::REROLL_COST &&
+                         gold_after_sale >= EconomyEngine::REROLL_COST) ||
+                        (old_gold < EconomyEngine::BUY_XP_COST &&
+                         gold_after_sale >= EconomyEngine::BUY_XP_COST);
+                    sale_has_legitimate_context =
+                        sale_bench_was_full || sale_economic_need;
                     const auto recent = std::find_if(
                         this->recent_purchases.rbegin(), this->recent_purchases.rend(),
                         [&sold_uuid](const RecentPurchase& purchase) {
                             return !sold_uuid.empty() && purchase.uuid == sold_uuid;
                         });
                     if (recent != this->recent_purchases.rend()) {
-                        const bool bench_was_full =
-                            old_bench_count >= static_cast<int>(kBenchSlots);
                         const auto& current_strategy = this->strategy.empty()
                             ? StrategyInfo{} : this->strategy.back();
                         const bool still_core_or_planned =
@@ -3831,6 +3840,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                              recent->comp_focus != current_strategy.composition_focus) &&
                             (!recent->comp_direction.empty() || !recent->comp_focus.empty()) &&
                             !still_core_or_planned;
+                        sale_has_legitimate_context = sale_has_legitimate_context ||
+                            composition_changed || recent->was_deployed;
 
                         // An experiment is justified when a later, better-fit
                         // purchase is still owned. This preserves flexibility:
@@ -3862,21 +3873,17 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         // economic decision, not an impulsive reversal. The sale
                         // must make a 2g reroll or 4g XP purchase affordable.
                         const int gold_after_sale = old_gold + sell_value;
-                        const bool economic_need =
-                            (old_gold < EconomyEngine::REROLL_COST &&
-                             gold_after_sale >= EconomyEngine::REROLL_COST) ||
-                            (old_gold < EconomyEngine::BUY_XP_COST &&
-                             gold_after_sale >= EconomyEngine::BUY_XP_COST);
-
+                        sale_has_legitimate_context = sale_has_legitimate_context ||
+                            better_alternative_found;
                         if (reward_model::should_penalize_reversed_purchase(
                                 recent->fit_score,
                                 recent->completed_upgrade,
                                 recent->was_deployed,
-                                bench_was_full,
+                                sale_bench_was_full,
                                 composition_changed,
                                 recent->built_pair,
                                 better_alternative_found,
-                                economic_need)) {
+                                sale_economic_need)) {
                             purchase_was_recently_reversed = true;
                             reversed_purchase_prior_reward = recent->reward;
                         }
@@ -4269,8 +4276,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 ? reward_model::sale_quality(
                     sold_unit_fit_score, sold_core_unit,
                     sold_unit_protects_upgrade,
-                    old_bench_count >= static_cast<int>(kBenchSlots),
-                    sale_compensated_by_board_gain)
+                    sale_bench_was_full,
+                    sale_compensated_by_board_gain,
+                    sale_has_legitimate_context)
                 : -0.10;
             if (success && purchase_was_recently_reversed &&
                 old_bench_count < static_cast<int>(kBenchSlots)) {
