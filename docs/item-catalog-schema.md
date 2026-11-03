@@ -37,6 +37,7 @@ The current header-only loader is `cpp/include/items/ItemCatalog.hpp` and accept
         "support": 0,
         "utility": 0
       },
+      "unit_equipable": true,
       "combat_effects": [
         {
           "trigger": "combat_start",
@@ -59,6 +60,7 @@ The current header-only loader is `cpp/include/items/ItemCatalog.hpp` and accept
 - Every finished item must name exactly two known components. Duplicate recipes are rejected.
 - Stats and weights are optional and default to zero; supplied values must be finite, numeric and non-negative.
 - Percentage-like bonuses are represented as fractions where applicable (for example, `0.15` means +15%). The source adapter must normalize the source format to this contract.
+- `unit_equipable` defaults to true. Player-scope items (such as items whose source effect is `MaxArmySizeIncrease`) must set it to false until the lobby implements their player-level behavior; they are not offered as champion equipment, craft targets, or completed-item anvil choices.
 - This schema describes data, not yet a full live item economy. Item drops, lobby persistence, PPO actions/masks and Viewer telemetry are separate integration tasks.
 
 ## Source-effect coverage metadata
