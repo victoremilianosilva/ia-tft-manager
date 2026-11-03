@@ -57,12 +57,33 @@ def _effect_coverage(effects: dict[str, Any]) -> dict[str, list[str]]:
         str(key) for key, value in effects.items()
         if not (_finite_number(value) and float(value) == 0.0)
     )
-    generic_stat = sorted(key for key in active_keys if key in GENERIC_STAT_SOURCE_KEYS)
-    generic_combat = sorted(key for key in active_keys if key in GENERIC_COMBAT_SOURCE_KEYS)
-    not_generic = sorted(
+    stat_fields = {
+        "AS": "attack_speed", "AttackSpeed": "attack_speed",
+        "AP": "ability_power", "AbilityPower": "ability_power",
+        "CritChance": "critical_strike_chance",
+        "CriticalStrikeChance": "critical_strike_chance",
+        "CritDamage": "critical_strike_damage",
+        "CriticalStrikeDamage": "critical_strike_damage",
+        "Health": "health", "HP": "health", "BonusHealth": "health",
+        "Armor": "armor", "MagicResist": "magic_resist", "MR": "magic_resist",
+        "Mana": "mana", "StatOmnivamp": "omnivamp", "Omnivamp": "omnivamp",
+        "DamageAmp": "damage_amplification",
+        "DamageAmplification": "damage_amplification",
+        "DamageReduction": "damage_reduction",
+    }
+    normalized_stats = _normalise_stats(effects)
+    generic_stat = sorted(
         key for key in active_keys
-        if key not in GENERIC_STAT_SOURCE_KEYS and key not in GENERIC_COMBAT_SOURCE_KEYS
+        if key in stat_fields and normalized_stats[stat_fields[key]] > 0.0
     )
+    generic_combat = []
+    if _percent_fraction(effects, "AD", "BonusAD") > 0.0:
+        generic_combat.extend(key for key in ("AD", "BonusAD") if key in active_keys)
+    if _nonnegative_effect(effects, "ManaRegen") > 0.0 and "ManaRegen" in active_keys:
+        generic_combat.append("ManaRegen")
+    generic_combat = sorted(generic_combat)
+    normalized = set(generic_stat) | set(generic_combat)
+    not_generic = sorted(key for key in active_keys if key not in normalized)
     return {
         "source_keys": active_keys,
         "generic_stat_keys": generic_stat,
