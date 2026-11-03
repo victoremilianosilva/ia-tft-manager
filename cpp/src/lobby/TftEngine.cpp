@@ -3225,6 +3225,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         const double old_positioning_score = lobby.positioning_score(player_id);
         bool sold_core_unit = false;
         bool sold_unit_protects_upgrade = false;
+        double sold_unit_upgrade_strength = 0.0;
         double sold_unit_fit_score = 0.0;
         bool displaced_core_unit = false;
         bool buy_completes_upgrade = false;
@@ -3918,8 +3919,35 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         count_upgrade_copies(candidate);
                     // Only same-star copies form a pair. For a 2-star sale, three
                     // 1-star copies also represent a concrete route to another 2-star.
-                    sold_unit_protects_upgrade = reward_model::protects_upgrade_path(
+                    sold_unit_upgrade_strength = reward_model::upgrade_path_strength(
                         unit.star, same_star_copies, one_star_copies);
+                    sold_unit_protects_upgrade = sold_unit_upgrade_strength >= 0.45;
+
+                    // A genuinely stronger owned option can justify releasing a
+                    // planned/core slot. Compare only against units that fit the
+                    // active plan materially better, not merely any owned unit.
+                    if (sold_core_unit && !this->strategy.empty()) {
+                        const auto has_better_owned_fit = [&](const auto& candidate) {
+                            if (!candidate ||
+                                candidate->champion_internal_id == unit.champion_internal_id)
+                                return false;
+                            const auto* candidate_def = lobby.catalog->find_by_id(
+                                candidate->champion_internal_id);
+                            if (!candidate_def) return false;
+                            const double candidate_fit = std::clamp(
+                                unit_composition_score(current_strategy, *candidate_def,
+                                    candidate->star, lobby.trait_milestones) / 32.5,
+                                0.0, 1.0);
+                            return candidate_fit >= sold_unit_fit_score + 0.10;
+                        };
+                        const bool better_owned_substitute =
+                            std::any_of(this->board.begin(), this->board.end(),
+                                has_better_owned_fit) ||
+                            std::any_of(this->bench.begin(), this->bench.end(),
+                                has_better_owned_fit);
+                        sale_has_legitimate_context =
+                            sale_has_legitimate_context || better_owned_substitute;
+                    }
                     // Só confirma a venda se a devolução ao pool
                     // for aceita.
                     bool returned_all_copies = true;
@@ -4279,7 +4307,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     sold_unit_protects_upgrade,
                     sale_bench_was_full,
                     sale_compensated_by_board_gain,
-                    sale_has_legitimate_context)
+                    sale_has_legitimate_context,
+                    sold_unit_upgrade_strength)
                 : -0.10;
             if (success && purchase_was_recently_reversed &&
                 old_bench_count < static_cast<int>(kBenchSlots)) {
