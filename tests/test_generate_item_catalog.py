@@ -185,6 +185,21 @@ def test_semantic_validation_accepts_active_repository_catalog():
     validate_catalog_semantics(catalog)
     for item in catalog["items"]:
         assert item["effect_coverage"] == _effect_coverage(item.get("source_effects", {}))
+        effects = item.get("source_effects", {})
+        expected_unit_scope = not (
+            float(effects.get("MaxArmySizeIncrease") or 0) > 0
+            or float(effects.get("PercentGoldChance") or 0) > 0
+        )
+        assert item["unit_equipable"] is expected_unit_scope
+
+    non_unit_items = {
+        item["id"] for item in catalog["items"] if not item["unit_equipable"]
+    }
+    assert non_unit_items == {
+        "TFT_Item_ForceOfNature",
+        "TFT_Item_TacticiansRing",
+        "TFT_Item_TacticiansScepter",
+    }
 
 
 def test_source_mana_regen_becomes_generic_combat_effect():
