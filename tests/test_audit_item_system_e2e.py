@@ -38,9 +38,10 @@ def make_masks(pass_only=True):
 
 
 class FakeLobby:
-    def __init__(self, seed=0, complete=True):
+    def __init__(self, seed=0, complete=True, events=None):
         self.seed = seed
         self.complete = complete
+        self.events = list(events or [])
         self.finished = False
         self.players = [type("Player", (), {"alive": True})() for _ in range(8)]
         self.closed = False
@@ -57,7 +58,7 @@ class FakeLobby:
             np.zeros((8, 252), dtype=np.float32),
             np.zeros(8, dtype=np.float32),
             self.complete,
-            {"round": 1, "events": []},
+            {"round": 1, "events": self.events},
         )
 
     def get_public_state(self):
@@ -109,6 +110,36 @@ class ItemSystemE2EAuditTests(unittest.TestCase):
             persisted = json.loads((root / "out" / "audit.json").read_text(encoding="utf-8"))
             self.assertEqual(persisted["status"], "passed")
             self.assertTrue(instances[0].closed)
+
+    def test_item_pipeline_counts_loot_anvil_and_applied_equipment_separately(self):
+        events = [
+            "COMPONENT_LOOT_GRANTED: player=0, stage=2, count=1, source=pve_direct_drop",
+            "COMPONENT_ANVIL_GRANTED: player=0, stage=4, source=pve_4_7",
+            "ITEM_ANVIL_CHOSEN: player=0, kind=anvil_component_choice, item=DA_Component_Bow, stage=4",
+            "ITEM_ACTION_APPLIED: player=0, kind=equip_inventory_item, item=TFT_Item_Deathblade, target_uuid=unit-0, fit=4.0, reward=0.1, stage=5",
+            "ITEM_ACTION_APPLIED: player=1, kind=craft_and_equip, item=TFT_Item_GargoyleStoneplate, target_uuid=unit-1, fit=3.0, reward=0.08, stage=5",
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            checkpoint = root / "policy.pt"
+            self._checkpoint(checkpoint)
+            lobby = FakeLobby(events=events)
+            report = run_audit(
+                checkpoint, root / "out",
+                env_factory=lambda seed: lobby, max_steps=2,
+            )
+            self.assertEqual(
+                report["item_pipeline"]["acquisition_and_usage_events"]["COMPONENT_LOOT_GRANTED"],
+                1,
+            )
+            self.assertEqual(
+                report["item_pipeline"]["acquisition_and_usage_events"]["ITEM_ANVIL_CHOSEN"],
+                1,
+            )
+            self.assertEqual(report["item_action_counts"]["EQUIP_FROM_INVENTORY"], 1)
+            self.assertEqual(report["item_action_counts"]["CRAFT_AND_EQUIP"], 1)
+            self.assertEqual(report["player_metrics"]["0"]["item_actions"], 1)
+            self.assertEqual(report["player_metrics"]["1"]["item_actions"], 1)
 
     def test_truncated_match_is_failure_not_success(self):
         with tempfile.TemporaryDirectory() as directory:
