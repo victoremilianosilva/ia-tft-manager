@@ -72,6 +72,20 @@ int main(int argc, char** argv) {
             return 10;
         }
 
+        for (const auto* player_scope_id : {
+                 "TFT_Item_ForceOfNature",
+                 "TFT_Item_TacticiansRing",
+                 "TFT_Item_TacticiansScepter"}) {
+            const auto found = std::find_if(
+                catalog.items.begin(), catalog.items.end(),
+                [&](const auto& item) { return item.id == player_scope_id; });
+            if (found == catalog.items.end() || found->unit_equipable) {
+                std::cerr << "player-scope item must not be unit equipment: "
+                          << player_scope_id << '\\n';
+                return 11;
+            }
+        }
+
         std::cout << "Loaded active item catalog: "
                   << component_ids.size() << " components, "
                   << item_ids.size() << " items, "
