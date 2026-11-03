@@ -173,6 +173,9 @@ int main() {
             std::abs(combat_damage.omnivamp - 0.10f) < 0.001f,
             "item catalog definition should map to combat item stats");
 
+    UnitProfile carry{"carry-1", 2, 1, false, true, 80.0, 1.2, 0.0, 900.0, 30.0, 30.0, 0.9};
+    UnitProfile tank{"tank-1", 2, 0, true, false, 35.0, 0.7, 0.0, 1800.0, 70.0, 60.0, 0.8};
+
     // Supported special passives must contribute to compatibility even when
     // the item has no flat stats. Offensive passives favor carries; defensive
     // passives favor frontline recipients.
@@ -240,8 +243,6 @@ int main() {
     ItemEngine engine({damage, guard, double_component});
     require(!engine.add_component("unknown_component"),
             "component IDs outside the loaded recipe catalog must be rejected");
-    UnitProfile carry{"carry-1", 2, 1, false, true, 80.0, 1.2, 0.0, 900.0, 30.0, 30.0, 0.9};
-    UnitProfile tank{"tank-1", 2, 0, true, false, 35.0, 0.7, 0.0, 1800.0, 70.0, 60.0, 0.8};
 
     require(engine.add_component("sword"), "component should be accepted");
     require(engine.add_component("bow"), "component should be accepted");
