@@ -41,7 +41,7 @@ MASK_SHAPES = {
 ACTION_NAMES = {
     0: "BUY", 1: "REROLL", 2: "BUY_XP", 3: "MOVE_BENCH",
     4: "MOVE_BOARD", 5: "SELL", 6: "PASS",
-    7: "EQUIP_FROM_INVENTORY", 8: "CRAFT_AND_EQUIP",
+    7: "ITEM_CHOICE_OR_EQUIP", 8: "CRAFT_AND_EQUIP",
 }
 
 
@@ -218,6 +218,8 @@ def run_audit(
     }
     action_counts = Counter()
     item_counts = Counter()
+    item_pipeline_counts = Counter()
+    item_actions_by_kind = Counter()
     total_events = 0
     complete = False
     try:
@@ -278,9 +280,6 @@ def run_audit(
                         action_counts[action_name] += 1
                         player_metric = report["player_metrics"][str(player_id)]
                         player_metric["actions"] += 1
-                        if int(values[0]) in (7, 8):
-                            item_counts[action_name] += 1
-                            player_metric["item_actions"] += 1
                         step_actions.append(action_dict(values))
                     else:
                         step_actions.append({"type": 6})
@@ -297,6 +296,36 @@ def run_audit(
                     player_metric["reward_steps"] += 1
                 events = info.get("events", []) if isinstance(info, dict) else []
                 total_events += len(events) if isinstance(events, list) else 0
+                if isinstance(events, list):
+                    for event in events:
+                        if not isinstance(event, str):
+                            continue
+                        event_type = event.split(":", 1)[0]
+                        if event_type in {
+                            "COMPONENT_LOOT_GRANTED",
+                            "COMPONENT_ANVIL_GRANTED",
+                            "COMPLETED_ITEM_ANVIL_GRANTED",
+                            "ITEM_ANVIL_CHOSEN",
+                            "ITEM_ACTION_APPLIED",
+                            "COMBAT_ITEM_INPUT",
+                        }:
+                            item_pipeline_counts[event_type] += 1
+                        if event_type == "ITEM_ACTION_APPLIED":
+                            event_fields = {}
+                            event_payload = event.split(":", 1)[1] if ":" in event else event
+                            for field in event_payload.split(","):
+                                key, separator, value = field.strip().partition("=")
+                                if separator:
+                                    event_fields[key] = value
+                            kind = event_fields.get("kind", "")
+                            player_id = event_fields.get("player", "")
+                            item_actions_by_kind[kind] += 1
+                            if kind == "equip_inventory_item":
+                                item_counts["EQUIP_FROM_INVENTORY"] += 1
+                            elif kind == "craft_and_equip":
+                                item_counts["CRAFT_AND_EQUIP"] += 1
+                            if player_id in report["player_metrics"]:
+                                report["player_metrics"][player_id]["item_actions"] += 1
                 trace.write(json.dumps({
                     "step": step,
                     "round": info.get("round") if isinstance(info, dict) else None,
@@ -319,6 +348,33 @@ def run_audit(
             "EQUIP_FROM_INVENTORY": int(item_counts["EQUIP_FROM_INVENTORY"]),
             "CRAFT_AND_EQUIP": int(item_counts["CRAFT_AND_EQUIP"]),
             "total_item_actions": int(item_counts["EQUIP_FROM_INVENTORY"] + item_counts["CRAFT_AND_EQUIP"]),
+        }
+        acquisition_events = sum(
+            item_pipeline_counts[name] for name in (
+                "COMPONENT_LOOT_GRANTED",
+                "COMPONENT_ANVIL_GRANTED",
+                "COMPLETED_ITEM_ANVIL_GRANTED",
+            )
+        )
+        applied_equipment = int(
+            item_counts["EQUIP_FROM_INVENTORY"] + item_counts["CRAFT_AND_EQUIP"]
+        )
+        combat_item_inputs = int(item_pipeline_counts["COMBAT_ITEM_INPUT"])
+        if acquisition_events == 0:
+            item_cycle_status = "no_acquisition_observed"
+        elif applied_equipment == 0:
+            item_cycle_status = "acquired_but_not_equipped"
+        elif combat_item_inputs == 0:
+            item_cycle_status = "equipped_but_not_seen_in_combat"
+        else:
+            item_cycle_status = "item_reached_combat_input"
+        report["item_pipeline"] = {
+            "acquisition_and_usage_events": dict(item_pipeline_counts),
+            "applied_action_kinds": dict(item_actions_by_kind),
+            "acquisition_event_count": acquisition_events,
+            "applied_equipment_count": applied_equipment,
+            "combat_item_input_count": combat_item_inputs,
+            "cycle_status": item_cycle_status,
         }
         report["native_event_count"] = total_events
         report["complete_match"] = complete

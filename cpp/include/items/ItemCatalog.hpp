@@ -19,6 +19,10 @@ namespace tft::items {
 struct ItemCatalog {
     std::string set_id;
     std::vector<std::pair<std::string, std::string>> components;
+    // Subset eligible for the active set's normal PvE component pool.
+    // Special components (for example, Set 18's Pan/Spatula) remain valid
+    // recipe dimensions but are not ordinary PvE component drops.
+    std::vector<std::string> pve_loot_components;
     std::vector<ItemDefinition> items;
 };
 
@@ -66,6 +70,17 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             throw std::invalid_argument("Empty or duplicate item component id/name");
         }
         catalog.components.emplace_back(id, name);
+        bool pve_loot_eligible = true; // schema-v1 legacy fixtures remain compatible
+        if (component.contains("pve_loot_eligible")) {
+            if (!component["pve_loot_eligible"].is_boolean())
+                throw std::invalid_argument("pve_loot_eligible must be boolean");
+            pve_loot_eligible = component["pve_loot_eligible"].get<bool>();
+        }
+        if (pve_loot_eligible) catalog.pve_loot_components.push_back(id);
+    }
+
+    if (catalog.pve_loot_components.size() > 8) {
+        throw std::invalid_argument("PvE component loot pool cannot exceed eight basic components");
     }
 
     if (catalog.components.size() > 10) {
@@ -86,6 +101,45 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             CombatEffectDefinition effect;
             effect.trigger = raw["trigger"].get<std::string>();
             effect.operation = raw["operation"].get<std::string>();
+            const bool supported_operation =
+                effect.operation == "add_stat" ||
+                effect.operation == "bonus_damage" ||
+                effect.operation == "heal_max_hp_pct" ||
+                effect.operation == "grant_charges" ||
+                effect.operation == "mana_regen";
+            if (!supported_operation) {
+                throw std::invalid_argument(
+                    "Unsupported combat effect operation (not implemented by CombatEngine): " +
+                    effect.operation);
+            }
+            const bool supported_trigger =
+                effect.trigger.empty() ||
+                effect.trigger == "combat_start" ||
+                effect.trigger == "on_attack" ||
+                effect.trigger == "on_kill" ||
+                effect.trigger == "after_delay" ||
+                effect.trigger == "while_hp_below" ||
+                effect.trigger == "on_ally_shield";
+            if (!supported_trigger) {
+                throw std::invalid_argument(
+                    "Unsupported combat effect trigger (not implemented by CombatEngine): " +
+                    effect.trigger);
+            }
+            const bool supported_pair =
+                (effect.operation == "add_stat" &&
+                    (effect.trigger == "combat_start" || effect.trigger == "after_delay" ||
+                     effect.trigger == "while_hp_below" || effect.trigger == "on_ally_shield")) ||
+                (effect.operation == "bonus_damage" && effect.trigger == "on_attack") ||
+                (effect.operation == "heal_max_hp_pct" &&
+                    (effect.trigger == "on_kill" || effect.trigger == "on_attack")) ||
+                (effect.operation == "grant_charges" && effect.trigger == "on_kill") ||
+                (effect.operation == "mana_regen" &&
+                    (effect.trigger.empty() || effect.trigger == "combat_start"));
+            if (!supported_pair) {
+                throw std::invalid_argument(
+                    "Unsupported combat effect operation/trigger pair: " +
+                    effect.operation + "/" + effect.trigger);
+            }
             const auto read_string = [&](const char* key, std::string& output) {
                 if (!raw.contains(key)) return;
                 if (!raw[key].is_string()) {
@@ -98,6 +152,71 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             read_string("condition", effect.condition);
             read_string("condition_trait", effect.condition_trait);
             read_string("stack_key", effect.stack_key);
+            const bool supported_condition =
+                effect.condition.empty() ||
+                effect.condition == "has_trait" ||
+                effect.condition == "trait_count_at_least" ||
+                effect.condition == "role_tank" ||
+                effect.condition == "role_fighter" ||
+                effect.condition == "role_assassin" ||
+                effect.condition == "role_other";
+            if (!supported_condition) {
+                throw std::invalid_argument(
+                    "Unsupported combat effect condition: " + effect.condition);
+            }
+            if ((effect.condition == "has_trait" ||
+                 effect.condition == "trait_count_at_least") &&
+                effect.condition_trait.empty()) {
+                throw std::invalid_argument(
+                    "Trait-conditioned combat effect requires condition_trait");
+            }
+            const bool supported_target =
+                effect.target.empty() || effect.target == "self" ||
+                effect.target == "allies" ||
+                effect.target == "allies_same_row_within_1";
+            if (!supported_target) {
+                throw std::invalid_argument(
+                    "Unsupported combat effect target: " + effect.target);
+            }
+            if ((effect.operation == "mana_regen" ||
+                 effect.operation == "grant_charges" ||
+                 effect.operation == "heal_max_hp_pct") &&
+                !effect.target.empty() && effect.target != "self") {
+                throw std::invalid_argument(
+                    "This combat effect operation only supports the self target: " +
+                    effect.operation);
+            }
+            if (effect.operation == "bonus_damage" &&
+                effect.target == "allies_same_row_within_1") {
+                throw std::invalid_argument(
+                    "bonus_damage does not support allies_same_row_within_1");
+            }
+            if (effect.operation == "add_stat") {
+                const bool supported_stat =
+                    effect.stat == "attack_damage" ||
+                    effect.stat == "attack_speed" ||
+                    effect.stat == "ability_power" ||
+                    effect.stat == "armor" ||
+                    effect.stat == "magic_resist" ||
+                    effect.stat == "omnivamp" ||
+                    effect.stat == "damage_amplification" ||
+                    effect.stat == "damage_reduction" ||
+                    effect.stat == "max_hp";
+                if (!supported_stat) {
+                    throw std::invalid_argument(
+                        "Unsupported add_stat target (not implemented by CombatEngine): " +
+                        effect.stat);
+                }
+            }
+            if (effect.operation == "grant_charges" && effect.stack_key.empty()) {
+                throw std::invalid_argument(
+                    "grant_charges requires a non-empty stack_key");
+            }
+            if (effect.operation == "heal_max_hp_pct" &&
+                effect.trigger == "on_attack" && effect.stack_key.empty()) {
+                throw std::invalid_argument(
+                    "on_attack heal_max_hp_pct requires a non-empty stack_key");
+            }
             if (raw.contains("damage_type")) {
                 if (!raw["damage_type"].is_string()) {
                     throw std::invalid_argument("combat effect damage_type must be a string");
@@ -148,6 +267,33 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             };
             read_bool("percent_of_max_health", effect.percent_of_max_health);
             read_bool("percent_of_stat", effect.percent_of_stat);
+            if (effect.operation == "add_stat" && effect.percent_of_max_health) {
+                throw std::invalid_argument(
+                    "add_stat does not support percent_of_max_health; use percent_of_stat");
+            }
+            if (effect.operation == "bonus_damage" &&
+                effect.percent_of_max_health && effect.percent_of_stat) {
+                throw std::invalid_argument(
+                    "bonus_damage cannot combine percent_of_max_health and percent_of_stat");
+            }
+            if (effect.operation == "bonus_damage" && effect.percent_of_stat) {
+                const bool supported_damage_stat =
+                    effect.stat == "attack_damage" ||
+                    effect.stat == "attack_speed" ||
+                    effect.stat == "ability_power" ||
+                    effect.stat == "max_hp" ||
+                    effect.stat == "armor" ||
+                    effect.stat == "magic_resist";
+                if (!supported_damage_stat) {
+                    throw std::invalid_argument(
+                        "bonus_damage percent_of_stat requires a supported stat");
+                }
+            }
+            if (effect.condition == "trait_count_at_least" &&
+                effect.min_trait_count <= 0) {
+                throw std::invalid_argument(
+                    "trait_count_at_least requires positive min_trait_count");
+            }
             parsed.push_back(std::move(effect));
         }
         return parsed;
@@ -252,6 +398,12 @@ inline ItemCatalog load_item_catalog(std::istream& input) {
             }
             item.granted_trait_active_count =
                 entry["granted_trait_active_count"].get<int>();
+        }
+        if (entry.contains("unit_equipable")) {
+            if (!entry["unit_equipable"].is_boolean()) {
+                throw std::invalid_argument("unit_equipable must be a boolean");
+            }
+            item.unit_equipable = entry["unit_equipable"].get<bool>();
         }
         if (entry.contains("combat_effects")) {
             item.combat_effects = parse_effects(entry["combat_effects"]);

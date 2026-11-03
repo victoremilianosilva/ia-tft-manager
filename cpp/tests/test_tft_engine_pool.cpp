@@ -946,21 +946,28 @@ int main(int argc, char** argv) {
         }
 
         if (!anvil_catalog_path.empty()) {
-            tft::TFTEngine anvil_engine(246801, json_path, anvil_catalog_path);
-            // This test isolates loot/anvil scheduling, not combat survival.
-            // Keep every participant alive long enough to exercise rounds 2-7,
-            // 4-7, 5-7 and 6-7 without weakening production elimination rules.
+            tft::TFTEngine loot_engine(246801, json_path, anvil_catalog_path);
+            // Isolate PvE loot scheduling from combat survival.
             for (std::int32_t player = 0;
                  player < static_cast<std::int32_t>(tft::kPlayersPerLobby); ++player) {
-                require(anvil_engine.set_player_hp_for_testing(player, 10000.0f),
-                        "Nao foi possivel preparar HP alto para teste de bigorna.");
+                require(loot_engine.set_player_hp_for_testing(player, 10000.0f),
+                        "Nao foi possivel preparar HP alto para teste de loot.");
             }
             std::array<tft::PlayerAction, tft::kPlayersPerLobby> pass_actions{};
             for (auto& action : pass_actions) action.values = {6, 0, 0, 0, 0, 0};
             const auto finish_round = [&]() {
                 tft::StepResult result;
-                for (int action = 0; action < 15; ++action)
-                    result = step_with_pending_anvils(anvil_engine, pass_actions);
+                // PvE loot is emitted on the step that advances the round.
+                // Preserve events from every action: the final action in the
+                // round usually has no reward event and must not overwrite it.
+                for (int action = 0; action < 15; ++action) {
+                    auto step = step_with_pending_anvils(loot_engine, pass_actions);
+                    result.events.insert(result.events.end(),
+                                         step.events.begin(), step.events.end());
+                    result.observations = std::move(step.observations);
+                    result.rewards = std::move(step.rewards);
+                    result.dones = std::move(step.dones);
+                }
                 return result;
             };
             const auto contains_event = [](const tft::StepResult& result,
@@ -968,78 +975,47 @@ int main(int argc, char** argv) {
                 return std::any_of(result.events.begin(), result.events.end(),
                     [&](const std::string& event) { return event.rfind(prefix, 0) == 0; });
             };
-            const auto resolve_anvil = [&](std::size_t expected_options,
-                                                std::int32_t expected_kind) {
-                const auto masks = anvil_engine.get_action_masks();
-                const auto pending_snapshot = anvil_engine.get_audit_snapshot();
+            const auto require_no_pending_choice = [&]() {
+                const auto masks = loot_engine.get_action_masks();
+                const auto snapshot = loot_engine.get_audit_snapshot();
                 for (std::size_t player = 0; player < tft::kPlayersPerLobby; ++player) {
-                    require(pending_snapshot.players[player].pending_anvil &&
-                            pending_snapshot.players[player].pending_anvil_kind == expected_kind &&
-                            pending_snapshot.players[player].pending_anvil_options.size() == expected_options,
-                            "Snapshot de auditoria nao identificou o tipo e as opcoes da bigorna.");
-                    const auto& mask = masks[player];
-                    require(mask.type_mask[6] == 0 && mask.type_mask[7] == 1 &&
-                            std::count(mask.type_mask.begin(), mask.type_mask.end(), 1) == 1,
-                            "Bigorna pendente nao tornou a escolha a unica acao legal.");
-                    require(mask.item_target_mask[0] == 1,
-                            "Bigorna nao habilitou o indice sentinela do alvo.");
-                    require(std::count(mask.item_inventory_mask.begin(),
-                                       mask.item_inventory_mask.end(), 1) ==
-                                static_cast<std::ptrdiff_t>(expected_options),
-                            "Bigorna nao expos exatamente a quantidade esperada de opcoes.");
+                    require(!snapshot.players[player].pending_anvil,
+                            "Drop direto abriu uma escolha obrigatoria de bigorna.");
+                    require(masks[player].type_mask[6] == 1,
+                            "Drop direto bloqueou PASS como se houvesse bigorna pendente.");
                 }
-                std::array<tft::PlayerAction, tft::kPlayersPerLobby> choices{};
-                std::string selected_option;
-                for (std::size_t player = 0; player < tft::kPlayersPerLobby; ++player) {
-                    const auto& option_mask = masks[player].item_inventory_mask;
-                    const auto option = std::find(option_mask.begin(), option_mask.end(), 1);
-                    require(option != option_mask.end(), "Bigorna nao possui opcao selecionavel.");
-                    const auto option_index = static_cast<std::size_t>(
-                        std::distance(option_mask.begin(), option));
-                    if (player == 0)
-                        selected_option = pending_snapshot.players[player].pending_anvil_options[option_index];
-                    choices[player].values = {7, static_cast<std::int32_t>(option_index), 0, 0, 0, 0};
-                }
-                (void)anvil_engine.step(choices);
-                const auto selected_snapshot = anvil_engine.get_audit_snapshot();
-                require(selected_snapshot.players[0].last_item_action_kind ==
-                            (expected_kind == 0 ? "anvil_component_choice" : "anvil_completed_item_choice") &&
-                        selected_snapshot.players[0].last_item_id == selected_option &&
-                        selected_snapshot.players[0].last_item_target_uuid.empty(),
-                        "Escolha da bigorna foi confundida com equipagem normal no snapshot.");
-                tft::StepResult result;
-                for (int action = 1; action < 15; ++action)
-                    result = step_with_pending_anvils(anvil_engine, pass_actions);
-                require(anvil_engine.round() > 0,
-                        "Resolucao da bigorna impediu o avanco normal da rodada.");
-                const auto after = anvil_engine.get_action_masks();
-                for (const auto& mask : after)
-                    require(mask.type_mask[6] == 1,
-                            "Bigorna continuou bloqueando PASS depois da escolha.");
             };
 
             tft::StepResult round_result;
-            while (anvil_engine.round() < 11) round_result = finish_round();
+            const auto advance_until = [&](std::uint32_t target_round) {
+                std::vector<std::string> accumulated_events;
+                while (loot_engine.round() < target_round) {
+                    auto step = finish_round();
+                    accumulated_events.insert(accumulated_events.end(),
+                                               step.events.begin(), step.events.end());
+                }
+                round_result.events = std::move(accumulated_events);
+            };
+
+            advance_until(11);
             require(contains_event(round_result, "COMPONENT_LOOT_GRANTED:"),
                     "O loot normal de 2-7 nao concedeu componente diretamente.");
-            for (const auto& mask : anvil_engine.get_action_masks())
-                require(mask.type_mask[6] == 1,
-                        "O loot normal de 2-7 abriu indevidamente uma escolha obrigatoria.");
+            require_no_pending_choice();
 
-            while (anvil_engine.round() < 25) round_result = finish_round();
-            require(contains_event(round_result, "COMPONENT_ANVIL_GRANTED:"),
-                    "A rodada 4-7 nao concedeu bigorna de componentes.");
-            resolve_anvil(3, 0);
+            advance_until(25);
+            require(contains_event(round_result, "COMPONENT_LOOT_GRANTED:"),
+                    "A rodada 4-7 nao concedeu componentes diretamente.");
+            require_no_pending_choice();
 
-            while (anvil_engine.round() < 32) round_result = finish_round();
-            require(contains_event(round_result, "COMPLETED_ITEM_ANVIL_GRANTED:"),
-                    "A rodada 5-7 nao concedeu bigorna de itens completos.");
-            resolve_anvil(4, 1);
+            advance_until(32);
+            require(contains_event(round_result, "COMPLETED_ITEM_GRANTED:"),
+                    "A rodada 5-7 nao concedeu item completo diretamente.");
+            require_no_pending_choice();
 
-            while (anvil_engine.round() < 39) round_result = finish_round();
-            require(contains_event(round_result, "COMPLETED_ITEM_ANVIL_GRANTED:"),
-                    "A rodada 6-7 nao concedeu bigorna de itens completos.");
-            resolve_anvil(4, 1);
+            advance_until(39);
+            require(contains_event(round_result, "COMPLETED_ITEM_GRANTED:"),
+                    "A rodada 6-7 nao concedeu item completo diretamente.");
+            require_no_pending_choice();
         }
 
         std::cout << "TFTEngine + loja/economia/ActionMask/AntiLoop/CompLock: OK\n";

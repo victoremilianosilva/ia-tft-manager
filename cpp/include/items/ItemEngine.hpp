@@ -46,6 +46,10 @@ struct ItemDefinition {
     int granted_trait_active_count{1};
     std::vector<CombatEffectDefinition> combat_effects;
     std::vector<std::string> deferred_stats;
+    // Appended to preserve existing aggregate initializers.
+    // Player-scope items must not be attached to a champion until their
+    // player-level effect is modeled by the lobby.
+    bool unit_equipable{true};
 };
 
 struct UnitProfile {
@@ -182,7 +186,8 @@ public:
 
     // Called by game loot/armory events, never by the policy action decoder.
     bool add_completed_item(const std::string& item_id) {
-        if (!find(item_id)) {
+        const auto* definition = find(item_id);
+        if (!definition || !definition->unit_equipable) {
             ++metrics_.invalid_actions;
             return false;
         }
@@ -193,7 +198,8 @@ public:
     [[nodiscard]] bool can_craft(const std::string& first,
                                 const std::string& second) const {
         const auto recipe = craftable_item(first, second);
-        if (!recipe) return false;
+        const auto* definition = recipe ? find(*recipe) : nullptr;
+        if (!definition || !definition->unit_equipable) return false;
         const auto count = [this](const std::string& id) {
             return static_cast<std::size_t>(std::count(
                 components_.begin(), components_.end(), id));
@@ -204,7 +210,9 @@ public:
 
     [[nodiscard]] bool can_equip(const std::string& item_id,
                                 const std::string& unit_uuid) const {
-        return !unit_uuid.empty() && has_item(item_id) &&
+        const auto* definition = find(item_id);
+        return definition && definition->unit_equipable &&
+            !unit_uuid.empty() && has_item(item_id) &&
             equipped(unit_uuid).size() < kMaxItemsPerUnit;
     }
 
@@ -216,6 +224,11 @@ public:
         }
         const auto recipe = recipes_.find(recipe_key(first, second));
         if (recipe == recipes_.end()) {
+            ++metrics_.invalid_actions;
+            return std::nullopt;
+        }
+        const auto* crafted_definition = find(recipe->second);
+        if (!crafted_definition || !crafted_definition->unit_equipable) {
             ++metrics_.invalid_actions;
             return std::nullopt;
         }
@@ -251,7 +264,9 @@ public:
         const auto target_items = equipped_.find(target.uuid);
         const std::size_t target_count = target_items == equipped_.end()
             ? 0U : target_items->second.size();
-        if (!has_item(item_id) || target.uuid.empty() ||
+        const auto* definition = find(item_id);
+        if (!definition || !definition->unit_equipable ||
+            !has_item(item_id) || target.uuid.empty() ||
             target_count >= kMaxItemsPerUnit) {
             ++metrics_.invalid_actions;
             return false;
@@ -320,12 +335,119 @@ public:
         return it->second;
     }
 
-    // Estimate only marginal item value. Actual combat remains the source of
-    // truth; composition fit and current role are inputs, not fixed labels.
+    // Score only effects that CombatEngine currently interprets. This keeps
+    // unsupported source passives from being rewarded as if they were active.
+    // The score is deliberately bounded and role-aware; it is shaping, not a
+    // hard target selector.
+    [[nodiscard]] double item_effect_strength(
+        const std::string& item_id, const UnitProfile& unit
+    ) const noexcept {
+        const auto* item = find(item_id);
+        if (!item || unit.uuid.empty()) return 0.0;
+
+        const auto normalize_trait = [](const std::string& value) {
+            std::string normalized;
+            normalized.reserve(value.size());
+            for (const unsigned char ch : value) {
+                if (std::isalnum(ch))
+                    normalized.push_back(static_cast<char>(std::tolower(ch)));
+            }
+            return normalized;
+        };
+        double total = 0.0;
+        for (const auto& effect : item->combat_effects) {
+            if (effect.value <= 0.0f) continue;
+            const bool team_target = effect.target == "allies" ||
+                effect.target == "allies_same_row_within_1";
+            // For team auras, role conditions filter allied recipients in
+            // CombatEngine, not the item holder whose profile is being scored.
+            if (!team_target && effect.condition == "role_tank" && unit.role != 0) continue;
+            if (!team_target && effect.condition == "role_fighter" && unit.role != 3) continue;
+            if (!team_target && effect.condition == "role_assassin" && unit.role != 4) continue;
+            if (!team_target && effect.condition == "role_other" &&
+                (unit.role == 0 || unit.role == 3 || unit.role == 4)) continue;
+            // The profile has trait identities but not live lobby trait counts.
+            // Do not reward a threshold-gated passive without enough information.
+            if (effect.condition == "trait_count_at_least") continue;
+            if (effect.condition == "has_trait") {
+                const auto separator = effect.condition_trait.find_last_of('_');
+                const auto suffix = separator == std::string::npos
+                    ? effect.condition_trait
+                    : effect.condition_trait.substr(separator + 1);
+                const auto full_key = normalize_trait(effect.condition_trait);
+                const auto suffix_key = normalize_trait(suffix);
+                const bool has_condition_trait = std::any_of(
+                    unit.traits.begin(), unit.traits.end(),
+                    [&](const std::string& trait) {
+                        const auto key = normalize_trait(trait);
+                        return key == full_key || key == suffix_key;
+                    });
+                if (!has_condition_trait) continue;
+            }
+
+            double semantic_weight = 0.0;
+            if (effect.operation == "add_stat") {
+                if (effect.stat == "attack_damage" ||
+                    effect.stat == "attack_speed" ||
+                    effect.stat == "ability_power") {
+                    semantic_weight = 0.30;
+                } else if (effect.stat == "armor" ||
+                           effect.stat == "magic_resist" ||
+                           effect.stat == "max_hp" ||
+                           effect.stat == "damage_reduction") {
+                    semantic_weight = 0.30;
+                } else if (effect.stat == "omnivamp" ||
+                           effect.stat == "damage_amplification") {
+                    semantic_weight = 0.28;
+                }
+            } else if (effect.operation == "bonus_damage") {
+                semantic_weight = 0.34;
+            } else if (effect.operation == "heal_max_hp_pct") {
+                semantic_weight = 0.30;
+            } else if (effect.operation == "mana_regen") {
+                semantic_weight = 0.24;
+            } else if (effect.operation == "grant_charges") {
+                semantic_weight = 0.18;
+            }
+            if (semantic_weight <= 0.0) continue;
+
+            const bool offensive = effect.operation == "bonus_damage" ||
+                effect.stat == "attack_damage" ||
+                effect.stat == "attack_speed" ||
+                effect.stat == "ability_power" ||
+                effect.stat == "damage_amplification";
+            const bool defensive = effect.stat == "armor" ||
+                effect.stat == "magic_resist" || effect.stat == "max_hp" ||
+                effect.stat == "damage_reduction";
+            const bool supportive = effect.operation == "heal_max_hp_pct" ||
+                effect.target == "allies" ||
+                effect.target == "allies_same_row_within_1";
+
+            double role_multiplier = 0.75;
+            if (supportive) role_multiplier = unit.role == 2 ? 1.0 : 0.85;
+            else if (offensive) role_multiplier =
+                (unit.role == 1 || unit.role == 4 || unit.backline) ? 1.0 : 0.75;
+            else if (defensive) role_multiplier =
+                (unit.role == 0 || unit.role == 3 || unit.frontline) ? 1.0 : 0.75;
+
+            // Percent-of-stat effects scale with the recipient's relevant stat;
+            // fixed-value effects use a bounded magnitude factor.
+            double magnitude = std::clamp(static_cast<double>(effect.value), 0.0, 1.0);
+            if (effect.percent_of_stat) magnitude = std::clamp(magnitude * 2.0, 0.0, 1.0);
+            if (effect.percent_of_max_health) magnitude =
+                std::clamp(magnitude * 4.0, 0.0, 1.0);
+            total += semantic_weight * role_multiplier * (0.5 + 0.5 * magnitude);
+        }
+        return std::clamp(total, 0.0, 1.0);
+    }
+
+    // Estimate marginal item value from numeric stats, supported special
+    // effects, role and composition. Combat remains the source of truth.
     [[nodiscard]] double item_fit(const std::string& item_id,
                                   const UnitProfile& unit) const noexcept {
         const auto* item = find(item_id);
-        if (!item || unit.uuid.empty()) return -1.0;
+        if (!item || !item->unit_equipable || unit.uuid.empty()) return -1.0;
+        const double effect_fit = item_effect_strength(item_id, unit);
         const double damage_fit =
             std::max(0.0, item->attack_damage) * std::max(0.0, unit.attack_damage) / 100.0 +
             std::max(0.0, item->attack_speed) * std::max(0.0, unit.attack_speed) +
@@ -388,7 +510,8 @@ public:
             }
         }
         return damage_fit + durability_fit + role_fit +
-            0.25 * std::clamp(unit.composition_fit, 0.0, 1.0);
+            0.25 * std::clamp(unit.composition_fit, 0.0, 1.0) +
+            12.0 * effect_fit;
     }
 
     // Execute an item action selected by the main policy. There is no
@@ -488,9 +611,11 @@ private:
         std::unordered_set<std::string> seen;
         seen.reserve(options.size());
         for (const auto& option : options) {
+            const auto* completed_item = kind == ItemAnvilKind::COMPLETED_ITEM
+                ? find(option) : nullptr;
             const bool known = kind == ItemAnvilKind::COMPONENT
                 ? component_ids_.contains(option)
-                : find(option) != nullptr;
+                : completed_item && completed_item->unit_equipable;
             if (option.empty() || !known || !seen.insert(option).second) {
                 ++metrics_.invalid_actions;
                 return false;

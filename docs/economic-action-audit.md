@@ -48,6 +48,66 @@ internal term used by the action reward formula.
 improve future shop options, and XP may be a deliberate investment that pays off
 later. The report flags these cases for review instead of applying a penalty.
 
+
+## Purchase followed by sale
+
+A recent purchase followed by a sale is not automatically classified as a bad
+decision. The audit correlates the acquired UUID and records the sale context
+using separate categories:
+
+- `IMPULSIVE_REVERSED`: low composition fit and low strategic value, with no
+  pair/upgrade progress, better owned alternative, composition transition,
+  deployment, full-bench constraint, or sale-funded necessary action.
+- `EXPERIMENTAL_REPLACED`: a later, materially better-fit purchase remains
+  owned when the earlier experiment is sold.
+- `PAIR_OR_UPGRADE`: the acquisition completed a same-star pair/upgrade path.
+- `COMP_TRANSITION`: the composition direction/focus/core plan changed before
+  the sale.
+- `BENCH_CAPACITY`: the bench was full immediately before the sale.
+- `ECONOMIC_NEED`: sale proceeds made the next XP purchase, reroll, or shop
+  purchase affordable when it was not affordable before the sale.
+- `DEPLOYED_THEN_SOLD`: the acquired unit was deployed before being sold.
+- `UNJUSTIFIED_REVIEW`: no reason was demonstrated, but the purchase had
+  enough strategic value that the audit must not label it impulsive.
+
+Only `IMPULSIVE_REVERSED` contributes to the reversed-purchase counters and
+the corresponding medium-severity finding. `UNJUSTIFIED_REVIEW` is a low
+severity review item, not a PPO penalty. Ambiguous UUID correlation remains
+`UNKNOWN` and is never penalized automatically.
+
+The native PPO shaping follows the same conservative principle: it penalizes
+only low-fit purchases without a concrete exception. Pair-building, a better
+owned alternative, a real composition transition, deployment, full-bench
+pressure, and sales that unlock the 2g/4g spending thresholds are exempt. This
+does not prevent the policy from buying, testing, or changing its mind; it
+reduces the reward for demonstrably wasteful low-value buy/sell loops.
+
+
+## Core units and upgrade-path sale potential
+
+Selling is never blocked solely because a champion is marked core or because
+copies exist. The native reward uses a graduated retention cost:
+
+- Composition importance is based on the unit's normalized fit with the active
+  plan; a core label with weak actual fit receives less protection than a
+  high-fit core unit.
+- Upgrade potential is based on remaining same-champion, same-star copies.
+  Selling one of exactly two 1-star copies has the highest immediate pair
+  opportunity cost; additional copies reduce that cost because a pair may
+  remain. A 2-star copy is valued for a same-star 3-star route, while three
+  1-star copies are treated as a weaker route to another 2-star.
+- A materially better-fit unit already owned, a confirmed composition/focus
+  transition, a measurable board improvement, full bench pressure, or a sale
+  that unlocks a real 2g reroll / 4g XP purchase softens the retention cost.
+- Gold recovery remains represented by the economy reward and is not treated
+  as proof that every sale was strategically correct.
+
+The audit records copy counts, star tier, estimated upgrade-path strength,
+core status, composition-decision status, and bench capacity for every sale.
+Core/pair findings are still checked for immediate or near-term board,
+synergy, positioning, and upgrade compensation. This is reward shaping and
+diagnostics, not a hard sale prohibition.
+
 ## Reports and metrics
 
 Run the viewer on a match, then audit the resulting session directory:

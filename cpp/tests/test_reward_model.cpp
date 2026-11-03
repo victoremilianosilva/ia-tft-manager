@@ -220,8 +220,16 @@ int main() {
         throw std::runtime_error("Caitlyn-like low-fit immediate reversal should be penalized");
     if (!should_penalize_reversed_purchase(0.20, false, false, false, false))
         throw std::runtime_error("threshold-fit immediate reversal should be penalized");
-    if (!should_penalize_reversed_purchase(0.80, false, false, false, false))
-        throw std::runtime_error("a recently bought unit sold without deployment must be penalized regardless of fit");
+    if (should_penalize_reversed_purchase(0.80, false, false, false, false))
+        throw std::runtime_error("a high-fit experimental purchase must not be penalized solely because it was sold");
+    if (should_penalize_reversed_purchase(0.08, false, false, false, false, true))
+        throw std::runtime_error("a purchase that built a real pair must retain its strategic value");
+    if (should_penalize_reversed_purchase(0.08, false, false, false, false, false, true))
+        throw std::runtime_error("an experiment replaced by a better owned alternative must not be penalized");
+    if (should_penalize_reversed_purchase(0.08, false, false, false, false, false, false, true))
+        throw std::runtime_error("a sale that unlocks an essential economic threshold must not be penalized");
+    if (!should_penalize_reversed_purchase(0.08, false, false, false, false))
+        throw std::runtime_error("a low-fit immediate reversal without justification must be penalized");
     static_assert(kRecentPurchaseHistoryActions == 8,
                   "recent purchase association window should cover intervening actions");
     if (should_penalize_reversed_purchase(0.08, true, false, false, false))
@@ -437,6 +445,17 @@ int main() {
         protects_upgrade_path(2, 0, 2) || protects_upgrade_path(3, 0, 3)) {
         throw std::runtime_error("only real same-star pairs and complete 1-star-to-2-star paths should be protected");
     }
+    require_close(upgrade_path_strength(1, 1, 0), 1.0,
+                  "selling one of exactly two 1-star copies destroys the pair");
+    require_close(upgrade_path_strength(1, 2, 0), 0.5,
+                  "extra 1-star copies reduce, but do not erase, upgrade risk");
+    require_close(upgrade_path_strength(2, 1, 0), 0.65,
+                  "a second 2-star copy retains meaningful 3-star potential");
+    require_close(upgrade_path_strength(2, 0, 3), 0.45,
+                  "three 1-star copies provide a weaker alternative upgrade path");
+    require_close(upgrade_path_strength(2, 0, 2), 0.0,
+                  "two 1-star copies are not yet a complete upgrade path");
+
     if (!(sale_quality(0.0, false, true, true) < 0.0)) {
         throw std::runtime_error("selling a pair copy must remain unattractive even when it frees bench space");
     }
@@ -446,6 +465,16 @@ int main() {
                   "sale protects core unit and upgrade copies");
     require_close(sale_quality(1.0, true, true, false, true), -0.225,
                   "measurable board gain removes the core and pair sale penalties");
+    require_close(sale_quality(1.0, true, true, false, false, true), -0.455,
+                  "verified replacement or urgent sale halves, but does not erase, retention cost");
+    if (!(sale_quality(0.25, true, false, false) >
+          sale_quality(1.0, true, false, false))) {
+        throw std::runtime_error("core retention pressure must scale with actual composition fit");
+    }
+    if (!(sale_quality(0.0, false, false, false, false, false, 0.25) >
+          sale_quality(0.0, false, false, false, false, false, 1.0))) {
+        throw std::runtime_error("upgrade retention pressure must scale with remaining copy potential");
+    }
     if (!(sale_quality(0.0, false, false, false) >
           sale_quality(0.5, false, false, false) &&
           sale_quality(0.5, false, false, false) >

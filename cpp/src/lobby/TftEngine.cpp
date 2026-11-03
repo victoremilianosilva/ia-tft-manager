@@ -29,6 +29,7 @@
 #include "strategy/SynergyCounter.hpp"
 #include "strategy/PositioningEngine.hpp"
 #include "strategy/BoardEvaluation.hpp"
+#include "strategy/UnitCombatClassifier.hpp"
 #include "reward/RewardModel.hpp"
 #include "strategy/CompositionDirectionPolicy.hpp"
 #include "strategy/StrategyPolicy.hpp"
@@ -41,6 +42,7 @@
 #include "decision/DecisionTypes.hpp"
 #include "items/ItemCatalog.hpp"
 #include "items/ItemEngine.hpp"
+#include "items/PveLootDistribution.hpp"
 #include "items/CombatItemAdapter.hpp"
 
 #ifndef TFT_DEFAULT_ITEM_CATALOG_PATH
@@ -371,6 +373,7 @@ struct TFTEngine::Impl {
         // Estado e serviços pertencentes exclusivamente a um jogador.
         std::unique_ptr<ShopEngine> shop;
         std::unique_ptr<items::ItemEngine> item_engine;
+        items::Set18ComponentPool pve_component_pool;
         std::array<std::optional<UnitInstance>, kBenchSlots> bench{};
         std::array<std::optional<UnitInstance>, kBoardSlots> board{};
         // Temporal context for the feed-forward policy: actions left this round
@@ -409,6 +412,7 @@ struct TFTEngine::Impl {
             double fit_score{0.0};
             double reward{0.0};
             std::string comp_direction;
+            std::string comp_focus;
         };
         std::uint64_t action_serial{0};
         std::vector<RecentPurchase> recent_purchases;
@@ -734,11 +738,24 @@ struct TFTEngine::Impl {
         std::uint32_t current_round_number,
         std::vector<std::string>& events
     ) {
-        if (!item_catalog || current_round_number <= 4) return;
+        if (!item_catalog || item_catalog->pve_loot_components.size() != 8 || current_round_number == 0)
+            return;
 
         const auto current_stage = stage_for_round(current_round_number);
-        const auto round_in_stage = ((current_round_number - 5) % kRoundsPerStage) + 1;
-        if (round_in_stage != 7 || current_stage < 2 || current_stage > 6) return;
+        const auto round_in_stage = current_round_number <= 4
+            ? current_round_number
+            : ((current_round_number - 5) % kRoundsPerStage) + 1;
+
+        // Stages 1-4 resolve their weighted PvE package directly into
+        // components. No orb entities or orb telemetry are created.
+        const bool component_reward_round =
+            (current_stage == 1 && current_round_number == 4) ||
+            (current_stage >= 2 && current_stage <= 4 && round_in_stage == 7);
+
+        // From stage 5 onward, the PvE boss reward is a direct completed item.
+        const bool completed_item_reward_round =
+            current_stage >= 5 && round_in_stage == 7;
+        if (!component_reward_round && !completed_item_reward_round) return;
 
         std::vector<std::size_t> living;
         for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
@@ -747,93 +764,80 @@ struct TFTEngine::Impl {
         }
         if (living.empty()) return;
 
-        const auto player_rng = [this, current_round_number](std::size_t player_index) {
-            const auto mixed_seed = seed ^
-                (episode_id * 0xD1B54A32D192ED03ULL) ^
-                (static_cast<std::uint64_t>(current_round_number) << 16U) ^
-                static_cast<std::uint64_t>(player_index);
-            return std::mt19937_64(mixed_seed);
-        };
+        const auto mixed_seed = seed ^
+            (episode_id * 0xD1B54A32D192ED03ULL) ^
+            (static_cast<std::uint64_t>(current_round_number) << 16U) ^
+            0x53455431385F4C54ULL;
 
-        // Standard anvil milestones are choices for every living player, not
-        // a catch-up reward restricted to the two lowest-health players.
-        // Keep normal PvE component drops separate from these forced choices.
-        if (current_stage == 4) { // 4-7: choose one of three components.
-            std::vector<std::string> component_pool;
-            for (const auto& component : item_catalog->components)
-                component_pool.push_back(component.first);
-            if (component_pool.empty()) return;
+        if (component_reward_round) {
+            std::vector<std::string> component_ids;
+            component_ids = item_catalog->pve_loot_components;
+
+            // All players share the weighted component-count roll; component
+            // identities are drawn independently from each player's pool.
+            std::mt19937_64 outcome_rng(mixed_seed);
+            const auto outcome = items::roll_set18_pve_loot(current_stage, outcome_rng);
+            events.emplace_back(
+                "PVE_COMPONENT_REWARD_ROLLED: stage=" + std::to_string(current_stage) +
+                ", round=" + std::to_string(current_round_number) +
+                ", components=" + std::to_string(outcome.components) +
+                ", source=set18_weighted_table");
 
             for (const auto player_index : living) {
-                auto options = component_pool;
-                auto loot_rng = player_rng(player_index);
-                std::shuffle(options.begin(), options.end(), loot_rng);
-                options.resize(std::min<std::size_t>(3, options.size()));
                 auto& player = player_envs[player_index];
-                if (player.item_engine->grant_component_anvil(std::move(options))) {
-                    events.emplace_back(
-                        "COMPONENT_ANVIL_GRANTED: player=" + std::to_string(player_index) +
-                        ", stage=4, source=pve_4_7");
+                auto& pool = player.pve_component_pool;
+                if (current_stage == 1) {
+                    if (pool.empty()) pool.initialize(component_ids);
+                } else {
+                    if (pool.empty()) pool.initialize(component_ids);
+                    pool.add_stage_refresh(component_ids);
                 }
-                refresh_masks(player_index);
-            }
-            return;
-        }
 
-        if (current_stage == 5 || current_stage == 6) { // 5-7 / 6-7: completed item.
-            std::vector<std::string> item_pool;
-            for (const auto& item : item_catalog->items)
-                item_pool.push_back(item.id);
-            if (item_pool.empty()) return;
-
-            for (const auto player_index : living) {
-                auto options = item_pool;
-                auto loot_rng = player_rng(player_index);
-                std::shuffle(options.begin(), options.end(), loot_rng);
-                options.resize(std::min<std::size_t>(4, options.size()));
-                auto& player = player_envs[player_index];
-                if (player.item_engine->grant_completed_item_anvil(std::move(options))) {
+                auto component_rng = std::mt19937_64(
+                    mixed_seed ^ (static_cast<std::uint64_t>(player_index) *
+                                  0x9E3779B97F4A7C15ULL));
+                std::size_t granted_count = 0;
+                for (unsigned drop = 0; drop < outcome.components && !pool.empty(); ++drop) {
+                    const auto component_id = pool.draw(component_rng);
+                    if (!component_id.empty() && player.item_engine->add_component(component_id))
+                        ++granted_count;
+                }
+                if (granted_count > 0) {
                     events.emplace_back(
-                        "COMPLETED_ITEM_ANVIL_GRANTED: player=" + std::to_string(player_index) +
+                        "COMPONENT_LOOT_GRANTED: player=" + std::to_string(player_index) +
                         ", stage=" + std::to_string(current_stage) +
-                        ", source=pve_stage_end");
+                        ", count=" + std::to_string(granted_count) +
+                        ", pool_remaining=" + std::to_string(pool.remaining()) +
+                        ", source=set18_pve_component_pool");
                 }
                 refresh_masks(player_index);
             }
             return;
         }
 
-        // Ordinary PvE loot goes directly to the component bag: no Pengu/armory
-        // offer and no forced policy action. Stages 2 and 3 each grant one
-        // component; stage 4+ uses the explicit anvil events above.
-        const std::size_t component_count =
-            (current_stage == 2 || current_stage == 3) ? 1U : 0U;
-        if (component_count == 0 || item_catalog->components.empty()) return;
+        std::vector<std::string> item_pool;
+        item_pool.reserve(item_catalog->items.size());
+        for (const auto& item : item_catalog->items)
+            if (item.unit_equipable) item_pool.push_back(item.id);
+        if (item_pool.empty()) return;
 
-        std::vector<std::string> component_pool;
-        for (const auto& component : item_catalog->components)
-            component_pool.push_back(component.first);
         for (const auto player_index : living) {
-            auto pool = component_pool;
-            auto loot_rng = player_rng(player_index);
-            std::shuffle(pool.begin(), pool.end(), loot_rng);
             auto& player = player_envs[player_index];
-            std::size_t granted_count = 0;
-            for (std::size_t drop = 0; drop < component_count && !pool.empty(); ++drop) {
-                if (player.item_engine->add_component(pool[drop % pool.size()]))
-                    ++granted_count;
-            }
-            if (granted_count > 0) {
+            auto loot_rng = std::mt19937_64(
+                mixed_seed ^ (static_cast<std::uint64_t>(player_index) *
+                              0x9E3779B97F4A7C15ULL));
+            std::uniform_int_distribution<std::size_t> pick(0, item_pool.size() - 1);
+            const auto& item_id = item_pool[pick(loot_rng)];
+            if (player.item_engine->add_completed_item(item_id)) {
                 events.emplace_back(
-                    "COMPONENT_LOOT_GRANTED: player=" + std::to_string(player_index) +
+                    "COMPLETED_ITEM_GRANTED: player=" + std::to_string(player_index) +
                     ", stage=" + std::to_string(current_stage) +
-                    ", count=" + std::to_string(granted_count) +
-                    ", source=pve_direct_drop");
+                    ", item=" + item_id +
+                    ", source=set18_pve_boss_reward");
             }
             refresh_masks(player_index);
         }
     }
-
     void sync_unit_items_from_engine(std::size_t player_index, const std::string& uuid) {
         auto& player = player_envs[player_index];
         if (!player.item_engine || uuid.empty()) return;
@@ -1017,6 +1021,7 @@ struct TFTEngine::Impl {
 
             player_envs[i].bench.fill(std::nullopt);
             player_envs[i].board.fill(std::nullopt);
+            player_envs[i].pve_component_pool = items::Set18ComponentPool{};
             if (item_catalog) {
                 std::vector<std::string> component_ids;
                 component_ids.reserve(item_catalog->components.size());
@@ -1920,19 +1925,58 @@ struct TFTEngine::Impl {
 
     strategy::BoardEvaluationResult board_evaluation(
         std::size_t player_index) const {
+        const StrategyInfo active_strategy = player_envs[player_index].strategy.empty()
+            ? StrategyInfo{} : player_envs[player_index].strategy.back();
+        const auto classify_unit = [&](const UnitInstance& unit, const ChampionDefinition& def) {
+            strategy::UnitCombatSignals signals;
+            signals.base_role = def.combat_profile.role;
+            signals.attack_range = def.stats.attack_range > 0.0 ? def.stats.attack_range : def.combat_profile.attack_range;
+            signals.max_health = def.stats.max_hp; signals.armor = def.stats.armor;
+            signals.magic_resist = def.stats.magic_resist; signals.attack_damage = def.stats.attack_damage;
+            signals.attack_speed = def.stats.attack_speed; signals.ability_text = def.ability.description + " " + def.ability.name;
+            signals.planned_main_carry = unit.champion_internal_id == active_strategy.planned_main_carry_id;
+            for (const auto& item : unit.items) {
+                signals.item_health += item.health; signals.item_armor += item.armor;
+                signals.item_magic_resist += item.magic_resist; signals.item_attack_damage += item.attack_damage;
+                signals.item_attack_speed += item.attack_speed; signals.item_ability_power += item.ability_power;
+                signals.item_crit += item.critical_strike_chance;
+            }
+            return strategy::UnitCombatClassifier::classify(signals);
+        };
         std::vector<int> board_roles(kBoardSlots, -1);
+        std::vector<strategy::BoardUnitProfile> board_profiles(kBoardSlots);
         for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
             const auto& unit = player_envs[player_index].board[slot];
             if (!unit) continue;
             const auto* def = catalog->find_by_id(unit->champion_internal_id);
             if (def) {
-                board_roles[slot] =
-                    std::clamp(def->combat_profile.role, 0, 4);
+                board_roles[slot] = classify_unit(*unit, *def).positioning_role;
+                auto& profile = board_profiles[slot];
+                profile.champion_id = unit->champion_internal_id;
+                profile.role = board_roles[slot];
+                profile.star = unit->star;
+                profile.cost = def->cost;
+                profile.traits = def->traits;
+                // Emblems and other trait-granting items are part of the
+                // effective board identity for synergy and strategic fit.
+                for (const auto& item : unit->items) {
+                    if (!item.grants_trait.empty() &&
+                        std::find(profile.traits.begin(), profile.traits.end(),
+                                  item.grants_trait) == profile.traits.end())
+                        profile.traits.push_back(item.grants_trait);
+                }
             }
         }
 
-        const StrategyInfo active_strategy = player_envs[player_index].strategy.empty()
-            ? StrategyInfo{} : player_envs[player_index].strategy.back();
+        strategy::StrategicBoardContext strategic_context;
+        strategic_context.level = player_envs[player_index].economy.level;
+        strategic_context.direction = active_strategy.composition_direction;
+        strategic_context.focus_weights = active_strategy.composition_focus_weights;
+        strategic_context.core_unit_ids = active_strategy.core_unit_ids;
+        strategic_context.planned_unit_ids = active_strategy.planned_unit_ids;
+        strategic_context.core_traits = active_strategy.core_traits;
+        strategic_context.planned_traits = active_strategy.planned_traits;
+        strategic_context.trait_milestones = trait_milestones;
         std::vector<int> main_carry_positions;
         int fallback_carry_slot = -1;
         double fallback_carry_fit = -std::numeric_limits<double>::infinity();
@@ -1985,10 +2029,11 @@ struct TFTEngine::Impl {
             });
         }
 
-        // Synergy has its own reward component. Keep it out of this score so
-        // a formation change cannot receive the same synergy signal twice.
+        // Trait milestones contribute a bounded coherence diagnostic. The
+        // separate synergy reward remains the primary active-trait signal.
         return strategy::BoardEvaluation::evaluate(
-            board_roles, bench_profiles, 0.0, main_carry_positions);
+            board_roles, bench_profiles, 0.0, main_carry_positions,
+            board_profiles, strategic_context);
     }
 
     double positioning_score(std::size_t player_index) const {
@@ -3077,6 +3122,19 @@ struct TFTEngine::Impl {
             int next_unit_id = 0;
             append_combat_team(a, UnitTeam::PLAYER_A, input.player_a, next_unit_id);
             append_combat_team(b, UnitTeam::PLAYER_B, input.player_b, next_unit_id);
+            const auto record_combat_item_inputs = [&](std::size_t player_id,
+                                                        const auto& team) {
+                for (const auto& unit : team.units) {
+                    for (const auto& item : unit.items) {
+                        events.emplace_back(
+                            "COMBAT_ITEM_INPUT: player=" + std::to_string(player_id) +
+                            ", unit_id=" + std::to_string(unit.id) +
+                            ", item=" + item.api_name);
+                    }
+                }
+            };
+            record_combat_item_inputs(a, input.player_a);
+            record_combat_item_inputs(b, input.player_b);
 
             const bool empty_a = input.player_a.units.empty();
             const bool empty_b = input.player_b.units.empty();
@@ -3224,6 +3282,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         const double old_positioning_score = lobby.positioning_score(player_id);
         bool sold_core_unit = false;
         bool sold_unit_protects_upgrade = false;
+        double sold_unit_upgrade_strength = 0.0;
         double sold_unit_fit_score = 0.0;
         bool displaced_core_unit = false;
         bool buy_completes_upgrade = false;
@@ -3236,6 +3295,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         bool bought_unit_successfully = false;
         bool bought_upgrade = false;
         bool purchase_was_recently_reversed = false;
+        bool sale_has_legitimate_context = false;
+        bool sale_bench_was_full = false;
         double reversed_purchase_prior_reward = 0.0;
         bool board_capacity_violation = false;
         bool anti_loop_blocked = false;
@@ -3457,7 +3518,8 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                                 false,
                                 std::clamp(std::max(0.0, candidate_comp_score) / 40.0, 0.0, 1.0),
                                 0.0,
-                                strategy_before.composition_direction
+                                strategy_before.composition_direction,
+                                strategy_before.composition_focus
                             });
                         }
                         lobby.register_position_state(player_id);
@@ -3758,7 +3820,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             case 4: role_alignment = item_definition->carry_weight; break;
                             default: role_alignment = item_definition->utility_weight; break;
                         }
-                        const double immediate_strength = reward_model::item_immediate_strength(
+                        const double numeric_strength = reward_model::item_immediate_strength(
                             item_definition->attack_damage,
                             item_definition->attack_speed,
                             item_definition->max_health,
@@ -3771,6 +3833,14 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             item_definition->ability_power,
                             item_definition->magic_resist,
                             item_definition->mana);
+                        const double supported_effect_strength =
+                            this->item_engine->item_effect_strength(
+                                item_definition->id, *target_profile);
+                        // Combine numeric stats and explicitly simulated passives
+                        // without counting the same effect additively twice.
+                        const double immediate_strength = 1.0 -
+                            (1.0 - std::clamp(numeric_strength, 0.0, 1.0)) *
+                            (1.0 - std::clamp(supported_effect_strength, 0.0, 1.0));
                         item_assignment_reward = reward_model::item_assignment_quality(
                             immediate_strength, target_profile->composition_fit,
                             role_alignment, static_cast<int>(lobby.stage));
@@ -3805,40 +3875,88 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
 
                 if (definition) {
                     const std::string sold_uuid = unit.uuid;
+                    const auto sell_value = EconomyEngine::get_sell_value(
+                        definition->cost, unit.star);
+                    sale_bench_was_full =
+                        old_bench_count >= static_cast<int>(kBenchSlots);
+                    const int gold_after_sale = old_gold + sell_value;
+                    const bool sale_economic_need =
+                        (old_gold < EconomyEngine::REROLL_COST &&
+                         gold_after_sale >= EconomyEngine::REROLL_COST) ||
+                        (old_gold < EconomyEngine::BUY_XP_COST &&
+                         gold_after_sale >= EconomyEngine::BUY_XP_COST);
+                    sale_has_legitimate_context =
+                        sale_bench_was_full || sale_economic_need;
                     const auto recent = std::find_if(
                         this->recent_purchases.rbegin(), this->recent_purchases.rend(),
                         [&sold_uuid](const RecentPurchase& purchase) {
                             return !sold_uuid.empty() && purchase.uuid == sold_uuid;
                         });
                     if (recent != this->recent_purchases.rend()) {
-                        // A changed direction label alone is not proof that the
-                        // purchase was strategically useful. Only concrete exceptions
-                        // (upgrade, deployment, or a previously full bench) exempt it.
-                        const bool bench_was_full =
-                            old_bench_count >= static_cast<int>(kBenchSlots);
-                        // A fresh purchase sold within the action window is a
-                        // reversal unless it was deployed, merged, or required
-                        // to resolve a full bench. Do not limit this to low-fit
-                        // purchases: the buy/sell loop itself wastes liquidity.
-                        const bool immediate_reversal =
-                            this->action_serial - recent->action_serial <=
-                                reward_model::kRecentPurchaseHistoryActions &&
-                            !recent->completed_upgrade &&
-                            !recent->was_deployed &&
-                            !bench_was_full;
-                        if (immediate_reversal ||
-                            reward_model::should_penalize_reversed_purchase(
+                        const auto& current_strategy = this->strategy.empty()
+                            ? StrategyInfo{} : this->strategy.back();
+                        const bool still_core_or_planned =
+                            std::find(current_strategy.core_unit_ids.begin(),
+                                      current_strategy.core_unit_ids.end(),
+                                      unit.champion_internal_id) != current_strategy.core_unit_ids.end() ||
+                            std::find(current_strategy.planned_unit_ids.begin(),
+                                      current_strategy.planned_unit_ids.end(),
+                                      unit.champion_internal_id) != current_strategy.planned_unit_ids.end();
+                        const bool composition_changed =
+                            (recent->comp_direction != current_strategy.composition_direction ||
+                             recent->comp_focus != current_strategy.composition_focus) &&
+                            (!recent->comp_direction.empty() || !recent->comp_focus.empty()) &&
+                            !still_core_or_planned;
+                        sale_has_legitimate_context = sale_has_legitimate_context ||
+                            composition_changed || recent->was_deployed;
+
+                        // An experiment is justified when a later, better-fit
+                        // purchase is still owned. This preserves flexibility:
+                        // discovering a stronger option is not a buy/sell mistake.
+                        const auto is_still_owned = [this](const std::string& uuid) {
+                            if (uuid.empty()) return false;
+                            const auto in_board = std::any_of(
+                                this->board.begin(), this->board.end(),
+                                [&uuid](const auto& candidate) {
+                                    return candidate && candidate->uuid == uuid;
+                                });
+                            const auto in_bench = std::any_of(
+                                this->bench.begin(), this->bench.end(),
+                                [&uuid](const auto& candidate) {
+                                    return candidate && candidate->uuid == uuid;
+                                });
+                            return in_board || in_bench;
+                        };
+                        const bool better_alternative_found = std::any_of(
+                            this->recent_purchases.begin(), this->recent_purchases.end(),
+                            [&](const RecentPurchase& candidate) {
+                                return candidate.uuid != sold_uuid &&
+                                    candidate.action_serial > recent->action_serial &&
+                                    candidate.fit_score >= recent->fit_score + 0.10 &&
+                                    is_still_owned(candidate.uuid);
+                            });
+
+                        // Selling to cross a meaningful spending threshold is an
+                        // economic decision, not an impulsive reversal. The sale
+                        // must make a 2g reroll or 4g XP purchase affordable.
+                        const int gold_after_sale = old_gold + sell_value;
+                        sale_has_legitimate_context = sale_has_legitimate_context ||
+                            better_alternative_found;
+                        if (reward_model::should_penalize_reversed_purchase(
                                 recent->fit_score,
                                 recent->completed_upgrade,
                                 recent->was_deployed,
-                                bench_was_full,
-                                false)) {
+                                sale_bench_was_full,
+                                composition_changed,
+                                recent->built_pair,
+                                better_alternative_found,
+                                sale_economic_need)) {
                             purchase_was_recently_reversed = true;
                             reversed_purchase_prior_reward = recent->reward;
                         }
                     }
+                    const auto& current_strategy = strategy_before;
                     if (!this->strategy.empty()) {
-                        const auto& current_strategy = this->strategy.back();
                         const auto& core_unit_ids = current_strategy.core_unit_ids;
                         const auto& planned_unit_ids = current_strategy.planned_unit_ids;
                         sold_core_unit =
@@ -3866,14 +3984,35 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                         count_upgrade_copies(candidate);
                     // Only same-star copies form a pair. For a 2-star sale, three
                     // 1-star copies also represent a concrete route to another 2-star.
-                    sold_unit_protects_upgrade = reward_model::protects_upgrade_path(
+                    sold_unit_upgrade_strength = reward_model::upgrade_path_strength(
                         unit.star, same_star_copies, one_star_copies);
-                    const auto sell_value =
-                        EconomyEngine::get_sell_value(
-                            definition->cost,
-                            unit.star
-                        );
+                    sold_unit_protects_upgrade = sold_unit_upgrade_strength >= 0.45;
 
+                    // A genuinely stronger owned option can justify releasing a
+                    // planned/core slot. Compare only against units that fit the
+                    // active plan materially better, not merely any owned unit.
+                    if (sold_core_unit && !this->strategy.empty()) {
+                        const auto has_better_owned_fit = [&](const auto& candidate) {
+                            if (!candidate ||
+                                candidate->champion_internal_id == unit.champion_internal_id)
+                                return false;
+                            const auto* candidate_def = lobby.catalog->find_by_id(
+                                candidate->champion_internal_id);
+                            if (!candidate_def) return false;
+                            const double candidate_fit = std::clamp(
+                                unit_composition_score(current_strategy, *candidate_def,
+                                    candidate->star, lobby.trait_milestones) / 32.5,
+                                0.0, 1.0);
+                            return candidate_fit >= sold_unit_fit_score + 0.10;
+                        };
+                        const bool better_owned_substitute =
+                            std::any_of(this->board.begin(), this->board.end(),
+                                has_better_owned_fit) ||
+                            std::any_of(this->bench.begin(), this->bench.end(),
+                                has_better_owned_fit);
+                        sale_has_legitimate_context =
+                            sale_has_legitimate_context || better_owned_substitute;
+                    }
                     // Só confirma a venda se a devolução ao pool
                     // for aceita.
                     bool returned_all_copies = true;
@@ -4231,8 +4370,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 ? reward_model::sale_quality(
                     sold_unit_fit_score, sold_core_unit,
                     sold_unit_protects_upgrade,
-                    old_bench_count >= static_cast<int>(kBenchSlots),
-                    sale_compensated_by_board_gain)
+                    sale_bench_was_full,
+                    sale_compensated_by_board_gain,
+                    sale_has_legitimate_context,
+                    sold_unit_upgrade_strength)
                 : -0.10;
             if (success && purchase_was_recently_reversed &&
                 old_bench_count < static_cast<int>(kBenchSlots)) {
@@ -4350,6 +4491,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                  it != this->recent_purchases.rend(); ++it) {
                 if (it->action_serial == this->action_serial) {
                     it->comp_direction = this->strategy.back().composition_direction;
+                    it->comp_focus = this->strategy.back().composition_focus;
                     break;
                 }
             }
@@ -4534,10 +4676,30 @@ StepResult TFTEngine::step(
     std::array<std::int32_t, kPlayersPerLobby> level_after_actions{};
     std::array<std::int32_t, kPlayersPerLobby> xp_before_actions{};
     std::array<std::int32_t, kPlayersPerLobby> xp_after_actions{};
+    std::vector<std::string> item_action_events;
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
         const auto transition = impl_->player_envs[i].step(*impl_, i, effective_actions[i]);
         if (!transition.acted) {
             continue;
+        }
+        const auto& item_action = impl_->player_envs[i].last_item_action;
+        if (item_action.kind == "anvil_component_choice" ||
+            item_action.kind == "anvil_completed_item_choice") {
+            item_action_events.emplace_back(
+                "ITEM_ANVIL_CHOSEN: player=" + std::to_string(i) +
+                ", kind=" + item_action.kind +
+                ", item=" + item_action.item_id +
+                ", stage=" + std::to_string(impl_->stage));
+        } else if (item_action.kind == "equip_inventory_item" ||
+                   item_action.kind == "craft_and_equip") {
+            item_action_events.emplace_back(
+                "ITEM_ACTION_APPLIED: player=" + std::to_string(i) +
+                ", kind=" + item_action.kind +
+                ", item=" + item_action.item_id +
+                ", target_uuid=" + item_action.target_uuid +
+                ", fit=" + std::to_string(item_action.fit) +
+                ", reward=" + std::to_string(item_action.assignment_reward) +
+                ", stage=" + std::to_string(impl_->stage));
         }
         action_rewards[i] = transition.action_reward;
         capacity_violations[i] = transition.board_capacity_violation;
@@ -4566,6 +4728,8 @@ StepResult TFTEngine::step(
     // ========================================================
 
     std::vector<std::string> round_events;
+    round_events.insert(round_events.end(),
+                        item_action_events.begin(), item_action_events.end());
     bool round_resolved = false;
 
     // In viewer/runtime mode the wall-clock timer owns the preparation phase.

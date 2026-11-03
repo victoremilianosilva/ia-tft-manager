@@ -640,9 +640,9 @@ inline double pass_opportunity_penalty(
         0.0, 0.45);
 }
 
-// A low-fit purchase sold almost immediately is usually a wasted buy.
-// Fit is normalized to [0, 1]; legitimate exceptions are explicit so a real
-// upgrade, deployment, comp transition, or full bench is not punished.
+// A recent buy/sell sequence is not automatically a mistake. Penalize only
+// low-fit acquisitions with no concrete strategic, experimental, composition,
+// or economic justification. Fit is normalized to [0, 1].
 inline constexpr double kRecentPurchaseLowFitThreshold = 0.20;
 // Keep purchase provenance long enough to associate a sale after intervening
 // shop/position actions, without carrying stale intent across a whole round.
@@ -653,14 +653,17 @@ inline bool should_penalize_reversed_purchase(
     bool completed_upgrade,
     bool was_deployed,
     bool bench_was_full,
-    bool composition_changed
+    bool composition_changed,
+    bool built_pair = false,
+    bool better_alternative_found = false,
+    bool economic_need = false
 ) noexcept {
-    // Selling a recently acquired unit without deploying/merging it is itself
-    // evidence of a wasted buy, even if its initial fit score looked acceptable.
-    // Keep explicit exceptions for a full bench and a genuine comp transition.
-    (void)normalized_fit;
-    return !completed_upgrade && !was_deployed && !bench_was_full &&
-        !composition_changed;
+    if (completed_upgrade || built_pair || was_deployed || bench_was_full ||
+        composition_changed || better_alternative_found || economic_need) {
+        return false;
+    }
+    return std::clamp(normalized_fit, 0.0, 1.0) <=
+        kRecentPurchaseLowFitThreshold;
 }
 
 inline double reversed_purchase_penalty() noexcept {
@@ -678,14 +681,37 @@ inline double reversed_sequence_adjustment(
 // Protect a real same-star pair. A 2-star also remains valuable when three
 // 1-star copies can create another 2-star, but a lone 1-star beside a 2-star
 // is not a pair and should not be artificially locked on the bench.
+inline double upgrade_path_strength(
+    int sold_star, int same_star_copies, int one_star_copies
+) noexcept {
+    same_star_copies = std::max(0, same_star_copies);
+    one_star_copies = std::max(0, one_star_copies);
+    if (sold_star == 1) {
+        // Selling one of exactly two copies destroys the immediate pair.
+        // Extra copies reduce the opportunity cost because a pair remains.
+        if (same_star_copies <= 0) return 0.0;
+        return same_star_copies == 1 ? 1.0 :
+            1.0 / static_cast<double>(same_star_copies);
+    }
+    if (sold_star == 2) {
+        // A second 2-star copy contributes to a 3-star route; three 1-stars
+        // are a viable, but less immediate, replacement path to another 2-star.
+        if (same_star_copies >= 1)
+            return std::min(1.0, 0.65 + 0.15 * (same_star_copies - 1));
+        if (one_star_copies >= 3)
+            return std::min(0.45, 0.15 * static_cast<double>(one_star_copies));
+    }
+    return 0.0;
+}
+
 inline bool protects_upgrade_path(
     int sold_star, int same_star_copies, int one_star_copies
 ) noexcept {
-    if (sold_star == 1)
-        return same_star_copies >= 1;
-    if (sold_star == 2)
-        return same_star_copies >= 1 || one_star_copies >= 3;
-    return false;
+    // 0.15 * 3 can be represented just below 0.45 in binary floating
+    // point; use a tiny tolerance so the documented three-copy threshold
+    // does not depend on rounding.
+    return upgrade_path_strength(sold_star, same_star_copies, one_star_copies) +
+        1e-9 >= 0.45;
 }
 
 // Selling should be attractive for low-value clutter, but not intrinsically
@@ -693,13 +719,23 @@ inline bool protects_upgrade_path(
 // Gold recovery is shaped separately by gold_change_reward().
 inline double sale_quality(double fit_score, bool core_unit,
                            bool protects_upgrade, bool frees_bench_space,
-                           bool compensated_by_board_gain = false) noexcept {
+                           bool compensated_by_board_gain = false,
+                           bool justified_by_context = false,
+                           double upgrade_strength = -1.0) noexcept {
     const double fit = std::clamp(fit_score, 0.0, 1.0);
-    // Sale proceeds are already represented by gold_change_reward. Protect
-    // core/upgrade copies unless the same action produces a measurable board gain.
-    return 0.015 - 0.24 * fit -
-        (core_unit && !compensated_by_board_gain ? 0.34 : 0.0) -
-        (protects_upgrade && !compensated_by_board_gain ? 0.36 : 0.0) +
+    // Preserve the old boolean behavior for callers without copy-count data.
+    const double upgrade_pressure = upgrade_strength < 0.0
+        ? (protects_upgrade ? 1.0 : 0.0)
+        : std::clamp(upgrade_strength, 0.0, 1.0);
+    // Strategic importance is continuous: a core label alone is not enough;
+    // actual composition fit and a concrete upgrade path determine retention.
+    const double core_pressure = core_unit ? (0.20 + 0.80 * fit) : 0.0;
+    const double context_factor = justified_by_context ? 0.5 : 1.0;
+    return 0.015 - 0.24 * fit * context_factor -
+        (core_pressure > 0.0 && !compensated_by_board_gain
+            ? 0.34 * core_pressure * context_factor : 0.0) -
+        (upgrade_pressure > 0.0 && !compensated_by_board_gain
+            ? 0.36 * upgrade_pressure * context_factor : 0.0) +
         (frees_bench_space ? 0.06 : 0.0);
 }
 

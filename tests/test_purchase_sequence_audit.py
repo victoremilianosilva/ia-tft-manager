@@ -56,7 +56,7 @@ def test_detects_purchase_reversed_within_two_actions_and_counts_net_gold():
     assert metrics["reversed_2"] == 1
     assert metrics["reversed_4"] == 1
     assert metrics["net_gold_lost_reversed"] == 0
-    assert metrics["classified_sales"]["PURCHASE_REVERSED"] == 1
+    assert metrics["classified_sales"]["IMPULSIVE_REVERSED"] == 1
     assert any(issue["code"] == "PURCHASE_REVERSED" for issue in report["issues"])
 
 
@@ -306,3 +306,139 @@ def test_pair_loss_reports_champion_specific_evidence_when_global_pair_count_is_
     assert issue["evidence"]["global_pair_count_before"] == issue["evidence"]["global_pair_count_after"]
     assert issue["evidence"]["same_star_copies_before"] == 2
     assert issue["evidence"]["same_star_copies_after"] == 1
+
+
+def test_pair_building_purchase_is_classified_separately_from_impulsive_reversal():
+    existing = _unit("Briar")
+    shop = _unit("Briar")
+    shop["uuid"] = "shop-briar"
+    acquired = _unit("Briar")
+    acquired["uuid"] = "new-briar"
+    bought = _entry(
+        1, 1, [0, 0, 0, 0, 0, 0], "BUY",
+        _state(10, bench=[existing], shop=[shop]),
+        _state(9, bench=[existing, acquired]),
+    )
+    sold = _entry(
+        2, 2, [5, 0, 1, 0, 0, 0], "SELL",
+        _state(9, bench=[existing, acquired]),
+        _state(10, bench=[existing]),
+    )
+    report = {"issues": []}
+    audit_purchase_sequences([bought, sold], "Jogador 1", report)
+    metrics = report["purchase_sequence_metrics"]["Jogador 1"]
+    assert metrics["pair_building_buys"] == 1
+    assert metrics["classified_sales"]["PAIR_OR_UPGRADE"] == 1
+    assert metrics["reversed_1"] == 0
+
+
+def test_experimental_purchase_replaced_by_better_owned_option_is_not_penalized():
+    briar_shop = _unit("Briar")
+    briar_shop["uuid"] = "shop-briar"
+    briar = _unit("Briar")
+    briar["uuid"] = "briar-bought"
+    first_buy = _entry(
+        1, 1, [0, 0, 0, 0, 0, 0], "BUY",
+        _state(10, shop=[briar_shop]),
+        _state(9, bench=[briar]),
+    )
+    lux_shop = _unit("Lux")
+    lux_shop["uuid"] = "shop-lux"
+    lux = _unit("Lux", cost=2, impact=4.0)
+    lux["uuid"] = "lux-bought"
+    better_buy = _entry(
+        2, 2, [0, 0, 0, 0, 0, 0], "BUY",
+        _state(9, bench=[briar], shop=[lux_shop]),
+        _state(7, bench=[briar, lux]),
+    )
+    better_buy["payload"]["composition_diagnostics"]["unit_fit"] = {
+        "focus_fit_score": 1.0, "core_unit_match": True
+    }
+    sale = _entry(
+        3, 3, [5, 0, 0, 0, 0, 0], "SELL",
+        _state(7, bench=[briar, lux]),
+        _state(8, bench=[lux]),
+    )
+    report = {"issues": []}
+    audit_purchase_sequences([first_buy, better_buy, sale], "Jogador 1", report)
+    metrics = report["purchase_sequence_metrics"]["Jogador 1"]
+    assert metrics["classified_sales"]["EXPERIMENTAL_REPLACED"] == 1
+    assert metrics["reversed_1"] == 0
+    assert not any(issue["code"] == "PURCHASE_REVERSED" for issue in report["issues"])
+
+
+def test_sale_that_funds_next_reroll_is_classified_as_economic_need():
+    briar_shop = _unit("Briar")
+    briar_shop["uuid"] = "shop-briar"
+    briar = _unit("Briar")
+    briar["uuid"] = "briar-bought"
+    bought = _entry(
+        1, 1, [0, 0, 0, 0, 0, 0], "BUY",
+        _state(2, shop=[briar_shop]),
+        _state(1, bench=[briar]),
+    )
+    sold = _entry(
+        2, 2, [5, 0, 0, 0, 0, 0], "SELL",
+        _state(1, bench=[briar]),
+        _state(2, bench=[]),
+    )
+    rerolled = _entry(
+        3, 3, [1, 0, 0, 0, 0, 0], "REROLL",
+        _state(2),
+        _state(0),
+    )
+    report = {"issues": []}
+    audit_purchase_sequences([bought, sold, rerolled], "Jogador 1", report)
+    metrics = report["purchase_sequence_metrics"]["Jogador 1"]
+    assert metrics["classified_sales"]["ECONOMIC_NEED"] == 1
+    assert metrics["reversed_1"] == 0
+
+
+def test_high_fit_buy_sell_without_proven_reason_is_review_not_impulsive():
+    briar_shop = _unit("Briar")
+    briar_shop["uuid"] = "shop-briar"
+    briar = _unit("Briar")
+    briar["uuid"] = "briar-bought"
+    bought = _entry(
+        1, 1, [0, 0, 0, 0, 0, 0], "BUY",
+        _state(10, shop=[briar_shop]),
+        _state(9, bench=[briar]),
+    )
+    bought["payload"]["composition_diagnostics"]["unit_fit"] = {
+        "focus_fit_score": 1.0, "core_unit_match": True
+    }
+    sold = _entry(
+        2, 2, [5, 0, 0, 0, 0, 0], "SELL",
+        _state(9, bench=[briar]),
+        _state(10, bench=[]),
+    )
+    report = {"issues": []}
+    audit_purchase_sequences([bought, sold], "Jogador 1", report)
+    metrics = report["purchase_sequence_metrics"]["Jogador 1"]
+    assert metrics["classified_sales"]["UNJUSTIFIED_REVIEW"] == 1
+    assert metrics["reversed_1"] == 0
+    assert not any(issue["code"] == "PURCHASE_REVERSED" for issue in report["issues"])
+
+
+def test_sale_to_free_full_bench_is_classified_separately():
+    bought_unit = _unit("Briar")
+    bought_unit["uuid"] = "briar-bought"
+    full_bench = [_unit(f"Unit{i}") for i in range(8)] + [bought_unit]
+    initial_bench = full_bench[:-1]
+    shop_offer = _unit("Briar")
+    shop_offer["uuid"] = "shop-briar"
+    bought = _entry(
+        1, 1, [0, 0, 0, 0, 0, 0], "BUY",
+        _state(10, bench=initial_bench, shop=[shop_offer]),
+        _state(9, bench=full_bench),
+    )
+    sold = _entry(
+        2, 2, [5, 0, 8, 0, 0, 0], "SELL",
+        _state(9, bench=full_bench),
+        _state(10, bench=full_bench[:-1]),
+    )
+    report = {"issues": []}
+    audit_purchase_sequences([bought, sold], "Jogador 1", report)
+    metrics = report["purchase_sequence_metrics"]["Jogador 1"]
+    assert metrics["classified_sales"]["BENCH_CAPACITY"] == 1
+    assert metrics["reversed_1"] == 0

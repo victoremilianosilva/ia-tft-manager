@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <utility>
 
 namespace {
 void require(bool condition, const std::string& message) {
@@ -133,6 +134,88 @@ int main() {
     const auto best_carry = PE::find_best_position(position_candidates, PE::carry);
     require(best_carry.first >= 0 && best_carry.second > 0.0,
             "best-position search should find a positive whole-board placement gain");
+
+    // Strategic coherence: a six-unit board needs both frontline and
+    // damage/backline coverage; a pile of carries is not a complete lineup.
+    Roles coherent_roles(PE::size, -1);
+    coherent_roles[0] = PE::tank;
+    coherent_roles[1] = PE::fighter;
+    coherent_roles[7] = PE::carry;
+    coherent_roles[8] = PE::support;
+    coherent_roles[14] = PE::carry;
+    coherent_roles[15] = PE::fighter;
+    Roles carry_only_roles(PE::size, -1);
+    carry_only_roles[0] = PE::carry;
+    carry_only_roles[1] = PE::carry;
+    carry_only_roles[7] = PE::carry;
+    carry_only_roles[8] = PE::carry;
+    carry_only_roles[14] = PE::assassin;
+    carry_only_roles[15] = PE::assassin;
+    std::vector<tft::strategy::BoardUnitProfile> coherent_profiles(PE::size);
+    const auto set_profile = [&](int slot, int id, int role, int cost,
+                                 std::vector<std::string> traits) {
+        coherent_profiles[static_cast<std::size_t>(slot)] =
+            tft::strategy::BoardUnitProfile{id, role, 1, cost, std::move(traits)};
+    };
+    set_profile(0, 100, PE::tank, 3, {"Aegis"});
+    set_profile(1, 101, PE::fighter, 2, {"Invoker"});
+    set_profile(7, 102, PE::carry, 4, {"Invoker"});
+    set_profile(8, 103, PE::support, 3, {"Aegis"});
+    set_profile(14, 104, PE::carry, 2, {"Dynamo"});
+    set_profile(15, 105, PE::fighter, 2, {"Dynamo"});
+    tft::strategy::StrategicBoardContext strategic_context;
+    strategic_context.level = 8;
+    strategic_context.direction = "Invoker";
+    strategic_context.planned_unit_ids = {101, 102, 103};
+    strategic_context.core_unit_ids = {102};
+    strategic_context.planned_traits = {"Invoker", "Aegis"};
+    strategic_context.trait_milestones = {
+        {"Invoker", {2, 4}}, {"Aegis", {2, 4}}, {"Dynamo", {2, 4}}
+    };
+    const auto coherent_eval = BoardEvaluation::evaluate(
+        coherent_roles, {}, 0.0, {}, coherent_profiles, strategic_context);
+    const auto carry_only_eval = BoardEvaluation::evaluate(
+        carry_only_roles, {}, 0.0, {}, coherent_profiles, strategic_context);
+    require(carry_only_eval.missing_frontline_count > 0,
+            "role coverage must identify a board with no frontline");
+    require(coherent_eval.total_score > carry_only_eval.total_score,
+            "balanced frontline/backline coverage should beat an incomplete carry-heavy board");
+
+    // Composition-aligned units improve strategic fit without making
+    // off-direction bridge units invalid.
+    auto neutral_context = strategic_context;
+    neutral_context.direction.clear();
+    neutral_context.core_unit_ids.clear();
+    neutral_context.planned_unit_ids.clear();
+    neutral_context.core_traits.clear();
+    neutral_context.planned_traits.clear();
+    const auto neutral_eval = BoardEvaluation::evaluate(
+        coherent_roles, {}, 0.0, {}, coherent_profiles, neutral_context);
+    require(coherent_eval.strategic_fit_score > neutral_eval.strategic_fit_score,
+            "planned/core units should improve strategic fit");
+    require(coherent_eval.active_trait_count >= 2,
+            "active trait milestones should be counted from unique champion traits");
+
+    // Early boards remain flexible; the same role gap matters more once
+    // the lineup is mature and its strategic direction should be established.
+    auto early_context = strategic_context;
+    early_context.level = 2;
+    auto mature_context = strategic_context;
+    mature_context.level = 8;
+    const auto early_eval = BoardEvaluation::evaluate(
+        carry_only_roles, {}, 0.0, {}, coherent_profiles, early_context);
+    const auto mature_eval = BoardEvaluation::evaluate(
+        carry_only_roles, {}, 0.0, {}, coherent_profiles, mature_context);
+    require(mature_eval.structural_score < early_eval.structural_score,
+            "structural role gaps should matter more as the composition matures");
+
+    // Star/cost quality is bounded and should not overwhelm structural fit.
+    auto upgraded_profiles = coherent_profiles;
+    upgraded_profiles[7].star = 2;
+    const auto upgraded_eval = BoardEvaluation::evaluate(
+        coherent_roles, {}, 0.0, {}, upgraded_profiles, strategic_context);
+    require(upgraded_eval.unit_quality_score > coherent_eval.unit_quality_score,
+            "upgraded deployed units should improve the bounded quality component");
 
     std::cout << "[PASS] Tactical board evaluation and directional delta scenarios.\n";
     return EXIT_SUCCESS;

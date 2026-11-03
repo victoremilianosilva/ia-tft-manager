@@ -159,6 +159,11 @@ def test_normalizes_supported_stats_and_preserves_raw_effects():
     assert item["stats"]["critical_strike_chance"] == pytest.approx(0.35)
     assert item["stats"]["attack_damage"] == 0
     assert item["source_effects"]["AD"] == pytest.approx(0.3)
+    assert item["effect_coverage"]["generic_stat_keys"] == [
+        "AP", "AS", "CritChance",
+    ]
+    assert item["effect_coverage"]["generic_combat_keys"] == ["AD", "ManaRegen"]
+    assert item["effect_coverage"]["not_generic_normalized_keys"] == []
     assert {
         "trigger": "combat_start",
         "operation": "add_stat",
@@ -173,10 +178,28 @@ def test_normalizes_supported_stats_and_preserves_raw_effects():
 
 def test_semantic_validation_accepts_active_repository_catalog():
     import json
+    from scripts.generate_item_catalog import _effect_coverage
 
     catalog_path = Path(__file__).resolve().parents[1] / "data" / "itens.json"
     catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
     validate_catalog_semantics(catalog)
+    for item in catalog["items"]:
+        assert item["effect_coverage"] == _effect_coverage(item.get("source_effects", {}))
+        effects = item.get("source_effects", {})
+        expected_unit_scope = not (
+            float(effects.get("MaxArmySizeIncrease") or 0) > 0
+            or float(effects.get("PercentGoldChance") or 0) > 0
+        )
+        assert item["unit_equipable"] is expected_unit_scope
+
+    non_unit_items = {
+        item["id"] for item in catalog["items"] if not item["unit_equipable"]
+    }
+    assert non_unit_items == {
+        "TFT_Item_ForceOfNature",
+        "TFT_Item_TacticiansRing",
+        "TFT_Item_TacticiansScepter",
+    }
 
 
 def test_source_mana_regen_becomes_generic_combat_effect():
@@ -209,10 +232,21 @@ def test_semantic_validation_accepts_normalized_stats_or_explicit_effects():
     catalog = {
         "items": [
             {"id": "Item_A", "stats": {"attack_speed": 0.1}, "combat_effects": []},
-            {"id": "Item_B", "stats": {}, "combat_effects": [{"trigger": "COMBAT_START", "operation": "GRANT_SHIELD"}]},
+            {"id": "Item_B", "stats": {}, "combat_effects": [{"trigger": "on_attack", "operation": "bonus_damage", "damage_type": "MAGIC", "value": 0.05}]},
         ]
     }
     validate_catalog_semantics(catalog)
+
+def test_semantic_validation_rejects_effect_without_combat_handler():
+    catalog = {
+        "items": [
+            {"id": "Item_A", "stats": {"attack_speed": 0.1}, "combat_effects": []},
+            {"id": "Item_B", "stats": {}, "combat_effects": [{"trigger": "combat_start", "operation": "grant_shield", "value": 100}]},
+        ]
+    }
+    with pytest.raises(ValueError, match="Efeito sem handler/contrato suportado"):
+        validate_catalog_semantics(catalog)
+
 
 
 def test_explicit_trait_metadata_can_add_non_craftable_items():

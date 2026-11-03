@@ -77,9 +77,9 @@ struct CombatPosition
 // interprets these stable operations instead of branching on item API names.
 struct CombatEffectDefinition
 {
-    std::string trigger;       // combat_start, every_second, on_attack, on_cast, on_kill, on_ally_shield
-    std::string operation;     // add_stat, bonus_damage, heal_max_hp_pct, grant_mana, mana_share, grant_shield
-    std::string stat;          // attack_damage, attack_speed, ability_power, armor, magic_resist, omnivamp, damage_amplification
+    std::string trigger;       // combat_start, on_attack, on_kill, after_delay, while_hp_below, on_ally_shield
+    std::string operation;     // add_stat, bonus_damage, heal_max_hp_pct, grant_charges, mana_regen
+    std::string stat;          // attack_damage, attack_speed, ability_power, armor, magic_resist, omnivamp, damage_amplification, damage_reduction, max_hp
     std::string target;        // self, allies, enemies, lowest_health_ally
     std::string condition;     // empty, role_tank, role_fighter, role_assassin, role_other, has_trait
     std::string condition_trait;

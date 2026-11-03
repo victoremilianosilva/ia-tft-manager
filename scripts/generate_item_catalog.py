@@ -41,6 +41,48 @@ UTILITY_EFFECTS = {
     "StealthDuration",
 }
 
+def _effect_coverage(effects: dict[str, Any]) -> dict[str, list[str]]:
+    """Expose source keys that still need an explicit generic or legacy handler audit."""
+    active_keys = sorted(
+        str(key) for key, value in effects.items()
+        if value is not None
+        and not (isinstance(value, bool) and not value)
+        and not (_finite_number(value) and float(value) == 0.0)
+    )
+    stat_fields = {
+        "AS": "attack_speed", "AttackSpeed": "attack_speed",
+        "AP": "ability_power", "AbilityPower": "ability_power",
+        "CritChance": "critical_strike_chance",
+        "CriticalStrikeChance": "critical_strike_chance",
+        "CritDamage": "critical_strike_damage",
+        "CriticalStrikeDamage": "critical_strike_damage",
+        "Health": "health", "HP": "health", "BonusHealth": "health",
+        "Armor": "armor", "MagicResist": "magic_resist", "MR": "magic_resist",
+        "Mana": "mana", "StatOmnivamp": "omnivamp", "Omnivamp": "omnivamp",
+        "DamageAmp": "damage_amplification",
+        "DamageAmplification": "damage_amplification",
+        "DamageReduction": "damage_reduction",
+    }
+    normalized_stats = _normalise_stats(effects)
+    generic_stat = sorted(
+        key for key in active_keys
+        if key in stat_fields and normalized_stats[stat_fields[key]] > 0.0
+    )
+    generic_combat = []
+    if _percent_fraction(effects, "AD", "BonusAD") > 0.0:
+        generic_combat.extend(key for key in ("AD", "BonusAD") if key in active_keys)
+    if _nonnegative_effect(effects, "ManaRegen") > 0.0 and "ManaRegen" in active_keys:
+        generic_combat.append("ManaRegen")
+    generic_combat = sorted(generic_combat)
+    normalized = set(generic_stat) | set(generic_combat)
+    not_generic = sorted(key for key in active_keys if key not in normalized)
+    return {
+        "source_keys": active_keys,
+        "generic_stat_keys": generic_stat,
+        "generic_combat_keys": generic_combat,
+        "not_generic_normalized_keys": not_generic,
+    }
+
 
 def _finite_number(value: Any) -> bool:
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(float(value))
@@ -281,11 +323,24 @@ def build_catalog(
         component = item_by_id.get(component_id)
         if component is None:
             raise ValueError(f"Componente referenciado por uma receita, mas ausente na origem: {component_id}")
+        source_effects = component.get("effects") or {}
+        # Only ordinary stat-bearing base components enter random PvE drops.
+        # Special components remain recipe dimensions but are excluded from
+        # the basic component pool through explicit normalized metadata.
+        basic_component_effects = {
+            "AD", "Armor", "Health", "AP", "MagicResist", "MR",
+            "AS", "CritChance", "ManaRegen",
+        }
+        pve_loot_eligible = bool(source_effects) and any(
+            key in basic_component_effects and _finite_number(value) and float(value) != 0.0
+            for key, value in source_effects.items()
+        )
         components.append({
             "id": component_id,
+            "pve_loot_eligible": pve_loot_eligible,
             "name": str(component.get("name") or component_id),
             "source_api_name": component_id,
-            "source_effects": component.get("effects") or {},
+            "source_effects": source_effects,
         })
 
     recipes: dict[tuple[str, str], str] = {}
@@ -317,6 +372,14 @@ def build_catalog(
             "source_icon": source_item.get("icon") or "",
             "source_effects": effects,
             "combat_effects": _normalise_combat_effects(effects),
+            "effect_coverage": _effect_coverage(effects),
+            # Army-size/economy items act on the player, not on a champion.
+            # Until that player-level effect is modeled, never expose them as
+            # unit equipment or ordinary completed-item anvil choices.
+            "unit_equipable": not (
+                _nonnegative_effect(effects, "MaxArmySizeIncrease") > 0.0 or
+                _nonnegative_effect(effects, "PercentGoldChance") > 0.0
+            ),
             "weight_basis": "heuristic_from_CommunityDragon_effect_keys",
         }
         # Special/trait mechanics are set data, not API-name branches in C++.
@@ -357,6 +420,8 @@ def build_catalog(
             "source_icon": "",
             "source_effects": {},
             "combat_effects": metadata.get("combat_effects", []),
+            "effect_coverage": _effect_coverage({}),
+            "unit_equipable": True,
             "grants_trait": metadata["grants_trait"],
             "granted_trait_active_count": metadata.get("granted_trait_active_count", 1),
             "weight_basis": "explicit_set_item_metadata",
@@ -386,6 +451,66 @@ def build_catalog(
     }
 
 
+def _combat_effect_is_supported(effect: Any) -> bool:
+    """Mirror the C++ CombatEngine operation/trigger contract."""
+    if not isinstance(effect, dict):
+        return False
+    trigger = effect.get("trigger")
+    operation = effect.get("operation")
+    pairs = {
+        "add_stat": {"combat_start", "after_delay", "while_hp_below", "on_ally_shield"},
+        "bonus_damage": {"on_attack"},
+        "heal_max_hp_pct": {"on_attack", "on_kill"},
+        "grant_charges": {"on_kill"},
+        "mana_regen": {"", "combat_start"},
+    }
+    if not isinstance(operation, str) or not isinstance(trigger, str):
+        return False
+    if operation not in pairs or trigger not in pairs[operation]:
+        return False
+
+    target = effect.get("target", "")
+    if not isinstance(target, str) or target not in {"", "self", "allies", "allies_same_row_within_1"}:
+        return False
+    if operation in {"mana_regen", "grant_charges", "heal_max_hp_pct"} and target not in {"", "self"}:
+        return False
+    if operation == "bonus_damage" and target == "allies_same_row_within_1":
+        return False
+    condition = effect.get("condition", "")
+    if condition not in {
+        "", "has_trait", "trait_count_at_least",
+        "role_tank", "role_fighter", "role_assassin", "role_other",
+    }:
+        return False
+    if condition in {"has_trait", "trait_count_at_least"} and not effect.get("condition_trait"):
+        return False
+    if condition == "trait_count_at_least":
+        if not isinstance(effect.get("min_trait_count"), int) or effect["min_trait_count"] <= 0:
+            return False
+
+    if operation == "add_stat" and effect.get("percent_of_max_health"):
+        return False
+    if operation == "bonus_damage" and effect.get("percent_of_max_health") and effect.get("percent_of_stat"):
+        return False
+    if operation == "add_stat" and effect.get("stat") not in {
+        "attack_damage", "attack_speed", "ability_power", "armor",
+        "magic_resist", "omnivamp", "damage_amplification",
+        "damage_reduction", "max_hp",
+    }:
+        return False
+    if operation == "bonus_damage" and effect.get("percent_of_stat"):
+        if effect.get("stat") not in {
+            "attack_damage", "attack_speed", "ability_power",
+            "max_hp", "armor", "magic_resist",
+        }:
+            return False
+    if operation == "grant_charges" and not effect.get("stack_key"):
+        return False
+    if operation == "heal_max_hp_pct" and trigger == "on_attack" and not effect.get("stack_key"):
+        return False
+    return True
+
+
 def validate_catalog_semantics(catalog: dict[str, Any]) -> None:
     """Reject structurally valid catalogs that would make finished items inert.
 
@@ -404,6 +529,9 @@ def validate_catalog_semantics(catalog: dict[str, Any]) -> None:
     ]
     if not ordinary:
         raise ValueError("Catálogo não contém itens craftáveis comuns para validar.")
+    for item in ordinary:
+        if "unit_equipable" in item and not isinstance(item["unit_equipable"], bool):
+            raise ValueError("unit_equipable precisa ser boolean em %s." % item.get("id", "<sem id>"))
 
     stat_keys = (
         "attack_damage", "attack_speed", "ability_power",
@@ -419,7 +547,15 @@ def validate_catalog_semantics(catalog: dict[str, Any]) -> None:
             for key in stat_keys
         )
         effects = item.get("combat_effects")
-        has_effects = isinstance(effects, list) and bool(effects)
+        if not isinstance(effects, list):
+            raise ValueError("combat_effects precisa ser uma lista em %s." % item.get("id", "<sem id>"))
+        unsupported = [effect for effect in effects if not _combat_effect_is_supported(effect)]
+        if unsupported:
+            raise ValueError(
+                "Efeito sem handler/contrato suportado em %s: %s"
+                % (item.get("id", "<sem id>"), unsupported)
+            )
+        has_effects = bool(effects)
         return has_stats or has_effects
 
     usable = sum(1 for item in ordinary if has_applied_value(item))

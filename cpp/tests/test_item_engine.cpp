@@ -2,7 +2,9 @@
 #include "items/ItemActionContract.hpp"
 #include "items/CombatItemAdapter.hpp"
 #include "items/ItemCatalog.hpp"
+#include "items/PveLootDistribution.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -122,6 +124,34 @@ int main() {
     require(inert_catalog_rejected,
             "runtime loader must reject a structurally valid but inert item catalog");
 
+    std::istringstream unsupported_effect_catalog_json(R"json({
+        "schema_version": 1,
+        "set_id": "synthetic-unsupported-effect-test",
+        "components": [
+            {"id": "sword", "name": "Test Sword"},
+            {"id": "bow", "name": "Test Bow"}
+        ],
+        "items": [{
+            "id": "unsupported_effect_item", "name": "Unsupported Effect",
+            "recipe_components": ["sword", "bow"],
+            "stats": {}, "weights": {},
+            "combat_effects": [{
+                "trigger": "combat_start",
+                "operation": "grant_shield",
+                "target": "self",
+                "value": 100.0
+            }]
+        }]
+    })json");
+    bool unsupported_effect_rejected = false;
+    try {
+        (void)load_item_catalog(unsupported_effect_catalog_json);
+    } catch (const std::invalid_argument&) {
+        unsupported_effect_rejected = true;
+    }
+    require(unsupported_effect_rejected,
+            "catalog loader must reject a passive whose operation has no CombatEngine handler");
+
     std::istringstream mismatched_set_json(R"json({
         "schema_version": 1,
         "set_id": "Set17",
@@ -145,11 +175,94 @@ int main() {
             std::abs(combat_damage.omnivamp - 0.10f) < 0.001f,
             "item catalog definition should map to combat item stats");
 
+    UnitProfile carry{"carry-1", 2, 1, false, true, 80.0, 1.2, 0.0, 900.0, 30.0, 30.0, 0.9};
+    UnitProfile tank{"tank-1", 2, 0, true, false, 35.0, 0.7, 0.0, 1800.0, 70.0, 60.0, 0.8};
+
+    // Supported special passives must contribute to compatibility even when
+    // the item has no flat stats. Offensive passives favor carries; defensive
+    // passives favor frontline recipients.
+    ItemDefinition passive_damage;
+    passive_damage.id = "passive_damage";
+    passive_damage.name = "Passive Damage";
+    tft::CombatEffectDefinition damage_effect;
+    damage_effect.trigger = "on_attack";
+    damage_effect.operation = "bonus_damage";
+    damage_effect.target = "self";
+    damage_effect.damage_type = tft::DamageType::MAGIC;
+    damage_effect.value = 0.08f;
+    damage_effect.percent_of_max_health = true;
+    passive_damage.combat_effects.push_back(damage_effect);
+
+    ItemDefinition passive_guard;
+    passive_guard.id = "passive_guard";
+    passive_guard.name = "Passive Guard";
+    tft::CombatEffectDefinition guard_effect;
+    guard_effect.trigger = "combat_start";
+    guard_effect.operation = "add_stat";
+    guard_effect.stat = "damage_reduction";
+    guard_effect.target = "self";
+    guard_effect.condition = "role_tank";
+    guard_effect.value = 0.10f;
+    passive_guard.combat_effects.push_back(guard_effect);
+
+    const auto combat_passive = to_combat_item(passive_damage);
+    require(combat_passive.effects.size() == 1 &&
+            combat_passive.effects.front().operation == "bonus_damage",
+            "adapter must preserve normalized passive definitions into CombatInput");
+    ItemEngine passive_engine({passive_damage, passive_guard});
+    require(passive_engine.item_effect_strength("passive_damage", carry) > 0.0,
+            "supported special damage passive should have a compatibility score");
+    require(passive_engine.item_fit("passive_damage", carry) >
+                passive_engine.item_fit("passive_damage", tank),
+            "special offensive passive should favor a carry over a tank");
+    require(passive_engine.item_effect_strength("passive_guard", tank) >
+                passive_engine.item_effect_strength("passive_guard", carry),
+            "role-conditioned defensive passive should favor its eligible tank role");
+    require(passive_engine.item_effect_strength("missing_item", carry) == 0.0,
+            "unknown items must not receive special-effect compatibility value");
+
+    ItemDefinition trait_passive;
+    trait_passive.id = "trait_passive";
+    trait_passive.name = "Trait Passive";
+    tft::CombatEffectDefinition trait_effect;
+    trait_effect.trigger = "combat_start";
+    trait_effect.operation = "add_stat";
+    trait_effect.stat = "ability_power";
+    trait_effect.target = "self";
+    trait_effect.condition = "has_trait";
+    trait_effect.condition_trait = "DA_18_Invoker";
+    trait_effect.value = 15.0f;
+    trait_passive.combat_effects.push_back(trait_effect);
+    ItemEngine trait_passive_engine({trait_passive});
+    auto invoker_profile = carry;
+    invoker_profile.traits = {"Invoker"};
+    auto unrelated_profile = carry;
+    unrelated_profile.traits = {"Vanguard"};
+    require(trait_passive_engine.item_effect_strength("trait_passive", invoker_profile) >
+                trait_passive_engine.item_effect_strength("trait_passive", unrelated_profile),
+            "trait-conditioned passives should match canonical trait suffixes");
+
+    ItemDefinition player_scope_item;
+    player_scope_item.id = "player_scope_item";
+    player_scope_item.name = "Player Scope Item";
+    player_scope_item.recipe_components = {"spatula", "pan"};
+    player_scope_item.unit_equipable = false;
+    ItemEngine player_scope_engine({player_scope_item}, {"spatula", "pan"});
+    require(player_scope_engine.add_component("spatula") &&
+            player_scope_engine.add_component("pan"),
+            "player-scope recipe components may still be acquired");
+    require(!player_scope_engine.can_craft("spatula", "pan") &&
+            !player_scope_engine.craft("spatula", "pan"),
+            "player-scope items must not be exposed as unit craft-and-equip actions");
+    require(!player_scope_engine.add_completed_item("player_scope_item") &&
+            !player_scope_engine.grant_completed_item_anvil({"player_scope_item"}),
+            "player-scope items must not enter the champion equipment inventory/anvil");
+    require(player_scope_engine.item_fit("player_scope_item", carry) < 0.0,
+            "player-scope items must not receive unit compatibility scores");
+
     ItemEngine engine({damage, guard, double_component});
     require(!engine.add_component("unknown_component"),
             "component IDs outside the loaded recipe catalog must be rejected");
-    UnitProfile carry{"carry-1", 2, 1, false, true, 80.0, 1.2, 0.0, 900.0, 30.0, 30.0, 0.9};
-    UnitProfile tank{"tank-1", 2, 0, true, false, 35.0, 0.7, 0.0, 1800.0, 70.0, 60.0, 0.8};
 
     require(engine.add_component("sword"), "component should be accepted");
     require(engine.add_component("bow"), "component should be accepted");
@@ -318,6 +431,54 @@ int main() {
     require(engine.inventory().size() ==
                 inventory_before_release + carry_equipped_before_release - 1,
             "re-equipping consumes exactly one returned item");
+
+    // Set 18 PvE loot tables: weighted direct component rewards preserve the
+    // published per-stage component averages without creating orb drops; the
+    // personal pool removes each drawn component until the next stage refresh.
+    {
+        std::mt19937_64 rng(180018ULL);
+        constexpr std::size_t samples = 50000;
+        const auto average_components = [&](unsigned stage) {
+            std::mt19937_64 sample_rng(180000ULL + stage);
+            std::uint64_t total = 0;
+            for (std::size_t i = 0; i < samples; ++i)
+                total += roll_set18_pve_loot(stage, sample_rng).components;
+            return static_cast<double>(total) / static_cast<double>(samples);
+        };
+        require(std::abs(average_components(1) - 3.0) < 0.12,
+                "Set 18 stage 1 loot should average about three components");
+        require(std::abs(average_components(2) - 2.4) < 0.10,
+                "Set 18 stage 2 loot should average about 2.4 components");
+        require(std::abs(average_components(3) - 3.5) < 0.12,
+                "Set 18 stage 3 loot should average about 3.5 components");
+        require(std::abs(average_components(4) - 3.1) < 0.12,
+                "Set 18 stage 4 loot should average about 3.1 components");
+
+        const std::vector<std::string> basic_components{
+            "sword", "bow", "rod", "tear", "belt", "chain", "cloak", "glove"
+        };
+        Set18ComponentPool pool;
+        pool.initialize(basic_components);
+        std::vector<std::string> first_stage_draws;
+        for (int i = 0; i < 5; ++i) first_stage_draws.push_back(pool.draw(rng));
+        std::sort(first_stage_draws.begin(), first_stage_draws.end());
+        require(std::adjacent_find(first_stage_draws.begin(), first_stage_draws.end()) ==
+                    first_stage_draws.end(),
+                "Set 18 stage 1 pool must not drop the same basic component twice");
+        require(pool.remaining() == 3,
+                "Set 18 component pool must retain undropped components");
+        pool.add_stage_refresh(basic_components);
+        require(pool.remaining() == 11,
+                "Set 18 must add one of each component before stages 2, 3 and 4");
+        for (unsigned stage = 1; stage <= 4; ++stage)
+            require(!set18_pve_loot_table(stage).empty(),
+                    "each Set 18 PvE stage must have a loot distribution table");
+        bool later_stage_rejected = false;
+        try { (void)set18_pve_loot_table(5); }
+        catch (const std::out_of_range&) { later_stage_rejected = true; }
+        require(later_stage_rejected,
+                "random component loot tables must stop after stage 4");
+    }
 
     std::cout << "[PASS] Item inventory, recipes, equip, and decision tests.\n";
     return EXIT_SUCCESS;

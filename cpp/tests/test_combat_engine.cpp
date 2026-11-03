@@ -1,4 +1,6 @@
 #include "CombatEngine.hpp"
+#include "items/ItemEngine.hpp"
+#include "items/CombatItemAdapter.hpp"
 
 #include <cmath>
 #include <iostream>
@@ -692,6 +694,72 @@ void test_data_driven_trait_emblem_effects() {
         "A trait-count-gated team aura should grant the generic true-damage effect.");
 }
 
+void test_component_to_craft_to_equipment_to_combat_cycle() {
+    tft::CombatEngine combat;
+    auto baseline_input = make_input();
+    baseline_input.config.max_duration = 0.1f;
+    baseline_input.config.record_damage = true;
+    baseline_input.player_a.units[0].attack_damage = 10.0f;
+    baseline_input.player_a.units[0].attack_speed = 1.0f;
+    baseline_input.player_b.units[0].attack_damage = 0.1f;
+    baseline_input.player_b.units[0].attack_speed = 0.1f;
+    baseline_input.player_b.units[0].armor = 0.0f;
+    baseline_input.player_b.units[0].hp = baseline_input.player_b.units[0].max_hp = 5000.0f;
+
+    const auto baseline = combat.simulate(baseline_input);
+    require(baseline.success && !baseline.damage_events.empty(),
+            "Baseline for the item lifecycle integration test must run.");
+
+    tft::items::ItemDefinition definition;
+    definition.id = "cycle_blade";
+    definition.name = "Cycle Blade";
+    definition.recipe_components = {"component_sword", "component_bow"};
+    definition.attack_damage = 15.0;
+    tft::CombatEffectDefinition passive;
+    passive.trigger = "combat_start";
+    passive.operation = "add_stat";
+    passive.stat = "attack_damage";
+    passive.target = "self";
+    passive.value = 0.20f;
+    passive.percent_of_stat = true;
+    definition.combat_effects.push_back(passive);
+
+    tft::items::ItemEngine item_engine(
+        {definition}, {"component_sword", "component_bow"});
+    require(item_engine.add_component("component_sword") &&
+            item_engine.add_component("component_bow"),
+            "Acquired components must enter the item inventory.");
+    const auto crafted = item_engine.craft("component_sword", "component_bow");
+    require(crafted && *crafted == "cycle_blade",
+            "The component recipe must produce the expected finished item.");
+
+    tft::items::UnitProfile target{
+        "cycle-carry-uuid", 1, 1, false, true,
+        10.0, 1.0, 0.0, 100.0, 0.0, 0.0, 1.0
+    };
+    tft::items::ItemActionCommand equip;
+    equip.operation = tft::items::ItemOperation::EQUIP_FROM_INVENTORY;
+    equip.item_id = *crafted;
+    equip.target_unit_uuid = target.uuid;
+    const auto equipped = item_engine.apply_action(equip, {target});
+    require(equipped.success && item_engine.inventory().empty() &&
+            item_engine.equipped(target.uuid).size() == 1,
+            "The crafted item must move from inventory to the selected unit UUID.");
+
+    const auto* equipped_definition = item_engine.find(item_engine.equipped(target.uuid).front());
+    require(equipped_definition != nullptr,
+            "Equipped item ID must resolve to its catalog definition.");
+    auto combat_input = baseline_input;
+    combat_input.player_a.units[0].items.push_back(
+        tft::items::to_combat_item(*equipped_definition));
+    const auto with_item = combat.simulate(combat_input);
+    require(with_item.success && !with_item.damage_events.empty(),
+            "The equipped catalog item must reach the combat simulator.");
+    require(with_item.damage_events.front().raw_damage >
+                baseline.damage_events.front().raw_damage,
+            "Numeric stats and the generic passive must change actual combat damage.");
+}
+
 void test_generic_source_ad_effect_changes_combat() {
     tft::CombatEngine engine;
     auto baseline_input = make_input();
@@ -741,6 +809,7 @@ int main() {
         test_set17_healing_and_defensive_items_change_survival();
         test_set17_ionic_spark_and_emblem_passives();
         test_data_driven_trait_emblem_effects();
+        test_component_to_craft_to_equipment_to_combat_cycle();
         test_generic_source_ad_effect_changes_combat();
     } catch (const std::exception& error) {
         std::cerr << "test_combat_engine: " << error.what() << '\n';

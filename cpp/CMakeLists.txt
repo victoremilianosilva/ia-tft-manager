@@ -319,6 +319,11 @@ if(BUILD_TESTING)
     add_test(NAME composition_planner_opgg_incompatible_fallback
         COMMAND test_composition_planner_opgg incompatible)
 
+    add_executable(test_unit_combat_classifier tests/test_unit_combat_classifier.cpp)
+    configure_tft_module(test_unit_combat_classifier)
+    enable_tft_test_assertions(test_unit_combat_classifier)
+    add_test(NAME test_unit_combat_classifier COMMAND test_unit_combat_classifier)
+
     add_executable(test_board_evaluation tests/test_board_evaluation.cpp)
     configure_tft_module(test_board_evaluation)
     enable_tft_test_assertions(test_board_evaluation)
