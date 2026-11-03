@@ -1035,6 +1035,7 @@ struct TFTEngine::Impl {
 
             player_envs[i].bench.fill(std::nullopt);
             player_envs[i].board.fill(std::nullopt);
+            player_envs[i].pve_component_pool = items::Set18ComponentPool{};
             if (item_catalog) {
                 std::vector<std::string> component_ids;
                 component_ids.reserve(item_catalog->components.size());
