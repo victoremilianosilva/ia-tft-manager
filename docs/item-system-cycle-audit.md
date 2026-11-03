@@ -46,6 +46,7 @@ A decisão continua sendo da policy unificada: ação 7 equipa do inventário; a
 3. **Contrato catálogo/combate:** o loader C++ aceita somente operações e pares trigger/operação com handlers existentes no `CombatEngine`. Operações como `grant_shield` sem handler não são mais aceitas como se fossem funcionais.
 4. **Telemetria:** o lobby emite `ITEM_ANVIL_CHOSEN` e `ITEM_ACTION_APPLIED`, incluindo jogador, tipo, item, unidade-alvo, fit, recompensa e etapa.
 5. **Auditoria:** `audit_item_system_e2e.py` agrega eventos de loot, bigorna e transições aplicadas, além de contagens por tipo de ação.
+6. **Ciclo de combate:** foi adicionado teste determinístico que coleta dois componentes, crafta, equipa por UUID, converte para `CombatItem` e verifica aumento do dano real no `CombatEngine`.
 
 ## Limite conhecido de cobertura
 
