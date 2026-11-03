@@ -4625,6 +4625,25 @@ StepResult TFTEngine::step(
         if (!transition.acted) {
             continue;
         }
+        const auto& item_action = impl_->player_envs[i].last_item_action;
+        if (item_action.kind == "anvil_component_choice" ||
+            item_action.kind == "anvil_completed_item_choice") {
+            item_action_events.emplace_back(
+                "ITEM_ANVIL_CHOSEN: player=" + std::to_string(i) +
+                ", kind=" + item_action.kind +
+                ", item=" + item_action.item_id +
+                ", stage=" + std::to_string(impl_->stage));
+        } else if (item_action.kind == "equip_inventory_item" ||
+                   item_action.kind == "craft_and_equip") {
+            item_action_events.emplace_back(
+                "ITEM_ACTION_APPLIED: player=" + std::to_string(i) +
+                ", kind=" + item_action.kind +
+                ", item=" + item_action.item_id +
+                ", target_uuid=" + item_action.target_uuid +
+                ", fit=" + std::to_string(item_action.fit) +
+                ", reward=" + std::to_string(item_action.assignment_reward) +
+                ", stage=" + std::to_string(impl_->stage));
+        }
         action_rewards[i] = transition.action_reward;
         capacity_violations[i] = transition.board_capacity_violation;
         action_costs[i] = transition.action_cost;
