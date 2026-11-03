@@ -424,9 +424,10 @@ def test_sale_to_free_full_bench_is_classified_separately():
     bought_unit = _unit("Briar")
     bought_unit["uuid"] = "briar-bought"
     full_bench = [_unit(f"Unit{i}") for i in range(8)] + [bought_unit]
+    initial_bench = full_bench[:-1]
     bought = _entry(
         1, 1, [0, 0, 0, 0, 0, 0], "BUY",
-        _state(10),
+        _state(10, bench=initial_bench),
         _state(9, bench=full_bench),
     )
     sold = _entry(
