@@ -957,8 +957,17 @@ int main(int argc, char** argv) {
             for (auto& action : pass_actions) action.values = {6, 0, 0, 0, 0, 0};
             const auto finish_round = [&]() {
                 tft::StepResult result;
-                for (int action = 0; action < 15; ++action)
-                    result = step_with_pending_anvils(loot_engine, pass_actions);
+                // PvE loot is emitted on the step that advances the round.
+                // Preserve events from every action: the final action in the
+                // round usually has no reward event and must not overwrite it.
+                for (int action = 0; action < 15; ++action) {
+                    auto step = step_with_pending_anvils(loot_engine, pass_actions);
+                    result.events.insert(result.events.end(),
+                                         step.events.begin(), step.events.end());
+                    result.observations = std::move(step.observations);
+                    result.rewards = std::move(step.rewards);
+                    result.dones = std::move(step.dones);
+                }
                 return result;
             };
             const auto contains_event = [](const tft::StepResult& result,
