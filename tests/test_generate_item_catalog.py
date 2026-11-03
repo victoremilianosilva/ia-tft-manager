@@ -178,10 +178,13 @@ def test_normalizes_supported_stats_and_preserves_raw_effects():
 
 def test_semantic_validation_accepts_active_repository_catalog():
     import json
+    from scripts.generate_item_catalog import _effect_coverage
 
     catalog_path = Path(__file__).resolve().parents[1] / "data" / "itens.json"
     catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
     validate_catalog_semantics(catalog)
+    for item in catalog["items"]:
+        assert item["effect_coverage"] == _effect_coverage(item.get("source_effects", {}))
 
 
 def test_source_mana_regen_becomes_generic_combat_effect():
