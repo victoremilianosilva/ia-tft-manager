@@ -256,6 +256,8 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
         "composition_decision_round": decision_round,
         "composition_decision_action_index": decision_start_index,
         "classified_sales": {}, "purchase_records": [], "sale_review_records": [],
+        "sale_potential_records": [], "upgrade_potential_sales": 0,
+        "high_upgrade_potential_sales": 0,
     }
     purchases = []
     classifications = Counter()
@@ -340,6 +342,28 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
             sold_star = max(1, min(3, int(unit.get("star", 1) or 1)))
             same_star_before = _same_star_copy_count(before, champion, sold_star)
             same_star_after = _same_star_copy_count(after, champion, sold_star)
+            one_star_before = _same_star_copy_count(before, champion, 1)
+            remaining_same_star = max(0, same_star_before - 1)
+            if sold_star == 1 and remaining_same_star > 0:
+                upgrade_path_strength = 1.0 / remaining_same_star
+            elif sold_star == 2 and remaining_same_star > 0:
+                upgrade_path_strength = min(1.0, 0.65 + 0.15 * (remaining_same_star - 1))
+            elif sold_star == 2 and one_star_before >= 3:
+                upgrade_path_strength = 0.45
+            else:
+                upgrade_path_strength = 0.0
+            metrics["upgrade_potential_sales"] += int(upgrade_path_strength > 0.0)
+            metrics["high_upgrade_potential_sales"] += int(upgrade_path_strength >= 0.65)
+            metrics["sale_potential_records"].append({
+                "step": step, "round": rnd, "champion": champion,
+                "sold_star": sold_star, "copies_before": copies_before,
+                "copies_after": copies_after, "same_star_before": same_star_before,
+                "same_star_after": same_star_after, "one_star_before": one_star_before,
+                "upgrade_path_strength": round(upgrade_path_strength, 4),
+                "core_unit": champion_key in core_keys,
+                "composition_decided": after_comp_decision,
+                "bench_was_full": len([u for u in bench if isinstance(u, dict) and u.get("occupied", True)]) >= 9,
+            })
             higher_star_before = sum(
                 _same_star_copy_count(before, champion, star)
                 for star in range(sold_star + 1, 4)
@@ -411,6 +435,8 @@ def audit_purchase_sequences(entries: list[dict], player: str, report: dict) -> 
                     },
                     "copies_before": copies_before, "copies_after": copies_after,
                     "same_star_before": same_star_before, "same_star_after": same_star_after,
+                    "one_star_before": one_star_before,
+                    "upgrade_path_strength": round(upgrade_path_strength, 4),
                     "board_power_before": _board_power(before), "board_power_after": _board_power(after),
                 })
             if not after_comp_decision and (
