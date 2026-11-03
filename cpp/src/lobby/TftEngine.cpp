@@ -3238,6 +3238,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
         bool bought_upgrade = false;
         bool purchase_was_recently_reversed = false;
         bool sale_has_legitimate_context = false;
+        bool sale_bench_was_full = false;
         double reversed_purchase_prior_reward = 0.0;
         bool board_capacity_violation = false;
         bool anti_loop_blocked = false;
@@ -3810,7 +3811,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     const std::string sold_uuid = unit.uuid;
                     const auto sell_value = EconomyEngine::get_sell_value(
                         definition->cost, unit.star);
-                    const bool sale_bench_was_full =
+                    sale_bench_was_full =
                         old_bench_count >= static_cast<int>(kBenchSlots);
                     const int gold_after_sale = old_gold + sell_value;
                     const bool sale_economic_need =
