@@ -3078,6 +3078,19 @@ struct TFTEngine::Impl {
             int next_unit_id = 0;
             append_combat_team(a, UnitTeam::PLAYER_A, input.player_a, next_unit_id);
             append_combat_team(b, UnitTeam::PLAYER_B, input.player_b, next_unit_id);
+            const auto record_combat_item_inputs = [&](std::size_t player_id,
+                                                        const auto& team) {
+                for (const auto& unit : team.units) {
+                    for (const auto& item : unit.items) {
+                        events.emplace_back(
+                            "COMBAT_ITEM_INPUT: player=" + std::to_string(player_id) +
+                            ", unit_id=" + std::to_string(unit.id) +
+                            ", item=" + item.api_name);
+                    }
+                }
+            };
+            record_combat_item_inputs(a, input.player_a);
+            record_combat_item_inputs(b, input.player_b);
 
             const bool empty_a = input.player_a.units.empty();
             const bool empty_b = input.player_b.units.empty();
