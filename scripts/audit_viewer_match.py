@@ -2268,14 +2268,17 @@ def markdown_report(report: dict) -> str:
 
     if report.get("purchase_sequence_metrics"):
         lines += ["## Auditoria de compras e vendas", "",
-                  "| Jogador | Compras | Vendas | Revertidas ≤1 ação | ≤2 ações | ≤4 ações | Ouro perdido | Upgrades | Vendas core/par | Valor médio |",
-                  "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+                  "| Jogador | Compras | Vendas | Impulsivas ≤1 ação | ≤2 ações | ≤4 ações | Par/upgrade | Experimentais | Mudança comp. | Banco cheio | Necessidade econômica | Revisão | Ouro perdido |",
+                  "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
         for player, metrics in sorted(report["purchase_sequence_metrics"].items()):
+            categories = metrics.get("classified_sales", {})
             lines.append(
                 f"| {player} | {metrics['buys']} | {metrics['sells']} | "
                 f"{metrics['reversed_1']} | {metrics['reversed_2']} | {metrics['reversed_4']} | "
-                f"{metrics['net_gold_lost_reversed']} | {metrics['upgrade_completing_buys']} | "
-                f"{metrics['core_or_pair_sales']} | {metrics.get('average_strategic_value_per_purchase', 0.0)} |"
+                f"{categories.get('PAIR_OR_UPGRADE', 0)} | {categories.get('EXPERIMENTAL_REPLACED', 0)} | "
+                f"{categories.get('COMP_TRANSITION', 0)} | {categories.get('BENCH_CAPACITY', 0)} | "
+                f"{categories.get('ECONOMIC_NEED', 0)} | {categories.get('UNJUSTIFIED_REVIEW', 0)} | "
+                f"{metrics['net_gold_lost_reversed']} |"
             )
         ignored_pre_decision = sum(
             int(metrics.get("core_pair_sales_before_comp_decision_ignored", 0))
@@ -2298,7 +2301,8 @@ def markdown_report(report: dict) -> str:
         lines += ["", f"Vendas de core/pares ignoradas antes da decisão da composição: **{ignored_pre_decision}**.",
                   f"Round da decisão por jogador: {decisions}.",
                   "As classificações detalhadas e sequências correlacionadas permanecem nos dados estruturados de origem.",
-                  "Uma venda sem compra correspondente na janela é UNKNOWN; sequências ambíguas não são penalizadas automaticamente. Ganhos nas três ações seguintes do mesmo round podem compensar uma venda; falta de ganho imediato isoladamente não gera penalidade.", ""]
+                  "Compra/venda impulsiva exige baixo fit e baixo valor estratégico, sem par/upgrade, alternativa melhor ainda possuída, transição de composição, implantação, banco cheio ou venda que financie uma ação necessária.",
+                  "Compras de alto fit sem justificativa observável ficam em UNJUSTIFIED_REVIEW, não são tratadas como impulsivas. Uma venda sem compra correspondente na janela é UNKNOWN; identidades ambíguas nunca são penalizadas automaticamente.", ""]
     if report["issues"]:
         lines += ["## Achados", "", "| Severidade | Jogador | Round | Step | Código | Descrição |",
                   "|---|---|---:|---:|---|---|"]
