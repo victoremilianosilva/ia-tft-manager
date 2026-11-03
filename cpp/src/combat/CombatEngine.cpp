@@ -17,6 +17,8 @@ namespace {
 
 struct RuntimeUnit {
     CombatUnit unit;
+    // Immutable item identity lookup; dynamic item stats remain on CombatUnit.
+    std::unordered_set<std::string> item_presence;
     float initial_hp = 0.0f;
     float damage_dealt = 0.0f;
     float damage_taken = 0.0f;
@@ -107,9 +109,8 @@ bool is_alive(const RuntimeUnit& unit) {
     return unit.unit.alive && unit.unit.hp > 0.0f;
 }
 
-bool has_item(const CombatUnit& unit, const char* api_name) {
-    return std::any_of(unit.items.begin(), unit.items.end(),
-        [&](const CombatItem& item) { return item.api_name == api_name; });
+bool has_item(const RuntimeUnit& unit, const char* api_name) {
+    return unit.item_presence.contains(api_name);
 }
 
 void add_titans_stack(RuntimeUnit& unit) {
@@ -130,26 +131,26 @@ float apply_heal(RuntimeUnit& target, float amount, float now) {
 }
 
 void trigger_defensive_items(RuntimeUnit& unit, float now) {
-    if (has_item(unit.unit, "TFT_Item_Bloodthirster") &&
+    if (has_item(unit, "TFT_Item_Bloodthirster") &&
         !unit.bloodthirster_triggered && unit.unit.hp <= unit.unit.max_hp * 0.40f) {
         unit.shield_hp += unit.unit.max_hp * 0.25f;
         unit.shield_expires_at = std::max(unit.shield_expires_at, now + 5.0f);
         unit.bloodthirster_triggered = true;
     }
-    if (has_item(unit.unit, "TFT_Item_SteraksGage") &&
+    if (has_item(unit, "TFT_Item_SteraksGage") &&
         !unit.sterak_triggered && unit.unit.hp <= unit.unit.max_hp * 0.60f) {
         unit.shield_hp += unit.unit.max_hp * 0.40f;
         unit.shield_expires_at = std::max(unit.shield_expires_at, now + 4.0f);
         unit.sterak_triggered = true;
     }
-    if (has_item(unit.unit, "TFT_Item_FrozenHeart") &&
+    if (has_item(unit, "TFT_Item_FrozenHeart") &&
         !unit.frozen_heart_triggered && unit.unit.hp <= unit.unit.max_hp * 0.40f) {
         unit.unit.mana = std::min(unit.unit.max_mana, unit.unit.mana + 15.0f);
         unit.shield_hp += unit.unit.max_hp * 0.20f;
         unit.shield_expires_at = std::max(unit.shield_expires_at, now + 60.0f);
         unit.frozen_heart_triggered = true;
     }
-    if (has_item(unit.unit, "TFT_Item_GuardianAngel") &&
+    if (has_item(unit, "TFT_Item_GuardianAngel") &&
         !unit.guardian_angel_triggered && unit.unit.hp <= unit.unit.max_hp * 0.60f) {
         unit.guardian_angel_triggered = true;
         unit.guardian_previous_damage_reduction = unit.unit.damage_reduction;
@@ -796,10 +797,13 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
 
             units.push_back(RuntimeUnit{effective_unit, effective_unit.hp});
             auto& loaded = units.back();
+            loaded.item_presence.reserve(loaded.unit.items.size());
+            for (const auto& item : loaded.unit.items)
+                loaded.item_presence.insert(item.api_name);
             loaded.base_attack_speed = loaded.unit.attack_speed;
             loaded.titans_base_ad = loaded.unit.attack_damage;
             loaded.runaans_base_ad = loaded.unit.attack_damage;
-            if (has_item(loaded.unit, "TFT_Item_AdaptiveHelm"))
+            if (has_item(loaded, "TFT_Item_AdaptiveHelm"))
                 loaded.mana_gain_multiplier = 1.15f;
             for (const auto& item : loaded.unit.items) {
                 const bool has_generic_mana_regen = std::any_of(
@@ -820,7 +824,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 else if (item.api_name == "TFT_Item_Redemption") loaded.mana_regen_per_second += 2.0f;
             }
             loaded.mana_regen_per_second += effect_mana_regeneration(loaded.unit);
-            if (has_item(loaded.unit, "TFT_Item_UnstableConcoction")) {
+            if (has_item(loaded, "TFT_Item_UnstableConcoction")) {
                 loaded.hand_of_justice_ad_bonus =
                     loaded.unit.attack_damage * (0.15f / 1.15f);
                 loaded.hand_of_justice_ad_ap_active =
@@ -852,16 +856,16 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
         index_by_id[units[i].unit.id] = i;
         auto& runtime = units[i];
         // Efeitos de início de combate: escudo e mana inicial.
-        if (has_item(runtime.unit, "TFT_Item_Crownguard")) {
+        if (has_item(runtime, "TFT_Item_Crownguard")) {
             runtime.shield_hp += runtime.unit.max_hp * 0.25f;
             runtime.crown_shield_triggered = true;
             runtime.crown_shield_expires_at = 8.0f;
             runtime.shield_expires_at = 8.0f;
         }
-        if (has_item(runtime.unit, "TFT_Item_FrozenHeart"))
+        if (has_item(runtime, "TFT_Item_FrozenHeart"))
             runtime.unit.mana = std::min(runtime.unit.max_mana,
                 runtime.unit.mana + 20.0f * runtime.mana_gain_multiplier);
-        if (has_item(runtime.unit, "TFT_Item_AdaptiveHelm")) {
+        if (has_item(runtime, "TFT_Item_AdaptiveHelm")) {
 
             if (runtime.unit.role == UnitRole::TANK ||
                 runtime.unit.role == UnitRole::FIGHTER) {
@@ -872,22 +876,22 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 runtime.unit.ability_power *= 1.10f;
             }
         }
-        if (has_item(runtime.unit, "TFT_Item_BlueBuff")) {
+        if (has_item(runtime, "TFT_Item_BlueBuff")) {
             runtime.unit.attack_damage *= 1.10f;
             runtime.unit.ability_power *= 1.10f;
         }
-        if (has_item(runtime.unit, "TFT_Item_Deathblade"))
+        if (has_item(runtime, "TFT_Item_Deathblade"))
             runtime.unit.damage_amplification += 0.10f;
-        if (has_item(runtime.unit, "TFT_Item_RabadonsDeathcap"))
+        if (has_item(runtime, "TFT_Item_RabadonsDeathcap"))
             runtime.unit.damage_amplification += 0.15f;
-        if (has_item(runtime.unit, "TFT_Item_NightHarvester")) {
+        if (has_item(runtime, "TFT_Item_NightHarvester")) {
             runtime.unit.damage_reduction += 0.05f;
             if (runtime.unit.hp / runtime.unit.max_hp > 0.50f)
                 runtime.unit.damage_reduction += 0.15f;
             runtime.night_harvester_bonus_active =
                 runtime.unit.hp / runtime.unit.max_hp > 0.50f;
         }
-        if (has_item(runtime.unit, "TFT17_Item_FlexTraitEmblemItem")) {
+        if (has_item(runtime, "TFT17_Item_FlexTraitEmblemItem")) {
             for (auto& ally : units) {
                 if (ally.unit.team != runtime.unit.team ||
                     std::abs(ally.unit.position.y - runtime.unit.position.y) != 0 ||
@@ -903,7 +907,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 }
             }
         }
-        if (has_item(runtime.unit, "TFT_Item_IonicSpark")) {
+        if (has_item(runtime, "TFT_Item_IonicSpark")) {
             for (auto& enemy : units) {
                 if (enemy.unit.team != runtime.unit.team && is_alive(enemy) &&
                     distance_between(runtime.unit, enemy.unit) <= 2) {
@@ -912,7 +916,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 }
             }
         }
-        if (has_item(runtime.unit, "TFT_Item_GargoyleStoneplate")) {
+        if (has_item(runtime, "TFT_Item_GargoyleStoneplate")) {
             int nearby_enemies = 0;
             for (const auto& enemy : units) {
                 if (enemy.unit.team != runtime.unit.team &&
@@ -1023,19 +1027,19 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             actor.unit.mana = std::min(actor.unit.max_mana,
                 actor.unit.mana + actor.mana_regen_per_second *
                     elapsed * actor.mana_gain_multiplier);
-            if (has_item(actor.unit, "TFT_Item_ArchangelsStaff") &&
+            if (has_item(actor, "TFT_Item_ArchangelsStaff") &&
                 now - actor.last_archangel_tick >= 5.0f) {
                 const int ticks = static_cast<int>((now - actor.last_archangel_tick) / 5.0f);
                 actor.unit.ability_power += actor.unit.ability_power * 0.20f * ticks;
                 actor.last_archangel_tick += 5.0f * ticks;
             }
-            if (has_item(actor.unit, "TFT_Item_Quicksilver") &&
+            if (has_item(actor, "TFT_Item_Quicksilver") &&
                 now - actor.last_quicksilver_tick >= 1.0f) {
                 const int ticks = static_cast<int>(now - actor.last_quicksilver_tick);
                 actor.unit.attack_speed += 0.03f * ticks;
                 actor.last_quicksilver_tick += static_cast<float>(ticks);
             }
-            if (has_item(actor.unit, "TFT_Item_Redemption") &&
+            if (has_item(actor, "TFT_Item_Redemption") &&
                 now - actor.last_redemption_tick >= 1.0f) {
                 const int ticks = static_cast<int>(now - actor.last_redemption_tick);
                 const float missing = actor.unit.max_hp - actor.unit.hp;
@@ -1044,7 +1048,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 actor.healing_done += heal;
                 actor.last_redemption_tick += static_cast<float>(ticks);
             }
-            if (has_item(actor.unit, "TFT_Item_DragonsClaw") &&
+            if (has_item(actor, "TFT_Item_DragonsClaw") &&
                 now - actor.last_dragons_claw_tick >= 2.0f) {
                 const int ticks = static_cast<int>((now - actor.last_dragons_claw_tick) / 2.0f);
                 const float heal = apply_heal(actor,
@@ -1059,7 +1063,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             }
             actor.last_status_tick = now;
         }
-        if (has_item(actor.unit, "TFT_Item_PowerGauntlet")) {
+        if (has_item(actor, "TFT_Item_PowerGauntlet")) {
             while (!actor.power_gauntlet_stack_times.empty() &&
                    now - actor.power_gauntlet_stack_times.front() >= 5.0f) {
                 actor.power_gauntlet_stack_times.erase(
@@ -1248,12 +1252,12 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                         const float hp_damage = std::min(ability_target.unit.hp, damage - absorbed);
                         ability_target.unit.hp -= hp_damage;
                         ability_target.damage_taken += damage;
-                        if (has_item(ability_target.unit, "TFT_Item_TitansResolve"))
+                        if (has_item(ability_target, "TFT_Item_TitansResolve"))
                             add_titans_stack(ability_target);
                         trigger_defensive_items(ability_target, now);
                         actor.damage_dealt += damage;
                         ability_event.damage += damage;
-                        if (has_item(actor.unit, "TFT_Item_MadredsBloodrazor") &&
+                        if (has_item(actor, "TFT_Item_MadredsBloodrazor") &&
                             ability_target.unit.role == UnitRole::TANK) {
                             const float bonus = damage * 0.15f;
                             const float extra_hp = std::min(ability_target.unit.hp, bonus);
@@ -1262,27 +1266,27 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                             actor.damage_dealt += extra_hp;
                             ability_event.damage += extra_hp;
                         }
-                        if (has_item(actor.unit, "TFT_Item_LastWhisper")) {
+                        if (has_item(actor, "TFT_Item_LastWhisper")) {
                             ability_target.armor_shred_until = now + 3.0f;
                             ability_target.armor_shred_percent = 0.30f;
                         }
-                        if (has_item(actor.unit, "TFT_Item_StatikkShiv")) {
+                        if (has_item(actor, "TFT_Item_StatikkShiv")) {
                             ability_target.mr_shred_until = now + 5.0f;
                             ability_target.mr_shred_percent = 0.30f;
                         }
-                        if (has_item(actor.unit, "TFT_Item_Morellonomicon") ||
-                            has_item(actor.unit, "TFT_Item_RedBuff") ||
-                            has_item(actor.unit, "TFT_Item_RapidFireCannon")) {
+                        if (has_item(actor, "TFT_Item_Morellonomicon") ||
+                            has_item(actor, "TFT_Item_RedBuff") ||
+                            has_item(actor, "TFT_Item_RapidFireCannon")) {
                             ability_target.burn_until = std::max(ability_target.burn_until,
-                                now + (has_item(actor.unit, "TFT_Item_Morellonomicon") ? 10.0f : 5.0f));
+                                now + (has_item(actor, "TFT_Item_Morellonomicon") ? 10.0f : 5.0f));
                             ability_target.burn_percent = std::max(ability_target.burn_percent, 1.0f);
                             ability_target.burn_source_id = actor.unit.id;
                             if (ability_target.burn_next_tick < now)
                                 ability_target.burn_next_tick = now + 1.0f;
                             ability_target.grievous_until = std::max(ability_target.grievous_until,
-                                now + (has_item(actor.unit, "TFT_Item_Morellonomicon") ? 10.0f : 5.0f));
+                                now + (has_item(actor, "TFT_Item_Morellonomicon") ? 10.0f : 5.0f));
                         }
-                        if (has_item(actor.unit, "TFT_Item_HextechGunblade")) {
+                        if (has_item(actor, "TFT_Item_HextechGunblade")) {
                             std::size_t ally = units.size();
                             float lowest = std::numeric_limits<float>::infinity();
                             for (std::size_t i = 0; i < units.size(); ++i) {
@@ -1330,7 +1334,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                         ability_event.shield += shield;
                         for (auto& ally : units) {
                             if (ally.unit.team == actor.unit.team &&
-                                has_item(ally.unit, "TFT17_Item_ShieldTankEmblemItem"))
+                                has_item(ally, "TFT17_Item_ShieldTankEmblemItem"))
                                 ally.unit.ability_power += 2.0f;
                         }
                     }
@@ -1345,7 +1349,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                             const float actual_heal = apply_heal(actor, generic_kill_heal, now);
                             actor.healing_done += actual_heal;
                         }
-                        if (has_item(actor.unit, "TFT17_Item_ASTraitEmblemItem"))
+                        if (has_item(actor, "TFT17_Item_ASTraitEmblemItem"))
                             actor.challenger_attacks_remaining = 3;
                         if (config.record_events) {
                             DeathEvent death;
@@ -1361,7 +1365,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                 // Centelha Iônica pune conjurações inimigas próximas, com recarga.
                 for (auto& holder : units) {
                     if (!is_alive(holder) || holder.unit.team == actor.unit.team ||
-                        !has_item(holder.unit, "TFT_Item_IonicSpark") ||
+                        !has_item(holder, "TFT_Item_IonicSpark") ||
                         now - holder.last_ionic_proc < 2.0f ||
                         distance_between(holder.unit, actor.unit) > 2) continue;
                     holder.last_ionic_proc = now;
@@ -1426,7 +1430,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
 
             raw_damage *= std::max(
                 0.0f, 1.0f + actor.unit.damage_amplification);
-            if (has_item(actor.unit, "TFT_Item_MadredsBloodrazor") &&
+            if (has_item(actor, "TFT_Item_MadredsBloodrazor") &&
                 target.unit.role == UnitRole::TANK)
                 raw_damage *= 1.15f;
 
@@ -1437,7 +1441,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
 
             damage *= std::clamp(
                 1.0f - target.unit.damage_reduction, 0.0f, 1.0f);
-            if (has_item(target.unit, "TFT_Item_BrambleVest"))
+            if (has_item(target, "TFT_Item_BrambleVest"))
                 damage *= 0.95f;
 
             damage = std::min(damage, target.unit.hp + target.shield_hp);
@@ -1447,7 +1451,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             const float hp_damage = std::min(target.unit.hp, damage - absorbed);
             target.unit.hp -= hp_damage;
             target.damage_taken += damage;
-            if (has_item(target.unit, "TFT_Item_TitansResolve"))
+            if (has_item(target, "TFT_Item_TitansResolve"))
                 add_titans_stack(target);
             trigger_defensive_items(target, now);
             actor.damage_dealt += damage;
@@ -1524,26 +1528,26 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
             }
 
             // Efeitos aplicados ao alvo por ataques: fatiamento, queimadura e ferimentos.
-            if (has_item(actor.unit, "TFT_Item_LastWhisper")) {
+            if (has_item(actor, "TFT_Item_LastWhisper")) {
                 target.armor_shred_until = now + 3.0f;
                 target.armor_shred_percent = 0.30f;
             }
-            if (has_item(actor.unit, "TFT_Item_StatikkShiv")) {
+            if (has_item(actor, "TFT_Item_StatikkShiv")) {
                 target.mr_shred_until = now + 5.0f;
                 target.mr_shred_percent = 0.30f;
             }
-            if (has_item(actor.unit, "TFT_Item_Morellonomicon") ||
-                has_item(actor.unit, "TFT_Item_RedBuff") ||
-                has_item(actor.unit, "TFT_Item_RapidFireCannon")) {
+            if (has_item(actor, "TFT_Item_Morellonomicon") ||
+                has_item(actor, "TFT_Item_RedBuff") ||
+                has_item(actor, "TFT_Item_RapidFireCannon")) {
                 target.burn_until = std::max(target.burn_until, now +
-                    (has_item(actor.unit, "TFT_Item_Morellonomicon") ? 10.0f : 5.0f));
+                    (has_item(actor, "TFT_Item_Morellonomicon") ? 10.0f : 5.0f));
                 target.burn_percent = std::max(target.burn_percent, 1.0f);
                 target.burn_source_id = actor.unit.id;
                 if (target.burn_next_tick < now) target.burn_next_tick = now + 1.0f;
                 target.grievous_until = std::max(target.grievous_until,
-                    now + (has_item(actor.unit, "TFT_Item_Morellonomicon") ? 10.0f : 5.0f));
+                    now + (has_item(actor, "TFT_Item_Morellonomicon") ? 10.0f : 5.0f));
             }
-            if (has_item(actor.unit, "TFT_Item_HextechGunblade") && damage > 0.0f) {
+            if (has_item(actor, "TFT_Item_HextechGunblade") && damage > 0.0f) {
                 std::size_t ally = units.size();
                 float lowest = std::numeric_limits<float>::infinity();
                 for (std::size_t i = 0; i < units.size(); ++i) {
@@ -1636,7 +1640,7 @@ CombatResult CombatEngine::simulate(const CombatInput& input) const {
                     const float actual_heal = apply_heal(actor, generic_kill_heal, now);
                     actor.healing_done += actual_heal;
                 }
-                if (has_item(actor.unit, "TFT17_Item_ASTraitEmblemItem"))
+                if (has_item(actor, "TFT17_Item_ASTraitEmblemItem"))
                     actor.challenger_attacks_remaining = 3;
 
                 if (config.record_events) {
