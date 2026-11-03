@@ -263,6 +263,26 @@ double unit_composition_score(
     return score;
 }
 
+double cached_unit_composition_score(
+    const StrategyInfo& strategy,
+    const ChampionDefinition& def,
+    std::int32_t star,
+    const std::unordered_map<std::string, std::vector<int>>& trait_milestones,
+    std::unordered_map<std::uint64_t, double>& cache
+) {
+    // The cache is scoped to one player's observation, where strategy and
+    // trait milestones are immutable. Champion ID + star uniquely identifies
+    // the remaining inputs to unit_composition_score().
+    const auto key =
+        (static_cast<std::uint64_t>(static_cast<std::uint32_t>(def.internal_id)) << 8) |
+        static_cast<std::uint8_t>(star);
+    const auto found = cache.find(key);
+    if (found != cache.end()) return found->second;
+    const double score = unit_composition_score(strategy, def, star, trait_milestones);
+    cache.emplace(key, score);
+    return score;
+}
+
 // Approximation of Python _compute_unit_board_impact(). This is deliberately a
 // heuristic for reward shaping, not a replacement for simulated combat.
 double unit_board_impact_score(
@@ -729,7 +749,11 @@ struct TFTEngine::Impl {
     // MÁSCARAS DE AÇÃO
     // ========================================================
 
-    std::vector<items::UnitProfile> item_unit_profiles(std::size_t player_index) const {
+    std::vector<items::UnitProfile> item_unit_profiles(
+        std::size_t player_index,
+        const StrategyInfo& strategy,
+        std::unordered_map<std::uint64_t, double>& composition_score_cache
+    ) const {
         std::vector<items::UnitProfile> profiles;
         profiles.reserve(kBoardSlots + kBenchSlots);
         const auto& player = player_envs[player_index];
@@ -738,8 +762,8 @@ struct TFTEngine::Impl {
             if (!def || unit.uuid.empty()) return;
             const auto& stats = def->stats;
             const auto& combat = def->combat_profile;
-            const auto strategy = player.strategy.empty() ? StrategyInfo{} : player.strategy.back();
-            const double fit = unit_composition_score(strategy, *def, unit.star, trait_milestones);
+            const double fit = cached_unit_composition_score(
+                strategy, *def, unit.star, trait_milestones, composition_score_cache);
             std::vector<std::string> preferred_traits = strategy.core_traits;
             preferred_traits.insert(preferred_traits.end(),
                 strategy.planned_traits.begin(), strategy.planned_traits.end());
@@ -1170,6 +1194,10 @@ struct TFTEngine::Impl {
             const auto& economy = player_envs[i].economy;
             const auto& strategy = player_envs[i].strategy.empty()
                 ? StrategyInfo{} : player_envs[i].strategy.back();
+            // One cache per player and observation: strategy and trait
+            // milestones remain unchanged throughout this observation build.
+            std::unordered_map<std::uint64_t, double> composition_score_cache;
+            composition_score_cache.reserve(kBoardSlots + kBenchSlots + kShopSlots);
 
             std::array<int, kBoardSlots> board_roles{};
             std::array<bool, kBoardSlots> board_occupied{};
@@ -1345,8 +1373,8 @@ struct TFTEngine::Impl {
                     out[offset++] = 0.0f;
                     return;
                 }
-                const double score =
-                    unit_composition_score(strategy, *def, unit->star, trait_milestones);
+                const double score = cached_unit_composition_score(
+                    strategy, *def, unit->star, trait_milestones, composition_score_cache);
                 out[offset++] = static_cast<float>(
                     std::clamp(score / 32.5, 0.0, 1.0));
             };
@@ -1408,7 +1436,8 @@ struct TFTEngine::Impl {
             out[offset++] = pending_anvil &&
                 pending_anvil->kind == items::ItemAnvilKind::COMPLETED_ITEM ? 1.0f : 0.0f;
             const auto item_profiles = player_envs[i].item_engine
-                ? item_unit_profiles(i) : std::vector<items::UnitProfile>{};
+                ? item_unit_profiles(i, strategy, composition_score_cache)
+                : std::vector<items::UnitProfile>{};
             // Scoped to this observation so changed unit stats/traits never reuse stale fits.
             items::ItemFitCache item_fit_cache(player_envs[i].item_engine.get());
             for (std::size_t option_index = 0; option_index < kAnvilOptionCount; ++option_index) {
@@ -1502,8 +1531,9 @@ struct TFTEngine::Impl {
                         const int role = std::clamp(definition->combat_profile.role, 0, 4);
                         const auto& stats = definition->stats;
                         const auto& combat = definition->combat_profile;
-                        const auto fit = unit_composition_score(strategy, *definition,
-                            unit->star, trait_milestones);
+                        const auto fit = cached_unit_composition_score(
+                            strategy, *definition, unit->star, trait_milestones,
+                            composition_score_cache);
                         features[0] = 1.0f;
                         features[1] = on_board ? 1.0f : 0.0f;
                         features[2] = on_board ? 0.0f : 1.0f;
@@ -1623,7 +1653,8 @@ struct TFTEngine::Impl {
                         out[offset++] = 0.0f;
                     return;
                 }
-                const double fit = unit_composition_score(strategy, *def, unit->star, trait_milestones);
+                const double fit = cached_unit_composition_score(
+                    strategy, *def, unit->star, trait_milestones, composition_score_cache);
                 const bool core = std::find(strategy.core_unit_ids.begin(),
                     strategy.core_unit_ids.end(), def->internal_id) != strategy.core_unit_ids.end() ||
                     std::find(strategy.planned_unit_ids.begin(),
@@ -3878,7 +3909,12 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 const auto target_index = static_cast<std::size_t>(type == 7 ? action[2] : action[3]);
                 auto* target_unit = lobby.item_target_unit(player_id, target_index);
                 if (!target_unit) throw std::invalid_argument("Alvo de item nao existe.");
-                const auto profiles = lobby.item_unit_profiles(player_id);
+                const auto& current_strategy = this->strategy.empty()
+                    ? StrategyInfo{} : this->strategy.back();
+                std::unordered_map<std::uint64_t, double> action_composition_score_cache;
+                action_composition_score_cache.reserve(kBoardSlots + kBenchSlots);
+                const auto profiles = lobby.item_unit_profiles(
+                    player_id, current_strategy, action_composition_score_cache);
                 items::ItemActionCommand command;
                 command.operation = type == 7 ? items::ItemOperation::EQUIP_FROM_INVENTORY
                                                : items::ItemOperation::CRAFT_AND_EQUIP;
