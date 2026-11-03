@@ -172,6 +172,30 @@ float role_state_value(std::int32_t role) {
     }
 }
 
+std::array<float, kItemSemanticFeatureDim> encode_item_semantic_features(
+    const items::ItemDefinition& item
+) {
+    return {
+        static_cast<float>(std::clamp(item.attack_damage / 100.0, 0.0, 1.0)),
+        static_cast<float>(std::clamp(item.attack_speed / 2.0, 0.0, 1.0)),
+        static_cast<float>(std::clamp(item.ability_power / 100.0, 0.0, 1.0)),
+        static_cast<float>(std::clamp(item.critical_strike_chance, 0.0, 1.0)),
+        static_cast<float>(std::clamp(item.critical_strike_damage / 2.0, 0.0, 1.0)),
+        static_cast<float>(std::clamp(item.max_health / 2000.0, 0.0, 1.0)),
+        static_cast<float>(std::clamp(item.armor / 100.0, 0.0, 1.0)),
+        static_cast<float>(std::clamp(item.magic_resist / 100.0, 0.0, 1.0)),
+        static_cast<float>(std::clamp(item.omnivamp, 0.0, 1.0)),
+        static_cast<float>(std::clamp(item.damage_amplification, 0.0, 1.0)),
+        static_cast<float>(std::clamp(item.damage_reduction, 0.0, 1.0)),
+        static_cast<float>(std::clamp(item.mana / 100.0, 0.0, 1.0)),
+        static_cast<float>(std::clamp(item.carry_weight, 0.0, 1.0)),
+        static_cast<float>(std::clamp(item.tank_weight, 0.0, 1.0)),
+        static_cast<float>(std::clamp(item.support_weight, 0.0, 1.0)),
+        static_cast<float>(std::clamp(item.utility_weight, 0.0, 1.0)),
+        item.grants_trait.empty() ? 0.0f : 1.0f
+    };
+}
+
 float unit_strength(const ChampionDefinition& def, const UnitInstance& unit) {
     const float cost = static_cast<float>(def.cost);
     const float star = static_cast<float>(unit.star);
@@ -451,6 +475,11 @@ struct TFTEngine::Impl {
 
     std::unique_ptr<ChampionCatalog> catalog;
     std::optional<items::ItemCatalog> item_catalog;
+    // Catalog-derived recipe observations are immutable for this engine
+    // instance and shared by every player's observation.
+    std::array<std::array<float, kItemSemanticFeatureDim>, 100>
+        recipe_observation_features{};
+    std::array<std::string, 100> recipe_observation_item_ids{};
     std::unique_ptr<UnitPool> pool;
     std::unique_ptr<UnitInstanceFactory> unit_factory;
 
@@ -515,6 +544,37 @@ struct TFTEngine::Impl {
                 );
             }
             item_catalog = items::load_item_catalog(item_file);
+        }
+
+        // Recipes and their encoded attributes depend only on the loaded item
+        // catalog. Build the exact same symmetric 10x10 mapping once, rather
+        // than repeating catalog searches and feature encoding per player and
+        // observation. Iteration order intentionally matches the old path.
+        if (item_catalog) {
+            for (const auto& definition : item_catalog->items) {
+                if (definition.recipe_components[0].empty() ||
+                    definition.recipe_components[1].empty()) continue;
+                const auto first = std::find_if(item_catalog->components.begin(),
+                    item_catalog->components.end(), [&](const auto& entry) {
+                        return entry.first == definition.recipe_components[0];
+                    });
+                const auto second = std::find_if(item_catalog->components.begin(),
+                    item_catalog->components.end(), [&](const auto& entry) {
+                        return entry.first == definition.recipe_components[1];
+                    });
+                if (first == item_catalog->components.end() ||
+                    second == item_catalog->components.end()) continue;
+                const auto a = static_cast<std::size_t>(
+                    std::distance(item_catalog->components.begin(), first));
+                const auto b = static_cast<std::size_t>(
+                    std::distance(item_catalog->components.begin(), second));
+                if (a >= 10 || b >= 10) continue;
+                const auto encoded = encode_item_semantic_features(definition);
+                recipe_observation_features[a * 10 + b] = encoded;
+                recipe_observation_features[b * 10 + a] = encoded;
+                recipe_observation_item_ids[a * 10 + b] = definition.id;
+                recipe_observation_item_ids[b * 10 + a] = definition.id;
+            }
         }
 
         for (const auto& champion : catalog->all()) {
@@ -1407,28 +1467,6 @@ struct TFTEngine::Impl {
             // gives PPO the actual component/item identities and stats, recipe
             // outcomes, and the role/location/profile of every possible target.
             const auto* item_state = player_envs[i].item_engine.get();
-            const auto encode_item = [](const items::ItemDefinition& item) {
-                return std::array<float, kItemSemanticFeatureDim>{
-                    static_cast<float>(std::clamp(item.attack_damage / 100.0, 0.0, 1.0)),
-                    static_cast<float>(std::clamp(item.attack_speed / 2.0, 0.0, 1.0)),
-                    static_cast<float>(std::clamp(item.ability_power / 100.0, 0.0, 1.0)),
-                    static_cast<float>(std::clamp(item.critical_strike_chance, 0.0, 1.0)),
-                    static_cast<float>(std::clamp(item.critical_strike_damage / 2.0, 0.0, 1.0)),
-                    static_cast<float>(std::clamp(item.max_health / 2000.0, 0.0, 1.0)),
-                    static_cast<float>(std::clamp(item.armor / 100.0, 0.0, 1.0)),
-                    static_cast<float>(std::clamp(item.magic_resist / 100.0, 0.0, 1.0)),
-                    static_cast<float>(std::clamp(item.omnivamp, 0.0, 1.0)),
-                    static_cast<float>(std::clamp(item.damage_amplification, 0.0, 1.0)),
-                    static_cast<float>(std::clamp(item.damage_reduction, 0.0, 1.0)),
-                    static_cast<float>(std::clamp(item.mana / 100.0, 0.0, 1.0)),
-                    static_cast<float>(std::clamp(item.carry_weight, 0.0, 1.0)),
-                    static_cast<float>(std::clamp(item.tank_weight, 0.0, 1.0)),
-                    static_cast<float>(std::clamp(item.support_weight, 0.0, 1.0)),
-                    static_cast<float>(std::clamp(item.utility_weight, 0.0, 1.0)),
-                    item.grants_trait.empty() ? 0.0f : 1.0f
-                };
-            };
-
             for (std::size_t component = 0; component < 10; ++component) {
                 double count = 0.0;
                 if (item_state && item_catalog && component < item_catalog->components.size()) {
@@ -1443,42 +1481,14 @@ struct TFTEngine::Impl {
                 std::array<float, kItemSemanticFeatureDim> features{};
                 if (item_state && slot < item_state->inventory().size()) {
                     if (const auto* definition = item_state->find(item_state->inventory()[slot]))
-                        features = encode_item(*definition);
+                        features = encode_item_semantic_features(*definition);
                 }
                 for (const float feature : features) out[offset++] = feature;
             }
 
             // Recipe features are indexed [first_component * 10 + second].
-            // Both orders are populated because the recipe contract is symmetric.
-            std::array<std::array<float, kItemSemanticFeatureDim>, 100> recipe_features{};
-            std::array<std::string, 100> recipe_item_ids{};
-            if (item_catalog) {
-                for (const auto& definition : item_catalog->items) {
-                    if (definition.recipe_components[0].empty() ||
-                        definition.recipe_components[1].empty()) continue;
-                    const auto first = std::find_if(item_catalog->components.begin(),
-                        item_catalog->components.end(), [&](const auto& entry) {
-                            return entry.first == definition.recipe_components[0];
-                        });
-                    const auto second = std::find_if(item_catalog->components.begin(),
-                        item_catalog->components.end(), [&](const auto& entry) {
-                            return entry.first == definition.recipe_components[1];
-                        });
-                    if (first == item_catalog->components.end() ||
-                        second == item_catalog->components.end()) continue;
-                    const auto a = static_cast<std::size_t>(
-                        std::distance(item_catalog->components.begin(), first));
-                    const auto b = static_cast<std::size_t>(
-                        std::distance(item_catalog->components.begin(), second));
-                    if (a >= 10 || b >= 10) continue;
-                    const auto encoded = encode_item(definition);
-                    recipe_features[a * 10 + b] = encoded;
-                    recipe_features[b * 10 + a] = encoded;
-                    recipe_item_ids[a * 10 + b] = definition.id;
-                    recipe_item_ids[b * 10 + a] = definition.id;
-                }
-            }
-            for (const auto& recipe : recipe_features)
+            // The immutable catalog-derived matrix is shared by all players.
+            for (const auto& recipe : recipe_observation_features)
                 for (const float feature : recipe) out[offset++] = feature;
 
             for (std::size_t target = 0; target < kBoardSlots + kBenchSlots; ++target) {
@@ -1568,8 +1578,8 @@ struct TFTEngine::Impl {
                 }
             }
 
-            for (std::size_t recipe = 0; recipe < recipe_item_ids.size(); ++recipe) {
-                const auto& item_id = recipe_item_ids[recipe];
+            for (std::size_t recipe = 0; recipe < recipe_observation_item_ids.size(); ++recipe) {
+                const auto& item_id = recipe_observation_item_ids[recipe];
                 const bool recipe_available = recipe_available_cache[recipe];
                 for (std::size_t target = 0; target < kBoardSlots + kBenchSlots; ++target) {
                     double fit = 0.0;
