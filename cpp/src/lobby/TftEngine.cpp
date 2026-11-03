@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstdint>
 #include <fstream>
+#include <functional>
 #include <map>
 #include <limits>
 #include <unordered_map>
@@ -452,6 +453,16 @@ struct TFTEngine::Impl {
     std::optional<items::ItemCatalog> item_catalog;
     std::unique_ptr<UnitPool> pool;
     std::unique_ptr<UnitInstanceFactory> unit_factory;
+
+    struct BoardEvaluationCacheEntry {
+        std::uint64_t signature{0};
+        strategy::BoardEvaluationResult result{};
+        bool valid{false};
+    };
+    // Board evaluation is read by observations, rewards and viewer snapshots.
+    // The signature covers every mutable input used by the evaluator.
+    mutable std::array<BoardEvaluationCacheEntry, kPlayersPerLobby>
+        board_evaluation_cache{};
 
     // Uma instância C++ por jogador; o lobby coordena as oito.
     std::array<PlayerEnv, kPlayersPerLobby> player_envs{};
@@ -1941,8 +1952,77 @@ struct TFTEngine::Impl {
         return score;
     }
 
+    std::uint64_t board_evaluation_signature(std::size_t player_index) const {
+        const auto& env = player_envs[player_index];
+        std::size_t hash = 0;
+        const auto mix = [&hash](std::size_t value) {
+            hash ^= value + static_cast<std::size_t>(0x9e3779b97f4a7c15ULL) +
+                (hash << 6U) + (hash >> 2U);
+        };
+        const auto add_int = [&mix](std::int32_t value) {
+            mix(std::hash<std::int32_t>{}(value));
+        };
+        const auto add_string = [&mix](const std::string& value) {
+            mix(std::hash<std::string>{}(value));
+        };
+        const auto add_double = [&mix](double value) {
+            mix(std::hash<double>{}(value));
+        };
+        const auto add_unit = [&](const std::optional<UnitInstance>& maybe_unit,
+                                  bool include_equipment) {
+            mix(maybe_unit.has_value() ? 1U : 0U);
+            if (!maybe_unit) return;
+            const auto& unit = *maybe_unit;
+            add_int(unit.champion_internal_id);
+            add_int(unit.star);
+            add_string(unit.champion_id);
+            if (!include_equipment) return;
+            mix(unit.items.size());
+            for (const auto& item : unit.items) {
+                add_double(item.health);
+                add_double(item.armor);
+                add_double(item.magic_resist);
+                add_double(item.attack_damage);
+                add_double(item.attack_speed);
+                add_double(item.ability_power);
+                add_double(item.critical_strike_chance);
+                add_string(item.grants_trait);
+            }
+        };
+
+        // Position and occupancy are significant to tactical evaluation.
+        for (const auto& unit : env.board) add_unit(unit, true);
+        for (const auto& unit : env.bench) add_unit(unit, false);
+        add_int(env.economy.level);
+
+        const StrategyInfo active = env.strategy.empty()
+            ? StrategyInfo{} : env.strategy.back();
+        add_int(active.planned_main_carry_id);
+        add_string(active.composition_direction);
+        for (const auto& [trait, weight] : active.composition_focus_weights) {
+            add_string(trait);
+            add_double(weight);
+        }
+        mix(active.composition_focus_weights.size());
+        for (const auto id : active.core_unit_ids) add_int(id);
+        mix(active.core_unit_ids.size());
+        for (const auto id : active.planned_unit_ids) add_int(id);
+        mix(active.planned_unit_ids.size());
+        for (const auto& trait : active.core_traits) add_string(trait);
+        mix(active.core_traits.size());
+        for (const auto& trait : active.planned_traits) add_string(trait);
+        mix(active.planned_traits.size());
+        for (const auto& name : active.core_units) add_string(name);
+        mix(active.core_units.size());
+        return static_cast<std::uint64_t>(hash);
+    }
+
     strategy::BoardEvaluationResult board_evaluation(
         std::size_t player_index) const {
+        auto& cached = board_evaluation_cache[player_index];
+        const auto signature = board_evaluation_signature(player_index);
+        if (cached.valid && cached.signature == signature)
+            return cached.result;
         const StrategyInfo active_strategy = player_envs[player_index].strategy.empty()
             ? StrategyInfo{} : player_envs[player_index].strategy.back();
         const auto classify_unit = [&](const UnitInstance& unit, const ChampionDefinition& def) {
@@ -2049,9 +2129,13 @@ struct TFTEngine::Impl {
 
         // Trait milestones contribute a bounded coherence diagnostic. The
         // separate synergy reward remains the primary active-trait signal.
-        return strategy::BoardEvaluation::evaluate(
+        const auto result = strategy::BoardEvaluation::evaluate(
             board_roles, bench_profiles, 0.0, main_carry_positions,
             board_profiles, strategic_context);
+        cached.signature = signature;
+        cached.result = result;
+        cached.valid = true;
+        return result;
     }
 
     double positioning_score(std::size_t player_index) const {
