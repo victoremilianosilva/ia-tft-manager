@@ -737,7 +737,7 @@ struct TFTEngine::Impl {
         std::uint32_t current_round_number,
         std::vector<std::string>& events
     ) {
-        if (!item_catalog || item_catalog->components.size() != 8 || current_round_number == 0)
+        if (!item_catalog || item_catalog->pve_loot_components.size() != 8 || current_round_number == 0)
             return;
 
         const auto current_stage = stage_for_round(current_round_number);
@@ -770,9 +770,7 @@ struct TFTEngine::Impl {
 
         if (component_reward_round) {
             std::vector<std::string> component_ids;
-            component_ids.reserve(item_catalog->components.size());
-            for (const auto& component : item_catalog->components)
-                component_ids.push_back(component.first);
+            component_ids = item_catalog->pve_loot_components;
 
             // All players share the weighted component-count roll; component
             // identities are drawn independently from each player's pool.
