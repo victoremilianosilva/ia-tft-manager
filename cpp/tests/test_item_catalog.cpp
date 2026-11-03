@@ -38,6 +38,11 @@ int main(int argc, char** argv) {
             }
         }
 
+        if (catalog.pve_loot_components.size() != 8) {
+            std::cerr << "active set must expose exactly eight ordinary PvE components; got "
+                      << catalog.pve_loot_components.size() << '\\n';
+            return 12;
+        }
         std::set<std::string> item_ids;
         std::size_t crafted_items = 0;
         std::size_t trait_granting_items = 0;
@@ -88,7 +93,7 @@ int main(int argc, char** argv) {
         }
 
         std::cout << "Loaded active item catalog: "
-                  << component_ids.size() << " components, "
+                  << component_ids.size() << " components (" << catalog.pve_loot_components.size() << " PvE-eligible), "
                   << item_ids.size() << " items, "
                   << crafted_items << " recipes, "
                   << trait_granting_items << " trait-granting items\n";
