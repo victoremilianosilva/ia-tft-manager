@@ -3763,7 +3763,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             case 4: role_alignment = item_definition->carry_weight; break;
                             default: role_alignment = item_definition->utility_weight; break;
                         }
-                        const double immediate_strength = reward_model::item_immediate_strength(
+                        const double numeric_strength = reward_model::item_immediate_strength(
                             item_definition->attack_damage,
                             item_definition->attack_speed,
                             item_definition->max_health,
@@ -3776,6 +3776,14 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             item_definition->ability_power,
                             item_definition->magic_resist,
                             item_definition->mana);
+                        const double supported_effect_strength =
+                            this->item_engine->item_effect_strength(
+                                item_definition->id, *target_profile);
+                        // Combine numeric stats and explicitly simulated passives
+                        // without counting the same effect additively twice.
+                        const double immediate_strength = 1.0 -
+                            (1.0 - std::clamp(numeric_strength, 0.0, 1.0)) *
+                            (1.0 - std::clamp(supported_effect_strength, 0.0, 1.0));
                         item_assignment_reward = reward_model::item_assignment_quality(
                             immediate_strength, target_profile->composition_fit,
                             role_alignment, static_cast<int>(lobby.stage));
