@@ -48,6 +48,40 @@ internal term used by the action reward formula.
 improve future shop options, and XP may be a deliberate investment that pays off
 later. The report flags these cases for review instead of applying a penalty.
 
+
+## Purchase followed by sale
+
+A recent purchase followed by a sale is not automatically classified as a bad
+decision. The audit correlates the acquired UUID and records the sale context
+using separate categories:
+
+- `IMPULSIVE_REVERSED`: low composition fit and low strategic value, with no
+  pair/upgrade progress, better owned alternative, composition transition,
+  deployment, full-bench constraint, or sale-funded necessary action.
+- `EXPERIMENTAL_REPLACED`: a later, materially better-fit purchase remains
+  owned when the earlier experiment is sold.
+- `PAIR_OR_UPGRADE`: the acquisition completed a same-star pair/upgrade path.
+- `COMP_TRANSITION`: the composition direction/focus/core plan changed before
+  the sale.
+- `BENCH_CAPACITY`: the bench was full immediately before the sale.
+- `ECONOMIC_NEED`: sale proceeds made the next XP purchase, reroll, or shop
+  purchase affordable when it was not affordable before the sale.
+- `DEPLOYED_THEN_SOLD`: the acquired unit was deployed before being sold.
+- `UNJUSTIFIED_REVIEW`: no reason was demonstrated, but the purchase had
+  enough strategic value that the audit must not label it impulsive.
+
+Only `IMPULSIVE_REVERSED` contributes to the reversed-purchase counters and
+the corresponding medium-severity finding. `UNJUSTIFIED_REVIEW` is a low
+severity review item, not a PPO penalty. Ambiguous UUID correlation remains
+`UNKNOWN` and is never penalized automatically.
+
+The native PPO shaping follows the same conservative principle: it penalizes
+only low-fit purchases without a concrete exception. Pair-building, a better
+owned alternative, a real composition transition, deployment, full-bench
+pressure, and sales that unlock the 2g/4g spending thresholds are exempt. This
+does not prevent the policy from buying, testing, or changing its mind; it
+reduces the reward for demonstrably wasteful low-value buy/sell loops.
+
 ## Reports and metrics
 
 Run the viewer on a match, then audit the resulting session directory:
