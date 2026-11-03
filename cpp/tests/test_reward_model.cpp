@@ -220,8 +220,16 @@ int main() {
         throw std::runtime_error("Caitlyn-like low-fit immediate reversal should be penalized");
     if (!should_penalize_reversed_purchase(0.20, false, false, false, false))
         throw std::runtime_error("threshold-fit immediate reversal should be penalized");
-    if (!should_penalize_reversed_purchase(0.80, false, false, false, false))
-        throw std::runtime_error("a recently bought unit sold without deployment must be penalized regardless of fit");
+    if (should_penalize_reversed_purchase(0.80, false, false, false, false))
+        throw std::runtime_error("a high-fit experimental purchase must not be penalized solely because it was sold");
+    if (should_penalize_reversed_purchase(0.08, false, false, false, false, true))
+        throw std::runtime_error("a purchase that built a real pair must retain its strategic value");
+    if (should_penalize_reversed_purchase(0.08, false, false, false, false, false, true))
+        throw std::runtime_error("an experiment replaced by a better owned alternative must not be penalized");
+    if (should_penalize_reversed_purchase(0.08, false, false, false, false, false, false, true))
+        throw std::runtime_error("a sale that unlocks an essential economic threshold must not be penalized");
+    if (!should_penalize_reversed_purchase(0.08, false, false, false, false))
+        throw std::runtime_error("a low-fit immediate reversal without justification must be penalized");
     static_assert(kRecentPurchaseHistoryActions == 8,
                   "recent purchase association window should cover intervening actions");
     if (should_penalize_reversed_purchase(0.08, true, false, false, false))
