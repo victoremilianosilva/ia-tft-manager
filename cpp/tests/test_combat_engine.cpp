@@ -233,7 +233,9 @@ void test_item_mana_can_enable_an_early_cast() {
     input.player_a.units[0].ability.target_type = tft::AbilityTargetType::ENEMY;
     input.player_a.units[0].items.push_back(tft::CombatItem{
         .id = 202, .api_name = "test_mana_item", .name = "Mana Start",
-        .mana = 50.0f
+        .mana = 50.0f,
+        .grants_trait = {},
+        .effects = {}
     });
     input.player_b.units[0].hp = input.player_b.units[0].max_hp = 1000.0f;
     input.player_b.units[0].attack_damage = 0.1f;
@@ -735,7 +737,7 @@ void test_component_to_craft_to_equipment_to_combat_cycle() {
 
     tft::items::UnitProfile target{
         "cycle-carry-uuid", 1, 1, false, true,
-        10.0, 1.0, 0.0, 100.0, 0.0, 0.0, 1.0
+        10.0, 1.0, 0.0, 100.0, 0.0, 0.0, 1.0, {}, {}
     };
     tft::items::ItemActionCommand equip;
     equip.operation = tft::items::ItemOperation::EQUIP_FROM_INVENTORY;
