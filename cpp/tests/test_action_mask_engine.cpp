@@ -255,7 +255,7 @@ void test_nasus_briar_loop_across_rounds_is_masked() {
     ActionMaskEngine engine;
 
     auto register_current_state = [&]() {
-        anti_loop.register_state(anti_loop.make_board_signature(state));
+        (void)anti_loop.register_state(anti_loop.make_board_signature(state));
     };
     auto apply_legal_move = [&](std::size_t source, std::size_t target,
                                 const char* move_type) {
@@ -264,7 +264,7 @@ void test_nasus_briar_loop_across_rounds_is_masked() {
 
         const auto moving_unit = state.board[source]->identity;
         std::swap(state.board[source], state.board[target]);
-        anti_loop.register_move(
+        (void)anti_loop.register_move(
             move_type,
             static_cast<std::int32_t>(source),
             static_cast<std::int32_t>(target),
@@ -334,7 +334,7 @@ void test_mask_diagnostics_count_real_candidates_and_seen_state_blocks() {
     std::swap(previously_seen.board[3], previously_seen.board[4]);
 
     AntiLoopEngine anti_loop;
-    anti_loop.register_state(
+    (void)anti_loop.register_state(
         anti_loop.make_board_signature(previously_seen)
     );
     ActionMaskEngine engine;
@@ -386,7 +386,7 @@ void test_mask_diagnostics_count_bench_replacement_loop() {
 
     AntiLoopEngine anti_loop;
     // Briar entrou no tabuleiro e deslocou Nasus para o banco.
-    anti_loop.register_move(
+    (void)anti_loop.register_move(
         "bench_to_board",
         2,
         10,
