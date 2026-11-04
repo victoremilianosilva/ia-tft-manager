@@ -131,7 +131,10 @@ inline double strategy_action_reward(
             }
             break;
         case 1: // STABILIZE: favor playable-board upgrades over routine leveling.
-            if (action_type == 1) reward -= 0.08;
+            // A reroll is only defensible here when it measurably improves the
+            // shop or HP is critical; otherwise it competes with board buys/XP.
+            if (action_type == 1)
+                reward -= (hp <= 25.0 || reroll_improved) ? 0.08 : 0.14;
             if (action_type == 0 && useful_purchase) reward += 0.07;
             if (action_type == 2 && leveled)
                 reward += 0.95 * (hp <= 30.0 ? 0.07 : (old_gold >= 50 ? 0.05 : 0.015));
