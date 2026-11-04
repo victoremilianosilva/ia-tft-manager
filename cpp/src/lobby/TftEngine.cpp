@@ -946,6 +946,18 @@ struct TFTEngine::Impl {
             !active_strategy.empty() && active_strategy.back().strategy == 2) {
             current.type_mask[1] = 0;
         }
+        // Surplus gold must advance the level curve instead of being burned
+        // on repeated rerolls. SLOWROLL and critical-HP stabilization retain
+        // their explicit reroll window.
+        if (!active_strategy.empty() &&
+            reward_model::should_defer_reroll_for_leveling(
+                player_envs[player_index].economy.gold,
+                player_envs[player_index].economy.level,
+                static_cast<double>(player_envs[player_index].info.hp),
+                static_cast<int>(stage_for_round(round + 1)),
+                active_strategy.back().strategy)) {
+            current.type_mask[1] = 0;
+        }
         current.shop_mask = batch.shop_mask;
         current.bench_source_mask =
             batch.bench_source_mask;
