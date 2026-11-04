@@ -1,0 +1,5469 @@
+# Auditoria da partida TFT
+
+- Arquivos lidos: **16**
+- Jogadores encontrados: **8** (1, 2, 3, 4, 5, 6, 7, 8)
+- Registros estruturados analisados: **6064**
+- Achados: **388**
+- CRITICAL: 0 | HIGH: 22 | MEDIUM: 127 | LOW: 239
+
+## Metadados da sessão
+
+- Match ID: 3efcf15b-10dd-41c4-a222-9e6cbde34903
+- Seed: 20261016 | Engine: cpp | Política determinística: True
+- Checkpoint SHA-256: df66ae38173f80ca2c7668478b31c7768356c6930600e2b86dcf24b9f1c90f3c
+- Policy: TFTPolicy | Observation dim: 7237 | Action dims: [9, 5, 9, 28, 28, 28]
+- Sidecars estruturados descobertos: 8
+
+- Decisões analisadas enquanto os jogadores estavam vivos: **5268**
+- Entradas posteriores à eliminação ignoradas: **796**
+- A ação que causa a eliminação permanece válida; o estado terminal não é usado como economia final.
+
+## Revisão prioritária — jogadores 4, 6 e 7
+
+| Jogador | Ouro final | Nível final | XP purchases | Janelas XP/stabilização | Compras com valor identificado | Vendas para revisar | Vendas compensadas | Componentes sem craft observado | Bigornas |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Jogador 4 | 101 | 6 | 0 | 10 | 48 | 1 | 1 | não/inconclusivo | 0 |
+| Jogador 6 | 70 | 6 | 0 | 9 | 71 | 3 | 6 | não/inconclusivo | 0 |
+| Jogador 7 | 126 | 6 | 0 | 10 | 43 | 0 | 1 | não/inconclusivo | 0 |
+
+A tabela prioriza a inspeção desses três jogadores; as tabelas completas abaixo continuam incluindo os oito participantes.
+
+## Reconstrução de decisões dos logs legados
+
+Esta seção usa o que está explícito em cada linha de ação. HP, nível, máscara legal e canais separados de recompensa não são inferidos quando o log não os registra.
+
+| Jogador | Ações | Compras | Vendas | XP | Rerolls | Passes | Movimentos | Δ recompensa média | Mudanças comp/foco | Warnings posicionamento |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Jogador 1 | 265 | 76 | 29 | 0 | 36 | 30 | 82 | 0.1264 | 22 | 13 |
+- Jogador 1 — ações por estratégia: ALL_IN::BUY: 2, ALL_IN::MOVE_BOARD: 3, ALL_IN::PASS: 1, ALL_IN::SELL: 1, SLOWROLL::BUY: 44, SLOWROLL::ITEM: 8, SLOWROLL::MOVE_BENCH: 24, SLOWROLL::MOVE_BOARD: 7, SLOWROLL::PASS: 14, SLOWROLL::REROLL: 32, SLOWROLL::SELL: 25, STABILIZE::BUY: 30, STABILIZE::ITEM: 4, STABILIZE::MOVE_BENCH: 19, STABILIZE::MOVE_BOARD: 29, STABILIZE::PASS: 15, STABILIZE::REROLL: 4, STABILIZE::SELL: 3
+- Jogador 1 — recompensas por ação: BUY: média 0.4979 (n=76), ITEM: média 0.1533 (n=12), MOVE_BENCH: média 0.0728 (n=43), MOVE_BOARD: média -0.0090 (n=39), PASS: média -0.0463 (n=30), REROLL: média -0.0242 (n=36), SELL: média -0.2310 (n=29)
+| Jogador 2 | 352 | 91 | 28 | 0 | 79 | 32 | 105 | 0.0891 | 9 | 51 |
+- Jogador 2 — ações por estratégia: ALL_IN::BUY: 5, ALL_IN::ITEM: 4, ALL_IN::MOVE_BOARD: 18, ALL_IN::PASS: 5, ALL_IN::REROLL: 5, ALL_IN::SELL: 2, FAST8::BUY: 8, FAST8::MOVE_BENCH: 1, FAST8::PASS: 1, FAST8::REROLL: 6, FAST8::SELL: 4, SLOWROLL::BUY: 25, SLOWROLL::ITEM: 8, SLOWROLL::MOVE_BENCH: 32, SLOWROLL::MOVE_BOARD: 1, SLOWROLL::PASS: 11, SLOWROLL::REROLL: 15, SLOWROLL::SELL: 9, STABILIZE::BUY: 53, STABILIZE::ITEM: 5, STABILIZE::MOVE_BENCH: 32, STABILIZE::MOVE_BOARD: 21, STABILIZE::PASS: 15, STABILIZE::REROLL: 53, STABILIZE::SELL: 13
+- Jogador 2 — recompensas por ação: BUY: média 0.5584 (n=91), ITEM: média 0.1341 (n=17), MOVE_BENCH: média -0.0888 (n=65), MOVE_BOARD: média -0.0158 (n=40), PASS: média -0.0372 (n=32), REROLL: média -0.0929 (n=79), SELL: média -0.2425 (n=28)
+| Jogador 3 | 295 | 87 | 36 | 0 | 43 | 32 | 81 | 0.1136 | 10 | 17 |
+- Jogador 3 — ações por estratégia: ALL_IN::BUY: 2, ALL_IN::ITEM: 1, ALL_IN::MOVE_BOARD: 4, ALL_IN::PASS: 2, ALL_IN::SELL: 1, FAST8::BUY: 34, FAST8::ITEM: 10, FAST8::MOVE_BENCH: 5, FAST8::MOVE_BOARD: 23, FAST8::PASS: 9, FAST8::REROLL: 18, FAST8::SELL: 19, SLOWROLL::BUY: 29, SLOWROLL::ITEM: 3, SLOWROLL::MOVE_BENCH: 9, SLOWROLL::MOVE_BOARD: 12, SLOWROLL::PASS: 10, SLOWROLL::REROLL: 20, SLOWROLL::SELL: 7, STABILIZE::BUY: 22, STABILIZE::ITEM: 2, STABILIZE::MOVE_BENCH: 10, STABILIZE::MOVE_BOARD: 18, STABILIZE::PASS: 11, STABILIZE::REROLL: 5, STABILIZE::SELL: 9
+- Jogador 3 — recompensas por ação: BUY: média 0.4343 (n=87), ITEM: média 0.1300 (n=16), MOVE_BENCH: média 0.2321 (n=24), MOVE_BOARD: média -0.0053 (n=57), PASS: média -0.0934 (n=32), REROLL: média -0.0758 (n=43), SELL: média -0.1494 (n=36)
+| Jogador 4 | 177 | 48 | 12 | 0 | 12 | 23 | 75 | 0.0845 | 14 | 31 |
+- Jogador 4 — ações por estratégia: ALL_IN::BUY: 6, ALL_IN::MOVE_BENCH: 2, ALL_IN::MOVE_BOARD: 14, ALL_IN::PASS: 3, ALL_IN::SELL: 1, SLOWROLL::BUY: 15, SLOWROLL::ITEM: 1, SLOWROLL::MOVE_BENCH: 22, SLOWROLL::PASS: 8, SLOWROLL::REROLL: 8, SLOWROLL::SELL: 4, STABILIZE::BUY: 27, STABILIZE::ITEM: 6, STABILIZE::MOVE_BENCH: 24, STABILIZE::MOVE_BOARD: 13, STABILIZE::PASS: 12, STABILIZE::REROLL: 4, STABILIZE::SELL: 7
+- Jogador 4 — recompensas por ação: BUY: média 0.5502 (n=48), ITEM: média 0.1500 (n=7), MOVE_BENCH: média -0.1679 (n=48), MOVE_BOARD: média -0.0133 (n=27), PASS: média -0.0609 (n=23), REROLL: média -0.0408 (n=12), SELL: média -0.1833 (n=12)
+| Jogador 5 | 231 | 58 | 19 | 0 | 28 | 26 | 91 | 0.1232 | 19 | 18 |
+- Jogador 5 — ações por estratégia: ALL_IN::MOVE_BOARD: 9, FAST8::BUY: 1, FAST8::MOVE_BENCH: 5, FAST8::MOVE_BOARD: 10, FAST8::PASS: 3, SLOWROLL::BUY: 32, SLOWROLL::ITEM: 5, SLOWROLL::MOVE_BENCH: 12, SLOWROLL::MOVE_BOARD: 19, SLOWROLL::PASS: 12, SLOWROLL::REROLL: 23, SLOWROLL::SELL: 15, STABILIZE::BUY: 25, STABILIZE::ITEM: 4, STABILIZE::MOVE_BENCH: 14, STABILIZE::MOVE_BOARD: 22, STABILIZE::PASS: 11, STABILIZE::REROLL: 5, STABILIZE::SELL: 4
+- Jogador 5 — recompensas por ação: BUY: média 0.5031 (n=58), ITEM: média 0.1656 (n=9), MOVE_BENCH: média 0.1100 (n=31), MOVE_BOARD: média -0.0073 (n=60), PASS: média -0.0177 (n=26), REROLL: média -0.0554 (n=28), SELL: média -0.1663 (n=19)
+| Jogador 6 | 256 | 71 | 23 | 0 | 36 | 28 | 82 | 0.1383 | 10 | 25 |
+- Jogador 6 — ações por estratégia: ALL_IN::BUY: 3, ALL_IN::MOVE_BENCH: 2, ALL_IN::MOVE_BOARD: 6, ALL_IN::PASS: 1, ALL_IN::SELL: 1, SLOWROLL::BUY: 40, SLOWROLL::ITEM: 7, SLOWROLL::MOVE_BENCH: 16, SLOWROLL::MOVE_BOARD: 18, SLOWROLL::PASS: 15, SLOWROLL::REROLL: 30, SLOWROLL::SELL: 16, STABILIZE::BUY: 28, STABILIZE::ITEM: 9, STABILIZE::MOVE_BENCH: 14, STABILIZE::MOVE_BOARD: 26, STABILIZE::PASS: 12, STABILIZE::REROLL: 6, STABILIZE::SELL: 6
+- Jogador 6 — recompensas por ação: BUY: média 0.4878 (n=71), ITEM: média 0.1356 (n=16), MOVE_BENCH: média 0.1400 (n=32), MOVE_BOARD: média -0.0080 (n=50), PASS: média -0.0171 (n=28), REROLL: média -0.0361 (n=36), SELL: média -0.1609 (n=23)
+| Jogador 7 | 184 | 43 | 9 | 0 | 12 | 25 | 83 | 0.0845 | 13 | 36 |
+- Jogador 7 — ações por estratégia: ALL_IN::BUY: 4, ALL_IN::ITEM: 5, ALL_IN::MOVE_BENCH: 8, ALL_IN::MOVE_BOARD: 1, ALL_IN::PASS: 2, ALL_IN::SELL: 2, LOSS_STREAK::BUY: 4, LOSS_STREAK::ITEM: 2, LOSS_STREAK::MOVE_BENCH: 1, LOSS_STREAK::PASS: 1, LOSS_STREAK::REROLL: 2, LOSS_STREAK::SELL: 2, SLOWROLL::BUY: 11, SLOWROLL::ITEM: 1, SLOWROLL::MOVE_BENCH: 25, SLOWROLL::MOVE_BOARD: 3, SLOWROLL::PASS: 8, SLOWROLL::REROLL: 6, SLOWROLL::SELL: 4, STABILIZE::BUY: 24, STABILIZE::ITEM: 4, STABILIZE::MOVE_BENCH: 22, STABILIZE::MOVE_BOARD: 23, STABILIZE::PASS: 14, STABILIZE::REROLL: 4, STABILIZE::SELL: 1
+- Jogador 7 — recompensas por ação: BUY: média 0.5858 (n=43), ITEM: média 0.1575 (n=12), MOVE_BENCH: média -0.1171 (n=56), MOVE_BOARD: média -0.0130 (n=27), PASS: média -0.0788 (n=25), REROLL: média -0.0600 (n=12), SELL: média -0.2144 (n=9)
+| Jogador 8 | 356 | 100 | 43 | 0 | 94 | 26 | 82 | 0.0808 | 20 | 48 |
+- Jogador 8 — ações por estratégia: FAST8::BUY: 43, FAST8::ITEM: 2, FAST8::MOVE_BENCH: 9, FAST8::MOVE_BOARD: 18, FAST8::OTHER: 1, FAST8::PASS: 6, FAST8::REROLL: 54, FAST8::SELL: 22, SLOWROLL::BUY: 25, SLOWROLL::ITEM: 5, SLOWROLL::MOVE_BENCH: 9, SLOWROLL::MOVE_BOARD: 14, SLOWROLL::PASS: 10, SLOWROLL::REROLL: 24, SLOWROLL::SELL: 11, STABILIZE::BUY: 32, STABILIZE::ITEM: 3, STABILIZE::MOVE_BENCH: 11, STABILIZE::MOVE_BOARD: 21, STABILIZE::PASS: 10, STABILIZE::REROLL: 16, STABILIZE::SELL: 10
+- Jogador 8 — recompensas por ação: BUY: média 0.4655 (n=100), ITEM: média 0.1340 (n=10), MOVE_BENCH: média 0.0855 (n=29), MOVE_BOARD: média -0.0038 (n=53), OTHER: média -0.0300 (n=1), PASS: média -0.0015 (n=26), REROLL: média -0.1266 (n=94), SELL: média -0.2195 (n=43)
+
+### Timeline por decisão
+
+| Jogador | Round | Horário | Ação | Estratégia | Motivo | Ouro observado | Juros | Comp direction | Focus | Recompensa | Sinal para revisar |
+|---|---|---|---|---|---|---:|---:|---|---|---:|---|
+| Jogador 1 | ? | 14:40:45 | MOVE Bench -> Board: Ornn (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Ornn | 0.5100 |  |
+| Jogador 1 | ? | 14:40:46 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Ornn | 0.0000 |  |
+| Jogador 1 | 1-1 | 14:40:51 | COMPROU: Akali (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | 0.2400 |  |
+| Jogador 1 | 1-1 | 14:40:51 | MOVE Bench -> Board: Akali (i:2.0) <-> Ornn (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | -0.3300 |  |
+| Jogador 1 | 1-1 | 14:40:52 | MOVE Bench -> Board: Ornn (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | 0.1500 |  |
+| Jogador 1 | 1-1 | 14:40:52 | COMPROU: Rakan (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.2300 |  |
+| Jogador 1 | 1-1 | 14:40:52 | MOVE Board -> Board: Akali (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 1 | 1-1 | 14:40:53 | MOVE Bench -> Board: Rakan (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.4000 |  |
+| Jogador 1 | 1-1 | 14:40:53 | MOVE Board -> Board: Rakan (i:2.0) <-> Akali (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | -0.0100 |  |
+| Jogador 1 | 1-1 | 14:40:53 | MOVE Board -> Board: Akali (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | -0.0100 |  |
+| Jogador 1 | 1-1 | 14:40:53 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | 0.0000 |  |
+| Jogador 1 | 1-2 | 14:40:57 | COMPROU: Xayah (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Rakan | 0.3500 |  |
+| Jogador 1 | 1-2 | 14:40:57 | COMPROU: Leona (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | 0.2600 |  |
+| Jogador 1 | 1-2 | 14:40:58 | MOVE Board -> Board: Ornn (i:2.0) <-> Rakan (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 1 | 1-2 | 14:40:58 | MOVE Board -> Board: Rakan (i:2.0) <-> Akali (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | -0.0100 |  |
+| Jogador 1 | 1-2 | 14:40:58 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | 0.0000 |  |
+| Jogador 1 | 1-3 | 14:41:04 | COMPROU: Akali (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Akali_AD | 1.0400 |  |
+| Jogador 1 | 1-3 | 14:41:04 | COMPROU: Ornn (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | 1.0300 |  |
+| Jogador 1 | 1-3 | 14:41:04 | MOVE Board -> Board: Akali (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 1 | 1-3 | 14:41:04 | MOVE Board -> Board: Akali (i:2.0) <-> Ornn (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 1 | 1-3 | 14:41:05 | MOVE Board -> Board: Ornn (i:2.0) <-> Rakan (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 1 | 1-3 | 14:41:05 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 1 | 1-4 | 14:41:10 | CRAFT_AND_EQUIP: TFT_Item_NegatronCloak + TFT_Item_GiantsBelt -> Rakan (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 5 | 0 | — | DA_18_Akali_AD | 0.1600 |  |
+| Jogador 1 | 1-4 | 14:41:11 | CRAFT_AND_EQUIP: TFT_Item_NeedlesslyLargeRod + TFT_Item_TearOfTheGoddess -> Rakan (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 5 | 0 | — | DA_18_Akali_AD | 0.1700 |  |
+| Jogador 1 | 1-4 | 14:41:11 | COMPROU: Ornn (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Ornn | 1.0400 |  |
+| Jogador 1 | 1-4 | 14:41:11 | MOVE Bench -> Board: Akali (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Ornn | 0.3200 |  |
+| Jogador 1 | 1-4 | 14:41:12 | COMPROU: Varus (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Ornn | 0.2900 |  |
+| Jogador 1 | 1-4 | 14:41:12 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Ornn | -0.1600 |  |
+| Jogador 1 | 1-4 | 14:41:13 | MOVE Board -> Board: Akali (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Ornn | 0.0100 |  |
+| Jogador 1 | 1-4 | 14:41:13 | MOVE Bench -> Board: Varus (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Ornn | 0.3900 |  |
+| Jogador 1 | 1-4 | 14:41:13 | MOVE Board -> Board: Varus (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Ornn | -0.0100 |  |
+| Jogador 1 | 1-4 | 14:41:14 | MOVE Board -> Board: Rakan (i:2.0) <-> Varus (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Ornn | -0.0200 |  |
+| Jogador 1 | 1-4 | 14:41:14 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Ornn | 0.0000 |  |
+| Jogador 1 | 2-1 | 14:41:17 | COMPROU: Varus (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 5 | 0 | — | DA_18_Ornn | 0.9800 |  |
+| Jogador 1 | 2-1 | 14:41:17 | COMPROU: Yorick (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Ornn | 0.2200 |  |
+| Jogador 1 | 2-1 | 14:41:17 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Ornn | -0.1600 |  |
+| Jogador 1 | 2-1 | 14:41:18 | COMPROU: Leona (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Ornn | 0.6200 |  |
+| Jogador 1 | 2-1 | 14:41:18 | COMPROU: Veigar (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Ornn | 0.0900 |  |
+| Jogador 1 | 2-1 | 14:41:19 | MOVE Board -> Board: Varus (i:2.0) <-> Akali (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Ornn | -0.3300 |  |
+| Jogador 1 | 2-1 | 14:41:19 | MOVE Board -> Board: Akali (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Ornn | -0.0100 |  |
+| Jogador 1 | 2-1 | 14:41:19 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Ornn | 0.0000 |  |
+| Jogador 1 | 2-2 | 14:41:24 | COMPROU: Vi (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Ornn | 0.2000 |  |
+| Jogador 1 | 2-2 | 14:41:24 | COMPROU: Shen (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Ornn | 0.0800 |  |
+| Jogador 1 | 2-2 | 14:41:24 | MOVE Board -> Board: Varus (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Ornn | 0.3500 |  |
+| Jogador 1 | 2-2 | 14:41:25 | VENDEU: Ornn (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_Vi18 | -0.2000 |  |
+| Jogador 1 | 2-2 | 14:41:25 | COMPROU: Grompe (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_Vi18 | 0.0100 |  |
+| Jogador 1 | 2-2 | 14:41:25 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_Vi18 | -0.1600 |  |
+| Jogador 1 | 2-2 | 14:41:26 | VENDEU: Veigar (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_Vi18 | 0.0000 |  |
+| Jogador 1 | 2-2 | 14:41:27 | COMPROU: Akali (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.9500 |  |
+| Jogador 1 | 2-2 | 14:41:27 | MOVE Bench -> Board: Varus (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.2300 |  |
+| Jogador 1 | 2-2 | 14:41:27 | MOVE Bench -> Board: Leona (i:2.0) <-> Varus (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | -0.0800 |  |
+| Jogador 1 | 2-2 | 14:41:27 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 1 | 2-3 | 14:41:31 | COMPROU: Rakan (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Akali_AD | 0.8900 |  |
+| Jogador 1 | 2-3 | 14:41:31 | VENDEU: Akali (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 7 | 0 | — | DA_Vi18 | -0.2900 |  |
+| Jogador 1 | 2-3 | 14:41:31 | COMPROU: Rakan (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 6 | 0 | — | DA_18_Rakan | 0.9500 |  |
+| Jogador 1 | 2-3 | 14:41:31 | MOVE Bench -> Board: Varus (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 6 | 0 | — | DA_18_Rakan | 0.2800 |  |
+| Jogador 1 | 2-3 | 14:41:32 | MOVE Bench -> Board: Xayah (i:2.0) <-> Leona (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 6 | 0 | — | DA_18_Rakan | -0.0500 |  |
+| Jogador 1 | 2-3 | 14:41:32 | MOVE Bench -> Board: Leona (i:2.0) <-> Varus (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 6 | 0 | — | DA_18_Rakan | -0.0300 |  |
+| Jogador 1 | 2-3 | 14:41:32 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 6 | 0 | — | DA_18_Rakan | 0.0000 |  |
+| Jogador 1 | 2-3 | 14:41:36 | MOVE Bench -> Board: Varus (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 6 | 0 | — | DA_18_Rakan | 0.4700 |  |
+| Jogador 1 | 2-4 | 14:41:38 | COMPROU: Leona (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 10 | 0 | Fumegante | DA_18_Rakan | 0.9300 |  |
+| Jogador 1 | 2-4 | 14:41:38 | MOVE Bench -> Board: Leona (i:4.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 10 | 0 | Fumegante | DA_18_Rakan | 0.7800 |  |
+| Jogador 1 | 2-4 | 14:41:38 | MOVE Bench -> Board: Yorick (i:2.0) <-> Xayah (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 10 | 0 | Fumegante | DA_18_Rakan | -0.4000 |  |
+| Jogador 1 | 2-4 | 14:41:39 | COMPROU: Master Yi (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 7 | 0 | Fumegante | DA_18_Rakan | -0.0500 |  |
+| Jogador 1 | 2-4 | 14:41:39 | MOVE Bench -> Board: Master Yi (i:6.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 7 | 0 | Fumegante | DA_18_Rakan | -0.3900 |  |
+| Jogador 1 | 2-4 | 14:41:40 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 5 | 0 | Fumegante | DA_18_Rakan | -0.1600 |  |
+| Jogador 1 | 2-4 | 14:41:40 | COMPROU: Kayle (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | Fumegante | DA_18_Rakan | 0.3300 |  |
+| Jogador 1 | 2-4 | 14:41:41 | COMPROU: Lobo Trevoguari (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | Fumegante | DA_18_Rakan | -0.0800 |  |
+| Jogador 1 | 2-4 | 14:41:41 | MOVE Bench -> Board: Lobo Trevoguari (i:4.0) <-> Master Yi (i:6.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | Fumegante | DA_18_Rakan | -0.6500 |  |
+| Jogador 1 | 2-4 | 14:41:41 | MOVE Bench -> Board: Master Yi (i:6.0) <-> Leona (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | Fumegante | DA_18_Rakan | -0.4100 |  |
+| Jogador 1 | 2-4 | 14:41:42 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | Fumegante | DA_18_Rakan | 0.0000 |  |
+| Jogador 1 | 2-5 | 14:41:45 | COMPROU: Vi (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Fumegante | DA_18_Rakan | 0.6100 |  |
+| Jogador 1 | 2-5 | 14:41:45 | MOVE Bench -> Board: Leona (i:4.0) <-> Lobo Trevoguari (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Fumegante | DA_18_Rakan | 0.1100 |  |
+| Jogador 1 | 2-5 | 14:41:45 | MOVE Bench -> Board: Lobo Trevoguari (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Fumegante | DA_18_Rakan | 0.3900 |  |
+| Jogador 1 | 2-5 | 14:41:45 | COMPROU: Grompe (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Fumegante | DA_18_Rakan | 0.6300 |  |
+| Jogador 1 | 2-5 | 14:41:46 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Fumegante | DA_18_Rakan | -0.1100 |  |
+| Jogador 1 | 2-5 | 14:41:46 | VENDEU: Rakan (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Fumegante | DA_18_Leona | -0.2800 |  |
+| Jogador 1 | 2-5 | 14:41:46 | EQUIP_FROM_INVENTORY: TFT_Item_ArchangelsStaff -> Varus (i:2.0) (tabuleiro slot 19) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Fumegante | DA_18_Leona | 0.1500 |  |
+| Jogador 1 | 2-5 | 14:41:47 | EQUIP_FROM_INVENTORY: TFT_Item_SpectralGauntlet -> Varus (i:2.0) (tabuleiro slot 19) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Fumegante | DA_18_Leona | 0.1000 |  |
+| Jogador 1 | 2-5 | 14:41:48 | COMPROU: Xayah (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Fumegante | DA_18_Leona | 0.8300 |  |
+| Jogador 1 | 2-5 | 14:41:48 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Fumegante | DA_18_Leona | -0.1100 |  |
+| Jogador 1 | 2-5 | 14:41:49 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Fumegante | DA_18_Leona | 0.0000 |  |
+| Jogador 1 | 2-6 | 14:41:52 | VENDEU: Grompe (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Fumegante | DA_18_Leona | -0.2800 |  |
+| Jogador 1 | 2-6 | 14:41:53 | COMPROU: Xayah (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Fumegante | DA_18_Xayah | 0.8800 |  |
+| Jogador 1 | 2-6 | 14:41:53 | COMPROU: Mamãe Bicuda (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Fumegante | DA_18_Xayah | 0.2600 |  |
+| Jogador 1 | 2-6 | 14:41:53 | COMPROU: Sejuani (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Fumegante | DA_18_Xayah | -0.0500 |  |
+| Jogador 1 | 2-6 | 14:41:54 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Fumegante | DA_18_Xayah | -0.1100 |  |
+| Jogador 1 | 2-6 | 14:41:54 | VENDEU: Xayah (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Fumegante | DA_18_Leona | -0.3600 |  |
+| Jogador 1 | 2-6 | 14:41:54 | COMPROU: Kayle (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Fumegante | DA_18_Leona | 0.8300 |  |
+| Jogador 1 | 2-6 | 14:41:55 | MOVE Board -> Board: Varus (i:2.0) <-> Varus (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Fumegante | DA_18_Leona | 0.0000 |  |
+| Jogador 1 | 2-6 | 14:41:55 | MOVE Board -> Board: Varus (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Fumegante | DA_18_Leona | -0.2700 |  |
+| Jogador 1 | 2-6 | 14:41:56 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Fumegante | DA_18_Leona | 0.0000 |  |
+| Jogador 1 | 2-7 | 14:42:01 | CRAFT_AND_EQUIP: TFT_Item_BFSword + TFT_Item_SparringGloves -> Varus (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Fumegante | DA_18_Leona | 0.2400 |  |
+| Jogador 1 | 2-7 | 14:42:01 | VENDEU: Sejuani (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Fumegante | DA_18_Leona | -0.0100 |  |
+| Jogador 1 | 2-7 | 14:42:02 | COMPROU: Warwick (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Fumegante | DA_18_Leona | -0.0300 |  |
+| Jogador 1 | 2-7 | 14:42:02 | MOVE Board -> Board: Lobo Trevoguari (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Fumegante | DA_18_Leona | 0.0100 |  |
+| Jogador 1 | 2-7 | 14:42:02 | MOVE Board -> Board: Leona (i:4.0) <-> Lobo Trevoguari (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Fumegante | DA_18_Leona | -0.0100 |  |
+| Jogador 1 | 2-7 | 14:42:03 | MOVE Board -> Board: Lobo Trevoguari (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Fumegante | DA_18_Leona | 0.1400 |  |
+| Jogador 1 | 2-7 | 14:42:03 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Fumegante | DA_18_Leona | 0.0400 |  |
+| Jogador 1 | 2-7 | 14:42:03 | VENDEU: Grompe (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Fumegante | DA_18_Leona | 0.0000 |  |
+| Jogador 1 | 2-7 | 14:42:03 | COMPROU: Lobo Trevoguari (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Fumegante | DA_18_Leona | 0.4400 |  |
+| Jogador 1 | 2-7 | 14:42:05 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Fumegante | DA_18_Leona | 0.0400 |  |
+| Jogador 1 | 2-7 | 14:42:05 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Fumegante | DA_18_Leona | 0.0000 |  |
+| Jogador 1 | 3-1 | 14:42:10 | VENDEU: Warwick (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Fumegante | DA_18_Leona | 0.0900 |  |
+| Jogador 1 | 3-1 | 14:42:10 | COMPROU: Leona (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Fumegante | DA_18_Leona | 0.2200 |  |
+| Jogador 1 | 3-1 | 14:42:11 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Fumegante | DA_18_Leona | -0.1900 |  |
+| Jogador 1 | 3-1 | 14:42:11 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Fumegante | DA_18_Leona | 0.0400 |  |
+| Jogador 1 | 3-1 | 14:42:11 | VENDEU: Leona (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Fumegante | DA_18_Leona | -0.2600 |  |
+| Jogador 1 | 3-1 | 14:42:11 | COMPROU: Leona (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Fumegante | DA_18_Leona | 0.2200 |  |
+| Jogador 1 | 3-1 | 14:42:12 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Fumegante | DA_18_Leona | 0.0400 |  |
+| Jogador 1 | 3-1 | 14:42:12 | VENDEU: Leona (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Fumegante | DA_18_Leona | -0.2600 |  |
+| Jogador 1 | 3-1 | 14:42:12 | COMPROU: Leona (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Fumegante | DA_18_Leona | 0.2200 |  |
+| Jogador 1 | 3-1 | 14:42:14 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Fumegante | DA_18_Leona | 0.0400 |  |
+| Jogador 1 | 3-1 | 14:42:14 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Fumegante | DA_18_Leona | 0.0000 |  |
+| Jogador 1 | 3-2 | 14:42:19 | VENDEU: Leona (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Fumegante | DA_18_Leona | -0.1800 |  |
+| Jogador 1 | 3-2 | 14:42:20 | COMPROU: Leona (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Fumegante | DA_18_Leona | 0.1400 |  |
+| Jogador 1 | 3-2 | 14:42:20 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Fumegante | DA_18_Leona | -0.1200 |  |
+| Jogador 1 | 3-2 | 14:42:20 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Fumegante | DA_18_Leona | 0.0400 |  |
+| Jogador 1 | 3-2 | 14:42:21 | VENDEU: Leona (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Fumegante | DA_18_Leona | -0.2600 |  |
+| Jogador 1 | 3-2 | 14:42:21 | COMPROU: Varus (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Fumegante | DA_18_Leona | 0.7700 |  |
+| Jogador 1 | 3-2 | 14:42:21 | MOVE Bench -> Board: Kayle (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Fumegante | DA_18_Leona | 0.3700 |  |
+| Jogador 1 | 3-2 | 14:42:21 | COMPROU: Xayah (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Fumegante | DA_18_Leona | 0.2200 |  |
+| Jogador 1 | 3-2 | 14:42:22 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Fumegante | DA_18_Leona | 0.0400 |  |
+| Jogador 1 | 3-2 | 14:42:24 | VENDEU: Varus (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Fumegante | DA_18_Leona | -0.3700 |  |
+| Jogador 1 | 3-2 | 14:42:24 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Fumegante | DA_18_Leona | 0.0000 |  |
+| Jogador 1 | 3-3 | 14:42:29 | EQUIP_FROM_INVENTORY: TFT_Item_ArchangelsStaff -> Leona (i:4.0) (tabuleiro slot 25) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Fumegante | DA_18_Leona | 0.1400 |  |
+| Jogador 1 | 3-3 | 14:42:29 | EQUIP_FROM_INVENTORY: TFT_Item_SpectralGauntlet -> Leona (i:4.0) (tabuleiro slot 25) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Fumegante | DA_18_Leona | 0.1300 |  |
+| Jogador 1 | 3-3 | 14:42:29 | EQUIP_FROM_INVENTORY: TFT_Item_InfinityEdge -> Leona (i:4.0) (tabuleiro slot 25) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Fumegante | DA_18_Leona | 0.1700 |  |
+| Jogador 1 | 3-3 | 14:42:30 | COMPROU: Cascalho (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Fumegante | DA_18_Leona | -0.1400 |  |
+| Jogador 1 | 3-3 | 14:42:30 | MOVE Bench -> Board: Xayah (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Fumegante | DA_18_Leona | 0.5700 |  |
+| Jogador 1 | 3-3 | 14:42:30 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Fumegante | DA_18_Leona | -0.2400 |  |
+| Jogador 1 | 3-3 | 14:42:30 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Fumegante | DA_18_Leona | 0.0400 |  |
+| Jogador 1 | 3-3 | 14:42:31 | VENDEU: Cascalho (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Fumegante | DA_18_Leona | 0.0100 |  |
+| Jogador 1 | 3-3 | 14:42:31 | COMPROU: Leona (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Fumegante | DA_18_Leona | 0.2200 |  |
+| Jogador 1 | 3-3 | 14:42:33 | VENDEU: Rek'Sai (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Fumegante | DA_18_Leona | 0.0200 |  |
+| Jogador 1 | 3-3 | 14:42:33 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Fumegante | DA_18_Leona | 0.0000 |  |
+| Jogador 1 | 3-4 | 14:42:39 | COMPROU: Mamãe Bicuda (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Fumegante | DA_18_Leona | 0.6500 |  |
+| Jogador 1 | 3-4 | 14:42:40 | VENDEU: Leona (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Fumegante | DA_CrimsonRaptor18 | -0.2100 |  |
+| Jogador 1 | 3-4 | 14:42:40 | COMPROU: Lobo Trevoguari (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Fumegante | DA_Murkwolf18 | 0.5800 |  |
+| Jogador 1 | 3-4 | 14:42:40 | MOVE Bench -> Board: Mamãe Bicuda (i:6.0) <-> Kayle (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Fumegante | DA_Murkwolf18 | -0.2700 |  |
+| Jogador 1 | 3-4 | 14:42:41 | MOVE Bench -> Board: Kayle (i:4.0) <-> Xayah (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Fumegante | DA_Murkwolf18 | -0.3500 |  |
+| Jogador 1 | 3-4 | 14:42:41 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Fumegante | DA_Murkwolf18 | 0.0000 |  |
+| Jogador 1 | 3-4 | 14:42:44 | MOVE Bench -> Board: Yorick (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Fumegante | DA_Murkwolf18 | 0.4300 |  |
+| Jogador 1 | 3-5 | 14:42:47 | COMPROU: Lobo Trevoguari (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 12 | 0 | Fumegante | DA_Murkwolf18 | 0.1800 |  |
+| Jogador 1 | 3-5 | 14:42:48 | COMPROU: Rakan (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Fumegante | DA_Murkwolf18 | 0.2100 |  |
+| Jogador 1 | 3-5 | 14:42:48 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Fumegante | DA_Murkwolf18 | -0.0400 |  |
+| Jogador 1 | 3-5 | 14:42:48 | VENDEU: Lobo Trevoguari (i:8.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 14 | 0 | Fumegante | DA_CrimsonRaptor18 | -0.0900 |  |
+| Jogador 1 | 3-5 | 14:42:49 | COMPROU: Mamãe Bicuda (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Fumegante | DA_CrimsonRaptor18 | 0.7600 |  |
+| Jogador 1 | 3-5 | 14:42:51 | COMPROU: Xayah (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Fumegante | DA_CrimsonRaptor18 | 0.7400 |  |
+| Jogador 1 | 3-5 | 14:42:51 | MOVE Bench -> Board: Xayah (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Fumegante | DA_CrimsonRaptor18 | 0.5200 |  |
+| Jogador 1 | 3-5 | 14:42:52 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Fumegante | DA_CrimsonRaptor18 | -0.0400 |  |
+| Jogador 1 | 3-5 | 14:42:52 | COMPROU: Kayle (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Fumegante | DA_CrimsonRaptor18 | 0.7700 |  |
+| Jogador 1 | 3-5 | 14:42:52 | MOVE Bench -> Board: Kayle (i:8.0) <-> Xayah (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Fumegante | DA_CrimsonRaptor18 | 0.1200 |  |
+| Jogador 1 | 3-5 | 14:42:52 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Fumegante | DA_CrimsonRaptor18 | 0.0000 |  |
+| Jogador 1 | 3-6 | 14:42:58 | COMPROU: Leona (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Fumegante | DA_CrimsonRaptor18 | 0.2200 |  |
+| Jogador 1 | 3-6 | 14:42:59 | MOVE Bench -> Board: Xayah (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Fumegante | DA_CrimsonRaptor18 | 0.5100 |  |
+| Jogador 1 | 3-6 | 14:42:59 | COMPROU: Shen (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Fumegante | DA_CrimsonRaptor18 | 0.6100 |  |
+| Jogador 1 | 3-6 | 14:42:59 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Fumegante | DA_CrimsonRaptor18 | 0.0400 |  |
+| Jogador 1 | 3-6 | 14:43:00 | VENDEU: Mamãe Bicuda (i:12.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 14 | 0 | Fumegante | DA_18_Kayle | -0.2800 |  |
+| Jogador 1 | 3-6 | 14:43:00 | COMPROU: Leona (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 13 | 0 | Fumegante | DA_18_Kayle | 0.7400 |  |
+| Jogador 1 | 3-6 | 14:43:00 | MOVE Board -> Board: Xayah (i:2.0) <-> Leona (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 13 | 0 | Fumegante | DA_18_Kayle | -0.0200 |  |
+| Jogador 1 | 3-6 | 14:43:00 | MOVE Board -> Board: Leona (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 13 | 0 | Fumegante | DA_18_Kayle | 0.0100 |  |
+| Jogador 1 | 3-6 | 14:43:01 | MOVE Bench -> Board: Shen (i:4.0) <-> Kayle (i:8.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 13 | 0 | Fumegante | DA_18_Kayle | -0.6900 |  |
+| Jogador 1 | 3-6 | 14:43:03 | VENDEU: Kayle (i:8.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 18 | 0 | Fumegante | DA_18_Leona | -0.3700 |  |
+| Jogador 1 | 3-6 | 14:43:04 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 18 | 0 | Fumegante | DA_18_Leona | -0.0600 |  |
+| Jogador 1 | 3-7 | 14:43:08 | COMPROU: Xayah (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 23 | 1 | Fumegante | DA_18_Leona | 0.8000 |  |
+| Jogador 1 | 3-7 | 14:43:08 | CRAFT_AND_EQUIP: TFT_Item_BFSword + TFT_Item_RecurveBow -> Yorick (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 23 | 1 | Fumegante | DA_18_Leona | 0.2000 |  |
+| Jogador 1 | 3-7 | 14:43:08 | CRAFT_AND_EQUIP: TFT_Item_RecurveBow + TFT_Item_NegatronCloak -> Yorick (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 23 | 1 | Fumegante | DA_18_Leona | 0.1600 |  |
+| Jogador 1 | 3-7 | 14:43:09 | MOVE Bench -> Board: Xayah (i:4.0) <-> Shen (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 23 | 1 | Fumegante | DA_18_Leona | 0.1000 |  |
+| Jogador 1 | 3-7 | 14:43:12 | MOVE Bench -> Board: Shen (i:4.0) <-> Master Yi (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 23 | 1 | Fumegante | DA_18_Leona | 0.0800 |  |
+| Jogador 1 | 3-7 | 14:43:12 | MOVE Bench -> Board: Master Yi (i:6.0) <-> Xayah (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 23 | 1 | Fumegante | DA_18_Leona | -0.6800 |  |
+| Jogador 1 | 3-7 | 14:43:12 | MOVE Bench -> Board: Xayah (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 23 | 1 | Fumegante | DA_18_Leona | 0.5800 |  |
+| Jogador 1 | 3-7 | 14:43:13 | COMPROU: Kayle (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 21 | 1 | Fumegante | DA_18_Leona | 0.2400 |  |
+| Jogador 1 | 3-7 | 14:43:13 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 19 | 1 | Fumegante | DA_18_Leona | -0.0400 |  |
+| Jogador 1 | 3-7 | 14:43:13 | COMPROU: Rakan (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 18 | 1 | Fumegante | DA_18_Leona | 0.7300 |  |
+| Jogador 1 | 3-7 | 14:43:13 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 18 | 1 | Fumegante | DA_18_Leona | 0.0000 |  |
+| Jogador 1 | 4-1 | 14:43:16 | MOVE Bench -> Board: Kayle (i:4.0) <-> Xayah (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 25 | 1 | Fumegante | DA_18_Leona | -0.6500 |  |
+| Jogador 1 | 4-1 | 14:43:17 | MOVE Bench -> Board: Xayah (i:4.0) <-> Master Yi (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 25 | 1 | Fumegante | DA_18_Leona | 0.0900 |  |
+| Jogador 1 | 4-1 | 14:43:20 | MOVE Bench -> Board: Master Yi (i:6.0) <-> Kayle (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 25 | 1 | Fumegante | DA_18_Leona | -0.6600 |  |
+| Jogador 1 | 4-1 | 14:43:20 | MOVE Bench -> Board: Kayle (i:4.0) <-> Xayah (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 25 | 1 | Fumegante | DA_18_Leona | -0.6600 |  |
+| Jogador 1 | 4-1 | 14:43:20 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 25 | 1 | Fumegante | DA_18_Leona | 0.0000 |  |
+| Jogador 1 | 4-1 | 14:43:21 | MOVE Bench -> Board: Lobo Trevoguari (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 25 | 1 | Fumegante | DA_18_Leona | 0.4000 |  |
+| Jogador 1 | 4-2 | 14:43:28 | COMPROU: Master Yi (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 29 | 2 | Fumegante | DA_18_Leona | 0.5100 |  |
+| Jogador 1 | 4-2 | 14:43:29 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 27 | 2 | Fumegante | DA_18_Leona | 0.0500 |  |
+| Jogador 1 | 4-2 | 14:43:29 | VENDEU: Xayah (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 30 | 2 | Fumegante | DA_18_Leona | -0.2800 |  |
+| Jogador 1 | 4-2 | 14:43:29 | COMPROU: Kayle (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 28 | 2 | Fumegante | DA_18_Leona | 0.7000 |  |
+| Jogador 1 | 4-2 | 14:43:29 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 26 | 2 | Fumegante | DA_18_Leona | 0.0500 |  |
+| Jogador 1 | 4-2 | 14:43:30 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 24 | 2 | Fumegante | DA_18_Leona | -0.1200 |  |
+| Jogador 1 | 4-2 | 14:43:30 | VENDEU: Leona (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 25 | 2 | Fumegante | DA_18_Leona | -0.5400 |  |
+| Jogador 1 | 4-2 | 14:43:30 | COMPROU: Varus (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 24 | 2 | Fumegante | DA_18_Leona | 0.2400 |  |
+| Jogador 1 | 4-2 | 14:43:30 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 22 | 2 | Fumegante | DA_18_Leona | 0.0500 |  |
+| Jogador 1 | 4-2 | 14:43:33 | VENDEU: Leona (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 23 | 2 | Fumegante | DA_18_Leona | -0.2900 |  |
+| Jogador 1 | 4-2 | 14:43:34 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 23 | 2 | Fumegante | DA_18_Leona | -0.0900 |  |
+| Jogador 1 | 4-3 | 14:43:37 | COMPROU: Varus (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 30 | 2 | Fumegante | DA_18_Leona | 0.7800 |  |
+| Jogador 1 | 4-3 | 14:43:38 | VENDEU: Shen (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 32 | 2 | Fumegante | DA_18_Leona | -0.4600 |  |
+| Jogador 1 | 4-3 | 14:43:38 | COMPROU: Mamãe Bicuda (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 29 | 2 | Fumegante | DA_18_Leona | 0.1800 |  |
+| Jogador 1 | 4-3 | 14:43:38 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 27 | 2 | Fumegante | DA_18_Leona | -0.1300 |  |
+| Jogador 1 | 4-3 | 14:43:39 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 25 | 2 | Fumegante | DA_18_Leona | 0.0500 |  |
+| Jogador 1 | 4-3 | 14:43:42 | VENDEU: Vi (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 28 | 2 | Fumegante | DA_18_Leona | -0.2700 |  |
+| Jogador 1 | 4-3 | 14:43:42 | COMPROU: Xayah (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 27 | 2 | Fumegante | DA_18_Leona | 0.2400 |  |
+| Jogador 1 | 4-3 | 14:43:42 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 25 | 2 | Fumegante | DA_18_Leona | 0.0500 |  |
+| Jogador 1 | 4-3 | 14:43:43 | VENDEU: Vi (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 28 | 2 | Fumegante | DA_18_Leona | 0.0000 |  |
+| Jogador 1 | 4-3 | 14:43:43 | COMPROU: Xayah (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 27 | 2 | Fumegante | DA_18_Leona | 0.7600 |  |
+| Jogador 1 | 4-3 | 14:43:43 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 27 | 2 | Fumegante | DA_18_Leona | 0.0000 |  |
+| Jogador 1 | 4-4 | 14:43:47 | VENDEU: Mamãe Bicuda (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 37 | 2 | Fumegante | DA_18_Leona | -0.3400 |  |
+| Jogador 1 | 4-4 | 14:43:47 | COMPROU: Shen (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 35 | 2 | Fumegante | DA_18_Leona | 0.7600 |  |
+| Jogador 1 | 4-4 | 14:43:50 | VENDEU: Varus (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 36 | 2 | Fumegante | DA_18_Leona | -0.5600 |  |
+| Jogador 1 | 4-4 | 14:43:51 | COMPROU: Rakan (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 35 | 2 | Fumegante | DA_18_Rakan | 0.8200 |  |
+| Jogador 1 | 4-4 | 14:43:51 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 33 | 2 | Fumegante | DA_18_Rakan | 0.0700 |  |
+| Jogador 1 | 4-4 | 14:43:51 | COMPROU: Master Yi (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 30 | 2 | Fumegante | DA_18_MasterYi_AD | 0.8100 |  |
+| Jogador 1 | 4-4 | 14:43:52 | MOVE Bench -> Board: Kayle (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 30 | 2 | Fumegante | DA_18_MasterYi_AD | 0.5900 |  |
+| Jogador 1 | 4-4 | 14:43:52 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 28 | 2 | Fumegante | DA_18_MasterYi_AD | -0.1900 |  |
+| Jogador 1 | 4-4 | 14:43:52 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 26 | 2 | Fumegante | DA_18_MasterYi_AD | 0.0400 |  |
+| Jogador 1 | 4-4 | 14:43:52 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 24 | 2 | Fumegante | DA_18_MasterYi_AD | 0.0500 |  |
+| Jogador 1 | 4-4 | 14:43:53 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 24 | 2 | Fumegante | DA_18_MasterYi_AD | -0.0900 |  |
+| Jogador 1 | 4-5 | 14:43:57 | COMPROU: Shen (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 29 | 2 | Fumegante | DA_18_MasterYi_AD | 0.7600 |  |
+| Jogador 1 | 4-5 | 14:43:57 | MOVE Bench -> Board: Shen (i:8.0) <-> Kayle (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 29 | 2 | Fumegante | DA_18_MasterYi_AD | 0.0400 |  |
+| Jogador 1 | 4-5 | 14:43:57 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 27 | 2 | Fumegante | DA_18_MasterYi_AD | 0.0500 |  |
+| Jogador 1 | 4-5 | 14:43:57 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 25 | 2 | Fumegante | DA_18_MasterYi_AD | 0.0500 |  |
+| Jogador 1 | 4-5 | 14:43:58 | COMPROU: Varus (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 24 | 2 | Fumegante | DA_18_MasterYi_AD | 0.7700 |  |
+| Jogador 1 | 4-5 | 14:43:58 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 22 | 2 | Fumegante | DA_18_MasterYi_AD | 0.0500 |  |
+| Jogador 1 | 4-5 | 14:43:58 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 20 | 2 | Fumegante | DA_18_MasterYi_AD | 0.0500 |  |
+| Jogador 1 | 4-5 | 14:43:59 | COMPROU: Kayle (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 18 | 2 | Fumegante | DA_18_MasterYi_AD | 0.7200 |  |
+| Jogador 1 | 4-5 | 14:43:59 | MOVE Bench -> Board: Varus (i:2.0) <-> Shen (i:8.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 18 | 2 | Fumegante | DA_18_MasterYi_AD | -0.3000 |  |
+| Jogador 1 | 4-5 | 14:43:59 | MOVE Bench -> Board: Shen (i:8.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 18 | 2 | Fumegante | DA_18_MasterYi_AD | 0.3400 |  |
+| Jogador 1 | 4-6 | 14:44:08 | MOVE Bench -> Board: Rakan (i:4.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 25 | 1 | Fumegante | DA_18_MasterYi_AD | 0.5500 |  |
+| Jogador 1 | 4-6 | 14:44:08 | COMPROU: Diana (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: pressão de vida | 22 | 1 | Fumegante | DA_18_MasterYi_AD | 0.2000 |  |
+| Jogador 1 | 4-6 | 14:44:08 | MOVE Board -> Board: Rakan (i:4.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 22 | 1 | Fumegante | DA_18_MasterYi_AD | 0.0000 |  |
+| Jogador 1 | 4-6 | 14:44:09 | MOVE Board -> Board: Yorick (i:2.0) <-> Rakan (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 22 | 1 | Fumegante | DA_18_MasterYi_AD | -0.0100 |  |
+| Jogador 1 | 4-6 | 14:44:09 | MOVE Board -> Board: Rakan (i:4.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 22 | 1 | Fumegante | DA_18_MasterYi_AD | -0.0100 |  |
+| Jogador 1 | 4-6 | 14:44:09 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 22 | 1 | Fumegante | DA_18_MasterYi_AD | -0.1200 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 1 | 4-7 | 14:44:19 | COMPROU: Xayah (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 29 | 2 | Fumegante | DA_18_MasterYi_AD | 0.8800 |  |
+| Jogador 1 | 4-7 | 14:44:19 | COMPROU: Xayah (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 28 | 2 | Fumegante | DA_18_MasterYi_AD | 0.3700 |  |
+| Jogador 1 | 4-7 | 14:44:19 | CRAFT_AND_EQUIP: TFT_Item_ChainVest + TFT_Item_NeedlesslyLargeRod -> Yorick (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 28 | 2 | Fumegante | DA_18_MasterYi_AD | 0.1200 |  |
+| Jogador 1 | 4-7 | 14:44:19 | CRAFT_AND_EQUIP: TFT_Item_GiantsBelt + TFT_Item_NeedlesslyLargeRod -> Lobo Trevoguari (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 28 | 2 | Fumegante | DA_18_MasterYi_AD | 0.1000 |  |
+| Jogador 1 | 4-7 | 14:44:20 | MOVE Board -> Board: Varus (i:2.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 28 | 2 | Fumegante | DA_18_MasterYi_AD | 0.0000 |  |
+| Jogador 1 | 4-7 | 14:44:20 | MOVE Board -> Board: Yorick (i:2.0) <-> Rakan (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 28 | 2 | Fumegante | DA_18_MasterYi_AD | -0.0200 |  |
+| Jogador 1 | 4-7 | 14:44:20 | MOVE Board -> Board: Rakan (i:4.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 28 | 2 | Fumegante | DA_18_MasterYi_AD | -0.0100 |  |
+| Jogador 1 | 4-7 | 14:44:21 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 28 | 2 | Fumegante | DA_18_MasterYi_AD | -0.1400 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 1 | 5-1 | 14:44:29 | COMPROU: Xayah (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 35 | 2 | Fumegante | DA_18_MasterYi_AD | 0.9300 |  |
+| Jogador 1 | 5-1 | 14:44:29 | COMPROU: Varus (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 34 | 2 | Fumegante | DA_18_MasterYi_AD | 0.9300 |  |
+| Jogador 1 | 5-1 | 14:44:30 | MOVE Bench -> Board: Diana (i:6.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 34 | 2 | Fumegante | DA_18_MasterYi_AD | 0.4100 |  |
+| Jogador 1 | 5-1 | 14:44:30 | MOVE Board -> Board: Diana (i:6.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 34 | 2 | Fumegante | DA_18_MasterYi_AD | -0.0100 |  |
+| Jogador 1 | 5-1 | 14:44:30 | MOVE Board -> Board: Yorick (i:2.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 34 | 2 | Fumegante | DA_18_MasterYi_AD | -0.0100 |  |
+| Jogador 1 | 5-1 | 14:44:31 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 34 | 2 | Fumegante | DA_18_MasterYi_AD | -0.2100 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 1 | 5-2 | 14:44:39 | COMPROU: Diana (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: pressão de vida | 40 | 3 | Fumegante | DA_18_MasterYi_AD | 0.7000 |  |
+| Jogador 1 | 5-2 | 14:44:40 | COMPROU: Fiddlesticks (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: pressão de vida | 37 | 3 | Fumegante | DA_18_MasterYi_AD | 0.1200 |  |
+| Jogador 1 | 5-2 | 14:44:40 | MOVE Board -> Board: Yorick (i:2.0) <-> Diana (i:6.0) | STABILIZE | STABILIZE: pressão de vida | 37 | 3 | Fumegante | DA_18_MasterYi_AD | 0.0000 |  |
+| Jogador 1 | 5-2 | 14:44:40 | MOVE Board -> Board: Diana (i:6.0) <-> Rakan (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 37 | 3 | Fumegante | DA_18_MasterYi_AD | -0.0100 |  |
+| Jogador 1 | 5-2 | 14:44:40 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 37 | 3 | Fumegante | DA_18_MasterYi_AD | -0.2200 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 1 | 5-3 | 14:44:50 | COMPROU: Yorick (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 44 | 3 | Fumegante | DA_18_MasterYi_AD | 0.8500 |  |
+| Jogador 1 | 5-3 | 14:44:50 | MOVE Board -> Board: Rakan (i:4.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 44 | 3 | Fumegante | DA_18_MasterYi_AD | 0.0000 |  |
+| Jogador 1 | 5-3 | 14:44:51 | MOVE Board -> Board: Rakan (i:4.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 44 | 3 | Fumegante | DA_18_MasterYi_AD | -0.0200 |  |
+| Jogador 1 | 5-3 | 14:44:51 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 44 | 3 | Fumegante | DA_18_MasterYi_AD | -0.1000 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 1 | 5-4 | 14:45:01 | MOVE Board -> Board: Yorick (i:2.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 53 | 4 | Fumegante | DA_18_MasterYi_AD | 0.0000 |  |
+| Jogador 1 | 5-4 | 14:45:01 | MOVE Board -> Board: Yorick (i:2.0) <-> Diana (i:6.0) | STABILIZE | STABILIZE: pressão de vida | 53 | 4 | Fumegante | DA_18_MasterYi_AD | -0.0100 |  |
+| Jogador 1 | 5-4 | 14:45:01 | MOVE Board -> Board: Diana (i:6.0) <-> Rakan (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 53 | 4 | Fumegante | DA_18_MasterYi_AD | -0.0200 |  |
+| Jogador 1 | 5-4 | 14:45:02 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 53 | 4 | Fumegante | DA_18_MasterYi_AD | -0.1400 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 1 | 5-5 | 14:45:25 | VENDEU: Xayah (i:4.0) | ALL_IN | HP crítico: gastar para sobreviver | 67 | 5 | Fumegante | DA_18_MasterYi_AD | -0.3800 |  |
+| Jogador 1 | 5-5 | 14:45:26 | COMPROU: Xayah (Custo 1 \| i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 66 | 5 | Fumegante | DA_18_MasterYi_AD | 1.0400 |  |
+| Jogador 1 | 5-5 | 14:45:26 | COMPROU: Malphite (Custo 4 \| i:8.0) | ALL_IN | HP crítico: gastar para sobreviver | 62 | 5 | Fumegante | DA_18_MasterYi_AD | -0.0900 |  |
+| Jogador 1 | 5-5 | 14:45:26 | MOVE Board -> Board: Rakan (i:4.0) <-> Vazio | ALL_IN | HP crítico: gastar para sobreviver | 62 | 5 | Fumegante | DA_18_MasterYi_AD | 0.0000 |  |
+| Jogador 1 | 5-5 | 14:45:26 | MOVE Board -> Board: Lobo Trevoguari (i:4.0) <-> Vazio | ALL_IN | HP crítico: gastar para sobreviver | 62 | 5 | Fumegante | DA_18_MasterYi_AD | -0.0100 |  |
+| Jogador 1 | 5-5 | 14:45:27 | MOVE Board -> Board: Lobo Trevoguari (i:4.0) <-> Diana (i:6.0) | ALL_IN | HP crítico: gastar para sobreviver | 62 | 5 | Fumegante | DA_18_MasterYi_AD | -0.0100 |  |
+| Jogador 1 | 5-5 | 14:45:27 | PASSOU TURNO | ALL_IN | HP crítico: gastar para sobreviver | 62 | 5 | Fumegante | DA_18_MasterYi_AD | -0.2200 |  |
+| Jogador 2 | ? | 14:40:45 | MOVE Bench -> Board: Veigar (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.2200 |  |
+| Jogador 2 | ? | 14:40:46 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.0000 |  |
+| Jogador 2 | 1-1 | 14:40:51 | COMPROU: Veigar (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Veigar | 1.0400 |  |
+| Jogador 2 | 1-1 | 14:40:51 | MOVE Bench -> Board: Veigar (i:2.0) <-> Veigar (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Veigar | -0.4000 |  |
+| Jogador 2 | 1-1 | 14:40:52 | MOVE Bench -> Board: Veigar (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Veigar | -0.0200 |  |
+| Jogador 2 | 1-1 | 14:40:52 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Veigar | 0.0000 |  |
+| Jogador 2 | 1-2 | 14:40:57 | COMPROU: Veigar (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Veigar | 1.1200 |  |
+| Jogador 2 | 1-2 | 14:40:57 | MOVE Bench -> Board: Veigar (i:4.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Veigar | 0.2500 |  |
+| Jogador 2 | 1-2 | 14:40:58 | COMPROU: Kobuko (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Veigar | 0.0800 |  |
+| Jogador 2 | 1-2 | 14:40:58 | MOVE Bench -> Board: Kobuko (i:2.0) <-> Veigar (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Veigar | -0.0800 |  |
+| Jogador 2 | 1-2 | 14:40:58 | MOVE Bench -> Board: Veigar (i:4.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Veigar | 0.3700 |  |
+| Jogador 2 | 1-2 | 14:40:59 | MOVE Board -> Board: Kobuko (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Veigar | 0.0000 |  |
+| Jogador 2 | 1-2 | 14:40:59 | COMPROU: Rubrivirim (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.0100 |  |
+| Jogador 2 | 1-2 | 14:40:59 | MOVE Bench -> Board: Rubrivirim (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.4000 |  |
+| Jogador 2 | 1-2 | 14:41:00 | MOVE Board -> Board: Rubrivirim (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | -0.0200 |  |
+| Jogador 2 | 1-2 | 14:41:00 | MOVE Board -> Board: Veigar (i:4.0) <-> Rubrivirim (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | -0.2500 |  |
+| Jogador 2 | 1-2 | 14:41:00 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.0000 |  |
+| Jogador 2 | 1-3 | 14:41:04 | COMPROU: Veigar (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Veigar | 0.4100 |  |
+| Jogador 2 | 1-3 | 14:41:04 | COMPROU: Veigar (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Veigar | 1.0800 |  |
+| Jogador 2 | 1-3 | 14:41:04 | COMPROU: Rubrivirim (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 1.0100 |  |
+| Jogador 2 | 1-3 | 14:41:04 | MOVE Board -> Board: Rubrivirim (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.0200 |  |
+| Jogador 2 | 1-3 | 14:41:05 | MOVE Board -> Board: Rubrivirim (i:2.0) <-> Veigar (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.2100 |  |
+| Jogador 2 | 1-3 | 14:41:05 | MOVE Board -> Board: Veigar (i:4.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | -0.0100 |  |
+| Jogador 2 | 1-3 | 14:41:05 | MOVE Board -> Board: Rubrivirim (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | -0.0100 |  |
+| Jogador 2 | 1-3 | 14:41:05 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.0000 |  |
+| Jogador 2 | 1-4 | 14:41:10 | COMPROU: LeBlanc (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Veigar | 0.2700 |  |
+| Jogador 2 | 1-4 | 14:41:11 | CRAFT_AND_EQUIP: TFT_Item_BFSword + TFT_Item_SparringGloves -> Veigar (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Veigar | 0.2800 |  |
+| Jogador 2 | 1-4 | 14:41:11 | CRAFT_AND_EQUIP: TFT_Item_GiantsBelt + TFT_Item_NegatronCloak -> Veigar (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Veigar | 0.1600 |  |
+| Jogador 2 | 1-4 | 14:41:11 | COMPROU: Rakan (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Veigar | 0.1700 |  |
+| Jogador 2 | 1-4 | 14:41:12 | MOVE Bench -> Board: Rubrivirim (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Veigar | -0.1000 |  |
+| Jogador 2 | 1-4 | 14:41:12 | COMPROU: Akali (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.2000 |  |
+| Jogador 2 | 1-4 | 14:41:13 | MOVE Board -> Board: Rubrivirim (i:2.0) <-> Rubrivirim (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.0000 |  |
+| Jogador 2 | 1-4 | 14:41:13 | MOVE Board -> Board: Rubrivirim (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | -0.0400 |  |
+| Jogador 2 | 1-4 | 14:41:13 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.0000 |  |
+| Jogador 2 | 2-1 | 14:41:17 | COMPROU: Veigar (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 5 | 0 | — | DA_18_Veigar | 1.0500 |  |
+| Jogador 2 | 2-1 | 14:41:17 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Veigar | -0.1600 |  |
+| Jogador 2 | 2-1 | 14:41:17 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Veigar | 0.3200 |  |
+| Jogador 2 | 2-1 | 14:41:18 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | -0.1600 |  |
+| Jogador 2 | 2-1 | 14:41:18 | MOVE Board -> Board: Rubrivirim (i:2.0) <-> Rubrivirim (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.0000 |  |
+| Jogador 2 | 2-1 | 14:41:19 | MOVE Board -> Board: Rubrivirim (i:2.0) <-> Kobuko (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | -0.3400 |  |
+| Jogador 2 | 2-1 | 14:41:19 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.0000 |  |
+| Jogador 2 | 2-2 | 14:41:24 | COMPROU: Azir (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Veigar | 0.3300 |  |
+| Jogador 2 | 2-2 | 14:41:24 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | -0.1600 |  |
+| Jogador 2 | 2-2 | 14:41:24 | MOVE Board -> Board: Kobuko (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.0000 |  |
+| Jogador 2 | 2-2 | 14:41:25 | MOVE Board -> Board: Rubrivirim (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.0100 |  |
+| Jogador 2 | 2-2 | 14:41:25 | VENDEU: Veigar (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Veigar | -0.5800 |  |
+| Jogador 2 | 2-2 | 14:41:25 | COMPROU: Kog'Maw (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.2900 |  |
+| Jogador 2 | 2-2 | 14:41:26 | VENDEU: LeBlanc (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Veigar | -0.0500 |  |
+| Jogador 2 | 2-2 | 14:41:27 | COMPROU: Cascalho (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Veigar | 0.2800 |  |
+| Jogador 2 | 2-2 | 14:41:27 | COMPROU: Cascalho (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.8100 |  |
+| Jogador 2 | 2-2 | 14:41:27 | MOVE Board -> Board: Rubrivirim (i:2.0) <-> Rubrivirim (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.0000 |  |
+| Jogador 2 | 2-2 | 14:41:27 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.0000 |  |
+| Jogador 2 | 2-3 | 14:41:31 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 5 | 0 | — | DA_18_Veigar | 0.8800 |  |
+| Jogador 2 | 2-3 | 14:41:31 | COMPROU: Warwick (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Veigar | 0.1000 |  |
+| Jogador 2 | 2-3 | 14:41:31 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Veigar | -0.1600 |  |
+| Jogador 2 | 2-3 | 14:41:31 | VENDEU: Akali (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Veigar | -0.0100 |  |
+| Jogador 2 | 2-3 | 14:41:32 | COMPROU: Veigar (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Veigar | 0.1700 |  |
+| Jogador 2 | 2-3 | 14:41:32 | VENDEU: Rakan (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Veigar | -0.0100 |  |
+| Jogador 2 | 2-3 | 14:41:32 | COMPROU: Cascalho (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Veigar | 0.9100 |  |
+| Jogador 2 | 2-3 | 14:41:33 | COMPROU: Yorick (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.1000 |  |
+| Jogador 2 | 2-3 | 14:41:33 | MOVE Board -> Board: Rubrivirim (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | -0.0200 |  |
+| Jogador 2 | 2-3 | 14:41:34 | MOVE Board -> Board: Rubrivirim (i:2.0) <-> Veigar (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | -0.0200 |  |
+| Jogador 2 | 2-3 | 14:41:34 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.0000 |  |
+| Jogador 2 | 2-4 | 14:41:38 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | Espinhos Negros | DA_18_Veigar | 0.9400 |  |
+| Jogador 2 | 2-4 | 14:41:38 | COMPROU: Yorick (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | Espinhos Negros | DA_18_Veigar | 0.8100 |  |
+| Jogador 2 | 2-4 | 14:41:38 | COMPROU: Cascalho (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | Espinhos Negros | DA_18_Veigar | 0.1500 |  |
+| Jogador 2 | 2-4 | 14:41:39 | MOVE Bench -> Board: Veigar (i:2.0) <-> Veigar (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | Espinhos Negros | DA_18_Veigar | -0.5200 |  |
+| Jogador 2 | 2-4 | 14:41:39 | MOVE Bench -> Board: Veigar (i:4.0) <-> Kobuko (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | Espinhos Negros | DA_18_Veigar | 0.0800 |  |
+| Jogador 2 | 2-4 | 14:41:40 | MOVE Bench -> Board: Kobuko (i:2.0) <-> Veigar (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | Espinhos Negros | DA_18_Veigar | -0.2300 |  |
+| Jogador 2 | 2-4 | 14:41:40 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | Espinhos Negros | DA_18_Veigar | -0.1600 |  |
+| Jogador 2 | 2-4 | 14:41:41 | VENDEU: Cascalho (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | Espinhos Negros | DA_18_Veigar | -0.2300 |  |
+| Jogador 2 | 2-4 | 14:41:41 | COMPROU: Warwick (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | Espinhos Negros | DA_18_Veigar | 0.9000 |  |
+| Jogador 2 | 2-4 | 14:41:41 | MOVE Bench -> Board: Veigar (i:2.0) <-> Veigar (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | Espinhos Negros | DA_18_Veigar | -0.6000 |  |
+| Jogador 2 | 2-4 | 14:41:42 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | Espinhos Negros | DA_18_Veigar | 0.0000 |  |
+| Jogador 2 | 2-5 | 14:41:45 | MOVE Bench -> Board: Veigar (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Espinhos Negros | DA_18_Veigar | 0.5200 |  |
+| Jogador 2 | 2-5 | 14:41:45 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Espinhos Negros | DA_18_Veigar | 0.0400 |  |
+| Jogador 2 | 2-5 | 14:41:45 | COMPROU: Veigar (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Espinhos Negros | DA_18_Veigar | 0.8500 |  |
+| Jogador 2 | 2-5 | 14:41:45 | VENDEU: Rek'Sai (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Espinhos Negros | DA_18_Veigar | -0.3000 |  |
+| Jogador 2 | 2-5 | 14:41:46 | COMPROU: Cascalho (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Espinhos Negros | DA_18_Veigar | 0.6800 |  |
+| Jogador 2 | 2-5 | 14:41:46 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Espinhos Negros | DA_18_Veigar | 0.0400 |  |
+| Jogador 2 | 2-5 | 14:41:46 | VENDEU: Cascalho (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Espinhos Negros | DA_18_Veigar | -0.2800 |  |
+| Jogador 2 | 2-5 | 14:41:47 | COMPROU: Veigar (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Espinhos Negros | DA_18_Veigar | 0.8800 |  |
+| Jogador 2 | 2-5 | 14:41:48 | MOVE Bench -> Board: Yorick (i:2.0) <-> Veigar (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Espinhos Negros | DA_18_Veigar | -0.3000 |  |
+| Jogador 2 | 2-5 | 14:41:48 | MOVE Bench -> Board: Azir (i:6.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Espinhos Negros | DA_18_Veigar | 0.5800 |  |
+| Jogador 2 | 2-5 | 14:41:49 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Espinhos Negros | DA_18_Veigar | 0.0000 |  |
+| Jogador 2 | 2-6 | 14:41:52 | COMPROU: Krugue (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Espinhos Negros | DA_18_Veigar | 0.2100 |  |
+| Jogador 2 | 2-6 | 14:41:53 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Espinhos Negros | DA_18_Veigar | 0.0400 |  |
+| Jogador 2 | 2-6 | 14:41:53 | COMPROU: Kobuko (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Espinhos Negros | DA_18_Veigar | 0.8100 |  |
+| Jogador 2 | 2-6 | 14:41:53 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Espinhos Negros | DA_18_Veigar | 0.0400 |  |
+| Jogador 2 | 2-6 | 14:41:54 | VENDEU: Veigar (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Espinhos Negros | DA_18_Veigar | -0.5400 |  |
+| Jogador 2 | 2-6 | 14:41:54 | EQUIP_FROM_INVENTORY: TFT_Item_InfinityEdge -> Rubrivirim (i:2.0) (tabuleiro slot 18) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Espinhos Negros | DA_18_Veigar | 0.1200 |  |
+| Jogador 2 | 2-6 | 14:41:54 | EQUIP_FROM_INVENTORY: TFT_Item_SpectralGauntlet -> Rubrivirim (i:2.0) (tabuleiro slot 18) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Espinhos Negros | DA_18_Veigar | 0.0400 |  |
+| Jogador 2 | 2-6 | 14:41:55 | COMPROU: Krugue (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Espinhos Negros | DA_18_Veigar | 0.7800 |  |
+| Jogador 2 | 2-6 | 14:41:55 | VENDEU: Veigar (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Fera do Rift | DA_18_Azir | -0.3700 |  |
+| Jogador 2 | 2-6 | 14:41:56 | COMPROU: Kobuko (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Fera do Rift | DA_18_Azir | 0.8700 |  |
+| Jogador 2 | 2-6 | 14:41:57 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Fera do Rift | DA_18_Azir | 0.0000 |  |
+| Jogador 2 | 2-7 | 14:42:01 | COMPROU: Rubrivirim (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Fera do Rift | DA_18_Azir | 0.7700 |  |
+| Jogador 2 | 2-7 | 14:42:01 | MOVE Bench -> Board: Rubrivirim (i:4.0) <-> Yorick (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Fera do Rift | DA_Cinderling18 | 0.0500 |  |
+| Jogador 2 | 2-7 | 14:42:02 | MOVE Bench -> Board: Yorick (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Fera do Rift | DA_Cinderling18 | 0.4300 |  |
+| Jogador 2 | 2-7 | 14:42:02 | CRAFT_AND_EQUIP: TFT_Item_SparringGloves + TFT_Item_RecurveBow -> Yorick (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Fera do Rift | DA_Cinderling18 | 0.1700 |  |
+| Jogador 2 | 2-7 | 14:42:02 | MOVE Bench -> Board: Krugue (i:6.0) <-> Rubrivirim (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Fera do Rift | DA_18_Azir | -0.6400 |  |
+| Jogador 2 | 2-7 | 14:42:03 | COMPROU: Kobuko (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Fera do Rift | DA_18_Kobuko | 0.2100 |  |
+| Jogador 2 | 2-7 | 14:42:03 | MOVE Bench -> Board: Kobuko (i:2.0) <-> Krugue (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Fera do Rift | DA_18_Kobuko | -0.3600 |  |
+| Jogador 2 | 2-7 | 14:42:03 | MOVE Bench -> Board: Krugue (i:6.0) <-> Yorick (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Fera do Rift | DA_18_Kobuko | 0.0900 |  |
+| Jogador 2 | 2-7 | 14:42:03 | MOVE Bench -> Board: Yorick (i:2.0) <-> Kobuko (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Fera do Rift | DA_18_Kobuko | -0.4200 |  |
+| Jogador 2 | 2-7 | 14:42:05 | MOVE Bench -> Board: Kobuko (i:2.0) <-> Krugue (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Fera do Rift | DA_18_Kobuko | -0.5700 |  |
+| Jogador 2 | 2-7 | 14:42:05 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Fera do Rift | DA_18_Kobuko | 0.0000 |  |
+| Jogador 2 | 3-1 | 14:42:10 | MOVE Bench -> Board: Krugue (i:6.0) <-> Yorick (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 13 | 0 | Fera do Rift | DA_18_Kobuko | 0.1000 |  |
+| Jogador 2 | 3-1 | 14:42:10 | MOVE Bench -> Board: Yorick (i:2.0) <-> Azir (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 13 | 0 | Fera do Rift | DA_18_Kobuko | -0.7500 |  |
+| Jogador 2 | 3-1 | 14:42:11 | MOVE Bench -> Board: Azir (i:6.0) <-> Krugue (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 13 | 0 | Fera do Rift | DA_18_Kobuko | -0.4300 |  |
+| Jogador 2 | 3-1 | 14:42:11 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 13 | 0 | Fera do Rift | DA_18_Kobuko | 0.0000 |  |
+| Jogador 2 | 3-1 | 14:42:15 | MOVE Bench -> Board: Krugue (i:6.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 13 | 0 | Fera do Rift | DA_18_Kobuko | 0.3000 |  |
+| Jogador 2 | 3-2 | 14:42:19 | COMPROU: Azir (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 17 | 1 | Fera do Rift | DA_18_Kobuko | 0.6600 |  |
+| Jogador 2 | 3-2 | 14:42:20 | MOVE Bench -> Board: Krugue (i:6.0) <-> Azir (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 17 | 1 | Fera do Rift | DA_18_Kobuko | -0.5800 |  |
+| Jogador 2 | 3-2 | 14:42:20 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 15 | 1 | Fera do Rift | DA_18_Kobuko | 0.0400 |  |
+| Jogador 2 | 3-2 | 14:42:20 | VENDEU: Rubrivirim (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 18 | 1 | Fera do Rift | DA_18_Kobuko | -0.3600 |  |
+| Jogador 2 | 3-2 | 14:42:21 | EQUIP_FROM_INVENTORY: TFT_Item_InfinityEdge -> Kobuko (i:2.0) (tabuleiro slot 8) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 18 | 1 | Fera do Rift | DA_18_Kobuko | 0.1500 |  |
+| Jogador 2 | 3-2 | 14:42:21 | EQUIP_FROM_INVENTORY: TFT_Item_SpectralGauntlet -> Kobuko (i:2.0) (tabuleiro slot 8) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 18 | 1 | Fera do Rift | DA_18_Kobuko | 0.1200 |  |
+| Jogador 2 | 3-2 | 14:42:21 | COMPROU: Cascalho (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 17 | 1 | Fera do Rift | DA_18_Kobuko | 0.7400 |  |
+| Jogador 2 | 3-2 | 14:42:21 | VENDEU: Kobuko (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 20 | 1 | Fera do Rift | DA_18_Azir | -0.2100 |  |
+| Jogador 2 | 3-2 | 14:42:22 | COMPROU: Rakan (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 19 | 1 | Fera do Rift | DA_18_Azir | 0.1300 |  |
+| Jogador 2 | 3-2 | 14:42:24 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 17 | 1 | Fera do Rift | DA_18_Azir | -0.1200 |  |
+| Jogador 2 | 3-2 | 14:42:24 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 17 | 1 | Fera do Rift | DA_18_Azir | 0.0000 |  |
+| Jogador 2 | 3-3 | 14:42:29 | VENDEU: Warwick (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 27 | 1 | Fera do Rift | DA_18_Azir | -0.2500 |  |
+| Jogador 2 | 3-3 | 14:42:29 | COMPROU: Rakan (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 26 | 1 | Fera do Rift | DA_18_Azir | 0.7300 |  |
+| Jogador 2 | 3-3 | 14:42:29 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 24 | 1 | Fera do Rift | DA_18_Azir | -0.1300 |  |
+| Jogador 2 | 3-3 | 14:42:30 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 22 | 1 | Fera do Rift | DA_18_Azir | 0.0500 |  |
+| Jogador 2 | 3-3 | 14:42:30 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 20 | 1 | Fera do Rift | DA_18_Azir | 0.0500 |  |
+| Jogador 2 | 3-3 | 14:42:30 | VENDEU: Warwick (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 22 | 1 | Fera do Rift | DA_18_Azir | 0.0200 |  |
+| Jogador 2 | 3-3 | 14:42:30 | COMPROU: Yorick (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 21 | 1 | Fera do Rift | DA_18_Yorick | 0.7800 |  |
+| Jogador 2 | 3-3 | 14:42:31 | MOVE Bench -> Board: Azir (i:6.0) <-> Kobuko (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 21 | 1 | Fera do Rift | DA_18_Yorick | -0.1000 |  |
+| Jogador 2 | 3-3 | 14:42:31 | MOVE Bench -> Board: Kobuko (i:2.0) <-> Krugue (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 21 | 1 | Fera do Rift | DA_18_Yorick | -0.4100 |  |
+| Jogador 2 | 3-3 | 14:42:33 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 21 | 1 | Fera do Rift | DA_18_Yorick | -0.0600 |  |
+| Jogador 2 | 3-3 | 14:42:34 | MOVE Bench -> Board: Azir (i:6.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 21 | 1 | Fera do Rift | DA_18_Yorick | 0.3300 |  |
+| Jogador 2 | 3-4 | 14:42:39 | COMPROU: Kobuko (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 29 | 2 | Fera do Rift | DA_18_Yorick | 0.3500 |  |
+| Jogador 2 | 3-4 | 14:42:40 | MOVE Bench -> Board: Krugue (i:6.0) <-> Kobuko (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 29 | 2 | Fera do Rift | DA_18_Yorick | 0.0900 |  |
+| Jogador 2 | 3-4 | 14:42:40 | COMPROU: Lobo Trevoguari (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 27 | 2 | Fera do Rift | DA_18_Yorick | 0.2100 |  |
+| Jogador 2 | 3-4 | 14:42:40 | MOVE Bench -> Board: Kobuko (i:2.0) <-> Azir (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 27 | 2 | Fera do Rift | DA_18_Yorick | -0.4100 |  |
+| Jogador 2 | 3-4 | 14:42:41 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 25 | 2 | Fera do Rift | DA_18_Yorick | 0.0500 |  |
+| Jogador 2 | 3-4 | 14:42:41 | VENDEU: Yorick (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 28 | 2 | Fera do Rift | DA_18_Azir | -0.2100 |  |
+| Jogador 2 | 3-4 | 14:42:41 | EQUIP_FROM_INVENTORY: TFT_Item_LastWhisper -> Azir (i:6.0) (tabuleiro slot 8) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 28 | 2 | Fera do Rift | DA_18_Azir | 0.1400 |  |
+| Jogador 2 | 3-4 | 14:42:42 | COMPROU: Cascalho (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 27 | 2 | Fera do Rift | DA_18_Azir | 0.7800 |  |
+| Jogador 2 | 3-4 | 14:42:42 | COMPROU: Azir (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 24 | 2 | Fera do Rift | DA_18_Azir | 0.7800 |  |
+| Jogador 2 | 3-4 | 14:42:44 | MOVE Bench -> Board: Azir (i:12.0) <-> Krugue (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 24 | 2 | Fera do Rift | DA_18_Azir | -0.3500 |  |
+| Jogador 2 | 3-4 | 14:42:44 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 24 | 2 | Fera do Rift | DA_18_Azir | -0.0600 |  |
+| Jogador 2 | 3-5 | 14:42:47 | MOVE Bench -> Board: Krugue (i:6.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 34 | 2 | Fera do Rift | DA_18_Azir | 0.5300 |  |
+| Jogador 2 | 3-5 | 14:42:48 | MOVE Bench -> Board: Kobuko (i:2.0) <-> Azir (i:12.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 34 | 2 | Fera do Rift | DA_18_Azir | -0.8800 |  |
+| Jogador 2 | 3-5 | 14:42:48 | MOVE Bench -> Board: Azir (i:12.0) <-> Kobuko (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 34 | 2 | Fera do Rift | DA_18_Azir | 0.2300 |  |
+| Jogador 2 | 3-5 | 14:42:48 | MOVE Bench -> Board: Kobuko (i:2.0) <-> Kobuko (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 34 | 2 | Fera do Rift | DA_18_Azir | -0.0100 |  |
+| Jogador 2 | 3-5 | 14:42:49 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 32 | 2 | Fera do Rift | DA_18_Azir | 0.0700 |  |
+| Jogador 2 | 3-5 | 14:42:51 | COMPROU: Kobuko (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 31 | 2 | Fera do Rift | DA_18_Azir | 0.7500 |  |
+| Jogador 2 | 3-5 | 14:42:51 | MOVE Bench -> Board: Kobuko (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 31 | 2 | Fera do Rift | DA_18_Azir | 0.1600 |  |
+| Jogador 2 | 3-5 | 14:42:52 | MOVE Board -> Board: Krugue (i:6.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 31 | 2 | Fera do Rift | DA_18_Azir | -0.0400 |  |
+| Jogador 2 | 3-5 | 14:42:52 | COMPROU: Rammus (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 28 | 2 | Fera do Rift | DA_18_Azir | -0.2500 |  |
+| Jogador 2 | 3-5 | 14:42:52 | MOVE Bench -> Board: Rammus (i:6.0) <-> Kobuko (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 28 | 2 | Fera do Rift | DA_18_Azir | -0.7500 |  |
+| Jogador 2 | 3-5 | 14:42:52 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 28 | 2 | Fera do Rift | DA_18_Azir | -0.0600 |  |
+| Jogador 2 | 3-6 | 14:42:58 | MOVE Bench -> Board: Kobuko (i:4.0) <-> Azir (i:12.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 36 | 2 | Fera do Rift | DA_18_Azir | 0.0100 |  |
+| Jogador 2 | 3-6 | 14:42:59 | MOVE Bench -> Board: Azir (i:12.0) <-> Rammus (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 36 | 2 | Fera do Rift | DA_18_Azir | 0.1600 |  |
+| Jogador 2 | 3-6 | 14:42:59 | MOVE Bench -> Board: Rammus (i:6.0) <-> Kobuko (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 36 | 2 | Fera do Rift | DA_18_Azir | -0.8200 |  |
+| Jogador 2 | 3-6 | 14:42:59 | MOVE Bench -> Board: Kobuko (i:4.0) <-> Azir (i:12.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 36 | 2 | Fera do Rift | DA_18_Azir | -0.3400 |  |
+| Jogador 2 | 3-6 | 14:43:00 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 36 | 2 | Fera do Rift | DA_18_Azir | -0.1100 |  |
+| Jogador 2 | 3-6 | 14:43:04 | MOVE Bench -> Board: Azir (i:12.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 36 | 2 | Fera do Rift | DA_18_Azir | 0.5400 |  |
+| Jogador 2 | 3-7 | 14:43:08 | COMPROU: Cascalho (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 43 | 3 | Fera do Rift | DA_18_Azir | 0.3200 |  |
+| Jogador 2 | 3-7 | 14:43:08 | COMPROU: Azir (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 40 | 3 | Fera do Rift | DA_18_Azir | 0.2800 |  |
+| Jogador 2 | 3-7 | 14:43:08 | CRAFT_AND_EQUIP: TFT_Item_ChainVest + TFT_Item_RecurveBow -> Krugue (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 40 | 3 | Fera do Rift | DA_18_Azir | 0.1600 |  |
+| Jogador 2 | 3-7 | 14:43:09 | CRAFT_AND_EQUIP: TFT_Item_TearOfTheGoddess + TFT_Item_NegatronCloak -> Krugue (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 40 | 3 | Fera do Rift | DA_18_Azir | 0.1600 |  |
+| Jogador 2 | 3-7 | 14:43:12 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 38 | 3 | Fera do Rift | DA_18_Azir | -0.1900 |  |
+| Jogador 2 | 3-7 | 14:43:12 | COMPROU: Diana (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 35 | 3 | Fera do Rift | DA_18_Azir | -0.1900 |  |
+| Jogador 2 | 3-7 | 14:43:12 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 33 | 3 | Fera do Rift | DA_18_Azir | -0.1100 |  |
+| Jogador 2 | 3-7 | 14:43:13 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 31 | 3 | Fera do Rift | DA_18_Azir | 0.0700 |  |
+| Jogador 2 | 3-7 | 14:43:13 | COMPROU: Mamãe Bicuda (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 28 | 3 | Fera do Rift | DA_18_Azir | 0.1700 |  |
+| Jogador 2 | 3-7 | 14:43:13 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 26 | 3 | Fera do Rift | DA_18_Azir | 0.0500 |  |
+| Jogador 2 | 3-7 | 14:43:13 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 26 | 3 | Fera do Rift | DA_18_Azir | 0.0000 |  |
+| Jogador 2 | 4-1 | 14:43:16 | VENDEU: Cascalho (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 38 | 2 | Fera do Rift | DA_18_Azir | -0.3700 |  |
+| Jogador 2 | 4-1 | 14:43:17 | COMPROU: Grompe (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 36 | 2 | Fera do Rift | DA_18_Azir | 0.2600 |  |
+| Jogador 2 | 4-1 | 14:43:20 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 34 | 2 | Fera do Rift | DA_18_Azir | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 2 | 4-1 | 14:43:20 | VENDEU: Mamãe Bicuda (i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 37 | 2 | Fera do Rift | DA_18_Azir | -0.0800 |  |
+| Jogador 2 | 4-1 | 14:43:20 | COMPROU: Rakan (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 36 | 2 | Fera do Rift | DA_18_Azir | 0.8200 |  |
+| Jogador 2 | 4-1 | 14:43:21 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 34 | 2 | Fera do Rift | DA_18_Azir | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 2 | 4-1 | 14:43:21 | COMPROU: Rubrivirim (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 33 | 2 | Fera do Rift | DA_18_Azir | 0.2400 |  |
+| Jogador 2 | 4-1 | 14:43:21 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 31 | 2 | Fera do Rift | DA_18_Azir | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 2 | 4-1 | 14:43:21 | MOVE Bench -> Board: Cascalho (i:2.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 31 | 2 | Fera do Rift | DA_18_Azir | 0.5000 |  |
+| Jogador 2 | 4-1 | 14:43:22 | COMPROU: Grompe (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 29 | 2 | Fera do Rift | DA_18_Azir | 0.6900 |  |
+| Jogador 2 | 4-1 | 14:43:22 | PASSOU TURNO | FAST8 | FAST8: composição planejada exige nível 8 | 29 | 2 | Fera do Rift | DA_18_Azir | -0.1200 |  |
+| Jogador 2 | 4-2 | 14:43:28 | COMPROU: Rubrivirim (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 38 | 3 | Fera do Rift | DA_18_Azir | 0.7400 |  |
+| Jogador 2 | 4-2 | 14:43:29 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 36 | 3 | Fera do Rift | DA_18_Azir | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 2 | 4-2 | 14:43:29 | VENDEU: Rakan (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 39 | 3 | Fera do Rift | DA_18_Azir | -0.2600 |  |
+| Jogador 2 | 4-2 | 14:43:29 | COMPROU: Kog'Maw (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 36 | 3 | Fera do Rift | DA_18_Azir | 0.7700 |  |
+| Jogador 2 | 4-2 | 14:43:29 | VENDEU: Diana (i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 39 | 3 | Fera do Rift | DA_18_Azir | 0.0100 |  |
+| Jogador 2 | 4-2 | 14:43:30 | COMPROU: Rubrivirim (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 38 | 3 | Fera do Rift | DA_18_Azir | 0.8200 |  |
+| Jogador 2 | 4-2 | 14:43:30 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 36 | 3 | Fera do Rift | DA_18_Azir | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 2 | 4-2 | 14:43:30 | COMPROU: Grompe (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 34 | 3 | Fera do Rift | DA_18_Azir | 0.8300 |  |
+| Jogador 2 | 4-2 | 14:43:30 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 32 | 3 | Fera do Rift | DA_18_Azir | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 2 | 4-2 | 14:43:33 | COMPROU: Krugue (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 29 | 3 | Fera do Rift | DA_18_Azir | 0.7600 |  |
+| Jogador 2 | 4-2 | 14:43:34 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 29 | 3 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 4-3 | 14:43:37 | MOVE Bench -> Board: Rubrivirim (i:4.0) <-> Kobuko (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 36 | 2 | Fera do Rift | DA_18_Azir | -0.1000 |  |
+| Jogador 2 | 4-3 | 14:43:38 | MOVE Bench -> Board: Kobuko (i:4.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 36 | 2 | Fera do Rift | DA_18_Azir | 0.4000 |  |
+| Jogador 2 | 4-3 | 14:43:38 | COMPROU: Aronguejo (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: pressão de vida | 34 | 2 | Fera do Rift | DA_18_Azir | 0.3400 |  |
+| Jogador 2 | 4-3 | 14:43:38 | MOVE Bench -> Board: Aronguejo (i:4.0) <-> Rubrivirim (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 34 | 2 | Fera do Rift | DA_18_Azir | -0.3900 |  |
+| Jogador 2 | 4-3 | 14:43:39 | REROLL | STABILIZE | STABILIZE: pressão de vida | 32 | 2 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 4-3 | 14:43:42 | REROLL | STABILIZE | STABILIZE: pressão de vida | 30 | 2 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 4-3 | 14:43:42 | REROLL | STABILIZE | STABILIZE: pressão de vida | 28 | 2 | Fera do Rift | DA_18_Azir | -0.1700 |  |
+| Jogador 2 | 4-3 | 14:43:42 | REROLL | STABILIZE | STABILIZE: pressão de vida | 26 | 2 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 4-3 | 14:43:43 | MOVE Bench -> Board: Krugue (i:12.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 26 | 2 | Fera do Rift | DA_18_Azir | 0.6000 |  |
+| Jogador 2 | 4-3 | 14:43:43 | COMPROU: Aronguejo (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: pressão de vida | 24 | 2 | Fera do Rift | DA_18_Azir | 0.8400 |  |
+| Jogador 2 | 4-3 | 14:43:43 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 24 | 2 | Fera do Rift | DA_18_Azir | -0.1200 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 2 | 4-4 | 14:43:47 | COMPROU: Azir (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: pressão de vida | 28 | 2 | Fera do Rift | DA_18_Azir | 0.7600 |  |
+| Jogador 2 | 4-4 | 14:43:47 | COMPROU: Rubrivirim (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 27 | 2 | Fera do Rift | DA_18_Azir | 0.3100 |  |
+| Jogador 2 | 4-4 | 14:43:50 | REROLL | STABILIZE | STABILIZE: pressão de vida | 25 | 2 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 4-4 | 14:43:51 | VENDEU: Rubrivirim (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 28 | 2 | Fera do Rift | DA_18_Azir | -0.2800 |  |
+| Jogador 2 | 4-4 | 14:43:51 | COMPROU: Rammus (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: pressão de vida | 25 | 2 | Fera do Rift | DA_18_Azir | 0.6300 |  |
+| Jogador 2 | 4-4 | 14:43:51 | REROLL | STABILIZE | STABILIZE: pressão de vida | 23 | 2 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 4-4 | 14:43:52 | REROLL | STABILIZE | STABILIZE: pressão de vida | 21 | 2 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 4-4 | 14:43:52 | REROLL | STABILIZE | STABILIZE: pressão de vida | 19 | 2 | Fera do Rift | DA_18_Azir | -0.1700 |  |
+| Jogador 2 | 4-4 | 14:43:52 | VENDEU: Grompe (i:8.0) | STABILIZE | STABILIZE: pressão de vida | 24 | 2 | Fera do Rift | DA_18_Azir | -0.2700 |  |
+| Jogador 2 | 4-4 | 14:43:52 | COMPROU: Aronguejo (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: pressão de vida | 22 | 2 | Fera do Rift | DA_18_Azir | 0.8700 |  |
+| Jogador 2 | 4-4 | 14:43:53 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 22 | 2 | Fera do Rift | DA_18_Azir | -0.1100 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 2 | 4-5 | 14:43:57 | MOVE Bench -> Board: Rammus (i:6.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 30 | 2 | Fera do Rift | DA_18_Azir | -0.1000 |  |
+| Jogador 2 | 4-5 | 14:43:57 | COMPROU: Master Yi (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: pressão de vida | 27 | 2 | Fera do Rift | DA_18_Azir | -0.3000 |  |
+| Jogador 2 | 4-5 | 14:43:57 | REROLL | STABILIZE | STABILIZE: pressão de vida | 25 | 2 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 4-5 | 14:43:57 | REROLL | STABILIZE | STABILIZE: pressão de vida | 23 | 2 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 4-5 | 14:43:58 | COMPROU: Azir (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: pressão de vida | 20 | 2 | Fera do Rift | DA_18_Azir | 0.8600 |  |
+| Jogador 2 | 4-5 | 14:43:58 | REROLL | STABILIZE | STABILIZE: pressão de vida | 18 | 2 | Fera do Rift | DA_18_Azir | -0.1700 |  |
+| Jogador 2 | 4-5 | 14:43:58 | COMPROU: Aronguejo (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: pressão de vida | 16 | 2 | Fera do Rift | DA_18_Azir | 0.2900 |  |
+| Jogador 2 | 4-5 | 14:43:59 | COMPROU: Rubrivira (Custo 4 \| i:8.0) | STABILIZE | STABILIZE: pressão de vida | 12 | 2 | Fera do Rift | DA_18_Azir | 0.2800 |  |
+| Jogador 2 | 4-5 | 14:43:59 | REROLL | STABILIZE | STABILIZE: pressão de vida | 10 | 2 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 4-5 | 14:43:59 | MOVE Board -> Board: Krugue (i:12.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 10 | 2 | Fera do Rift | DA_18_Azir | 0.0000 |  |
+| Jogador 2 | 4-6 | 14:44:08 | REROLL | STABILIZE | STABILIZE: pressão de vida | 16 | 1 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 4-6 | 14:44:08 | VENDEU: Aronguejo (i:8.0) | STABILIZE | STABILIZE: pressão de vida | 21 | 1 | Fera do Rift | DA_18_Azir | -0.2800 |  |
+| Jogador 2 | 4-6 | 14:44:08 | COMPROU: Rubrivirim (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 20 | 1 | Fera do Rift | DA_18_Azir | 0.8300 |  |
+| Jogador 2 | 4-6 | 14:44:09 | REROLL | STABILIZE | STABILIZE: pressão de vida | 18 | 1 | Fera do Rift | DA_18_Azir | -0.1700 |  |
+| Jogador 2 | 4-6 | 14:44:09 | REROLL | STABILIZE | STABILIZE: pressão de vida | 16 | 1 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 4-6 | 14:44:09 | REROLL | STABILIZE | STABILIZE: pressão de vida | 14 | 1 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 4-6 | 14:44:10 | REROLL | STABILIZE | STABILIZE: pressão de vida | 12 | 1 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 4-6 | 14:44:10 | REROLL | STABILIZE | STABILIZE: pressão de vida | 10 | 1 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 4-6 | 14:44:10 | REROLL | STABILIZE | STABILIZE: pressão de vida | 8 | 1 | Fera do Rift | DA_18_Azir | -0.1700 |  |
+| Jogador 2 | 4-7 | 14:44:19 | CRAFT_AND_EQUIP: TFT_Item_ChainVest + TFT_Item_ChainVest -> Cascalho (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 14 | 0 | Fera do Rift | DA_18_Azir | 0.1100 |  |
+| Jogador 2 | 4-7 | 14:44:19 | CRAFT_AND_EQUIP: TFT_Item_NeedlesslyLargeRod + TFT_Item_NeedlesslyLargeRod -> Cascalho (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 14 | 0 | Fera do Rift | DA_18_Azir | 0.1600 |  |
+| Jogador 2 | 4-7 | 14:44:19 | REROLL | STABILIZE | STABILIZE: pressão de vida | 12 | 0 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 4-7 | 14:44:19 | REROLL | STABILIZE | STABILIZE: pressão de vida | 10 | 0 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 4-7 | 14:44:20 | VENDEU: Azir (i:12.0) | STABILIZE | STABILIZE: pressão de vida | 18 | 0 | Fera do Rift | DA_18_Azir | -0.4200 |  |
+| Jogador 2 | 4-7 | 14:44:20 | COMPROU: Azir (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: pressão de vida | 15 | 0 | Fera do Rift | DA_18_Azir | 0.2800 |  |
+| Jogador 2 | 4-7 | 14:44:20 | REROLL | STABILIZE | STABILIZE: pressão de vida | 13 | 0 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 4-7 | 14:44:21 | VENDEU: Master Yi (i:6.0) | STABILIZE | STABILIZE: pressão de vida | 16 | 0 | Fera do Rift | DA_18_Azir | 0.0200 |  |
+| Jogador 2 | 4-7 | 14:44:21 | COMPROU: Rubrivirim (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 15 | 0 | Fera do Rift | DA_18_Azir | 0.8400 |  |
+| Jogador 2 | 5-1 | 14:44:29 | COMPROU: Azir (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: pressão de vida | 20 | 1 | Fera do Rift | DA_18_Azir | 0.8300 |  |
+| Jogador 2 | 5-1 | 14:44:29 | REROLL | STABILIZE | STABILIZE: pressão de vida | 18 | 1 | Fera do Rift | DA_18_Azir | -0.1700 |  |
+| Jogador 2 | 5-1 | 14:44:30 | REROLL | STABILIZE | STABILIZE: pressão de vida | 16 | 1 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 5-1 | 14:44:30 | REROLL | STABILIZE | STABILIZE: pressão de vida | 14 | 1 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 5-1 | 14:44:30 | REROLL | STABILIZE | STABILIZE: pressão de vida | 12 | 1 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 5-1 | 14:44:31 | REROLL | STABILIZE | STABILIZE: pressão de vida | 10 | 1 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 5-1 | 14:44:31 | REROLL | STABILIZE | STABILIZE: pressão de vida | 8 | 1 | Fera do Rift | DA_18_Azir | -0.1700 |  |
+| Jogador 2 | 5-1 | 14:44:31 | REROLL | STABILIZE | STABILIZE: pressão de vida | 6 | 1 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 5-1 | 14:44:31 | REROLL | STABILIZE | STABILIZE: pressão de vida | 4 | 1 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 5-2 | 14:44:39 | COMPROU: Lobo Trevoguari (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: pressão de vida | 7 | 0 | Fera do Rift | DA_18_Azir | 0.8100 |  |
+| Jogador 2 | 5-2 | 14:44:40 | VENDEU: Rubrivirim (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 10 | 0 | Fera do Rift | DA_18_Azir | -0.2200 |  |
+| Jogador 2 | 5-2 | 14:44:40 | COMPROU: Azir (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: pressão de vida | 7 | 0 | Fera do Rift | DA_18_Azir | 0.7500 |  |
+| Jogador 2 | 5-2 | 14:44:40 | REROLL | STABILIZE | STABILIZE: pressão de vida | 5 | 0 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 5-2 | 14:44:40 | COMPROU: Azuporã (Custo 4 \| i:8.0) | STABILIZE | STABILIZE: pressão de vida | 1 | 0 | Fera do Rift | DA_18_Azir | 0.2800 |  |
+| Jogador 2 | 5-2 | 14:44:41 | MOVE Bench -> Board: Azuporã (i:8.0) <-> Rammus (i:6.0) | STABILIZE | STABILIZE: pressão de vida | 1 | 0 | Fera do Rift | DA_18_Azir | 0.1000 |  |
+| Jogador 2 | 5-2 | 14:44:41 | MOVE Board -> Board: Rammus (i:6.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 1 | 0 | Fera do Rift | DA_18_Azir | -0.0200 |  |
+| Jogador 2 | 5-2 | 14:44:41 | MOVE Bench -> Board: Rammus (i:6.0) <-> Azuporã (i:8.0) | STABILIZE | STABILIZE: pressão de vida | 1 | 0 | Fera do Rift | DA_18_Azir | -0.7900 |  |
+| Jogador 2 | 5-2 | 14:44:42 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 1 | 0 | Fera do Rift | DA_18_Azir | 0.0000 |  |
+| Jogador 2 | 5-3 | 14:44:50 | MOVE Bench -> Board: Azuporã (i:8.0) <-> Kobuko (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 7 | 0 | Fera do Rift | DA_18_Azir | 0.1000 |  |
+| Jogador 2 | 5-3 | 14:44:50 | REROLL | STABILIZE | STABILIZE: pressão de vida | 5 | 0 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 5-3 | 14:44:51 | REROLL | STABILIZE | STABILIZE: pressão de vida | 3 | 0 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 5-3 | 14:44:51 | REROLL | STABILIZE | STABILIZE: pressão de vida | 1 | 0 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 5-3 | 14:44:51 | MOVE Bench -> Board: Kobuko (i:4.0) <-> Rammus (i:6.0) | STABILIZE | STABILIZE: pressão de vida | 1 | 0 | Fera do Rift | DA_18_Azir | 0.0900 |  |
+| Jogador 2 | 5-3 | 14:44:51 | MOVE Bench -> Board: Azir (i:12.0) <-> Kobuko (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 1 | 0 | Fera do Rift | DA_18_Azir | 0.0800 |  |
+| Jogador 2 | 5-3 | 14:44:52 | MOVE Bench -> Board: Kobuko (i:4.0) <-> Azuporã (i:8.0) | STABILIZE | STABILIZE: pressão de vida | 1 | 0 | Fera do Rift | DA_18_Azir | -0.4100 |  |
+| Jogador 2 | 5-3 | 14:44:52 | MOVE Bench -> Board: Azuporã (i:8.0) <-> Azir (i:12.0) | STABILIZE | STABILIZE: pressão de vida | 1 | 0 | Fera do Rift | DA_18_Azir | 0.0800 |  |
+| Jogador 2 | 5-3 | 14:44:52 | MOVE Bench -> Board: Azir (i:12.0) <-> Azir (i:12.0) | STABILIZE | STABILIZE: pressão de vida | 1 | 0 | Fera do Rift | DA_18_Azir | -0.4100 |  |
+| Jogador 2 | 5-4 | 14:45:01 | COMPROU: Kog'Maw (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: pressão de vida | 3 | 0 | Fera do Rift | DA_18_Azir | 0.8300 |  |
+| Jogador 2 | 5-4 | 14:45:01 | REROLL | STABILIZE | STABILIZE: pressão de vida | 1 | 0 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 5-4 | 14:45:01 | MOVE Bench -> Board: Azir (i:12.0) <-> Kobuko (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 1 | 0 | Fera do Rift | DA_18_Azir | 0.0900 |  |
+| Jogador 2 | 5-4 | 14:45:02 | MOVE Bench -> Board: Kobuko (i:4.0) <-> Azir (i:12.0) | STABILIZE | STABILIZE: pressão de vida | 1 | 0 | Fera do Rift | DA_18_Azir | -0.4100 |  |
+| Jogador 2 | 5-4 | 14:45:02 | MOVE Bench -> Board: Azir (i:12.0) <-> Azir (i:12.0) | STABILIZE | STABILIZE: pressão de vida | 1 | 0 | Fera do Rift | DA_18_Azir | -0.4100 |  |
+| Jogador 2 | 5-4 | 14:45:02 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 1 | 0 | Fera do Rift | DA_18_Azir | 0.0000 |  |
+| Jogador 2 | 5-5 | 14:45:25 | COMPROU: Kog'Maw (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: pressão de vida | 5 | 0 | Fera do Rift | DA_18_Azir | 0.2800 |  |
+| Jogador 2 | 5-5 | 14:45:26 | REROLL | STABILIZE | STABILIZE: pressão de vida | 3 | 0 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 5-5 | 14:45:26 | REROLL | STABILIZE | STABILIZE: pressão de vida | 1 | 0 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 5-5 | 14:45:26 | COMPROU: Cascalho (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 0 | 0 | Fera do Rift | DA_18_Azir | 0.8100 |  |
+| Jogador 2 | 5-5 | 14:45:26 | MOVE Bench -> Board: Azir (i:12.0) <-> Kobuko (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 0 | 0 | Fera do Rift | DA_18_Azir | 0.1000 |  |
+| Jogador 2 | 5-5 | 14:45:27 | MOVE Bench -> Board: Kobuko (i:4.0) <-> Azir (i:12.0) | STABILIZE | STABILIZE: pressão de vida | 0 | 0 | Fera do Rift | DA_18_Azir | -0.4100 |  |
+| Jogador 2 | 5-5 | 14:45:27 | MOVE Bench -> Board: Azir (i:12.0) <-> Azir (i:12.0) | STABILIZE | STABILIZE: pressão de vida | 0 | 0 | Fera do Rift | DA_18_Azir | -0.4100 |  |
+| Jogador 2 | 5-5 | 14:45:27 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 0 | 0 | Fera do Rift | DA_18_Azir | 0.0000 |  |
+| Jogador 2 | 5-6 | 14:46:18 | VENDEU: Kog'Maw (i:12.0) | STABILIZE | STABILIZE: pressão de vida | 15 | 0 | Fera do Rift | DA_18_Azir | -0.2500 |  |
+| Jogador 2 | 5-6 | 14:46:18 | COMPROU: Aronguejo (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: pressão de vida | 13 | 0 | Fera do Rift | DA_18_Azir | 0.8000 |  |
+| Jogador 2 | 5-6 | 14:46:18 | REROLL | STABILIZE | STABILIZE: pressão de vida | 11 | 0 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 5-6 | 14:46:18 | REROLL | STABILIZE | STABILIZE: pressão de vida | 9 | 0 | Fera do Rift | DA_18_Azir | -0.1700 |  |
+| Jogador 2 | 5-6 | 14:46:19 | VENDEU: Azir (i:12.0) | STABILIZE | STABILIZE: pressão de vida | 17 | 0 | Fera do Rift | DA_18_Azir | -0.3400 |  |
+| Jogador 2 | 5-6 | 14:46:19 | COMPROU: Aronguejo (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: pressão de vida | 15 | 0 | Fera do Rift | DA_18_Azir | 0.8300 |  |
+| Jogador 2 | 5-6 | 14:46:19 | REROLL | STABILIZE | STABILIZE: pressão de vida | 13 | 0 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 5-6 | 14:46:20 | REROLL | STABILIZE | STABILIZE: pressão de vida | 11 | 0 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 5-6 | 14:46:20 | REROLL | STABILIZE | STABILIZE: pressão de vida | 9 | 0 | Fera do Rift | DA_18_Azir | -0.1700 |  |
+| Jogador 2 | 5-7 | 14:47:05 | EQUIP_FROM_INVENTORY: TFT_Item_GargoyleStoneplate -> Cascalho (i:2.0) (tabuleiro slot 24) | STABILIZE | STABILIZE: pressão de vida | 15 | 0 | Fera do Rift | DA_18_Azir | 0.0900 |  |
+| Jogador 2 | 5-7 | 14:47:05 | REROLL | STABILIZE | STABILIZE: pressão de vida | 13 | 0 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 5-7 | 14:47:05 | REROLL | STABILIZE | STABILIZE: pressão de vida | 11 | 0 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 5-7 | 14:47:05 | COMPROU: Kobuko (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 10 | 0 | Fera do Rift | DA_18_Azir | 0.2100 |  |
+| Jogador 2 | 5-7 | 14:47:05 | REROLL | STABILIZE | STABILIZE: pressão de vida | 8 | 0 | Fera do Rift | DA_18_Azir | -0.1700 |  |
+| Jogador 2 | 5-7 | 14:47:06 | COMPROU: Lobo Trevoguari (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: pressão de vida | 6 | 0 | Fera do Rift | DA_18_Azir | 0.8400 |  |
+| Jogador 2 | 5-7 | 14:47:06 | COMPROU: Cascalho (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 5 | 0 | Fera do Rift | DA_18_Azir | 0.8400 |  |
+| Jogador 2 | 5-7 | 14:47:06 | MOVE Bench -> Board: Aronguejo (i:8.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 5 | 0 | Fera do Rift | DA_18_Azir | 0.5600 |  |
+| Jogador 2 | 5-7 | 14:47:06 | REROLL | STABILIZE | STABILIZE: pressão de vida | 3 | 0 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 6-1 | 14:47:49 | COMPROU: Lobo Trevoguari (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: pressão de vida | 8 | 0 | Fera do Rift | DA_18_Azir | 0.2300 |  |
+| Jogador 2 | 6-1 | 14:47:50 | REROLL | STABILIZE | STABILIZE: pressão de vida | 6 | 0 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 6-1 | 14:47:50 | COMPROU: Azir (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: pressão de vida | 3 | 0 | Fera do Rift | DA_18_Azir | 0.2800 |  |
+| Jogador 2 | 6-1 | 14:47:50 | REROLL | STABILIZE | STABILIZE: pressão de vida | 1 | 0 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 6-1 | 14:47:50 | COMPROU: Kobuko (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 0 | 0 | Fera do Rift | DA_18_Azir | 0.7600 |  |
+| Jogador 2 | 6-1 | 14:47:50 | MOVE Board -> Board: Aronguejo (i:8.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 0 | 0 | Fera do Rift | DA_18_Azir | 0.0000 |  |
+| Jogador 2 | 6-1 | 14:47:51 | MOVE Board -> Board: Azir (i:12.0) <-> Rammus (i:6.0) | STABILIZE | STABILIZE: pressão de vida | 0 | 0 | Fera do Rift | DA_18_Azir | -0.0100 |  |
+| Jogador 2 | 6-1 | 14:47:51 | MOVE Board -> Board: Rammus (i:6.0) <-> Aronguejo (i:8.0) | STABILIZE | STABILIZE: pressão de vida | 0 | 0 | Fera do Rift | DA_18_Azir | -0.0100 |  |
+| Jogador 2 | 6-1 | 14:47:51 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 0 | 0 | Fera do Rift | DA_18_Azir | 0.0000 |  |
+| Jogador 2 | 6-2 | 14:48:01 | MOVE Board -> Board: Aronguejo (i:8.0) <-> Vazio | ALL_IN | HP crítico: gastar para sobreviver | 5 | 0 | Fera do Rift | DA_18_Azir | 0.0000 |  |
+| Jogador 2 | 6-2 | 14:48:01 | REROLL | ALL_IN | HP crítico: gastar para sobreviver | 3 | 0 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 6-2 | 14:48:01 | REROLL | ALL_IN | HP crítico: gastar para sobreviver | 1 | 0 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 6-2 | 14:48:02 | VENDEU: Cascalho (i:4.0) | ALL_IN | HP crítico: gastar para sobreviver | 4 | 0 | Fera do Rift | DA_18_Azir | -0.3200 |  |
+| Jogador 2 | 6-2 | 14:48:02 | EQUIP_FROM_INVENTORY: TFT_Item_RabadonsDeathcap -> Azir (i:12.0) (tabuleiro slot 19) | ALL_IN | HP crítico: gastar para sobreviver | 4 | 0 | Fera do Rift | DA_18_Azir | 0.1000 |  |
+| Jogador 2 | 6-2 | 14:48:02 | EQUIP_FROM_INVENTORY: TFT_Item_GargoyleStoneplate -> Azir (i:12.0) (tabuleiro slot 19) | ALL_IN | HP crítico: gastar para sobreviver | 4 | 0 | Fera do Rift | DA_18_Azir | 0.0900 |  |
+| Jogador 2 | 6-2 | 14:48:02 | EQUIP_FROM_INVENTORY: TFT_Item_BrambleVest -> Azuporã (i:8.0) (tabuleiro slot 23) | ALL_IN | HP crítico: gastar para sobreviver | 4 | 0 | Fera do Rift | DA_18_Azir | 0.1000 |  |
+| Jogador 2 | 6-2 | 14:48:03 | COMPROU: Kog'Maw (Custo 3 \| i:6.0) | ALL_IN | HP crítico: gastar para sobreviver | 1 | 0 | Fera do Rift | DA_18_Azir | 0.7900 |  |
+| Jogador 2 | 6-2 | 14:48:03 | MOVE Board -> Board: Kobuko (i:4.0) <-> Azir (i:12.0) | ALL_IN | HP crítico: gastar para sobreviver | 1 | 0 | Fera do Rift | DA_18_Azir | 0.0000 |  |
+| Jogador 2 | 6-3 | 14:48:13 | MOVE Board -> Board: Azuporã (i:8.0) <-> Rammus (i:6.0) | ALL_IN | HP crítico: gastar para sobreviver | 7 | 0 | Fera do Rift | DA_18_Azir | 0.0000 |  |
+| Jogador 2 | 6-3 | 14:48:13 | MOVE Board -> Board: Rammus (i:6.0) <-> Kobuko (i:4.0) | ALL_IN | HP crítico: gastar para sobreviver | 7 | 0 | Fera do Rift | DA_18_Azir | -0.0100 |  |
+| Jogador 2 | 6-3 | 14:48:13 | PASSOU TURNO | ALL_IN | HP crítico: gastar para sobreviver | 7 | 0 | Fera do Rift | DA_18_Azir | -0.0500 |  |
+| Jogador 2 | 6-4 | 14:48:24 | MOVE Board -> Board: Kobuko (i:4.0) <-> Aronguejo (i:8.0) | ALL_IN | HP crítico: gastar para sobreviver | 12 | 0 | Fera do Rift | DA_18_Azir | 0.0000 |  |
+| Jogador 2 | 6-4 | 14:48:24 | REROLL | ALL_IN | HP crítico: gastar para sobreviver | 10 | 0 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 6-4 | 14:48:25 | MOVE Board -> Board: Aronguejo (i:8.0) <-> Krugue (i:12.0) | ALL_IN | HP crítico: gastar para sobreviver | 10 | 0 | Fera do Rift | DA_18_Azir | 0.0000 |  |
+| Jogador 2 | 6-4 | 14:48:25 | VENDEU: Lobo Trevoguari (i:8.0) | ALL_IN | HP crítico: gastar para sobreviver | 15 | 0 | Fera do Rift | DA_18_Azir | -0.3500 |  |
+| Jogador 2 | 6-4 | 14:48:25 | COMPROU: Kog'Maw (Custo 3 \| i:6.0) | ALL_IN | HP crítico: gastar para sobreviver | 12 | 0 | Fera do Rift | DA_18_Azir | 0.8200 |  |
+| Jogador 2 | 6-4 | 14:48:25 | REROLL | ALL_IN | HP crítico: gastar para sobreviver | 10 | 0 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 6-4 | 14:48:26 | MOVE Board -> Board: Krugue (i:12.0) <-> Vazio | ALL_IN | HP crítico: gastar para sobreviver | 10 | 0 | Fera do Rift | DA_18_Azir | 0.0000 |  |
+| Jogador 2 | 6-4 | 14:48:26 | MOVE Board -> Board: Rammus (i:6.0) <-> Azuporã (i:8.0) | ALL_IN | HP crítico: gastar para sobreviver | 10 | 0 | Fera do Rift | DA_18_Azir | -0.0100 |  |
+| Jogador 2 | 6-4 | 14:48:26 | MOVE Board -> Board: Azuporã (i:8.0) <-> Krugue (i:12.0) | ALL_IN | HP crítico: gastar para sobreviver | 10 | 0 | Fera do Rift | DA_18_Azir | -0.0100 |  |
+| Jogador 2 | 6-5 | 14:48:36 | COMPROU: Kog'Maw (Custo 3 \| i:6.0) | ALL_IN | HP crítico: gastar para sobreviver | 15 | 1 | Fera do Rift | DA_18_Azir | 0.2700 |  |
+| Jogador 2 | 6-5 | 14:48:36 | REROLL | ALL_IN | HP crítico: gastar para sobreviver | 13 | 1 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 6-5 | 14:48:36 | COMPROU: Azir (Custo 3 \| i:6.0) | ALL_IN | HP crítico: gastar para sobreviver | 10 | 1 | Fera do Rift | DA_18_Azir | 0.7900 |  |
+| Jogador 2 | 6-5 | 14:48:37 | MOVE Board -> Board: Krugue (i:12.0) <-> Aronguejo (i:8.0) | ALL_IN | HP crítico: gastar para sobreviver | 10 | 1 | Fera do Rift | DA_18_Azir | 0.0000 |  |
+| Jogador 2 | 6-5 | 14:48:37 | MOVE Board -> Board: Aronguejo (i:8.0) <-> Kobuko (i:4.0) | ALL_IN | HP crítico: gastar para sobreviver | 10 | 1 | Fera do Rift | DA_18_Azir | -0.0100 |  |
+| Jogador 2 | 6-5 | 14:48:37 | PASSOU TURNO | ALL_IN | HP crítico: gastar para sobreviver | 10 | 1 | Fera do Rift | DA_18_Azir | -0.0500 |  |
+| Jogador 2 | 6-6 | 14:48:47 | COMPROU: Krugue (Custo 3 \| i:6.0) | ALL_IN | HP crítico: gastar para sobreviver | 15 | 1 | Fera do Rift | DA_18_Azir | 0.2700 |  |
+| Jogador 2 | 6-6 | 14:48:48 | MOVE Board -> Board: Lobo Trevoguari (i:4.0) <-> Kobuko (i:4.0) | ALL_IN | HP crítico: gastar para sobreviver | 15 | 1 | Fera do Rift | DA_18_Azir | 0.0000 |  |
+| Jogador 2 | 6-6 | 14:48:48 | MOVE Board -> Board: Kobuko (i:4.0) <-> Rammus (i:6.0) | ALL_IN | HP crítico: gastar para sobreviver | 15 | 1 | Fera do Rift | DA_18_Azir | -0.0100 |  |
+| Jogador 2 | 6-6 | 14:48:48 | PASSOU TURNO | ALL_IN | HP crítico: gastar para sobreviver | 15 | 1 | Fera do Rift | DA_18_Azir | -0.0900 |  |
+| Jogador 2 | 6-7 | 14:48:59 | EQUIP_FROM_INVENTORY: TFT_Item_Quicksilver -> Azuporã (i:8.0) (tabuleiro slot 18) | ALL_IN | HP crítico: gastar para sobreviver | 22 | 1 | Fera do Rift | DA_18_Azir | 0.1300 |  |
+| Jogador 2 | 6-7 | 14:48:59 | MOVE Board -> Board: Rammus (i:6.0) <-> Krugue (i:12.0) | ALL_IN | HP crítico: gastar para sobreviver | 22 | 1 | Fera do Rift | DA_18_Azir | 0.0000 |  |
+| Jogador 2 | 6-7 | 14:49:00 | MOVE Board -> Board: Krugue (i:12.0) <-> Vazio | ALL_IN | HP crítico: gastar para sobreviver | 22 | 1 | Fera do Rift | DA_18_Azir | -0.0100 |  |
+| Jogador 2 | 6-7 | 14:49:00 | PASSOU TURNO | ALL_IN | HP crítico: gastar para sobreviver | 22 | 1 | Fera do Rift | DA_18_Azir | -0.1200 |  |
+| Jogador 2 | 7-1 | 14:49:11 | MOVE Board -> Board: Lobo Trevoguari (i:4.0) <-> Kobuko (i:4.0) | ALL_IN | HP crítico: gastar para sobreviver | 30 | 2 | Fera do Rift | DA_18_Azir | 0.0000 |  |
+| Jogador 2 | 7-1 | 14:49:11 | MOVE Board -> Board: Kobuko (i:4.0) <-> Azuporã (i:8.0) | ALL_IN | HP crítico: gastar para sobreviver | 30 | 2 | Fera do Rift | DA_18_Azir | -0.0100 |  |
+| Jogador 2 | 7-1 | 14:49:12 | MOVE Board -> Board: Azuporã (i:8.0) <-> Krugue (i:12.0) | ALL_IN | HP crítico: gastar para sobreviver | 30 | 2 | Fera do Rift | DA_18_Azir | -0.0100 |  |
+| Jogador 2 | 7-1 | 14:49:12 | PASSOU TURNO | ALL_IN | HP crítico: gastar para sobreviver | 30 | 2 | Fera do Rift | DA_18_Azir | -0.1500 |  |
+| Jogador 3 | ? | 14:40:45 | MOVE Bench -> Board: Akali (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.5900 |  |
+| Jogador 3 | ? | 14:40:46 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 1-1 | 14:40:51 | COMPROU: Yorick (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | 0.1000 |  |
+| Jogador 3 | 1-1 | 14:40:51 | MOVE Bench -> Board: Yorick (i:2.0) <-> Akali (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Yorick | -0.7200 |  |
+| Jogador 3 | 1-1 | 14:40:52 | MOVE Bench -> Board: Akali (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Yorick | 0.2500 |  |
+| Jogador 3 | 1-1 | 14:40:52 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.1200 |  |
+| Jogador 3 | 1-1 | 14:40:52 | MOVE Board -> Board: Yorick (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.0000 |  |
+| Jogador 3 | 1-1 | 14:40:53 | MOVE Board -> Board: Akali (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | -0.0100 |  |
+| Jogador 3 | 1-1 | 14:40:53 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.0000 |  |
+| Jogador 3 | 1-1 | 14:40:56 | MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.4000 |  |
+| Jogador 3 | 1-2 | 14:40:57 | COMPROU: Akali (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | 1.0400 |  |
+| Jogador 3 | 1-2 | 14:40:57 | COMPROU: Akali (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 1.1200 |  |
+| Jogador 3 | 1-2 | 14:40:58 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 1-2 | 14:41:02 | MOVE Bench -> Board: Akali (i:4.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.5900 |  |
+| Jogador 3 | 1-3 | 14:41:04 | COMPROU: Camille (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Akali_AD | 0.2200 |  |
+| Jogador 3 | 1-3 | 14:41:04 | COMPROU: Grompe (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.2200 |  |
+| Jogador 3 | 1-3 | 14:41:04 | MOVE Board -> Board: Rek'Sai (i:2.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 1-3 | 14:41:04 | MOVE Board -> Board: Yorick (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 1-3 | 14:41:05 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 1-4 | 14:41:10 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Akali_AD | 0.9600 |  |
+| Jogador 3 | 1-4 | 14:41:11 | CRAFT_AND_EQUIP: TFT_Item_BFSword + TFT_Item_GiantsBelt -> Akali (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Akali_AD | 0.2400 |  |
+| Jogador 3 | 1-4 | 14:41:11 | CRAFT_AND_EQUIP: TFT_Item_NegatronCloak + TFT_Item_TearOfTheGoddess -> Akali (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Akali_AD | 0.2200 |  |
+| Jogador 3 | 1-4 | 14:41:11 | MOVE Board -> Board: Akali (i:4.0) <-> Rek'Sai (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 1-4 | 14:41:12 | MOVE Board -> Board: Rek'Sai (i:2.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 1-4 | 14:41:12 | MOVE Board -> Board: Yorick (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 1-4 | 14:41:13 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 1-4 | 14:41:15 | MOVE Bench -> Board: Camille (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Akali_AD | 0.4000 |  |
+| Jogador 3 | 2-1 | 14:41:17 | COMPROU: Diana (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 5 | 0 | — | DA_18_Akali_AD | 0.3400 |  |
+| Jogador 3 | 2-1 | 14:41:17 | MOVE Board -> Board: Camille (i:2.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 5 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 2-1 | 14:41:17 | MOVE Board -> Board: Yorick (i:2.0) <-> Akali (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 5 | 0 | — | DA_18_Akali_AD | -0.0200 |  |
+| Jogador 3 | 2-1 | 14:41:18 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 5 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 2-2 | 14:41:24 | MOVE Board -> Board: Akali (i:4.0) <-> Rek'Sai (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 11 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 2-2 | 14:41:24 | COMPROU: Rakan (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 10 | 0 | — | DA_18_Akali_AD | 0.3300 |  |
+| Jogador 3 | 2-2 | 14:41:24 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 8 | 0 | — | DA_18_Akali_AD | -0.2400 |  |
+| Jogador 3 | 2-2 | 14:41:25 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 6 | 0 | — | DA_18_Akali_AD | -0.1600 |  |
+| Jogador 3 | 2-2 | 14:41:25 | COMPROU: Yorick (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 5 | 0 | — | DA_18_Akali_AD | 0.9700 |  |
+| Jogador 3 | 2-2 | 14:41:25 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Akali_AD | -0.1600 |  |
+| Jogador 3 | 2-2 | 14:41:26 | COMPROU: Yorick (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Akali_AD | 1.0500 |  |
+| Jogador 3 | 2-2 | 14:41:27 | MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Akali_AD | -0.0900 |  |
+| Jogador 3 | 2-2 | 14:41:27 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | -0.1600 |  |
+| Jogador 3 | 2-2 | 14:41:27 | VENDEU: Yorick (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Akali_AD | -0.2500 |  |
+| Jogador 3 | 2-2 | 14:41:27 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 2-3 | 14:41:31 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 7 | 0 | — | DA_18_Akali_AD | 1.0500 |  |
+| Jogador 3 | 2-3 | 14:41:31 | MOVE Bench -> Board: Rek'Sai (i:4.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 7 | 0 | — | DA_18_Akali_AD | 0.2000 |  |
+| Jogador 3 | 2-3 | 14:41:31 | COMPROU: Kobuko (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 6 | 0 | — | DA_18_Akali_AD | 0.1600 |  |
+| Jogador 3 | 2-3 | 14:41:31 | MOVE Bench -> Board: Kobuko (i:2.0) <-> Rek'Sai (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 6 | 0 | — | DA_18_Akali_AD | -0.7300 |  |
+| Jogador 3 | 2-3 | 14:41:32 | MOVE Bench -> Board: Rek'Sai (i:4.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 6 | 0 | — | DA_18_Akali_AD | 0.5600 |  |
+| Jogador 3 | 2-3 | 14:41:32 | MOVE Board -> Board: Rek'Sai (i:4.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 6 | 0 | — | DA_18_Akali_AD | -0.0200 |  |
+| Jogador 3 | 2-3 | 14:41:32 | MOVE Board -> Board: Kobuko (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 6 | 0 | — | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 2-3 | 14:41:33 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 6 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 2-4 | 14:41:38 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 10 | 0 | Devastador | DA_18_Akali_AD | 0.3900 |  |
+| Jogador 3 | 2-4 | 14:41:38 | MOVE Board -> Board: Camille (i:2.0) <-> Akali (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 10 | 0 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 2-4 | 14:41:38 | MOVE Board -> Board: Akali (i:4.0) <-> Kobuko (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 10 | 0 | Devastador | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 2-4 | 14:41:39 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 10 | 0 | Devastador | DA_18_Akali_AD | 0.0000 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 3 | 2-5 | 14:41:45 | MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 17 | 1 | Devastador | DA_18_Akali_AD | 0.5400 |  |
+| Jogador 3 | 2-5 | 14:41:45 | COMPROU: Warwick (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 15 | 1 | Devastador | DA_18_Akali_AD | 0.3200 |  |
+| Jogador 3 | 2-5 | 14:41:45 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 13 | 1 | Devastador | DA_18_Akali_AD | 0.0400 |  |
+| Jogador 3 | 2-5 | 14:41:45 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 1 | Devastador | DA_18_Akali_AD | 0.0400 |  |
+| Jogador 3 | 2-5 | 14:41:46 | MOVE Board -> Board: Rek'Sai (i:2.0) <-> Kobuko (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 1 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 2-5 | 14:41:46 | MOVE Board -> Board: Kobuko (i:2.0) <-> Rek'Sai (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 1 | Devastador | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 2-5 | 14:41:46 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 1 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 2-6 | 14:41:52 | COMPROU: Camille (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 18 | 1 | Devastador | DA_18_Akali_AD | 0.9100 |  |
+| Jogador 3 | 2-6 | 14:41:53 | MOVE Board -> Board: Rek'Sai (i:4.0) <-> Akali (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 18 | 1 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 2-6 | 14:41:53 | MOVE Board -> Board: Akali (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 18 | 1 | Devastador | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 2-6 | 14:41:53 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 18 | 1 | Devastador | DA_18_Akali_AD | -0.0200 |  |
+| Jogador 3 | 2-7 | 14:42:01 | CRAFT_AND_EQUIP: TFT_Item_BFSword + TFT_Item_SparringGloves -> Akali (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 25 | 1 | Devastador | DA_18_Akali_AD | 0.2600 |  |
+| Jogador 3 | 2-7 | 14:42:01 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 23 | 1 | Devastador | DA_18_Akali_AD | 0.0400 |  |
+| Jogador 3 | 2-7 | 14:42:02 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 21 | 1 | Devastador | DA_18_Akali_AD | 0.0500 |  |
+| Jogador 3 | 2-7 | 14:42:02 | MOVE Board -> Board: Rek'Sai (i:2.0) <-> Kobuko (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 21 | 1 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 2-7 | 14:42:02 | MOVE Board -> Board: Kobuko (i:2.0) <-> Akali (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 21 | 1 | Devastador | DA_18_Akali_AD | -0.0200 |  |
+| Jogador 3 | 2-7 | 14:42:03 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 21 | 1 | Devastador | DA_18_Akali_AD | -0.0600 |  |
+| Jogador 3 | 3-1 | 14:42:10 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 28 | 2 | Devastador | DA_18_Akali_AD | -0.0300 |  |
+| Jogador 3 | 3-1 | 14:42:10 | MOVE Board -> Board: Akali (i:4.0) <-> Camille (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 28 | 2 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 3-1 | 14:42:11 | MOVE Board -> Board: Camille (i:2.0) <-> Rek'Sai (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 28 | 2 | Devastador | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 3-1 | 14:42:11 | MOVE Board -> Board: Rek'Sai (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 28 | 2 | Devastador | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 3-1 | 14:42:11 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 28 | 2 | Devastador | DA_18_Akali_AD | -0.0600 |  |
+| Jogador 3 | 3-2 | 14:42:19 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 34 | 2 | Devastador | DA_18_Akali_AD | 0.7800 |  |
+| Jogador 3 | 3-2 | 14:42:20 | MOVE Board -> Board: Camille (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 34 | 2 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 3-2 | 14:42:20 | MOVE Board -> Board: Camille (i:2.0) <-> Rek'Sai (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 34 | 2 | Devastador | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 3-2 | 14:42:20 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 34 | 2 | Devastador | DA_18_Akali_AD | -0.1100 |  |
+| Jogador 3 | 3-3 | 14:42:29 | COMPROU: Akali (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 42 | 3 | Devastador | DA_18_Akali_AD | 0.2700 |  |
+| Jogador 3 | 3-3 | 14:42:29 | MOVE Bench -> Board: Diana (i:6.0) <-> Camille (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 42 | 3 | Devastador | DA_18_Akali_AD | 0.0800 |  |
+| Jogador 3 | 3-3 | 14:42:29 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 40 | 3 | Devastador | DA_18_Akali_AD | 0.1000 |  |
+| Jogador 3 | 3-3 | 14:42:30 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 39 | 3 | Devastador | DA_18_Akali_AD | 0.7300 |  |
+| Jogador 3 | 3-3 | 14:42:30 | MOVE Bench -> Board: Warwick (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 39 | 3 | Devastador | DA_18_Akali_AD | 0.4700 |  |
+| Jogador 3 | 3-3 | 14:42:30 | COMPROU: Vi (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 36 | 3 | Devastador | DA_18_Akali_AD | -0.2600 |  |
+| Jogador 3 | 3-3 | 14:42:30 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 34 | 3 | Devastador | DA_18_Akali_AD | 0.0700 |  |
+| Jogador 3 | 3-3 | 14:42:31 | COMPROU: Lobo Trevoguari (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 32 | 3 | Devastador | DA_18_Akali_AD | 0.2300 |  |
+| Jogador 3 | 3-3 | 14:42:31 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 30 | 3 | Devastador | DA_18_Akali_AD | 0.0700 |  |
+| Jogador 3 | 3-3 | 14:42:33 | COMPROU: Warwick (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 28 | 3 | Devastador | DA_18_Akali_AD | 0.6800 |  |
+| Jogador 3 | 3-3 | 14:42:33 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 28 | 3 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 3-4 | 14:42:39 | VENDEU: Rek'Sai (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 39 | 2 | Devastador | DA_18_Akali_AD | -0.4300 |  |
+| Jogador 3 | 3-4 | 14:42:40 | COMPROU: Kobuko (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 38 | 2 | Devastador | DA_18_Akali_AD | 0.2300 |  |
+| Jogador 3 | 3-4 | 14:42:40 | MOVE Board -> Board: Warwick (i:4.0) <-> Diana (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 38 | 2 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 3-4 | 14:42:40 | VENDEU: Vi (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 41 | 2 | Devastador | DA_18_Akali_AD | 0.1000 |  |
+| Jogador 3 | 3-4 | 14:42:41 | COMPROU: Kobuko (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 40 | 2 | Devastador | DA_18_Akali_AD | 0.4800 |  |
+| Jogador 3 | 3-4 | 14:42:41 | MOVE Bench -> Board: Camille (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 40 | 2 | Devastador | DA_18_Akali_AD | 0.4000 |  |
+| Jogador 3 | 3-4 | 14:42:41 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 38 | 2 | Devastador | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 3-4 | 14:42:42 | COMPROU: Lobo Trevoguari (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 36 | 2 | Devastador | DA_18_Akali_AD | 0.7400 |  |
+| Jogador 3 | 3-4 | 14:42:42 | COMPROU: Camille (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 35 | 2 | Devastador | DA_18_Akali_AD | 0.8000 |  |
+| Jogador 3 | 3-4 | 14:42:44 | MOVE Bench -> Board: Lobo Trevoguari (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 35 | 2 | Devastador | DA_18_Akali_AD | 0.4000 |  |
+| Jogador 3 | 3-4 | 14:42:44 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 35 | 2 | Devastador | DA_18_Akali_AD | -0.1100 |  |
+| Jogador 3 | 3-5 | 14:42:47 | COMPROU: Malphite (Custo 4 \| i:8.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 40 | 3 | Devastador | DA_18_Akali_AD | 0.2100 |  |
+| Jogador 3 | 3-5 | 14:42:48 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 38 | 3 | Devastador | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 3-5 | 14:42:48 | COMPROU: Grompe (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 36 | 3 | Devastador | DA_18_Akali_AD | 0.7200 |  |
+| Jogador 3 | 3-5 | 14:42:48 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 34 | 3 | Devastador | DA_18_Akali_AD | -0.1200 |  |
+| Jogador 3 | 3-5 | 14:42:49 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 32 | 3 | Devastador | DA_18_Akali_AD | 0.0700 |  |
+| Jogador 3 | 3-5 | 14:42:51 | VENDEU: Kobuko (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 35 | 3 | Devastador | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 3-5 | 14:42:51 | COMPROU: Lobo Trevoguari (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 33 | 3 | Devastador | DA_18_Akali_AD | 0.7900 |  |
+| Jogador 3 | 3-5 | 14:42:52 | MOVE Bench -> Board: Malphite (i:8.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 33 | 3 | Devastador | DA_18_Akali_AD | 0.4100 |  |
+| Jogador 3 | 3-5 | 14:42:52 | COMPROU: Grompe (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 31 | 3 | Devastador | DA_18_Akali_AD | 0.7700 |  |
+| Jogador 3 | 3-5 | 14:42:52 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 29 | 3 | Devastador | DA_18_Akali_AD | -0.2000 |  |
+| Jogador 3 | 3-5 | 14:42:52 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 29 | 3 | Devastador | DA_18_Akali_AD | -0.0600 |  |
+| Jogador 3 | 3-6 | 14:42:58 | COMPROU: Akali (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 38 | 3 | Devastador | DA_18_Akali_AD | 0.7800 |  |
+| Jogador 3 | 3-6 | 14:42:59 | COMPROU: Camille (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 37 | 3 | Devastador | DA_18_Akali_AD | 0.2400 |  |
+| Jogador 3 | 3-6 | 14:42:59 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 35 | 3 | Devastador | DA_18_Akali_AD | 0.0700 |  |
+| Jogador 3 | 3-6 | 14:42:59 | COMPROU: Warwick (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 33 | 3 | Devastador | DA_18_Akali_AD | 0.8000 |  |
+| Jogador 3 | 3-6 | 14:43:00 | COMPROU: Grompe (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 31 | 3 | Devastador | DA_18_Akali_AD | 0.2300 |  |
+| Jogador 3 | 3-6 | 14:43:00 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 29 | 3 | Devastador | DA_18_Akali_AD | -0.0300 |  |
+| Jogador 3 | 3-6 | 14:43:00 | VENDEU: Grompe (i:8.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 34 | 3 | Devastador | DA_18_Akali_AD | -0.1900 |  |
+| Jogador 3 | 3-6 | 14:43:00 | COMPROU: Camille (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 33 | 3 | Devastador | DA_18_Akali_AD | 0.7500 |  |
+| Jogador 3 | 3-6 | 14:43:01 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 31 | 3 | Devastador | DA_18_Akali_AD | 0.0400 |  |
+| Jogador 3 | 3-6 | 14:43:03 | MOVE Bench -> Board: Camille (i:2.0) <-> Malphite (i:8.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 31 | 3 | Devastador | DA_18_Akali_AD | 0.1000 |  |
+| Jogador 3 | 3-6 | 14:43:04 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 31 | 3 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 3-7 | 14:43:08 | CRAFT_AND_EQUIP: TFT_Item_ChainVest + TFT_Item_RecurveBow -> Camille (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 40 | 3 | Devastador | DA_18_Akali_AD | 0.1500 |  |
+| Jogador 3 | 3-7 | 14:43:08 | CRAFT_AND_EQUIP: TFT_Item_TearOfTheGoddess + TFT_Item_GiantsBelt -> Camille (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 40 | 3 | Devastador | DA_18_Akali_AD | 0.1300 |  |
+| Jogador 3 | 3-7 | 14:43:08 | VENDEU: Camille (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 43 | 3 | Devastador | DA_18_Akali_AD | -0.3100 |  |
+| Jogador 3 | 3-7 | 14:43:09 | COMPROU: Diana (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 40 | 3 | Devastador | DA_18_Akali_AD | 0.8100 |  |
+| Jogador 3 | 3-7 | 14:43:12 | MOVE Bench -> Board: Malphite (i:8.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 40 | 3 | Devastador | DA_18_Akali_AD | 0.4000 |  |
+| Jogador 3 | 3-7 | 14:43:12 | COMPROU: Akali (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 39 | 3 | Devastador | DA_18_Akali_AD | 0.7800 |  |
+| Jogador 3 | 3-7 | 14:43:12 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 37 | 3 | Devastador | DA_18_Akali_AD | 0.0700 |  |
+| Jogador 3 | 3-7 | 14:43:13 | COMPROU: Akali (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 36 | 3 | Devastador | DA_18_Akali_AD | 0.2800 |  |
+| Jogador 3 | 3-7 | 14:43:13 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 34 | 3 | Devastador | DA_18_Akali_AD | 0.0700 |  |
+| Jogador 3 | 3-7 | 14:43:13 | COMPROU: Warwick (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 32 | 3 | Devastador | DA_18_Akali_AD | 0.2700 |  |
+| Jogador 3 | 3-7 | 14:43:13 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 32 | 3 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 4-1 | 14:43:16 | VENDEU: Akali (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 43 | 3 | Devastador | DA_18_Warwick | -0.5400 |  |
+| Jogador 3 | 4-1 | 14:43:17 | COMPROU: Akali (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 42 | 3 | Devastador | DA_18_Akali_AD | 0.8300 |  |
+| Jogador 3 | 4-1 | 14:43:20 | VENDEU: Warwick (i:8.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 47 | 3 | Devastador | DA_18_Akali_AD | -0.3700 |  |
+| Jogador 3 | 4-1 | 14:43:20 | COMPROU: Akali (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 46 | 3 | Devastador | DA_18_Akali_AD | 0.8600 |  |
+| Jogador 3 | 4-1 | 14:43:20 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 44 | 3 | Devastador | DA_18_Akali_AD | -0.1700 |  |
+| Jogador 3 | 4-1 | 14:43:21 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 42 | 3 | Devastador | DA_18_Akali_AD | 0.1000 |  |
+| Jogador 3 | 4-1 | 14:43:21 | COMPROU: Lobo Trevoguari (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 40 | 3 | Devastador | DA_18_Akali_AD | 0.3000 |  |
+| Jogador 3 | 4-1 | 14:43:21 | COMPROU: Lobo Trevoguari (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 38 | 3 | Devastador | DA_18_Akali_AD | 0.7400 |  |
+| Jogador 3 | 4-1 | 14:43:21 | MOVE Bench -> Board: Lobo Trevoguari (i:4.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 38 | 3 | Devastador | DA_18_Akali_AD | 0.5800 |  |
+| Jogador 3 | 4-1 | 14:43:22 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 36 | 3 | Devastador | DA_18_Akali_AD | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 3 | 4-1 | 14:43:22 | PASSOU TURNO | FAST8 | FAST8: composição planejada exige nível 8 | 36 | 3 | Devastador | DA_18_Akali_AD | -0.1800 |  |
+| Jogador 3 | 4-2 | 14:43:28 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 43 | 3 | Devastador | DA_18_Akali_AD | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 3 | 4-2 | 14:43:29 | COMPROU: Warwick (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 41 | 3 | Devastador | DA_18_Akali_AD | 0.7900 |  |
+| Jogador 3 | 4-2 | 14:43:29 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 39 | 3 | Devastador | DA_18_Akali_AD | -0.2400 | FAST8_REROLL_REVIEW |
+| Jogador 3 | 4-2 | 14:43:29 | VENDEU: Lobo Trevoguari (i:8.0) | FAST8 | FAST8: composição planejada exige nível 8 | 44 | 3 | Devastador | DA_18_Akali_AD | -0.2700 |  |
+| Jogador 3 | 4-2 | 14:43:29 | COMPROU: Camille (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 43 | 3 | Devastador | DA_18_Akali_AD | 0.8600 |  |
+| Jogador 3 | 4-2 | 14:43:30 | MOVE Bench -> Board: Warwick (i:4.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 43 | 3 | Devastador | DA_18_Akali_AD | 0.4900 |  |
+| Jogador 3 | 4-2 | 14:43:30 | COMPROU: Kog'Maw (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 40 | 3 | Devastador | DA_18_Akali_AD | 0.2600 |  |
+| Jogador 3 | 4-2 | 14:43:30 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 38 | 3 | Devastador | DA_18_Akali_AD | -0.2400 | FAST8_REROLL_REVIEW |
+| Jogador 3 | 4-2 | 14:43:30 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 36 | 3 | Devastador | DA_18_Akali_AD | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 3 | 4-2 | 14:43:33 | MOVE Board -> Board: Warwick (i:4.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 36 | 3 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 4-2 | 14:43:34 | PASSOU TURNO | FAST8 | FAST8: composição planejada exige nível 8 | 36 | 3 | Devastador | DA_18_Akali_AD | -0.1800 |  |
+| Jogador 3 | 4-3 | 14:43:37 | MOVE Board -> Board: Lobo Trevoguari (i:4.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 46 | 3 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 4-3 | 14:43:38 | COMPROU: Azir (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 43 | 3 | Devastador | DA_18_Akali_AD | 0.0600 |  |
+| Jogador 3 | 4-3 | 14:43:38 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 41 | 3 | Devastador | DA_18_Akali_AD | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 3 | 4-3 | 14:43:38 | VENDEU: Akali (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 44 | 3 | Devastador | DA_18_Akali_AD | -0.5400 |  |
+| Jogador 3 | 4-3 | 14:43:39 | COMPROU: Akali (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 43 | 3 | Devastador | DA_18_Akali_AD | 0.3100 |  |
+| Jogador 3 | 4-3 | 14:43:42 | MOVE Board -> Board: Diana (i:6.0) <-> Warwick (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 43 | 3 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 4-3 | 14:43:42 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 41 | 3 | Devastador | DA_18_Akali_AD | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 3 | 4-3 | 14:43:42 | VENDEU: Camille (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 44 | 3 | Devastador | DA_18_Akali_AD | -0.2600 |  |
+| Jogador 3 | 4-3 | 14:43:43 | EQUIP_FROM_INVENTORY: TFT_Item_Redemption -> Lobo Trevoguari (i:4.0) (tabuleiro slot 19) | FAST8 | FAST8: composição planejada exige nível 8 | 44 | 3 | Devastador | DA_18_Akali_AD | 0.0900 |  |
+| Jogador 3 | 4-3 | 14:43:43 | EQUIP_FROM_INVENTORY: TFT_Item_TitansResolve -> Lobo Trevoguari (i:4.0) (tabuleiro slot 19) | FAST8 | FAST8: composição planejada exige nível 8 | 44 | 3 | Devastador | DA_18_Akali_AD | 0.1000 |  |
+| Jogador 3 | 4-3 | 14:43:43 | PASSOU TURNO | FAST8 | FAST8: composição planejada exige nível 8 | 44 | 3 | Devastador | DA_18_Akali_AD | -0.1900 |  |
+| Jogador 3 | 4-4 | 14:43:47 | COMPROU: Krugue (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 51 | 4 | Devastador | DA_18_Akali_AD | -0.0300 |  |
+| Jogador 3 | 4-4 | 14:43:47 | MOVE Board -> Board: Warwick (i:4.0) <-> Lobo Trevoguari (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 51 | 4 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 4-4 | 14:43:50 | MOVE Board -> Board: Lobo Trevoguari (i:4.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 51 | 4 | Devastador | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 4-4 | 14:43:51 | PASSOU TURNO | FAST8 | FAST8: composição planejada exige nível 8 | 51 | 4 | Devastador | DA_18_Akali_AD | -0.0800 |  |
+| Jogador 3 | 4-5 | 14:43:57 | MOVE Board -> Board: Malphite (i:8.0) <-> Diana (i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 63 | 5 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 4-5 | 14:43:57 | MOVE Board -> Board: Diana (i:6.0) <-> Warwick (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 63 | 5 | Devastador | DA_18_Akali_AD | -0.0200 |  |
+| Jogador 3 | 4-5 | 14:43:57 | PASSOU TURNO | FAST8 | FAST8: composição planejada exige nível 8 | 63 | 5 | Devastador | DA_18_Akali_AD | -0.0900 |  |
+| Jogador 3 | 4-6 | 14:44:08 | VENDEU: Rakan (i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 76 | 5 | Devastador | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 4-6 | 14:44:08 | COMPROU: Warwick (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 74 | 5 | Devastador | DA_18_Akali_AD | 0.8900 |  |
+| Jogador 3 | 4-6 | 14:44:08 | COMPROU: Grompe (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 72 | 5 | Devastador | DA_18_Akali_AD | 0.7800 |  |
+| Jogador 3 | 4-6 | 14:44:09 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 70 | 5 | Devastador | DA_18_Akali_AD | -0.1300 | FAST8_REROLL_REVIEW |
+| Jogador 3 | 4-6 | 14:44:09 | VENDEU: Warwick (i:8.0) | FAST8 | FAST8: composição planejada exige nível 8 | 75 | 5 | Devastador | DA_18_Akali_AD | -0.3700 |  |
+| Jogador 3 | 4-6 | 14:44:09 | COMPROU: Warwick (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 73 | 5 | Devastador | DA_18_Akali_AD | 0.2900 |  |
+| Jogador 3 | 4-6 | 14:44:10 | MOVE Bench -> Board: Kog'Maw (i:6.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 73 | 5 | Devastador | DA_18_Akali_AD | 0.4100 |  |
+| Jogador 3 | 4-6 | 14:44:10 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 71 | 5 | Devastador | DA_18_Akali_AD | -0.1300 | FAST8_REROLL_REVIEW |
+| Jogador 3 | 4-6 | 14:44:10 | MOVE Board -> Board: Kog'Maw (i:6.0) <-> Malphite (i:8.0) | FAST8 | FAST8: composição planejada exige nível 8 | 71 | 5 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 4-7 | 14:44:19 | COMPROU: Warwick (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 80 | 5 | Devastador | DA_18_Akali_AD | 0.8500 |  |
+| Jogador 3 | 4-7 | 14:44:19 | CRAFT_AND_EQUIP: TFT_Item_ChainVest + TFT_Item_SparringGloves -> Diana (i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 80 | 5 | Devastador | DA_18_Akali_AD | 0.2200 |  |
+| Jogador 3 | 4-7 | 14:44:19 | CRAFT_AND_EQUIP: TFT_Item_TearOfTheGoddess + TFT_Item_NegatronCloak -> Diana (i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 80 | 5 | Devastador | DA_18_Akali_AD | 0.1600 |  |
+| Jogador 3 | 4-7 | 14:44:19 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 78 | 5 | Devastador | DA_18_Akali_AD | -0.1300 | FAST8_REROLL_REVIEW |
+| Jogador 3 | 4-7 | 14:44:20 | VENDEU: Azir (i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 81 | 5 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 4-7 | 14:44:20 | COMPROU: Diana (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 78 | 5 | Devastador | DA_18_Diana | 0.9500 |  |
+| Jogador 3 | 4-7 | 14:44:20 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 76 | 5 | Devastador | DA_18_Diana | -0.1300 | FAST8_REROLL_REVIEW |
+| Jogador 3 | 4-7 | 14:44:21 | COMPROU: Warwick (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 74 | 5 | Devastador | DA_18_Diana | 0.9500 |  |
+| Jogador 3 | 4-7 | 14:44:21 | MOVE Bench -> Board: Krugue (i:6.0) <-> Malphite (i:8.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 74 | 5 | Devastador | DA_18_Diana | -0.5600 |  |
+| Jogador 3 | 5-1 | 14:44:29 | MOVE Bench -> Board: Malphite (i:8.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 87 | 5 | Devastador | DA_18_Diana | 0.4300 |  |
+| Jogador 3 | 5-1 | 14:44:29 | COMPROU: Azir (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 84 | 5 | Devastador | DA_18_Diana | -0.0300 |  |
+| Jogador 3 | 5-1 | 14:44:30 | COMPROU: Varus (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 83 | 5 | Devastador | DA_18_Diana | -0.0300 |  |
+| Jogador 3 | 5-1 | 14:44:30 | MOVE Board -> Board: Krugue (i:6.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 83 | 5 | Devastador | DA_18_Diana | 0.0000 |  |
+| Jogador 3 | 5-1 | 14:44:30 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 81 | 5 | Devastador | DA_18_Diana | -0.1300 | FAST8_REROLL_REVIEW |
+| Jogador 3 | 5-1 | 14:44:31 | COMPROU: Rengar (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 78 | 5 | Devastador | DA_18_Diana | -0.1900 |  |
+| Jogador 3 | 5-1 | 14:44:31 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 76 | 5 | Devastador | DA_18_Diana | -0.1300 | FAST8_REROLL_REVIEW |
+| Jogador 3 | 5-1 | 14:44:31 | MOVE Board -> Board: Malphite (i:8.0) <-> Kog'Maw (i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 76 | 5 | Devastador | DA_18_Diana | 0.0000 |  |
+| Jogador 3 | 5-1 | 14:44:31 | MOVE Board -> Board: Kog'Maw (i:6.0) <-> Krugue (i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 76 | 5 | Devastador | DA_18_Diana | -0.0100 |  |
+| Jogador 3 | 5-2 | 14:44:39 | VENDEU: Warwick (i:8.0) | FAST8 | FAST8: composição planejada exige nível 8 | 95 | 5 | Devastador | DA_18_Diana | -0.3400 |  |
+| Jogador 3 | 5-2 | 14:44:40 | COMPROU: Akali (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 94 | 5 | Devastador | DA_18_Diana | 0.9200 |  |
+| Jogador 3 | 5-2 | 14:44:40 | VENDEU: Varus (i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 95 | 5 | Devastador | DA_18_Diana | 0.0000 |  |
+| Jogador 3 | 5-2 | 14:44:40 | COMPROU: Azir (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 92 | 5 | Devastador | DA_18_Diana | 0.4200 |  |
+| Jogador 3 | 5-2 | 14:44:40 | MOVE Board -> Board: Krugue (i:6.0) <-> Lobo Trevoguari (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 92 | 5 | Devastador | DA_18_Diana | 0.0000 |  |
+| Jogador 3 | 5-2 | 14:44:41 | MOVE Board -> Board: Lobo Trevoguari (i:4.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 92 | 5 | Devastador | DA_18_Diana | -0.0100 |  |
+| Jogador 3 | 5-2 | 14:44:41 | PASSOU TURNO | FAST8 | FAST8: composição planejada exige nível 8 | 92 | 5 | Devastador | DA_18_Diana | -0.1200 |  |
+| Jogador 3 | 5-3 | 14:44:50 | VENDEU: Diana (i:12.0) | FAST8 | FAST8: composição planejada exige nível 8 | 113 | 5 | Devastador | DA_18_Akali_AD | -0.3600 |  |
+| Jogador 3 | 5-3 | 14:44:50 | EQUIP_FROM_INVENTORY: TFT_Item_AdaptiveHelm -> Lobo Trevoguari (i:4.0) (tabuleiro slot 18) | FAST8 | FAST8: composição planejada exige nível 8 | 113 | 5 | Devastador | DA_18_Akali_AD | 0.1000 |  |
+| Jogador 3 | 5-3 | 14:44:51 | EQUIP_FROM_INVENTORY: TFT_Item_NightHarvester -> Kog'Maw (i:6.0) (tabuleiro slot 19) | FAST8 | FAST8: composição planejada exige nível 8 | 113 | 5 | Devastador | DA_18_Akali_AD | 0.1000 |  |
+| Jogador 3 | 5-3 | 14:44:51 | COMPROU: Krugue (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 110 | 5 | Devastador | DA_18_Akali_AD | 0.5700 |  |
+| Jogador 3 | 5-3 | 14:44:51 | MOVE Board -> Board: Kog'Maw (i:6.0) <-> Malphite (i:8.0) | FAST8 | FAST8: composição planejada exige nível 8 | 110 | 5 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 5-3 | 14:44:51 | MOVE Board -> Board: Malphite (i:8.0) <-> Krugue (i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 110 | 5 | Devastador | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 5-3 | 14:44:52 | PASSOU TURNO | FAST8 | FAST8: composição planejada exige nível 8 | 110 | 5 | Devastador | DA_18_Akali_AD | -0.1400 |  |
+| Jogador 3 | 5-4 | 14:45:01 | VENDEU: Rengar (i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 126 | 5 | Devastador | DA_18_Akali_AD | 0.0100 |  |
+| Jogador 3 | 5-4 | 14:45:01 | COMPROU: Grompe (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 124 | 5 | Devastador | DA_18_Akali_AD | 0.9500 |  |
+| Jogador 3 | 5-4 | 14:45:01 | COMPROU: Camille (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 123 | 5 | Devastador | DA_18_Akali_AD | 0.3000 |  |
+| Jogador 3 | 5-4 | 14:45:02 | COMPROU: Rubrivirim (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 122 | 5 | Devastador | DA_18_Akali_AD | 0.0400 |  |
+| Jogador 3 | 5-4 | 14:45:02 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 120 | 5 | Devastador | DA_18_Akali_AD | -0.1300 | FAST8_REROLL_REVIEW |
+| Jogador 3 | 5-4 | 14:45:02 | VENDEU: Grompe (i:8.0) | FAST8 | FAST8: composição planejada exige nível 8 | 125 | 5 | Devastador | DA_18_Akali_AD | -0.3400 |  |
+| Jogador 3 | 5-4 | 14:45:02 | COMPROU: Lobo Trevoguari (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 123 | 5 | Devastador | DA_18_Akali_AD | 0.9500 |  |
+| Jogador 3 | 5-4 | 14:45:02 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 121 | 5 | Devastador | DA_18_Akali_AD | -0.1300 | FAST8_REROLL_REVIEW |
+| Jogador 3 | 5-4 | 14:45:03 | COMPROU: Warwick (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 119 | 5 | Devastador | DA_18_Akali_AD | 0.3100 |  |
+| Jogador 3 | 5-5 | 14:45:25 | MOVE Board -> Board: Krugue (i:6.0) <-> Akali (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 133 | 5 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 5-5 | 14:45:26 | MOVE Board -> Board: Akali (i:4.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 133 | 5 | Devastador | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 5-5 | 14:45:26 | PASSOU TURNO | FAST8 | FAST8: composição planejada exige nível 8 | 133 | 5 | Devastador | DA_18_Akali_AD | -0.1600 |  |
+| Jogador 3 | 5-6 | 14:46:18 | COMPROU: Camille (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 142 | 5 | Devastador | DA_18_Akali_AD | 0.8400 |  |
+| Jogador 3 | 5-6 | 14:46:18 | MOVE Board -> Board: Azir (i:6.0) <-> Kog'Maw (i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 142 | 5 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 5-6 | 14:46:18 | MOVE Board -> Board: Kog'Maw (i:6.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 142 | 5 | Devastador | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 5-6 | 14:46:18 | VENDEU: Lobo Trevoguari (i:8.0) | FAST8 | FAST8: composição planejada exige nível 8 | 147 | 5 | Devastador | DA_18_Akali_AD | -0.3800 |  |
+| Jogador 3 | 5-6 | 14:46:19 | EQUIP_FROM_INVENTORY: TFT_Item_Redemption -> Kog'Maw (i:6.0) (tabuleiro slot 19) | FAST8 | FAST8: composição planejada exige nível 8 | 147 | 5 | Devastador | DA_18_Akali_AD | 0.0700 |  |
+| Jogador 3 | 5-6 | 14:46:19 | EQUIP_FROM_INVENTORY: TFT_Item_TitansResolve -> Kog'Maw (i:6.0) (tabuleiro slot 19) | FAST8 | FAST8: composição planejada exige nível 8 | 147 | 5 | Devastador | DA_18_Akali_AD | 0.0800 |  |
+| Jogador 3 | 5-6 | 14:46:19 | EQUIP_FROM_INVENTORY: TFT_Item_AdaptiveHelm -> Rek'Sai (i:4.0) (tabuleiro slot 13) | FAST8 | FAST8: composição planejada exige nível 8 | 147 | 5 | Devastador | DA_18_Akali_AD | 0.0700 |  |
+| Jogador 3 | 5-6 | 14:46:20 | COMPROU: Rubrivirim (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 146 | 5 | Devastador | DA_18_Akali_AD | 0.3400 |  |
+| Jogador 3 | 5-6 | 14:46:20 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 144 | 5 | Devastador | DA_18_Akali_AD | -0.1300 | FAST8_REROLL_REVIEW |
+| Jogador 3 | 5-7 | 14:47:05 | EQUIP_FROM_INVENTORY: TFT_Item_GuinsoosRageblade -> Rek'Sai (i:4.0) (tabuleiro slot 13) | FAST8 | FAST8: composição planejada exige nível 8 | 154 | 5 | Devastador | DA_18_Akali_AD | 0.0500 |  |
+| Jogador 3 | 5-7 | 14:47:05 | VENDEU: Rubrivirim (i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 155 | 5 | Devastador | DA_18_Akali_AD | -0.2600 |  |
+| Jogador 3 | 5-7 | 14:47:05 | COMPROU: Diana (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 152 | 5 | Devastador | DA_18_Akali_AD | 0.3800 |  |
+| Jogador 3 | 5-7 | 14:47:05 | MOVE Board -> Board: Kog'Maw (i:6.0) <-> Azir (i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 152 | 5 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 5-7 | 14:47:05 | VENDEU: Rubrivirim (i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 153 | 5 | Devastador | DA_18_Akali_AD | 0.0100 |  |
+| Jogador 3 | 5-7 | 14:47:06 | COMPROU: Veigar (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 152 | 5 | Devastador | DA_18_Akali_AD | 0.0700 |  |
+| Jogador 3 | 5-7 | 14:47:06 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 150 | 5 | Devastador | DA_18_Akali_AD | -0.1300 | FAST8_REROLL_REVIEW |
+| Jogador 3 | 5-7 | 14:47:06 | VENDEU: Veigar (i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 151 | 5 | Devastador | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 5-7 | 14:47:06 | COMPROU: Zyra (Custo 4 \| i:8.0) | FAST8 | FAST8: composição planejada exige nível 8 | 147 | 5 | Devastador | DA_18_Akali_AD | 0.0800 |  |
+| Jogador 3 | 6-1 | 14:47:49 | VENDEU: Zyra (i:8.0) | FAST8 | FAST8: composição planejada exige nível 8 | 161 | 5 | Devastador | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 6-1 | 14:47:50 | COMPROU: Grompe (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 159 | 5 | Devastador | DA_18_Akali_AD | 0.3200 |  |
+| Jogador 3 | 6-1 | 14:47:50 | VENDEU: Warwick (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 161 | 5 | Devastador | DA_18_Akali_AD | -0.0800 |  |
+| Jogador 3 | 6-1 | 14:47:50 | COMPROU: Master Yi (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 158 | 5 | Devastador | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 6-1 | 14:47:50 | MOVE Board -> Board: Azir (i:6.0) <-> Krugue (i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 158 | 5 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 6-1 | 14:47:50 | MOVE Board -> Board: Krugue (i:6.0) <-> Malphite (i:8.0) | FAST8 | FAST8: composição planejada exige nível 8 | 158 | 5 | Devastador | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 6-1 | 14:47:51 | PASSOU TURNO | FAST8 | FAST8: composição planejada exige nível 8 | 158 | 5 | Devastador | DA_18_Akali_AD | -0.1900 |  |
+| Jogador 3 | 6-2 | 14:48:01 | VENDEU: Master Yi (i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 171 | 5 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 6-2 | 14:48:01 | COMPROU: Krugue (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 168 | 5 | Devastador | DA_Krug18 | 0.8100 |  |
+| Jogador 3 | 6-2 | 14:48:01 | COMPROU: Teemo (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 166 | 5 | Devastador | DA_Krug18 | -0.1200 |  |
+| Jogador 3 | 6-2 | 14:48:02 | MOVE Bench -> Board: Azir (i:6.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 166 | 5 | Devastador | DA_Krug18 | -0.0300 |  |
+| Jogador 3 | 6-2 | 14:48:02 | COMPROU: Shen (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 164 | 5 | Devastador | DA_Krug18 | -0.0500 |  |
+| Jogador 3 | 6-2 | 14:48:02 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 162 | 5 | Devastador | DA_Krug18 | -0.1300 | FAST8_REROLL_REVIEW |
+| Jogador 3 | 6-2 | 14:48:02 | VENDEU: Krugue (i:12.0) | FAST8 | FAST8: composição planejada exige nível 8 | 170 | 5 | Devastador | DA_18_Akali_AD | -0.1900 |  |
+| Jogador 3 | 6-2 | 14:48:03 | COMPROU: Mamãe Bicuda (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 167 | 5 | Devastador | DA_18_Akali_AD | 0.0300 |  |
+| Jogador 3 | 6-2 | 14:48:03 | MOVE Board -> Board: Azir (i:6.0) <-> Kog'Maw (i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 167 | 5 | Devastador | DA_18_Akali_AD | 0.0100 |  |
+| Jogador 3 | 6-3 | 14:48:13 | VENDEU: Shen (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 180 | 5 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 6-3 | 14:48:13 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 179 | 5 | Devastador | DA_18_Akali_AD | 0.2400 |  |
+| Jogador 3 | 6-3 | 14:48:13 | VENDEU: Teemo (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 181 | 5 | Devastador | DA_18_Akali_AD | 0.0100 |  |
+| Jogador 3 | 6-3 | 14:48:14 | COMPROU: Rakan (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 180 | 5 | Devastador | DA_18_Akali_AD | -0.1900 |  |
+| Jogador 3 | 6-3 | 14:48:14 | VENDEU: Rakan (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 181 | 5 | Devastador | DA_18_Akali_AD | 0.0100 |  |
+| Jogador 3 | 6-3 | 14:48:14 | COMPROU: Veigar (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 180 | 5 | Devastador | DA_18_Akali_AD | 0.0300 |  |
+| Jogador 3 | 6-3 | 14:48:14 | REROLL | STABILIZE | STABILIZE: pressão de vida | 178 | 5 | Devastador | DA_18_Akali_AD | -0.0900 |  |
+| Jogador 3 | 6-3 | 14:48:15 | VENDEU: Veigar (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 179 | 5 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 6-3 | 14:48:15 | COMPROU: Ezreal (Custo 4 \| i:8.0) | STABILIZE | STABILIZE: pressão de vida | 175 | 5 | Devastador | DA_18_Akali_AD | -0.0200 |  |
+| Jogador 3 | 6-4 | 14:48:24 | VENDEU: Ezreal (i:8.0) | STABILIZE | STABILIZE: pressão de vida | 190 | 5 | Devastador | DA_18_Akali_AD | 0.0100 |  |
+| Jogador 3 | 6-4 | 14:48:24 | COMPROU: Fiddlesticks (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: pressão de vida | 187 | 5 | Devastador | DA_18_Akali_AD | -0.0700 |  |
+| Jogador 3 | 6-4 | 14:48:25 | VENDEU: Fiddlesticks (i:6.0) | STABILIZE | STABILIZE: pressão de vida | 190 | 5 | Devastador | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 6-4 | 14:48:25 | COMPROU: Teemo (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: pressão de vida | 188 | 5 | Devastador | DA_18_Akali_AD | -0.0500 |  |
+| Jogador 3 | 6-4 | 14:48:25 | VENDEU: Teemo (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 190 | 5 | Devastador | DA_18_Akali_AD | 0.0100 |  |
+| Jogador 3 | 6-4 | 14:48:25 | COMPROU: Leona (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 189 | 5 | Devastador | DA_18_Akali_AD | -0.2800 |  |
+| Jogador 3 | 6-4 | 14:48:26 | MOVE Board -> Board: Kog'Maw (i:6.0) <-> Malphite (i:8.0) | STABILIZE | STABILIZE: pressão de vida | 189 | 5 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 6-4 | 14:48:26 | MOVE Board -> Board: Malphite (i:8.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 189 | 5 | Devastador | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 6-4 | 14:48:26 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 189 | 5 | Devastador | DA_18_Akali_AD | -0.2500 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 3 | 6-5 | 14:48:36 | VENDEU: Rek'Sai (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 201 | 5 | Devastador | DA_18_Akali_AD | -0.0300 |  |
+| Jogador 3 | 6-5 | 14:48:36 | COMPROU: Fiddlesticks (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: pressão de vida | 198 | 5 | Devastador | DA_18_Akali_AD | -0.0700 |  |
+| Jogador 3 | 6-5 | 14:48:36 | MOVE Board -> Board: Kog'Maw (i:6.0) <-> Azir (i:6.0) | STABILIZE | STABILIZE: pressão de vida | 198 | 5 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 6-5 | 14:48:37 | MOVE Board -> Board: Azir (i:6.0) <-> Azir (i:6.0) | STABILIZE | STABILIZE: pressão de vida | 198 | 5 | Devastador | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 3 | 6-5 | 14:48:37 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 198 | 5 | Devastador | DA_18_Akali_AD | -0.2600 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 3 | 6-6 | 14:48:47 | COMPROU: Tristana (Custo 3 \| i:6.0) | ALL_IN | HP crítico: gastar para sobreviver | 206 | 5 | Devastador | DA_18_Akali_AD | -0.2200 |  |
+| Jogador 3 | 6-6 | 14:48:48 | MOVE Board -> Board: Camille (i:2.0) <-> Kog'Maw (i:6.0) | ALL_IN | HP crítico: gastar para sobreviver | 206 | 5 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 6-6 | 14:48:48 | MOVE Board -> Board: Kog'Maw (i:6.0) <-> Azir (i:6.0) | ALL_IN | HP crítico: gastar para sobreviver | 206 | 5 | Devastador | DA_18_Akali_AD | -0.0200 |  |
+| Jogador 3 | 6-6 | 14:48:48 | PASSOU TURNO | ALL_IN | HP crítico: gastar para sobreviver | 206 | 5 | Devastador | DA_18_Akali_AD | -0.3600 |  |
+| Jogador 3 | 6-7 | 14:48:59 | EQUIP_FROM_INVENTORY: TFT_Item_Deathblade -> Rek'Sai (i:4.0) (tabuleiro slot 13) | ALL_IN | HP crítico: gastar para sobreviver | 217 | 5 | Devastador | DA_18_Akali_AD | 0.0400 |  |
+| Jogador 3 | 6-7 | 14:48:59 | VENDEU: Leona (i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 218 | 5 | Devastador | DA_18_Akali_AD | 0.0200 |  |
+| Jogador 3 | 6-7 | 14:49:00 | COMPROU: Lobo Trevoguari (Custo 2 \| i:4.0) | ALL_IN | HP crítico: gastar para sobreviver | 216 | 5 | Devastador | DA_18_Akali_AD | 0.4100 |  |
+| Jogador 3 | 6-7 | 14:49:00 | MOVE Board -> Board: Azir (i:6.0) <-> Rek'Sai (i:4.0) | ALL_IN | HP crítico: gastar para sobreviver | 216 | 5 | Devastador | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 3 | 6-7 | 14:49:00 | MOVE Board -> Board: Rek'Sai (i:4.0) <-> Akali (i:4.0) | ALL_IN | HP crítico: gastar para sobreviver | 216 | 5 | Devastador | DA_18_Akali_AD | -0.0200 |  |
+| Jogador 3 | 6-7 | 14:49:01 | PASSOU TURNO | ALL_IN | HP crítico: gastar para sobreviver | 216 | 5 | Devastador | DA_18_Akali_AD | -0.3700 |  |
+| Jogador 4 | ? | 14:40:45 | MOVE Bench -> Board: Rakan (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | 0.5900 |  |
+| Jogador 4 | ? | 14:40:46 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | 0.0000 |  |
+| Jogador 4 | 1-1 | 14:40:51 | COMPROU: Yorick (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Rakan | 0.2700 |  |
+| Jogador 4 | 1-1 | 14:40:51 | MOVE Bench -> Board: Yorick (i:2.0) <-> Rakan (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Yorick | -0.7100 |  |
+| Jogador 4 | 1-1 | 14:40:52 | MOVE Bench -> Board: Rakan (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Yorick | 0.2700 |  |
+| Jogador 4 | 1-1 | 14:40:52 | COMPROU: Camille (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.0400 |  |
+| Jogador 4 | 1-1 | 14:40:52 | MOVE Board -> Board: Yorick (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.0000 |  |
+| Jogador 4 | 1-1 | 14:40:53 | MOVE Bench -> Board: Camille (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.3900 |  |
+| Jogador 4 | 1-1 | 14:40:53 | MOVE Board -> Board: Camille (i:2.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | -0.0100 |  |
+| Jogador 4 | 1-1 | 14:40:53 | MOVE Board -> Board: Yorick (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | -0.0100 |  |
+| Jogador 4 | 1-1 | 14:40:53 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.0000 |  |
+| Jogador 4 | 1-2 | 14:40:57 | COMPROU: Karma (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Yorick | 0.1600 |  |
+| Jogador 4 | 1-2 | 14:40:57 | COMPROU: Ornn (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.0600 |  |
+| Jogador 4 | 1-2 | 14:40:58 | MOVE Board -> Board: Rakan (i:2.0) <-> Camille (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | 0.0000 |  |
+| Jogador 4 | 1-2 | 14:40:58 | MOVE Board -> Board: Camille (i:2.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | -0.0100 |  |
+| Jogador 4 | 1-2 | 14:40:58 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | 0.0000 |  |
+| Jogador 4 | 1-3 | 14:41:04 | COMPROU: Camille (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Rakan | 1.0100 |  |
+| Jogador 4 | 1-3 | 14:41:04 | COMPROU: Akali (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Rakan | 0.3400 |  |
+| Jogador 4 | 1-3 | 14:41:04 | COMPROU: Akali (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.9800 |  |
+| Jogador 4 | 1-3 | 14:41:04 | MOVE Board -> Board: Yorick (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 4 | 1-3 | 14:41:05 | MOVE Board -> Board: Yorick (i:2.0) <-> Rakan (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 4 | 1-3 | 14:41:05 | MOVE Board -> Board: Rakan (i:2.0) <-> Camille (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 4 | 1-3 | 14:41:05 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 4 | 1-4 | 14:41:10 | CRAFT_AND_EQUIP: TFT_Item_RecurveBow + TFT_Item_GiantsBelt -> Camille (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Akali_AD | 0.1600 |  |
+| Jogador 4 | 1-4 | 14:41:11 | CRAFT_AND_EQUIP: TFT_Item_TearOfTheGoddess + TFT_Item_NegatronCloak -> Camille (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Akali_AD | 0.1200 |  |
+| Jogador 4 | 1-4 | 14:41:11 | COMPROU: Yorick (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Yorick | 0.9800 |  |
+| Jogador 4 | 1-4 | 14:41:11 | MOVE Bench -> Board: Camille (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Yorick | -0.0900 |  |
+| Jogador 4 | 1-4 | 14:41:12 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Yorick | -0.1600 |  |
+| Jogador 4 | 1-4 | 14:41:12 | COMPROU: Karma (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.8600 |  |
+| Jogador 4 | 1-4 | 14:41:13 | MOVE Board -> Board: Camille (i:2.0) <-> Camille (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.0000 |  |
+| Jogador 4 | 1-4 | 14:41:13 | MOVE Board -> Board: Camille (i:2.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | -0.0100 |  |
+| Jogador 4 | 1-4 | 14:41:13 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.0000 |  |
+| Jogador 4 | 2-1 | 14:41:17 | COMPROU: Akali (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 5 | 0 | — | DA_18_Akali_AD | 0.9400 |  |
+| Jogador 4 | 2-1 | 14:41:17 | COMPROU: Camille (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Akali_AD | 1.0100 |  |
+| Jogador 4 | 2-1 | 14:41:17 | MOVE Bench -> Board: Karma (i:2.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Akali_AD | -0.3700 |  |
+| Jogador 4 | 2-1 | 14:41:18 | MOVE Bench -> Board: Yorick (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Akali_AD | 0.3300 |  |
+| Jogador 4 | 2-1 | 14:41:18 | MOVE Bench -> Board: Ornn (i:2.0) <-> Karma (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Akali_AD | -0.4600 |  |
+| Jogador 4 | 2-1 | 14:41:19 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Akali_AD | -0.1600 |  |
+| Jogador 4 | 2-1 | 14:41:19 | COMPROU: Xayah (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | 0.3000 |  |
+| Jogador 4 | 2-1 | 14:41:19 | COMPROU: Xayah (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.8400 |  |
+| Jogador 4 | 2-1 | 14:41:19 | MOVE Board -> Board: Yorick (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | -0.0500 |  |
+| Jogador 4 | 2-1 | 14:41:20 | MOVE Bench -> Board: Xayah (i:2.0) <-> Ornn (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.1800 |  |
+| Jogador 4 | 2-1 | 14:41:20 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 4 | 2-2 | 14:41:24 | COMPROU: Xayah (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Akali_AD | 0.9400 |  |
+| Jogador 4 | 2-2 | 14:41:24 | MOVE Bench -> Board: Ornn (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Akali_AD | 0.2100 |  |
+| Jogador 4 | 2-2 | 14:41:24 | COMPROU: Fiddlesticks (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | 0.3100 |  |
+| Jogador 4 | 2-2 | 14:41:25 | MOVE Bench -> Board: Fiddlesticks (i:6.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | 0.6800 |  |
+| Jogador 4 | 2-2 | 14:41:25 | COMPROU: Varus (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.1300 |  |
+| Jogador 4 | 2-2 | 14:41:25 | MOVE Board -> Board: Ornn (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | -0.0400 |  |
+| Jogador 4 | 2-2 | 14:41:26 | MOVE Board -> Board: Fiddlesticks (i:6.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 4 | 2-2 | 14:41:27 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 4 | 2-3 | 14:41:31 | COMPROU: Rakan (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 5 | 0 | — | DA_18_Akali_AD | 0.9000 |  |
+| Jogador 4 | 2-3 | 14:41:31 | COMPROU: Ornn (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Akali_AD | 0.6500 |  |
+| Jogador 4 | 2-3 | 14:41:31 | VENDEU: Camille (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 7 | 0 | — | DA_18_Akali_AD | -0.0200 |  |
+| Jogador 4 | 2-3 | 14:41:31 | EQUIP_FROM_INVENTORY: TFT_Item_Leviathan -> Fiddlesticks (i:6.0) (tabuleiro slot 19) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 7 | 0 | — | DA_18_Akali_AD | 0.1000 |  |
+| Jogador 4 | 2-3 | 14:41:32 | EQUIP_FROM_INVENTORY: TFT_Item_AdaptiveHelm -> Fiddlesticks (i:6.0) (tabuleiro slot 19) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 7 | 0 | — | DA_18_Akali_AD | 0.1100 |  |
+| Jogador 4 | 2-3 | 14:41:32 | COMPROU: Mamãe Bicuda (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Akali_AD | 0.0900 |  |
+| Jogador 4 | 2-3 | 14:41:32 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Akali_AD | -0.1600 |  |
+| Jogador 4 | 2-3 | 14:41:33 | VENDEU: Xayah (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 5 | 0 | — | DA_18_Akali_AD | -0.2500 |  |
+| Jogador 4 | 2-3 | 14:41:33 | COMPROU: Rakan (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Akali_AD | 0.9500 |  |
+| Jogador 4 | 2-3 | 14:41:34 | COMPROU: Akali (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Akali_AD | 0.1500 |  |
+| Jogador 4 | 2-3 | 14:41:34 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 4 | 2-4 | 14:41:38 | VENDEU: Akali (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 12 | 0 | Florescer | DA_18_Rakan | -0.1300 |  |
+| Jogador 4 | 2-4 | 14:41:38 | COMPROU: Ornn (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 11 | 0 | Florescer | DA_18_Rakan | 0.9300 |  |
+| Jogador 4 | 2-4 | 14:41:38 | COMPROU: Akali (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 10 | 0 | Florescer | DA_18_Rakan | 0.5500 |  |
+| Jogador 4 | 2-4 | 14:41:39 | MOVE Bench -> Board: Varus (i:2.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 10 | 0 | Florescer | DA_18_Rakan | -0.3500 |  |
+| Jogador 4 | 2-4 | 14:41:39 | MOVE Bench -> Board: Yorick (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 10 | 0 | Florescer | DA_18_Rakan | 0.5200 |  |
+| Jogador 4 | 2-4 | 14:41:40 | COMPROU: Xayah (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 9 | 0 | Florescer | DA_18_Rakan | 0.0500 |  |
+| Jogador 4 | 2-4 | 14:41:40 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 7 | 0 | Florescer | DA_18_Rakan | -0.1600 |  |
+| Jogador 4 | 2-4 | 14:41:41 | VENDEU: Ornn (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 10 | 0 | Florescer | DA_18_Rakan | -0.1100 |  |
+| Jogador 4 | 2-4 | 14:41:41 | COMPROU: Fiddlesticks (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 7 | 0 | Florescer | DA_18_Rakan | 0.8200 |  |
+| Jogador 4 | 2-4 | 14:41:41 | VENDEU: Rakan (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 10 | 0 | Florescer | DA_Fiddlesticks18 | -0.2300 |  |
+| Jogador 4 | 2-4 | 14:41:42 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 10 | 0 | Florescer | DA_Fiddlesticks18 | 0.0000 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 4 | 2-5 | 14:41:45 | COMPROU: Yunara (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 15 | 1 | Florescer | DA_Fiddlesticks18 | 0.1500 |  |
+| Jogador 4 | 2-5 | 14:41:45 | MOVE Bench -> Board: Xayah (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 15 | 1 | Florescer | DA_Fiddlesticks18 | 0.1500 |  |
+| Jogador 4 | 2-5 | 14:41:45 | COMPROU: Akali (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 14 | 1 | Florescer | DA_18_Akali_AD | 0.7900 |  |
+| Jogador 4 | 2-5 | 14:41:45 | COMPROU: Rakan (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 13 | 1 | Florescer | DA_18_Akali_AD | 0.2500 |  |
+| Jogador 4 | 2-5 | 14:41:46 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 1 | Florescer | DA_18_Akali_AD | 0.0400 |  |
+| Jogador 4 | 2-5 | 14:41:46 | COMPROU: Karma (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 1 | Florescer | DA_18_Akali_AD | 0.8800 |  |
+| Jogador 4 | 2-5 | 14:41:46 | COMPROU: Yunara (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 1 | Florescer | DA_18_Akali_AD | 0.7400 |  |
+| Jogador 4 | 2-5 | 14:41:47 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 1 | Florescer | DA_18_Akali_AD | 0.0400 |  |
+| Jogador 4 | 2-5 | 14:41:48 | COMPROU: Yunara (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 1 | Florescer | DA_18_Yunara | 0.8800 |  |
+| Jogador 4 | 2-5 | 14:41:48 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 1 | Florescer | DA_18_Yunara | 0.0400 |  |
+| Jogador 4 | 2-5 | 14:41:49 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 1 | Florescer | DA_18_Yunara | 0.0000 |  |
+| Jogador 4 | 2-6 | 14:41:52 | COMPROU: Ornn (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Florescer | DA_18_Yunara | 0.0200 |  |
+| Jogador 4 | 2-6 | 14:41:53 | MOVE Bench -> Board: Akali (i:4.0) <-> Xayah (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Florescer | DA_18_Yunara | -0.2700 |  |
+| Jogador 4 | 2-6 | 14:41:53 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Florescer | DA_18_Yunara | 0.0400 |  |
+| Jogador 4 | 2-6 | 14:41:53 | COMPROU: Rakan (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Florescer | DA_18_Yunara | 0.8200 |  |
+| Jogador 4 | 2-6 | 14:41:54 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Florescer | DA_18_Yunara | 0.0400 |  |
+| Jogador 4 | 2-6 | 14:41:54 | VENDEU: Karma (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Florescer | DA_18_Yunara | -0.3200 |  |
+| Jogador 4 | 2-6 | 14:41:54 | COMPROU: Yorick (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Florescer | DA_18_Yunara | 0.8800 |  |
+| Jogador 4 | 2-6 | 14:41:55 | COMPROU: Mamãe Bicuda (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Florescer | DA_18_Yunara | 0.8200 |  |
+| Jogador 4 | 2-6 | 14:41:55 | MOVE Bench -> Board: Xayah (i:2.0) <-> Varus (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Fumegante | DA_18_Yunara | -0.4600 |  |
+| Jogador 4 | 2-6 | 14:41:56 | MOVE Bench -> Board: Varus (i:2.0) <-> Akali (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Fumegante | DA_18_Yunara | -0.7500 |  |
+| Jogador 4 | 2-6 | 14:41:57 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Fumegante | DA_18_Yunara | 0.0000 |  |
+| Jogador 4 | 2-7 | 14:42:01 | CRAFT_AND_EQUIP: TFT_Item_BFSword + TFT_Item_SparringGloves -> Fiddlesticks (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Fumegante | DA_18_Yunara | 0.1600 |  |
+| Jogador 4 | 2-7 | 14:42:01 | MOVE Bench -> Board: Akali (i:4.0) <-> Xayah (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Fumegante | DA_18_Yunara | -0.3000 |  |
+| Jogador 4 | 2-7 | 14:42:02 | MOVE Bench -> Board: Xayah (i:2.0) <-> Varus (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Fumegante | DA_18_Yunara | -0.4600 |  |
+| Jogador 4 | 2-7 | 14:42:02 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Fumegante | DA_18_Yunara | 0.0000 |  |
+| Jogador 4 | 2-7 | 14:42:06 | MOVE Bench -> Board: Ornn (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Fumegante | DA_18_Yunara | 0.1900 |  |
+| Jogador 4 | 3-1 | 14:42:10 | COMPROU: Yunara (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 12 | 0 | Fumegante | DA_18_Yunara | 0.1200 |  |
+| Jogador 4 | 3-1 | 14:42:10 | MOVE Bench -> Board: Varus (i:2.0) <-> Xayah (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 12 | 0 | Fumegante | DA_18_Yunara | -0.3600 |  |
+| Jogador 4 | 3-1 | 14:42:11 | MOVE Bench -> Board: Xayah (i:2.0) <-> Akali (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 12 | 0 | Fumegante | DA_18_Yunara | -0.7100 |  |
+| Jogador 4 | 3-1 | 14:42:11 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 12 | 0 | Fumegante | DA_18_Yunara | 0.0000 |  |
+| Jogador 4 | 3-1 | 14:42:15 | MOVE Bench -> Board: Yunara (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 12 | 0 | Fumegante | DA_18_Yunara | 0.3900 |  |
+| Jogador 4 | 3-2 | 14:42:19 | COMPROU: Kayle (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 19 | 1 | Fumegante | DA_18_Yunara | 0.1400 |  |
+| Jogador 4 | 3-2 | 14:42:20 | MOVE Bench -> Board: Akali (i:4.0) <-> Xayah (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 19 | 1 | Fumegante | DA_18_Yunara | -0.2900 |  |
+| Jogador 4 | 3-2 | 14:42:20 | MOVE Bench -> Board: Xayah (i:2.0) <-> Varus (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 19 | 1 | Fumegante | DA_18_Yunara | -0.3600 |  |
+| Jogador 4 | 3-2 | 14:42:20 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 19 | 1 | Fumegante | DA_18_Yunara | 0.0000 |  |
+| Jogador 4 | 3-3 | 14:42:29 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 25 | 2 | Fumegante | DA_18_Yunara | 0.0500 |  |
+| Jogador 4 | 3-3 | 14:42:29 | VENDEU: Yunara (i:8.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 30 | 2 | Fumegante | DA_18_Akali_AD | -0.1000 |  |
+| Jogador 4 | 3-3 | 14:42:29 | COMPROU: Akali (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 29 | 2 | Fumegante | DA_18_Akali_AD | 0.1600 |  |
+| Jogador 4 | 3-3 | 14:42:30 | MOVE Bench -> Board: Varus (i:2.0) <-> Akali (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 29 | 2 | Fumegante | DA_18_Akali_AD | -0.7200 |  |
+| Jogador 4 | 3-3 | 14:42:30 | MOVE Bench -> Board: Akali (i:4.0) <-> Xayah (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 29 | 2 | Fumegante | DA_18_Akali_AD | -0.2700 |  |
+| Jogador 4 | 3-3 | 14:42:30 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 29 | 2 | Fumegante | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 4 | 3-4 | 14:42:39 | VENDEU: Yorick (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 39 | 2 | Fumegante | DA_18_Akali_AD | -0.2800 |  |
+| Jogador 4 | 3-4 | 14:42:40 | COMPROU: Akali (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 38 | 2 | Fumegante | DA_18_Akali_AD | 0.7600 |  |
+| Jogador 4 | 3-4 | 14:42:40 | MOVE Bench -> Board: Kayle (i:4.0) <-> Akali (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 38 | 2 | Fumegante | DA_18_Akali_AD | -0.7800 |  |
+| Jogador 4 | 3-4 | 14:42:40 | MOVE Bench -> Board: Akali (i:4.0) <-> Varus (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 38 | 2 | Fumegante | DA_18_Akali_AD | 0.0400 |  |
+| Jogador 4 | 3-4 | 14:42:41 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 36 | 2 | Fumegante | DA_18_Akali_AD | 0.0700 |  |
+| Jogador 4 | 3-4 | 14:42:41 | MOVE Bench -> Board: Xayah (i:2.0) <-> Kayle (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 36 | 2 | Fumegante | DA_18_Akali_AD | -0.2700 |  |
+| Jogador 4 | 3-4 | 14:42:41 | MOVE Bench -> Board: Kayle (i:4.0) <-> Akali (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 36 | 2 | Fumegante | DA_18_Akali_AD | -0.7800 |  |
+| Jogador 4 | 3-4 | 14:42:42 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 36 | 2 | Fumegante | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 4 | 3-5 | 14:42:47 | VENDEU: Akali (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 47 | 3 | Fumegante | DA_Fiddlesticks18 | -0.2800 |  |
+| Jogador 4 | 3-5 | 14:42:48 | COMPROU: Xayah (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 46 | 3 | Fumegante | DA_Fiddlesticks18 | 0.7800 |  |
+| Jogador 4 | 3-5 | 14:42:48 | MOVE Bench -> Board: Xayah (i:2.0) <-> Xayah (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 46 | 3 | Fumegante | DA_Fiddlesticks18 | -0.4000 |  |
+| Jogador 4 | 3-5 | 14:42:48 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 44 | 3 | Fumegante | DA_Fiddlesticks18 | -0.1700 |  |
+| Jogador 4 | 3-5 | 14:42:49 | MOVE Bench -> Board: Xayah (i:2.0) <-> Kayle (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 44 | 3 | Fumegante | DA_Fiddlesticks18 | 0.0200 |  |
+| Jogador 4 | 3-5 | 14:42:51 | MOVE Bench -> Board: Kayle (i:4.0) <-> Xayah (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 44 | 3 | Fumegante | DA_Fiddlesticks18 | -0.3900 |  |
+| Jogador 4 | 3-5 | 14:42:51 | MOVE Bench -> Board: Xayah (i:2.0) <-> Xayah (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 44 | 3 | Fumegante | DA_Fiddlesticks18 | -0.4100 |  |
+| Jogador 4 | 3-5 | 14:42:52 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 44 | 3 | Fumegante | DA_Fiddlesticks18 | 0.0000 |  |
+| Jogador 4 | 3-6 | 14:42:58 | VENDEU: Varus (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 55 | 4 | Fumegante | DA_Fiddlesticks18 | -0.2400 |  |
+| Jogador 4 | 3-6 | 14:42:59 | COMPROU: Varus (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 54 | 4 | Fumegante | DA_Fiddlesticks18 | 0.3300 |  |
+| Jogador 4 | 3-6 | 14:42:59 | MOVE Bench -> Board: Xayah (i:2.0) <-> Kayle (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 54 | 4 | Fumegante | DA_Fiddlesticks18 | 0.0700 |  |
+| Jogador 4 | 3-6 | 14:42:59 | MOVE Bench -> Board: Kayle (i:4.0) <-> Xayah (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 54 | 4 | Fumegante | DA_Fiddlesticks18 | -0.3900 |  |
+| Jogador 4 | 3-6 | 14:43:00 | MOVE Bench -> Board: Xayah (i:2.0) <-> Xayah (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 54 | 4 | Fumegante | DA_Fiddlesticks18 | -0.4100 |  |
+| Jogador 4 | 3-6 | 14:43:00 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 54 | 4 | Fumegante | DA_Fiddlesticks18 | -0.0700 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 4 | 3-7 | 14:43:08 | CRAFT_AND_EQUIP: TFT_Item_BFSword + TFT_Item_NegatronCloak -> Xayah (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 65 | 5 | Fumegante | DA_Fiddlesticks18 | 0.2400 |  |
+| Jogador 4 | 3-7 | 14:43:08 | CRAFT_AND_EQUIP: TFT_Item_TearOfTheGoddess + TFT_Item_GiantsBelt -> Xayah (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 65 | 5 | Fumegante | DA_Fiddlesticks18 | 0.1600 |  |
+| Jogador 4 | 3-7 | 14:43:08 | VENDEU: Varus (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 66 | 5 | Fumegante | DA_Fiddlesticks18 | -0.2400 |  |
+| Jogador 4 | 3-7 | 14:43:09 | COMPROU: Rakan (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 65 | 5 | Fumegante | DA_18_Rakan | 0.9600 |  |
+| Jogador 4 | 3-7 | 14:43:12 | MOVE Bench -> Board: Rakan (i:4.0) <-> Xayah (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 65 | 5 | Fumegante | DA_18_Rakan | -0.3400 |  |
+| Jogador 4 | 3-7 | 14:43:12 | MOVE Bench -> Board: Xayah (i:2.0) <-> Kayle (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 65 | 5 | Fumegante | DA_18_Rakan | 0.0800 |  |
+| Jogador 4 | 3-7 | 14:43:12 | MOVE Bench -> Board: Kayle (i:4.0) <-> Rakan (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 65 | 5 | Fumegante | DA_18_Rakan | -0.8000 |  |
+| Jogador 4 | 3-7 | 14:43:13 | MOVE Bench -> Board: Rakan (i:4.0) <-> Xayah (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 65 | 5 | Fumegante | DA_18_Rakan | -0.3700 |  |
+| Jogador 4 | 3-7 | 14:43:13 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 65 | 5 | Fumegante | DA_18_Rakan | -0.2400 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 4 | 4-1 | 14:43:16 | MOVE Bench -> Board: Xayah (i:2.0) <-> Kayle (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 76 | 5 | Fumegante | DA_18_Rakan | 0.0900 |  |
+| Jogador 4 | 4-1 | 14:43:17 | MOVE Bench -> Board: Xayah (i:2.0) <-> Xayah (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 76 | 5 | Fumegante | DA_18_Rakan | -0.4100 |  |
+| Jogador 4 | 4-1 | 14:43:20 | MOVE Bench -> Board: Kayle (i:4.0) <-> Xayah (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 76 | 5 | Fumegante | DA_18_Rakan | -0.7500 |  |
+| Jogador 4 | 4-1 | 14:43:20 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 76 | 5 | Fumegante | DA_18_Rakan | -0.2700 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 4 | 4-1 | 14:43:21 | MOVE Bench -> Board: Xayah (i:2.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 76 | 5 | Fumegante | DA_18_Rakan | 0.5800 |  |
+| Jogador 4 | 4-2 | 14:43:28 | COMPROU: Xayah (Custo 1 \| i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 86 | 5 | Fumegante | DA_18_Rakan | 1.0600 |  |
+| Jogador 4 | 4-2 | 14:43:29 | COMPROU: Rakan (Custo 1 \| i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 85 | 5 | Fumegante | DA_18_Rakan | 0.4900 |  |
+| Jogador 4 | 4-2 | 14:43:29 | MOVE Bench -> Board: Xayah (i:4.0) <-> Kayle (i:4.0) | ALL_IN | HP crítico: gastar para sobreviver | 85 | 5 | Fumegante | DA_18_Rakan | 0.1200 |  |
+| Jogador 4 | 4-2 | 14:43:29 | MOVE Bench -> Board: Kayle (i:4.0) <-> Vazio | ALL_IN | HP crítico: gastar para sobreviver | 85 | 5 | Fumegante | DA_18_Rakan | 0.4700 |  |
+| Jogador 4 | 4-2 | 14:43:29 | MOVE Board -> Board: Xayah (i:4.0) <-> Fiddlesticks (i:6.0) | ALL_IN | HP crítico: gastar para sobreviver | 85 | 5 | Fumegante | DA_18_Rakan | -0.0300 |  |
+| Jogador 4 | 4-2 | 14:43:30 | MOVE Board -> Board: Fiddlesticks (i:6.0) <-> Vazio | ALL_IN | HP crítico: gastar para sobreviver | 85 | 5 | Fumegante | DA_18_Rakan | 0.0200 |  |
+| Jogador 4 | 4-2 | 14:43:30 | MOVE Board -> Board: Ornn (i:2.0) <-> Xayah (i:4.0) | ALL_IN | HP crítico: gastar para sobreviver | 85 | 5 | Fumegante | DA_18_Rakan | -0.0300 |  |
+| Jogador 4 | 4-2 | 14:43:30 | MOVE Board -> Board: Xayah (i:4.0) <-> Fiddlesticks (i:6.0) | ALL_IN | HP crítico: gastar para sobreviver | 85 | 5 | Fumegante | DA_18_Rakan | -0.1900 |  |
+| Jogador 4 | 4-2 | 14:43:30 | PASSOU TURNO | ALL_IN | HP crítico: gastar para sobreviver | 85 | 5 | Fumegante | DA_18_Rakan | -0.3500 |  |
+| Jogador 4 | 4-3 | 14:43:37 | COMPROU: Kayle (Custo 2 \| i:4.0) | ALL_IN | HP crítico: gastar para sobreviver | 95 | 5 | Fumegante | DA_18_Rakan | 1.0000 |  |
+| Jogador 4 | 4-3 | 14:43:38 | MOVE Board -> Board: Fiddlesticks (i:6.0) <-> Vazio | ALL_IN | HP crítico: gastar para sobreviver | 95 | 5 | Fumegante | DA_18_Rakan | 0.0200 |  |
+| Jogador 4 | 4-3 | 14:43:38 | COMPROU: Veigar (Custo 1 \| i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 94 | 5 | Fumegante | DA_18_Rakan | 0.0000 |  |
+| Jogador 4 | 4-3 | 14:43:38 | MOVE Board -> Board: Rakan (i:4.0) <-> Fiddlesticks (i:6.0) | ALL_IN | HP crítico: gastar para sobreviver | 94 | 5 | Fumegante | DA_18_Rakan | 0.0100 |  |
+| Jogador 4 | 4-3 | 14:43:39 | MOVE Board -> Board: Fiddlesticks (i:6.0) <-> Ornn (i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 94 | 5 | Fumegante | DA_18_Rakan | 0.0300 |  |
+| Jogador 4 | 4-3 | 14:43:42 | MOVE Board -> Board: Ornn (i:2.0) <-> Xayah (i:4.0) | ALL_IN | HP crítico: gastar para sobreviver | 94 | 5 | Fumegante | DA_18_Rakan | 0.1200 |  |
+| Jogador 4 | 4-3 | 14:43:42 | MOVE Board -> Board: Xayah (i:4.0) <-> Vazio | ALL_IN | HP crítico: gastar para sobreviver | 94 | 5 | Fumegante | DA_18_Rakan | -0.0200 |  |
+| Jogador 4 | 4-3 | 14:43:42 | MOVE Board -> Board: Yunara (i:4.0) <-> Fiddlesticks (i:6.0) | ALL_IN | HP crítico: gastar para sobreviver | 94 | 5 | Fumegante | DA_18_Rakan | -0.0200 |  |
+| Jogador 4 | 4-3 | 14:43:43 | PASSOU TURNO | ALL_IN | HP crítico: gastar para sobreviver | 94 | 5 | Fumegante | DA_18_Rakan | -0.2300 |  |
+| Jogador 4 | 4-4 | 14:43:47 | COMPROU: Hecarim (Custo 3 \| i:6.0) | ALL_IN | HP crítico: gastar para sobreviver | 103 | 5 | Fumegante | DA_18_Rakan | 0.1100 |  |
+| Jogador 4 | 4-4 | 14:43:47 | MOVE Board -> Board: Fiddlesticks (i:6.0) <-> Rakan (i:4.0) | ALL_IN | HP crítico: gastar para sobreviver | 103 | 5 | Fumegante | DA_18_Rakan | 0.0000 |  |
+| Jogador 4 | 4-4 | 14:43:50 | MOVE Board -> Board: Rakan (i:4.0) <-> Ornn (i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 103 | 5 | Fumegante | DA_18_Rakan | -0.0100 |  |
+| Jogador 4 | 4-4 | 14:43:51 | VENDEU: Veigar (i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 104 | 5 | Fumegante | DA_18_Rakan | 0.0000 |  |
+| Jogador 4 | 4-4 | 14:43:51 | COMPROU: Vi (Custo 3 \| i:6.0) | ALL_IN | HP crítico: gastar para sobreviver | 101 | 5 | Fumegante | DA_18_Rakan | 0.0100 |  |
+| Jogador 4 | 4-4 | 14:43:51 | MOVE Board -> Board: Ornn (i:2.0) <-> Xayah (i:4.0) | ALL_IN | HP crítico: gastar para sobreviver | 101 | 5 | Fumegante | DA_18_Rakan | 0.0000 |  |
+| Jogador 4 | 4-4 | 14:43:52 | MOVE Board -> Board: Xayah (i:4.0) <-> Vazio | ALL_IN | HP crítico: gastar para sobreviver | 101 | 5 | Fumegante | DA_18_Rakan | -0.1000 |  |
+| Jogador 4 | 4-4 | 14:43:52 | PASSOU TURNO | ALL_IN | HP crítico: gastar para sobreviver | 101 | 5 | Fumegante | DA_18_Rakan | -0.2400 |  |
+| Jogador 5 | ? | 14:40:45 | MOVE Bench -> Board: Yorick (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.5700 |  |
+| Jogador 5 | ? | 14:40:46 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.0000 |  |
+| Jogador 5 | 1-1 | 14:40:51 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Yorick | 0.1100 |  |
+| Jogador 5 | 1-1 | 14:40:51 | MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Yorick | -0.6400 |  |
+| Jogador 5 | 1-1 | 14:40:52 | MOVE Bench -> Board: Yorick (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Yorick | 0.2500 |  |
+| Jogador 5 | 1-1 | 14:40:52 | COMPROU: Veigar (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.2700 |  |
+| Jogador 5 | 1-1 | 14:40:52 | MOVE Board -> Board: Rek'Sai (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.0000 |  |
+| Jogador 5 | 1-1 | 14:40:53 | MOVE Board -> Board: Yorick (i:2.0) <-> Rek'Sai (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | -0.0100 |  |
+| Jogador 5 | 1-1 | 14:40:53 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.0000 |  |
+| Jogador 5 | 1-1 | 14:40:56 | MOVE Bench -> Board: Veigar (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.4200 |  |
+| Jogador 5 | 1-2 | 14:40:57 | COMPROU: Kobuko (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Yorick | 0.2700 |  |
+| Jogador 5 | 1-2 | 14:40:57 | COMPROU: Leona (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.0600 |  |
+| Jogador 5 | 1-2 | 14:40:58 | MOVE Board -> Board: Veigar (i:2.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | -0.3400 |  |
+| Jogador 5 | 1-2 | 14:40:58 | MOVE Board -> Board: Yorick (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.0500 |  |
+| Jogador 5 | 1-2 | 14:40:58 | MOVE Board -> Board: Rek'Sai (i:2.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | -0.0100 |  |
+| Jogador 5 | 1-2 | 14:40:59 | MOVE Board -> Board: Yorick (i:2.0) <-> Veigar (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.2800 |  |
+| Jogador 5 | 1-2 | 14:40:59 | MOVE Board -> Board: Veigar (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | -0.0100 |  |
+| Jogador 5 | 1-2 | 14:40:59 | MOVE Board -> Board: Veigar (i:2.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | -0.2900 |  |
+| Jogador 5 | 1-2 | 14:41:00 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.0000 |  |
+| Jogador 5 | 1-3 | 14:41:04 | COMPROU: Rakan (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Veigar | 0.3200 |  |
+| Jogador 5 | 1-3 | 14:41:04 | MOVE Bench -> Board: Rakan (i:2.0) <-> Veigar (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Rakan | -0.0900 |  |
+| Jogador 5 | 1-3 | 14:41:04 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | -0.1600 |  |
+| Jogador 5 | 1-3 | 14:41:04 | MOVE Board -> Board: Yorick (i:2.0) <-> Rek'Sai (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | 0.0000 |  |
+| Jogador 5 | 1-3 | 14:41:05 | MOVE Board -> Board: Rek'Sai (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | -0.0100 |  |
+| Jogador 5 | 1-3 | 14:41:05 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | 0.0000 |  |
+| Jogador 5 | 1-4 | 14:41:10 | COMPROU: Rakan (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Rakan | 1.0400 |  |
+| Jogador 5 | 1-4 | 14:41:11 | CRAFT_AND_EQUIP: TFT_Item_BFSword + TFT_Item_SparringGloves -> Rek'Sai (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Rakan | 0.1700 |  |
+| Jogador 5 | 1-4 | 14:41:11 | CRAFT_AND_EQUIP: TFT_Item_RecurveBow + TFT_Item_GiantsBelt -> Rek'Sai (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Rakan | 0.1600 |  |
+| Jogador 5 | 1-4 | 14:41:11 | MOVE Bench -> Board: Veigar (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Rakan | 0.4300 |  |
+| Jogador 5 | 1-4 | 14:41:12 | MOVE Board -> Board: Veigar (i:2.0) <-> Rakan (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Rakan | -0.2600 |  |
+| Jogador 5 | 1-4 | 14:41:12 | COMPROU: Tristana (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Tristana | 0.3500 |  |
+| Jogador 5 | 1-4 | 14:41:13 | MOVE Board -> Board: Rakan (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Tristana | 0.0100 |  |
+| Jogador 5 | 1-4 | 14:41:13 | MOVE Board -> Board: Rakan (i:2.0) <-> Veigar (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Tristana | 0.2300 |  |
+| Jogador 5 | 1-4 | 14:41:13 | MOVE Board -> Board: Veigar (i:2.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Tristana | -0.0200 |  |
+| Jogador 5 | 1-4 | 14:41:14 | MOVE Board -> Board: Yorick (i:2.0) <-> Rek'Sai (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Tristana | -0.0200 |  |
+| Jogador 5 | 1-4 | 14:41:14 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 2-1 | 14:41:17 | COMPROU: Rakan (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Rakan | 1.0500 |  |
+| Jogador 5 | 2-1 | 14:41:17 | COMPROU: Kobuko (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Rakan | 0.9300 |  |
+| Jogador 5 | 2-1 | 14:41:17 | MOVE Bench -> Board: Tristana (i:6.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Rakan | 0.5800 |  |
+| Jogador 5 | 2-1 | 14:41:18 | COMPROU: Rubrivirim (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Rakan | 0.1700 |  |
+| Jogador 5 | 2-1 | 14:41:18 | COMPROU: Rubrivirim (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Rakan | 0.7600 |  |
+| Jogador 5 | 2-1 | 14:41:19 | MOVE Board -> Board: Tristana (i:6.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Rakan | -0.3000 |  |
+| Jogador 5 | 2-1 | 14:41:19 | MOVE Board -> Board: Rek'Sai (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Rakan | -0.0200 |  |
+| Jogador 5 | 2-1 | 14:41:19 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Rakan | 0.0000 |  |
+| Jogador 5 | 2-2 | 14:41:24 | COMPROU: Leona (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 6 | 0 | — | DA_18_Rakan | 0.5300 |  |
+| Jogador 5 | 2-2 | 14:41:24 | COMPROU: LeBlanc (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Rakan | 0.1500 |  |
+| Jogador 5 | 2-2 | 14:41:24 | COMPROU: Kha'Zix (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Rakan | -0.0100 |  |
+| Jogador 5 | 2-2 | 14:41:25 | MOVE Board -> Board: Rek'Sai (i:2.0) <-> Tristana (i:6.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Rakan | 0.3600 |  |
+| Jogador 5 | 2-2 | 14:41:25 | VENDEU: Rakan (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Tristana | -0.2800 |  |
+| Jogador 5 | 2-2 | 14:41:25 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Tristana | -0.1600 |  |
+| Jogador 5 | 2-2 | 14:41:26 | COMPROU: Leona (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Tristana | 0.7600 |  |
+| Jogador 5 | 2-2 | 14:41:27 | COMPROU: Akali (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Tristana | 0.1900 |  |
+| Jogador 5 | 2-2 | 14:41:27 | VENDEU: Leona (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Tristana | -0.2200 |  |
+| Jogador 5 | 2-2 | 14:41:27 | COMPROU: Rammus (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Tristana | 0.2700 |  |
+| Jogador 5 | 2-2 | 14:41:27 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 2-3 | 14:41:31 | COMPROU: Rubrivirim (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 5 | 0 | — | DA_18_Tristana | 0.9000 |  |
+| Jogador 5 | 2-3 | 14:41:31 | COMPROU: Ornn (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Tristana | 0.0100 |  |
+| Jogador 5 | 2-3 | 14:41:31 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Tristana | -0.1600 |  |
+| Jogador 5 | 2-3 | 14:41:31 | COMPROU: Yorick (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Tristana | 0.8900 |  |
+| Jogador 5 | 2-3 | 14:41:32 | VENDEU: Rubrivirim (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Tristana | -0.2000 |  |
+| Jogador 5 | 2-3 | 14:41:32 | COMPROU: Yorick (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Yorick | 0.9400 |  |
+| Jogador 5 | 2-3 | 14:41:32 | MOVE Bench -> Board: Ornn (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Yorick | 0.3700 |  |
+| Jogador 5 | 2-3 | 14:41:33 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Yorick | -0.1600 |  |
+| Jogador 5 | 2-3 | 14:41:33 | COMPROU: Kobuko (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.9500 |  |
+| Jogador 5 | 2-3 | 14:41:34 | MOVE Board -> Board: Ornn (i:2.0) <-> Rek'Sai (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | -0.0200 |  |
+| Jogador 5 | 2-3 | 14:41:34 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.0000 |  |
+| Jogador 5 | 2-4 | 14:41:38 | COMPROU: Yorick (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | Vivaz | DA_18_Yorick | 0.3300 |  |
+| Jogador 5 | 2-4 | 14:41:38 | COMPROU: Warwick (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | Vivaz | DA_18_Yorick | 0.1400 |  |
+| Jogador 5 | 2-4 | 14:41:38 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | Vivaz | DA_18_Yorick | -0.1600 |  |
+| Jogador 5 | 2-4 | 14:41:39 | VENDEU: Yorick (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | Vivaz | DA_18_Tristana | -0.2300 |  |
+| Jogador 5 | 2-4 | 14:41:39 | COMPROU: Rammus (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | Vivaz | DA_18_Tristana | 0.9100 |  |
+| Jogador 5 | 2-4 | 14:41:40 | MOVE Bench -> Board: Kobuko (i:4.0) <-> Rek'Sai (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | Vivaz | DA_18_Kobuko | 0.0700 |  |
+| Jogador 5 | 2-4 | 14:41:40 | MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Ornn (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | Vivaz | DA_18_Kobuko | 0.1000 |  |
+| Jogador 5 | 2-4 | 14:41:41 | MOVE Board -> Board: Kobuko (i:4.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | Vivaz | DA_18_Kobuko | -0.0100 |  |
+| Jogador 5 | 2-4 | 14:41:41 | MOVE Bench -> Board: Ornn (i:2.0) <-> Rek'Sai (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | Vivaz | DA_18_Kobuko | -0.6500 |  |
+| Jogador 5 | 2-4 | 14:41:41 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | Vivaz | DA_18_Kobuko | 0.0000 |  |
+| Jogador 5 | 2-5 | 14:41:45 | MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Vivaz | DA_18_Kobuko | 0.4100 |  |
+| Jogador 5 | 2-5 | 14:41:45 | COMPROU: Warwick (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Vivaz | DA_18_Kobuko | 0.5700 |  |
+| Jogador 5 | 2-5 | 14:41:45 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Kobuko | 0.0400 |  |
+| Jogador 5 | 2-5 | 14:41:45 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Vivaz | DA_18_Kobuko | 0.8100 |  |
+| Jogador 5 | 2-5 | 14:41:46 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Kobuko | -0.1100 |  |
+| Jogador 5 | 2-5 | 14:41:46 | MOVE Board -> Board: Rek'Sai (i:2.0) <-> Kobuko (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Kobuko | 0.0000 |  |
+| Jogador 5 | 2-5 | 14:41:46 | MOVE Board -> Board: Kobuko (i:4.0) <-> Tristana (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Tristana | -0.0200 |  |
+| Jogador 5 | 2-5 | 14:41:47 | MOVE Board -> Board: Tristana (i:6.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Tristana | -0.0100 |  |
+| Jogador 5 | 2-5 | 14:41:48 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 2-6 | 14:41:52 | VENDEU: Kha'Zix (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Vivaz | DA_18_Tristana | 0.0100 |  |
+| Jogador 5 | 2-6 | 14:41:53 | COMPROU: Ornn (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Vivaz | DA_18_Tristana | 0.6800 |  |
+| Jogador 5 | 2-6 | 14:41:53 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Vivaz | DA_18_Tristana | -0.1100 |  |
+| Jogador 5 | 2-6 | 14:41:53 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Tristana | 0.0400 |  |
+| Jogador 5 | 2-6 | 14:41:54 | VENDEU: LeBlanc (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 2-6 | 14:41:54 | COMPROU: Tristana (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Vivaz | DA_18_Tristana | 0.8400 |  |
+| Jogador 5 | 2-6 | 14:41:54 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Tristana | -0.1100 |  |
+| Jogador 5 | 2-6 | 14:41:55 | MOVE Bench -> Board: Warwick (i:4.0) <-> Ornn (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Tristana | -0.0400 |  |
+| Jogador 5 | 2-6 | 14:41:55 | MOVE Board -> Board: Rek'Sai (i:2.0) <-> Kobuko (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Tristana | -0.0200 |  |
+| Jogador 5 | 2-6 | 14:41:56 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 2-7 | 14:42:01 | CRAFT_AND_EQUIP: TFT_Item_ChainVest + TFT_Item_NeedlesslyLargeRod -> Tristana (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Vivaz | DA_18_Tristana | 0.1700 |  |
+| Jogador 5 | 2-7 | 14:42:01 | VENDEU: Yorick (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Vivaz | DA_18_Tristana | 0.0100 |  |
+| Jogador 5 | 2-7 | 14:42:02 | COMPROU: Veigar (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Vivaz | DA_18_Tristana | 0.7400 |  |
+| Jogador 5 | 2-7 | 14:42:02 | VENDEU: Akali (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 2-7 | 14:42:02 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Vivaz | DA_18_Tristana | 0.7600 |  |
+| Jogador 5 | 2-7 | 14:42:03 | MOVE Bench -> Board: Ornn (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Vivaz | DA_18_Tristana | 0.4000 |  |
+| Jogador 5 | 2-7 | 14:42:03 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Tristana | 0.0400 |  |
+| Jogador 5 | 2-7 | 14:42:03 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Vivaz | DA_18_Tristana | 0.2200 |  |
+| Jogador 5 | 2-7 | 14:42:03 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Tristana | -0.1100 |  |
+| Jogador 5 | 2-7 | 14:42:05 | MOVE Board -> Board: Ornn (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 2-7 | 14:42:05 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 3-1 | 14:42:10 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Vivaz | DA_18_RekSai | 0.7400 |  |
+| Jogador 5 | 3-1 | 14:42:10 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_RekSai | 0.0400 |  |
+| Jogador 5 | 3-1 | 14:42:11 | MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Ornn (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_RekSai | 0.1000 |  |
+| Jogador 5 | 3-1 | 14:42:11 | VENDEU: Rek'Sai (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Vivaz | DA_18_Tristana | -0.3100 |  |
+| Jogador 5 | 3-1 | 14:42:11 | EQUIP_FROM_INVENTORY: TFT_Item_InfinityEdge -> Tristana (i:6.0) (tabuleiro slot 18) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Vivaz | DA_18_Tristana | 0.1900 |  |
+| Jogador 5 | 3-1 | 14:42:11 | EQUIP_FROM_INVENTORY: TFT_Item_Leviathan -> Tristana (i:6.0) (tabuleiro slot 18) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Vivaz | DA_18_Tristana | 0.1800 |  |
+| Jogador 5 | 3-1 | 14:42:12 | COMPROU: Veigar (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Vivaz | DA_18_Veigar | 0.7700 |  |
+| Jogador 5 | 3-1 | 14:42:12 | MOVE Bench -> Board: Ornn (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Vivaz | DA_18_Veigar | 0.4000 |  |
+| Jogador 5 | 3-1 | 14:42:12 | COMPROU: Warwick (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Warwick | 0.6700 |  |
+| Jogador 5 | 3-1 | 14:42:14 | MOVE Bench -> Board: Warwick (i:8.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Warwick | 0.4600 |  |
+| Jogador 5 | 3-1 | 14:42:14 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Warwick | 0.0000 |  |
+| Jogador 5 | 3-2 | 14:42:19 | COMPROU: Kobuko (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Vivaz | DA_18_Warwick | 0.1400 |  |
+| Jogador 5 | 3-2 | 14:42:20 | COMPROU: Veigar (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Vivaz | DA_18_Warwick | 0.2200 |  |
+| Jogador 5 | 3-2 | 14:42:20 | MOVE Board -> Board: Warwick (i:8.0) <-> Rek'Sai (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Vivaz | DA_18_Warwick | 0.0000 |  |
+| Jogador 5 | 3-2 | 14:42:20 | MOVE Board -> Board: Rek'Sai (i:2.0) <-> Kobuko (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Vivaz | DA_18_Warwick | -0.0100 |  |
+| Jogador 5 | 3-2 | 14:42:21 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Vivaz | DA_18_Warwick | 0.0000 |  |
+| Jogador 5 | 3-3 | 14:42:29 | COMPROU: Caitlyn (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 13 | 0 | Vivaz | DA_18_Warwick | 0.1600 |  |
+| Jogador 5 | 3-3 | 14:42:29 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Vivaz | DA_18_Warwick | 0.0400 |  |
+| Jogador 5 | 3-3 | 14:42:29 | VENDEU: Veigar (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 14 | 0 | Vivaz | DA_18_Warwick | -0.3700 |  |
+| Jogador 5 | 3-3 | 14:42:30 | COMPROU: Caitlyn (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 12 | 0 | Vivaz | DA_18_Warwick | 0.6700 |  |
+| Jogador 5 | 3-3 | 14:42:30 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Vivaz | DA_18_Warwick | 0.0400 |  |
+| Jogador 5 | 3-3 | 14:42:30 | MOVE Board -> Board: Kobuko (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Vivaz | DA_18_Warwick | 0.0800 |  |
+| Jogador 5 | 3-3 | 14:42:30 | VENDEU: Kobuko (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Vivaz | DA_18_Warwick | -0.3600 |  |
+| Jogador 5 | 3-3 | 14:42:31 | COMPROU: Teemo (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Vivaz | DA_18_Warwick | 0.1300 |  |
+| Jogador 5 | 3-3 | 14:42:31 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Vivaz | DA_18_Warwick | 0.0400 |  |
+| Jogador 5 | 3-3 | 14:42:33 | VENDEU: Ornn (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Vivaz | DA_18_Warwick | -0.2600 |  |
+| Jogador 5 | 3-3 | 14:42:33 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Vivaz | DA_18_Warwick | 0.0000 |  |
+| Jogador 5 | 3-4 | 14:42:39 | COMPROU: Veigar (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 13 | 0 | Vivaz | DA_18_Warwick | 0.7400 |  |
+| Jogador 5 | 3-4 | 14:42:40 | VENDEU: Caitlyn (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 15 | 0 | Vivaz | DA_18_Warwick | -0.2600 |  |
+| Jogador 5 | 3-4 | 14:42:40 | COMPROU: Xayah (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 14 | 0 | Vivaz | DA_18_Warwick | 0.2000 |  |
+| Jogador 5 | 3-4 | 14:42:40 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 12 | 0 | Vivaz | DA_18_Warwick | 0.0400 |  |
+| Jogador 5 | 3-4 | 14:42:41 | VENDEU: Caitlyn (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 14 | 0 | Vivaz | DA_18_Warwick | 0.0100 |  |
+| Jogador 5 | 3-4 | 14:42:41 | COMPROU: Kobuko (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 13 | 0 | Vivaz | DA_18_Warwick | 0.2200 |  |
+| Jogador 5 | 3-4 | 14:42:41 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Vivaz | DA_18_Warwick | 0.0400 |  |
+| Jogador 5 | 3-4 | 14:42:42 | VENDEU: Kobuko (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 12 | 0 | Vivaz | DA_18_Warwick | -0.3600 |  |
+| Jogador 5 | 3-4 | 14:42:42 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Vivaz | DA_18_Warwick | 0.7600 |  |
+| Jogador 5 | 3-4 | 14:42:44 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Vivaz | DA_18_Warwick | -0.1900 |  |
+| Jogador 5 | 3-4 | 14:42:44 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Vivaz | DA_18_Warwick | 0.0000 |  |
+| Jogador 5 | 3-5 | 14:42:47 | COMPROU: Azir (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Vivaz | DA_18_Warwick | 0.0700 |  |
+| Jogador 5 | 3-5 | 14:42:48 | MOVE Bench -> Board: Veigar (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Vivaz | DA_18_Warwick | 0.6100 |  |
+| Jogador 5 | 3-5 | 14:42:48 | COMPROU: Rakan (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Vivaz | DA_18_Warwick | 0.0500 |  |
+| Jogador 5 | 3-5 | 14:42:48 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Vivaz | DA_18_Warwick | -0.0400 |  |
+| Jogador 5 | 3-5 | 14:42:49 | VENDEU: Rek'Sai (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Vivaz | DA_18_Warwick | -0.1500 |  |
+| Jogador 5 | 3-5 | 14:42:51 | COMPROU: Ornn (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Vivaz | DA_18_Warwick | 0.4400 |  |
+| Jogador 5 | 3-5 | 14:42:51 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Vivaz | DA_18_Warwick | -0.1900 |  |
+| Jogador 5 | 3-5 | 14:42:52 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Vivaz | DA_18_Warwick | 0.0400 |  |
+| Jogador 5 | 3-5 | 14:42:52 | VENDEU: Rakan (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Vivaz | DA_18_Warwick | -0.0100 |  |
+| Jogador 5 | 3-5 | 14:42:52 | COMPROU: Teemo (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Vivaz | DA_18_Warwick | 0.7300 |  |
+| Jogador 5 | 3-5 | 14:42:52 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Vivaz | DA_18_Warwick | 0.0000 |  |
+| Jogador 5 | 3-6 | 14:42:58 | MOVE Board -> Board: Veigar (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Vivaz | DA_18_Warwick | 0.0100 |  |
+| Jogador 5 | 3-6 | 14:42:59 | VENDEU: Azir (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 14 | 0 | Vivaz | DA_18_Warwick | 0.0000 |  |
+| Jogador 5 | 3-6 | 14:42:59 | COMPROU: Ahri (Custo 4 \| i:8.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Vivaz | DA_18_Warwick | -0.1400 |  |
+| Jogador 5 | 3-6 | 14:42:59 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Vivaz | DA_18_Warwick | -0.0400 |  |
+| Jogador 5 | 3-6 | 14:43:00 | VENDEU: Xayah (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Vivaz | DA_18_Warwick | -0.1800 |  |
+| Jogador 5 | 3-6 | 14:43:00 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Vivaz | DA_18_Warwick | -0.1100 |  |
+| Jogador 5 | 3-6 | 14:43:00 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Vivaz | DA_18_Warwick | 0.0400 |  |
+| Jogador 5 | 3-6 | 14:43:00 | COMPROU: Rammus (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Vivaz | DA_18_Rammus | 0.7600 |  |
+| Jogador 5 | 3-6 | 14:43:01 | COMPROU: Xayah (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Vivaz | DA_18_Rammus | 0.1900 |  |
+| Jogador 5 | 3-6 | 14:43:03 | MOVE Board -> Board: Ornn (i:2.0) <-> Veigar (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Vivaz | DA_18_Rammus | 0.0000 |  |
+| Jogador 5 | 3-6 | 14:43:04 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Vivaz | DA_18_Rammus | 0.0000 |  |
+| Jogador 5 | 3-7 | 14:43:08 | COMPROU: Tristana (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Tristana | 0.7600 |  |
+| Jogador 5 | 3-7 | 14:43:08 | MOVE Bench -> Board: Teemo (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Tristana | 0.4900 |  |
+| Jogador 5 | 3-7 | 14:43:08 | CRAFT_AND_EQUIP: TFT_Item_ChainVest + TFT_Item_SparringGloves -> Ornn (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Tristana | 0.1500 |  |
+| Jogador 5 | 3-7 | 14:43:09 | CRAFT_AND_EQUIP: TFT_Item_NeedlesslyLargeRod + TFT_Item_NegatronCloak -> Ornn (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Tristana | 0.1400 |  |
+| Jogador 5 | 3-7 | 14:43:12 | MOVE Board -> Board: Teemo (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 3-7 | 14:43:12 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Vivaz | DA_18_Tristana | -0.1100 |  |
+| Jogador 5 | 3-7 | 14:43:12 | MOVE Board -> Board: Veigar (i:2.0) <-> Warwick (i:8.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 3-7 | 14:43:13 | MOVE Board -> Board: Warwick (i:8.0) <-> Teemo (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Vivaz | DA_18_Tristana | -0.0100 |  |
+| Jogador 5 | 3-7 | 14:43:13 | MOVE Board -> Board: Teemo (i:4.0) <-> Ornn (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Vivaz | DA_18_Tristana | -0.0200 |  |
+| Jogador 5 | 3-7 | 14:43:13 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 4-1 | 14:43:16 | COMPROU: Veigar (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Vivaz | DA_18_Tristana | 0.7700 |  |
+| Jogador 5 | 4-1 | 14:43:17 | MOVE Bench -> Board: Veigar (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Vivaz | DA_18_Tristana | 0.3500 |  |
+| Jogador 5 | 4-1 | 14:43:20 | COMPROU: Xayah (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Vivaz | DA_18_Tristana | 0.7100 |  |
+| Jogador 5 | 4-1 | 14:43:20 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Vivaz | DA_18_Tristana | 0.0400 |  |
+| Jogador 5 | 4-1 | 14:43:20 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Tristana | -0.1100 |  |
+| Jogador 5 | 4-1 | 14:43:21 | MOVE Board -> Board: Veigar (i:4.0) <-> Teemo (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 4-1 | 14:43:21 | MOVE Board -> Board: Teemo (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Tristana | -0.0100 |  |
+| Jogador 5 | 4-1 | 14:43:21 | MOVE Board -> Board: Ornn (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Tristana | -0.0100 |  |
+| Jogador 5 | 4-1 | 14:43:21 | MOVE Bench -> Board: Xayah (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Tristana | 0.3900 |  |
+| Jogador 5 | 4-1 | 14:43:22 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 4-2 | 14:43:28 | COMPROU: Teemo (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Vivaz | DA_18_Tristana | 0.7700 |  |
+| Jogador 5 | 4-2 | 14:43:29 | MOVE Bench -> Board: Teemo (i:8.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 4 | 0 | Vivaz | DA_18_Tristana | 0.5500 |  |
+| Jogador 5 | 4-2 | 14:43:29 | COMPROU: Kobuko (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 3 | 0 | Vivaz | DA_18_Tristana | 0.2200 |  |
+| Jogador 5 | 4-2 | 14:43:29 | MOVE Board -> Board: Teemo (i:8.0) <-> Warwick (i:8.0) | FAST8 | FAST8: composição planejada exige nível 8 | 3 | 0 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 4-2 | 14:43:29 | MOVE Bench -> Board: Kobuko (i:2.0) <-> Warwick (i:8.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Tristana | -0.0200 |  |
+| Jogador 5 | 4-2 | 14:43:30 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 4-3 | 14:43:37 | MOVE Board -> Board: Kobuko (i:2.0) <-> Veigar (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Vivaz | DA_18_Tristana | -0.1100 |  |
+| Jogador 5 | 4-3 | 14:43:38 | MOVE Board -> Board: Veigar (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Vivaz | DA_18_Tristana | 0.1200 |  |
+| Jogador 5 | 4-3 | 14:43:38 | COMPROU: Kobuko (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Vivaz | DA_18_Tristana | 0.7500 |  |
+| Jogador 5 | 4-3 | 14:43:38 | MOVE Bench -> Board: Warwick (i:8.0) <-> Veigar (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 8 | 0 | Vivaz | DA_18_Tristana | -0.8100 |  |
+| Jogador 5 | 4-3 | 14:43:39 | MOVE Bench -> Board: Veigar (i:4.0) <-> Ornn (i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 8 | 0 | Vivaz | DA_18_Tristana | 0.2100 |  |
+| Jogador 5 | 4-3 | 14:43:42 | MOVE Bench -> Board: Ornn (i:2.0) <-> Warwick (i:8.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Vivaz | DA_18_Tristana | -0.7400 |  |
+| Jogador 5 | 4-3 | 14:43:42 | MOVE Bench -> Board: Warwick (i:8.0) <-> Veigar (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 8 | 0 | Vivaz | DA_18_Tristana | -0.7800 |  |
+| Jogador 5 | 4-3 | 14:43:42 | PASSOU TURNO | FAST8 | FAST8: composição planejada exige nível 8 | 8 | 0 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 4-4 | 14:43:47 | COMPROU: Xayah (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 13 | 0 | Vivaz | DA_18_Tristana | 0.7700 |  |
+| Jogador 5 | 4-4 | 14:43:47 | MOVE Bench -> Board: Veigar (i:4.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 13 | 0 | Vivaz | DA_18_Tristana | 0.6500 |  |
+| Jogador 5 | 4-4 | 14:43:50 | MOVE Board -> Board: Veigar (i:4.0) <-> Kobuko (i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 13 | 0 | Vivaz | DA_18_Tristana | 0.0200 |  |
+| Jogador 5 | 4-4 | 14:43:51 | MOVE Board -> Board: Kobuko (i:2.0) <-> Ornn (i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 13 | 0 | Vivaz | DA_18_Tristana | -0.0200 |  |
+| Jogador 5 | 4-4 | 14:43:51 | MOVE Board -> Board: Ornn (i:2.0) <-> Teemo (i:8.0) | FAST8 | FAST8: composição planejada exige nível 8 | 13 | 0 | Vivaz | DA_18_Tristana | 0.0500 |  |
+| Jogador 5 | 4-4 | 14:43:51 | MOVE Board -> Board: Teemo (i:8.0) <-> Warwick (i:8.0) | FAST8 | FAST8: composição planejada exige nível 8 | 13 | 0 | Vivaz | DA_18_Tristana | -0.0100 |  |
+| Jogador 5 | 4-4 | 14:43:52 | MOVE Board -> Board: Warwick (i:8.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 13 | 0 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 4-4 | 14:43:52 | MOVE Board -> Board: Veigar (i:4.0) <-> Ornn (i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 13 | 0 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 4-4 | 14:43:52 | MOVE Board -> Board: Ornn (i:2.0) <-> Kobuko (i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 13 | 0 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 4-4 | 14:43:52 | PASSOU TURNO | FAST8 | FAST8: composição planejada exige nível 8 | 13 | 0 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 4-5 | 14:43:57 | MOVE Board -> Board: Kobuko (i:2.0) <-> Teemo (i:8.0) | FAST8 | FAST8: composição planejada exige nível 8 | 20 | 1 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 4-5 | 14:43:57 | MOVE Board -> Board: Teemo (i:8.0) <-> Warwick (i:8.0) | FAST8 | FAST8: composição planejada exige nível 8 | 20 | 1 | Vivaz | DA_18_Tristana | -0.2400 |  |
+| Jogador 5 | 4-5 | 14:43:57 | PASSOU TURNO | FAST8 | FAST8: composição planejada exige nível 8 | 20 | 1 | Vivaz | DA_18_Tristana | -0.1100 |  |
+| Jogador 5 | 4-6 | 14:44:08 | MOVE Board -> Board: Warwick (i:8.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 27 | 2 | Vivaz | DA_18_Tristana | -0.0600 |  |
+| Jogador 5 | 4-6 | 14:44:08 | MOVE Board -> Board: Warwick (i:8.0) <-> Ornn (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 27 | 2 | Vivaz | DA_18_Tristana | -0.0200 |  |
+| Jogador 5 | 4-6 | 14:44:08 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 27 | 2 | Vivaz | DA_18_Tristana | -0.1300 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 5 | 4-7 | 14:44:19 | CRAFT_AND_EQUIP: TFT_Item_RecurveBow + TFT_Item_NegatronCloak -> Kobuko (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 34 | 2 | Vivaz | DA_18_Tristana | 0.1700 |  |
+| Jogador 5 | 4-7 | 14:44:19 | CRAFT_AND_EQUIP: TFT_Item_GiantsBelt + TFT_Item_NeedlesslyLargeRod -> Kobuko (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 34 | 2 | Vivaz | DA_18_Tristana | 0.1600 |  |
+| Jogador 5 | 4-7 | 14:44:19 | MOVE Bench -> Board: Kobuko (i:2.0) <-> Warwick (i:8.0) | STABILIZE | STABILIZE: pressão de vida | 34 | 2 | Vivaz | DA_18_Tristana | 0.0300 |  |
+| Jogador 5 | 4-7 | 14:44:19 | MOVE Bench -> Board: Warwick (i:8.0) <-> Kobuko (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 34 | 2 | Vivaz | DA_18_Tristana | -0.3500 |  |
+| Jogador 5 | 4-7 | 14:44:20 | MOVE Bench -> Board: Kobuko (i:2.0) <-> Kobuko (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 34 | 2 | Vivaz | DA_18_Tristana | -0.3100 |  |
+| Jogador 5 | 4-7 | 14:44:20 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 34 | 2 | Vivaz | DA_18_Tristana | -0.2200 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 5 | 5-1 | 14:44:29 | MOVE Board -> Board: Ornn (i:2.0) <-> Vazio | ALL_IN | HP crítico: gastar para sobreviver | 43 | 3 | Vivaz | DA_18_Tristana | 0.0800 |  |
+| Jogador 5 | 5-1 | 14:44:29 | MOVE Board -> Board: Ornn (i:2.0) <-> Kobuko (i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 43 | 3 | Vivaz | DA_18_Tristana | -0.0100 |  |
+| Jogador 5 | 5-1 | 14:44:30 | MOVE Board -> Board: Kobuko (i:2.0) <-> Veigar (i:4.0) | ALL_IN | HP crítico: gastar para sobreviver | 43 | 3 | Vivaz | DA_18_Tristana | 0.1600 |  |
+| Jogador 5 | 5-1 | 14:44:30 | MOVE Board -> Board: Veigar (i:4.0) <-> Warwick (i:8.0) | ALL_IN | HP crítico: gastar para sobreviver | 43 | 3 | Vivaz | DA_18_Tristana | -0.0100 |  |
+| Jogador 5 | 5-1 | 14:44:30 | MOVE Board -> Board: Warwick (i:8.0) <-> Teemo (i:8.0) | ALL_IN | HP crítico: gastar para sobreviver | 43 | 3 | Vivaz | DA_18_Tristana | 0.0200 |  |
+| Jogador 5 | 5-1 | 14:44:31 | MOVE Board -> Board: Teemo (i:8.0) <-> Vazio | ALL_IN | HP crítico: gastar para sobreviver | 43 | 3 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 5-1 | 14:44:31 | MOVE Board -> Board: Teemo (i:8.0) <-> Kobuko (i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 43 | 3 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 5-1 | 14:44:31 | MOVE Board -> Board: Kobuko (i:2.0) <-> Vazio | ALL_IN | HP crítico: gastar para sobreviver | 43 | 3 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 5 | 5-1 | 14:44:31 | MOVE Board -> Board: Kobuko (i:2.0) <-> Ornn (i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 43 | 3 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | ? | 14:40:45 | MOVE Bench -> Board: Cascalho (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Sentry | 0.1600 |  |
+| Jogador 6 | ? | 14:40:46 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Sentry | 0.0000 |  |
+| Jogador 6 | 1-1 | 14:40:51 | COMPROU: Yorick (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Yorick | 0.1700 |  |
+| Jogador 6 | 1-1 | 14:40:51 | COMPROU: Yorick (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.9900 |  |
+| Jogador 6 | 1-1 | 14:40:52 | MOVE Bench -> Board: Yorick (i:2.0) <-> Cascalho (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.1000 |  |
+| Jogador 6 | 1-1 | 14:40:52 | MOVE Bench -> Board: Cascalho (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.1300 |  |
+| Jogador 6 | 1-1 | 14:40:52 | MOVE Bench -> Board: Yorick (i:2.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | -0.4100 |  |
+| Jogador 6 | 1-1 | 14:40:53 | MOVE Bench -> Board: Yorick (i:2.0) <-> Cascalho (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.0700 |  |
+| Jogador 6 | 1-1 | 14:40:53 | MOVE Board -> Board: Yorick (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | -0.0200 |  |
+| Jogador 6 | 1-1 | 14:40:53 | MOVE Bench -> Board: Cascalho (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.1600 |  |
+| Jogador 6 | 1-1 | 14:40:53 | MOVE Board -> Board: Cascalho (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.2700 |  |
+| Jogador 6 | 1-1 | 14:40:54 | MOVE Board -> Board: Yorick (i:2.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.0000 |  |
+| Jogador 6 | 1-1 | 14:40:54 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.0000 |  |
+| Jogador 6 | 1-2 | 14:40:57 | COMPROU: Teemo (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.1800 |  |
+| Jogador 6 | 1-2 | 14:40:57 | MOVE Board -> Board: Yorick (i:2.0) <-> Cascalho (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.0000 |  |
+| Jogador 6 | 1-2 | 14:40:58 | MOVE Board -> Board: Cascalho (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | -0.0100 |  |
+| Jogador 6 | 1-2 | 14:40:58 | MOVE Board -> Board: Cascalho (i:2.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | -0.3300 |  |
+| Jogador 6 | 1-2 | 14:40:58 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.0000 |  |
+| Jogador 6 | 1-3 | 14:41:04 | COMPROU: Cascalho (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Yorick | 1.0300 |  |
+| Jogador 6 | 1-3 | 14:41:04 | COMPROU: Lobo Trevoguari (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.2000 |  |
+| Jogador 6 | 1-3 | 14:41:04 | MOVE Board -> Board: Yorick (i:2.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.0000 |  |
+| Jogador 6 | 1-3 | 14:41:04 | MOVE Board -> Board: Yorick (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | -0.0100 |  |
+| Jogador 6 | 1-3 | 14:41:05 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.0000 |  |
+| Jogador 6 | 1-4 | 14:41:10 | CRAFT_AND_EQUIP: TFT_Item_BFSword + TFT_Item_GiantsBelt -> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Yorick | 0.2000 |  |
+| Jogador 6 | 1-4 | 14:41:11 | CRAFT_AND_EQUIP: TFT_Item_NeedlesslyLargeRod + TFT_Item_TearOfTheGoddess -> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Yorick | 0.1900 |  |
+| Jogador 6 | 1-4 | 14:41:11 | COMPROU: Rakan (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Yorick | 0.2600 |  |
+| Jogador 6 | 1-4 | 14:41:11 | MOVE Bench -> Board: Lobo Trevoguari (i:4.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Yorick | 0.4300 |  |
+| Jogador 6 | 1-4 | 14:41:12 | COMPROU: Aronguejo (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Yorick | 0.3700 |  |
+| Jogador 6 | 1-4 | 14:41:12 | MOVE Board -> Board: Lobo Trevoguari (i:4.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Yorick | 0.0000 |  |
+| Jogador 6 | 1-4 | 14:41:13 | MOVE Board -> Board: Lobo Trevoguari (i:4.0) <-> Cascalho (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_Murkwolf18 | 0.3200 |  |
+| Jogador 6 | 1-4 | 14:41:13 | MOVE Board -> Board: Cascalho (i:2.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_Murkwolf18 | -0.0100 |  |
+| Jogador 6 | 1-4 | 14:41:13 | MOVE Board -> Board: Yorick (i:2.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_Murkwolf18 | -0.0100 |  |
+| Jogador 6 | 1-4 | 14:41:14 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_Murkwolf18 | 0.0000 |  |
+| Jogador 6 | 2-1 | 14:41:17 | COMPROU: Tristana (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Tristana | 0.1300 |  |
+| Jogador 6 | 2-1 | 14:41:17 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Tristana | -0.1600 |  |
+| Jogador 6 | 2-1 | 14:41:17 | COMPROU: Aronguejo (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Tristana | 0.9600 |  |
+| Jogador 6 | 2-1 | 14:41:18 | MOVE Board -> Board: Yorick (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 2-1 | 14:41:18 | MOVE Board -> Board: Lobo Trevoguari (i:4.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Tristana | -0.0100 |  |
+| Jogador 6 | 2-1 | 14:41:19 | MOVE Board -> Board: Yorick (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Tristana | -0.0200 |  |
+| Jogador 6 | 2-1 | 14:41:19 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 2-2 | 14:41:24 | COMPROU: Rakan (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 6 | 0 | — | DA_18_Tristana | 0.8400 |  |
+| Jogador 6 | 2-2 | 14:41:24 | COMPROU: Rakan (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 5 | 0 | — | DA_18_Rakan | 0.9200 |  |
+| Jogador 6 | 2-2 | 14:41:24 | COMPROU: Akali (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Rakan | 0.2600 |  |
+| Jogador 6 | 2-2 | 14:41:25 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Rakan | -0.1600 |  |
+| Jogador 6 | 2-2 | 14:41:25 | COMPROU: Yorick (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Yorick | 0.9500 |  |
+| Jogador 6 | 2-2 | 14:41:25 | MOVE Bench -> Board: Aronguejo (i:4.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Yorick | 0.2800 |  |
+| Jogador 6 | 2-2 | 14:41:26 | COMPROU: Rubrivirim (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.2400 |  |
+| Jogador 6 | 2-2 | 14:41:27 | MOVE Bench -> Board: Rubrivirim (i:2.0) <-> Aronguejo (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | -0.3300 |  |
+| Jogador 6 | 2-2 | 14:41:27 | MOVE Bench -> Board: Aronguejo (i:4.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Yorick | 0.5200 |  |
+| Jogador 6 | 2-2 | 14:41:27 | VENDEU: Yorick (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Rakan | -0.3100 |  |
+| Jogador 6 | 2-2 | 14:41:27 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Rakan | 0.0000 |  |
+| Jogador 6 | 2-3 | 14:41:31 | EQUIP_FROM_INVENTORY: TFT_Item_SteraksGage -> Cascalho (i:2.0) (tabuleiro slot 18) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 10 | 0 | — | DA_18_Rakan | 0.1000 |  |
+| Jogador 6 | 2-3 | 14:41:31 | EQUIP_FROM_INVENTORY: TFT_Item_ArchangelsStaff -> Cascalho (i:2.0) (tabuleiro slot 18) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 10 | 0 | — | DA_18_Rakan | 0.1200 |  |
+| Jogador 6 | 2-3 | 14:41:31 | COMPROU: Rubrivirim (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 9 | 0 | — | DA_18_Rakan | 0.8100 |  |
+| Jogador 6 | 2-3 | 14:41:31 | COMPROU: Rubrivirim (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 8 | 0 | — | DA_18_Rakan | 0.9400 |  |
+| Jogador 6 | 2-3 | 14:41:32 | MOVE Bench -> Board: Cascalho (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 8 | 0 | — | DA_18_Rakan | 0.5200 |  |
+| Jogador 6 | 2-3 | 14:41:32 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 6 | 0 | — | DA_18_Rakan | -0.1600 |  |
+| Jogador 6 | 2-3 | 14:41:32 | COMPROU: Kog'Maw (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Rakan | 0.3200 |  |
+| Jogador 6 | 2-3 | 14:41:33 | COMPROU: Vi (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | 0.2800 |  |
+| Jogador 6 | 2-3 | 14:41:33 | MOVE Board -> Board: Aronguejo (i:4.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | 0.0000 |  |
+| Jogador 6 | 2-3 | 14:41:34 | MOVE Board -> Board: Cascalho (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | -0.3600 |  |
+| Jogador 6 | 2-3 | 14:41:34 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | 0.0000 |  |
+| Jogador 6 | 2-4 | 14:41:38 | COMPROU: Lobo Trevoguari (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | Fera do Rift | DA_18_Rakan | 0.8900 |  |
+| Jogador 6 | 2-4 | 14:41:38 | MOVE Bench -> Board: Vi (i:6.0) <-> Cascalho (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | Fera do Rift | DA_18_Rakan | -0.0800 |  |
+| Jogador 6 | 2-4 | 14:41:38 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | Fera do Rift | DA_18_Rakan | -0.1600 |  |
+| Jogador 6 | 2-4 | 14:41:39 | VENDEU: Rubrivirim (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 5 | 0 | Fera do Rift | DA_18_Rakan | -0.2800 |  |
+| Jogador 6 | 2-4 | 14:41:39 | COMPROU: Cascalho (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | Fera do Rift | DA_18_Rakan | 0.9500 |  |
+| Jogador 6 | 2-4 | 14:41:40 | MOVE Bench -> Board: Kog'Maw (i:6.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | Fera do Rift | DA_18_Rakan | 0.5300 |  |
+| Jogador 6 | 2-4 | 14:41:40 | COMPROU: Rakan (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | Fera do Rift | DA_18_Rakan | 0.3300 |  |
+| Jogador 6 | 2-4 | 14:41:41 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | Fera do Rift | DA_18_Rakan | -0.1600 |  |
+| Jogador 6 | 2-4 | 14:41:41 | COMPROU: Veigar (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | Fera do Rift | DA_18_Rakan | -0.2400 |  |
+| Jogador 6 | 2-4 | 14:41:41 | MOVE Board -> Board: Kog'Maw (i:6.0) <-> Vi (i:6.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | Fera do Rift | DA_18_Rakan | -0.3100 |  |
+| Jogador 6 | 2-4 | 14:41:42 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | Fera do Rift | DA_18_Rakan | 0.0000 |  |
+| Jogador 6 | 2-5 | 14:41:45 | VENDEU: Cascalho (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Fera do Rift | DA_18_Rakan | -0.2700 |  |
+| Jogador 6 | 2-5 | 14:41:45 | EQUIP_FROM_INVENTORY: TFT_Item_SteraksGage -> Aronguejo (i:4.0) (tabuleiro slot 19) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Fera do Rift | DA_18_Rakan | 0.1500 |  |
+| Jogador 6 | 2-5 | 14:41:45 | EQUIP_FROM_INVENTORY: TFT_Item_ArchangelsStaff -> Aronguejo (i:4.0) (tabuleiro slot 19) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Fera do Rift | DA_18_Rakan | 0.0900 |  |
+| Jogador 6 | 2-5 | 14:41:45 | COMPROU: Vi (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Fera do Rift | DA_18_Rakan | 0.5600 |  |
+| Jogador 6 | 2-5 | 14:41:46 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Fera do Rift | DA_18_Rakan | 0.0400 |  |
+| Jogador 6 | 2-5 | 14:41:46 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Fera do Rift | DA_18_Rakan | -0.1100 |  |
+| Jogador 6 | 2-5 | 14:41:46 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Fera do Rift | DA_18_Rakan | -0.1100 |  |
+| Jogador 6 | 2-5 | 14:41:47 | VENDEU: Rakan (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Fera do Rift | DA_KogMaw18_AD | -0.2800 |  |
+| Jogador 6 | 2-5 | 14:41:48 | COMPROU: Tristana (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Fera do Rift | DA_18_Tristana | 0.8200 |  |
+| Jogador 6 | 2-5 | 14:41:48 | VENDEU: Veigar (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Fera do Rift | DA_18_Tristana | 0.0100 |  |
+| Jogador 6 | 2-5 | 14:41:49 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Fera do Rift | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 2-6 | 14:41:52 | COMPROU: Akali (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Fera do Rift | DA_18_Tristana | 0.8300 |  |
+| Jogador 6 | 2-6 | 14:41:53 | VENDEU: Teemo (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Fera do Rift | DA_18_Tristana | 0.0100 |  |
+| Jogador 6 | 2-6 | 14:41:53 | COMPROU: Rakan (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Fera do Rift | DA_18_Tristana | 0.8100 |  |
+| Jogador 6 | 2-6 | 14:41:53 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Fera do Rift | DA_18_Tristana | 0.0400 |  |
+| Jogador 6 | 2-6 | 14:41:54 | MOVE Bench -> Board: Akali (i:2.0) <-> Vi (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Fera do Rift | DA_18_Tristana | 0.0800 |  |
+| Jogador 6 | 2-6 | 14:41:54 | MOVE Bench -> Board: Vi (i:6.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Fera do Rift | DA_18_Tristana | 0.3800 |  |
+| Jogador 6 | 2-6 | 14:41:54 | COMPROU: Tristana (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Fera do Rift | DA_18_Tristana | 0.8700 |  |
+| Jogador 6 | 2-6 | 14:41:55 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Fera do Rift | DA_18_Tristana | -0.1100 |  |
+| Jogador 6 | 2-6 | 14:41:55 | MOVE Board -> Board: Vi (i:6.0) <-> Kog'Maw (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Fera do Rift | DA_18_Tristana | 0.2400 |  |
+| Jogador 6 | 2-6 | 14:41:56 | MOVE Board -> Board: Kog'Maw (i:6.0) <-> Aronguejo (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Fera do Rift | DA_18_Tristana | -0.0100 |  |
+| Jogador 6 | 2-6 | 14:41:57 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Fera do Rift | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 2-7 | 14:42:01 | CRAFT_AND_EQUIP: TFT_Item_BFSword + TFT_Item_NeedlesslyLargeRod -> Kog'Maw (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Fera do Rift | DA_18_Tristana | 0.2100 |  |
+| Jogador 6 | 2-7 | 14:42:01 | COMPROU: Rakan (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Fera do Rift | DA_18_Tristana | 0.7600 |  |
+| Jogador 6 | 2-7 | 14:42:02 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Fera do Rift | DA_18_Tristana | 0.0400 |  |
+| Jogador 6 | 2-7 | 14:42:02 | COMPROU: Aronguejo (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Fera do Rift | DA_18_Tristana | 0.7700 |  |
+| Jogador 6 | 2-7 | 14:42:02 | MOVE Bench -> Board: Tristana (i:12.0) <-> Akali (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Fera do Rift | DA_18_Tristana | -0.2900 |  |
+| Jogador 6 | 2-7 | 14:42:03 | MOVE Bench -> Board: Akali (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Fera do Rift | DA_18_Tristana | 0.5000 |  |
+| Jogador 6 | 2-7 | 14:42:03 | MOVE Board -> Board: Akali (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Fera do Rift | DA_18_Tristana | -0.0100 |  |
+| Jogador 6 | 2-7 | 14:42:03 | MOVE Board -> Board: Tristana (i:12.0) <-> Kog'Maw (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Fera do Rift | DA_18_Tristana | -0.0100 |  |
+| Jogador 6 | 2-7 | 14:42:03 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Fera do Rift | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 3-1 | 14:42:10 | COMPROU: Rubrivirim (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Fera do Rift | DA_18_Tristana | 0.2200 |  |
+| Jogador 6 | 3-1 | 14:42:10 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Fera do Rift | DA_18_Tristana | 0.0400 |  |
+| Jogador 6 | 3-1 | 14:42:11 | COMPROU: Kog'Maw (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Fera do Rift | DA_18_Tristana | 0.7300 |  |
+| Jogador 6 | 3-1 | 14:42:11 | MOVE Board -> Board: Kog'Maw (i:6.0) <-> Vi (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Fera do Rift | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 3-1 | 14:42:11 | MOVE Board -> Board: Vi (i:6.0) <-> Akali (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Fera do Rift | DA_18_Tristana | -0.0100 |  |
+| Jogador 6 | 3-1 | 14:42:11 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Fera do Rift | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 3-2 | 14:42:19 | COMPROU: Aronguejo (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Fera do Rift | DA_18_Tristana | 0.2200 |  |
+| Jogador 6 | 3-2 | 14:42:20 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Fera do Rift | DA_18_Tristana | 0.0400 |  |
+| Jogador 6 | 3-2 | 14:42:20 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Fera do Rift | DA_18_Tristana | -0.1200 |  |
+| Jogador 6 | 3-2 | 14:42:20 | COMPROU: Xayah (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Fera do Rift | DA_18_Tristana | -0.0500 |  |
+| Jogador 6 | 3-2 | 14:42:21 | VENDEU: Aronguejo (i:8.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Fera do Rift | DA_18_Tristana | -0.3700 |  |
+| Jogador 6 | 3-2 | 14:42:21 | EQUIP_FROM_INVENTORY: TFT_Item_SteraksGage -> Vi (i:6.0) (tabuleiro slot 18) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Fera do Rift | DA_18_Tristana | 0.0900 |  |
+| Jogador 6 | 3-2 | 14:42:21 | EQUIP_FROM_INVENTORY: TFT_Item_ArchangelsStaff -> Vi (i:6.0) (tabuleiro slot 18) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Fera do Rift | DA_18_Tristana | 0.0800 |  |
+| Jogador 6 | 3-2 | 14:42:21 | COMPROU: Lobo Trevoguari (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Fera do Rift | DA_18_Tristana | 0.7700 |  |
+| Jogador 6 | 3-2 | 14:42:22 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Fera do Rift | DA_18_Tristana | 0.0400 |  |
+| Jogador 6 | 3-2 | 14:42:24 | MOVE Bench -> Board: Kog'Maw (i:6.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Fera do Rift | DA_18_Tristana | -0.0900 |  |
+| Jogador 6 | 3-2 | 14:42:24 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Fera do Rift | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 3-3 | 14:42:29 | COMPROU: Aronguejo (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Fera do Rift | DA_18_Tristana | 0.7300 |  |
+| Jogador 6 | 3-3 | 14:42:29 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Fera do Rift | DA_18_Tristana | 0.0400 |  |
+| Jogador 6 | 3-3 | 14:42:29 | COMPROU: Xayah (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Fera do Rift | DA_18_Tristana | 0.4000 |  |
+| Jogador 6 | 3-3 | 14:42:30 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Fera do Rift | DA_18_Tristana | 0.0400 |  |
+| Jogador 6 | 3-3 | 14:42:30 | VENDEU: Rakan (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Fera do Rift | DA_18_Tristana | -0.3500 |  |
+| Jogador 6 | 3-3 | 14:42:30 | COMPROU: Aronguejo (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Fera do Rift | DA_18_Tristana | 0.7600 |  |
+| Jogador 6 | 3-3 | 14:42:30 | COMPROU: Rakan (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Fera do Rift | DA_18_Tristana | 0.1800 |  |
+| Jogador 6 | 3-3 | 14:42:31 | MOVE Board -> Board: Kog'Maw (i:6.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Fera do Rift | DA_18_Tristana | 0.1400 |  |
+| Jogador 6 | 3-3 | 14:42:31 | COMPROU: Yorick (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Fera do Rift | DA_18_Tristana | 0.0100 |  |
+| Jogador 6 | 3-3 | 14:42:33 | MOVE Board -> Board: Akali (i:2.0) <-> Kog'Maw (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Fera do Rift | DA_18_Tristana | -0.1600 |  |
+| Jogador 6 | 3-3 | 14:42:33 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Fera do Rift | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 3-4 | 14:42:39 | VENDEU: Aronguejo (i:8.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Fera do Rift | DA_18_Tristana | -0.2500 |  |
+| Jogador 6 | 3-4 | 14:42:40 | COMPROU: Sejuani (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Fera do Rift | DA_18_Tristana | -0.1600 |  |
+| Jogador 6 | 3-4 | 14:42:40 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Fera do Rift | DA_18_Tristana | 0.0400 |  |
+| Jogador 6 | 3-4 | 14:42:40 | VENDEU: Lobo Trevoguari (i:8.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 12 | 0 | Fera do Rift | DA_18_Tristana | -0.2300 |  |
+| Jogador 6 | 3-4 | 14:42:41 | COMPROU: Rubrivirim (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Fera do Rift | DA_18_Tristana | 0.7300 |  |
+| Jogador 6 | 3-4 | 14:42:41 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Fera do Rift | DA_18_Tristana | -0.0400 |  |
+| Jogador 6 | 3-4 | 14:42:41 | VENDEU: Sejuani (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Fera do Rift | DA_18_Tristana | 0.0800 |  |
+| Jogador 6 | 3-4 | 14:42:42 | COMPROU: Varus (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Fera do Rift | DA_18_Tristana | -0.1200 |  |
+| Jogador 6 | 3-4 | 14:42:42 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Fera do Rift | DA_18_Tristana | -0.0400 |  |
+| Jogador 6 | 3-4 | 14:42:44 | VENDEU: Varus (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Fera do Rift | DA_18_Tristana | 0.0100 |  |
+| Jogador 6 | 3-4 | 14:42:44 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Fera do Rift | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 3-5 | 14:42:47 | COMPROU: Akali (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 16 | 1 | Adaptador | DA_18_Tristana | 0.7700 |  |
+| Jogador 6 | 3-5 | 14:42:48 | COMPROU: Camille (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 15 | 1 | Adaptador | DA_18_Tristana | 0.0300 |  |
+| Jogador 6 | 3-5 | 14:42:48 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 13 | 1 | Adaptador | DA_18_Tristana | 0.0400 |  |
+| Jogador 6 | 3-5 | 14:42:48 | VENDEU: Akali (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 16 | 1 | Adaptador | DA_18_Tristana | -0.3700 |  |
+| Jogador 6 | 3-5 | 14:42:49 | COMPROU: Akali (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 15 | 1 | Adaptador | DA_18_Tristana | 0.2200 |  |
+| Jogador 6 | 3-5 | 14:42:51 | VENDEU: Yorick (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 16 | 1 | Adaptador | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 3-5 | 14:42:51 | COMPROU: Rubrivirim (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 15 | 1 | Adaptador | DA_18_Tristana | 0.7400 |  |
+| Jogador 6 | 3-5 | 14:42:52 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 13 | 1 | Adaptador | DA_18_Tristana | 0.0400 |  |
+| Jogador 6 | 3-5 | 14:42:52 | COMPROU: Rakan (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 12 | 1 | Adaptador | DA_18_Tristana | 0.6800 |  |
+| Jogador 6 | 3-5 | 14:42:52 | COMPROU: Camille (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 1 | Adaptador | DA_18_Tristana | 0.5300 |  |
+| Jogador 6 | 3-5 | 14:42:52 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 1 | Adaptador | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 3-6 | 14:42:58 | VENDEU: Rubrivirim (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 20 | 1 | Adaptador | DA_18_Tristana | -0.1800 |  |
+| Jogador 6 | 3-6 | 14:42:59 | COMPROU: Cascalho (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 19 | 1 | Adaptador | DA_18_Tristana | 0.0800 |  |
+| Jogador 6 | 3-6 | 14:42:59 | VENDEU: Xayah (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 20 | 1 | Adaptador | DA_18_Tristana | -0.1900 |  |
+| Jogador 6 | 3-6 | 14:42:59 | MOVE Bench -> Board: Rakan (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 20 | 1 | Adaptador | DA_18_Tristana | 0.4300 |  |
+| Jogador 6 | 3-6 | 14:43:00 | COMPROU: Cascalho (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 19 | 1 | Adaptador | DA_18_Tristana | 0.6200 |  |
+| Jogador 6 | 3-6 | 14:43:00 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 17 | 1 | Adaptador | DA_18_Tristana | 0.0400 |  |
+| Jogador 6 | 3-6 | 14:43:00 | COMPROU: Tristana (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 14 | 1 | Adaptador | DA_18_Tristana | 0.2100 |  |
+| Jogador 6 | 3-6 | 14:43:00 | VENDEU: Xayah (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 15 | 1 | Adaptador | DA_18_Tristana | 0.0100 |  |
+| Jogador 6 | 3-6 | 14:43:01 | COMPROU: Vi (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 12 | 1 | Adaptador | DA_18_Tristana | 0.7400 |  |
+| Jogador 6 | 3-6 | 14:43:03 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 1 | Adaptador | DA_18_Tristana | 0.0400 |  |
+| Jogador 6 | 3-6 | 14:43:04 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 1 | Adaptador | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 3-7 | 14:43:08 | COMPROU: Kog'Maw (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 13 | 1 | Adaptador | DA_18_Tristana | 0.7600 |  |
+| Jogador 6 | 3-7 | 14:43:08 | MOVE Bench -> Board: Cascalho (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 13 | 1 | Adaptador | DA_18_Tristana | 0.1300 |  |
+| Jogador 6 | 3-7 | 14:43:08 | CRAFT_AND_EQUIP: TFT_Item_BFSword + TFT_Item_SparringGloves -> Tristana (i:12.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 13 | 1 | Adaptador | DA_18_Tristana | 0.2300 |  |
+| Jogador 6 | 3-7 | 14:43:09 | CRAFT_AND_EQUIP: TFT_Item_NegatronCloak + TFT_Item_GiantsBelt -> Tristana (i:12.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 13 | 1 | Adaptador | DA_18_Tristana | 0.1200 |  |
+| Jogador 6 | 3-7 | 14:43:12 | MOVE Bench -> Board: Camille (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 13 | 1 | Adaptador | DA_18_Tristana | 0.1500 |  |
+| Jogador 6 | 3-7 | 14:43:12 | COMPROU: Cascalho (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 12 | 1 | Adaptador | DA_18_Tristana | 0.7600 |  |
+| Jogador 6 | 3-7 | 14:43:12 | MOVE Bench -> Board: Rakan (i:2.0) <-> Camille (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 12 | 1 | Adaptador | DA_18_Tristana | 0.1000 |  |
+| Jogador 6 | 3-7 | 14:43:13 | MOVE Bench -> Board: Camille (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 12 | 1 | Adaptador | DA_18_Tristana | 0.1300 |  |
+| Jogador 6 | 3-7 | 14:43:13 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 1 | Adaptador | DA_18_Tristana | 0.0400 |  |
+| Jogador 6 | 3-7 | 14:43:13 | COMPROU: Camille (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 1 | Adaptador | DA_18_Tristana | 0.6800 |  |
+| Jogador 6 | 3-7 | 14:43:13 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 1 | Adaptador | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 4-1 | 14:43:16 | COMPROU: Tristana (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 12 | 0 | Adaptador | DA_18_Tristana | 0.7500 |  |
+| Jogador 6 | 4-1 | 14:43:17 | MOVE Bench -> Board: Tristana (i:6.0) <-> Rakan (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 12 | 0 | Adaptador | DA_18_Tristana | 0.0900 |  |
+| Jogador 6 | 4-1 | 14:43:20 | MOVE Bench -> Board: Rakan (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 12 | 0 | Adaptador | DA_18_Tristana | 0.3000 |  |
+| Jogador 6 | 4-1 | 14:43:20 | COMPROU: Akali (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Adaptador | DA_18_Tristana | 0.7500 |  |
+| Jogador 6 | 4-1 | 14:43:20 | MOVE Bench -> Board: Akali (i:2.0) <-> Tristana (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Adaptador | DA_18_Tristana | -0.3700 |  |
+| Jogador 6 | 4-1 | 14:43:21 | MOVE Bench -> Board: Camille (i:4.0) <-> Rakan (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Adaptador | DA_18_Tristana | -0.3700 |  |
+| Jogador 6 | 4-1 | 14:43:21 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Adaptador | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 4-1 | 14:43:21 | MOVE Bench -> Board: Rakan (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Adaptador | DA_18_Tristana | -0.0200 |  |
+| Jogador 6 | 4-2 | 14:43:28 | COMPROU: Cascalho (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 17 | 1 | Feérico | DA_18_Tristana | 0.2000 |  |
+| Jogador 6 | 4-2 | 14:43:29 | COMPROU: Teemo (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 15 | 1 | Feérico | DA_18_Tristana | 0.1400 |  |
+| Jogador 6 | 4-2 | 14:43:29 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 13 | 1 | Feérico | DA_18_Tristana | 0.0400 |  |
+| Jogador 6 | 4-2 | 14:43:29 | COMPROU: Xayah (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 12 | 1 | Feérico | DA_18_Tristana | 0.2200 |  |
+| Jogador 6 | 4-2 | 14:43:29 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 1 | Feérico | DA_18_Tristana | -0.1100 |  |
+| Jogador 6 | 4-2 | 14:43:30 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 1 | Feérico | DA_18_Tristana | -0.0400 |  |
+| Jogador 6 | 4-2 | 14:43:30 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 1 | Feérico | DA_18_Tristana | -0.1200 |  |
+| Jogador 6 | 4-2 | 14:43:30 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 1 | Feérico | DA_18_Tristana | 0.0400 |  |
+| Jogador 6 | 4-2 | 14:43:30 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 1 | Feérico | DA_18_Tristana | 0.0400 |  |
+| Jogador 6 | 4-2 | 14:43:33 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 1 | Feérico | DA_18_Tristana | -0.1100 |  |
+| Jogador 6 | 4-2 | 14:43:34 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 1 | Feérico | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 4-3 | 14:43:37 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Feérico | DA_18_Tristana | 0.0400 |  |
+| Jogador 6 | 4-3 | 14:43:38 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Feérico | DA_18_Tristana | -0.1100 |  |
+| Jogador 6 | 4-3 | 14:43:38 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Feérico | DA_18_Tristana | -0.1100 |  |
+| Jogador 6 | 4-3 | 14:43:38 | MOVE Board -> Board: Camille (i:4.0) <-> Tristana (i:12.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Feérico | DA_18_Tristana | -0.0100 |  |
+| Jogador 6 | 4-3 | 14:43:39 | MOVE Board -> Board: Tristana (i:12.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Feérico | DA_18_Tristana | 0.0600 |  |
+| Jogador 6 | 4-3 | 14:43:42 | MOVE Bench -> Board: Cascalho (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Feérico | DA_18_Tristana | 0.4000 |  |
+| Jogador 6 | 4-3 | 14:43:42 | MOVE Board -> Board: Cascalho (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Feérico | DA_18_Tristana | -0.0100 |  |
+| Jogador 6 | 4-3 | 14:43:42 | MOVE Board -> Board: Rakan (i:2.0) <-> Camille (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Feérico | DA_18_Tristana | -0.0100 |  |
+| Jogador 6 | 4-3 | 14:43:43 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Feérico | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 4-4 | 14:43:47 | COMPROU: Cascalho (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Feérico | DA_18_Tristana | 0.7300 |  |
+| Jogador 6 | 4-4 | 14:43:47 | MOVE Board -> Board: Camille (i:4.0) <-> Cascalho (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Feérico | DA_18_Tristana | -0.0100 |  |
+| Jogador 6 | 4-4 | 14:43:50 | MOVE Board -> Board: Cascalho (i:2.0) <-> Tristana (i:12.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Feérico | DA_18_Tristana | -0.1000 |  |
+| Jogador 6 | 4-4 | 14:43:51 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Feérico | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 4-5 | 14:43:57 | MOVE Board -> Board: Tristana (i:12.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Feérico | DA_18_Tristana | 0.0100 |  |
+| Jogador 6 | 4-5 | 14:43:57 | VENDEU: Cascalho (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 12 | 0 | Feérico | DA_18_Tristana | -0.1500 |  |
+| Jogador 6 | 4-5 | 14:43:57 | COMPROU: Varus (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Feérico | DA_18_Tristana | 0.1800 |  |
+| Jogador 6 | 4-5 | 14:43:57 | MOVE Board -> Board: Tristana (i:12.0) <-> Camille (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Feérico | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 4-5 | 14:43:58 | MOVE Board -> Board: Camille (i:4.0) <-> Rakan (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Feérico | DA_18_Tristana | -0.0100 |  |
+| Jogador 6 | 4-5 | 14:43:58 | MOVE Board -> Board: Rakan (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Feérico | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 4-5 | 14:43:58 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Feérico | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 4-6 | 14:44:08 | VENDEU: Kog'Maw (i:12.0) | STABILIZE | STABILIZE: pressão de vida | 26 | 1 | Feérico | DA_18_Tristana | -0.2800 |  |
+| Jogador 6 | 4-6 | 14:44:08 | EQUIP_FROM_INVENTORY: TFT_Item_HextechGunblade -> Rakan (i:2.0) (tabuleiro slot 18) | STABILIZE | STABILIZE: pressão de vida | 26 | 1 | Feérico | DA_18_Tristana | 0.1600 |  |
+| Jogador 6 | 4-6 | 14:44:08 | COMPROU: Grompe (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: pressão de vida | 24 | 1 | Feérico | DA_18_Tristana | 0.0600 |  |
+| Jogador 6 | 4-6 | 14:44:09 | MOVE Board -> Board: Akali (i:2.0) <-> Tristana (i:12.0) | STABILIZE | STABILIZE: pressão de vida | 24 | 1 | Feérico | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 4-6 | 14:44:09 | MOVE Board -> Board: Tristana (i:12.0) <-> Camille (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 24 | 1 | Feérico | DA_18_Tristana | -0.0100 |  |
+| Jogador 6 | 4-6 | 14:44:09 | MOVE Board -> Board: Camille (i:4.0) <-> Rakan (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 24 | 1 | Feérico | DA_18_Tristana | -0.0100 |  |
+| Jogador 6 | 4-6 | 14:44:10 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 24 | 1 | Feérico | DA_18_Tristana | -0.0400 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 6 | 4-7 | 14:44:19 | CRAFT_AND_EQUIP: TFT_Item_ChainVest + TFT_Item_NeedlesslyLargeRod -> Camille (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 32 | 2 | Feérico | DA_18_Tristana | 0.1200 |  |
+| Jogador 6 | 4-7 | 14:44:19 | CRAFT_AND_EQUIP: TFT_Item_TearOfTheGoddess + TFT_Item_NegatronCloak -> Camille (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 32 | 2 | Feérico | DA_18_Tristana | 0.1000 |  |
+| Jogador 6 | 4-7 | 14:44:19 | VENDEU: Vi (i:12.0) | STABILIZE | STABILIZE: pressão de vida | 40 | 2 | Feérico | DA_18_Tristana | -0.1700 |  |
+| Jogador 6 | 4-7 | 14:44:19 | EQUIP_FROM_INVENTORY: TFT_Item_ArchangelsStaff -> Camille (i:4.0) (tabuleiro slot 18) | STABILIZE | STABILIZE: pressão de vida | 40 | 2 | Feérico | DA_18_Tristana | 0.0800 |  |
+| Jogador 6 | 4-7 | 14:44:20 | EQUIP_FROM_INVENTORY: TFT_Item_SteraksGage -> Tristana (i:12.0) (tabuleiro slot 19) | STABILIZE | STABILIZE: pressão de vida | 40 | 2 | Feérico | DA_18_Tristana | 0.1300 |  |
+| Jogador 6 | 4-7 | 14:44:20 | COMPROU: Cascalho (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 39 | 2 | Feérico | DA_18_Tristana | 0.7300 |  |
+| Jogador 6 | 4-7 | 14:44:20 | COMPROU: Yorick (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 38 | 2 | Feérico | DA_18_Tristana | -0.0600 |  |
+| Jogador 6 | 4-7 | 14:44:21 | MOVE Board -> Board: Rakan (i:2.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 38 | 2 | Feérico | DA_18_Tristana | 0.0200 |  |
+| Jogador 6 | 4-7 | 14:44:21 | REROLL | STABILIZE | STABILIZE: pressão de vida | 36 | 2 | Feérico | DA_18_Tristana | -0.0900 |  |
+| Jogador 6 | 5-1 | 14:44:29 | VENDEU: Cascalho (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 48 | 3 | Feérico | DA_18_Tristana | -0.1400 |  |
+| Jogador 6 | 5-1 | 14:44:29 | COMPROU: Soraka (Custo 4 \| i:8.0) | STABILIZE | STABILIZE: pressão de vida | 44 | 3 | Feérico | DA_18_Tristana | -0.2100 |  |
+| Jogador 6 | 5-1 | 14:44:30 | MOVE Bench -> Board: Yorick (i:2.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 44 | 3 | Feérico | DA_18_Tristana | 0.4000 |  |
+| Jogador 6 | 5-1 | 14:44:30 | COMPROU: Veigar (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 43 | 3 | Feérico | DA_18_Tristana | 0.0100 |  |
+| Jogador 6 | 5-1 | 14:44:30 | MOVE Board -> Board: Yorick (i:2.0) <-> Tristana (i:12.0) | STABILIZE | STABILIZE: pressão de vida | 43 | 3 | Feérico | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 5-1 | 14:44:31 | MOVE Board -> Board: Tristana (i:12.0) <-> Akali (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 43 | 3 | Feérico | DA_18_Tristana | -0.0100 |  |
+| Jogador 6 | 5-1 | 14:44:31 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 43 | 3 | Feérico | DA_18_Tristana | -0.0900 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 6 | 5-2 | 14:44:39 | VENDEU: Veigar (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 54 | 4 | Feérico | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 5-2 | 14:44:40 | COMPROU: Yorick (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 53 | 4 | Feérico | DA_18_Tristana | 0.7300 |  |
+| Jogador 6 | 5-2 | 14:44:40 | MOVE Board -> Board: Akali (i:2.0) <-> Rakan (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 53 | 4 | Feérico | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 5-2 | 14:44:40 | MOVE Board -> Board: Rakan (i:2.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 53 | 4 | Feérico | DA_18_Tristana | -0.0100 |  |
+| Jogador 6 | 5-2 | 14:44:40 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 53 | 4 | Feérico | DA_18_Tristana | -0.1300 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 6 | 5-3 | 14:44:50 | VENDEU: Grompe (i:4.0) | ALL_IN | HP crítico: gastar para sobreviver | 65 | 5 | Feérico | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 5-3 | 14:44:50 | COMPROU: Rakan (Custo 1 \| i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 64 | 5 | Feérico | DA_18_Tristana | 1.0300 |  |
+| Jogador 6 | 5-3 | 14:44:51 | MOVE Bench -> Board: Yorick (i:2.0) <-> Vazio | ALL_IN | HP crítico: gastar para sobreviver | 64 | 5 | Feérico | DA_18_Tristana | -0.1400 |  |
+| Jogador 6 | 5-3 | 14:44:51 | MOVE Board -> Board: Yorick (i:2.0) <-> Vazio | ALL_IN | HP crítico: gastar para sobreviver | 64 | 5 | Feérico | DA_18_Tristana | 0.0600 |  |
+| Jogador 6 | 5-3 | 14:44:51 | MOVE Board -> Board: Yorick (i:2.0) <-> Tristana (i:12.0) | ALL_IN | HP crítico: gastar para sobreviver | 64 | 5 | Feérico | DA_18_Tristana | -0.0100 |  |
+| Jogador 6 | 5-3 | 14:44:51 | MOVE Bench -> Board: Tristana (i:6.0) <-> Vazio | ALL_IN | HP crítico: gastar para sobreviver | 64 | 5 | Feérico | DA_18_Tristana | 0.5900 |  |
+| Jogador 6 | 5-3 | 14:44:52 | COMPROU: Master Yi (Custo 3 \| i:6.0) | ALL_IN | HP crítico: gastar para sobreviver | 61 | 5 | Feérico | DA_18_Tristana | 0.1700 |  |
+| Jogador 6 | 5-3 | 14:44:52 | MOVE Board -> Board: Tristana (i:6.0) <-> Camille (i:4.0) | ALL_IN | HP crítico: gastar para sobreviver | 61 | 5 | Feérico | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 5-3 | 14:44:52 | MOVE Board -> Board: Camille (i:4.0) <-> Yorick (i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 61 | 5 | Feérico | DA_18_Tristana | -0.0100 |  |
+| Jogador 6 | 5-4 | 14:45:01 | COMPROU: Varus (Custo 1 \| i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 70 | 5 | Feérico | DA_18_Tristana | 0.7600 |  |
+| Jogador 6 | 5-4 | 14:45:01 | MOVE Board -> Board: Yorick (i:2.0) <-> Yorick (i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 70 | 5 | Feérico | DA_18_Tristana | 0.0000 |  |
+| Jogador 6 | 5-4 | 14:45:01 | MOVE Board -> Board: Yorick (i:2.0) <-> Tristana (i:12.0) | ALL_IN | HP crítico: gastar para sobreviver | 70 | 5 | Feérico | DA_18_Tristana | -0.0200 |  |
+| Jogador 6 | 5-4 | 14:45:02 | PASSOU TURNO | ALL_IN | HP crítico: gastar para sobreviver | 70 | 5 | Feérico | DA_18_Tristana | -0.2200 |  |
+| Jogador 7 | ? | 14:40:45 | MOVE Bench -> Board: Akali (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.5900 |  |
+| Jogador 7 | ? | 14:40:46 | MOVE Board -> Board: Akali (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 7 | ? | 14:40:46 | MOVE Board -> Board: Akali (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 7 | ? | 14:40:46 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 7 | 1-1 | 14:40:51 | COMPROU: Varus (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | 0.2600 |  |
+| Jogador 7 | 1-1 | 14:40:51 | MOVE Bench -> Board: Varus (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | -0.0200 |  |
+| Jogador 7 | 1-1 | 14:40:52 | COMPROU: Rakan (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.1900 |  |
+| Jogador 7 | 1-1 | 14:40:52 | MOVE Bench -> Board: Rakan (i:2.0) <-> Varus (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | -0.2000 |  |
+| Jogador 7 | 1-1 | 14:40:52 | MOVE Board -> Board: Rakan (i:2.0) <-> Akali (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | -0.0100 |  |
+| Jogador 7 | 1-1 | 14:40:53 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | 0.0000 |  |
+| Jogador 7 | 1-1 | 14:40:56 | MOVE Bench -> Board: Varus (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | 0.4100 |  |
+| Jogador 7 | 1-2 | 14:40:57 | COMPROU: Akali (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | 1.0500 |  |
+| Jogador 7 | 1-2 | 14:40:57 | COMPROU: Yorick (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.2300 |  |
+| Jogador 7 | 1-2 | 14:40:58 | MOVE Board -> Board: Varus (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.0100 |  |
+| Jogador 7 | 1-2 | 14:40:58 | MOVE Board -> Board: Akali (i:2.0) <-> Varus (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | -0.1200 |  |
+| Jogador 7 | 1-2 | 14:40:58 | MOVE Board -> Board: Varus (i:2.0) <-> Rakan (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | -0.1300 |  |
+| Jogador 7 | 1-2 | 14:40:59 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 7 | 1-3 | 14:41:04 | COMPROU: Varus (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Akali_AD | 1.0200 |  |
+| Jogador 7 | 1-3 | 14:41:04 | COMPROU: Camille (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | 0.1800 |  |
+| Jogador 7 | 1-3 | 14:41:04 | MOVE Board -> Board: Rakan (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | -0.0600 |  |
+| Jogador 7 | 1-3 | 14:41:04 | MOVE Board -> Board: Rakan (i:2.0) <-> Varus (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | 0.2700 |  |
+| Jogador 7 | 1-3 | 14:41:05 | MOVE Board -> Board: Varus (i:2.0) <-> Akali (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | -0.0200 |  |
+| Jogador 7 | 1-3 | 14:41:05 | MOVE Board -> Board: Akali (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | -0.0100 |  |
+| Jogador 7 | 1-3 | 14:41:05 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 7 | 1-4 | 14:41:10 | COMPROU: Yorick (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Akali_AD | 0.9700 |  |
+| Jogador 7 | 1-4 | 14:41:11 | CRAFT_AND_EQUIP: TFT_Item_ChainVest + TFT_Item_SparringGloves -> Akali (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Akali_AD | 0.2400 |  |
+| Jogador 7 | 1-4 | 14:41:11 | CRAFT_AND_EQUIP: TFT_Item_NegatronCloak + TFT_Item_GiantsBelt -> Akali (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Akali_AD | 0.2100 |  |
+| Jogador 7 | 1-4 | 14:41:11 | MOVE Bench -> Board: Varus (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Akali_AD | -0.0900 |  |
+| Jogador 7 | 1-4 | 14:41:12 | COMPROU: Shen (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Akali_AD | 0.2700 |  |
+| Jogador 7 | 1-4 | 14:41:12 | MOVE Bench -> Board: Shen (i:4.0) <-> Varus (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Akali_AD | 0.0200 |  |
+| Jogador 7 | 1-4 | 14:41:13 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | -0.1600 |  |
+| Jogador 7 | 1-4 | 14:41:13 | MOVE Board -> Board: Shen (i:4.0) <-> Rakan (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Shen | 0.0000 |  |
+| Jogador 7 | 1-4 | 14:41:13 | VENDEU: Camille (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Shen | -0.0800 |  |
+| Jogador 7 | 1-4 | 14:41:14 | COMPROU: Akali (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 1.0500 |  |
+| Jogador 7 | 1-4 | 14:41:14 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 7 | 2-1 | 14:41:17 | COMPROU: Varus (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Akali_AD | 1.0500 |  |
+| Jogador 7 | 2-1 | 14:41:17 | MOVE Bench -> Board: Yorick (i:2.0) <-> Rakan (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Akali_AD | -0.2900 |  |
+| Jogador 7 | 2-1 | 14:41:17 | MOVE Bench -> Board: Rakan (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Akali_AD | 0.1600 |  |
+| Jogador 7 | 2-1 | 14:41:18 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Akali_AD | 0.1600 |  |
+| Jogador 7 | 2-1 | 14:41:18 | MOVE Board -> Board: Rakan (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 7 | 2-1 | 14:41:19 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | -0.1600 |  |
+| Jogador 7 | 2-1 | 14:41:19 | COMPROU: Leona (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.1800 |  |
+| Jogador 7 | 2-1 | 14:41:19 | MOVE Board -> Board: Yorick (i:2.0) <-> Rakan (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 7 | 2-1 | 14:41:19 | MOVE Board -> Board: Rakan (i:2.0) <-> Shen (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | -0.0200 |  |
+| Jogador 7 | 2-1 | 14:41:20 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 7 | 2-1 | 14:41:22 | MOVE Bench -> Board: Varus (i:4.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Akali_AD | 0.5800 |  |
+| Jogador 7 | 2-2 | 14:41:24 | COMPROU: Xayah (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 5 | 0 | — | DA_18_Akali_AD | 0.3200 |  |
+| Jogador 7 | 2-2 | 14:41:24 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Akali_AD | -0.1600 |  |
+| Jogador 7 | 2-2 | 14:41:24 | COMPROU: Rakan (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Akali_AD | 0.9800 |  |
+| Jogador 7 | 2-2 | 14:41:25 | COMPROU: Varus (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | 0.3300 |  |
+| Jogador 7 | 2-2 | 14:41:25 | MOVE Board -> Board: Varus (i:4.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | 0.0100 |  |
+| Jogador 7 | 2-2 | 14:41:25 | MOVE Board -> Board: Shen (i:4.0) <-> Varus (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | -0.0200 |  |
+| Jogador 7 | 2-2 | 14:41:26 | MOVE Board -> Board: Varus (i:4.0) <-> Rakan (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | -0.3000 |  |
+| Jogador 7 | 2-2 | 14:41:27 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Akali_AD | 0.0000 |  |
+| Jogador 7 | 2-3 | 14:41:31 | COMPROU: Shen (Custo 2 \| i:4.0) | LOSS_STREAK | LOSS_STREAK: converter derrota em economia sem risco crítico | 5 | 0 | — | DA_18_Akali_AD | 0.8100 |  |
+| Jogador 7 | 2-3 | 14:41:31 | COMPROU: Leona (Custo 1 \| i:2.0) | LOSS_STREAK | LOSS_STREAK: converter derrota em economia sem risco crítico | 4 | 0 | — | DA_18_Akali_AD | 0.5900 |  |
+| Jogador 7 | 2-3 | 14:41:31 | REROLL | LOSS_STREAK | LOSS_STREAK: converter derrota em economia sem risco crítico | 2 | 0 | — | DA_18_Akali_AD | -0.1600 |  |
+| Jogador 7 | 2-3 | 14:41:31 | VENDEU: Akali (i:4.0) | LOSS_STREAK | LOSS_STREAK: converter derrota em economia sem risco crítico | 5 | 0 | — | DA_18_Varus | -0.2800 |  |
+| Jogador 7 | 2-3 | 14:41:32 | EQUIP_FROM_INVENTORY: TFT_Item_NightHarvester -> Shen (i:4.0) (tabuleiro slot 19) | LOSS_STREAK | LOSS_STREAK: converter derrota em economia sem risco crítico | 5 | 0 | — | DA_18_Varus | 0.1500 |  |
+| Jogador 7 | 2-3 | 14:41:32 | EQUIP_FROM_INVENTORY: TFT_Item_SpectralGauntlet -> Shen (i:4.0) (tabuleiro slot 19) | LOSS_STREAK | LOSS_STREAK: converter derrota em economia sem risco crítico | 5 | 0 | — | DA_18_Varus | 0.1300 |  |
+| Jogador 7 | 2-3 | 14:41:32 | COMPROU: Xayah (Custo 1 \| i:2.0) | LOSS_STREAK | LOSS_STREAK: converter derrota em economia sem risco crítico | 4 | 0 | — | DA_18_Varus | 0.7700 |  |
+| Jogador 7 | 2-3 | 14:41:33 | REROLL | LOSS_STREAK | LOSS_STREAK: converter derrota em economia sem risco crítico | 2 | 0 | — | DA_18_Varus | -0.1600 |  |
+| Jogador 7 | 2-3 | 14:41:33 | VENDEU: Rek'Sai (i:2.0) | LOSS_STREAK | LOSS_STREAK: converter derrota em economia sem risco crítico | 3 | 0 | — | DA_18_Varus | 0.0000 |  |
+| Jogador 7 | 2-3 | 14:41:34 | COMPROU: Rakan (Custo 1 \| i:2.0) | LOSS_STREAK | LOSS_STREAK: converter derrota em economia sem risco crítico | 2 | 0 | — | DA_18_Rakan | 0.8800 |  |
+| Jogador 7 | 2-3 | 14:41:34 | PASSOU TURNO | LOSS_STREAK | LOSS_STREAK: converter derrota em economia sem risco crítico | 2 | 0 | — | DA_18_Rakan | 0.0000 |  |
+| Jogador 7 | 2-4 | 14:41:38 | MOVE Bench -> Board: Leona (i:2.0) <-> Vazio | LOSS_STREAK | LOSS_STREAK: converter derrota em economia sem risco crítico | 8 | 0 | Inferno | DA_18_Rakan | 0.3700 |  |
+| Jogador 7 | 2-4 | 14:41:38 | COMPROU: Yorick (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 7 | 0 | Inferno | DA_18_Rakan | 0.8800 |  |
+| Jogador 7 | 2-4 | 14:41:38 | MOVE Bench -> Board: Yorick (i:4.0) <-> Leona (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 7 | 0 | Inferno | DA_18_Yorick | 0.1000 |  |
+| Jogador 7 | 2-4 | 14:41:39 | MOVE Bench -> Board: Leona (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 7 | 0 | Inferno | DA_18_Yorick | 0.4200 |  |
+| Jogador 7 | 2-4 | 14:41:39 | COMPROU: Grompe (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 5 | 0 | Inferno | DA_18_Yorick | 0.1500 |  |
+| Jogador 7 | 2-4 | 14:41:40 | MOVE Board -> Board: Leona (i:2.0) <-> Shen (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 5 | 0 | Inferno | DA_18_Yorick | 0.0100 |  |
+| Jogador 7 | 2-4 | 14:41:40 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | Inferno | DA_18_Yorick | -0.1600 |  |
+| Jogador 7 | 2-4 | 14:41:41 | COMPROU: Rakan (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | Inferno | DA_18_Rakan | 0.3300 |  |
+| Jogador 7 | 2-4 | 14:41:41 | MOVE Board -> Board: Shen (i:4.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | Inferno | DA_18_Rakan | -0.0400 |  |
+| Jogador 7 | 2-4 | 14:41:41 | COMPROU: Kayle (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | Inferno | DA_18_Rakan | 0.0000 |  |
+| Jogador 7 | 2-4 | 14:41:42 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | Inferno | DA_18_Rakan | 0.0000 |  |
+| Jogador 7 | 2-5 | 14:41:45 | VENDEU: Rakan (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Inferno | DA_18_Yorick | -0.2900 |  |
+| Jogador 7 | 2-5 | 14:41:45 | COMPROU: Xayah (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Inferno | DA_18_Yorick | 0.8700 |  |
+| Jogador 7 | 2-5 | 14:41:45 | COMPROU: Leona (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Inferno | DA_18_Yorick | 0.8500 |  |
+| Jogador 7 | 2-5 | 14:41:45 | MOVE Bench -> Board: Grompe (i:4.0) <-> Yorick (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Inferno | DA_18_Xayah | -0.7200 |  |
+| Jogador 7 | 2-5 | 14:41:46 | MOVE Bench -> Board: Yorick (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Inferno | DA_18_Yorick | 0.1900 |  |
+| Jogador 7 | 2-5 | 14:41:46 | MOVE Bench -> Board: Xayah (i:4.0) <-> Grompe (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Inferno | DA_18_Yorick | 0.1200 |  |
+| Jogador 7 | 2-5 | 14:41:46 | MOVE Bench -> Board: Grompe (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Inferno | DA_18_Yorick | 0.3600 |  |
+| Jogador 7 | 2-5 | 14:41:47 | MOVE Board -> Board: Grompe (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Inferno | DA_18_Yorick | 0.0600 |  |
+| Jogador 7 | 2-5 | 14:41:48 | MOVE Board -> Board: Xayah (i:4.0) <-> Grompe (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Inferno | DA_18_Yorick | 0.0000 |  |
+| Jogador 7 | 2-5 | 14:41:48 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Inferno | DA_18_Yorick | 0.0400 |  |
+| Jogador 7 | 2-5 | 14:41:49 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Inferno | DA_18_Yorick | 0.0000 |  |
+| Jogador 7 | 2-6 | 14:41:52 | COMPROU: Fiddlesticks (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Inferno | DA_18_Yorick | 0.1700 |  |
+| Jogador 7 | 2-6 | 14:41:53 | MOVE Board -> Board: Grompe (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Inferno | DA_18_Yorick | 0.0900 |  |
+| Jogador 7 | 2-6 | 14:41:53 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Inferno | DA_18_Yorick | 0.0400 |  |
+| Jogador 7 | 2-6 | 14:41:53 | COMPROU: Ornn (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Inferno | DA_18_Yorick | 0.0700 |  |
+| Jogador 7 | 2-6 | 14:41:54 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Inferno | DA_18_Yorick | 0.0400 |  |
+| Jogador 7 | 2-6 | 14:41:54 | COMPROU: Yorick (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Inferno | DA_18_Yorick | 0.2600 |  |
+| Jogador 7 | 2-6 | 14:41:54 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Inferno | DA_18_Yorick | 0.0400 |  |
+| Jogador 7 | 2-6 | 14:41:55 | COMPROU: Rakan (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Inferno | DA_18_Yorick | 0.8200 |  |
+| Jogador 7 | 2-6 | 14:41:55 | MOVE Bench -> Board: Ornn (i:2.0) <-> Yorick (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Inferno | DA_18_Yorick | -0.7100 |  |
+| Jogador 7 | 2-6 | 14:41:56 | MOVE Bench -> Board: Yorick (i:4.0) <-> Varus (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Inferno | DA_18_Yorick | -0.1900 |  |
+| Jogador 7 | 2-6 | 14:41:57 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Inferno | DA_18_Yorick | 0.0000 |  |
+| Jogador 7 | 2-7 | 14:42:01 | CRAFT_AND_EQUIP: TFT_Item_TearOfTheGoddess + TFT_Item_NeedlesslyLargeRod -> Xayah (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Defendente | DA_18_Yorick | 0.2100 |  |
+| Jogador 7 | 2-7 | 14:42:01 | VENDEU: Varus (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Defendente | DA_18_Yorick | -0.3300 |  |
+| Jogador 7 | 2-7 | 14:42:02 | COMPROU: Yorick (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Defendente | DA_18_Yorick | 0.7400 |  |
+| Jogador 7 | 2-7 | 14:42:02 | MOVE Bench -> Board: Leona (i:4.0) <-> Ornn (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Defendente | DA_18_Yorick | 0.0900 |  |
+| Jogador 7 | 2-7 | 14:42:02 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Defendente | DA_18_Yorick | 0.0400 |  |
+| Jogador 7 | 2-7 | 14:42:03 | VENDEU: Kayle (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Defendente | DA_18_Yorick | 0.0100 |  |
+| Jogador 7 | 2-7 | 14:42:03 | COMPROU: Ornn (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Defendente | DA_18_Yorick | 0.7400 |  |
+| Jogador 7 | 2-7 | 14:42:03 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Defendente | DA_18_Yorick | 0.0400 |  |
+| Jogador 7 | 2-7 | 14:42:03 | VENDEU: Varus (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Defendente | DA_18_Yorick | -0.1900 |  |
+| Jogador 7 | 2-7 | 14:42:05 | COMPROU: Rakan (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Defendente | DA_18_Yorick | 0.7700 |  |
+| Jogador 7 | 2-7 | 14:42:05 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Defendente | DA_18_Yorick | 0.0000 |  |
+| Jogador 7 | 3-1 | 14:42:10 | MOVE Bench -> Board: Yorick (i:2.0) <-> Leona (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Defendente | DA_18_Yorick | 0.0700 |  |
+| Jogador 7 | 3-1 | 14:42:10 | MOVE Bench -> Board: Leona (i:4.0) <-> Yorick (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Defendente | DA_18_Yorick | -0.4000 |  |
+| Jogador 7 | 3-1 | 14:42:11 | MOVE Bench -> Board: Yorick (i:4.0) <-> Yorick (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Defendente | DA_18_Yorick | 0.0300 |  |
+| Jogador 7 | 3-1 | 14:42:11 | MOVE Bench -> Board: Yorick (i:2.0) <-> Leona (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Defendente | DA_18_Yorick | 0.0600 |  |
+| Jogador 7 | 3-1 | 14:42:11 | MOVE Bench -> Board: Leona (i:4.0) <-> Yorick (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Defendente | DA_18_Yorick | -0.4000 |  |
+| Jogador 7 | 3-1 | 14:42:11 | MOVE Bench -> Board: Yorick (i:4.0) <-> Shen (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Defendente | DA_18_Yorick | 0.0900 |  |
+| Jogador 7 | 3-1 | 14:42:12 | MOVE Bench -> Board: Ornn (i:2.0) <-> Leona (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Defendente | DA_18_Yorick | -0.3500 |  |
+| Jogador 7 | 3-1 | 14:42:12 | MOVE Bench -> Board: Leona (i:4.0) <-> Yorick (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Defendente | DA_18_Yorick | -0.3800 |  |
+| Jogador 7 | 3-1 | 14:42:12 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Defendente | DA_18_Yorick | 0.0000 |  |
+| Jogador 7 | 3-2 | 14:42:19 | MOVE Bench -> Board: Yorick (i:4.0) <-> Ornn (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 17 | 1 | Defendente | DA_18_Yorick | 0.0900 |  |
+| Jogador 7 | 3-2 | 14:42:20 | MOVE Bench -> Board: Ornn (i:2.0) <-> Leona (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 17 | 1 | Defendente | DA_18_Yorick | -0.3700 |  |
+| Jogador 7 | 3-2 | 14:42:20 | MOVE Bench -> Board: Leona (i:4.0) <-> Yorick (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 17 | 1 | Defendente | DA_18_Yorick | -0.4000 |  |
+| Jogador 7 | 3-2 | 14:42:20 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 17 | 1 | Defendente | DA_18_Yorick | -0.0600 |  |
+| Jogador 7 | 3-3 | 14:42:29 | MOVE Bench -> Board: Shen (i:4.0) <-> Leona (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 24 | 1 | Defendente | DA_18_Yorick | -0.3700 |  |
+| Jogador 7 | 3-3 | 14:42:29 | MOVE Bench -> Board: Leona (i:4.0) <-> Yorick (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 24 | 1 | Defendente | DA_18_Yorick | -0.4000 |  |
+| Jogador 7 | 3-3 | 14:42:29 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 24 | 1 | Defendente | DA_18_Yorick | -0.0600 |  |
+| Jogador 7 | 3-4 | 14:42:39 | MOVE Bench -> Board: Yorick (i:2.0) <-> Shen (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 32 | 2 | Defendente | DA_18_Yorick | -0.3700 |  |
+| Jogador 7 | 3-4 | 14:42:40 | MOVE Bench -> Board: Shen (i:4.0) <-> Ornn (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 32 | 2 | Defendente | DA_18_Yorick | -0.3800 |  |
+| Jogador 7 | 3-4 | 14:42:40 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 32 | 2 | Defendente | DA_18_Yorick | -0.1100 |  |
+| Jogador 7 | 3-5 | 14:42:47 | COMPROU: Yorick (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 40 | 3 | Defendente | DA_18_Yorick | 0.8100 |  |
+| Jogador 7 | 3-5 | 14:42:48 | MOVE Bench -> Board: Ornn (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 40 | 3 | Defendente | DA_18_Yorick | 0.5200 |  |
+| Jogador 7 | 3-5 | 14:42:48 | COMPROU: Leona (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 39 | 3 | Defendente | DA_18_Yorick | 0.1800 |  |
+| Jogador 7 | 3-5 | 14:42:48 | MOVE Bench -> Board: Yorick (i:4.0) <-> Ornn (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 39 | 3 | Defendente | DA_18_Yorick | -0.3600 |  |
+| Jogador 7 | 3-5 | 14:42:49 | MOVE Bench -> Board: Ornn (i:2.0) <-> Shen (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 39 | 3 | Defendente | DA_18_Yorick | -0.4900 |  |
+| Jogador 7 | 3-5 | 14:42:51 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 39 | 3 | Defendente | DA_18_Yorick | -0.1100 |  |
+| Jogador 7 | 3-6 | 14:42:58 | COMPROU: Rakan (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 48 | 3 | Defendente | DA_18_Yorick | 0.3400 |  |
+| Jogador 7 | 3-6 | 14:42:59 | MOVE Bench -> Board: Shen (i:4.0) <-> Yorick (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 48 | 3 | Defendente | DA_18_Yorick | -0.3800 |  |
+| Jogador 7 | 3-6 | 14:42:59 | MOVE Bench -> Board: Yorick (i:4.0) <-> Ornn (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 48 | 3 | Defendente | DA_18_Yorick | -0.3700 |  |
+| Jogador 7 | 3-6 | 14:42:59 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 48 | 3 | Defendente | DA_18_Yorick | -0.1400 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 7 | 3-7 | 14:43:08 | COMPROU: Rakan (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 58 | 4 | Defendente | DA_18_Yorick | 0.9100 |  |
+| Jogador 7 | 3-7 | 14:43:08 | CRAFT_AND_EQUIP: TFT_Item_ChainVest + TFT_Item_NegatronCloak -> Xayah (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 58 | 4 | Defendente | DA_18_Yorick | 0.1500 |  |
+| Jogador 7 | 3-7 | 14:43:08 | CRAFT_AND_EQUIP: TFT_Item_RecurveBow + TFT_Item_NeedlesslyLargeRod -> Xayah (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 58 | 4 | Defendente | DA_18_Yorick | 0.1600 |  |
+| Jogador 7 | 3-7 | 14:43:09 | MOVE Bench -> Board: Ornn (i:2.0) <-> Shen (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 58 | 4 | Defendente | DA_18_Yorick | -0.4900 |  |
+| Jogador 7 | 3-7 | 14:43:12 | MOVE Bench -> Board: Shen (i:4.0) <-> Yorick (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 58 | 4 | Defendente | DA_18_Yorick | -0.4000 |  |
+| Jogador 7 | 3-7 | 14:43:12 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 58 | 4 | Defendente | DA_18_Yorick | -0.1000 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 7 | 4-1 | 14:43:16 | MOVE Bench -> Board: Leona (i:2.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 69 | 5 | Defendente | DA_18_Yorick | 0.5200 |  |
+| Jogador 7 | 4-1 | 14:43:17 | COMPROU: Shen (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: pressão de vida | 67 | 5 | Defendente | DA_18_Yorick | 0.9600 |  |
+| Jogador 7 | 4-1 | 14:43:20 | MOVE Bench -> Board: Yorick (i:4.0) <-> Leona (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 67 | 5 | Defendente | DA_18_Yorick | -0.3100 |  |
+| Jogador 7 | 4-1 | 14:43:20 | MOVE Bench -> Board: Leona (i:2.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 67 | 5 | Defendente | DA_18_Yorick | 0.5000 |  |
+| Jogador 7 | 4-1 | 14:43:20 | MOVE Board -> Board: Yorick (i:4.0) <-> Xayah (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 67 | 5 | Defendente | DA_18_Yorick | -0.0200 |  |
+| Jogador 7 | 4-1 | 14:43:21 | MOVE Board -> Board: Xayah (i:4.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 67 | 5 | Defendente | DA_18_Yorick | -0.0100 |  |
+| Jogador 7 | 4-1 | 14:43:21 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 67 | 5 | Defendente | DA_18_Yorick | -0.2500 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 7 | 4-2 | 14:43:28 | COMPROU: Yorick (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 78 | 5 | Defendente | DA_18_Yorick | 0.3900 |  |
+| Jogador 7 | 4-2 | 14:43:29 | MOVE Board -> Board: Ornn (i:2.0) <-> Yorick (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 78 | 5 | Defendente | DA_18_Yorick | 0.0000 |  |
+| Jogador 7 | 4-2 | 14:43:29 | MOVE Board -> Board: Yorick (i:4.0) <-> Xayah (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 78 | 5 | Defendente | DA_18_Yorick | -0.0200 |  |
+| Jogador 7 | 4-2 | 14:43:29 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 78 | 5 | Defendente | DA_18_Yorick | -0.2500 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 7 | 4-3 | 14:43:37 | MOVE Bench -> Board: Yorick (i:2.0) <-> Xayah (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 88 | 5 | Defendente | DA_18_Yorick | -0.6000 |  |
+| Jogador 7 | 4-3 | 14:43:38 | MOVE Bench -> Board: Xayah (i:4.0) <-> Leona (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 88 | 5 | Defendente | DA_18_Yorick | -0.4000 |  |
+| Jogador 7 | 4-3 | 14:43:38 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 88 | 5 | Defendente | DA_18_Yorick | -0.2800 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 7 | 4-4 | 14:43:47 | COMPROU: Fiddlesticks (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: pressão de vida | 95 | 5 | Defendente | DA_18_Yorick | 0.9000 |  |
+| Jogador 7 | 4-4 | 14:43:47 | MOVE Bench -> Board: Leona (i:2.0) <-> Yorick (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 95 | 5 | Defendente | DA_18_Yorick | -0.3800 |  |
+| Jogador 7 | 4-4 | 14:43:50 | MOVE Bench -> Board: Yorick (i:2.0) <-> Xayah (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 95 | 5 | Defendente | DA_18_Yorick | -0.5900 |  |
+| Jogador 7 | 4-4 | 14:43:51 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 95 | 5 | Defendente | DA_18_Yorick | -0.1500 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 7 | 4-5 | 14:43:57 | VENDEU: Xayah (i:4.0) | ALL_IN | HP crítico: gastar para sobreviver | 109 | 5 | Defendente | DA_18_Yorick | -0.2300 |  |
+| Jogador 7 | 4-5 | 14:43:57 | EQUIP_FROM_INVENTORY: TFT_Item_GargoyleStoneplate -> Ornn (i:2.0) (tabuleiro slot 19) | ALL_IN | HP crítico: gastar para sobreviver | 109 | 5 | Defendente | DA_18_Yorick | 0.1200 |  |
+| Jogador 7 | 4-5 | 14:43:57 | EQUIP_FROM_INVENTORY: TFT_Item_GuinsoosRageblade -> Ornn (i:2.0) (tabuleiro slot 19) | ALL_IN | HP crítico: gastar para sobreviver | 109 | 5 | Defendente | DA_18_Yorick | 0.0900 |  |
+| Jogador 7 | 4-5 | 14:43:57 | EQUIP_FROM_INVENTORY: TFT_Item_ArchangelsStaff -> Ornn (i:2.0) (tabuleiro slot 19) | ALL_IN | HP crítico: gastar para sobreviver | 109 | 5 | Defendente | DA_18_Yorick | 0.1100 |  |
+| Jogador 7 | 4-5 | 14:43:58 | COMPROU: Yorick (Custo 1 \| i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 108 | 5 | Defendente | DA_18_Yorick | 0.9700 |  |
+| Jogador 7 | 4-5 | 14:43:58 | MOVE Bench -> Board: Yorick (i:2.0) <-> Leona (i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 108 | 5 | Defendente | DA_18_Yorick | 0.0700 |  |
+| Jogador 7 | 4-5 | 14:43:58 | MOVE Bench -> Board: Leona (i:2.0) <-> Yorick (i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 108 | 5 | Defendente | DA_18_Yorick | -0.5800 |  |
+| Jogador 7 | 4-5 | 14:43:59 | MOVE Bench -> Board: Yorick (i:2.0) <-> Yorick (i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 108 | 5 | Defendente | DA_18_Yorick | -0.4100 |  |
+| Jogador 7 | 4-5 | 14:43:59 | PASSOU TURNO | ALL_IN | HP crítico: gastar para sobreviver | 108 | 5 | Defendente | DA_18_Yorick | -0.2300 |  |
+| Jogador 7 | 4-6 | 14:44:08 | MOVE Bench -> Board: Yorick (i:2.0) <-> Leona (i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 119 | 5 | Defendente | DA_18_Yorick | 0.0600 |  |
+| Jogador 7 | 4-6 | 14:44:08 | MOVE Bench -> Board: Leona (i:2.0) <-> Yorick (i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 119 | 5 | Defendente | DA_18_Yorick | -0.6000 |  |
+| Jogador 7 | 4-6 | 14:44:08 | MOVE Bench -> Board: Yorick (i:2.0) <-> Yorick (i:4.0) | ALL_IN | HP crítico: gastar para sobreviver | 119 | 5 | Defendente | DA_18_Yorick | -0.5300 |  |
+| Jogador 7 | 4-6 | 14:44:09 | PASSOU TURNO | ALL_IN | HP crítico: gastar para sobreviver | 119 | 5 | Defendente | DA_18_Yorick | -0.2300 |  |
+| Jogador 7 | 4-7 | 14:44:19 | CRAFT_AND_EQUIP: TFT_Item_ChainVest + TFT_Item_RecurveBow -> Yorick (i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 130 | 5 | Defendente | DA_18_Yorick | 0.1500 |  |
+| Jogador 7 | 4-7 | 14:44:19 | CRAFT_AND_EQUIP: TFT_Item_GiantsBelt + TFT_Item_GiantsBelt -> Yorick (i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 130 | 5 | Defendente | DA_18_Yorick | 0.1700 |  |
+| Jogador 7 | 4-7 | 14:44:19 | VENDEU: Yorick (i:4.0) | ALL_IN | HP crítico: gastar para sobreviver | 133 | 5 | Defendente | DA_18_Yorick | -0.5400 |  |
+| Jogador 7 | 4-7 | 14:44:19 | COMPROU: Yorick (Custo 1 \| i:2.0) | ALL_IN | HP crítico: gastar para sobreviver | 132 | 5 | Defendente | DA_18_Yorick | 1.0100 |  |
+| Jogador 7 | 4-7 | 14:44:20 | MOVE Bench -> Board: Yorick (i:4.0) <-> Vazio | ALL_IN | HP crítico: gastar para sobreviver | 132 | 5 | Defendente | DA_18_Yorick | 0.3700 |  |
+| Jogador 7 | 4-7 | 14:44:20 | MOVE Bench -> Board: Shen (i:8.0) <-> Vazio | ALL_IN | HP crítico: gastar para sobreviver | 132 | 5 | Defendente | DA_18_Yorick | 0.5800 |  |
+| Jogador 7 | 4-7 | 14:44:20 | COMPROU: Azir (Custo 3 \| i:6.0) | ALL_IN | HP crítico: gastar para sobreviver | 129 | 5 | Defendente | DA_18_Yorick | 0.1300 |  |
+| Jogador 7 | 4-7 | 14:44:21 | MOVE Board -> Board: Shen (i:8.0) <-> Vazio | ALL_IN | HP crítico: gastar para sobreviver | 129 | 5 | Defendente | DA_18_Yorick | 0.0000 |  |
+| Jogador 7 | 4-7 | 14:44:21 | COMPROU: Azir (Custo 3 \| i:6.0) | ALL_IN | HP crítico: gastar para sobreviver | 126 | 5 | Defendente | DA_18_Yorick | 0.6500 |  |
+| Jogador 8 | ? | 14:40:45 | MOVE Bench -> Board: Rakan (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | 0.5900 |  |
+| Jogador 8 | ? | 14:40:46 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | 0.0000 |  |
+| Jogador 8 | 1-1 | 14:40:51 | COMPROU: Veigar (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Rakan | 0.1000 |  |
+| Jogador 8 | 1-1 | 14:40:51 | MOVE Bench -> Board: Veigar (i:2.0) <-> Rakan (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Veigar | -1.1300 |  |
+| Jogador 8 | 1-1 | 14:40:52 | MOVE Bench -> Board: Rakan (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Veigar | 0.2500 |  |
+| Jogador 8 | 1-1 | 14:40:52 | COMPROU: Kobuko (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.1200 |  |
+| Jogador 8 | 1-1 | 14:40:52 | MOVE Bench -> Board: Kobuko (i:2.0) <-> Veigar (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | -0.0500 |  |
+| Jogador 8 | 1-1 | 14:40:53 | MOVE Board -> Board: Kobuko (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | -0.0200 |  |
+| Jogador 8 | 1-1 | 14:40:53 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | 0.0000 |  |
+| Jogador 8 | 1-1 | 14:40:56 | MOVE Bench -> Board: Veigar (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | 0.4200 |  |
+| Jogador 8 | 1-2 | 14:40:57 | COMPROU: Yorick (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Rakan | 0.2900 |  |
+| Jogador 8 | 1-2 | 14:40:57 | COMPROU: Xayah (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | 0.2900 |  |
+| Jogador 8 | 1-2 | 14:40:58 | MOVE Board -> Board: Veigar (i:2.0) <-> Kobuko (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | -0.3300 |  |
+| Jogador 8 | 1-2 | 14:40:58 | MOVE Board -> Board: Kobuko (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Veigar | 0.0300 |  |
+| Jogador 8 | 1-2 | 14:40:58 | MOVE Board -> Board: Rakan (i:2.0) <-> Veigar (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | 0.3000 |  |
+| Jogador 8 | 1-2 | 14:40:59 | MOVE Board -> Board: Veigar (i:2.0) <-> Kobuko (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | -0.0200 |  |
+| Jogador 8 | 1-2 | 14:40:59 | MOVE Board -> Board: Kobuko (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | -0.0100 |  |
+| Jogador 8 | 1-2 | 14:40:59 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Rakan | 0.0000 |  |
+| Jogador 8 | 1-3 | 14:41:04 | COMPROU: Xayah (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Xayah | 0.9900 |  |
+| Jogador 8 | 1-3 | 14:41:04 | COMPROU: Xayah (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Xayah | 1.1100 |  |
+| Jogador 8 | 1-3 | 14:41:04 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Xayah | 0.3300 |  |
+| Jogador 8 | 1-3 | 14:41:04 | MOVE Board -> Board: Veigar (i:2.0) <-> Rakan (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Xayah | -0.3200 |  |
+| Jogador 8 | 1-3 | 14:41:05 | MOVE Board -> Board: Rakan (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Xayah | -0.0500 |  |
+| Jogador 8 | 1-3 | 14:41:05 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Xayah | 0.0000 |  |
+| Jogador 8 | 1-4 | 14:41:10 | COMPROU: Xayah (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Xayah | 0.3900 |  |
+| Jogador 8 | 1-4 | 14:41:11 | CRAFT_AND_EQUIP: TFT_Item_BFSword + TFT_Item_GiantsBelt -> Kobuko (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Xayah | 0.1400 |  |
+| Jogador 8 | 1-4 | 14:41:11 | CRAFT_AND_EQUIP: TFT_Item_NegatronCloak + TFT_Item_TearOfTheGoddess -> Kobuko (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Xayah | 0.1200 |  |
+| Jogador 8 | 1-4 | 14:41:11 | MOVE Bench -> Board: Xayah (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Xayah | 0.5000 |  |
+| Jogador 8 | 1-4 | 14:41:12 | COMPROU: Teemo (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Xayah | 0.3000 |  |
+| Jogador 8 | 1-4 | 14:41:12 | MOVE Board -> Board: Xayah (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Xayah | 0.0000 |  |
+| Jogador 8 | 1-4 | 14:41:13 | MOVE Board -> Board: Rakan (i:2.0) <-> Veigar (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Xayah | 0.3400 |  |
+| Jogador 8 | 1-4 | 14:41:13 | MOVE Board -> Board: Veigar (i:2.0) <-> Kobuko (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Xayah | -0.0100 |  |
+| Jogador 8 | 1-4 | 14:41:13 | MOVE Board -> Board: Kobuko (i:2.0) <-> Xayah (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Xayah | -0.0100 |  |
+| Jogador 8 | 1-4 | 14:41:14 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Xayah | 0.0000 |  |
+| Jogador 8 | 2-1 | 14:41:17 | COMPROU: Kobuko (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 6 | 0 | — | DA_18_Xayah | 0.9400 |  |
+| Jogador 8 | 2-1 | 14:41:17 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Xayah | -0.1600 |  |
+| Jogador 8 | 2-1 | 14:41:17 | COMPROU: Veigar (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Xayah | 0.9800 |  |
+| Jogador 8 | 2-1 | 14:41:18 | COMPROU: Veigar (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | — | DA_18_Xayah | 0.9500 |  |
+| Jogador 8 | 2-1 | 14:41:18 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Xayah | -0.1600 |  |
+| Jogador 8 | 2-1 | 14:41:19 | MOVE Bench -> Board: Teemo (i:4.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Xayah | 0.4200 |  |
+| Jogador 8 | 2-1 | 14:41:19 | MOVE Board -> Board: Teemo (i:4.0) <-> Rakan (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Xayah | -0.0200 |  |
+| Jogador 8 | 2-1 | 14:41:19 | MOVE Board -> Board: Rakan (i:2.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Xayah | -0.0200 |  |
+| Jogador 8 | 2-1 | 14:41:19 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Xayah | 0.0000 |  |
+| Jogador 8 | 2-2 | 14:41:24 | COMPROU: Kobuko (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 6 | 0 | — | DA_18_Xayah | 1.0400 |  |
+| Jogador 8 | 2-2 | 14:41:24 | MOVE Bench -> Board: Kobuko (i:4.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 6 | 0 | — | DA_18_Xayah | 0.5500 |  |
+| Jogador 8 | 2-2 | 14:41:24 | COMPROU: Rammus (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Xayah | 0.2900 |  |
+| Jogador 8 | 2-2 | 14:41:25 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Xayah | -0.1600 |  |
+| Jogador 8 | 2-2 | 14:41:25 | COMPROU: Rakan (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Xayah | 0.9800 |  |
+| Jogador 8 | 2-2 | 14:41:25 | MOVE Board -> Board: Kobuko (i:4.0) <-> Xayah (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Xayah | -0.0100 |  |
+| Jogador 8 | 2-2 | 14:41:26 | MOVE Bench -> Board: Rammus (i:6.0) <-> Xayah (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Xayah | -0.6900 |  |
+| Jogador 8 | 2-2 | 14:41:27 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Xayah | 0.0000 |  |
+| Jogador 8 | 2-3 | 14:41:31 | COMPROU: Tristana (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | — | DA_18_Xayah | 0.3200 |  |
+| Jogador 8 | 2-3 | 14:41:31 | COMPROU: Akali (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 3 | 0 | — | DA_18_Xayah | 0.2000 |  |
+| Jogador 8 | 2-3 | 14:41:31 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 1 | 0 | — | DA_18_Xayah | -0.1600 |  |
+| Jogador 8 | 2-3 | 14:41:31 | COMPROU: Leona (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Xayah | -0.0100 |  |
+| Jogador 8 | 2-3 | 14:41:32 | MOVE Board -> Board: Rammus (i:6.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Xayah | 0.0200 |  |
+| Jogador 8 | 2-3 | 14:41:32 | MOVE Board -> Board: Kobuko (i:4.0) <-> Teemo (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Xayah | 0.3200 |  |
+| Jogador 8 | 2-3 | 14:41:32 | MOVE Board -> Board: Teemo (i:4.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Xayah | -0.0100 |  |
+| Jogador 8 | 2-3 | 14:41:33 | MOVE Board -> Board: Kobuko (i:4.0) <-> Vazio | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Xayah | -0.0200 |  |
+| Jogador 8 | 2-3 | 14:41:33 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 0 | 0 | — | DA_18_Xayah | 0.0000 |  |
+| Jogador 8 | 2-4 | 14:41:38 | VENDEU: Xayah (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 9 | 0 | Vivaz | DA_18_Veigar | -0.2500 |  |
+| Jogador 8 | 2-4 | 14:41:38 | COMPROU: Akali (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 8 | 0 | Vivaz | DA_18_Veigar | 0.4800 |  |
+| Jogador 8 | 2-4 | 14:41:38 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 6 | 0 | Vivaz | DA_18_Veigar | -0.1600 |  |
+| Jogador 8 | 2-4 | 14:41:39 | VENDEU: Veigar (i:4.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 9 | 0 | Vivaz | DA_18_Kobuko | -0.3700 |  |
+| Jogador 8 | 2-4 | 14:41:39 | COMPROU: Xayah (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 8 | 0 | Vivaz | DA_18_Kobuko | 0.6300 |  |
+| Jogador 8 | 2-4 | 14:41:40 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 6 | 0 | Vivaz | DA_18_Kobuko | -0.1600 |  |
+| Jogador 8 | 2-4 | 14:41:40 | VENDEU: Leona (i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 7 | 0 | Vivaz | DA_18_Kobuko | 0.0100 |  |
+| Jogador 8 | 2-4 | 14:41:41 | COMPROU: Kobuko (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 6 | 0 | Vivaz | DA_18_Kobuko | 0.1700 |  |
+| Jogador 8 | 2-4 | 14:41:41 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 4 | 0 | Vivaz | DA_18_Kobuko | -0.1600 |  |
+| Jogador 8 | 2-4 | 14:41:41 | REROLL | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | Vivaz | DA_18_Kobuko | -0.1600 |  |
+| Jogador 8 | 2-4 | 14:41:42 | PASSOU TURNO | STABILIZE | STABILIZE: tabuleiro fraco sob pressão | 2 | 0 | Vivaz | DA_18_Kobuko | 0.0000 |  |
+| Jogador 8 | 2-5 | 14:41:45 | VENDEU: Yorick (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Vivaz | DA_18_Kobuko | 0.0000 |  |
+| Jogador 8 | 2-5 | 14:41:45 | COMPROU: Teemo (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Vivaz | DA_18_Kobuko | 0.8300 |  |
+| Jogador 8 | 2-5 | 14:41:45 | VENDEU: Kobuko (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Vivaz | DA_18_Kobuko | -0.3500 |  |
+| Jogador 8 | 2-5 | 14:41:45 | COMPROU: Xayah (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Vivaz | DA_18_Xayah | 0.8700 |  |
+| Jogador 8 | 2-5 | 14:41:46 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Vivaz | DA_18_Xayah | 0.0400 |  |
+| Jogador 8 | 2-5 | 14:41:46 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Xayah | 0.8000 |  |
+| Jogador 8 | 2-5 | 14:41:46 | MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Xayah | 0.4200 |  |
+| Jogador 8 | 2-5 | 14:41:47 | COMPROU: Veigar (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Vivaz | DA_18_Xayah | 0.2600 |  |
+| Jogador 8 | 2-5 | 14:41:48 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Xayah | -0.1100 |  |
+| Jogador 8 | 2-5 | 14:41:48 | VENDEU: Xayah (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Kobuko | -0.3300 |  |
+| Jogador 8 | 2-5 | 14:41:49 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Kobuko | 0.0000 |  |
+| Jogador 8 | 2-6 | 14:41:52 | COMPROU: Veigar (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Vivaz | DA_18_Kobuko | 0.8300 |  |
+| Jogador 8 | 2-6 | 14:41:53 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Vivaz | DA_18_Kobuko | 0.0400 |  |
+| Jogador 8 | 2-6 | 14:41:53 | COMPROU: Fiddlesticks (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Kobuko | 0.1500 |  |
+| Jogador 8 | 2-6 | 14:41:53 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Vivaz | DA_18_Kobuko | 0.0400 |  |
+| Jogador 8 | 2-6 | 14:41:54 | VENDEU: Akali (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Vivaz | DA_18_Kobuko | -0.2500 |  |
+| Jogador 8 | 2-6 | 14:41:54 | COMPROU: Rakan (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Vivaz | DA_18_Rakan | 0.8800 |  |
+| Jogador 8 | 2-6 | 14:41:54 | MOVE Bench -> Board: Veigar (i:2.0) <-> Rek'Sai (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Vivaz | DA_18_Rakan | 0.0900 |  |
+| Jogador 8 | 2-6 | 14:41:55 | MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Vivaz | DA_18_Rakan | 0.3900 |  |
+| Jogador 8 | 2-6 | 14:41:55 | COMPROU: Veigar (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Veigar | 0.8800 |  |
+| Jogador 8 | 2-6 | 14:41:56 | MOVE Bench -> Board: Veigar (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Veigar | 0.6000 |  |
+| Jogador 8 | 2-6 | 14:41:57 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Veigar | 0.0000 |  |
+| Jogador 8 | 2-7 | 14:42:01 | CRAFT_AND_EQUIP: TFT_Item_SparringGloves + TFT_Item_RecurveBow -> Teemo (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Vivaz | DA_18_Veigar | 0.2100 |  |
+| Jogador 8 | 2-7 | 14:42:01 | COMPROU: Cassiopeia (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Vivaz | DA_18_Veigar | -0.1600 |  |
+| Jogador 8 | 2-7 | 14:42:02 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Veigar | -0.1100 |  |
+| Jogador 8 | 2-7 | 14:42:02 | MOVE Board -> Board: Veigar (i:4.0) <-> Kobuko (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Veigar | 0.0000 |  |
+| Jogador 8 | 2-7 | 14:42:02 | MOVE Board -> Board: Kobuko (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Veigar | -0.0100 |  |
+| Jogador 8 | 2-7 | 14:42:03 | MOVE Board -> Board: Rek'Sai (i:2.0) <-> Kobuko (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Veigar | -0.0100 |  |
+| Jogador 8 | 2-7 | 14:42:03 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Veigar | 0.0000 |  |
+| Jogador 8 | 3-1 | 14:42:10 | COMPROU: Krugue (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Vivaz | DA_18_Veigar | -0.1800 |  |
+| Jogador 8 | 3-1 | 14:42:10 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Veigar | -0.1100 |  |
+| Jogador 8 | 3-1 | 14:42:11 | VENDEU: Rakan (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Veigar | -0.3000 |  |
+| Jogador 8 | 3-1 | 14:42:11 | COMPROU: Teemo (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Vivaz | DA_18_Teemo | 0.7700 |  |
+| Jogador 8 | 3-1 | 14:42:11 | MOVE Board -> Board: Kobuko (i:4.0) <-> Veigar (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Vivaz | DA_18_Teemo | 0.0000 |  |
+| Jogador 8 | 3-1 | 14:42:11 | MOVE Bench -> Board: Cassiopeia (i:6.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Vivaz | DA_18_Teemo | 0.3900 |  |
+| Jogador 8 | 3-1 | 14:42:12 | MOVE Board -> Board: Cassiopeia (i:6.0) <-> Rek'Sai (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Vivaz | DA_18_Teemo | -0.0100 |  |
+| Jogador 8 | 3-1 | 14:42:12 | MOVE Board -> Board: Rek'Sai (i:2.0) <-> Kobuko (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Vivaz | DA_18_Teemo | -0.0200 |  |
+| Jogador 8 | 3-1 | 14:42:12 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Vivaz | DA_18_Teemo | 0.0000 |  |
+| Jogador 8 | 3-2 | 14:42:19 | COMPROU: Caitlyn (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Vivaz | DA_18_Teemo | 0.1400 |  |
+| Jogador 8 | 3-2 | 14:42:20 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Teemo | -0.1100 |  |
+| Jogador 8 | 3-2 | 14:42:20 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Vivaz | DA_18_Teemo | 0.0400 |  |
+| Jogador 8 | 3-2 | 14:42:20 | COMPROU: Xayah (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Teemo | 0.0400 |  |
+| Jogador 8 | 3-2 | 14:42:21 | MOVE Board -> Board: Kobuko (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Teemo | 0.0000 |  |
+| Jogador 8 | 3-2 | 14:42:21 | MOVE Board -> Board: Veigar (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Teemo | -0.0100 |  |
+| Jogador 8 | 3-2 | 14:42:21 | MOVE Board -> Board: Rek'Sai (i:2.0) <-> Cassiopeia (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Teemo | -0.0200 |  |
+| Jogador 8 | 3-2 | 14:42:21 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Teemo | 0.0000 |  |
+| Jogador 8 | 3-3 | 14:42:29 | COMPROU: Veigar (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Vivaz | DA_18_Veigar | 0.2200 |  |
+| Jogador 8 | 3-3 | 14:42:29 | VENDEU: Teemo (i:8.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Vivaz | DA_18_Veigar | -0.2500 |  |
+| Jogador 8 | 3-3 | 14:42:29 | EQUIP_FROM_INVENTORY: TFT_Item_LastWhisper -> Veigar (i:4.0) (tabuleiro slot 18) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 11 | 0 | Vivaz | DA_18_Veigar | 0.1900 |  |
+| Jogador 8 | 3-3 | 14:42:30 | COMPROU: Veigar (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Vivaz | DA_18_Veigar | 0.7400 |  |
+| Jogador 8 | 3-3 | 14:42:30 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Vivaz | DA_18_Veigar | -0.0400 |  |
+| Jogador 8 | 3-3 | 14:42:30 | VENDEU: Caitlyn (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Vivaz | DA_18_Veigar | 0.1000 |  |
+| Jogador 8 | 3-3 | 14:42:30 | COMPROU: Veigar (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Vivaz | DA_18_Veigar | 0.6900 |  |
+| Jogador 8 | 3-3 | 14:42:31 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Vivaz | DA_18_Veigar | -0.1100 |  |
+| Jogador 8 | 3-3 | 14:42:31 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Vivaz | DA_18_Veigar | 0.0400 |  |
+| Jogador 8 | 3-3 | 14:42:33 | COMPROU: Kobuko (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Vivaz | DA_18_Veigar | 0.2200 |  |
+| Jogador 8 | 3-3 | 14:42:33 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Vivaz | DA_18_Veigar | 0.0000 |  |
+| Jogador 8 | 3-4 | 14:42:39 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Vivaz | DA_18_Veigar | 0.6800 |  |
+| Jogador 8 | 3-4 | 14:42:40 | MOVE Bench -> Board: Veigar (i:4.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Vivaz | DA_18_Veigar | 0.6000 |  |
+| Jogador 8 | 3-4 | 14:42:40 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Vivaz | DA_18_Veigar | 0.0400 |  |
+| Jogador 8 | 3-4 | 14:42:40 | COMPROU: Rammus (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Vivaz | DA_18_Veigar | 0.7300 |  |
+| Jogador 8 | 3-4 | 14:42:41 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Vivaz | DA_18_Veigar | -0.1100 |  |
+| Jogador 8 | 3-4 | 14:42:41 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Veigar | -0.1100 |  |
+| Jogador 8 | 3-4 | 14:42:41 | MOVE Bench -> Board: Rammus (i:6.0) <-> Veigar (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Veigar | -0.6400 |  |
+| Jogador 8 | 3-4 | 14:42:42 | MOVE Board -> Board: Rammus (i:6.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Veigar | -0.0100 |  |
+| Jogador 8 | 3-4 | 14:42:42 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Veigar | 0.0000 |  |
+| Jogador 8 | 3-5 | 14:42:47 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 6 | 0 | Vivaz | DA_18_Veigar | 0.2200 |  |
+| Jogador 8 | 3-5 | 14:42:48 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Vivaz | DA_18_Veigar | -0.1100 |  |
+| Jogador 8 | 3-5 | 14:42:48 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 2 | 0 | Vivaz | DA_18_Veigar | 0.0400 |  |
+| Jogador 8 | 3-5 | 14:42:48 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Veigar | -0.1100 |  |
+| Jogador 8 | 3-5 | 14:42:49 | MOVE Board -> Board: Cassiopeia (i:6.0) <-> Veigar (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Veigar | 0.0000 |  |
+| Jogador 8 | 3-5 | 14:42:51 | MOVE Board -> Board: Veigar (i:4.0) <-> Kobuko (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Veigar | -0.1600 |  |
+| Jogador 8 | 3-5 | 14:42:51 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 0 | 0 | Vivaz | DA_18_Veigar | 0.0000 |  |
+| Jogador 8 | 3-6 | 14:42:58 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Vivaz | DA_18_Veigar | 0.0400 |  |
+| Jogador 8 | 3-6 | 14:42:59 | VENDEU: Veigar (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Vivaz | DA_18_Veigar | -0.5400 |  |
+| Jogador 8 | 3-6 | 14:42:59 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Vivaz | DA_18_Veigar | 0.7400 |  |
+| Jogador 8 | 3-6 | 14:42:59 | VENDEU: Rek'Sai (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 10 | 0 | Vivaz | DA_18_Veigar | -0.2500 |  |
+| Jogador 8 | 3-6 | 14:43:00 | COMPROU: Kobuko (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Vivaz | DA_18_Veigar | 0.6600 |  |
+| Jogador 8 | 3-6 | 14:43:00 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Vivaz | DA_18_Veigar | 0.0400 |  |
+| Jogador 8 | 3-6 | 14:43:00 | VENDEU: Akali (i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 8 | 0 | Vivaz | DA_18_Veigar | 0.0100 |  |
+| Jogador 8 | 3-6 | 14:43:00 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Vivaz | DA_18_Veigar | 0.7700 |  |
+| Jogador 8 | 3-6 | 14:43:01 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Vivaz | DA_18_Veigar | -0.1100 |  |
+| Jogador 8 | 3-6 | 14:43:03 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Veigar | 0.0400 |  |
+| Jogador 8 | 3-6 | 14:43:04 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Veigar | 0.0000 |  |
+| Jogador 8 | 3-7 | 14:43:08 | CRAFT_AND_EQUIP: TFT_Item_BFSword + TFT_Item_SparringGloves -> Cassiopeia (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Vivaz | DA_18_Veigar | 0.1500 |  |
+| Jogador 8 | 3-7 | 14:43:08 | CRAFT_AND_EQUIP: TFT_Item_GiantsBelt + TFT_Item_NeedlesslyLargeRod -> Cassiopeia (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 9 | 0 | Vivaz | DA_18_Veigar | 0.1000 |  |
+| Jogador 8 | 3-7 | 14:43:08 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 7 | 0 | Vivaz | DA_18_Veigar | 0.0400 |  |
+| Jogador 8 | 3-7 | 14:43:09 | COMPROU: Teemo (Custo 2 \| i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 5 | 0 | Vivaz | DA_18_Veigar | 0.2100 |  |
+| Jogador 8 | 3-7 | 14:43:12 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Veigar | 0.0400 |  |
+| Jogador 8 | 3-7 | 14:43:12 | REROLL | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Vivaz | DA_18_Veigar | 0.0400 |  |
+| Jogador 8 | 3-7 | 14:43:12 | MOVE Board -> Board: Kobuko (i:4.0) <-> Rammus (i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Vivaz | DA_18_Veigar | 0.0000 |  |
+| Jogador 8 | 3-7 | 14:43:13 | MOVE Board -> Board: Rammus (i:6.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Vivaz | DA_18_Veigar | 0.0600 |  |
+| Jogador 8 | 3-7 | 14:43:13 | MOVE Bench -> Board: Xayah (i:2.0) <-> Veigar (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 1 | 0 | Vivaz | DA_18_Kobuko | -0.7900 |  |
+| Jogador 8 | 3-7 | 14:43:13 | VENDEU: Veigar (i:4.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Vivaz | DA_18_Kobuko | -0.4200 |  |
+| Jogador 8 | 3-7 | 14:43:13 | PASSOU TURNO | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 4 | 0 | Vivaz | DA_18_Kobuko | 0.0000 |  |
+| Jogador 8 | 4-1 | 14:43:16 | EQUIP_FROM_INVENTORY: TFT_Item_LastWhisper -> Cassiopeia (i:6.0) (tabuleiro slot 18) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 12 | 0 | Vivaz | DA_18_Kobuko | 0.1100 |  |
+| Jogador 8 | 4-1 | 14:43:17 | MOVE Bench -> Board: Teemo (i:4.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 12 | 0 | Vivaz | DA_18_Kobuko | 0.4900 |  |
+| Jogador 8 | 4-1 | 14:43:20 | COMPROU: Sivir (Custo 4 \| i:8.0) | FAST8 | FAST8: composição planejada exige nível 8 | 8 | 0 | Vivaz | DA_18_Kobuko | -0.3300 |  |
+| Jogador 8 | 4-1 | 14:43:20 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 6 | 0 | Vivaz | DA_18_Kobuko | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 4-1 | 14:43:20 | COMPROU: Rammus (Custo 3 \| i:6.0) | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Rammus | 0.7600 |  |
+| Jogador 8 | 4-1 | 14:43:21 | MOVE Bench -> Board: Sivir (i:8.0) <-> Vazio | SLOWROLL | SLOWROLL: composição tem alvo de 3 estrelas | 3 | 0 | Vivaz | DA_18_Rammus | 0.2600 |  |
+| Jogador 8 | 4-1 | 14:43:21 | MOVE Bench -> Board: Rammus (i:12.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 3 | 0 | Vivaz | DA_18_Rammus | 0.5900 |  |
+| Jogador 8 | 4-1 | 14:43:21 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 1 | 0 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 4-1 | 14:43:21 | COMPROU: Kobuko (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 0 | 0 | Vivaz | DA_18_Rammus | 0.7700 |  |
+| Jogador 8 | 4-1 | 14:43:22 | MOVE Board -> Board: Teemo (i:4.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 0 | 0 | Vivaz | DA_18_Rammus | 0.0000 |  |
+| Jogador 8 | 4-1 | 14:43:22 | PASSOU TURNO | FAST8 | FAST8: composição planejada exige nível 8 | 0 | 0 | Vivaz | DA_18_Rammus | 0.0000 |  |
+| Jogador 8 | 4-2 | 14:43:28 | COMPROU: Rammus (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 6 | 0 | Vivaz | DA_18_Rammus | 0.2100 |  |
+| Jogador 8 | 4-2 | 14:43:29 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 5 | 0 | Vivaz | DA_18_Rammus | 0.2100 |  |
+| Jogador 8 | 4-2 | 14:43:29 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 3 | 0 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 4-2 | 14:43:29 | COMPROU: Rammus (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 0 | 0 | Vivaz | DA_18_Rammus | 0.7300 |  |
+| Jogador 8 | 4-2 | 14:43:29 | MOVE Board -> Board: Rammus (i:12.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 0 | 0 | Vivaz | DA_18_Rammus | 0.0000 |  |
+| Jogador 8 | 4-2 | 14:43:30 | MOVE Board -> Board: Sivir (i:8.0) <-> Rammus (i:12.0) | FAST8 | FAST8: composição planejada exige nível 8 | 0 | 0 | Vivaz | DA_18_Rammus | -0.0100 |  |
+| Jogador 8 | 4-2 | 14:43:30 | MOVE Board -> Board: Rammus (i:12.0) <-> Teemo (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 0 | 0 | Vivaz | DA_18_Rammus | -0.1000 |  |
+| Jogador 8 | 4-2 | 14:43:30 | PASSOU TURNO | FAST8 | FAST8: composição planejada exige nível 8 | 0 | 0 | Vivaz | DA_18_Rammus | 0.0000 |  |
+| Jogador 8 | 4-3 | 14:43:37 | COMPROU: Kobuko (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 8 | 0 | Vivaz | DA_18_Rammus | 0.2200 |  |
+| Jogador 8 | 4-3 | 14:43:38 | MOVE Bench -> Board: Kobuko (i:4.0) <-> Teemo (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 8 | 0 | Vivaz | DA_18_Rammus | 0.1600 |  |
+| Jogador 8 | 4-3 | 14:43:38 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 6 | 0 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 4-3 | 14:43:38 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 4 | 0 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 4-3 | 14:43:39 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 2 | 0 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 4-3 | 14:43:42 | VENDEU: Rek'Sai (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 5 | 0 | Vivaz | DA_18_Rammus | -0.2100 |  |
+| Jogador 8 | 4-3 | 14:43:42 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 4 | 0 | Vivaz | DA_18_Rammus | 0.6900 |  |
+| Jogador 8 | 4-3 | 14:43:42 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 2 | 0 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 4-3 | 14:43:43 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 0 | 0 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 4-3 | 14:43:43 | MOVE Board -> Board: Kobuko (i:4.0) <-> Cassiopeia (i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 0 | 0 | Vivaz | DA_18_Rammus | -0.0500 |  |
+| Jogador 8 | 4-3 | 14:43:43 | PASSOU TURNO | FAST8 | FAST8: composição planejada exige nível 8 | 0 | 0 | Vivaz | DA_18_Rammus | 0.0000 |  |
+| Jogador 8 | 4-4 | 14:43:47 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 6 | 0 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 4-4 | 14:43:47 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 4 | 0 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 4-4 | 14:43:50 | VENDEU: Kobuko (i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 5 | 0 | Vivaz | DA_18_Rammus | -0.3300 |  |
+| Jogador 8 | 4-4 | 14:43:51 | COMPROU: Teemo (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 3 | 0 | Vivaz | DA_18_Rammus | 0.7300 |  |
+| Jogador 8 | 4-4 | 14:43:51 | MOVE Board -> Board: Sivir (i:8.0) <-> Rammus (i:12.0) | FAST8 | FAST8: composição planejada exige nível 8 | 3 | 0 | Vivaz | DA_18_Rammus | 0.0000 |  |
+| Jogador 8 | 4-4 | 14:43:51 | MOVE Board -> Board: Rammus (i:12.0) <-> Kobuko (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 3 | 0 | Vivaz | DA_18_Rammus | -0.0100 |  |
+| Jogador 8 | 4-4 | 14:43:52 | PASSOU TURNO | FAST8 | FAST8: composição planejada exige nível 8 | 3 | 0 | Vivaz | DA_18_Rammus | 0.0000 |  |
+| Jogador 8 | 4-5 | 14:43:57 | MOVE Board -> Board: Kobuko (i:4.0) <-> Xayah (i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 12 | 0 | Vivaz | DA_18_Rammus | 0.0600 |  |
+| Jogador 8 | 4-5 | 14:43:57 | MOVE Board -> Board: Xayah (i:2.0) <-> Kobuko (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 12 | 0 | Vivaz | DA_18_Rammus | -0.0100 |  |
+| Jogador 8 | 4-5 | 14:43:57 | MOVE Board -> Board: Kobuko (i:4.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 12 | 0 | Vivaz | DA_18_Rammus | -0.0100 |  |
+| Jogador 8 | 4-5 | 14:43:57 | PASSOU TURNO | FAST8 | FAST8: composição planejada exige nível 8 | 12 | 0 | Vivaz | DA_18_Rammus | 0.0000 |  |
+| Jogador 8 | 4-6 | 14:44:08 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 20 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 4-6 | 14:44:08 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 18 | 1 | Vivaz | DA_18_Rammus | -0.2400 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 4-6 | 14:44:08 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 16 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 4-6 | 14:44:09 | MOVE Board -> Board: Cassiopeia (i:6.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 16 | 1 | Vivaz | DA_18_Rammus | 0.0000 |  |
+| Jogador 8 | 4-6 | 14:44:09 | MOVE Board -> Board: Cassiopeia (i:6.0) <-> Sivir (i:8.0) | FAST8 | FAST8: composição planejada exige nível 8 | 16 | 1 | Vivaz | DA_18_Rammus | -0.0100 |  |
+| Jogador 8 | 4-6 | 14:44:09 | VENDEU: Krugue (i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 19 | 1 | Vivaz | DA_18_Rammus | 0.0200 |  |
+| Jogador 8 | 4-6 | 14:44:10 | COMPROU: Teemo (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 17 | 1 | Vivaz | DA_18_Rammus | 0.7600 |  |
+| Jogador 8 | 4-6 | 14:44:10 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 15 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 4-6 | 14:44:10 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 13 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 4-7 | 14:44:19 | COMPROU: Teemo (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 20 | 1 | Vivaz | DA_18_Rammus | 0.2500 |  |
+| Jogador 8 | 4-7 | 14:44:19 | CRAFT_AND_EQUIP: TFT_Item_NegatronCloak + TFT_Item_NegatronCloak -> Xayah (i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 20 | 1 | Vivaz | DA_18_Rammus | 0.1000 |  |
+| Jogador 8 | 4-7 | 14:44:19 | CRAFT_AND_EQUIP: TFT_Item_NeedlesslyLargeRod + TFT_Item_NeedlesslyLargeRod -> Xayah (i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 20 | 1 | Vivaz | DA_18_Rammus | 0.1300 |  |
+| Jogador 8 | 4-7 | 14:44:19 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 18 | 1 | Vivaz | DA_18_Rammus | -0.2400 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 4-7 | 14:44:20 | COMPROU: Veigar (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 17 | 1 | Vivaz | DA_18_Rammus | 0.2200 |  |
+| Jogador 8 | 4-7 | 14:44:20 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 15 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 4-7 | 14:44:20 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 13 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 4-7 | 14:44:21 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 11 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 4-7 | 14:44:21 | VENDEU: Teemo (i:8.0) | FAST8 | FAST8: composição planejada exige nível 8 | 16 | 1 | Vivaz | DA_18_Rammus | -0.3300 |  |
+| Jogador 8 | 5-1 | 14:44:29 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 24 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-1 | 14:44:29 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 22 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-1 | 14:44:30 | COMPROU: Tristana (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 19 | 1 | Vivaz | DA_18_Rammus | 0.6900 |  |
+| Jogador 8 | 5-1 | 14:44:30 | MOVE Board -> Board: Sivir (i:8.0) <-> Kobuko (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 19 | 1 | Vivaz | DA_18_Rammus | 0.0000 |  |
+| Jogador 8 | 5-1 | 14:44:30 | VENDEU: Veigar (i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 20 | 1 | Vivaz | DA_18_Rammus | -0.1800 |  |
+| Jogador 8 | 5-1 | 14:44:31 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 19 | 1 | Vivaz | DA_18_Rammus | 0.7100 |  |
+| Jogador 8 | 5-1 | 14:44:31 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 17 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-1 | 14:44:31 | MOVE Board -> Board: Kobuko (i:4.0) <-> Kobuko (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 17 | 1 | Vivaz | DA_18_Rammus | 0.0000 |  |
+| Jogador 8 | 5-1 | 14:44:31 | COMPROU: Kog'Maw (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 14 | 1 | Vivaz | DA_18_Rammus | 0.1000 |  |
+| Jogador 8 | 5-2 | 14:44:39 | COMPROU: Kobuko (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 19 | 1 | Vivaz | DA_18_Rammus | 0.1800 |  |
+| Jogador 8 | 5-2 | 14:44:40 | VENDEU: Rek'Sai (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 22 | 1 | Vivaz | DA_18_Rammus | -0.1200 |  |
+| Jogador 8 | 5-2 | 14:44:40 | COMPROU: Teemo (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 20 | 1 | Vivaz | DA_18_Rammus | 0.7600 |  |
+| Jogador 8 | 5-2 | 14:44:40 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 18 | 1 | Vivaz | DA_18_Rammus | -0.2400 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-2 | 14:44:40 | MOVE Board -> Board: Kobuko (i:4.0) <-> Rammus (i:12.0) | FAST8 | FAST8: composição planejada exige nível 8 | 18 | 1 | Vivaz | DA_18_Rammus | 0.0000 |  |
+| Jogador 8 | 5-2 | 14:44:41 | VENDEU: Kobuko (i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 19 | 1 | Vivaz | DA_18_Rammus | -0.3300 |  |
+| Jogador 8 | 5-2 | 14:44:41 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 18 | 1 | Vivaz | DA_18_Rammus | 0.1700 |  |
+| Jogador 8 | 5-2 | 14:44:41 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 16 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-2 | 14:44:42 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 14 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-3 | 14:44:50 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 19 | 1 | Vivaz | DA_18_Rammus | -0.2400 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-3 | 14:44:50 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 17 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-3 | 14:44:51 | VENDEU: Rek'Sai (i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 18 | 1 | Vivaz | DA_18_Rammus | -0.1400 |  |
+| Jogador 8 | 5-3 | 14:44:51 | COMPROU: Cassiopeia (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 15 | 1 | Vivaz | DA_18_Rammus | 0.4200 |  |
+| Jogador 8 | 5-3 | 14:44:51 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 13 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-3 | 14:44:51 | VENDEU: Cassiopeia (i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 16 | 1 | Vivaz | DA_18_Rammus | -0.2600 |  |
+| Jogador 8 | 5-3 | 14:44:52 | COMPROU: Teemo (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 14 | 1 | Vivaz | DA_18_Rammus | 0.7600 |  |
+| Jogador 8 | 5-3 | 14:44:52 | COMPROU: Xayah (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 13 | 1 | Vivaz | DA_18_Rammus | 0.7300 |  |
+| Jogador 8 | 5-3 | 14:44:52 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 11 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-4 | 14:45:01 | COMPROU: Rammus (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 14 | 1 | Vivaz | DA_18_Rammus | 0.7600 |  |
+| Jogador 8 | 5-4 | 14:45:01 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 12 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-4 | 14:45:01 | COMPROU: Kayle (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 10 | 1 | Vivaz | DA_18_Rammus | -0.1200 |  |
+| Jogador 8 | 5-4 | 14:45:02 | COMPROU: Rengar (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 7 | 1 | Vivaz | DA_18_Rammus | -0.3100 |  |
+| Jogador 8 | 5-4 | 14:45:02 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 5 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-4 | 14:45:02 | VENDEU: Rammus (i:12.0) | FAST8 | FAST8: composição planejada exige nível 8 | 13 | 1 | Vivaz | DA_18_Rammus | -0.4500 |  |
+| Jogador 8 | 5-4 | 14:45:02 | COMPROU: Rakan (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 12 | 1 | Vivaz | DA_18_Rammus | 0.0800 |  |
+| Jogador 8 | 5-4 | 14:45:02 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 10 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-4 | 14:45:03 | VENDEU: Teemo (i:8.0) | FAST8 | FAST8: composição planejada exige nível 8 | 15 | 1 | Vivaz | DA_18_Rammus | -0.3300 |  |
+| Jogador 8 | 5-5 | 14:45:25 | COMPROU: Rengar (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 18 | 1 | Vivaz | DA_18_Rammus | 0.2100 |  |
+| Jogador 8 | 5-5 | 14:45:26 | VENDEU: Kayle (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 20 | 1 | Vivaz | DA_18_Rammus | 0.0900 |  |
+| Jogador 8 | 5-5 | 14:45:26 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 19 | 1 | Vivaz | DA_18_Rammus | 0.0900 |  |
+| Jogador 8 | 5-5 | 14:45:26 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 17 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-5 | 14:45:26 | VENDEU: Rakan (i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 18 | 1 | Vivaz | DA_18_Rammus | -0.0100 |  |
+| Jogador 8 | 5-5 | 14:45:27 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 17 | 1 | Vivaz | DA_18_Rammus | 0.6900 |  |
+| Jogador 8 | 5-5 | 14:45:27 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 15 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-5 | 14:45:27 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 13 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-5 | 14:45:27 | VENDEU: Xayah (i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 14 | 1 | Vivaz | DA_18_Rammus | -0.2900 |  |
+| Jogador 8 | 5-6 | 14:46:18 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 21 | 1 | Vivaz | DA_18_Rammus | 0.7900 |  |
+| Jogador 8 | 5-6 | 14:46:18 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 19 | 1 | Vivaz | DA_18_Rammus | -0.2400 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-6 | 14:46:18 | COMPROU: Rammus (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 16 | 1 | Vivaz | DA_18_Rammus | 0.2100 |  |
+| Jogador 8 | 5-6 | 14:46:18 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 14 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-6 | 14:46:19 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 12 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-6 | 14:46:19 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 10 | 1 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-6 | 14:46:19 | COMPROU: Tristana (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 7 | 1 | Vivaz | DA_18_Tristana | 0.6800 |  |
+| Jogador 8 | 5-6 | 14:46:20 | COMPROU: Kobuko (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 6 | 1 | Vivaz | DA_18_Tristana | 0.2200 |  |
+| Jogador 8 | 5-6 | 14:46:20 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 4 | 1 | Vivaz | DA_18_Tristana | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-7 | 14:47:05 | EQUIP_FROM_INVENTORY: DA_18_EmblemHunter -> Xayah (i:2.0) (tabuleiro slot 18) | FAST8 | FAST8: composição planejada exige nível 8 | 10 | 0 | Vivaz | DA_18_Tristana | -0.0300 |  |
+| Jogador 8 | 5-7 | 14:47:05 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 8 | 0 | Vivaz | DA_18_Tristana | -0.2400 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-7 | 14:47:05 | COMPROU: Teemo (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 6 | 0 | Vivaz | DA_18_Tristana | 0.2100 |  |
+| Jogador 8 | 5-7 | 14:47:05 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 4 | 0 | Vivaz | DA_18_Tristana | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-7 | 14:47:05 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 2 | 0 | Vivaz | DA_18_Tristana | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-7 | 14:47:06 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 0 | 0 | Vivaz | DA_18_Tristana | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 5-7 | 14:47:06 | MOVE Board -> Board: Rammus (i:12.0) <-> Xayah (i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 0 | 0 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 8 | 5-7 | 14:47:06 | MOVE Board -> Board: Xayah (i:2.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 0 | 0 | Vivaz | DA_18_Tristana | -0.0100 |  |
+| Jogador 8 | 5-7 | 14:47:06 | PASSOU TURNO | FAST8 | FAST8: composição planejada exige nível 8 | 0 | 0 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 8 | 6-1 | 14:47:49 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 3 | 0 | Vivaz | DA_18_Tristana | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 6-1 | 14:47:50 | VENDEU: Rek'Sai (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 6 | 0 | Vivaz | DA_18_Tristana | -0.2000 |  |
+| Jogador 8 | 6-1 | 14:47:50 | COMPROU: Fiddlesticks (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 3 | 0 | Vivaz | DA_18_Tristana | 0.7300 |  |
+| Jogador 8 | 6-1 | 14:47:50 | MOVE Bench -> Board: Fiddlesticks (i:6.0) <-> Kobuko (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 3 | 0 | Vivaz | DA_18_Tristana | -0.3900 |  |
+| Jogador 8 | 6-1 | 14:47:50 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 1 | 0 | Vivaz | DA_18_Tristana | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 6-1 | 14:47:50 | MOVE Board -> Board: Fiddlesticks (i:6.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 1 | 0 | Vivaz | DA_18_Tristana | 0.0000 |  |
+| Jogador 8 | 6-1 | 14:47:51 | MOVE Bench -> Board: Kog'Maw (i:6.0) <-> Cassiopeia (i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 1 | 0 | Vivaz | DA_18_Tristana | 0.0800 |  |
+| Jogador 8 | 6-1 | 14:47:51 | MOVE Bench -> Board: Cassiopeia (i:6.0) <-> Sivir (i:8.0) | FAST8 | FAST8: composição planejada exige nível 8 | 1 | 0 | Vivaz | DA_18_Tristana | -0.3100 |  |
+| Jogador 8 | 6-1 | 14:47:51 | MOVE Bench -> Board: Sivir (i:8.0) <-> Kog'Maw (i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 1 | 0 | Vivaz | DA_18_Tristana | -0.7600 |  |
+| Jogador 8 | 6-2 | 14:48:01 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 5 | 0 | Vivaz | DA_18_Tristana | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 6-2 | 14:48:01 | VENDEU: Kobuko (i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 8 | 0 | Vivaz | DA_18_Tristana | -0.5400 |  |
+| Jogador 8 | 6-2 | 14:48:01 | COMPROU: Teemo (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 6 | 0 | Vivaz | DA_18_Tristana | 0.7300 |  |
+| Jogador 8 | 6-2 | 14:48:02 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 4 | 0 | Vivaz | DA_18_Tristana | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 6-2 | 14:48:02 | VENDEU: Tristana (i:12.0) | FAST8 | FAST8: composição planejada exige nível 8 | 12 | 0 | Vivaz | DA_18_Rammus | -0.2800 |  |
+| Jogador 8 | 6-2 | 14:48:02 | COMPROU: Teemo (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 10 | 0 | Vivaz | DA_18_Rammus | 0.7700 |  |
+| Jogador 8 | 6-2 | 14:48:02 | COMPROU: Rek'Sai (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 9 | 0 | Vivaz | DA_18_Rammus | 0.1100 |  |
+| Jogador 8 | 6-2 | 14:48:03 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 7 | 0 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 6-2 | 14:48:03 | COMPROU: Fiddlesticks (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 4 | 0 | Vivaz | DA_Fiddlesticks18 | 0.7600 |  |
+| Jogador 8 | 6-3 | 14:48:13 | COMPROU: Kog'Maw (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 6 | 0 | Vivaz | DA_Fiddlesticks18 | 0.7200 |  |
+| Jogador 8 | 6-3 | 14:48:13 | MOVE Bench -> Board: Kog'Maw (i:6.0) <-> Vazio | FAST8 | FAST8: composição planejada exige nível 8 | 6 | 0 | Vivaz | DA_Fiddlesticks18 | 0.4600 |  |
+| Jogador 8 | 6-3 | 14:48:13 | COMPROU: Tristana (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 3 | 0 | Vivaz | DA_Fiddlesticks18 | 0.2100 |  |
+| Jogador 8 | 6-3 | 14:48:14 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 1 | 0 | Vivaz | DA_Fiddlesticks18 | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 6-3 | 14:48:14 | VENDEU: Fiddlesticks (i:12.0) | FAST8 | FAST8: composição planejada exige nível 8 | 9 | 0 | Vivaz | DA_18_Rammus | -0.3600 |  |
+| Jogador 8 | 6-3 | 14:48:14 | COMPROU: Rammus (Custo 3 \| i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 6 | 0 | Vivaz | DA_18_Rammus | 0.7300 |  |
+| Jogador 8 | 6-3 | 14:48:14 | MOVE Bench -> Board: Tristana (i:6.0) <-> Kog'Maw (i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 6 | 0 | Vivaz | DA_18_Rammus | 0.1000 |  |
+| Jogador 8 | 6-3 | 14:48:15 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 4 | 0 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 6-3 | 14:48:15 | VENDEU: Teemo (i:8.0) | FAST8 | FAST8: composição planejada exige nível 8 | 9 | 0 | Vivaz | DA_18_Rammus | -0.3500 |  |
+| Jogador 8 | 6-4 | 14:48:24 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 12 | 0 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 6-4 | 14:48:24 | COMPROU: Veigar (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 11 | 0 | Vivaz | DA_18_Rammus | 0.2200 |  |
+| Jogador 8 | 6-4 | 14:48:25 | VENDEU: Rengar (i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 14 | 0 | Vivaz | DA_18_Rammus | -0.2500 |  |
+| Jogador 8 | 6-4 | 14:48:25 | COMPROU: Teemo (Custo 2 \| i:4.0) | FAST8 | FAST8: composição planejada exige nível 8 | 12 | 0 | Vivaz | DA_18_Rammus | 0.2100 |  |
+| Jogador 8 | 6-4 | 14:48:25 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 10 | 0 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 6-4 | 14:48:25 | VENDEU: Rengar (i:6.0) | FAST8 | FAST8: composição planejada exige nível 8 | 13 | 0 | Vivaz | DA_18_Rammus | 0.0200 |  |
+| Jogador 8 | 6-4 | 14:48:26 | COMPROU: Kobuko (Custo 1 \| i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 12 | 0 | Vivaz | DA_18_Rammus | 0.7400 |  |
+| Jogador 8 | 6-4 | 14:48:26 | REROLL | FAST8 | FAST8: composição planejada exige nível 8 | 10 | 0 | Vivaz | DA_18_Rammus | -0.1600 | FAST8_REROLL_REVIEW |
+| Jogador 8 | 6-4 | 14:48:26 | VENDEU: Veigar (i:2.0) | FAST8 | FAST8: composição planejada exige nível 8 | 11 | 0 | Vivaz | DA_18_Rammus | -0.2600 |  |
+| Jogador 8 | 6-5 | 14:48:36 | MOVE Bench -> Board: Rek'Sai (i:2.0) <-> Tristana (i:6.0) | STABILIZE | STABILIZE: pressão de vida | 17 | 1 | Vivaz | DA_18_Rammus | -0.7000 |  |
+| Jogador 8 | 6-5 | 14:48:36 | MOVE Bench -> Board: Tristana (i:6.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 17 | 1 | Vivaz | DA_18_Rammus | 0.5800 |  |
+| Jogador 8 | 6-5 | 14:48:36 | MOVE Board -> Board: Tristana (i:6.0) <-> Sivir (i:8.0) | STABILIZE | STABILIZE: pressão de vida | 17 | 1 | Vivaz | DA_18_Rammus | -0.0100 |  |
+| Jogador 8 | 6-5 | 14:48:37 | MOVE Board -> Board: Sivir (i:8.0) <-> Vazio | STABILIZE | STABILIZE: pressão de vida | 17 | 1 | Vivaz | DA_18_Rammus | -0.0100 |  |
+| Jogador 8 | 6-5 | 14:48:37 | PASSOU TURNO | STABILIZE | STABILIZE: pressão de vida | 17 | 1 | Vivaz | DA_18_Rammus | -0.0400 | STABILIZE_PASS_WITH_GOLD_REVIEW |
+| Jogador 8 | 6-6 | 14:48:47 | COMPROU: Sivir (Custo 4 \| i:8.0) | STABILIZE | STABILIZE: pressão de vida | 19 | 1 | Vivaz | DA_18_Rammus | 0.7200 |  |
+| Jogador 8 | 6-6 | 14:48:48 | REROLL | STABILIZE | STABILIZE: pressão de vida | 17 | 1 | Vivaz | DA_18_Rammus | -0.0900 |  |
+| Jogador 8 | 6-6 | 14:48:48 | COMPROU: Rammus (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: pressão de vida | 14 | 1 | Vivaz | DA_18_Rammus | 0.8300 |  |
+| Jogador 8 | 6-6 | 14:48:48 | COMPROU: Zyra (Custo 4 \| i:8.0) | STABILIZE | STABILIZE: pressão de vida | 10 | 1 | Vivaz | DA_18_Rammus | -0.1300 |  |
+| Jogador 8 | 6-6 | 14:48:48 | REROLL | STABILIZE | STABILIZE: pressão de vida | 8 | 1 | Vivaz | DA_18_Rammus | -0.1700 |  |
+| Jogador 8 | 6-6 | 14:48:48 | COMPROU: Ornn (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 7 | 1 | Vivaz | DA_18_Rammus | 0.0900 |  |
+| Jogador 8 | 6-6 | 14:48:49 | REROLL | STABILIZE | STABILIZE: pressão de vida | 5 | 1 | Vivaz | DA_18_Rammus | -0.0900 |  |
+| Jogador 8 | 6-6 | 14:48:49 | VENDEU: Rammus (i:12.0) | STABILIZE | STABILIZE: pressão de vida | 13 | 1 | Vivaz | DA_18_Rammus | -0.4500 |  |
+| Jogador 8 | 6-6 | 14:48:49 | COMPROU: Teemo (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: pressão de vida | 11 | 1 | Vivaz | DA_18_Rammus | 0.8000 |  |
+| Jogador 8 | 6-7 | 14:48:59 | EQUIP_FROM_INVENTORY: TFT_Item_BrambleVest -> Rammus (i:12.0) (tabuleiro slot 18) | STABILIZE | STABILIZE: pressão de vida | 17 | 1 | Vivaz | DA_18_Rammus | 0.0900 |  |
+| Jogador 8 | 6-7 | 14:48:59 | VENDEU: Ornn (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 18 | 1 | Vivaz | DA_18_Rammus | 0.0000 |  |
+| Jogador 8 | 6-7 | 14:49:00 | COMPROU: Tristana (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: pressão de vida | 15 | 1 | Vivaz | DA_18_Rammus | 0.8000 |  |
+| Jogador 8 | 6-7 | 14:49:00 | VENDEU: Zyra (i:8.0) | STABILIZE | STABILIZE: pressão de vida | 19 | 1 | Vivaz | DA_18_Rammus | 0.0100 |  |
+| Jogador 8 | 6-7 | 14:49:00 | COMPROU: Cassiopeia (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: pressão de vida | 16 | 1 | Vivaz | DA_18_Rammus | 0.5000 |  |
+| Jogador 8 | 6-7 | 14:49:01 | REROLL | STABILIZE | STABILIZE: pressão de vida | 14 | 1 | Vivaz | DA_18_Rammus | -0.0900 |  |
+| Jogador 8 | 6-7 | 14:49:01 | VENDEU: Cassiopeia (i:6.0) | STABILIZE | STABILIZE: pressão de vida | 17 | 1 | Vivaz | DA_18_Rammus | -0.2600 |  |
+| Jogador 8 | 6-7 | 14:49:01 | COMPROU: Rammus (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: pressão de vida | 14 | 1 | Vivaz | DA_18_Rammus | 0.2800 |  |
+| Jogador 8 | 6-7 | 14:49:01 | REROLL | STABILIZE | STABILIZE: pressão de vida | 12 | 1 | Vivaz | DA_18_Rammus | -0.0900 |  |
+| Jogador 8 | 7-1 | 14:49:11 | VENDEU: Rammus (i:6.0) | STABILIZE | STABILIZE: pressão de vida | 22 | 1 | Vivaz | DA_18_Rammus | -0.2600 |  |
+| Jogador 8 | 7-1 | 14:49:11 | COMPROU: Veigar (Custo 1 \| i:2.0) | STABILIZE | STABILIZE: pressão de vida | 21 | 1 | Vivaz | DA_18_Rammus | 0.3300 |  |
+| Jogador 8 | 7-1 | 14:49:12 | VENDEU: Veigar (i:2.0) | STABILIZE | STABILIZE: pressão de vida | 22 | 1 | Vivaz | DA_18_Rammus | -0.2900 |  |
+| Jogador 8 | 7-1 | 14:49:12 | COMPROU: Warwick (Custo 2 \| i:4.0) | STABILIZE | STABILIZE: pressão de vida | 20 | 1 | Vivaz | DA_18_Rammus | 0.0300 |  |
+| Jogador 8 | 7-1 | 14:49:12 | REROLL | STABILIZE | STABILIZE: pressão de vida | 18 | 1 | Vivaz | DA_18_Rammus | -0.1700 |  |
+| Jogador 8 | 7-1 | 14:49:12 | VENDEU: Warwick (i:4.0) | STABILIZE | STABILIZE: pressão de vida | 20 | 1 | Vivaz | DA_18_Rammus | 0.0900 |  |
+| Jogador 8 | 7-1 | 14:49:13 | COMPROU: Fiddlesticks (Custo 3 \| i:6.0) | STABILIZE | STABILIZE: pressão de vida | 17 | 1 | Vivaz | DA_18_Rammus | 0.2400 |  |
+| Jogador 8 | 7-1 | 14:49:13 | REROLL | STABILIZE | STABILIZE: pressão de vida | 15 | 1 | Vivaz | DA_18_Rammus | -0.0900 |  |
+| Jogador 8 | 7-1 | 14:49:13 | REROLL | STABILIZE | STABILIZE: pressão de vida | 13 | 1 | Vivaz | DA_18_Rammus | -0.0900 |  |
+
+As flags FAST8/SLOWROLL/STABILIZE/ECON são candidatos de revisão, não violações definitivas: logs legados não incluem a máscara legal completa nem sempre registram HP, nível e alternativas no mesmo instante.
+
+### Evidência adicional dos logs do Viewer
+
+| Jogador | Rounds observados | Snapshots de loja | Ofertas vistas | Snapshots de itens | Itens não vazios | Observações de ouro | Transições comp/foco | Warnings de posição |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Jogador 1 | 31 | 67 | 335 | 31 | 17 | 265 | 22 | 13 |
+| Jogador 2 | 41 | 120 | 600 | 41 | 18 | 352 | 9 | 51 |
+| Jogador 3 | 40 | 83 | 415 | 40 | 18 | 295 | 10 | 17 |
+| Jogador 4 | 23 | 35 | 175 | 23 | 14 | 177 | 14 | 31 |
+| Jogador 5 | 27 | 55 | 275 | 27 | 16 | 231 | 19 | 18 |
+| Jogador 6 | 30 | 66 | 330 | 30 | 17 | 256 | 10 | 25 |
+| Jogador 7 | 26 | 38 | 190 | 26 | 16 | 184 | 13 | 36 |
+| Jogador 8 | 41 | 135 | 675 | 41 | 19 | 356 | 20 | 48 |
+
+Essas contagens complementam os snapshots estruturados: ofertas e avisos textuais não provam, isoladamente, que uma compra, venda ou posição era a melhor decisão.
+
+## Auditoria decisão por decisão
+
+| Jogador | Ações | Máscaras | Tipo permitido | Tipo bloqueado | Validação completa | Falhas | Estado completo | Recompensas completas | UUIDs observados | Adições/remoções |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Jogador 1 | 265 | 265 | 265 | 0 | 253 | 0 | 265 | 265 | 265 | 76/63 |
+| Jogador 2 | 352 | 352 | 352 | 0 | 335 | 0 | 352 | 352 | 352 | 91/76 |
+| Jogador 3 | 295 | 295 | 295 | 0 | 279 | 0 | 295 | 295 | 295 | 87/72 |
+| Jogador 4 | 177 | 177 | 177 | 0 | 170 | 0 | 177 | 177 | 177 | 48/34 |
+| Jogador 5 | 231 | 231 | 231 | 0 | 222 | 0 | 231 | 231 | 231 | 58/47 |
+| Jogador 6 | 256 | 256 | 256 | 0 | 240 | 0 | 256 | 256 | 256 | 71/57 |
+| Jogador 7 | 184 | 184 | 184 | 0 | 172 | 0 | 184 | 184 | 184 | 43/29 |
+| Jogador 8 | 356 | 356 | 356 | 0 | 345 | 0 | 356 | 356 | 356 | 100/85 |
+
+### Timeline
+
+| Jogador | Round | Step | Ação | Estratégia | HP | Nível | Ouro | Juros | Força | Direção/foco | Tipos legais | Tipo permitido | Parâmetros válidos | Rew ação | Combate | Colocação | UUIDs adicionados/removidos |
+|---|---|---:|---|---|---:|---:|---:|---:|---:|---|---|---|---|---:|---:|---:|---|
+| Jogador 1 | 1-1 | 1 | MOVE_BENCH | ECON | 100.0 | 2 | 0 | 0 | 0.0 | —/— | MOVE_BENCH, SELL, PASS | True | True | 0.511091411113739 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 1-1 | 2 | PASS | STABILIZE | 100.0 | 2 | 0 | 0 | 2.0 | —/DA_18_Ornn | MOVE_BOARD, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 1-2 | 29 | BUY | STABILIZE | 100.0 | 3 | 2 | 0 | 2.0 | —/DA_18_Ornn | BUY, REROLL, MOVE_BOARD, PASS | True | True | 0.23749256134033203 | 0.0 | 0.0 | +2718f555-b782-4fea-a68f-31395ad34232 / -— |
+| Jogador 1 | 1-2 | 30 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 1 | 0 | 2.0 | —/DA_18_Akali_AD | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3297509253025055 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 1-2 | 31 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 1 | 0 | 2.0 | —/DA_18_Akali_AD | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1543717384338379 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 1-2 | 32 | BUY | STABILIZE | 100.0 | 3 | 1 | 0 | 4.0 | —/DA_18_Akali_AD | BUY, MOVE_BOARD, PASS | True | True | 0.2252703607082367 | 0.0 | 0.0 | +cde2c30a-df2c-4275-86ef-e4a4a13a5be1 / -— |
+| Jogador 1 | 1-2 | 33 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.00032026885310187936 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 1-2 | 34 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.40369340777397156 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 1-2 | 35 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Akali_AD | MOVE_BOARD, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 1-2 | 36 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Rakan | MOVE_BOARD, PASS | True | True | -0.014501244761049747 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 1-2 | 37 | PASS | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Rakan | MOVE_BOARD, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 1-3 | 56 | BUY | STABILIZE | 100.0 | 3 | 2 | 0 | 6.0 | —/DA_18_Rakan | BUY, REROLL, MOVE_BOARD, PASS | True | True | 0.34559255838394165 | 0.0 | 0.0 | +cfc9d52e-f119-4fc9-8ced-569ac7071cb6 / -— |
+| Jogador 1 | 1-3 | 57 | BUY | STABILIZE | 100.0 | 3 | 1 | 0 | 6.0 | —/DA_18_Rakan | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2621667981147766 | 0.0 | 0.0 | +699bd379-c986-4107-9c35-eeb8b49cf182 / -— |
+| Jogador 1 | 1-3 | 58 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 1-3 | 59 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 1-3 | 60 | PASS | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 1-4 | 81 | BUY | STABILIZE | 100.0 | 3 | 3 | 0 | 6.0 | —/DA_18_Rakan | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.0390251874923706 | 0.0 | 0.0 | +c28def4c-cd00-4010-ac6f-0e6c90648294 / -— |
+| Jogador 1 | 1-4 | 82 | BUY | STABILIZE | 100.0 | 3 | 2 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.0251476764678955 | 0.0 | 0.0 | +6465b229-8025-4e7d-94de-1cd49fa76167 / -— |
+| Jogador 1 | 1-4 | 83 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 1 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0002449438034091145 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 1-4 | 84 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 1 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 1-4 | 85 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 1 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 1-4 | 86 | PASS | STABILIZE | 100.0 | 3 | 1 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-1 | 108 | CRAFT_AND_EQUIP | STABILIZE | 100.0 | 4 | 5 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.16313914954662323 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-1 | 109 | CRAFT_AND_EQUIP | STABILIZE | 100.0 | 4 | 5 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.16776928305625916 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-1 | 110 | BUY | STABILIZE | 100.0 | 4 | 5 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.0384962558746338 | 0.0 | 0.0 | +2ffdabd7-c3ce-44f6-ba26-de66bd2c7216 / -6465b229-8025-4e7d-94de-1cd49fa76167,ba82e61e-9068-4e02-b710-5419c194d2ff |
+| Jogador 1 | 2-1 | 111 | MOVE_BENCH | STABILIZE | 100.0 | 4 | 4 | 0 | 4.0 | —/DA_18_Ornn | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.32151803374290466 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-1 | 112 | BUY | STABILIZE | 100.0 | 4 | 4 | 0 | 6.0 | —/DA_18_Ornn | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.291057288646698 | 0.0 | 0.0 | +e2e6d682-b207-4a6c-858b-9a3c5c11a38d / -— |
+| Jogador 1 | 2-1 | 113 | REROLL | STABILIZE | 100.0 | 4 | 3 | 0 | 6.0 | —/DA_18_Ornn | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-1 | 114 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 1 | 0 | 6.0 | —/DA_18_Ornn | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.009041755460202694 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-1 | 115 | MOVE_BENCH | STABILIZE | 100.0 | 4 | 1 | 0 | 6.0 | —/DA_18_Ornn | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3888397514820099 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-1 | 116 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 1 | 0 | 8.0 | —/DA_18_Ornn | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014743589796125889 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-1 | 117 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 1 | 0 | 8.0 | —/DA_18_Ornn | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01535525918006897 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-1 | 118 | PASS | STABILIZE | 100.0 | 4 | 1 | 0 | 8.0 | —/DA_18_Ornn | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-2 | 131 | BUY | STABILIZE | 95.0 | 4 | 6 | 0 | 8.0 | —/DA_18_Ornn | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.984638512134552 | 0.0 | 0.0 | +341df1a1-a619-420a-926a-0fe048aa1456 / -— |
+| Jogador 1 | 2-2 | 132 | BUY | STABILIZE | 95.0 | 4 | 5 | 0 | 8.0 | —/DA_18_Ornn | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.22406676411628723 | 0.0 | 0.0 | +68cd8ae3-399f-461f-89a8-189d7b0a6b59 / -— |
+| Jogador 1 | 2-2 | 133 | REROLL | STABILIZE | 95.0 | 4 | 4 | 0 | 8.0 | —/DA_18_Ornn | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-2 | 134 | BUY | STABILIZE | 95.0 | 4 | 2 | 0 | 8.0 | —/DA_18_Ornn | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6155139207839966 | 0.0 | 0.0 | +5de56114-806a-4f58-8241-b3b8434a2154 / -— |
+| Jogador 1 | 2-2 | 135 | BUY | STABILIZE | 95.0 | 4 | 1 | 0 | 8.0 | —/DA_18_Ornn | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0943877100944519 | 0.0 | 0.0 | +f16ba193-452a-4c02-bfc0-b9757661a178 / -— |
+| Jogador 1 | 2-2 | 136 | MOVE_BOARD | STABILIZE | 95.0 | 4 | 0 | 0 | 8.0 | —/DA_18_Ornn | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.33250680565834045 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-2 | 137 | MOVE_BOARD | STABILIZE | 95.0 | 4 | 0 | 0 | 8.0 | —/DA_18_Ornn | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.012272719293832779 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-2 | 138 | PASS | STABILIZE | 95.0 | 4 | 0 | 0 | 8.0 | —/DA_18_Ornn | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-3 | 154 | BUY | STABILIZE | 95.0 | 4 | 6 | 0 | 8.0 | —/DA_18_Ornn | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1980627477169037 | 0.0 | 0.0 | +4b3d3abb-8023-422a-b699-88050ea034e5 / -— |
+| Jogador 1 | 2-3 | 155 | BUY | STABILIZE | 95.0 | 4 | 3 | 0 | 8.0 | —/DA_18_Ornn | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.08143600821495056 | 0.0 | 0.0 | +0f1b15a2-9978-4691-a15e-483ccd03db7f / -— |
+| Jogador 1 | 2-3 | 156 | MOVE_BOARD | STABILIZE | 95.0 | 4 | 1 | 0 | 8.0 | —/DA_18_Ornn | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.34834471344947815 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-3 | 157 | SELL | STABILIZE | 95.0 | 4 | 1 | 0 | 8.0 | —/DA_18_Ornn | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.20139651000499725 | 0.0 | 0.0 | +— / -2ffdabd7-c3ce-44f6-ba26-de66bd2c7216 |
+| Jogador 1 | 2-3 | 158 | BUY | STABILIZE | 95.0 | 4 | 4 | 0 | 8.0 | —/DA_Vi18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.009242172352969646 | 0.0 | 0.0 | +32b7b452-7702-43a3-b3c4-8eda786225b9 / -— |
+| Jogador 1 | 2-3 | 159 | REROLL | STABILIZE | 95.0 | 4 | 2 | 0 | 8.0 | —/DA_Vi18 | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-3 | 160 | SELL | STABILIZE | 95.0 | 4 | 0 | 0 | 8.0 | —/DA_Vi18 | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0006399999838322401 | 0.0 | 0.0 | +— / -f16ba193-452a-4c02-bfc0-b9757661a178 |
+| Jogador 1 | 2-3 | 161 | BUY | STABILIZE | 95.0 | 4 | 1 | 0 | 8.0 | —/DA_Vi18 | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.949712872505188 | 0.0 | 0.0 | +07ecc7d0-150a-4bf9-8c9d-dc15bdd854b0 / -2718f555-b782-4fea-a68f-31395ad34232,c28def4c-cd00-4010-ac6f-0e6c90648294 |
+| Jogador 1 | 2-3 | 162 | MOVE_BENCH | STABILIZE | 95.0 | 4 | 0 | 0 | 4.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.23225903511047363 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-3 | 163 | MOVE_BENCH | STABILIZE | 95.0 | 4 | 0 | 0 | 6.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.07994557917118073 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-3 | 164 | PASS | STABILIZE | 95.0 | 4 | 0 | 0 | 6.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-4 | 174 | BUY | STABILIZE | 89.0 | 4 | 5 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8915959596633911 | 0.0 | 0.0 | +a9f7f52e-6619-4669-9b8a-390b99fd73d8 / -— |
+| Jogador 1 | 2-4 | 175 | SELL | STABILIZE | 89.0 | 4 | 4 | 0 | 6.0 | —/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.29214105010032654 | 0.0 | 0.0 | +— / -07ecc7d0-150a-4bf9-8c9d-dc15bdd854b0 |
+| Jogador 1 | 2-4 | 176 | BUY | STABILIZE | 89.0 | 4 | 7 | 0 | 6.0 | —/DA_Vi18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9496936798095703 | 0.0 | 0.0 | +19cba1be-95ae-4cf0-a600-0c5eb8d081b0 / -a9f7f52e-6619-4669-9b8a-390b99fd73d8,cde2c30a-df2c-4275-86ef-e4a4a13a5be1 |
+| Jogador 1 | 2-4 | 177 | MOVE_BENCH | STABILIZE | 89.0 | 4 | 6 | 0 | 4.0 | —/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2768876254558563 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-4 | 178 | MOVE_BENCH | STABILIZE | 89.0 | 4 | 6 | 0 | 6.0 | —/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.04536855220794678 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-4 | 179 | MOVE_BENCH | STABILIZE | 89.0 | 4 | 6 | 0 | 6.0 | —/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.03017505258321762 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-4 | 180 | PASS | STABILIZE | 89.0 | 4 | 6 | 0 | 6.0 | —/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-4 | 191 | MOVE_BENCH | STABILIZE | 89.0 | 4 | 6 | 0 | 6.0 | —/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.47439220547676086 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-5 | 196 | BUY | STABILIZE | 89.0 | 4 | 11 | 1 | 8.0 | —/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9315317869186401 | 0.0 | 0.0 | +c114a849-aa3b-4b7f-bc26-b5b699914f0b / -5de56114-806a-4f58-8241-b3b8434a2154,699bd379-c986-4107-9c35-eeb8b49cf182 |
+| Jogador 1 | 2-5 | 197 | MOVE_BENCH | STABILIZE | 89.0 | 4 | 10 | 1 | 6.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7819467186927795 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-5 | 198 | MOVE_BENCH | STABILIZE | 89.0 | 4 | 10 | 1 | 10.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.40277472138404846 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-5 | 199 | BUY | STABILIZE | 89.0 | 4 | 10 | 1 | 10.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.047416042536497116 | 0.0 | 0.0 | +dbe9f465-e302-46d0-9bd4-93969fde6ecb / -— |
+| Jogador 1 | 2-5 | 200 | MOVE_BENCH | STABILIZE | 89.0 | 4 | 7 | 0 | 10.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.39262276887893677 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-5 | 201 | REROLL | STABILIZE | 89.0 | 4 | 7 | 0 | 14.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-5 | 202 | BUY | STABILIZE | 89.0 | 4 | 5 | 0 | 14.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.32931578159332275 | 0.0 | 0.0 | +e658854d-c531-46fc-8978-067953930510 / -— |
+| Jogador 1 | 2-5 | 203 | BUY | STABILIZE | 89.0 | 4 | 3 | 0 | 14.0 | Fumegante/DA_18_Rakan | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.07632371783256531 | 0.0 | 0.0 | +4e116bc2-f686-4a17-adb1-a7b80865c159 / -— |
+| Jogador 1 | 2-5 | 204 | MOVE_BENCH | STABILIZE | 89.0 | 4 | 1 | 0 | 14.0 | Fumegante/DA_18_Rakan | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.6536628603935242 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-5 | 205 | MOVE_BENCH | STABILIZE | 89.0 | 4 | 1 | 0 | 12.0 | Fumegante/DA_18_Rakan | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.40682291984558105 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-5 | 206 | PASS | STABILIZE | 89.0 | 4 | 1 | 0 | 14.0 | Fumegante/DA_18_Rakan | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-6 | 213 | BUY | SLOWROLL | 85.0 | 5 | 7 | 0 | 14.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6143633127212524 | 0.0 | 0.0 | +c02b6467-3a23-4da6-bca3-06ae415a9998 / -— |
+| Jogador 1 | 2-6 | 214 | MOVE_BENCH | SLOWROLL | 85.0 | 5 | 4 | 0 | 14.0 | Fumegante/DA_18_Rakan | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.10509774088859558 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-6 | 215 | MOVE_BENCH | SLOWROLL | 85.0 | 5 | 4 | 0 | 14.0 | Fumegante/DA_18_Rakan | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.38747602701187134 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-6 | 216 | BUY | SLOWROLL | 85.0 | 5 | 4 | 0 | 18.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6305384635925293 | 0.0 | 0.0 | +c4c0b136-020d-4c1e-9517-8e0bf4c5a628 / -— |
+| Jogador 1 | 2-6 | 217 | REROLL | SLOWROLL | 85.0 | 5 | 2 | 0 | 18.0 | Fumegante/DA_18_Rakan | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10899999737739563 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-6 | 218 | SELL | SLOWROLL | 85.0 | 5 | 0 | 0 | 18.0 | Fumegante/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.27973827719688416 | 0.0 | 0.0 | +— / -19cba1be-95ae-4cf0-a600-0c5eb8d081b0 |
+| Jogador 1 | 2-6 | 219 | EQUIP_FROM_INVENTORY | SLOWROLL | 85.0 | 5 | 3 | 0 | 18.0 | Fumegante/DA_18_Leona | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.1493830382823944 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-6 | 220 | EQUIP_FROM_INVENTORY | SLOWROLL | 85.0 | 5 | 3 | 0 | 18.0 | Fumegante/DA_18_Leona | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.09525089710950851 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-6 | 221 | BUY | SLOWROLL | 85.0 | 5 | 3 | 0 | 18.0 | Fumegante/DA_18_Leona | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8298271894454956 | 0.0 | 0.0 | +506f7312-07d8-4165-bd67-f7a69cf9a19c / -— |
+| Jogador 1 | 2-6 | 222 | REROLL | SLOWROLL | 85.0 | 5 | 2 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10899999737739563 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-6 | 223 | PASS | SLOWROLL | 85.0 | 5 | 0 | 0 | 18.0 | Fumegante/DA_18_Leona | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-7 | 232 | SELL | SLOWROLL | 85.0 | 5 | 6 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.27667543292045593 | 0.0 | 0.0 | +— / -c4c0b136-020d-4c1e-9517-8e0bf4c5a628 |
+| Jogador 1 | 2-7 | 233 | BUY | SLOWROLL | 85.0 | 5 | 8 | 0 | 18.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8796160221099854 | 0.0 | 0.0 | +2822845b-56e7-4a10-8766-3f7aa579ffcb / -506f7312-07d8-4165-bd67-f7a69cf9a19c,cfc9d52e-f119-4fc9-8ced-569ac7071cb6 |
+| Jogador 1 | 2-7 | 234 | BUY | SLOWROLL | 85.0 | 5 | 7 | 0 | 18.0 | Fumegante/DA_18_Xayah | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.25964459776878357 | 0.0 | 0.0 | +f5ae964e-f157-48d1-8088-8b8a45a398b6 / -— |
+| Jogador 1 | 2-7 | 235 | BUY | SLOWROLL | 85.0 | 5 | 4 | 0 | 18.0 | Fumegante/DA_18_Xayah | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.04864407703280449 | 0.0 | 0.0 | +9028d514-586b-4d0e-b042-07389323c8cf / -— |
+| Jogador 1 | 2-7 | 236 | REROLL | SLOWROLL | 85.0 | 5 | 2 | 0 | 18.0 | Fumegante/DA_18_Xayah | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10899999737739563 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-7 | 237 | SELL | SLOWROLL | 85.0 | 5 | 0 | 0 | 18.0 | Fumegante/DA_18_Xayah | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3612767457962036 | 0.0 | 0.0 | +— / -2822845b-56e7-4a10-8766-3f7aa579ffcb |
+| Jogador 1 | 2-7 | 238 | BUY | SLOWROLL | 85.0 | 5 | 3 | 0 | 18.0 | Fumegante/DA_18_Leona | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8278836607933044 | 0.0 | 0.0 | +55944609-f4df-4e53-a1d1-31c79a148b22 / -— |
+| Jogador 1 | 2-7 | 239 | MOVE_BOARD | SLOWROLL | 85.0 | 5 | 1 | 0 | 18.0 | Fumegante/DA_18_Leona | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-7 | 240 | MOVE_BOARD | SLOWROLL | 85.0 | 5 | 1 | 0 | 18.0 | Fumegante/DA_18_Leona | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2681082785129547 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 2-7 | 241 | PASS | SLOWROLL | 85.0 | 5 | 1 | 0 | 18.0 | Fumegante/DA_18_Leona | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-1 | 252 | CRAFT_AND_EQUIP | SLOWROLL | 85.0 | 5 | 6 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.2361413687467575 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-1 | 253 | SELL | SLOWROLL | 85.0 | 5 | 6 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.009695100598037243 | 0.0 | 0.0 | +— / -9028d514-586b-4d0e-b042-07389323c8cf |
+| Jogador 1 | 3-1 | 254 | BUY | SLOWROLL | 85.0 | 5 | 8 | 0 | 18.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0321744866669178 | 0.0 | 0.0 | +caf1c554-2223-4090-9f96-b551e5c579ce / -— |
+| Jogador 1 | 3-1 | 255 | MOVE_BOARD | SLOWROLL | 85.0 | 5 | 6 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.006358997896313667 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-1 | 256 | MOVE_BOARD | SLOWROLL | 85.0 | 5 | 6 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-1 | 257 | MOVE_BOARD | SLOWROLL | 85.0 | 5 | 6 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1447039693593979 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-1 | 258 | REROLL | SLOWROLL | 85.0 | 5 | 6 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04166364669799805 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-1 | 259 | SELL | SLOWROLL | 85.0 | 5 | 4 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0021347326692193747 | 0.0 | 0.0 | +— / -32b7b452-7702-43a3-b3c4-8eda786225b9 |
+| Jogador 1 | 3-1 | 260 | BUY | SLOWROLL | 85.0 | 5 | 6 | 0 | 18.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.43658584356307983 | 0.0 | 0.0 | +2530bb2a-8b40-4f0b-a49c-f13fe67fbca4 / -— |
+| Jogador 1 | 3-1 | 261 | REROLL | SLOWROLL | 85.0 | 5 | 4 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04204992949962616 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-1 | 262 | PASS | SLOWROLL | 85.0 | 5 | 2 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-2 | 272 | SELL | SLOWROLL | 85.0 | 5 | 9 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.08671999722719193 | 0.0 | 0.0 | +— / -caf1c554-2223-4090-9f96-b551e5c579ce |
+| Jogador 1 | 3-2 | 273 | BUY | SLOWROLL | 85.0 | 5 | 11 | 1 | 18.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.21723203361034393 | 0.0 | 0.0 | +fcc4f620-7b85-40ed-a42c-2eadd37a82fd / -— |
+| Jogador 1 | 3-2 | 274 | REROLL | SLOWROLL | 85.0 | 5 | 10 | 1 | 18.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.19000668823719025 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-2 | 275 | REROLL | SLOWROLL | 85.0 | 5 | 8 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04299790412187576 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-2 | 276 | SELL | SLOWROLL | 85.0 | 5 | 6 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.26085230708122253 | 0.0 | 0.0 | +— / -fcc4f620-7b85-40ed-a42c-2eadd37a82fd |
+| Jogador 1 | 3-2 | 277 | BUY | SLOWROLL | 85.0 | 5 | 7 | 0 | 18.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2172325700521469 | 0.0 | 0.0 | +8b75555c-d84d-4b8a-8d6c-012585a05b99 / -— |
+| Jogador 1 | 3-2 | 278 | REROLL | SLOWROLL | 85.0 | 5 | 6 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0428924560546875 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-2 | 279 | SELL | SLOWROLL | 85.0 | 5 | 4 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2609705328941345 | 0.0 | 0.0 | +— / -8b75555c-d84d-4b8a-8d6c-012585a05b99 |
+| Jogador 1 | 3-2 | 280 | BUY | SLOWROLL | 85.0 | 5 | 5 | 0 | 18.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2172306478023529 | 0.0 | 0.0 | +d366508d-f33b-485a-8ff3-e5d0a248ae3e / -— |
+| Jogador 1 | 3-2 | 281 | REROLL | SLOWROLL | 85.0 | 5 | 4 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04299990460276604 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-2 | 282 | PASS | SLOWROLL | 85.0 | 5 | 2 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-3 | 292 | SELL | SLOWROLL | 85.0 | 5 | 9 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.18097689747810364 | 0.0 | 0.0 | +— / -d366508d-f33b-485a-8ff3-e5d0a248ae3e |
+| Jogador 1 | 3-3 | 293 | BUY | SLOWROLL | 85.0 | 5 | 10 | 1 | 18.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.13723070919513702 | 0.0 | 0.0 | +1388df2e-8cb4-4e29-8b30-776c29406917 / -— |
+| Jogador 1 | 3-3 | 294 | REROLL | SLOWROLL | 85.0 | 5 | 9 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11545812338590622 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-3 | 295 | REROLL | SLOWROLL | 85.0 | 5 | 7 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.042996976524591446 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-3 | 296 | SELL | SLOWROLL | 85.0 | 5 | 5 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.26097479462623596 | 0.0 | 0.0 | +— / -1388df2e-8cb4-4e29-8b30-776c29406917 |
+| Jogador 1 | 3-3 | 297 | BUY | SLOWROLL | 85.0 | 5 | 6 | 0 | 18.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7679325938224792 | 0.0 | 0.0 | +217a3ebb-1953-4f1e-bfdd-a3c9438e791e / -341df1a1-a619-420a-926a-0fe048aa1456,e2e6d682-b207-4a6c-858b-9a3c5c11a38d |
+| Jogador 1 | 3-3 | 298 | MOVE_BENCH | SLOWROLL | 85.0 | 5 | 5 | 0 | 14.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.36609238386154175 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-3 | 299 | BUY | SLOWROLL | 85.0 | 5 | 5 | 0 | 18.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.21732740104198456 | 0.0 | 0.0 | +3658b5d8-450f-451a-8487-5b3bdd7c385b / -— |
+| Jogador 1 | 3-3 | 300 | REROLL | SLOWROLL | 85.0 | 5 | 4 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04299834743142128 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-3 | 301 | SELL | SLOWROLL | 85.0 | 5 | 2 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.37049999833106995 | 0.0 | 0.0 | +— / -217a3ebb-1953-4f1e-bfdd-a3c9438e791e |
+| Jogador 1 | 3-3 | 302 | PASS | SLOWROLL | 85.0 | 5 | 5 | 0 | 18.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-4 | 312 | EQUIP_FROM_INVENTORY | SLOWROLL | 75.0 | 5 | 10 | 1 | 18.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.13849632441997528 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-4 | 313 | EQUIP_FROM_INVENTORY | SLOWROLL | 75.0 | 5 | 10 | 1 | 18.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.13450300693511963 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-4 | 314 | EQUIP_FROM_INVENTORY | SLOWROLL | 75.0 | 5 | 10 | 1 | 18.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.1706400364637375 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-4 | 315 | BUY | SLOWROLL | 75.0 | 5 | 10 | 1 | 18.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.13813889026641846 | 0.0 | 0.0 | +22f3c707-2635-41cb-a228-10d5ed1883b3 / -— |
+| Jogador 1 | 3-4 | 316 | MOVE_BENCH | SLOWROLL | 75.0 | 5 | 9 | 0 | 18.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5671390295028687 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-4 | 317 | BUY | SLOWROLL | 75.0 | 5 | 9 | 0 | 20.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.23774275183677673 | 0.0 | 0.0 | +d22aa2b7-7c7c-4d47-89be-0f1b8755971c / -— |
+| Jogador 1 | 3-4 | 318 | REROLL | SLOWROLL | 75.0 | 5 | 8 | 0 | 20.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04299875348806381 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-4 | 319 | SELL | SLOWROLL | 75.0 | 5 | 6 | 0 | 20.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.008961966261267662 | 0.0 | 0.0 | +— / -22f3c707-2635-41cb-a228-10d5ed1883b3 |
+| Jogador 1 | 3-4 | 320 | BUY | SLOWROLL | 75.0 | 5 | 7 | 0 | 20.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.21785782277584076 | 0.0 | 0.0 | +be1e11e4-dc58-4e75-a402-3a2d831ac7b3 / -— |
+| Jogador 1 | 3-4 | 321 | SELL | SLOWROLL | 75.0 | 5 | 6 | 0 | 20.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.017920000478625298 | 0.0 | 0.0 | +— / -d22aa2b7-7c7c-4d47-89be-0f1b8755971c |
+| Jogador 1 | 3-4 | 322 | PASS | SLOWROLL | 75.0 | 5 | 7 | 0 | 20.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-5 | 332 | BUY | SLOWROLL | 75.0 | 5 | 12 | 1 | 20.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6539742350578308 | 0.0 | 0.0 | +f9820f05-e1b0-4953-a98d-3ae191b1249a / -— |
+| Jogador 1 | 3-5 | 333 | SELL | SLOWROLL | 75.0 | 5 | 9 | 0 | 20.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.20938168466091156 | 0.0 | 0.0 | +— / -be1e11e4-dc58-4e75-a402-3a2d831ac7b3 |
+| Jogador 1 | 3-5 | 334 | BUY | SLOWROLL | 75.0 | 5 | 10 | 1 | 20.0 | Fumegante/DA_CrimsonRaptor18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5843166708946228 | 0.0 | 0.0 | +d632ff66-a7c4-43d3-afb3-b83c174cda35 / -2530bb2a-8b40-4f0b-a49c-f13fe67fbca4,4e116bc2-f686-4a17-adb1-a7b80865c159 |
+| Jogador 1 | 3-5 | 335 | MOVE_BENCH | SLOWROLL | 75.0 | 5 | 8 | 0 | 16.0 | Fumegante/DA_Murkwolf18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.26836127042770386 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-5 | 336 | MOVE_BENCH | SLOWROLL | 75.0 | 5 | 8 | 0 | 18.0 | Fumegante/DA_Murkwolf18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3522645831108093 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-5 | 337 | PASS | SLOWROLL | 75.0 | 5 | 8 | 0 | 20.0 | Fumegante/DA_Murkwolf18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-5 | 341 | MOVE_BENCH | SLOWROLL | 75.0 | 5 | 8 | 0 | 20.0 | Fumegante/DA_Murkwolf18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.43155747652053833 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-6 | 346 | BUY | SLOWROLL | 75.0 | 5 | 14 | 1 | 22.0 | Fumegante/DA_Murkwolf18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.18293996155261993 | 0.0 | 0.0 | +ff6d5b66-5b8f-49b1-bbad-4231b794c2f1 / -— |
+| Jogador 1 | 3-6 | 347 | BUY | SLOWROLL | 75.0 | 5 | 12 | 1 | 22.0 | Fumegante/DA_Murkwolf18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.20523114502429962 | 0.0 | 0.0 | +14f6071d-5085-47a5-b657-04043b21adce / -— |
+| Jogador 1 | 3-6 | 348 | REROLL | SLOWROLL | 75.0 | 5 | 11 | 1 | 22.0 | Fumegante/DA_Murkwolf18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.03700001537799835 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-6 | 349 | SELL | SLOWROLL | 75.0 | 5 | 9 | 0 | 22.0 | Fumegante/DA_Murkwolf18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09310396015644073 | 0.0 | 0.0 | +— / -d632ff66-a7c4-43d3-afb3-b83c174cda35 |
+| Jogador 1 | 3-6 | 350 | BUY | SLOWROLL | 75.0 | 5 | 14 | 1 | 22.0 | Fumegante/DA_CrimsonRaptor18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7639967203140259 | 0.0 | 0.0 | +beed40ed-5b69-45eb-a675-b18cf2c9eb69 / -f5ae964e-f157-48d1-8088-8b8a45a398b6,f9820f05-e1b0-4953-a98d-3ae191b1249a |
+| Jogador 1 | 3-6 | 351 | BUY | SLOWROLL | 75.0 | 5 | 11 | 1 | 16.0 | Fumegante/DA_CrimsonRaptor18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7368844747543335 | 0.0 | 0.0 | +41cebf65-3d00-41d3-bc56-d1d126a6e261 / -— |
+| Jogador 1 | 3-6 | 352 | MOVE_BENCH | SLOWROLL | 75.0 | 5 | 10 | 1 | 16.0 | Fumegante/DA_CrimsonRaptor18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5203960537910461 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-6 | 353 | REROLL | SLOWROLL | 75.0 | 5 | 10 | 1 | 18.0 | Fumegante/DA_CrimsonRaptor18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.03700003772974014 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-6 | 354 | BUY | SLOWROLL | 75.0 | 5 | 8 | 0 | 18.0 | Fumegante/DA_CrimsonRaptor18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7658940553665161 | 0.0 | 0.0 | +316b1635-e9c1-41c2-a26f-e64625e1c743 / -55944609-f4df-4e53-a1d1-31c79a148b22,e658854d-c531-46fc-8978-067953930510 |
+| Jogador 1 | 3-6 | 355 | MOVE_BENCH | SLOWROLL | 75.0 | 5 | 6 | 0 | 14.0 | Fumegante/DA_CrimsonRaptor18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.11560323089361191 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-6 | 356 | PASS | SLOWROLL | 75.0 | 5 | 6 | 0 | 20.0 | Fumegante/DA_CrimsonRaptor18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-7 | 362 | BUY | SLOWROLL | 66.0 | 5 | 11 | 1 | 20.0 | Fumegante/DA_CrimsonRaptor18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.21758975088596344 | 0.0 | 0.0 | +3ac258d2-8fed-4c0d-b6f4-4c64aa4cec3e / -— |
+| Jogador 1 | 3-7 | 363 | MOVE_BENCH | SLOWROLL | 66.0 | 5 | 10 | 1 | 20.0 | Fumegante/DA_CrimsonRaptor18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5103697180747986 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-7 | 364 | BUY | SLOWROLL | 66.0 | 5 | 10 | 1 | 22.0 | Fumegante/DA_CrimsonRaptor18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6117376089096069 | 0.0 | 0.0 | +3ba5e931-3f4c-410f-bf0b-d9d1a426efa3 / -— |
+| Jogador 1 | 3-7 | 365 | REROLL | SLOWROLL | 66.0 | 5 | 8 | 0 | 22.0 | Fumegante/DA_CrimsonRaptor18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04295530915260315 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-7 | 366 | SELL | SLOWROLL | 66.0 | 5 | 6 | 0 | 22.0 | Fumegante/DA_CrimsonRaptor18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.28049999475479126 | 0.0 | 0.0 | +— / -beed40ed-5b69-45eb-a675-b18cf2c9eb69 |
+| Jogador 1 | 3-7 | 367 | BUY | SLOWROLL | 66.0 | 5 | 14 | 1 | 22.0 | Fumegante/DA_18_Kayle | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7378665208816528 | 0.0 | 0.0 | +82443408-b364-4e6e-864a-1dee6162dcb5 / -— |
+| Jogador 1 | 3-7 | 368 | MOVE_BOARD | SLOWROLL | 66.0 | 5 | 13 | 1 | 22.0 | Fumegante/DA_18_Kayle | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01548775564879179 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-7 | 369 | MOVE_BOARD | SLOWROLL | 66.0 | 5 | 13 | 1 | 22.0 | Fumegante/DA_18_Kayle | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.011523684486746788 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-7 | 370 | MOVE_BENCH | SLOWROLL | 66.0 | 5 | 13 | 1 | 22.0 | Fumegante/DA_18_Kayle | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.6943064332008362 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 3-7 | 371 | SELL | SLOWROLL | 66.0 | 5 | 13 | 1 | 18.0 | Fumegante/DA_18_Kayle | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.36649999022483826 | 0.0 | 0.0 | +— / -316b1635-e9c1-41c2-a26f-e64625e1c743 |
+| Jogador 1 | 3-7 | 372 | PASS | SLOWROLL | 66.0 | 5 | 18 | 1 | 18.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.057500001043081284 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-1 | 377 | BUY | SLOWROLL | 66.0 | 5 | 24 | 2 | 18.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | True | 0.7978949546813965 | 0.0 | 0.0 | +52c442e6-4e35-4e6f-8887-eff560f7b259 / -3658b5d8-450f-451a-8487-5b3bdd7c385b,41cebf65-3d00-41d3-bc56-d1d126a6e261 |
+| Jogador 1 | 4-1 | 378 | CRAFT_AND_EQUIP | SLOWROLL | 66.0 | 5 | 23 | 2 | 16.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.20240460336208344 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-1 | 379 | CRAFT_AND_EQUIP | SLOWROLL | 66.0 | 5 | 23 | 2 | 16.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.16455519199371338 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-1 | 380 | MOVE_BENCH | SLOWROLL | 66.0 | 5 | 23 | 2 | 16.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.09913822263479233 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-1 | 381 | MOVE_BENCH | SLOWROLL | 66.0 | 5 | 23 | 2 | 16.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.08099451661109924 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-1 | 382 | MOVE_BENCH | SLOWROLL | 66.0 | 5 | 23 | 2 | 14.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.6845977902412415 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-1 | 383 | MOVE_BENCH | SLOWROLL | 66.0 | 5 | 23 | 2 | 16.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5831972360610962 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-1 | 384 | BUY | SLOWROLL | 66.0 | 5 | 23 | 2 | 20.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.23526576161384583 | 0.0 | 0.0 | +ee733f3d-35a8-4ea0-86ca-92d3bdae3cc9 / -— |
+| Jogador 1 | 4-1 | 385 | REROLL | SLOWROLL | 66.0 | 5 | 21 | 2 | 20.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.03700070083141327 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-1 | 386 | BUY | SLOWROLL | 66.0 | 5 | 19 | 1 | 20.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7347102761268616 | 0.0 | 0.0 | +b9dd5592-1f2b-43f7-b094-7de5e406d4da / -— |
+| Jogador 1 | 4-1 | 387 | PASS | SLOWROLL | 66.0 | 5 | 18 | 1 | 20.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-2 | 389 | MOVE_BENCH | SLOWROLL | 66.0 | 6 | 25 | 2 | 20.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.6455817222595215 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-2 | 390 | MOVE_BENCH | SLOWROLL | 66.0 | 6 | 25 | 2 | 20.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.08555576205253601 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-2 | 391 | MOVE_BENCH | SLOWROLL | 66.0 | 6 | 25 | 2 | 18.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.6604006886482239 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-2 | 392 | MOVE_BENCH | SLOWROLL | 66.0 | 6 | 25 | 2 | 20.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.6601775288581848 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-2 | 393 | PASS | SLOWROLL | 66.0 | 6 | 25 | 2 | 20.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-2 | 397 | MOVE_BENCH | SLOWROLL | 66.0 | 6 | 25 | 2 | 20.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.40011104941368103 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-3 | 402 | BUY | SLOWROLL | 54.0 | 6 | 32 | 3 | 24.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5056287050247192 | 0.0 | 0.0 | +358601f9-8e68-4107-8719-8fdaee776f87 / -— |
+| Jogador 1 | 4-3 | 403 | REROLL | SLOWROLL | 54.0 | 6 | 29 | 2 | 24.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.05279697850346565 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-3 | 404 | SELL | SLOWROLL | 54.0 | 6 | 27 | 2 | 24.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2812732756137848 | 0.0 | 0.0 | +— / -52c442e6-4e35-4e6f-8887-eff560f7b259 |
+| Jogador 1 | 4-3 | 405 | BUY | SLOWROLL | 54.0 | 6 | 30 | 3 | 24.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6997321248054504 | 0.0 | 0.0 | +7a36288b-fe0f-43e2-a2c5-c8a3f30e1436 / -— |
+| Jogador 1 | 4-3 | 406 | REROLL | SLOWROLL | 54.0 | 6 | 28 | 2 | 24.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.05279621481895447 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-3 | 407 | REROLL | SLOWROLL | 54.0 | 6 | 26 | 2 | 24.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11698324233293533 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-3 | 408 | SELL | SLOWROLL | 54.0 | 6 | 24 | 2 | 24.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.5445884466171265 | 0.0 | 0.0 | +— / -3ac258d2-8fed-4c0d-b6f4-4c64aa4cec3e |
+| Jogador 1 | 4-3 | 409 | BUY | SLOWROLL | 54.0 | 6 | 25 | 2 | 24.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.23729711771011353 | 0.0 | 0.0 | +ef09d04c-94d6-48f3-ad2a-f7f2bfdfbd28 / -— |
+| Jogador 1 | 4-3 | 410 | REROLL | SLOWROLL | 54.0 | 6 | 24 | 2 | 24.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.05263879522681236 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-3 | 411 | SELL | SLOWROLL | 54.0 | 6 | 22 | 2 | 24.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2941165566444397 | 0.0 | 0.0 | +— / -82443408-b364-4e6e-864a-1dee6162dcb5 |
+| Jogador 1 | 4-3 | 412 | PASS | SLOWROLL | 54.0 | 6 | 23 | 2 | 24.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.08571428805589676 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-4 | 416 | BUY | SLOWROLL | 54.0 | 6 | 31 | 3 | 24.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7807680368423462 | 0.0 | 0.0 | +25be98ec-41f1-46a6-af0a-f6a0dd131384 / -— |
+| Jogador 1 | 4-4 | 417 | SELL | SLOWROLL | 54.0 | 6 | 30 | 3 | 24.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.4615517258644104 | 0.0 | 0.0 | +— / -0f1b15a2-9978-4691-a15e-483ccd03db7f |
+| Jogador 1 | 4-4 | 418 | BUY | SLOWROLL | 54.0 | 6 | 32 | 3 | 24.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1795712411403656 | 0.0 | 0.0 | +6fe186b1-7837-40b0-83ca-6c7615ea01f2 / -— |
+| Jogador 1 | 4-4 | 419 | REROLL | SLOWROLL | 54.0 | 6 | 29 | 2 | 24.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.12555523216724396 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-4 | 420 | REROLL | SLOWROLL | 54.0 | 6 | 27 | 2 | 24.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.05252573639154434 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-4 | 421 | SELL | SLOWROLL | 54.0 | 6 | 25 | 2 | 24.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.26516151428222656 | 0.0 | 0.0 | +— / -c02b6467-3a23-4da6-bca3-06ae415a9998 |
+| Jogador 1 | 4-4 | 422 | BUY | SLOWROLL | 54.0 | 6 | 28 | 2 | 24.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.23596803843975067 | 0.0 | 0.0 | +c3ffcc8c-9d09-4d3e-ba6a-16a833a9217c / -— |
+| Jogador 1 | 4-4 | 423 | REROLL | SLOWROLL | 54.0 | 6 | 27 | 2 | 24.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.052786629647016525 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-4 | 424 | SELL | SLOWROLL | 54.0 | 6 | 25 | 2 | 24.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0016725999303162098 | 0.0 | 0.0 | +— / -4b3d3abb-8023-422a-b699-88050ea034e5 |
+| Jogador 1 | 4-4 | 425 | BUY | SLOWROLL | 54.0 | 6 | 28 | 2 | 24.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7558538317680359 | 0.0 | 0.0 | +ee5c9b1a-d2fc-43a6-8457-b9271f2ec660 / -— |
+| Jogador 1 | 4-4 | 426 | PASS | SLOWROLL | 54.0 | 6 | 27 | 2 | 24.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-5 | 429 | SELL | SLOWROLL | 54.0 | 6 | 34 | 3 | 24.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.34101998805999756 | 0.0 | 0.0 | +— / -6fe186b1-7837-40b0-83ca-6c7615ea01f2 |
+| Jogador 1 | 4-5 | 430 | BUY | SLOWROLL | 54.0 | 6 | 37 | 3 | 24.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.755351722240448 | 0.0 | 0.0 | +cbe0150a-bb32-4e17-83b7-c24ec2815fdd / -— |
+| Jogador 1 | 4-5 | 431 | SELL | SLOWROLL | 54.0 | 6 | 35 | 3 | 24.0 | Fumegante/DA_18_Leona | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.5588560104370117 | 0.0 | 0.0 | +— / -ef09d04c-94d6-48f3-ad2a-f7f2bfdfbd28 |
+| Jogador 1 | 4-5 | 432 | BUY | SLOWROLL | 54.0 | 6 | 36 | 3 | 24.0 | Fumegante/DA_18_Leona | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8247513175010681 | 0.0 | 0.0 | +fbf9aa72-51f4-4ccd-b87c-ecc0408ec523 / -14f6071d-5085-47a5-b657-04043b21adce,b9dd5592-1f2b-43f7-b094-7de5e406d4da |
+| Jogador 1 | 4-5 | 433 | REROLL | SLOWROLL | 54.0 | 6 | 35 | 3 | 24.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.07081340253353119 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-5 | 434 | BUY | SLOWROLL | 54.0 | 6 | 33 | 3 | 24.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8130272030830383 | 0.0 | 0.0 | +c7a86699-af53-4163-b420-be4d92b929a1 / -358601f9-8e68-4107-8719-8fdaee776f87,dbe9f465-e302-46d0-9bd4-93969fde6ecb |
+| Jogador 1 | 4-5 | 435 | MOVE_BENCH | SLOWROLL | 54.0 | 6 | 30 | 3 | 18.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5935173630714417 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-5 | 436 | REROLL | SLOWROLL | 54.0 | 6 | 30 | 3 | 22.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.1925024688243866 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-5 | 437 | REROLL | SLOWROLL | 54.0 | 6 | 28 | 2 | 22.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.03949853032827377 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-5 | 438 | REROLL | SLOWROLL | 54.0 | 6 | 26 | 2 | 22.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.052778057754039764 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-5 | 439 | PASS | SLOWROLL | 54.0 | 6 | 24 | 2 | 22.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.08642856776714325 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-6 | 441 | BUY | SLOWROLL | 44.0 | 6 | 31 | 3 | 22.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7632792592048645 | 0.0 | 0.0 | +eea2d752-019e-4c3a-b14e-02884e83a178 / -3ba5e931-3f4c-410f-bf0b-d9d1a426efa3,cbe0150a-bb32-4e17-83b7-c24ec2815fdd |
+| Jogador 1 | 4-6 | 442 | MOVE_BENCH | SLOWROLL | 44.0 | 6 | 29 | 2 | 18.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.042900942265987396 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-6 | 443 | REROLL | SLOWROLL | 44.0 | 6 | 29 | 2 | 22.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.05300852283835411 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-6 | 444 | REROLL | SLOWROLL | 44.0 | 6 | 27 | 2 | 22.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04579043388366699 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-6 | 445 | BUY | SLOWROLL | 44.0 | 6 | 25 | 2 | 22.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7744786739349365 | 0.0 | 0.0 | +fab22f2c-bb18-4bc4-b9ca-07a0b6863dce / -— |
+| Jogador 1 | 4-6 | 446 | REROLL | SLOWROLL | 44.0 | 6 | 24 | 2 | 22.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.05305057018995285 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-6 | 447 | REROLL | SLOWROLL | 44.0 | 6 | 22 | 2 | 22.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.05298552289605141 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-6 | 448 | BUY | SLOWROLL | 44.0 | 6 | 20 | 2 | 22.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7159292697906494 | 0.0 | 0.0 | +86687629-92bf-4a82-850f-8fc0f613a680 / -7a36288b-fe0f-43e2-a2c5-c8a3f30e1436,ee733f3d-35a8-4ea0-86ca-92d3bdae3cc9 |
+| Jogador 1 | 4-6 | 449 | MOVE_BENCH | SLOWROLL | 44.0 | 6 | 18 | 1 | 18.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.29688483476638794 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-6 | 450 | MOVE_BENCH | SLOWROLL | 44.0 | 6 | 18 | 1 | 12.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.33521172404289246 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-7 | 452 | MOVE_BENCH | STABILIZE | 34.0 | 6 | 25 | 2 | 20.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5542977452278137 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-7 | 453 | BUY | STABILIZE | 34.0 | 6 | 25 | 2 | 24.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.19904787838459015 | 0.0 | 0.0 | +2be41986-480e-4c89-a269-ea00dd3612f4 / -— |
+| Jogador 1 | 4-7 | 454 | MOVE_BOARD | STABILIZE | 34.0 | 6 | 22 | 2 | 24.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 2.3788807084201835e-06 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-7 | 455 | MOVE_BOARD | STABILIZE | 34.0 | 6 | 22 | 2 | 24.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-7 | 456 | MOVE_BOARD | STABILIZE | 34.0 | 6 | 22 | 2 | 24.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014998815953731537 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 4-7 | 457 | PASS | STABILIZE | 34.0 | 6 | 22 | 2 | 24.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11782222241163254 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-1 | 462 | BUY | STABILIZE | 34.0 | 6 | 30 | 3 | 24.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | True | 0.8779271841049194 | 0.0 | 0.0 | +ae365559-4293-4bc2-bd8c-395f4b2860bc / -c3ffcc8c-9d09-4d3e-ba6a-16a833a9217c,ee5c9b1a-d2fc-43a6-8457-b9271f2ec660 |
+| Jogador 1 | 5-1 | 463 | BUY | STABILIZE | 34.0 | 6 | 29 | 2 | 24.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | True | 0.36623138189315796 | 0.0 | 0.0 | +121c3dfb-3781-4c95-9058-24d4ed8c3e1f / -— |
+| Jogador 1 | 5-1 | 464 | CRAFT_AND_EQUIP | STABILIZE | 34.0 | 6 | 28 | 2 | 24.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.12054252624511719 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-1 | 465 | CRAFT_AND_EQUIP | STABILIZE | 34.0 | 6 | 28 | 2 | 24.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.10085506737232208 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-1 | 466 | MOVE_BOARD | STABILIZE | 34.0 | 6 | 28 | 2 | 24.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 5.431747140960397e-08 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-1 | 467 | MOVE_BOARD | STABILIZE | 34.0 | 6 | 28 | 2 | 24.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.015001135878264904 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-1 | 468 | MOVE_BOARD | STABILIZE | 34.0 | 6 | 28 | 2 | 24.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014997346326708794 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-1 | 469 | PASS | STABILIZE | 34.0 | 6 | 28 | 2 | 24.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.13862095773220062 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-2 | 472 | BUY | STABILIZE | 34.0 | 6 | 36 | 3 | 24.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9279950857162476 | 0.0 | 0.0 | +74ee6465-3392-4d5e-9578-590b9d310fda / -— |
+| Jogador 1 | 5-2 | 473 | BUY | STABILIZE | 34.0 | 6 | 35 | 3 | 24.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9279256463050842 | 0.0 | 0.0 | +337b55b9-17b5-4de8-8eee-4e6e1844adaf / -25be98ec-41f1-46a6-af0a-f6a0dd131384,fab22f2c-bb18-4bc4-b9ca-07a0b6863dce |
+| Jogador 1 | 5-2 | 474 | MOVE_BENCH | STABILIZE | 34.0 | 6 | 34 | 3 | 22.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.40615448355674744 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-2 | 475 | MOVE_BOARD | STABILIZE | 34.0 | 6 | 34 | 3 | 28.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-2 | 476 | MOVE_BOARD | STABILIZE | 34.0 | 6 | 34 | 3 | 28.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01406923308968544 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-2 | 477 | PASS | STABILIZE | 34.0 | 6 | 34 | 3 | 28.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.21363745629787445 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-3 | 482 | BUY | STABILIZE | 34.0 | 6 | 43 | 4 | 28.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7028846144676208 | 0.0 | 0.0 | +dddb11c7-5274-4009-82bc-c38768ed7cbf / -— |
+| Jogador 1 | 5-3 | 483 | BUY | STABILIZE | 34.0 | 6 | 40 | 4 | 28.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.12345461547374725 | 0.0 | 0.0 | +02a24cad-0b52-4e01-a7d0-23c2e113a401 / -— |
+| Jogador 1 | 5-3 | 484 | MOVE_BOARD | STABILIZE | 34.0 | 6 | 37 | 3 | 28.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-3 | 485 | MOVE_BOARD | STABILIZE | 34.0 | 6 | 37 | 3 | 28.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014772331342101097 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-3 | 486 | PASS | STABILIZE | 34.0 | 6 | 37 | 3 | 28.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2181457132101059 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-4 | 492 | BUY | STABILIZE | 21.0 | 6 | 45 | 4 | 28.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8519217371940613 | 0.0 | 0.0 | +11fb9179-da20-4251-b946-9df3c545260a / -— |
+| Jogador 1 | 5-4 | 493 | MOVE_BOARD | STABILIZE | 21.0 | 6 | 44 | 4 | 28.0 | Fumegante/DA_18_MasterYi_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.00048292858991771936 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-4 | 494 | MOVE_BOARD | STABILIZE | 21.0 | 6 | 44 | 4 | 28.0 | Fumegante/DA_18_MasterYi_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.015054646879434586 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-4 | 495 | PASS | STABILIZE | 21.0 | 6 | 44 | 4 | 28.0 | Fumegante/DA_18_MasterYi_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09721904993057251 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-5 | 502 | MOVE_BOARD | STABILIZE | 21.0 | 6 | 53 | 5 | 28.0 | Fumegante/DA_18_MasterYi_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0007406050572171807 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-5 | 503 | MOVE_BOARD | STABILIZE | 21.0 | 6 | 53 | 5 | 28.0 | Fumegante/DA_18_MasterYi_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-5 | 504 | MOVE_BOARD | STABILIZE | 21.0 | 6 | 53 | 5 | 28.0 | Fumegante/DA_18_MasterYi_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.015203029848635197 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-5 | 505 | PASS | STABILIZE | 21.0 | 6 | 53 | 5 | 28.0 | Fumegante/DA_18_MasterYi_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.13667629659175873 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-6 | 512 | SELL | ALL_IN | 7.0 | 6 | 64 | 5 | 28.0 | Fumegante/DA_18_MasterYi_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3765000104904175 | 0.0 | 0.0 | +— / -ae365559-4293-4bc2-bd8c-395f4b2860bc |
+| Jogador 1 | 5-6 | 513 | BUY | ALL_IN | 7.0 | 6 | 67 | 5 | 28.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.0391823053359985 | 0.0 | 0.0 | +a61667fa-c13b-4f64-b8d6-60872ef1daae / -121c3dfb-3781-4c95-9058-24d4ed8c3e1f,74ee6465-3392-4d5e-9578-590b9d310fda |
+| Jogador 1 | 5-6 | 514 | BUY | ALL_IN | 7.0 | 6 | 66 | 5 | 28.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09128662943840027 | 0.0 | 0.0 | +df8a815c-183a-43d5-a549-5513e8681257 / -— |
+| Jogador 1 | 5-6 | 515 | MOVE_BOARD | ALL_IN | 7.0 | 6 | 62 | 5 | 28.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 3.779267717618495e-05 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-6 | 516 | MOVE_BOARD | ALL_IN | 7.0 | 6 | 62 | 5 | 28.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014872480183839798 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-6 | 517 | MOVE_BOARD | ALL_IN | 7.0 | 6 | 62 | 5 | 28.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 1 | 5-6 | 518 | PASS | ALL_IN | 7.0 | 6 | 62 | 5 | 28.0 | Fumegante/DA_18_MasterYi_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.22031964361667633 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 1-1 | 1 | MOVE_BENCH | ECON | 100.0 | 2 | 0 | 0 | 0.0 | —/— | MOVE_BENCH, SELL, PASS | True | True | 0.21754200756549835 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 1-1 | 2 | PASS | STABILIZE | 100.0 | 2 | 0 | 0 | 2.0 | —/DA_18_Veigar | MOVE_BOARD, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 1-2 | 29 | BUY | STABILIZE | 100.0 | 3 | 2 | 0 | 2.0 | —/DA_18_Veigar | BUY, REROLL, MOVE_BOARD, PASS | True | True | 1.0390512943267822 | 0.0 | 0.0 | +f0d714b2-9165-4d27-97f5-04b552d02548 / -— |
+| Jogador 2 | 1-2 | 30 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 1 | 0 | 2.0 | —/DA_18_Veigar | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.4000000059604645 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 1-2 | 31 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 1 | 0 | 2.0 | —/DA_18_Veigar | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.015388243831694126 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 1-2 | 32 | PASS | STABILIZE | 100.0 | 3 | 1 | 0 | 4.0 | —/DA_18_Veigar | BUY, MOVE_BOARD, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 1-3 | 56 | BUY | STABILIZE | 100.0 | 3 | 3 | 0 | 4.0 | —/DA_18_Veigar | BUY, REROLL, MOVE_BOARD, PASS | True | True | 1.1177810430526733 | 0.0 | 0.0 | +11a1c814-5357-4f19-944f-aa11d6bf8384 / -f0d714b2-9165-4d27-97f5-04b552d02548,fb5a6c27-acbe-4d6d-ba91-7a6209d10cf2 |
+| Jogador 2 | 1-3 | 57 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 2 | 0 | 0.0 | —/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, SELL, PASS | True | True | 0.246878519654274 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 1-3 | 58 | BUY | STABILIZE | 100.0 | 3 | 2 | 0 | 4.0 | —/DA_18_Veigar | BUY, REROLL, MOVE_BOARD, PASS | True | True | 0.08098852634429932 | 0.0 | 0.0 | +046de242-84d0-4f44-a171-345f16a6e719 / -— |
+| Jogador 2 | 1-3 | 59 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 1 | 0 | 4.0 | —/DA_18_Veigar | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.07836904376745224 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 1-3 | 60 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 1 | 0 | 2.0 | —/DA_18_Veigar | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3689575493335724 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 1-3 | 61 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 1 | 0 | 6.0 | —/DA_18_Veigar | BUY, MOVE_BOARD, PASS | True | True | 0.0045447321608662605 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 1-3 | 62 | BUY | STABILIZE | 100.0 | 3 | 1 | 0 | 6.0 | —/DA_18_Veigar | BUY, MOVE_BOARD, PASS | True | True | 0.0053092315793037415 | 0.0 | 0.0 | +18770ba0-b5a0-4c41-92a5-de4d5e3078b9 / -— |
+| Jogador 2 | 1-3 | 63 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.4015979468822479 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 1-3 | 64 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 8.0 | —/DA_18_Veigar | MOVE_BOARD, PASS | True | True | -0.01780657283961773 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 1-3 | 65 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 8.0 | —/DA_18_Veigar | MOVE_BOARD, PASS | True | True | -0.25076577067375183 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 1-3 | 66 | PASS | STABILIZE | 100.0 | 3 | 0 | 0 | 8.0 | —/DA_18_Veigar | MOVE_BOARD, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 1-4 | 81 | BUY | STABILIZE | 100.0 | 3 | 3 | 0 | 8.0 | —/DA_18_Veigar | BUY, REROLL, MOVE_BOARD, PASS | True | True | 0.4117957055568695 | 0.0 | 0.0 | +43759c90-bd65-4632-8aa4-56ab63ae84fe / -— |
+| Jogador 2 | 1-4 | 82 | BUY | STABILIZE | 100.0 | 3 | 2 | 0 | 8.0 | —/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.0844566822052002 | 0.0 | 0.0 | +9d9dd707-484b-47f6-ac7c-aff2e7e6f48d / -— |
+| Jogador 2 | 1-4 | 83 | BUY | STABILIZE | 100.0 | 3 | 1 | 0 | 8.0 | —/DA_18_Veigar | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.0081875324249268 | 0.0 | 0.0 | +780538e0-4319-45d7-9d96-ace3e3d95c3d / -— |
+| Jogador 2 | 1-4 | 84 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 8.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.016042929142713547 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 1-4 | 85 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 8.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.20540811121463776 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 1-4 | 86 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 8.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014222484081983566 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 1-4 | 87 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 8.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01260958332568407 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 1-4 | 88 | PASS | STABILIZE | 100.0 | 3 | 0 | 0 | 8.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-1 | 108 | BUY | STABILIZE | 100.0 | 4 | 4 | 0 | 8.0 | —/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | True | 0.2690425515174866 | 0.0 | 0.0 | +584812e9-d314-4de0-97e2-604c5c69466c / -— |
+| Jogador 2 | 2-1 | 109 | CRAFT_AND_EQUIP | STABILIZE | 100.0 | 4 | 2 | 0 | 8.0 | —/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.2763994038105011 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-1 | 110 | CRAFT_AND_EQUIP | STABILIZE | 100.0 | 4 | 2 | 0 | 8.0 | —/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.16376282274723053 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-1 | 111 | BUY | STABILIZE | 100.0 | 4 | 2 | 0 | 8.0 | —/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1744144856929779 | 0.0 | 0.0 | +c70251e8-af44-4466-808f-d49e9e5f57e9 / -— |
+| Jogador 2 | 2-1 | 112 | MOVE_BENCH | STABILIZE | 100.0 | 4 | 1 | 0 | 8.0 | —/DA_18_Veigar | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09575293213129044 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-1 | 113 | BUY | STABILIZE | 100.0 | 4 | 1 | 0 | 10.0 | —/DA_18_Veigar | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.20233502984046936 | 0.0 | 0.0 | +70d8224e-5996-4629-b4f6-761ef5f01525 / -— |
+| Jogador 2 | 2-1 | 114 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-1 | 115 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.03575596958398819 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-1 | 116 | PASS | STABILIZE | 100.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-2 | 131 | BUY | STABILIZE | 100.0 | 4 | 6 | 0 | 10.0 | —/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.0479886531829834 | 0.0 | 0.0 | +f1876a44-285c-4a57-8129-205768cd6ee6 / -43759c90-bd65-4632-8aa4-56ab63ae84fe,9d9dd707-484b-47f6-ac7c-aff2e7e6f48d |
+| Jogador 2 | 2-2 | 132 | REROLL | STABILIZE | 100.0 | 4 | 5 | 0 | 10.0 | —/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-2 | 133 | BUY | STABILIZE | 100.0 | 4 | 3 | 0 | 10.0 | —/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.32206887006759644 | 0.0 | 0.0 | +79aec946-44a4-498c-b903-3b0707189713 / -— |
+| Jogador 2 | 2-2 | 134 | REROLL | STABILIZE | 100.0 | 4 | 2 | 0 | 10.0 | —/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-2 | 135 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-2 | 136 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.33577868342399597 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-2 | 137 | PASS | STABILIZE | 100.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-3 | 154 | BUY | STABILIZE | 96.0 | 4 | 5 | 0 | 10.0 | —/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3339748978614807 | 0.0 | 0.0 | +2c497125-ca06-46b1-a3b3-9a59d904705b / -— |
+| Jogador 2 | 2-3 | 155 | REROLL | STABILIZE | 96.0 | 4 | 2 | 0 | 10.0 | —/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-3 | 156 | MOVE_BOARD | STABILIZE | 96.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0011509133037179708 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-3 | 157 | MOVE_BOARD | STABILIZE | 96.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.006104127503931522 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-3 | 158 | SELL | STABILIZE | 96.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.5802749991416931 | 0.0 | 0.0 | +— / -f1876a44-285c-4a57-8129-205768cd6ee6 |
+| Jogador 2 | 2-3 | 159 | BUY | STABILIZE | 96.0 | 4 | 3 | 0 | 10.0 | —/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.29138851165771484 | 0.0 | 0.0 | +28f66ef1-93d6-4cc8-a0c9-e84e844dee28 / -— |
+| Jogador 2 | 2-3 | 160 | SELL | STABILIZE | 96.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.05071136727929115 | 0.0 | 0.0 | +— / -584812e9-d314-4de0-97e2-604c5c69466c |
+| Jogador 2 | 2-3 | 161 | BUY | STABILIZE | 96.0 | 4 | 2 | 0 | 10.0 | —/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2778143286705017 | 0.0 | 0.0 | +486e92ad-4dcf-4c0e-a470-e0b87777d380 / -— |
+| Jogador 2 | 2-3 | 162 | BUY | STABILIZE | 96.0 | 4 | 1 | 0 | 10.0 | —/DA_18_Veigar | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8090060949325562 | 0.0 | 0.0 | +361c6f8a-301b-43b0-aace-dec56d04bbf1 / -— |
+| Jogador 2 | 2-3 | 163 | MOVE_BOARD | STABILIZE | 96.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-3 | 164 | PASS | STABILIZE | 96.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-4 | 174 | BUY | STABILIZE | 96.0 | 4 | 6 | 0 | 10.0 | —/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.883544921875 | 0.0 | 0.0 | +c737e99a-613e-4f1a-a50e-7a865169f90c / -— |
+| Jogador 2 | 2-4 | 175 | BUY | STABILIZE | 96.0 | 4 | 5 | 0 | 10.0 | —/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.10381225496530533 | 0.0 | 0.0 | +b482ecdd-cc1a-40fa-8c21-cd1cac92b594 / -— |
+| Jogador 2 | 2-4 | 176 | REROLL | STABILIZE | 96.0 | 4 | 3 | 0 | 10.0 | —/DA_18_Veigar | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-4 | 177 | SELL | STABILIZE | 96.0 | 4 | 1 | 0 | 10.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.006560000125318766 | 0.0 | 0.0 | +— / -70d8224e-5996-4629-b4f6-761ef5f01525 |
+| Jogador 2 | 2-4 | 178 | BUY | STABILIZE | 96.0 | 4 | 2 | 0 | 10.0 | —/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.16634561121463776 | 0.0 | 0.0 | +584991bb-37b3-4ac1-8e29-14e0d74c5e78 / -— |
+| Jogador 2 | 2-4 | 179 | SELL | STABILIZE | 96.0 | 4 | 1 | 0 | 10.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.006560000125318766 | 0.0 | 0.0 | +— / -c70251e8-af44-4466-808f-d49e9e5f57e9 |
+| Jogador 2 | 2-4 | 180 | BUY | STABILIZE | 96.0 | 4 | 2 | 0 | 10.0 | —/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9098300933837891 | 0.0 | 0.0 | +536c157d-bb9f-4be0-9847-040530c052fd / -361c6f8a-301b-43b0-aace-dec56d04bbf1,486e92ad-4dcf-4c0e-a470-e0b87777d380 |
+| Jogador 2 | 2-4 | 181 | BUY | STABILIZE | 96.0 | 4 | 1 | 0 | 10.0 | —/DA_18_Veigar | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1007634624838829 | 0.0 | 0.0 | +ac02c0c4-a10d-497d-b6c1-d458ad7ae58c / -— |
+| Jogador 2 | 2-4 | 182 | MOVE_BOARD | STABILIZE | 96.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.02138317935168743 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-4 | 183 | MOVE_BOARD | STABILIZE | 96.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01543653104454279 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-4 | 184 | PASS | STABILIZE | 96.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-5 | 196 | BUY | STABILIZE | 96.0 | 4 | 5 | 0 | 10.0 | —/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9425486326217651 | 0.0 | 0.0 | +7b2af6c8-ec0f-4ab5-8913-9b88fc2e0e86 / -79aec946-44a4-498c-b903-3b0707189713,c737e99a-613e-4f1a-a50e-7a865169f90c |
+| Jogador 2 | 2-5 | 197 | BUY | STABILIZE | 96.0 | 4 | 4 | 0 | 10.0 | Espinhos Negros/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.811784565448761 | 0.0 | 0.0 | +4d995451-2e5c-43c2-93f0-22e074e35ab2 / -— |
+| Jogador 2 | 2-5 | 198 | BUY | STABILIZE | 96.0 | 4 | 3 | 0 | 10.0 | Espinhos Negros/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.15451762080192566 | 0.0 | 0.0 | +5cf46feb-77cd-4cb8-9211-ffb08d88391a / -— |
+| Jogador 2 | 2-5 | 199 | MOVE_BENCH | STABILIZE | 96.0 | 4 | 2 | 0 | 10.0 | Espinhos Negros/DA_18_Veigar | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.5180265307426453 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-5 | 200 | MOVE_BENCH | STABILIZE | 96.0 | 4 | 2 | 0 | 8.0 | Espinhos Negros/DA_18_Veigar | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.07682187855243683 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-5 | 201 | MOVE_BENCH | STABILIZE | 96.0 | 4 | 2 | 0 | 10.0 | Espinhos Negros/DA_18_Veigar | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2280067503452301 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-5 | 202 | REROLL | STABILIZE | 96.0 | 4 | 2 | 0 | 10.0 | Espinhos Negros/DA_18_Veigar | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-5 | 203 | SELL | STABILIZE | 96.0 | 4 | 0 | 0 | 10.0 | Espinhos Negros/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.22943374514579773 | 0.0 | 0.0 | +— / -536c157d-bb9f-4be0-9847-040530c052fd |
+| Jogador 2 | 2-5 | 204 | BUY | STABILIZE | 96.0 | 4 | 3 | 0 | 10.0 | Espinhos Negros/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.897602915763855 | 0.0 | 0.0 | +58c38a13-23c5-4ac1-8601-f0636aeb33ab / -— |
+| Jogador 2 | 2-5 | 205 | MOVE_BENCH | STABILIZE | 96.0 | 4 | 1 | 0 | 10.0 | Espinhos Negros/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.5962477922439575 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-5 | 206 | PASS | STABILIZE | 96.0 | 4 | 1 | 0 | 8.0 | Espinhos Negros/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-6 | 213 | MOVE_BENCH | SLOWROLL | 92.0 | 5 | 6 | 0 | 8.0 | Espinhos Negros/DA_18_Veigar | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5192748308181763 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-6 | 214 | REROLL | SLOWROLL | 92.0 | 5 | 6 | 0 | 12.0 | Espinhos Negros/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04054994881153107 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-6 | 215 | BUY | SLOWROLL | 92.0 | 5 | 4 | 0 | 12.0 | Espinhos Negros/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8491708636283875 | 0.0 | 0.0 | +7a6a5238-f799-4f36-b4b2-63c890a83920 / -— |
+| Jogador 2 | 2-6 | 216 | SELL | SLOWROLL | 92.0 | 5 | 3 | 0 | 12.0 | Espinhos Negros/DA_18_Veigar | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3023819327354431 | 0.0 | 0.0 | +— / -7b2af6c8-ec0f-4ab5-8913-9b88fc2e0e86 |
+| Jogador 2 | 2-6 | 217 | BUY | SLOWROLL | 92.0 | 5 | 6 | 0 | 12.0 | Espinhos Negros/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6784883737564087 | 0.0 | 0.0 | +b5cec20a-0619-4060-9f1b-e72942ac34dd / -— |
+| Jogador 2 | 2-6 | 218 | REROLL | SLOWROLL | 92.0 | 5 | 5 | 0 | 12.0 | Espinhos Negros/DA_18_Veigar | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04054904356598854 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-6 | 219 | SELL | SLOWROLL | 92.0 | 5 | 3 | 0 | 12.0 | Espinhos Negros/DA_18_Veigar | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.27616095542907715 | 0.0 | 0.0 | +— / -b5cec20a-0619-4060-9f1b-e72942ac34dd |
+| Jogador 2 | 2-6 | 220 | BUY | SLOWROLL | 92.0 | 5 | 4 | 0 | 12.0 | Espinhos Negros/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8799916505813599 | 0.0 | 0.0 | +0e31b1ec-3ead-480e-8577-f59bb5486d00 / -584991bb-37b3-4ac1-8e29-14e0d74c5e78,7a6a5238-f799-4f36-b4b2-63c890a83920 |
+| Jogador 2 | 2-6 | 221 | MOVE_BENCH | SLOWROLL | 92.0 | 5 | 3 | 0 | 10.0 | Espinhos Negros/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.30024874210357666 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-6 | 222 | MOVE_BENCH | SLOWROLL | 92.0 | 5 | 3 | 0 | 8.0 | Espinhos Negros/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5844517946243286 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-6 | 223 | PASS | SLOWROLL | 92.0 | 5 | 3 | 0 | 14.0 | Espinhos Negros/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-7 | 232 | BUY | SLOWROLL | 86.0 | 5 | 9 | 0 | 14.0 | Espinhos Negros/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.21149110794067383 | 0.0 | 0.0 | +05be69ba-41c7-4dee-9799-dabbd60f0dc9 / -— |
+| Jogador 2 | 2-7 | 233 | REROLL | SLOWROLL | 86.0 | 5 | 6 | 0 | 14.0 | Espinhos Negros/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.040477000176906586 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-7 | 234 | BUY | SLOWROLL | 86.0 | 5 | 4 | 0 | 14.0 | Espinhos Negros/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8147421479225159 | 0.0 | 0.0 | +f8d6cf7b-e18c-4a52-87c6-8858f03eef72 / -— |
+| Jogador 2 | 2-7 | 235 | REROLL | SLOWROLL | 86.0 | 5 | 3 | 0 | 14.0 | Espinhos Negros/DA_18_Veigar | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04054778441786766 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-7 | 236 | SELL | SLOWROLL | 86.0 | 5 | 1 | 0 | 14.0 | Espinhos Negros/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.5352749824523926 | 0.0 | 0.0 | +— / -11a1c814-5357-4f19-944f-aa11d6bf8384 |
+| Jogador 2 | 2-7 | 237 | EQUIP_FROM_INVENTORY | SLOWROLL | 86.0 | 5 | 4 | 0 | 14.0 | Espinhos Negros/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.1229993924498558 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-7 | 238 | EQUIP_FROM_INVENTORY | SLOWROLL | 86.0 | 5 | 4 | 0 | 14.0 | Espinhos Negros/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.042182132601737976 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 2-7 | 239 | BUY | SLOWROLL | 86.0 | 5 | 4 | 0 | 14.0 | Espinhos Negros/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7824859619140625 | 0.0 | 0.0 | +2c153083-6c43-425e-90d5-23f7f2058592 / -— |
+| Jogador 2 | 2-7 | 240 | SELL | SLOWROLL | 86.0 | 5 | 1 | 0 | 14.0 | Espinhos Negros/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.37049999833106995 | 0.0 | 0.0 | +— / -0e31b1ec-3ead-480e-8577-f59bb5486d00 |
+| Jogador 2 | 2-7 | 241 | BUY | SLOWROLL | 86.0 | 5 | 4 | 0 | 14.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8732119798660278 | 0.0 | 0.0 | +1e81ac95-667f-494d-89eb-2bcdcf887a7e / -046de242-84d0-4f44-a171-345f16a6e719,f8d6cf7b-e18c-4a52-87c6-8858f03eef72 |
+| Jogador 2 | 2-7 | 242 | PASS | SLOWROLL | 86.0 | 5 | 3 | 0 | 12.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-1 | 252 | BUY | SLOWROLL | 86.0 | 5 | 9 | 0 | 12.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | True | 0.7677339911460876 | 0.0 | 0.0 | +506f421d-7a3c-46d7-9cac-6c107bc35e31 / -18770ba0-b5a0-4c41-92a5-de4d5e3078b9,780538e0-4319-45d7-9d96-ace3e3d95c3d |
+| Jogador 2 | 3-1 | 253 | MOVE_BENCH | SLOWROLL | 86.0 | 5 | 8 | 0 | 8.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | True | 0.04867861419916153 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-1 | 254 | MOVE_BENCH | SLOWROLL | 86.0 | 5 | 8 | 0 | 10.0 | Fera do Rift/DA_Cinderling18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | True | 0.43010732531547546 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-1 | 255 | CRAFT_AND_EQUIP | SLOWROLL | 86.0 | 5 | 8 | 0 | 12.0 | Fera do Rift/DA_Cinderling18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.17161163687705994 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-1 | 256 | MOVE_BENCH | SLOWROLL | 86.0 | 5 | 8 | 0 | 12.0 | Fera do Rift/DA_Cinderling18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.6350169777870178 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-1 | 257 | BUY | SLOWROLL | 86.0 | 5 | 8 | 0 | 14.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.21235714852809906 | 0.0 | 0.0 | +2001a193-3868-4a3f-8a71-3a9f95c04a02 / -— |
+| Jogador 2 | 3-1 | 258 | MOVE_BENCH | SLOWROLL | 86.0 | 5 | 7 | 0 | 14.0 | Fera do Rift/DA_18_Kobuko | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3592221438884735 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-1 | 259 | MOVE_BENCH | SLOWROLL | 86.0 | 5 | 7 | 0 | 10.0 | Fera do Rift/DA_18_Kobuko | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.09228681772947311 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-1 | 260 | MOVE_BENCH | SLOWROLL | 86.0 | 5 | 7 | 0 | 14.0 | Fera do Rift/DA_18_Kobuko | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.4210003912448883 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-1 | 261 | MOVE_BENCH | SLOWROLL | 86.0 | 5 | 7 | 0 | 14.0 | Fera do Rift/DA_18_Kobuko | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.5737549662590027 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-1 | 262 | PASS | SLOWROLL | 86.0 | 5 | 7 | 0 | 10.0 | Fera do Rift/DA_18_Kobuko | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-2 | 272 | MOVE_BENCH | SLOWROLL | 75.0 | 5 | 13 | 1 | 10.0 | Fera do Rift/DA_18_Kobuko | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1045135036110878 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-2 | 273 | MOVE_BENCH | SLOWROLL | 75.0 | 5 | 13 | 1 | 14.0 | Fera do Rift/DA_18_Kobuko | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.7507621645927429 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-2 | 274 | MOVE_BENCH | SLOWROLL | 75.0 | 5 | 13 | 1 | 10.0 | Fera do Rift/DA_18_Kobuko | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.42689764499664307 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-2 | 275 | PASS | SLOWROLL | 75.0 | 5 | 13 | 1 | 10.0 | Fera do Rift/DA_18_Kobuko | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-2 | 286 | MOVE_BENCH | SLOWROLL | 75.0 | 5 | 13 | 1 | 10.0 | Fera do Rift/DA_18_Kobuko | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.30089226365089417 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-3 | 292 | BUY | SLOWROLL | 66.0 | 5 | 20 | 2 | 16.0 | Fera do Rift/DA_18_Kobuko | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6604504585266113 | 0.0 | 0.0 | +943437ce-e190-4790-986b-4e66e49637a7 / -— |
+| Jogador 2 | 3-3 | 293 | MOVE_BENCH | SLOWROLL | 66.0 | 5 | 17 | 1 | 16.0 | Fera do Rift/DA_18_Kobuko | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.5753669738769531 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-3 | 294 | REROLL | SLOWROLL | 66.0 | 5 | 17 | 1 | 16.0 | Fera do Rift/DA_18_Kobuko | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0429873913526535 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-3 | 295 | SELL | SLOWROLL | 66.0 | 5 | 15 | 1 | 16.0 | Fera do Rift/DA_18_Kobuko | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.35957810282707214 | 0.0 | 0.0 | +— / -506f421d-7a3c-46d7-9cac-6c107bc35e31 |
+| Jogador 2 | 3-3 | 296 | EQUIP_FROM_INVENTORY | SLOWROLL | 66.0 | 5 | 18 | 1 | 16.0 | Fera do Rift/DA_18_Kobuko | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.15343376994132996 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-3 | 297 | EQUIP_FROM_INVENTORY | SLOWROLL | 66.0 | 5 | 18 | 1 | 16.0 | Fera do Rift/DA_18_Kobuko | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.12031958252191544 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-3 | 298 | BUY | SLOWROLL | 66.0 | 5 | 18 | 1 | 16.0 | Fera do Rift/DA_18_Kobuko | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7368917465209961 | 0.0 | 0.0 | +9af900db-c181-448a-9736-30f08f062a00 / -— |
+| Jogador 2 | 3-3 | 299 | SELL | SLOWROLL | 66.0 | 5 | 17 | 1 | 16.0 | Fera do Rift/DA_18_Kobuko | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.20931771397590637 | 0.0 | 0.0 | +— / -1e81ac95-667f-494d-89eb-2bcdcf887a7e |
+| Jogador 2 | 3-3 | 300 | BUY | SLOWROLL | 66.0 | 5 | 20 | 2 | 16.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.13394619524478912 | 0.0 | 0.0 | +e270a6b1-23dd-49a0-8694-ba911eae4c71 / -— |
+| Jogador 2 | 3-3 | 301 | REROLL | SLOWROLL | 66.0 | 5 | 19 | 1 | 16.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11580473184585571 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-3 | 302 | PASS | SLOWROLL | 66.0 | 5 | 17 | 1 | 16.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-4 | 312 | SELL | SLOWROLL | 57.0 | 5 | 25 | 2 | 16.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2536255121231079 | 0.0 | 0.0 | +— / -58c38a13-23c5-4ac1-8601-f0636aeb33ab |
+| Jogador 2 | 3-4 | 313 | BUY | SLOWROLL | 57.0 | 5 | 27 | 2 | 16.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7317047119140625 | 0.0 | 0.0 | +e1055913-2340-4af0-8527-e175c8bc1ccb / -— |
+| Jogador 2 | 3-4 | 314 | REROLL | SLOWROLL | 57.0 | 5 | 26 | 2 | 16.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.12563465535640717 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-4 | 315 | REROLL | SLOWROLL | 57.0 | 5 | 24 | 2 | 16.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.05160873755812645 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-4 | 316 | REROLL | SLOWROLL | 57.0 | 5 | 22 | 2 | 16.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.05261068046092987 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-4 | 317 | SELL | SLOWROLL | 57.0 | 5 | 20 | 2 | 16.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.017987024039030075 | 0.0 | 0.0 | +— / -b482ecdd-cc1a-40fa-8c21-cd1cac92b594 |
+| Jogador 2 | 3-4 | 318 | BUY | SLOWROLL | 57.0 | 5 | 22 | 2 | 16.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7822474241256714 | 0.0 | 0.0 | +01c587bb-ca4f-4690-9e4b-d1e9c44fd33e / -4d995451-2e5c-43c2-93f0-22e074e35ab2,ac02c0c4-a10d-497d-b6c1-d458ad7ae58c |
+| Jogador 2 | 3-4 | 319 | MOVE_BENCH | SLOWROLL | 57.0 | 5 | 21 | 2 | 14.0 | Fera do Rift/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10311895608901978 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-4 | 320 | MOVE_BENCH | SLOWROLL | 57.0 | 5 | 21 | 2 | 18.0 | Fera do Rift/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.41044366359710693 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-4 | 321 | PASS | SLOWROLL | 57.0 | 5 | 21 | 2 | 14.0 | Fera do Rift/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.05900000035762787 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-4 | 325 | MOVE_BENCH | SLOWROLL | 57.0 | 5 | 21 | 2 | 14.0 | Fera do Rift/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3327930271625519 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-5 | 332 | BUY | SLOWROLL | 57.0 | 5 | 30 | 3 | 20.0 | Fera do Rift/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3543543517589569 | 0.0 | 0.0 | +b1d58916-6d8b-4071-a37d-a478395e6a1e / -— |
+| Jogador 2 | 3-5 | 333 | MOVE_BENCH | SLOWROLL | 57.0 | 5 | 29 | 2 | 20.0 | Fera do Rift/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.09215238690376282 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-5 | 334 | BUY | SLOWROLL | 57.0 | 5 | 29 | 2 | 24.0 | Fera do Rift/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.21331042051315308 | 0.0 | 0.0 | +4261ad99-2607-4d90-978c-9e9abffd6d95 / -— |
+| Jogador 2 | 3-5 | 335 | MOVE_BENCH | SLOWROLL | 57.0 | 5 | 27 | 2 | 24.0 | Fera do Rift/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.40531662106513977 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-5 | 336 | REROLL | SLOWROLL | 57.0 | 5 | 27 | 2 | 20.0 | Fera do Rift/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.05104764178395271 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-5 | 337 | SELL | SLOWROLL | 57.0 | 5 | 25 | 2 | 20.0 | Fera do Rift/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2070421725511551 | 0.0 | 0.0 | +— / -01c587bb-ca4f-4690-9e4b-d1e9c44fd33e |
+| Jogador 2 | 3-5 | 338 | EQUIP_FROM_INVENTORY | SLOWROLL | 57.0 | 5 | 28 | 2 | 20.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.14485545456409454 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-5 | 339 | BUY | SLOWROLL | 57.0 | 5 | 28 | 2 | 20.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7826584577560425 | 0.0 | 0.0 | +c71adf7d-8d74-439d-8863-dac0f4f20cd1 / -5cf46feb-77cd-4cb8-9211-ffb08d88391a,9af900db-c181-448a-9736-30f08f062a00 |
+| Jogador 2 | 3-5 | 340 | BUY | SLOWROLL | 57.0 | 5 | 27 | 2 | 20.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7778038382530212 | 0.0 | 0.0 | +e1be174a-f112-4e1b-8bf6-738af52f27e8 / -2c497125-ca06-46b1-a3b3-9a59d904705b,943437ce-e190-4790-986b-4e66e49637a7 |
+| Jogador 2 | 3-5 | 341 | MOVE_BENCH | SLOWROLL | 57.0 | 5 | 24 | 2 | 14.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.35269439220428467 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-5 | 342 | PASS | SLOWROLL | 57.0 | 5 | 24 | 2 | 20.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.060499999672174454 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-6 | 346 | MOVE_BENCH | SLOWROLL | 48.0 | 5 | 34 | 3 | 20.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5291052460670471 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-6 | 347 | MOVE_BENCH | SLOWROLL | 48.0 | 5 | 34 | 3 | 26.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.8844357132911682 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-6 | 348 | MOVE_BENCH | SLOWROLL | 48.0 | 5 | 34 | 3 | 16.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.23384612798690796 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-6 | 349 | MOVE_BENCH | SLOWROLL | 48.0 | 5 | 34 | 3 | 26.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.013056796044111252 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-6 | 350 | REROLL | SLOWROLL | 48.0 | 5 | 34 | 3 | 26.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.07045219093561172 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-6 | 351 | BUY | SLOWROLL | 48.0 | 5 | 32 | 3 | 26.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7477841973304749 | 0.0 | 0.0 | +e22ad17a-827b-42f7-95a6-9e334471b0b9 / -2001a193-3868-4a3f-8a71-3a9f95c04a02,b1d58916-6d8b-4071-a37d-a478395e6a1e |
+| Jogador 2 | 3-6 | 352 | MOVE_BENCH | SLOWROLL | 48.0 | 5 | 31 | 3 | 24.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.15865924954414368 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-6 | 353 | MOVE_BOARD | SLOWROLL | 48.0 | 5 | 31 | 3 | 28.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.03893642872571945 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-6 | 354 | BUY | SLOWROLL | 48.0 | 5 | 31 | 3 | 28.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2515204846858978 | 0.0 | 0.0 | +09105a4a-c4d1-43c0-b1fb-08df25bcafd5 / -— |
+| Jogador 2 | 3-6 | 355 | MOVE_BENCH | SLOWROLL | 48.0 | 5 | 28 | 2 | 28.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.7517570853233337 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-6 | 356 | PASS | SLOWROLL | 48.0 | 5 | 28 | 2 | 30.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0625 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-7 | 362 | MOVE_BENCH | SLOWROLL | 48.0 | 5 | 36 | 3 | 30.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.007361527998000383 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-7 | 363 | MOVE_BENCH | SLOWROLL | 48.0 | 5 | 36 | 3 | 22.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.16286790370941162 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-7 | 364 | MOVE_BENCH | SLOWROLL | 48.0 | 5 | 36 | 3 | 28.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.8181159496307373 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-7 | 365 | MOVE_BENCH | SLOWROLL | 48.0 | 5 | 36 | 3 | 30.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3399229049682617 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-7 | 366 | PASS | SLOWROLL | 48.0 | 5 | 36 | 3 | 22.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10849999636411667 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 3-7 | 372 | MOVE_BENCH | SLOWROLL | 48.0 | 5 | 36 | 3 | 22.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5391683578491211 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-1 | 377 | BUY | SLOWROLL | 48.0 | 5 | 44 | 4 | 34.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | True | 0.3208383619785309 | 0.0 | 0.0 | +30d632db-738f-4a3c-84dc-ff4a4705ecdf / -— |
+| Jogador 2 | 4-1 | 378 | BUY | SLOWROLL | 48.0 | 5 | 43 | 4 | 34.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | True | 0.28399521112442017 | 0.0 | 0.0 | +4cae9d83-6cc8-4a27-9c17-2e6f45091477 / -— |
+| Jogador 2 | 4-1 | 379 | CRAFT_AND_EQUIP | SLOWROLL | 48.0 | 5 | 40 | 4 | 34.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.1641877442598343 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-1 | 380 | CRAFT_AND_EQUIP | SLOWROLL | 48.0 | 5 | 40 | 4 | 34.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.1627291738986969 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-1 | 381 | REROLL | SLOWROLL | 48.0 | 5 | 40 | 4 | 34.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.1889999955892563 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-1 | 382 | BUY | SLOWROLL | 48.0 | 5 | 38 | 3 | 34.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.18560205399990082 | 0.0 | 0.0 | +02cb9b8e-6bb3-4b3d-8369-5fb39975c0ed / -— |
+| Jogador 2 | 4-1 | 383 | REROLL | SLOWROLL | 48.0 | 5 | 35 | 3 | 34.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11343768984079361 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-1 | 384 | REROLL | SLOWROLL | 48.0 | 5 | 33 | 3 | 34.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.07090490311384201 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-1 | 385 | BUY | SLOWROLL | 48.0 | 5 | 31 | 3 | 34.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.17069977521896362 | 0.0 | 0.0 | +f5419ca3-b123-4d9e-8aa9-58b288a186c2 / -— |
+| Jogador 2 | 4-1 | 386 | REROLL | SLOWROLL | 48.0 | 5 | 28 | 2 | 34.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.052798911929130554 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-1 | 387 | PASS | SLOWROLL | 48.0 | 5 | 26 | 2 | 34.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-2 | 389 | SELL | FAST8 | 48.0 | 6 | 35 | 3 | 34.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.37049999833106995 | 0.0 | 0.0 | +— / -c71adf7d-8d74-439d-8863-dac0f4f20cd1 |
+| Jogador 2 | 4-2 | 390 | BUY | FAST8 | 48.0 | 6 | 38 | 3 | 34.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2552526593208313 | 0.0 | 0.0 | +d9b65c1c-1cb3-4585-a38d-d871723ded66 / -— |
+| Jogador 2 | 4-2 | 391 | REROLL | FAST8 | 48.0 | 6 | 36 | 3 | 34.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-2 | 392 | SELL | FAST8 | 48.0 | 6 | 34 | 3 | 34.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.08022255450487137 | 0.0 | 0.0 | +— / -f5419ca3-b123-4d9e-8aa9-58b288a186c2 |
+| Jogador 2 | 4-2 | 393 | BUY | FAST8 | 48.0 | 6 | 37 | 3 | 34.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8164677023887634 | 0.0 | 0.0 | +89e25847-d3e0-49a3-ba5b-4cd00ba7c8b6 / -e1055913-2340-4af0-8527-e175c8bc1ccb,e270a6b1-23dd-49a0-8694-ba911eae4c71 |
+| Jogador 2 | 4-2 | 394 | REROLL | FAST8 | 48.0 | 6 | 36 | 3 | 34.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-2 | 395 | BUY | FAST8 | 48.0 | 6 | 34 | 3 | 34.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.23863153159618378 | 0.0 | 0.0 | +8866c8fb-a7fe-4299-b2fd-e967adcedb74 / -— |
+| Jogador 2 | 4-2 | 396 | REROLL | FAST8 | 48.0 | 6 | 33 | 3 | 34.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-2 | 397 | MOVE_BENCH | FAST8 | 48.0 | 6 | 31 | 3 | 34.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.4981454610824585 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-2 | 398 | BUY | FAST8 | 48.0 | 6 | 31 | 3 | 36.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6894987225532532 | 0.0 | 0.0 | +663c9fe5-55b8-4c50-b544-aba5b6e02070 / -— |
+| Jogador 2 | 4-2 | 399 | PASS | FAST8 | 48.0 | 6 | 29 | 2 | 36.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11500000208616257 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-3 | 402 | BUY | FAST8 | 48.0 | 6 | 39 | 3 | 36.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7420939803123474 | 0.0 | 0.0 | +71b34398-0b5c-4b1a-8bfc-60ca14137847 / -— |
+| Jogador 2 | 4-3 | 403 | REROLL | FAST8 | 48.0 | 6 | 38 | 3 | 36.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-3 | 404 | SELL | FAST8 | 48.0 | 6 | 36 | 3 | 36.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.25740399956703186 | 0.0 | 0.0 | +— / -89e25847-d3e0-49a3-ba5b-4cd00ba7c8b6 |
+| Jogador 2 | 4-3 | 405 | BUY | FAST8 | 48.0 | 6 | 39 | 3 | 36.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7677159905433655 | 0.0 | 0.0 | +bb616470-4b6d-4736-9b6a-8635fb5680b3 / -— |
+| Jogador 2 | 4-3 | 406 | SELL | FAST8 | 48.0 | 6 | 36 | 3 | 36.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.010400000028312206 | 0.0 | 0.0 | +— / -02cb9b8e-6bb3-4b3d-8369-5fb39975c0ed |
+| Jogador 2 | 4-3 | 407 | BUY | FAST8 | 48.0 | 6 | 39 | 3 | 36.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8198220133781433 | 0.0 | 0.0 | +feb29e3c-5554-410e-a677-8c3e335a4531 / -71b34398-0b5c-4b1a-8bfc-60ca14137847,8866c8fb-a7fe-4299-b2fd-e967adcedb74 |
+| Jogador 2 | 4-3 | 408 | REROLL | FAST8 | 48.0 | 6 | 38 | 3 | 36.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-3 | 409 | BUY | FAST8 | 48.0 | 6 | 36 | 3 | 36.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8253694176673889 | 0.0 | 0.0 | +544b9b8d-c21d-4756-8d36-4534eba8fd21 / -663c9fe5-55b8-4c50-b544-aba5b6e02070,d9b65c1c-1cb3-4585-a38d-d871723ded66 |
+| Jogador 2 | 4-3 | 410 | REROLL | FAST8 | 48.0 | 6 | 34 | 3 | 36.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-3 | 411 | BUY | FAST8 | 48.0 | 6 | 32 | 3 | 36.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7638245224952698 | 0.0 | 0.0 | +bb47881d-191d-45a9-af43-6c3827d81444 / -05be69ba-41c7-4dee-9799-dabbd60f0dc9,2c153083-6c43-425e-90d5-23f7f2058592 |
+| Jogador 2 | 4-3 | 412 | PASS | SLOWROLL | 48.0 | 6 | 29 | 2 | 24.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09000000357627869 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-4 | 416 | MOVE_BENCH | STABILIZE | 38.0 | 6 | 36 | 3 | 24.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09844475984573364 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-4 | 417 | MOVE_BENCH | STABILIZE | 38.0 | 6 | 36 | 3 | 24.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3956248462200165 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-4 | 418 | BUY | STABILIZE | 38.0 | 6 | 36 | 3 | 28.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.33805057406425476 | 0.0 | 0.0 | +22d20f4e-90b8-4a5a-b55e-7b183944a8f3 / -— |
+| Jogador 2 | 4-4 | 419 | MOVE_BENCH | STABILIZE | 38.0 | 6 | 34 | 3 | 28.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.38923540711402893 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-4 | 420 | REROLL | STABILIZE | 38.0 | 6 | 34 | 3 | 28.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-4 | 421 | REROLL | STABILIZE | 38.0 | 6 | 32 | 3 | 28.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-4 | 422 | REROLL | STABILIZE | 38.0 | 6 | 30 | 3 | 28.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.17399999499320984 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-4 | 423 | REROLL | STABILIZE | 38.0 | 6 | 28 | 2 | 28.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-4 | 424 | MOVE_BENCH | STABILIZE | 38.0 | 6 | 26 | 2 | 28.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6037834286689758 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-4 | 425 | BUY | STABILIZE | 38.0 | 6 | 26 | 2 | 40.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8398095369338989 | 0.0 | 0.0 | +a6e4bd35-4f06-4dc0-b74c-61e264782ac3 / -— |
+| Jogador 2 | 4-4 | 426 | PASS | STABILIZE | 38.0 | 6 | 24 | 2 | 40.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11723598092794418 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-5 | 429 | BUY | STABILIZE | 38.0 | 6 | 31 | 3 | 40.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7599501609802246 | 0.0 | 0.0 | +ea140e3c-b723-43ce-94b5-0eebd940bffb / -— |
+| Jogador 2 | 4-5 | 430 | BUY | STABILIZE | 38.0 | 6 | 28 | 2 | 40.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3071178197860718 | 0.0 | 0.0 | +0a1fd400-8647-4a95-bdc0-d30de2476d0b / -— |
+| Jogador 2 | 4-5 | 431 | REROLL | STABILIZE | 38.0 | 6 | 27 | 2 | 40.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-5 | 432 | SELL | STABILIZE | 38.0 | 6 | 25 | 2 | 40.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2777720093727112 | 0.0 | 0.0 | +— / -feb29e3c-5554-410e-a677-8c3e335a4531 |
+| Jogador 2 | 4-5 | 433 | BUY | STABILIZE | 38.0 | 6 | 28 | 2 | 40.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6326273679733276 | 0.0 | 0.0 | +111c3751-b943-49fc-bd22-a26fcd8b27dc / -— |
+| Jogador 2 | 4-5 | 434 | REROLL | STABILIZE | 38.0 | 6 | 25 | 2 | 40.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-5 | 435 | REROLL | STABILIZE | 38.0 | 6 | 23 | 2 | 40.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-5 | 436 | REROLL | STABILIZE | 38.0 | 6 | 21 | 2 | 40.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.17399999499320984 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-5 | 437 | SELL | STABILIZE | 38.0 | 6 | 19 | 1 | 40.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2661319971084595 | 0.0 | 0.0 | +— / -544b9b8d-c21d-4756-8d36-4534eba8fd21 |
+| Jogador 2 | 4-5 | 438 | BUY | STABILIZE | 38.0 | 6 | 24 | 2 | 40.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8655347228050232 | 0.0 | 0.0 | +4f9d18d7-d8b1-457b-a008-8311525ab631 / -22d20f4e-90b8-4a5a-b55e-7b183944a8f3,a6e4bd35-4f06-4dc0-b74c-61e264782ac3 |
+| Jogador 2 | 4-5 | 439 | PASS | STABILIZE | 38.0 | 6 | 22 | 2 | 36.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11497777700424194 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-6 | 441 | MOVE_BENCH | STABILIZE | 38.0 | 6 | 30 | 3 | 36.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0974055603146553 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-6 | 442 | BUY | STABILIZE | 38.0 | 6 | 30 | 3 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.29937174916267395 | 0.0 | 0.0 | +8dfa090e-ec6b-408c-93f7-6aa740d37923 / -— |
+| Jogador 2 | 4-6 | 443 | REROLL | STABILIZE | 38.0 | 6 | 27 | 2 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-6 | 444 | REROLL | STABILIZE | 38.0 | 6 | 25 | 2 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-6 | 445 | BUY | STABILIZE | 38.0 | 6 | 23 | 2 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8635847568511963 | 0.0 | 0.0 | +1313ce0e-7069-44c1-a73e-25f180914bc5 / -4cae9d83-6cc8-4a27-9c17-2e6f45091477,ea140e3c-b723-43ce-94b5-0eebd940bffb |
+| Jogador 2 | 4-6 | 446 | REROLL | STABILIZE | 38.0 | 6 | 20 | 2 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.17399999499320984 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-6 | 447 | BUY | STABILIZE | 38.0 | 6 | 18 | 1 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2859797179698944 | 0.0 | 0.0 | +f3480d9d-d444-40b8-a071-b38a78316733 / -— |
+| Jogador 2 | 4-6 | 448 | BUY | STABILIZE | 38.0 | 6 | 16 | 1 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.281665176153183 | 0.0 | 0.0 | +f515e44c-513b-4877-bdfb-e6c0ef498492 / -— |
+| Jogador 2 | 4-6 | 449 | REROLL | STABILIZE | 38.0 | 6 | 12 | 1 | 42.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-6 | 450 | MOVE_BOARD | STABILIZE | 38.0 | 6 | 10 | 1 | 42.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0033993376418948174 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-7 | 452 | REROLL | STABILIZE | 38.0 | 6 | 18 | 1 | 42.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-7 | 453 | SELL | STABILIZE | 38.0 | 6 | 16 | 1 | 42.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.276852011680603 | 0.0 | 0.0 | +— / -4f9d18d7-d8b1-457b-a008-8311525ab631 |
+| Jogador 2 | 4-7 | 454 | BUY | STABILIZE | 38.0 | 6 | 21 | 2 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8253905177116394 | 0.0 | 0.0 | +a28fcbbe-115c-42bb-add8-ff6a4e57197c / -— |
+| Jogador 2 | 4-7 | 455 | REROLL | STABILIZE | 38.0 | 6 | 20 | 2 | 42.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.17399999499320984 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-7 | 456 | REROLL | STABILIZE | 38.0 | 6 | 18 | 1 | 42.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-7 | 457 | REROLL | STABILIZE | 38.0 | 6 | 16 | 1 | 42.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-7 | 458 | REROLL | STABILIZE | 38.0 | 6 | 14 | 1 | 42.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-7 | 459 | REROLL | STABILIZE | 38.0 | 6 | 12 | 1 | 42.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 4-7 | 460 | REROLL | STABILIZE | 38.0 | 6 | 10 | 1 | 42.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.17399999499320984 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-1 | 462 | CRAFT_AND_EQUIP | STABILIZE | 38.0 | 6 | 14 | 1 | 42.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.11171198636293411 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-1 | 463 | CRAFT_AND_EQUIP | STABILIZE | 38.0 | 6 | 14 | 1 | 42.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.1586424559354782 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-1 | 464 | REROLL | STABILIZE | 38.0 | 6 | 14 | 1 | 42.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-1 | 465 | REROLL | STABILIZE | 38.0 | 6 | 12 | 1 | 42.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-1 | 466 | SELL | STABILIZE | 38.0 | 6 | 10 | 1 | 42.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.41716375946998596 | 0.0 | 0.0 | +— / -1313ce0e-7069-44c1-a73e-25f180914bc5 |
+| Jogador 2 | 5-1 | 467 | BUY | STABILIZE | 38.0 | 6 | 18 | 1 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.28319454193115234 | 0.0 | 0.0 | +cd9a9a25-9485-4353-920f-d83bec9e4359 / -— |
+| Jogador 2 | 5-1 | 468 | REROLL | STABILIZE | 38.0 | 6 | 15 | 1 | 42.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-1 | 469 | SELL | STABILIZE | 38.0 | 6 | 13 | 1 | 42.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.019519999623298645 | 0.0 | 0.0 | +— / -8dfa090e-ec6b-408c-93f7-6aa740d37923 |
+| Jogador 2 | 5-1 | 470 | BUY | STABILIZE | 38.0 | 6 | 16 | 1 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8376302719116211 | 0.0 | 0.0 | +c9584e75-8a91-4ad1-affe-67add344d8d5 / -0a1fd400-8647-4a95-bdc0-d30de2476d0b,a28fcbbe-115c-42bb-add8-ff6a4e57197c |
+| Jogador 2 | 5-2 | 472 | BUY | STABILIZE | 38.0 | 6 | 23 | 2 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8306470513343811 | 0.0 | 0.0 | +da54ab9b-bc3c-4e2f-b9f6-5dc69c1de6ae / -— |
+| Jogador 2 | 5-2 | 473 | REROLL | STABILIZE | 38.0 | 6 | 20 | 2 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.17399999499320984 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-2 | 474 | REROLL | STABILIZE | 38.0 | 6 | 18 | 1 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-2 | 475 | REROLL | STABILIZE | 38.0 | 6 | 16 | 1 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-2 | 476 | REROLL | STABILIZE | 38.0 | 6 | 14 | 1 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-2 | 477 | REROLL | STABILIZE | 38.0 | 6 | 12 | 1 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-2 | 478 | REROLL | STABILIZE | 38.0 | 6 | 10 | 1 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.17399999499320984 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-2 | 479 | REROLL | STABILIZE | 38.0 | 6 | 8 | 0 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-2 | 480 | REROLL | STABILIZE | 38.0 | 6 | 6 | 0 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-3 | 482 | BUY | STABILIZE | 22.0 | 6 | 9 | 0 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8055346012115479 | 0.0 | 0.0 | +f0031636-7cd2-40a6-8c70-b2542699db1e / -— |
+| Jogador 2 | 5-3 | 483 | SELL | STABILIZE | 22.0 | 6 | 7 | 0 | 42.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.22457200288772583 | 0.0 | 0.0 | +— / -c9584e75-8a91-4ad1-affe-67add344d8d5 |
+| Jogador 2 | 5-3 | 484 | BUY | STABILIZE | 22.0 | 6 | 10 | 1 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7535847425460815 | 0.0 | 0.0 | +2a09590e-c9ac-4d71-89ac-12f12734434f / -cd9a9a25-9485-4353-920f-d83bec9e4359,da54ab9b-bc3c-4e2f-b9f6-5dc69c1de6ae |
+| Jogador 2 | 5-3 | 485 | REROLL | STABILIZE | 22.0 | 6 | 7 | 0 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-3 | 486 | BUY | STABILIZE | 22.0 | 6 | 5 | 0 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2819468080997467 | 0.0 | 0.0 | +5d774bab-dde7-4e5d-bf14-a9b96ffcb2ed / -— |
+| Jogador 2 | 5-3 | 487 | MOVE_BENCH | STABILIZE | 22.0 | 6 | 1 | 0 | 42.0 | Fera do Rift/DA_18_Azir | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1001741886138916 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-3 | 488 | MOVE_BOARD | STABILIZE | 22.0 | 6 | 1 | 0 | 44.0 | Fera do Rift/DA_18_Azir | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.015244237147271633 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-3 | 489 | MOVE_BENCH | STABILIZE | 22.0 | 6 | 1 | 0 | 44.0 | Fera do Rift/DA_18_Azir | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.7886868119239807 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-3 | 490 | PASS | STABILIZE | 22.0 | 6 | 1 | 0 | 42.0 | Fera do Rift/DA_18_Azir | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-4 | 492 | MOVE_BENCH | STABILIZE | 22.0 | 6 | 7 | 0 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0996614545583725 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-4 | 493 | REROLL | STABILIZE | 22.0 | 6 | 7 | 0 | 46.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-4 | 494 | REROLL | STABILIZE | 22.0 | 6 | 5 | 0 | 46.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-4 | 495 | REROLL | STABILIZE | 22.0 | 6 | 3 | 0 | 46.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-4 | 496 | MOVE_BENCH | STABILIZE | 22.0 | 6 | 1 | 0 | 46.0 | Fera do Rift/DA_18_Azir | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.08664511889219284 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-4 | 497 | MOVE_BENCH | STABILIZE | 22.0 | 6 | 1 | 0 | 44.0 | Fera do Rift/DA_18_Azir | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.08220410346984863 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-4 | 498 | MOVE_BENCH | STABILIZE | 22.0 | 6 | 1 | 0 | 52.0 | Fera do Rift/DA_18_Azir | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.4148405194282532 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-4 | 499 | MOVE_BENCH | STABILIZE | 22.0 | 6 | 1 | 0 | 48.0 | Fera do Rift/DA_18_Azir | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.08342498540878296 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-4 | 500 | MOVE_BENCH | STABILIZE | 22.0 | 6 | 1 | 0 | 44.0 | Fera do Rift/DA_18_Azir | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.41499999165534973 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-5 | 502 | BUY | STABILIZE | 22.0 | 6 | 6 | 0 | 44.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8327155709266663 | 0.0 | 0.0 | +6d3824d2-7940-4bf4-8bd5-938191a20478 / -28f66ef1-93d6-4cc8-a0c9-e84e844dee28,bb616470-4b6d-4736-9b6a-8635fb5680b3 |
+| Jogador 2 | 5-5 | 503 | REROLL | STABILIZE | 22.0 | 6 | 3 | 0 | 44.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-5 | 504 | MOVE_BENCH | STABILIZE | 22.0 | 6 | 1 | 0 | 44.0 | Fera do Rift/DA_18_Azir | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0906880795955658 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-5 | 505 | MOVE_BENCH | STABILIZE | 22.0 | 6 | 1 | 0 | 52.0 | Fera do Rift/DA_18_Azir | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.40796273946762085 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-5 | 506 | MOVE_BENCH | STABILIZE | 22.0 | 6 | 1 | 0 | 44.0 | Fera do Rift/DA_18_Azir | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.41499999165534973 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-5 | 507 | PASS | STABILIZE | 22.0 | 6 | 1 | 0 | 44.0 | Fera do Rift/DA_18_Azir | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-6 | 512 | BUY | STABILIZE | 22.0 | 6 | 8 | 0 | 44.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.28392717242240906 | 0.0 | 0.0 | +9668ab9e-ebde-4592-bf0a-f4ba4191f578 / -— |
+| Jogador 2 | 5-6 | 513 | REROLL | STABILIZE | 22.0 | 6 | 5 | 0 | 44.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-6 | 514 | REROLL | STABILIZE | 22.0 | 6 | 3 | 0 | 44.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-6 | 515 | BUY | STABILIZE | 22.0 | 6 | 1 | 0 | 44.0 | Fera do Rift/DA_18_Azir | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.80739426612854 | 0.0 | 0.0 | +17345f97-b4ff-48b2-a107-03c1ff5ebe77 / -— |
+| Jogador 2 | 5-6 | 516 | MOVE_BENCH | STABILIZE | 22.0 | 6 | 0 | 0 | 44.0 | Fera do Rift/DA_18_Azir | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.09706822037696838 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-6 | 517 | MOVE_BENCH | STABILIZE | 22.0 | 6 | 0 | 0 | 52.0 | Fera do Rift/DA_18_Azir | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.40848004817962646 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-6 | 518 | MOVE_BENCH | STABILIZE | 22.0 | 6 | 0 | 0 | 44.0 | Fera do Rift/DA_18_Azir | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.41499999165534973 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-6 | 519 | PASS | STABILIZE | 22.0 | 6 | 0 | 0 | 44.0 | Fera do Rift/DA_18_Azir | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-7 | 522 | SELL | STABILIZE | 22.0 | 6 | 7 | 0 | 44.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.24733847379684448 | 0.0 | 0.0 | +— / -6d3824d2-7940-4bf4-8bd5-938191a20478 |
+| Jogador 2 | 5-7 | 523 | BUY | STABILIZE | 22.0 | 6 | 15 | 1 | 44.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8024036884307861 | 0.0 | 0.0 | +c0fed31e-8de1-4910-83e5-d5847ae9ec9e / -— |
+| Jogador 2 | 5-7 | 524 | REROLL | STABILIZE | 22.0 | 6 | 13 | 1 | 44.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-7 | 525 | REROLL | STABILIZE | 22.0 | 6 | 11 | 1 | 44.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.17399999499320984 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-7 | 526 | SELL | STABILIZE | 22.0 | 6 | 9 | 0 | 44.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3384552299976349 | 0.0 | 0.0 | +— / -2a09590e-c9ac-4d71-89ac-12f12734434f |
+| Jogador 2 | 5-7 | 527 | BUY | STABILIZE | 22.0 | 6 | 17 | 1 | 44.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8345012068748474 | 0.0 | 0.0 | +ed73dbee-4dda-4930-82a3-8cb7f40ef3da / -c0fed31e-8de1-4910-83e5-d5847ae9ec9e,f3480d9d-d444-40b8-a071-b38a78316733 |
+| Jogador 2 | 5-7 | 528 | REROLL | STABILIZE | 22.0 | 6 | 15 | 1 | 44.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-7 | 529 | REROLL | STABILIZE | 22.0 | 6 | 13 | 1 | 44.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 5-7 | 530 | REROLL | STABILIZE | 22.0 | 6 | 11 | 1 | 44.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.17399999499320984 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-1 | 532 | EQUIP_FROM_INVENTORY | STABILIZE | 22.0 | 6 | 15 | 1 | 44.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.08845234662294388 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-1 | 533 | REROLL | STABILIZE | 22.0 | 6 | 15 | 1 | 44.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-1 | 534 | REROLL | STABILIZE | 22.0 | 6 | 13 | 1 | 44.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-1 | 535 | BUY | STABILIZE | 22.0 | 6 | 11 | 1 | 44.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.21466514468193054 | 0.0 | 0.0 | +1f804553-488c-46d6-b47f-2e8d98c70943 / -— |
+| Jogador 2 | 6-1 | 536 | REROLL | STABILIZE | 22.0 | 6 | 10 | 1 | 44.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.17399999499320984 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-1 | 537 | BUY | STABILIZE | 22.0 | 6 | 8 | 0 | 44.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8351730108261108 | 0.0 | 0.0 | +b16ce61f-1811-4aa6-a2ba-e3ce9a4e7168 / -4261ad99-2607-4d90-978c-9e9abffd6d95,f0031636-7cd2-40a6-8c70-b2542699db1e |
+| Jogador 2 | 6-1 | 538 | BUY | STABILIZE | 22.0 | 6 | 6 | 0 | 44.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8377165794372559 | 0.0 | 0.0 | +6bed2e53-3838-4d40-be88-8562cbb0fa9d / -17345f97-b4ff-48b2-a107-03c1ff5ebe77,30d632db-738f-4a3c-84dc-ff4a4705ecdf |
+| Jogador 2 | 6-1 | 539 | MOVE_BENCH | STABILIZE | 22.0 | 6 | 5 | 0 | 42.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5630475282669067 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-1 | 540 | REROLL | STABILIZE | 22.0 | 6 | 5 | 0 | 50.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-2 | 542 | BUY | STABILIZE | 22.0 | 6 | 10 | 1 | 50.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.23291932046413422 | 0.0 | 0.0 | +8c2c3ec0-f3a5-44b2-9122-4d41d08c71cb / -— |
+| Jogador 2 | 6-2 | 543 | REROLL | STABILIZE | 22.0 | 6 | 8 | 0 | 50.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-2 | 544 | BUY | STABILIZE | 22.0 | 6 | 6 | 0 | 50.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.28256067633628845 | 0.0 | 0.0 | +819af39a-6baf-404a-818d-0d06978c74cf / -— |
+| Jogador 2 | 6-2 | 545 | REROLL | STABILIZE | 22.0 | 6 | 3 | 0 | 50.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-2 | 546 | BUY | STABILIZE | 22.0 | 6 | 1 | 0 | 50.0 | Fera do Rift/DA_18_Azir | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7638463377952576 | 0.0 | 0.0 | +0a94242d-aa4b-4af1-a859-5a4618cd77cd / -— |
+| Jogador 2 | 6-2 | 547 | MOVE_BOARD | STABILIZE | 22.0 | 6 | 0 | 0 | 50.0 | Fera do Rift/DA_18_Azir | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 2.94799917810451e-07 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-2 | 548 | MOVE_BOARD | STABILIZE | 22.0 | 6 | 0 | 0 | 50.0 | Fera do Rift/DA_18_Azir | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999985694885254 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-2 | 549 | MOVE_BOARD | STABILIZE | 22.0 | 6 | 0 | 0 | 50.0 | Fera do Rift/DA_18_Azir | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-2 | 550 | PASS | STABILIZE | 22.0 | 6 | 0 | 0 | 50.0 | Fera do Rift/DA_18_Azir | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-3 | 552 | MOVE_BOARD | ALL_IN | 5.0 | 6 | 5 | 0 | 50.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.7101679077313747e-06 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-3 | 553 | REROLL | ALL_IN | 5.0 | 6 | 5 | 0 | 50.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-3 | 554 | REROLL | ALL_IN | 5.0 | 6 | 3 | 0 | 50.0 | Fera do Rift/DA_18_Azir | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-3 | 555 | SELL | ALL_IN | 5.0 | 6 | 1 | 0 | 50.0 | Fera do Rift/DA_18_Azir | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.32225412130355835 | 0.0 | 0.0 | +— / -6bed2e53-3838-4d40-be88-8562cbb0fa9d |
+| Jogador 2 | 6-3 | 556 | EQUIP_FROM_INVENTORY | ALL_IN | 5.0 | 6 | 4 | 0 | 50.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.10055560618638992 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-3 | 557 | EQUIP_FROM_INVENTORY | ALL_IN | 5.0 | 6 | 4 | 0 | 50.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.08623027801513672 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-3 | 558 | EQUIP_FROM_INVENTORY | ALL_IN | 5.0 | 6 | 4 | 0 | 50.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.1006690189242363 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-3 | 559 | BUY | ALL_IN | 5.0 | 6 | 4 | 0 | 50.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7903262376785278 | 0.0 | 0.0 | +bdcac177-a69d-4bda-ad7e-ff15450f6f8c / -— |
+| Jogador 2 | 6-3 | 560 | MOVE_BOARD | ALL_IN | 5.0 | 6 | 1 | 0 | 50.0 | Fera do Rift/DA_18_Azir | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-4 | 562 | MOVE_BOARD | ALL_IN | 5.0 | 6 | 7 | 0 | 50.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-4 | 563 | MOVE_BOARD | ALL_IN | 5.0 | 6 | 7 | 0 | 50.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-4 | 564 | PASS | ALL_IN | 5.0 | 6 | 7 | 0 | 50.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.05000000074505806 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-5 | 572 | MOVE_BOARD | ALL_IN | 5.0 | 6 | 12 | 1 | 50.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-5 | 573 | REROLL | ALL_IN | 5.0 | 6 | 12 | 1 | 50.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-5 | 574 | MOVE_BOARD | ALL_IN | 5.0 | 6 | 10 | 1 | 50.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-5 | 575 | SELL | ALL_IN | 5.0 | 6 | 10 | 1 | 50.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3461320102214813 | 0.0 | 0.0 | +— / -b16ce61f-1811-4aa6-a2ba-e3ce9a4e7168 |
+| Jogador 2 | 6-5 | 576 | BUY | ALL_IN | 5.0 | 6 | 15 | 1 | 50.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8223360776901245 | 0.0 | 0.0 | +9fceeae4-e289-4bbf-8f07-4e507bde382f / -9668ab9e-ebde-4592-bf0a-f4ba4191f578,bdcac177-a69d-4bda-ad7e-ff15450f6f8c |
+| Jogador 2 | 6-5 | 577 | REROLL | ALL_IN | 5.0 | 6 | 12 | 1 | 50.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-5 | 578 | MOVE_BOARD | ALL_IN | 5.0 | 6 | 10 | 1 | 50.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.5767158402013592e-05 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-5 | 579 | MOVE_BOARD | ALL_IN | 5.0 | 6 | 10 | 1 | 50.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-5 | 580 | MOVE_BOARD | ALL_IN | 5.0 | 6 | 10 | 1 | 50.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-6 | 582 | BUY | ALL_IN | 5.0 | 7 | 18 | 1 | 50.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2739065885543823 | 0.0 | 0.0 | +a3961f44-4e52-4e25-850a-befa5f5f2519 / -— |
+| Jogador 2 | 6-6 | 583 | REROLL | ALL_IN | 5.0 | 7 | 15 | 1 | 50.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-6 | 584 | BUY | ALL_IN | 5.0 | 7 | 13 | 1 | 50.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7924412488937378 | 0.0 | 0.0 | +d8a049d6-486e-49c9-8a00-9db55b29995d / -— |
+| Jogador 2 | 6-6 | 585 | MOVE_BOARD | ALL_IN | 5.0 | 7 | 10 | 1 | 50.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-6 | 586 | MOVE_BOARD | ALL_IN | 5.0 | 7 | 10 | 1 | 50.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-6 | 587 | PASS | ALL_IN | 5.0 | 7 | 10 | 1 | 50.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.05000000074505806 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-7 | 592 | BUY | ALL_IN | 5.0 | 7 | 18 | 1 | 54.0 | Fera do Rift/DA_18_Azir | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.27398350834846497 | 0.0 | 0.0 | +b9f2f580-cfb3-431d-bb1b-f8db07f9e791 / -— |
+| Jogador 2 | 6-7 | 593 | MOVE_BOARD | ALL_IN | 5.0 | 7 | 15 | 1 | 54.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -2.197451794927474e-05 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-7 | 594 | MOVE_BOARD | ALL_IN | 5.0 | 7 | 15 | 1 | 54.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 6-7 | 595 | PASS | ALL_IN | 5.0 | 7 | 15 | 1 | 54.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09422222524881363 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 7-1 | 602 | EQUIP_FROM_INVENTORY | ALL_IN | 5.0 | 7 | 22 | 2 | 54.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.1319005936384201 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 7-1 | 603 | MOVE_BOARD | ALL_IN | 5.0 | 7 | 22 | 2 | 54.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 7-1 | 604 | MOVE_BOARD | ALL_IN | 5.0 | 7 | 22 | 2 | 54.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014920338056981564 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 7-1 | 605 | PASS | ALL_IN | 5.0 | 7 | 22 | 2 | 54.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.12013333290815353 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 7-2 | 612 | MOVE_BOARD | ALL_IN | 5.0 | 7 | 30 | 3 | 54.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 8.4853700172971e-06 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 7-2 | 613 | MOVE_BOARD | ALL_IN | 5.0 | 7 | 30 | 3 | 54.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 7-2 | 614 | MOVE_BOARD | ALL_IN | 5.0 | 7 | 30 | 3 | 54.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 2 | 7-2 | 615 | PASS | ALL_IN | 5.0 | 7 | 30 | 3 | 54.0 | Fera do Rift/DA_18_Azir | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.14974603056907654 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 1-1 | 1 | MOVE_BENCH | ECON | 100.0 | 2 | 0 | 0 | 0.0 | —/— | MOVE_BENCH, SELL, PASS | True | True | 0.5923603177070618 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 1-1 | 2 | PASS | STABILIZE | 100.0 | 2 | 0 | 0 | 2.0 | —/DA_18_Akali_AD | MOVE_BOARD, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 1-2 | 29 | BUY | STABILIZE | 100.0 | 3 | 2 | 0 | 2.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BOARD, PASS | True | True | 0.09741609543561935 | 0.0 | 0.0 | +c83ad0c5-f046-4834-8d0e-6dac3e49cdef / -— |
+| Jogador 3 | 1-2 | 30 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 1 | 0 | 2.0 | —/DA_18_Akali_AD | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.7174433469772339 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 1-2 | 31 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 1 | 0 | 2.0 | —/DA_18_Yorick | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.24723634123802185 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 1-2 | 32 | BUY | STABILIZE | 100.0 | 3 | 1 | 0 | 4.0 | —/DA_18_Yorick | BUY, MOVE_BOARD, PASS | True | True | 0.11721326410770416 | 0.0 | 0.0 | +bdef75b2-081b-43df-9efb-fc0bc5ee2935 / -— |
+| Jogador 3 | 1-2 | 33 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0003019169671460986 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 1-2 | 34 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01252015307545662 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 1-2 | 35 | PASS | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 1-2 | 50 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.40288329124450684 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 1-3 | 56 | BUY | STABILIZE | 100.0 | 3 | 2 | 0 | 6.0 | —/DA_18_Yorick | BUY, REROLL, MOVE_BOARD, PASS | True | True | 1.0396454334259033 | 0.0 | 0.0 | +477d3aa4-2130-4a0e-8254-2688ac860569 / -— |
+| Jogador 3 | 1-3 | 57 | BUY | STABILIZE | 100.0 | 3 | 1 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.1179765462875366 | 0.0 | 0.0 | +5f61fad0-e2c4-4bef-add4-0eab1d93b4df / -36f58657-5835-4389-95e9-a7d26464c2aa,477d3aa4-2130-4a0e-8254-2688ac860569 |
+| Jogador 3 | 1-3 | 58 | PASS | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 1-3 | 75 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5915257334709167 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 1-4 | 81 | BUY | STABILIZE | 100.0 | 3 | 3 | 0 | 8.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BOARD, PASS | True | True | 0.21617752313613892 | 0.0 | 0.0 | +5ead8548-7453-4fa1-856e-674995576a48 / -— |
+| Jogador 3 | 1-4 | 82 | BUY | STABILIZE | 100.0 | 3 | 2 | 0 | 8.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2184157371520996 | 0.0 | 0.0 | +ab6084b0-65df-4a70-8591-687b320d98b6 / -— |
+| Jogador 3 | 1-4 | 83 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 8.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 1-4 | 84 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 8.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.004427318926900625 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 1-4 | 85 | PASS | STABILIZE | 100.0 | 3 | 0 | 0 | 8.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-1 | 108 | BUY | STABILIZE | 100.0 | 4 | 4 | 0 | 8.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | True | 0.9622392654418945 | 0.0 | 0.0 | +c05579e6-aa73-434f-8a91-c58d68a81ced / -— |
+| Jogador 3 | 2-1 | 109 | CRAFT_AND_EQUIP | STABILIZE | 100.0 | 4 | 3 | 0 | 8.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.24152588844299316 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-1 | 110 | CRAFT_AND_EQUIP | STABILIZE | 100.0 | 4 | 3 | 0 | 8.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.2197737693786621 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-1 | 111 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 3 | 0 | 8.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0006461042794398963 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-1 | 112 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 3 | 0 | 8.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-1 | 113 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 3 | 0 | 8.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014811624772846699 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-1 | 114 | PASS | STABILIZE | 100.0 | 4 | 3 | 0 | 8.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-1 | 125 | MOVE_BENCH | STABILIZE | 100.0 | 4 | 3 | 0 | 8.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.4001590609550476 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-2 | 131 | BUY | STABILIZE | 96.0 | 4 | 8 | 0 | 10.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.33963853120803833 | 0.0 | 0.0 | +98558a52-389f-46fc-b370-6345603f4103 / -— |
+| Jogador 3 | 2-2 | 132 | MOVE_BOARD | STABILIZE | 96.0 | 4 | 5 | 0 | 10.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-2 | 133 | MOVE_BOARD | STABILIZE | 96.0 | 4 | 5 | 0 | 10.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0202154703438282 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-2 | 134 | PASS | STABILIZE | 96.0 | 4 | 5 | 0 | 10.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-3 | 154 | MOVE_BOARD | STABILIZE | 96.0 | 4 | 11 | 1 | 10.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0038307325448840857 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-3 | 155 | BUY | STABILIZE | 96.0 | 4 | 11 | 1 | 10.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3296835422515869 | 0.0 | 0.0 | +22c1a0b0-5d27-406a-b3e1-9e0272a18947 / -— |
+| Jogador 3 | 2-3 | 156 | REROLL | STABILIZE | 96.0 | 4 | 10 | 1 | 10.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.24400000274181366 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-3 | 157 | REROLL | STABILIZE | 96.0 | 4 | 8 | 0 | 10.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-3 | 158 | BUY | STABILIZE | 96.0 | 4 | 6 | 0 | 10.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9716686010360718 | 0.0 | 0.0 | +35e1a0f6-207d-4df2-b096-fc07962d094a / -— |
+| Jogador 3 | 2-3 | 159 | REROLL | STABILIZE | 96.0 | 4 | 5 | 0 | 10.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-3 | 160 | BUY | STABILIZE | 96.0 | 4 | 3 | 0 | 10.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.047677755355835 | 0.0 | 0.0 | +4709c817-7def-40f8-9dae-baa913e0fc07 / -35e1a0f6-207d-4df2-b096-fc07962d094a,c83ad0c5-f046-4834-8d0e-6dac3e49cdef |
+| Jogador 3 | 2-3 | 161 | MOVE_BENCH | STABILIZE | 96.0 | 4 | 2 | 0 | 8.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09263193607330322 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-3 | 162 | REROLL | STABILIZE | 96.0 | 4 | 2 | 0 | 10.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-3 | 163 | SELL | STABILIZE | 96.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2499738484621048 | 0.0 | 0.0 | +— / -4709c817-7def-40f8-9dae-baa913e0fc07 |
+| Jogador 3 | 2-3 | 164 | PASS | STABILIZE | 96.0 | 4 | 3 | 0 | 10.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-4 | 174 | BUY | STABILIZE | 91.0 | 4 | 8 | 0 | 10.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.0533603429794312 | 0.0 | 0.0 | +2a286030-5984-44b5-87ff-6c948d2e672e / -bdef75b2-081b-43df-9efb-fc0bc5ee2935,c05579e6-aa73-434f-8a91-c58d68a81ced |
+| Jogador 3 | 2-4 | 175 | MOVE_BENCH | STABILIZE | 91.0 | 4 | 7 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.19539862871170044 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-4 | 176 | BUY | STABILIZE | 91.0 | 4 | 7 | 0 | 10.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1637239158153534 | 0.0 | 0.0 | +07130d94-c79f-4052-b3e9-7f867421f01b / -— |
+| Jogador 3 | 2-4 | 177 | MOVE_BENCH | STABILIZE | 91.0 | 4 | 6 | 0 | 10.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.7269791960716248 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-4 | 178 | MOVE_BENCH | STABILIZE | 91.0 | 4 | 6 | 0 | 8.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5612455606460571 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-4 | 179 | MOVE_BOARD | STABILIZE | 91.0 | 4 | 6 | 0 | 12.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01683013327419758 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-4 | 180 | MOVE_BOARD | STABILIZE | 91.0 | 4 | 6 | 0 | 12.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.013793747872114182 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-4 | 181 | PASS | STABILIZE | 91.0 | 4 | 6 | 0 | 12.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-5 | 196 | BUY | STABILIZE | 91.0 | 4 | 11 | 1 | 12.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.39422446489334106 | 0.0 | 0.0 | +9fe58106-e0c4-4ecc-b152-13c8c0eb564e / -— |
+| Jogador 3 | 2-5 | 197 | MOVE_BOARD | STABILIZE | 91.0 | 4 | 10 | 1 | 12.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0002166260965168476 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-5 | 198 | MOVE_BOARD | STABILIZE | 91.0 | 4 | 10 | 1 | 12.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014607294462621212 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-5 | 199 | PASS | STABILIZE | 91.0 | 4 | 10 | 1 | 12.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-6 | 213 | MOVE_BENCH | SLOWROLL | 91.0 | 5 | 17 | 1 | 12.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5419831275939941 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-6 | 214 | BUY | SLOWROLL | 91.0 | 5 | 17 | 1 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.32457202672958374 | 0.0 | 0.0 | +4cf7dfe2-9d2c-4d45-803e-503eda810357 / -— |
+| Jogador 3 | 2-6 | 215 | REROLL | SLOWROLL | 91.0 | 5 | 15 | 1 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0365186408162117 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-6 | 216 | REROLL | SLOWROLL | 91.0 | 5 | 13 | 1 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04042863845825195 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-6 | 217 | MOVE_BOARD | SLOWROLL | 91.0 | 5 | 11 | 1 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-6 | 218 | MOVE_BOARD | SLOWROLL | 91.0 | 5 | 11 | 1 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-6 | 219 | PASS | SLOWROLL | 91.0 | 5 | 11 | 1 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-7 | 232 | BUY | SLOWROLL | 91.0 | 5 | 19 | 1 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.907618522644043 | 0.0 | 0.0 | +bd0feb3d-9ff5-4678-862f-202b3bf74d5c / -— |
+| Jogador 3 | 2-7 | 233 | MOVE_BOARD | SLOWROLL | 91.0 | 5 | 18 | 1 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0005018420633859932 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-7 | 234 | MOVE_BOARD | SLOWROLL | 91.0 | 5 | 18 | 1 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.013878327794373035 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 2-7 | 235 | PASS | SLOWROLL | 91.0 | 5 | 18 | 1 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.02053571492433548 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-1 | 252 | CRAFT_AND_EQUIP | SLOWROLL | 91.0 | 5 | 25 | 2 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.2631056606769562 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-1 | 253 | REROLL | SLOWROLL | 91.0 | 5 | 25 | 2 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04406897723674774 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-1 | 254 | REROLL | SLOWROLL | 91.0 | 5 | 23 | 2 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.05228089913725853 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-1 | 255 | MOVE_BOARD | SLOWROLL | 91.0 | 5 | 21 | 2 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-1 | 256 | MOVE_BOARD | SLOWROLL | 91.0 | 5 | 21 | 2 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.015042068436741829 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-1 | 257 | PASS | SLOWROLL | 91.0 | 5 | 21 | 2 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.05900000035762787 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-2 | 272 | REROLL | SLOWROLL | 91.0 | 5 | 30 | 3 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.03239003196358681 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-2 | 273 | MOVE_BOARD | SLOWROLL | 91.0 | 5 | 28 | 2 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.00023586841416545212 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-2 | 274 | MOVE_BOARD | SLOWROLL | 91.0 | 5 | 28 | 2 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-2 | 275 | MOVE_BOARD | SLOWROLL | 91.0 | 5 | 28 | 2 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014018626883625984 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-2 | 276 | PASS | SLOWROLL | 91.0 | 5 | 28 | 2 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0625 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-3 | 292 | BUY | SLOWROLL | 82.0 | 5 | 35 | 3 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7785694599151611 | 0.0 | 0.0 | +de8de4b5-48ea-4947-ae08-2b90d94b0fc1 / -— |
+| Jogador 3 | 3-3 | 293 | MOVE_BOARD | SLOWROLL | 82.0 | 5 | 34 | 3 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0002408969303360209 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-3 | 294 | MOVE_BOARD | SLOWROLL | 82.0 | 5 | 34 | 3 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-3 | 295 | PASS | SLOWROLL | 82.0 | 5 | 34 | 3 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10750000178813934 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-4 | 312 | BUY | SLOWROLL | 73.0 | 5 | 43 | 4 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.27299636602401733 | 0.0 | 0.0 | +a899fe97-90e4-4ae3-941c-af3dee48fed3 / -— |
+| Jogador 3 | 3-4 | 313 | MOVE_BENCH | SLOWROLL | 73.0 | 5 | 42 | 4 | 14.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0784839540719986 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-4 | 314 | REROLL | SLOWROLL | 73.0 | 5 | 42 | 4 | 18.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.09899908304214478 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-4 | 315 | BUY | SLOWROLL | 73.0 | 5 | 40 | 4 | 18.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7326510548591614 | 0.0 | 0.0 | +c07a17cf-e9e7-42be-b925-cb4f699593de / -9fe58106-e0c4-4ecc-b152-13c8c0eb564e,de8de4b5-48ea-4947-ae08-2b90d94b0fc1 |
+| Jogador 3 | 3-4 | 316 | MOVE_BENCH | SLOWROLL | 73.0 | 5 | 39 | 3 | 16.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.4745435118675232 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-4 | 317 | BUY | SLOWROLL | 73.0 | 5 | 39 | 3 | 20.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2643759250640869 | 0.0 | 0.0 | +150a2da3-f559-4a40-a058-005e9c74e11f / -— |
+| Jogador 3 | 3-4 | 318 | REROLL | SLOWROLL | 73.0 | 5 | 36 | 3 | 20.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.07039952278137207 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-4 | 319 | BUY | SLOWROLL | 73.0 | 5 | 34 | 3 | 20.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.23046237230300903 | 0.0 | 0.0 | +3365b4aa-125c-4f72-bcc5-01c5a205b9b0 / -— |
+| Jogador 3 | 3-4 | 320 | REROLL | SLOWROLL | 73.0 | 5 | 32 | 3 | 20.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.07099480926990509 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-4 | 321 | BUY | SLOWROLL | 73.0 | 5 | 30 | 3 | 20.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6756231188774109 | 0.0 | 0.0 | +9c3b3b78-e99c-4947-b958-cce156ecccb1 / -— |
+| Jogador 3 | 3-4 | 322 | PASS | SLOWROLL | 73.0 | 5 | 28 | 2 | 20.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-5 | 332 | SELL | SLOWROLL | 73.0 | 5 | 36 | 3 | 20.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.4253978729248047 | 0.0 | 0.0 | +— / -c07a17cf-e9e7-42be-b925-cb4f699593de |
+| Jogador 3 | 3-5 | 333 | BUY | SLOWROLL | 73.0 | 5 | 39 | 3 | 20.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2253972589969635 | 0.0 | 0.0 | +bfe7ca8a-6e89-4673-b142-262e012398a9 / -— |
+| Jogador 3 | 3-5 | 334 | MOVE_BOARD | SLOWROLL | 73.0 | 5 | 38 | 3 | 20.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 3.386548632988706e-05 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-5 | 335 | SELL | SLOWROLL | 73.0 | 5 | 38 | 3 | 20.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0995199978351593 | 0.0 | 0.0 | +— / -150a2da3-f559-4a40-a058-005e9c74e11f |
+| Jogador 3 | 3-5 | 336 | BUY | SLOWROLL | 73.0 | 5 | 41 | 4 | 20.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.47517281770706177 | 0.0 | 0.0 | +b00644f3-3c3c-4ea2-a1fb-cc416e01e9e6 / -07130d94-c79f-4052-b3e9-7f867421f01b,bfe7ca8a-6e89-4673-b142-262e012398a9 |
+| Jogador 3 | 3-5 | 337 | MOVE_BENCH | SLOWROLL | 73.0 | 5 | 40 | 4 | 18.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.40339142084121704 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-5 | 338 | REROLL | SLOWROLL | 73.0 | 5 | 40 | 4 | 20.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.009009387344121933 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-5 | 339 | BUY | SLOWROLL | 73.0 | 5 | 38 | 3 | 20.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7405558824539185 | 0.0 | 0.0 | +910b14c4-57bc-44ce-b925-30a6d92a7651 / -— |
+| Jogador 3 | 3-5 | 340 | BUY | SLOWROLL | 73.0 | 5 | 36 | 3 | 20.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7954233884811401 | 0.0 | 0.0 | +bf33b437-04ac-4dd7-8c7d-ad48546675b8 / -5ead8548-7453-4fa1-856e-674995576a48,bd0feb3d-9ff5-4678-862f-202b3bf74d5c |
+| Jogador 3 | 3-5 | 341 | MOVE_BENCH | SLOWROLL | 73.0 | 5 | 35 | 3 | 18.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.4032510221004486 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-5 | 342 | PASS | SLOWROLL | 73.0 | 5 | 35 | 3 | 22.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.1080000028014183 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-6 | 346 | BUY | SLOWROLL | 73.0 | 5 | 44 | 4 | 22.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.20946355164051056 | 0.0 | 0.0 | +1b7347d3-3505-47d6-a324-bbf75b32db31 / -— |
+| Jogador 3 | 3-6 | 347 | REROLL | SLOWROLL | 73.0 | 5 | 40 | 4 | 22.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.009253846481442451 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-6 | 348 | BUY | SLOWROLL | 73.0 | 5 | 38 | 3 | 22.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7236146330833435 | 0.0 | 0.0 | +61c89fb9-3f6f-4386-a3b9-5e4fc71ee9c3 / -— |
+| Jogador 3 | 3-6 | 349 | REROLL | SLOWROLL | 73.0 | 5 | 36 | 3 | 22.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11961013823747635 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-6 | 350 | REROLL | SLOWROLL | 73.0 | 5 | 34 | 3 | 22.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.07099329680204391 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-6 | 351 | SELL | SLOWROLL | 73.0 | 5 | 32 | 3 | 22.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014717331156134605 | 0.0 | 0.0 | +— / -b00644f3-3c3c-4ea2-a1fb-cc416e01e9e6 |
+| Jogador 3 | 3-6 | 352 | BUY | SLOWROLL | 73.0 | 5 | 35 | 3 | 22.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7941817045211792 | 0.0 | 0.0 | +faad2b99-a44b-4552-909b-3805cb020272 / -3365b4aa-125c-4f72-bcc5-01c5a205b9b0,910b14c4-57bc-44ce-b925-30a6d92a7651 |
+| Jogador 3 | 3-6 | 353 | MOVE_BENCH | SLOWROLL | 73.0 | 5 | 33 | 3 | 18.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.41051357984542847 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-6 | 354 | BUY | SLOWROLL | 73.0 | 5 | 33 | 3 | 26.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7741945385932922 | 0.0 | 0.0 | +e0035f8b-bf6a-4d55-b814-ff11e3c25750 / -61c89fb9-3f6f-4386-a3b9-5e4fc71ee9c3,ab6084b0-65df-4a70-8591-687b320d98b6 |
+| Jogador 3 | 3-6 | 355 | REROLL | SLOWROLL | 73.0 | 5 | 31 | 3 | 26.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2027570903301239 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-6 | 356 | PASS | SLOWROLL | 73.0 | 5 | 29 | 2 | 26.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.06300000101327896 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-7 | 362 | BUY | SLOWROLL | 73.0 | 5 | 39 | 3 | 26.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7779985666275024 | 0.0 | 0.0 | +76162162-2214-4537-b5c4-011732ec5e67 / -— |
+| Jogador 3 | 3-7 | 363 | BUY | SLOWROLL | 73.0 | 5 | 38 | 3 | 26.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.23799313604831696 | 0.0 | 0.0 | +4accaece-f84d-43da-967c-8c733bb95174 / -— |
+| Jogador 3 | 3-7 | 364 | REROLL | SLOWROLL | 73.0 | 5 | 37 | 3 | 26.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.07098834216594696 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-7 | 365 | BUY | SLOWROLL | 73.0 | 5 | 35 | 3 | 26.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7958803772926331 | 0.0 | 0.0 | +aac54d95-6848-43d9-b837-d2189beede69 / -4cf7dfe2-9d2c-4d45-803e-503eda810357,9c3b3b78-e99c-4947-b958-cce156ecccb1 |
+| Jogador 3 | 3-7 | 366 | BUY | SLOWROLL | 73.0 | 5 | 33 | 3 | 22.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.23411430418491364 | 0.0 | 0.0 | +b3e5d552-7da1-42e6-9168-d054a829a1e9 / -— |
+| Jogador 3 | 3-7 | 367 | REROLL | SLOWROLL | 73.0 | 5 | 31 | 3 | 22.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.02723591774702072 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-7 | 368 | SELL | SLOWROLL | 73.0 | 5 | 29 | 2 | 22.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.1863686889410019 | 0.0 | 0.0 | +— / -e0035f8b-bf6a-4d55-b814-ff11e3c25750 |
+| Jogador 3 | 3-7 | 369 | BUY | SLOWROLL | 73.0 | 5 | 34 | 3 | 22.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7549011707305908 | 0.0 | 0.0 | +0af3def4-348c-47c9-aab3-11618b91e680 / -— |
+| Jogador 3 | 3-7 | 370 | REROLL | SLOWROLL | 73.0 | 5 | 33 | 3 | 22.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0377485416829586 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-7 | 371 | MOVE_BENCH | SLOWROLL | 73.0 | 5 | 31 | 3 | 22.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.09576182067394257 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 3-7 | 372 | PASS | SLOWROLL | 73.0 | 5 | 31 | 3 | 16.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-1 | 377 | CRAFT_AND_EQUIP | SLOWROLL | 73.0 | 5 | 40 | 4 | 16.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.15160657465457916 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-1 | 378 | CRAFT_AND_EQUIP | SLOWROLL | 73.0 | 5 | 40 | 4 | 16.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.13241909444332123 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-1 | 379 | SELL | SLOWROLL | 73.0 | 5 | 40 | 4 | 16.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3061739206314087 | 0.0 | 0.0 | +— / -bf33b437-04ac-4dd7-8c7d-ad48546675b8 |
+| Jogador 3 | 4-1 | 380 | BUY | SLOWROLL | 73.0 | 5 | 43 | 4 | 16.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8093430995941162 | 0.0 | 0.0 | +c131e810-debd-4555-b9eb-9b542cdd3f78 / -— |
+| Jogador 3 | 4-1 | 381 | MOVE_BENCH | SLOWROLL | 73.0 | 5 | 40 | 4 | 16.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.4034041166305542 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-1 | 382 | BUY | SLOWROLL | 73.0 | 5 | 40 | 4 | 24.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7779988646507263 | 0.0 | 0.0 | +68e8df20-cef6-4099-9daa-8fd4180c1a0d / -76162162-2214-4537-b5c4-011732ec5e67,a899fe97-90e4-4ae3-941c-af3dee48fed3 |
+| Jogador 3 | 4-1 | 383 | REROLL | SLOWROLL | 73.0 | 5 | 39 | 3 | 24.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.07099997997283936 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-1 | 384 | BUY | SLOWROLL | 73.0 | 5 | 37 | 3 | 24.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.27799883484840393 | 0.0 | 0.0 | +fd689140-8b80-48df-92c1-aeadf35505e8 / -— |
+| Jogador 3 | 4-1 | 385 | REROLL | SLOWROLL | 73.0 | 5 | 36 | 3 | 24.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.07095889747142792 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-1 | 386 | BUY | SLOWROLL | 73.0 | 5 | 34 | 3 | 24.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2732488512992859 | 0.0 | 0.0 | +52fab411-0911-4c1f-a60b-268de98a0243 / -— |
+| Jogador 3 | 4-1 | 387 | PASS | SLOWROLL | 73.0 | 5 | 32 | 3 | 24.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-2 | 389 | SELL | SLOWROLL | 62.0 | 6 | 40 | 4 | 24.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.5352749824523926 | 0.0 | 0.0 | +— / -68e8df20-cef6-4099-9daa-8fd4180c1a0d |
+| Jogador 3 | 4-2 | 390 | BUY | SLOWROLL | 62.0 | 6 | 43 | 4 | 24.0 | Devastador/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8279987573623657 | 0.0 | 0.0 | +93884291-af65-432f-a1a2-09d82066ca1c / -— |
+| Jogador 3 | 4-2 | 391 | SELL | SLOWROLL | 62.0 | 6 | 42 | 4 | 24.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.36649999022483826 | 0.0 | 0.0 | +— / -aac54d95-6848-43d9-b837-d2189beede69 |
+| Jogador 3 | 4-2 | 392 | BUY | SLOWROLL | 62.0 | 6 | 47 | 4 | 24.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8579987287521362 | 0.0 | 0.0 | +0cb30b20-2d68-4168-94b6-5198b58776bb / -93884291-af65-432f-a1a2-09d82066ca1c,fd689140-8b80-48df-92c1-aeadf35505e8 |
+| Jogador 3 | 4-2 | 393 | REROLL | SLOWROLL | 62.0 | 6 | 46 | 4 | 24.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.1711701899766922 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-2 | 394 | REROLL | SLOWROLL | 62.0 | 6 | 44 | 4 | 24.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.09899531304836273 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-2 | 395 | BUY | SLOWROLL | 62.0 | 6 | 42 | 4 | 24.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.29654398560523987 | 0.0 | 0.0 | +17939dfb-b3b1-4ae1-9a4c-e21c817b6d2f / -— |
+| Jogador 3 | 4-2 | 396 | BUY | SLOWROLL | 62.0 | 6 | 40 | 4 | 24.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7365410923957825 | 0.0 | 0.0 | +3b221e49-c162-4ee8-b1d0-2b6682928878 / -— |
+| Jogador 3 | 4-2 | 397 | MOVE_BENCH | SLOWROLL | 62.0 | 6 | 38 | 3 | 24.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.584007978439331 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-2 | 398 | REROLL | FAST8 | 62.0 | 6 | 38 | 3 | 28.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-2 | 399 | PASS | FAST8 | 62.0 | 6 | 36 | 3 | 28.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.18000000715255737 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-3 | 402 | REROLL | FAST8 | 62.0 | 6 | 45 | 4 | 28.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-3 | 403 | BUY | FAST8 | 62.0 | 6 | 43 | 4 | 28.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7881464958190918 | 0.0 | 0.0 | +bbbcbf7e-ab89-4457-acf1-529729f83aaa / -— |
+| Jogador 3 | 4-3 | 404 | REROLL | FAST8 | 62.0 | 6 | 41 | 4 | 28.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.24400000274181366 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-3 | 405 | SELL | FAST8 | 62.0 | 6 | 39 | 3 | 28.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.26827600598335266 | 0.0 | 0.0 | +— / -faad2b99-a44b-4552-909b-3805cb020272 |
+| Jogador 3 | 4-3 | 406 | BUY | FAST8 | 62.0 | 6 | 44 | 4 | 28.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8562061190605164 | 0.0 | 0.0 | +61acfdde-08df-4d0c-b2c7-4e95cd7e087d / -0af3def4-348c-47c9-aab3-11618b91e680,4accaece-f84d-43da-967c-8c733bb95174 |
+| Jogador 3 | 4-3 | 407 | MOVE_BENCH | FAST8 | 62.0 | 6 | 43 | 4 | 26.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.48942339420318604 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-3 | 408 | BUY | FAST8 | 62.0 | 6 | 43 | 4 | 30.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.25931316614151 | 0.0 | 0.0 | +232101ed-2aff-4705-8519-e52953f195b5 / -— |
+| Jogador 3 | 4-3 | 409 | REROLL | FAST8 | 62.0 | 6 | 40 | 4 | 30.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.24400000274181366 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-3 | 410 | REROLL | FAST8 | 62.0 | 6 | 38 | 3 | 30.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-3 | 411 | MOVE_BOARD | FAST8 | 62.0 | 6 | 36 | 3 | 30.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 6.925809429958463e-05 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-3 | 412 | PASS | FAST8 | 62.0 | 6 | 36 | 3 | 30.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.18000000715255737 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-4 | 416 | MOVE_BOARD | FAST8 | 62.0 | 6 | 46 | 4 | 30.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0002504982112441212 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-4 | 417 | BUY | FAST8 | 62.0 | 6 | 46 | 4 | 30.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.06386347115039825 | 0.0 | 0.0 | +e6548573-7891-493e-8012-9e03cf6d50fc / -— |
+| Jogador 3 | 4-4 | 418 | REROLL | FAST8 | 62.0 | 6 | 43 | 4 | 30.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-4 | 419 | SELL | FAST8 | 62.0 | 6 | 41 | 4 | 30.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.5352749824523926 | 0.0 | 0.0 | +— / -0cb30b20-2d68-4168-94b6-5198b58776bb |
+| Jogador 3 | 4-4 | 420 | BUY | FAST8 | 62.0 | 6 | 44 | 4 | 30.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.30799609422683716 | 0.0 | 0.0 | +cd403d04-bace-4f07-a744-74ab947126b9 / -— |
+| Jogador 3 | 4-4 | 421 | MOVE_BOARD | FAST8 | 62.0 | 6 | 43 | 4 | 30.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -6.924989429535344e-05 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-4 | 422 | REROLL | FAST8 | 62.0 | 6 | 43 | 4 | 30.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-4 | 423 | SELL | FAST8 | 62.0 | 6 | 41 | 4 | 30.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.26169198751449585 | 0.0 | 0.0 | +— / -61acfdde-08df-4d0c-b2c7-4e95cd7e087d |
+| Jogador 3 | 4-4 | 424 | EQUIP_FROM_INVENTORY | FAST8 | 62.0 | 6 | 44 | 4 | 30.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.08752480149269104 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-4 | 425 | EQUIP_FROM_INVENTORY | FAST8 | 62.0 | 6 | 44 | 4 | 30.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.10119163990020752 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-4 | 426 | PASS | FAST8 | 62.0 | 6 | 44 | 4 | 30.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.18571428954601288 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-5 | 429 | BUY | FAST8 | 62.0 | 6 | 54 | 5 | 30.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.025784868746995926 | 0.0 | 0.0 | +5e7e505e-96b9-4c85-a161-cb3ea137388f / -— |
+| Jogador 3 | 4-5 | 430 | MOVE_BOARD | FAST8 | 62.0 | 6 | 51 | 5 | 30.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -8.576578693464398e-06 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-5 | 431 | MOVE_BOARD | FAST8 | 62.0 | 6 | 51 | 5 | 30.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01478795986622572 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-5 | 432 | PASS | FAST8 | 62.0 | 6 | 51 | 5 | 30.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.08047321438789368 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-6 | 441 | MOVE_BOARD | FAST8 | 62.0 | 6 | 63 | 5 | 30.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-6 | 442 | MOVE_BOARD | FAST8 | 62.0 | 6 | 63 | 5 | 30.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01502868440002203 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-6 | 443 | PASS | FAST8 | 62.0 | 6 | 63 | 5 | 30.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.08795057982206345 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-7 | 452 | SELL | FAST8 | 62.0 | 6 | 75 | 5 | 30.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.005200000014156103 | 0.0 | 0.0 | +— / -22c1a0b0-5d27-406a-b3e1-9e0272a18947 |
+| Jogador 3 | 4-7 | 453 | BUY | FAST8 | 62.0 | 6 | 76 | 5 | 30.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.889665424823761 | 0.0 | 0.0 | +533d8eda-5bb2-4bb5-8a30-f12fe67381f6 / -52fab411-0911-4c1f-a60b-268de98a0243,bbbcbf7e-ab89-4457-acf1-529729f83aaa |
+| Jogador 3 | 4-7 | 454 | BUY | FAST8 | 62.0 | 6 | 74 | 5 | 26.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7835692763328552 | 0.0 | 0.0 | +695e3c97-be43-4e5f-9bb1-87a74eff2246 / -— |
+| Jogador 3 | 4-7 | 455 | REROLL | FAST8 | 62.0 | 6 | 72 | 5 | 26.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.12999999523162842 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-7 | 456 | SELL | FAST8 | 62.0 | 6 | 70 | 5 | 26.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3692665696144104 | 0.0 | 0.0 | +— / -533d8eda-5bb2-4bb5-8a30-f12fe67381f6 |
+| Jogador 3 | 4-7 | 457 | BUY | FAST8 | 62.0 | 6 | 75 | 5 | 26.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.29370665550231934 | 0.0 | 0.0 | +8c7c4f37-f1bc-48a6-a607-c28d7f70b63d / -— |
+| Jogador 3 | 4-7 | 458 | MOVE_BENCH | FAST8 | 62.0 | 6 | 73 | 5 | 26.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.41446465253829956 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-7 | 459 | REROLL | FAST8 | 62.0 | 6 | 73 | 5 | 32.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.12999999523162842 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 4-7 | 460 | MOVE_BOARD | FAST8 | 62.0 | 6 | 71 | 5 | 32.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.00017201504670083523 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-1 | 462 | BUY | FAST8 | 62.0 | 6 | 82 | 5 | 32.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | True | 0.851266622543335 | 0.0 | 0.0 | +3437fae3-fa56-450a-a5c2-1e62b056d8e8 / -— |
+| Jogador 3 | 5-1 | 463 | CRAFT_AND_EQUIP | FAST8 | 62.0 | 6 | 80 | 5 | 32.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.22150222957134247 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-1 | 464 | CRAFT_AND_EQUIP | FAST8 | 62.0 | 6 | 80 | 5 | 32.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.15775145590305328 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-1 | 465 | REROLL | FAST8 | 62.0 | 6 | 80 | 5 | 32.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.12999999523162842 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-1 | 466 | SELL | FAST8 | 62.0 | 6 | 78 | 5 | 32.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0032544019632041454 | 0.0 | 0.0 | +— / -e6548573-7891-493e-8012-9e03cf6d50fc |
+| Jogador 3 | 5-1 | 467 | BUY | FAST8 | 62.0 | 6 | 81 | 5 | 32.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9499951601028442 | 0.0 | 0.0 | +26924820-dd0e-47bc-b791-10fda2b54170 / -98558a52-389f-46fc-b370-6345603f4103,c131e810-debd-4555-b9eb-9b542cdd3f78 |
+| Jogador 3 | 5-1 | 468 | REROLL | FAST8 | 62.0 | 6 | 78 | 5 | 26.0 | Devastador/DA_18_Diana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.12999999523162842 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-1 | 469 | BUY | FAST8 | 62.0 | 6 | 76 | 5 | 26.0 | Devastador/DA_18_Diana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9488776922225952 | 0.0 | 0.0 | +ee9bb800-6ea3-44f4-8c77-054a433c9d2e / -3437fae3-fa56-450a-a5c2-1e62b056d8e8,8c7c4f37-f1bc-48a6-a607-c28d7f70b63d |
+| Jogador 3 | 5-1 | 470 | MOVE_BENCH | FAST8 | 62.0 | 6 | 74 | 5 | 26.0 | Devastador/DA_18_Diana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.5641276836395264 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-2 | 472 | MOVE_BENCH | SLOWROLL | 62.0 | 6 | 87 | 5 | 24.0 | Devastador/DA_18_Diana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.4302390515804291 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-2 | 473 | BUY | FAST8 | 62.0 | 6 | 87 | 5 | 32.0 | Devastador/DA_18_Diana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.02977033145725727 | 0.0 | 0.0 | +bad9ed1f-ca04-40ea-b621-b4ed9c1d1ea4 / -— |
+| Jogador 3 | 5-2 | 474 | BUY | FAST8 | 62.0 | 6 | 84 | 5 | 32.0 | Devastador/DA_18_Diana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.03355172276496887 | 0.0 | 0.0 | +80ec1ac4-ce0f-4bc3-a474-79b6cb3680a8 / -— |
+| Jogador 3 | 5-2 | 475 | MOVE_BOARD | FAST8 | 62.0 | 6 | 83 | 5 | 32.0 | Devastador/DA_18_Diana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0005980465793982148 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-2 | 476 | REROLL | FAST8 | 62.0 | 6 | 83 | 5 | 32.0 | Devastador/DA_18_Diana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.12999999523162842 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-2 | 477 | BUY | FAST8 | 62.0 | 6 | 81 | 5 | 32.0 | Devastador/DA_18_Diana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.19067642092704773 | 0.0 | 0.0 | +f7df2469-9148-4844-8503-b6cd8096b5fc / -— |
+| Jogador 3 | 5-2 | 478 | REROLL | FAST8 | 62.0 | 6 | 78 | 5 | 32.0 | Devastador/DA_18_Diana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.12999999523162842 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-2 | 479 | MOVE_BOARD | FAST8 | 62.0 | 6 | 76 | 5 | 32.0 | Devastador/DA_18_Diana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -1.6978566463876632e-06 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-2 | 480 | MOVE_BOARD | FAST8 | 62.0 | 6 | 76 | 5 | 32.0 | Devastador/DA_18_Diana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01499998476356268 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-3 | 482 | SELL | FAST8 | 62.0 | 6 | 90 | 5 | 32.0 | Devastador/DA_18_Diana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3426738381385803 | 0.0 | 0.0 | +— / -ee9bb800-6ea3-44f4-8c77-054a433c9d2e |
+| Jogador 3 | 5-3 | 483 | BUY | FAST8 | 62.0 | 6 | 95 | 5 | 32.0 | Devastador/DA_18_Diana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9199979305267334 | 0.0 | 0.0 | +d2d2729b-8ce6-4957-95c7-dddfc69aeb52 / -— |
+| Jogador 3 | 5-3 | 484 | SELL | FAST8 | 62.0 | 6 | 94 | 5 | 32.0 | Devastador/DA_18_Diana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.003920000046491623 | 0.0 | 0.0 | +— / -80ec1ac4-ce0f-4bc3-a474-79b6cb3680a8 |
+| Jogador 3 | 5-3 | 485 | BUY | FAST8 | 62.0 | 6 | 95 | 5 | 32.0 | Devastador/DA_18_Diana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.41901126503944397 | 0.0 | 0.0 | +78e4e473-e690-406e-af93-9d0af863393b / -— |
+| Jogador 3 | 5-3 | 486 | MOVE_BOARD | FAST8 | 62.0 | 6 | 92 | 5 | 32.0 | Devastador/DA_18_Diana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-3 | 487 | MOVE_BOARD | FAST8 | 62.0 | 6 | 92 | 5 | 32.0 | Devastador/DA_18_Diana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999701641499996 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-3 | 488 | PASS | FAST8 | 62.0 | 6 | 92 | 5 | 32.0 | Devastador/DA_18_Diana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11977080255746841 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-4 | 492 | SELL | FAST8 | 62.0 | 6 | 105 | 5 | 32.0 | Devastador/DA_18_Diana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.36309999227523804 | 0.0 | 0.0 | +— / -26924820-dd0e-47bc-b791-10fda2b54170 |
+| Jogador 3 | 5-4 | 493 | EQUIP_FROM_INVENTORY | FAST8 | 62.0 | 6 | 113 | 5 | 32.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.09547387808561325 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-4 | 494 | EQUIP_FROM_INVENTORY | FAST8 | 62.0 | 6 | 113 | 5 | 32.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.10407053679227829 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-4 | 495 | BUY | FAST8 | 62.0 | 6 | 113 | 5 | 32.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5660812258720398 | 0.0 | 0.0 | +f120e362-3190-4d47-8364-302d6a141d8d / -— |
+| Jogador 3 | 5-4 | 496 | MOVE_BOARD | FAST8 | 62.0 | 6 | 110 | 5 | 32.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-4 | 497 | MOVE_BOARD | FAST8 | 62.0 | 6 | 110 | 5 | 32.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-4 | 498 | PASS | FAST8 | 62.0 | 6 | 110 | 5 | 32.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.13503490388393402 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-5 | 502 | SELL | FAST8 | 62.0 | 6 | 123 | 5 | 32.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.010639999993145466 | 0.0 | 0.0 | +— / -f7df2469-9148-4844-8503-b6cd8096b5fc |
+| Jogador 3 | 5-5 | 503 | BUY | FAST8 | 62.0 | 6 | 126 | 5 | 32.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9490546584129333 | 0.0 | 0.0 | +bc05a4ab-8bf6-4cb7-b656-868032be746c / -695e3c97-be43-4e5f-9bb1-87a74eff2246,b3e5d552-7da1-42e6-9168-d054a829a1e9 |
+| Jogador 3 | 5-5 | 504 | BUY | FAST8 | 62.0 | 6 | 124 | 5 | 32.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3016759753227234 | 0.0 | 0.0 | +07c010dc-393f-4857-a917-d2067409d0d4 / -— |
+| Jogador 3 | 5-5 | 505 | BUY | FAST8 | 62.0 | 6 | 123 | 5 | 32.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.03661670535802841 | 0.0 | 0.0 | +e7a0570f-d3a7-474c-b14b-2f75013d36ba / -— |
+| Jogador 3 | 5-5 | 506 | REROLL | FAST8 | 62.0 | 6 | 122 | 5 | 32.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.12999999523162842 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-5 | 507 | SELL | FAST8 | 62.0 | 6 | 120 | 5 | 32.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.34188055992126465 | 0.0 | 0.0 | +— / -bc05a4ab-8bf6-4cb7-b656-868032be746c |
+| Jogador 3 | 5-5 | 508 | BUY | FAST8 | 62.0 | 6 | 125 | 5 | 32.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9498094916343689 | 0.0 | 0.0 | +7c9a635f-2222-4cfa-86c4-ab5e27b33ad2 / -17939dfb-b3b1-4ae1-9a4c-e21c817b6d2f,3b221e49-c162-4ee8-b1d0-2b6682928878 |
+| Jogador 3 | 5-5 | 509 | REROLL | FAST8 | 62.0 | 6 | 123 | 5 | 28.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.12999999523162842 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-5 | 510 | BUY | FAST8 | 62.0 | 6 | 121 | 5 | 28.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3143286108970642 | 0.0 | 0.0 | +e64da93b-c850-4a80-b682-50c66ec5557a / -— |
+| Jogador 3 | 5-6 | 512 | MOVE_BOARD | FAST8 | 62.0 | 6 | 133 | 5 | 28.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-6 | 513 | MOVE_BOARD | FAST8 | 62.0 | 6 | 133 | 5 | 28.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014961974695324898 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-6 | 514 | PASS | FAST8 | 62.0 | 6 | 133 | 5 | 28.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.1552109271287918 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-7 | 522 | BUY | FAST8 | 48.0 | 6 | 143 | 5 | 34.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8353186845779419 | 0.0 | 0.0 | +ceb42ace-7d49-4bef-b986-8b0b008239c6 / -— |
+| Jogador 3 | 5-7 | 523 | MOVE_BOARD | FAST8 | 48.0 | 6 | 142 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0002955630188807845 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-7 | 524 | MOVE_BOARD | FAST8 | 48.0 | 6 | 142 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999613165855408 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-7 | 525 | SELL | FAST8 | 48.0 | 6 | 142 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3765000104904175 | 0.0 | 0.0 | +— / -7c9a635f-2222-4cfa-86c4-ab5e27b33ad2 |
+| Jogador 3 | 5-7 | 526 | EQUIP_FROM_INVENTORY | FAST8 | 48.0 | 6 | 147 | 5 | 34.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.07376867532730103 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-7 | 527 | EQUIP_FROM_INVENTORY | FAST8 | 48.0 | 6 | 147 | 5 | 34.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.08035553246736526 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-7 | 528 | EQUIP_FROM_INVENTORY | FAST8 | 48.0 | 6 | 147 | 5 | 34.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.0730692446231842 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 5-7 | 529 | BUY | FAST8 | 48.0 | 6 | 147 | 5 | 34.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3358801603317261 | 0.0 | 0.0 | +1403446a-e1f3-4875-acfa-e7cdc3090e3a / -— |
+| Jogador 3 | 5-7 | 530 | REROLL | FAST8 | 48.0 | 6 | 146 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.12999999523162842 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 6-1 | 532 | EQUIP_FROM_INVENTORY | FAST8 | 48.0 | 6 | 154 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.0514887273311615 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 6-1 | 533 | SELL | FAST8 | 48.0 | 6 | 154 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.25534000992774963 | 0.0 | 0.0 | +— / -1403446a-e1f3-4875-acfa-e7cdc3090e3a |
+| Jogador 3 | 6-1 | 534 | BUY | FAST8 | 48.0 | 6 | 155 | 5 | 34.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3825456202030182 | 0.0 | 0.0 | +724a56e1-13fa-4e0d-9041-60a7927d0ab2 / -— |
+| Jogador 3 | 6-1 | 535 | MOVE_BOARD | FAST8 | 48.0 | 6 | 152 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -3.954868361688568e-07 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 6-1 | 536 | SELL | FAST8 | 48.0 | 6 | 152 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.00872000027447939 | 0.0 | 0.0 | +— / -e7a0570f-d3a7-474c-b14b-2f75013d36ba |
+| Jogador 3 | 6-1 | 537 | BUY | FAST8 | 48.0 | 6 | 153 | 5 | 34.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.07365746796131134 | 0.0 | 0.0 | +699cf580-30ba-45c2-8a54-ac744e4017f4 / -— |
+| Jogador 3 | 6-1 | 538 | REROLL | FAST8 | 48.0 | 6 | 152 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.12999999523162842 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 6-1 | 539 | SELL | FAST8 | 48.0 | 6 | 150 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.010871774516999722 | 0.0 | 0.0 | +— / -699cf580-30ba-45c2-8a54-ac744e4017f4 |
+| Jogador 3 | 6-1 | 540 | BUY | FAST8 | 48.0 | 6 | 151 | 5 | 34.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.08214185386896133 | 0.0 | 0.0 | +2fd1047d-fff5-4c0b-85a4-0702f2323271 / -— |
+| Jogador 3 | 6-2 | 542 | SELL | FAST8 | 48.0 | 6 | 157 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.011680000461637974 | 0.0 | 0.0 | +— / -2fd1047d-fff5-4c0b-85a4-0702f2323271 |
+| Jogador 3 | 6-2 | 543 | BUY | FAST8 | 48.0 | 6 | 161 | 5 | 34.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3233392834663391 | 0.0 | 0.0 | +85f30a8f-6897-4c82-a693-00b1e569cc78 / -— |
+| Jogador 3 | 6-2 | 544 | SELL | FAST8 | 48.0 | 6 | 159 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.07639405876398087 | 0.0 | 0.0 | +— / -e64da93b-c850-4a80-b682-50c66ec5557a |
+| Jogador 3 | 6-2 | 545 | BUY | FAST8 | 48.0 | 6 | 161 | 5 | 34.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0057516274973750114 | 0.0 | 0.0 | +7b1b1a7a-2c0e-4f10-ad3a-4680735a6f51 / -— |
+| Jogador 3 | 6-2 | 546 | MOVE_BOARD | FAST8 | 48.0 | 6 | 158 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -1.2904377399536315e-05 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 6-2 | 547 | MOVE_BOARD | FAST8 | 48.0 | 6 | 158 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 6-2 | 548 | PASS | FAST8 | 48.0 | 6 | 158 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.19395095109939575 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 6-3 | 552 | SELL | FAST8 | 48.0 | 6 | 168 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0022573804017156363 | 0.0 | 0.0 | +— / -7b1b1a7a-2c0e-4f10-ad3a-4680735a6f51 |
+| Jogador 3 | 6-3 | 553 | BUY | FAST8 | 48.0 | 6 | 171 | 5 | 34.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8089293837547302 | 0.0 | 0.0 | +91f40e1d-d129-4391-aae8-bd392ea36a3a / -5e7e505e-96b9-4c85-a161-cb3ea137388f,f120e362-3190-4d47-8364-302d6a141d8d |
+| Jogador 3 | 6-3 | 554 | BUY | FAST8 | 48.0 | 6 | 168 | 5 | 28.0 | Devastador/DA_Krug18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.12091798335313797 | 0.0 | 0.0 | +c550b17d-57ad-4c47-b873-bd6124600cef / -— |
+| Jogador 3 | 6-3 | 555 | MOVE_BENCH | FAST8 | 48.0 | 6 | 166 | 5 | 28.0 | Devastador/DA_Krug18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.02944297343492508 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 6-3 | 556 | BUY | FAST8 | 48.0 | 6 | 166 | 5 | 34.0 | Devastador/DA_Krug18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.05001014471054077 | 0.0 | 0.0 | +7875dab2-aae9-48cb-a278-a4e2899218a5 / -— |
+| Jogador 3 | 6-3 | 557 | REROLL | FAST8 | 48.0 | 6 | 164 | 5 | 34.0 | Devastador/DA_Krug18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.12999999523162842 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 6-3 | 558 | SELL | FAST8 | 48.0 | 6 | 162 | 5 | 34.0 | Devastador/DA_Krug18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.19265200197696686 | 0.0 | 0.0 | +— / -91f40e1d-d129-4391-aae8-bd392ea36a3a |
+| Jogador 3 | 6-3 | 559 | BUY | FAST8 | 48.0 | 6 | 170 | 5 | 34.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.03081098198890686 | 0.0 | 0.0 | +3969a065-bdba-4800-bd56-de2e7ccc8938 / -— |
+| Jogador 3 | 6-3 | 560 | MOVE_BOARD | FAST8 | 48.0 | 6 | 167 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.013005067594349384 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 6-4 | 562 | SELL | STABILIZE | 32.0 | 6 | 178 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0027199999894946814 | 0.0 | 0.0 | +— / -7875dab2-aae9-48cb-a278-a4e2899218a5 |
+| Jogador 3 | 6-4 | 563 | BUY | STABILIZE | 32.0 | 6 | 180 | 5 | 34.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2385772168636322 | 0.0 | 0.0 | +7a4dcb88-7bcf-48b9-ad07-b2927c673c7d / -— |
+| Jogador 3 | 6-4 | 564 | SELL | STABILIZE | 32.0 | 6 | 179 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.009920000098645687 | 0.0 | 0.0 | +— / -c550b17d-57ad-4c47-b873-bd6124600cef |
+| Jogador 3 | 6-4 | 565 | BUY | STABILIZE | 32.0 | 6 | 181 | 5 | 34.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.1934136152267456 | 0.0 | 0.0 | +d3d9e63c-19c5-422c-ad8d-b5bcd64a4557 / -— |
+| Jogador 3 | 6-4 | 566 | SELL | STABILIZE | 32.0 | 6 | 180 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.006800000090152025 | 0.0 | 0.0 | +— / -d3d9e63c-19c5-422c-ad8d-b5bcd64a4557 |
+| Jogador 3 | 6-4 | 567 | BUY | STABILIZE | 32.0 | 6 | 181 | 5 | 34.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.02736714296042919 | 0.0 | 0.0 | +2244d318-4d75-477e-9b95-547c1e4d4b97 / -— |
+| Jogador 3 | 6-4 | 568 | REROLL | STABILIZE | 32.0 | 6 | 180 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09000000357627869 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 6-4 | 569 | SELL | STABILIZE | 32.0 | 6 | 178 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0005518316756933928 | 0.0 | 0.0 | +— / -2244d318-4d75-477e-9b95-547c1e4d4b97 |
+| Jogador 3 | 6-4 | 570 | BUY | STABILIZE | 32.0 | 6 | 179 | 5 | 34.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.022724788635969162 | 0.0 | 0.0 | +9945751a-db0e-4a6a-806d-4f905a6f5145 / -— |
+| Jogador 3 | 6-5 | 572 | SELL | STABILIZE | 32.0 | 6 | 186 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.005842077080160379 | 0.0 | 0.0 | +— / -9945751a-db0e-4a6a-806d-4f905a6f5145 |
+| Jogador 3 | 6-5 | 573 | BUY | STABILIZE | 32.0 | 6 | 190 | 5 | 34.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.07012531161308289 | 0.0 | 0.0 | +105fbe64-493d-4f05-b13e-14479710985d / -— |
+| Jogador 3 | 6-5 | 574 | SELL | STABILIZE | 32.0 | 6 | 187 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.007600000128149986 | 0.0 | 0.0 | +— / -105fbe64-493d-4f05-b13e-14479710985d |
+| Jogador 3 | 6-5 | 575 | BUY | STABILIZE | 32.0 | 6 | 190 | 5 | 34.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.04709385707974434 | 0.0 | 0.0 | +7b58a47f-7970-4e69-b185-b04e060e2d5d / -— |
+| Jogador 3 | 6-5 | 576 | SELL | STABILIZE | 32.0 | 6 | 188 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.009920000098645687 | 0.0 | 0.0 | +— / -7b58a47f-7970-4e69-b185-b04e060e2d5d |
+| Jogador 3 | 6-5 | 577 | BUY | STABILIZE | 32.0 | 6 | 190 | 5 | 34.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.27940812706947327 | 0.0 | 0.0 | +c966240c-b71a-43be-98d9-69a811efe299 / -— |
+| Jogador 3 | 6-5 | 578 | MOVE_BOARD | STABILIZE | 32.0 | 6 | 189 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 6-5 | 579 | MOVE_BOARD | STABILIZE | 32.0 | 6 | 189 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.012458561919629574 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 6-5 | 580 | PASS | STABILIZE | 32.0 | 6 | 189 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2530215084552765 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 6-6 | 582 | SELL | STABILIZE | 32.0 | 7 | 200 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.02942313253879547 | 0.0 | 0.0 | +— / -7a4dcb88-7bcf-48b9-ad07-b2927c673c7d |
+| Jogador 3 | 6-6 | 583 | BUY | STABILIZE | 32.0 | 7 | 201 | 5 | 34.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.06830491125583649 | 0.0 | 0.0 | +a8011705-856d-4984-bfd4-edf1d6ff34a5 / -— |
+| Jogador 3 | 6-6 | 584 | MOVE_BOARD | STABILIZE | 32.0 | 7 | 198 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -3.8351386137946974e-06 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 6-6 | 585 | MOVE_BOARD | STABILIZE | 32.0 | 7 | 198 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 6-6 | 586 | PASS | STABILIZE | 32.0 | 7 | 198 | 5 | 34.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.26225903630256653 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 6-7 | 592 | BUY | ALL_IN | 15.0 | 7 | 209 | 5 | 36.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2213224470615387 | 0.0 | 0.0 | +6139d018-8e28-4cc7-8972-35b6a7dddce0 / -— |
+| Jogador 3 | 6-7 | 593 | MOVE_BOARD | ALL_IN | 15.0 | 7 | 206 | 5 | 36.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -4.6974551537459774e-07 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 6-7 | 594 | MOVE_BOARD | ALL_IN | 15.0 | 7 | 206 | 5 | 36.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.015028362162411213 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 6-7 | 595 | PASS | ALL_IN | 15.0 | 7 | 206 | 5 | 36.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.35678428411483765 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 7-1 | 602 | EQUIP_FROM_INVENTORY | ALL_IN | 15.0 | 7 | 217 | 5 | 36.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.03524685278534889 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 7-1 | 603 | SELL | ALL_IN | 15.0 | 7 | 217 | 5 | 36.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.019999999552965164 | 0.0 | 0.0 | +— / -c966240c-b71a-43be-98d9-69a811efe299 |
+| Jogador 3 | 7-1 | 604 | BUY | ALL_IN | 15.0 | 7 | 218 | 5 | 36.0 | Devastador/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.40539225935935974 | 0.0 | 0.0 | +00446e9e-8f48-4571-ac9b-181ab1079cba / -— |
+| Jogador 3 | 7-1 | 605 | MOVE_BOARD | ALL_IN | 15.0 | 7 | 216 | 5 | 36.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -1.7079788449336775e-05 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 7-1 | 606 | MOVE_BOARD | ALL_IN | 15.0 | 7 | 216 | 5 | 36.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.015009892173111439 | 0.0 | 0.0 | +— / -— |
+| Jogador 3 | 7-1 | 607 | PASS | ALL_IN | 15.0 | 7 | 216 | 5 | 36.0 | Devastador/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.36716702580451965 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 1-1 | 1 | MOVE_BENCH | ECON | 100.0 | 2 | 0 | 0 | 0.0 | —/— | MOVE_BENCH, SELL, PASS | True | True | 0.5923603177070618 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 1-1 | 2 | PASS | STABILIZE | 100.0 | 2 | 0 | 0 | 2.0 | —/DA_18_Rakan | MOVE_BOARD, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 1-2 | 29 | BUY | STABILIZE | 100.0 | 3 | 2 | 0 | 2.0 | —/DA_18_Rakan | BUY, REROLL, MOVE_BOARD, PASS | True | True | 0.2717767059803009 | 0.0 | 0.0 | +9e7d1da0-5190-4348-81b4-3a3f2129a8e5 / -— |
+| Jogador 4 | 1-2 | 30 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 1 | 0 | 2.0 | —/DA_18_Rakan | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.7083326578140259 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 1-2 | 31 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 1 | 0 | 2.0 | —/DA_18_Yorick | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2658877670764923 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 1-2 | 32 | BUY | STABILIZE | 100.0 | 3 | 1 | 0 | 4.0 | —/DA_18_Yorick | BUY, MOVE_BOARD, PASS | True | True | 0.040587835013866425 | 0.0 | 0.0 | +95829f2e-ad17-448d-a385-fdcf81872dc8 / -— |
+| Jogador 4 | 1-2 | 33 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.00021771372121293098 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 1-2 | 34 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3884163498878479 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 1-2 | 35 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Yorick | MOVE_BOARD, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 1-2 | 36 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Yorick | MOVE_BOARD, PASS | True | True | -0.01463404856622219 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 1-2 | 37 | PASS | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Yorick | MOVE_BOARD, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 1-3 | 56 | BUY | STABILIZE | 100.0 | 3 | 2 | 0 | 6.0 | —/DA_18_Yorick | BUY, REROLL, MOVE_BOARD, PASS | True | True | 0.16095320880413055 | 0.0 | 0.0 | +57f213f7-34b1-4a4a-8047-afa5e404e5c4 / -— |
+| Jogador 4 | 1-3 | 57 | BUY | STABILIZE | 100.0 | 3 | 1 | 0 | 6.0 | —/DA_18_Yorick | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.058208711445331573 | 0.0 | 0.0 | +34439867-85f7-4392-a985-337c6af81a1a / -— |
+| Jogador 4 | 1-3 | 58 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 1-3 | 59 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 1-3 | 60 | PASS | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 1-4 | 81 | BUY | STABILIZE | 100.0 | 3 | 3 | 0 | 6.0 | —/DA_18_Rakan | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.0125526189804077 | 0.0 | 0.0 | +4fbb2e46-1524-47c6-85a1-79266fd4da28 / -— |
+| Jogador 4 | 1-4 | 82 | BUY | STABILIZE | 100.0 | 3 | 2 | 0 | 6.0 | —/DA_18_Rakan | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.33877596259117126 | 0.0 | 0.0 | +eddd35aa-7d38-4d71-8984-e4768f06379e / -— |
+| Jogador 4 | 1-4 | 83 | BUY | STABILIZE | 100.0 | 3 | 1 | 0 | 6.0 | —/DA_18_Rakan | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9754891991615295 | 0.0 | 0.0 | +cd27dcd8-0a45-4196-be66-fbe6eb4a0793 / -— |
+| Jogador 4 | 1-4 | 84 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.00017737581219989806 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 1-4 | 85 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 1-4 | 86 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 1-4 | 87 | PASS | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-1 | 108 | CRAFT_AND_EQUIP | STABILIZE | 100.0 | 4 | 4 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.15649743378162384 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-1 | 109 | CRAFT_AND_EQUIP | STABILIZE | 100.0 | 4 | 4 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.11584341526031494 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-1 | 110 | BUY | STABILIZE | 100.0 | 4 | 4 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9813260436058044 | 0.0 | 0.0 | +4a8986e4-45cf-42bc-866d-01c476dcb55b / -— |
+| Jogador 4 | 2-1 | 111 | MOVE_BENCH | STABILIZE | 100.0 | 4 | 3 | 0 | 6.0 | —/DA_18_Yorick | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09386682510375977 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-1 | 112 | REROLL | STABILIZE | 100.0 | 4 | 3 | 0 | 8.0 | —/DA_18_Yorick | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-1 | 113 | BUY | STABILIZE | 100.0 | 4 | 1 | 0 | 8.0 | —/DA_18_Yorick | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8560376167297363 | 0.0 | 0.0 | +23a7be1c-afbc-4200-98c5-f6752ea11e7f / -— |
+| Jogador 4 | 2-1 | 114 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 8.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.00018050421203952283 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-1 | 115 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 8.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.013069149106740952 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-1 | 116 | PASS | STABILIZE | 100.0 | 4 | 0 | 0 | 8.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-2 | 131 | BUY | STABILIZE | 100.0 | 4 | 6 | 0 | 8.0 | —/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9438230991363525 | 0.0 | 0.0 | +3c6ac558-6b59-4a97-814e-bff0ff895232 / -cd27dcd8-0a45-4196-be66-fbe6eb4a0793,eddd35aa-7d38-4d71-8984-e4768f06379e |
+| Jogador 4 | 2-2 | 132 | BUY | STABILIZE | 100.0 | 4 | 5 | 0 | 8.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.0143705606460571 | 0.0 | 0.0 | +fa7ba406-b2bf-4dbb-8c80-7b56d69bb9b8 / -4fbb2e46-1524-47c6-85a1-79266fd4da28,95829f2e-ad17-448d-a385-fdcf81872dc8 |
+| Jogador 4 | 2-2 | 133 | MOVE_BENCH | STABILIZE | 100.0 | 4 | 4 | 0 | 4.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3658534586429596 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-2 | 134 | MOVE_BENCH | STABILIZE | 100.0 | 4 | 4 | 0 | 4.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.33339154720306396 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-2 | 135 | MOVE_BENCH | STABILIZE | 100.0 | 4 | 4 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.4587100148200989 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-2 | 136 | REROLL | STABILIZE | 100.0 | 4 | 4 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-2 | 137 | BUY | STABILIZE | 100.0 | 4 | 2 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3048713505268097 | 0.0 | 0.0 | +92450a29-eacd-4b5f-b3b5-cc8125e4918e / -— |
+| Jogador 4 | 2-2 | 138 | BUY | STABILIZE | 100.0 | 4 | 1 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8383509516716003 | 0.0 | 0.0 | +4c8a9a18-68d8-4672-a96d-bb09816257dc / -— |
+| Jogador 4 | 2-2 | 139 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 6.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.05323454365134239 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-2 | 140 | MOVE_BENCH | STABILIZE | 100.0 | 4 | 0 | 0 | 6.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.17691339552402496 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-2 | 141 | PASS | STABILIZE | 100.0 | 4 | 0 | 0 | 6.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-3 | 154 | BUY | STABILIZE | 95.0 | 4 | 5 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9391853213310242 | 0.0 | 0.0 | +fb186a97-59a4-4b3a-be2f-dadd2670dc95 / -4c8a9a18-68d8-4672-a96d-bb09816257dc,92450a29-eacd-4b5f-b3b5-cc8125e4918e |
+| Jogador 4 | 2-3 | 155 | MOVE_BENCH | STABILIZE | 95.0 | 4 | 4 | 0 | 4.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.21223367750644684 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-3 | 156 | BUY | STABILIZE | 95.0 | 4 | 4 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3060332238674164 | 0.0 | 0.0 | +82e3ae1b-a015-4fac-8624-f3b73ec1d90c / -— |
+| Jogador 4 | 2-3 | 157 | MOVE_BENCH | STABILIZE | 95.0 | 4 | 1 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6847155690193176 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-3 | 158 | BUY | STABILIZE | 95.0 | 4 | 1 | 0 | 12.0 | —/DA_18_Akali_AD | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.12821543216705322 | 0.0 | 0.0 | +5f2c89f5-15c2-4a77-943e-4ba5492d925b / -— |
+| Jogador 4 | 2-3 | 159 | MOVE_BOARD | STABILIZE | 95.0 | 4 | 0 | 0 | 12.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.03611088916659355 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-3 | 160 | MOVE_BOARD | STABILIZE | 95.0 | 4 | 0 | 0 | 12.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.013076926581561565 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-3 | 161 | PASS | STABILIZE | 95.0 | 4 | 0 | 0 | 12.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-4 | 174 | BUY | STABILIZE | 89.0 | 4 | 6 | 0 | 12.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8972052335739136 | 0.0 | 0.0 | +0067f61f-504d-440a-b071-de7f18886e3d / -— |
+| Jogador 4 | 2-4 | 175 | BUY | STABILIZE | 89.0 | 4 | 5 | 0 | 12.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6474485993385315 | 0.0 | 0.0 | +729ccd5b-adc5-4bca-9523-dcb532e93ecb / -— |
+| Jogador 4 | 2-4 | 176 | SELL | STABILIZE | 89.0 | 4 | 4 | 0 | 12.0 | —/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01744000054895878 | 0.0 | 0.0 | +— / -fa7ba406-b2bf-4dbb-8c80-7b56d69bb9b8 |
+| Jogador 4 | 2-4 | 177 | EQUIP_FROM_INVENTORY | STABILIZE | 89.0 | 4 | 7 | 0 | 12.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.09988676011562347 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-4 | 178 | EQUIP_FROM_INVENTORY | STABILIZE | 89.0 | 4 | 7 | 0 | 12.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.11172816902399063 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-4 | 179 | BUY | STABILIZE | 89.0 | 4 | 7 | 0 | 12.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.08639016002416611 | 0.0 | 0.0 | +c96b6357-8134-4e68-af0b-f5695a815597 / -— |
+| Jogador 4 | 2-4 | 180 | REROLL | STABILIZE | 89.0 | 4 | 4 | 0 | 12.0 | —/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-4 | 181 | SELL | STABILIZE | 89.0 | 4 | 2 | 0 | 12.0 | —/DA_18_Akali_AD | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.24537105858325958 | 0.0 | 0.0 | +— / -fb186a97-59a4-4b3a-be2f-dadd2670dc95 |
+| Jogador 4 | 2-4 | 182 | BUY | STABILIZE | 89.0 | 4 | 5 | 0 | 12.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9484557509422302 | 0.0 | 0.0 | +74fe48c1-d955-4b0d-b832-39d4c86049dc / -0067f61f-504d-440a-b071-de7f18886e3d,9614eae9-6f31-48db-a3be-9b4b2c5034c8 |
+| Jogador 4 | 2-4 | 183 | BUY | STABILIZE | 89.0 | 4 | 4 | 0 | 10.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.15439428389072418 | 0.0 | 0.0 | +6bbf1aa9-e129-45c6-8668-699425d97c5d / -— |
+| Jogador 4 | 2-4 | 184 | PASS | STABILIZE | 89.0 | 4 | 3 | 0 | 10.0 | —/DA_18_Akali_AD | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-5 | 196 | SELL | STABILIZE | 89.0 | 4 | 9 | 0 | 10.0 | —/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.12916399538516998 | 0.0 | 0.0 | +— / -3c6ac558-6b59-4a97-814e-bff0ff895232 |
+| Jogador 4 | 2-5 | 197 | BUY | STABILIZE | 89.0 | 4 | 12 | 1 | 10.0 | Florescer/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9252434372901917 | 0.0 | 0.0 | +584e7960-a541-4d45-8ea1-8a75e288c387 / -34439867-85f7-4392-a985-337c6af81a1a,729ccd5b-adc5-4bca-9523-dcb532e93ecb |
+| Jogador 4 | 2-5 | 198 | BUY | STABILIZE | 89.0 | 4 | 11 | 1 | 8.0 | Florescer/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5481404662132263 | 0.0 | 0.0 | +f0f7bd0a-19e6-44d8-a0e2-e4e4dc2b9e68 / -— |
+| Jogador 4 | 2-5 | 199 | MOVE_BENCH | STABILIZE | 89.0 | 4 | 10 | 1 | 8.0 | Florescer/DA_18_Rakan | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3539997935295105 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-5 | 200 | MOVE_BENCH | STABILIZE | 89.0 | 4 | 10 | 1 | 8.0 | Florescer/DA_18_Rakan | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.520719587802887 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-5 | 201 | BUY | STABILIZE | 89.0 | 4 | 10 | 1 | 10.0 | Florescer/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.046797022223472595 | 0.0 | 0.0 | +e6614d74-9c11-4502-8719-4d49167f44ab / -— |
+| Jogador 4 | 2-5 | 202 | REROLL | STABILIZE | 89.0 | 4 | 9 | 0 | 10.0 | Florescer/DA_18_Rakan | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-5 | 203 | SELL | STABILIZE | 89.0 | 4 | 7 | 0 | 10.0 | Florescer/DA_18_Rakan | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11415600031614304 | 0.0 | 0.0 | +— / -584e7960-a541-4d45-8ea1-8a75e288c387 |
+| Jogador 4 | 2-5 | 204 | BUY | STABILIZE | 89.0 | 4 | 10 | 1 | 10.0 | Florescer/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8182775378227234 | 0.0 | 0.0 | +a12781fd-4d61-4c7e-b439-a6e62bd48dfe / -— |
+| Jogador 4 | 2-5 | 205 | SELL | STABILIZE | 89.0 | 4 | 7 | 0 | 10.0 | Florescer/DA_18_Rakan | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.22783388197422028 | 0.0 | 0.0 | +— / -74fe48c1-d955-4b0d-b832-39d4c86049dc |
+| Jogador 4 | 2-5 | 206 | PASS | STABILIZE | 89.0 | 4 | 10 | 1 | 10.0 | Florescer/DA_Fiddlesticks18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-6 | 213 | BUY | SLOWROLL | 84.0 | 5 | 17 | 1 | 10.0 | Florescer/DA_Fiddlesticks18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.15418709814548492 | 0.0 | 0.0 | +2a0cf69a-4791-44ac-ad8c-7f7bcf9a9b3f / -— |
+| Jogador 4 | 2-6 | 214 | MOVE_BENCH | SLOWROLL | 84.0 | 5 | 15 | 1 | 10.0 | Florescer/DA_Fiddlesticks18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.14785631000995636 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-6 | 215 | BUY | SLOWROLL | 84.0 | 5 | 15 | 1 | 12.0 | Florescer/DA_Fiddlesticks18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7897683382034302 | 0.0 | 0.0 | +46fc5f36-cf3e-422e-89f3-9501ec9d7d12 / -6bbf1aa9-e129-45c6-8668-699425d97c5d,f0f7bd0a-19e6-44d8-a0e2-e4e4dc2b9e68 |
+| Jogador 4 | 2-6 | 216 | BUY | SLOWROLL | 84.0 | 5 | 14 | 1 | 12.0 | Florescer/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.25214725732803345 | 0.0 | 0.0 | +ee087d59-c995-4032-b4d9-27220b469d71 / -— |
+| Jogador 4 | 2-6 | 217 | REROLL | SLOWROLL | 84.0 | 5 | 13 | 1 | 12.0 | Florescer/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0405491478741169 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-6 | 218 | BUY | SLOWROLL | 84.0 | 5 | 11 | 1 | 12.0 | Florescer/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8796523809432983 | 0.0 | 0.0 | +2074e6ec-81e7-41c9-be7e-a0d9310fbafa / -23a7be1c-afbc-4200-98c5-f6752ea11e7f,57f213f7-34b1-4a4a-8047-afa5e404e5c4 |
+| Jogador 4 | 2-6 | 219 | BUY | SLOWROLL | 84.0 | 5 | 10 | 1 | 12.0 | Florescer/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7446245551109314 | 0.0 | 0.0 | +f2fa6abf-e020-4aaf-ac0e-35e7642e9d2e / -— |
+| Jogador 4 | 2-6 | 220 | REROLL | SLOWROLL | 84.0 | 5 | 8 | 0 | 12.0 | Florescer/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04036790505051613 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-6 | 221 | BUY | SLOWROLL | 84.0 | 5 | 6 | 0 | 12.0 | Florescer/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8762306571006775 | 0.0 | 0.0 | +171724e7-58bd-404f-820b-2bb32c5c193e / -2a0cf69a-4791-44ac-ad8c-7f7bcf9a9b3f,f2fa6abf-e020-4aaf-ac0e-35e7642e9d2e |
+| Jogador 4 | 2-6 | 222 | REROLL | SLOWROLL | 84.0 | 5 | 4 | 0 | 12.0 | Florescer/DA_18_Yunara | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.040549956262111664 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-6 | 223 | PASS | SLOWROLL | 84.0 | 5 | 2 | 0 | 12.0 | Florescer/DA_18_Yunara | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-7 | 232 | BUY | SLOWROLL | 77.0 | 5 | 8 | 0 | 12.0 | Florescer/DA_18_Yunara | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.018541354686021805 | 0.0 | 0.0 | +665661af-7240-4a65-bf3d-f4ecf3532a85 / -— |
+| Jogador 4 | 2-7 | 233 | MOVE_BENCH | SLOWROLL | 77.0 | 5 | 7 | 0 | 12.0 | Florescer/DA_18_Yunara | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2710893452167511 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-7 | 234 | REROLL | SLOWROLL | 77.0 | 5 | 7 | 0 | 14.0 | Florescer/DA_18_Yunara | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.040471166372299194 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-7 | 235 | BUY | SLOWROLL | 77.0 | 5 | 5 | 0 | 14.0 | Florescer/DA_18_Yunara | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8161036372184753 | 0.0 | 0.0 | +1ebe5a8f-f63b-44b8-b40b-d9062a1eb6b0 / -— |
+| Jogador 4 | 2-7 | 236 | REROLL | SLOWROLL | 77.0 | 5 | 4 | 0 | 14.0 | Florescer/DA_18_Yunara | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04054995998740196 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-7 | 237 | SELL | SLOWROLL | 77.0 | 5 | 2 | 0 | 14.0 | Florescer/DA_18_Yunara | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3186977505683899 | 0.0 | 0.0 | +— / -2074e6ec-81e7-41c9-be7e-a0d9310fbafa |
+| Jogador 4 | 2-7 | 238 | BUY | SLOWROLL | 77.0 | 5 | 5 | 0 | 14.0 | Florescer/DA_18_Yunara | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8799664974212646 | 0.0 | 0.0 | +fff5cc22-5f1a-47a4-93e3-9772177b0910 / -4a8986e4-45cf-42bc-866d-01c476dcb55b,9e7d1da0-5190-4348-81b4-3a3f2129a8e5 |
+| Jogador 4 | 2-7 | 239 | BUY | SLOWROLL | 77.0 | 5 | 4 | 0 | 12.0 | Florescer/DA_18_Yunara | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8151640295982361 | 0.0 | 0.0 | +9593a62e-442f-410a-8a0c-7d781e2487cc / -— |
+| Jogador 4 | 2-7 | 240 | MOVE_BENCH | SLOWROLL | 77.0 | 5 | 1 | 0 | 12.0 | Florescer/DA_18_Yunara | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.45723074674606323 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-7 | 241 | MOVE_BENCH | SLOWROLL | 77.0 | 5 | 1 | 0 | 12.0 | Fumegante/DA_18_Yunara | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.7500941753387451 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 2-7 | 242 | PASS | SLOWROLL | 77.0 | 5 | 1 | 0 | 10.0 | Fumegante/DA_18_Yunara | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-1 | 252 | CRAFT_AND_EQUIP | SLOWROLL | 77.0 | 5 | 7 | 0 | 10.0 | Fumegante/DA_18_Yunara | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.15831799805164337 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-1 | 253 | MOVE_BENCH | SLOWROLL | 77.0 | 5 | 7 | 0 | 10.0 | Fumegante/DA_18_Yunara | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2972424030303955 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-1 | 254 | MOVE_BENCH | SLOWROLL | 77.0 | 5 | 7 | 0 | 12.0 | Fumegante/DA_18_Yunara | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.46462103724479675 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-1 | 255 | PASS | SLOWROLL | 77.0 | 5 | 7 | 0 | 12.0 | Fumegante/DA_18_Yunara | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-1 | 266 | MOVE_BENCH | SLOWROLL | 77.0 | 5 | 7 | 0 | 12.0 | Fumegante/DA_18_Yunara | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.18543992936611176 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-2 | 272 | BUY | SLOWROLL | 68.0 | 5 | 14 | 1 | 14.0 | Fumegante/DA_18_Yunara | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1225179135799408 | 0.0 | 0.0 | +d6a00f0c-4823-44d6-b326-67595876998d / -— |
+| Jogador 4 | 3-2 | 273 | MOVE_BENCH | SLOWROLL | 68.0 | 5 | 12 | 1 | 14.0 | Fumegante/DA_18_Yunara | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.363264799118042 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-2 | 274 | MOVE_BENCH | SLOWROLL | 68.0 | 5 | 12 | 1 | 14.0 | Fumegante/DA_18_Yunara | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.7103727459907532 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-2 | 275 | PASS | SLOWROLL | 68.0 | 5 | 12 | 1 | 12.0 | Fumegante/DA_18_Yunara | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-2 | 286 | MOVE_BENCH | SLOWROLL | 68.0 | 5 | 12 | 1 | 12.0 | Fumegante/DA_18_Yunara | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3886053264141083 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-3 | 292 | BUY | SLOWROLL | 58.0 | 5 | 21 | 2 | 16.0 | Fumegante/DA_18_Yunara | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1430102437734604 | 0.0 | 0.0 | +bcd06176-e1d7-43fb-abd4-b6faea8c7927 / -— |
+| Jogador 4 | 3-3 | 293 | MOVE_BENCH | SLOWROLL | 58.0 | 5 | 19 | 1 | 16.0 | Fumegante/DA_18_Yunara | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.29328685998916626 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-3 | 294 | MOVE_BENCH | SLOWROLL | 58.0 | 5 | 19 | 1 | 18.0 | Fumegante/DA_18_Yunara | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3622500002384186 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-3 | 295 | PASS | SLOWROLL | 58.0 | 5 | 19 | 1 | 18.0 | Fumegante/DA_18_Yunara | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-4 | 312 | REROLL | SLOWROLL | 58.0 | 5 | 27 | 2 | 18.0 | Fumegante/DA_18_Yunara | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.05279025435447693 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-4 | 313 | SELL | SLOWROLL | 58.0 | 5 | 25 | 2 | 18.0 | Fumegante/DA_18_Yunara | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09997200220823288 | 0.0 | 0.0 | +— / -171724e7-58bd-404f-820b-2bb32c5c193e |
+| Jogador 4 | 3-4 | 314 | BUY | SLOWROLL | 58.0 | 5 | 30 | 3 | 18.0 | Fumegante/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.16438134014606476 | 0.0 | 0.0 | +3329c812-11fa-4335-a982-f03e6ab28ee0 / -— |
+| Jogador 4 | 3-4 | 315 | MOVE_BENCH | SLOWROLL | 58.0 | 5 | 29 | 2 | 18.0 | Fumegante/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.7168851494789124 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-4 | 316 | MOVE_BENCH | SLOWROLL | 58.0 | 5 | 29 | 2 | 16.0 | Fumegante/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2719174325466156 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-4 | 317 | PASS | SLOWROLL | 58.0 | 5 | 29 | 2 | 18.0 | Fumegante/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-5 | 332 | SELL | SLOWROLL | 58.0 | 5 | 36 | 3 | 18.0 | Fumegante/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.27516403794288635 | 0.0 | 0.0 | +— / -fff5cc22-5f1a-47a4-93e3-9772177b0910 |
+| Jogador 4 | 3-5 | 333 | BUY | SLOWROLL | 58.0 | 5 | 39 | 3 | 18.0 | Fumegante/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7647030353546143 | 0.0 | 0.0 | +5098782d-1ec1-4a5b-a435-f3c84ab1be0d / -— |
+| Jogador 4 | 3-5 | 334 | MOVE_BENCH | SLOWROLL | 58.0 | 5 | 38 | 3 | 18.0 | Fumegante/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.7833166718482971 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-5 | 335 | MOVE_BENCH | SLOWROLL | 58.0 | 5 | 38 | 3 | 18.0 | Fumegante/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.044137243181467056 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-5 | 336 | REROLL | SLOWROLL | 58.0 | 5 | 38 | 3 | 20.0 | Fumegante/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0707649290561676 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-5 | 337 | MOVE_BENCH | SLOWROLL | 58.0 | 5 | 36 | 3 | 20.0 | Fumegante/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2682217061519623 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-5 | 338 | MOVE_BENCH | SLOWROLL | 58.0 | 5 | 36 | 3 | 18.0 | Fumegante/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.7825888991355896 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-5 | 339 | PASS | SLOWROLL | 58.0 | 5 | 36 | 3 | 18.0 | Fumegante/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-6 | 346 | SELL | SLOWROLL | 48.0 | 5 | 44 | 4 | 18.0 | Fumegante/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.27707454562187195 | 0.0 | 0.0 | +— / -46fc5f36-cf3e-422e-89f3-9501ec9d7d12 |
+| Jogador 4 | 3-6 | 347 | BUY | SLOWROLL | 48.0 | 5 | 47 | 4 | 18.0 | Fumegante/DA_Fiddlesticks18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7775732278823853 | 0.0 | 0.0 | +f1c48e72-ce66-4b0d-ab88-5d965e06066b / -— |
+| Jogador 4 | 3-6 | 348 | MOVE_BENCH | SLOWROLL | 48.0 | 5 | 46 | 4 | 18.0 | Fumegante/DA_Fiddlesticks18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.4000000059604645 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-6 | 349 | REROLL | SLOWROLL | 48.0 | 5 | 46 | 4 | 18.0 | Fumegante/DA_Fiddlesticks18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.1713087260723114 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-6 | 350 | MOVE_BENCH | SLOWROLL | 48.0 | 5 | 44 | 4 | 18.0 | Fumegante/DA_Fiddlesticks18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.023200251162052155 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-6 | 351 | MOVE_BENCH | SLOWROLL | 48.0 | 5 | 44 | 4 | 16.0 | Fumegante/DA_Fiddlesticks18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3861682415008545 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-6 | 352 | MOVE_BENCH | SLOWROLL | 48.0 | 5 | 44 | 4 | 18.0 | Fumegante/DA_Fiddlesticks18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.41499999165534973 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-6 | 353 | PASS | SLOWROLL | 48.0 | 5 | 44 | 4 | 18.0 | Fumegante/DA_Fiddlesticks18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-7 | 362 | SELL | STABILIZE | 38.0 | 5 | 54 | 5 | 18.0 | Fumegante/DA_Fiddlesticks18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.24089199304580688 | 0.0 | 0.0 | +— / -5f2c89f5-15c2-4a77-943e-4ba5492d925b |
+| Jogador 4 | 3-7 | 363 | BUY | STABILIZE | 38.0 | 5 | 55 | 5 | 18.0 | Fumegante/DA_Fiddlesticks18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3343619704246521 | 0.0 | 0.0 | +8c57b805-656c-4993-8264-71d58537a9cd / -— |
+| Jogador 4 | 3-7 | 364 | MOVE_BENCH | STABILIZE | 38.0 | 5 | 54 | 5 | 18.0 | Fumegante/DA_Fiddlesticks18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.07224918156862259 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-7 | 365 | MOVE_BENCH | STABILIZE | 38.0 | 5 | 54 | 5 | 16.0 | Fumegante/DA_Fiddlesticks18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3861416280269623 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-7 | 366 | MOVE_BENCH | STABILIZE | 38.0 | 5 | 54 | 5 | 18.0 | Fumegante/DA_Fiddlesticks18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.41499999165534973 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 3-7 | 367 | PASS | STABILIZE | 38.0 | 5 | 54 | 5 | 18.0 | Fumegante/DA_Fiddlesticks18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.06623315066099167 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-1 | 377 | CRAFT_AND_EQUIP | STABILIZE | 38.0 | 5 | 65 | 5 | 18.0 | Fumegante/DA_Fiddlesticks18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.24129973351955414 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-1 | 378 | CRAFT_AND_EQUIP | STABILIZE | 38.0 | 5 | 65 | 5 | 18.0 | Fumegante/DA_Fiddlesticks18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.15668410062789917 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-1 | 379 | SELL | STABILIZE | 38.0 | 5 | 65 | 5 | 18.0 | Fumegante/DA_Fiddlesticks18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.24089199304580688 | 0.0 | 0.0 | +— / -8c57b805-656c-4993-8264-71d58537a9cd |
+| Jogador 4 | 4-1 | 380 | BUY | STABILIZE | 38.0 | 5 | 66 | 5 | 18.0 | Fumegante/DA_Fiddlesticks18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9584926962852478 | 0.0 | 0.0 | +41b1dead-685f-4b66-b9b1-cc504a711c98 / -1ebe5a8f-f63b-44b8-b40b-d9062a1eb6b0,ee087d59-c995-4032-b4d9-27220b469d71 |
+| Jogador 4 | 4-1 | 381 | MOVE_BENCH | STABILIZE | 38.0 | 5 | 65 | 5 | 18.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3433491587638855 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-1 | 382 | MOVE_BENCH | STABILIZE | 38.0 | 5 | 65 | 5 | 20.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.08152856677770615 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-1 | 383 | MOVE_BENCH | STABILIZE | 38.0 | 5 | 65 | 5 | 18.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.7960615158081055 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-1 | 384 | MOVE_BENCH | STABILIZE | 38.0 | 5 | 65 | 5 | 18.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.367837131023407 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-1 | 385 | PASS | STABILIZE | 38.0 | 5 | 65 | 5 | 20.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.24175041913986206 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-2 | 389 | MOVE_BENCH | STABILIZE | 28.0 | 6 | 76 | 5 | 20.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.09331309795379639 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-2 | 390 | MOVE_BENCH | STABILIZE | 28.0 | 6 | 76 | 5 | 18.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.41499999165534973 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-2 | 391 | MOVE_BENCH | STABILIZE | 28.0 | 6 | 76 | 5 | 18.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.7531532049179077 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-2 | 392 | PASS | STABILIZE | 28.0 | 6 | 76 | 5 | 20.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2672646641731262 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-2 | 397 | MOVE_BENCH | STABILIZE | 28.0 | 6 | 76 | 5 | 20.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5794130563735962 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-3 | 402 | BUY | ALL_IN | 15.0 | 6 | 87 | 5 | 22.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.057555079460144 | 0.0 | 0.0 | +c98cd1bc-3288-4d7e-a9f7-f31408df3d85 / -e6614d74-9c11-4502-8719-4d49167f44ab,f1c48e72-ce66-4b0d-ab88-5d965e06066b |
+| Jogador 4 | 4-3 | 403 | BUY | ALL_IN | 15.0 | 6 | 86 | 5 | 20.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.49258264899253845 | 0.0 | 0.0 | +b3665de8-1c90-4b35-9da4-af883dc096fe / -— |
+| Jogador 4 | 4-3 | 404 | MOVE_BENCH | ALL_IN | 15.0 | 6 | 85 | 5 | 20.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.11829052120447159 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-3 | 405 | MOVE_BENCH | ALL_IN | 15.0 | 6 | 85 | 5 | 20.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.4688948094844818 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-3 | 406 | MOVE_BOARD | ALL_IN | 15.0 | 6 | 85 | 5 | 24.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.033741604536771774 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-3 | 407 | MOVE_BOARD | ALL_IN | 15.0 | 6 | 85 | 5 | 24.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.024548755958676338 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-3 | 408 | MOVE_BOARD | ALL_IN | 15.0 | 6 | 85 | 5 | 24.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.028708765283226967 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-3 | 409 | MOVE_BOARD | ALL_IN | 15.0 | 6 | 85 | 5 | 24.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.19069676101207733 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-3 | 410 | PASS | ALL_IN | 15.0 | 6 | 85 | 5 | 24.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.34696727991104126 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-4 | 416 | BUY | ALL_IN | 4.0 | 6 | 97 | 5 | 24.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.0022085905075073 | 0.0 | 0.0 | +9b2d1fe7-34d0-43fd-9f0a-d9b24a5383a9 / -— |
+| Jogador 4 | 4-4 | 417 | MOVE_BOARD | ALL_IN | 4.0 | 6 | 95 | 5 | 24.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.016517003998160362 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-4 | 418 | BUY | ALL_IN | 4.0 | 6 | 95 | 5 | 24.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0008826270350255072 | 0.0 | 0.0 | +d845fe34-d5a1-49d0-9038-f0f14e058b10 / -— |
+| Jogador 4 | 4-4 | 419 | MOVE_BOARD | ALL_IN | 4.0 | 6 | 94 | 5 | 24.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.008327868767082691 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-4 | 420 | MOVE_BOARD | ALL_IN | 4.0 | 6 | 94 | 5 | 24.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.027886081486940384 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-4 | 421 | MOVE_BOARD | ALL_IN | 4.0 | 6 | 94 | 5 | 24.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.12175340205430984 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-4 | 422 | MOVE_BOARD | ALL_IN | 4.0 | 6 | 94 | 5 | 24.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01659996807575226 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-4 | 423 | MOVE_BOARD | ALL_IN | 4.0 | 6 | 94 | 5 | 24.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0168770644813776 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-4 | 424 | PASS | ALL_IN | 4.0 | 6 | 94 | 5 | 24.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.23328788578510284 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-5 | 429 | BUY | ALL_IN | 4.0 | 6 | 106 | 5 | 24.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1052224263548851 | 0.0 | 0.0 | +49d34f26-41a0-4cdc-b413-e6200e07b2cf / -— |
+| Jogador 4 | 4-5 | 430 | MOVE_BOARD | ALL_IN | 4.0 | 6 | 103 | 5 | 24.0 | Fumegante/DA_18_Rakan | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0013271515490487218 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-5 | 431 | MOVE_BOARD | ALL_IN | 4.0 | 6 | 103 | 5 | 24.0 | Fumegante/DA_18_Rakan | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-5 | 432 | SELL | ALL_IN | 4.0 | 6 | 103 | 5 | 24.0 | Fumegante/DA_18_Rakan | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0020000000949949026 | 0.0 | 0.0 | +— / -d845fe34-d5a1-49d0-9038-f0f14e058b10 |
+| Jogador 4 | 4-5 | 433 | BUY | ALL_IN | 4.0 | 6 | 104 | 5 | 24.0 | Fumegante/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.007845967076718807 | 0.0 | 0.0 | +5fc3573d-dd66-4c51-b59b-d19744e042fd / -— |
+| Jogador 4 | 4-5 | 434 | MOVE_BOARD | ALL_IN | 4.0 | 6 | 101 | 5 | 24.0 | Fumegante/DA_18_Rakan | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0010109373833984137 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-5 | 435 | MOVE_BOARD | ALL_IN | 4.0 | 6 | 101 | 5 | 24.0 | Fumegante/DA_18_Rakan | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10426686704158783 | 0.0 | 0.0 | +— / -— |
+| Jogador 4 | 4-5 | 436 | PASS | ALL_IN | 4.0 | 6 | 101 | 5 | 24.0 | Fumegante/DA_18_Rakan | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.23864814639091492 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 1-1 | 1 | MOVE_BENCH | ECON | 100.0 | 2 | 0 | 0 | 0.0 | —/— | MOVE_BENCH, SELL, PASS | True | True | 0.5658670663833618 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 1-1 | 2 | PASS | STABILIZE | 100.0 | 2 | 0 | 0 | 2.0 | —/DA_18_Yorick | MOVE_BOARD, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 1-2 | 29 | BUY | STABILIZE | 100.0 | 3 | 2 | 0 | 2.0 | —/DA_18_Yorick | BUY, REROLL, MOVE_BOARD, PASS | True | True | 0.10612095892429352 | 0.0 | 0.0 | +02c39b42-90d5-4e01-9380-460b6c1cb993 / -— |
+| Jogador 5 | 1-2 | 30 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 1 | 0 | 2.0 | —/DA_18_Yorick | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.6356261968612671 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 1-2 | 31 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 1 | 0 | 2.0 | —/DA_18_Yorick | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.25289487838745117 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 1-2 | 32 | BUY | STABILIZE | 100.0 | 3 | 1 | 0 | 4.0 | —/DA_18_Yorick | BUY, MOVE_BOARD, PASS | True | True | 0.2695513963699341 | 0.0 | 0.0 | +9c678a7f-3209-4d1b-addd-385f7d4b89fa / -— |
+| Jogador 5 | 1-2 | 33 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0005754890735261142 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 1-2 | 34 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 1-2 | 35 | PASS | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 1-2 | 50 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.42223861813545227 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 1-3 | 56 | BUY | STABILIZE | 100.0 | 3 | 2 | 0 | 6.0 | —/DA_18_Yorick | BUY, REROLL, MOVE_BOARD, PASS | True | True | 0.2690509557723999 | 0.0 | 0.0 | +3002832d-1e66-428b-a25e-007c716764a3 / -— |
+| Jogador 5 | 1-3 | 57 | BUY | STABILIZE | 100.0 | 3 | 1 | 0 | 6.0 | —/DA_18_Yorick | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.05612170696258545 | 0.0 | 0.0 | +9c93476e-a7be-457d-8543-8802507a8d3f / -— |
+| Jogador 5 | 1-3 | 58 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.337571382522583 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 1-3 | 59 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.050759948790073395 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 1-3 | 60 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 1-3 | 61 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.27828237414360046 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 1-3 | 62 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014984311535954475 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 1-3 | 63 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2854250967502594 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 1-3 | 64 | PASS | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 1-4 | 81 | BUY | STABILIZE | 100.0 | 3 | 3 | 0 | 6.0 | —/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3217373788356781 | 0.0 | 0.0 | +634004e3-6a89-4cb3-929d-39ef6d3bce3c / -— |
+| Jogador 5 | 1-4 | 82 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 2 | 0 | 6.0 | —/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.08667684346437454 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 1-4 | 83 | REROLL | STABILIZE | 100.0 | 3 | 2 | 0 | 6.0 | —/DA_18_Rakan | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 1-4 | 84 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 1-4 | 85 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014843162149190903 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 1-4 | 86 | PASS | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-1 | 108 | BUY | STABILIZE | 100.0 | 4 | 4 | 0 | 6.0 | —/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | True | 1.0387862920761108 | 0.0 | 0.0 | +c8b72b14-11a4-48e6-8135-41efdbc347cb / -— |
+| Jogador 5 | 2-1 | 109 | CRAFT_AND_EQUIP | STABILIZE | 100.0 | 4 | 3 | 0 | 6.0 | —/DA_18_Rakan | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.16787584125995636 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-1 | 110 | CRAFT_AND_EQUIP | STABILIZE | 100.0 | 4 | 3 | 0 | 6.0 | —/DA_18_Rakan | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.16212864220142365 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-1 | 111 | MOVE_BENCH | STABILIZE | 100.0 | 4 | 3 | 0 | 6.0 | —/DA_18_Rakan | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.4259626567363739 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-1 | 112 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 3 | 0 | 8.0 | —/DA_18_Rakan | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2641088664531708 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-1 | 113 | BUY | STABILIZE | 100.0 | 4 | 3 | 0 | 8.0 | —/DA_18_Rakan | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3496260643005371 | 0.0 | 0.0 | +75005e9c-56d1-48d6-815e-573e489e3dd7 / -— |
+| Jogador 5 | 2-1 | 114 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 8.0 | —/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.007953223772346973 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-1 | 115 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 8.0 | —/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.23098458349704742 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-1 | 116 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 8.0 | —/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.016413521021604538 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-1 | 117 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 8.0 | —/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.015052255243062973 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-1 | 118 | PASS | STABILIZE | 100.0 | 4 | 0 | 0 | 8.0 | —/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-2 | 131 | BUY | STABILIZE | 96.0 | 4 | 5 | 0 | 8.0 | —/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.047817349433899 | 0.0 | 0.0 | +e6ac7c34-615e-4ccc-bc0f-8ba583bf5ca1 / -634004e3-6a89-4cb3-929d-39ef6d3bce3c,c8b72b14-11a4-48e6-8135-41efdbc347cb |
+| Jogador 5 | 2-2 | 132 | BUY | STABILIZE | 96.0 | 4 | 4 | 0 | 6.0 | —/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9287415146827698 | 0.0 | 0.0 | +6951a681-f5b9-4c22-9182-46b4d2c3cbb3 / -— |
+| Jogador 5 | 2-2 | 133 | MOVE_BENCH | STABILIZE | 96.0 | 4 | 3 | 0 | 6.0 | —/DA_18_Rakan | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.577738344669342 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-2 | 134 | BUY | STABILIZE | 96.0 | 4 | 3 | 0 | 12.0 | —/DA_18_Rakan | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.17099179327487946 | 0.0 | 0.0 | +ff10e482-7085-4e73-8a0c-fdd3f4938128 / -— |
+| Jogador 5 | 2-2 | 135 | BUY | STABILIZE | 96.0 | 4 | 2 | 0 | 12.0 | —/DA_18_Rakan | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7608326077461243 | 0.0 | 0.0 | +73185d11-22d3-4a1d-803a-b37e82272098 / -— |
+| Jogador 5 | 2-2 | 136 | MOVE_BOARD | STABILIZE | 96.0 | 4 | 1 | 0 | 12.0 | —/DA_18_Rakan | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3048481345176697 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-2 | 137 | MOVE_BOARD | STABILIZE | 96.0 | 4 | 1 | 0 | 12.0 | —/DA_18_Rakan | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.018359122797846794 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-2 | 138 | PASS | STABILIZE | 96.0 | 4 | 1 | 0 | 12.0 | —/DA_18_Rakan | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-3 | 154 | BUY | STABILIZE | 91.0 | 4 | 7 | 0 | 12.0 | —/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5287450551986694 | 0.0 | 0.0 | +0c9ac713-08bd-4fa7-a94a-2ab70d7815ff / -— |
+| Jogador 5 | 2-3 | 155 | BUY | STABILIZE | 91.0 | 4 | 6 | 0 | 12.0 | —/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1522703617811203 | 0.0 | 0.0 | +2892a7ad-b390-4e82-9aa5-6e15828881f4 / -— |
+| Jogador 5 | 2-3 | 156 | BUY | STABILIZE | 91.0 | 4 | 4 | 0 | 12.0 | —/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.013119986280798912 | 0.0 | 0.0 | +f44d5eea-6187-4ea9-ab49-79077393b7de / -— |
+| Jogador 5 | 2-3 | 157 | MOVE_BOARD | STABILIZE | 91.0 | 4 | 1 | 0 | 12.0 | —/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.35928595066070557 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-3 | 158 | SELL | STABILIZE | 91.0 | 4 | 1 | 0 | 12.0 | —/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.27627694606781006 | 0.0 | 0.0 | +— / -e6ac7c34-615e-4ccc-bc0f-8ba583bf5ca1 |
+| Jogador 5 | 2-3 | 159 | REROLL | STABILIZE | 91.0 | 4 | 4 | 0 | 12.0 | —/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-3 | 160 | BUY | STABILIZE | 91.0 | 4 | 2 | 0 | 12.0 | —/DA_18_Tristana | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7618720531463623 | 0.0 | 0.0 | +b6a21130-c9dc-45ad-8ddb-9223b0ec8751 / -0c9ac713-08bd-4fa7-a94a-2ab70d7815ff,9c93476e-a7be-457d-8543-8802507a8d3f |
+| Jogador 5 | 2-3 | 161 | BUY | STABILIZE | 91.0 | 4 | 1 | 0 | 12.0 | —/DA_18_Tristana | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.19244490563869476 | 0.0 | 0.0 | +fa0e266f-ef5b-48c5-b9a3-511450e97169 / -— |
+| Jogador 5 | 2-3 | 162 | SELL | STABILIZE | 91.0 | 4 | 0 | 0 | 12.0 | —/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.21771599352359772 | 0.0 | 0.0 | +— / -b6a21130-c9dc-45ad-8ddb-9223b0ec8751 |
+| Jogador 5 | 2-3 | 163 | BUY | STABILIZE | 91.0 | 4 | 3 | 0 | 12.0 | —/DA_18_Tristana | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.26792410016059875 | 0.0 | 0.0 | +ae570779-3ae8-49b3-acdb-607fc512fcea / -— |
+| Jogador 5 | 2-3 | 164 | PASS | STABILIZE | 91.0 | 4 | 0 | 0 | 12.0 | —/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-4 | 174 | BUY | STABILIZE | 91.0 | 4 | 6 | 0 | 12.0 | —/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.895999550819397 | 0.0 | 0.0 | +79786887-d318-4836-b2f0-c0f03e86cbe5 / -73185d11-22d3-4a1d-803a-b37e82272098,ff10e482-7085-4e73-8a0c-fdd3f4938128 |
+| Jogador 5 | 2-4 | 175 | BUY | STABILIZE | 91.0 | 4 | 5 | 0 | 12.0 | —/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.008380072191357613 | 0.0 | 0.0 | +e2f28d51-690c-476e-b097-e5c69258f933 / -— |
+| Jogador 5 | 2-4 | 176 | REROLL | STABILIZE | 91.0 | 4 | 4 | 0 | 12.0 | —/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-4 | 177 | BUY | STABILIZE | 91.0 | 4 | 2 | 0 | 12.0 | —/DA_18_Tristana | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8852420449256897 | 0.0 | 0.0 | +d731d71e-fc91-41ae-ab3f-75966dd2c428 / -— |
+| Jogador 5 | 2-4 | 178 | SELL | STABILIZE | 91.0 | 4 | 1 | 0 | 12.0 | —/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.19951599836349487 | 0.0 | 0.0 | +— / -79786887-d318-4836-b2f0-c0f03e86cbe5 |
+| Jogador 5 | 2-4 | 179 | BUY | STABILIZE | 91.0 | 4 | 4 | 0 | 12.0 | —/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9437956809997559 | 0.0 | 0.0 | +d3fbe91b-4c13-49db-9b9c-8b2879652154 / -d731d71e-fc91-41ae-ab3f-75966dd2c428,f9c418e0-f8aa-4492-8b97-8855ce3af370 |
+| Jogador 5 | 2-4 | 180 | MOVE_BENCH | STABILIZE | 91.0 | 4 | 3 | 0 | 10.0 | —/DA_18_Yorick | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3738879859447479 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-4 | 181 | REROLL | STABILIZE | 91.0 | 4 | 3 | 0 | 12.0 | —/DA_18_Yorick | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-4 | 182 | BUY | STABILIZE | 91.0 | 4 | 1 | 0 | 12.0 | —/DA_18_Yorick | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9465044736862183 | 0.0 | 0.0 | +79ed9815-7667-4e50-86a3-420599ce8c79 / -3002832d-1e66-428b-a25e-007c716764a3,6951a681-f5b9-4c22-9182-46b4d2c3cbb3 |
+| Jogador 5 | 2-4 | 183 | MOVE_BOARD | STABILIZE | 91.0 | 4 | 0 | 0 | 12.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.024829478934407234 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-4 | 184 | PASS | STABILIZE | 91.0 | 4 | 0 | 0 | 12.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-5 | 196 | BUY | STABILIZE | 91.0 | 4 | 5 | 0 | 12.0 | —/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3261268734931946 | 0.0 | 0.0 | +6a5bf4a0-0a6d-4ee6-9b76-3b4923ba1d97 / -— |
+| Jogador 5 | 2-5 | 197 | BUY | STABILIZE | 91.0 | 4 | 4 | 0 | 12.0 | Vivaz/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.13770294189453125 | 0.0 | 0.0 | +f2020469-2f4e-4b95-96e4-1e7d091f1ab0 / -— |
+| Jogador 5 | 2-5 | 198 | REROLL | STABILIZE | 91.0 | 4 | 2 | 0 | 12.0 | Vivaz/DA_18_Yorick | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-5 | 199 | SELL | STABILIZE | 91.0 | 4 | 0 | 0 | 12.0 | Vivaz/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.23178397119045258 | 0.0 | 0.0 | +— / -d3fbe91b-4c13-49db-9b9c-8b2879652154 |
+| Jogador 5 | 2-5 | 200 | BUY | STABILIZE | 91.0 | 4 | 3 | 0 | 12.0 | Vivaz/DA_18_Tristana | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9089831709861755 | 0.0 | 0.0 | +46320c4e-6bc0-49d6-b150-be378fa422cf / -— |
+| Jogador 5 | 2-5 | 201 | MOVE_BENCH | STABILIZE | 91.0 | 4 | 0 | 0 | 12.0 | Vivaz/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.07215047627687454 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-5 | 202 | MOVE_BENCH | STABILIZE | 91.0 | 4 | 0 | 0 | 14.0 | Vivaz/DA_18_Kobuko | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.09950947761535645 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-5 | 203 | MOVE_BOARD | STABILIZE | 91.0 | 4 | 0 | 0 | 14.0 | Vivaz/DA_18_Kobuko | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01291028130799532 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-5 | 204 | MOVE_BENCH | STABILIZE | 91.0 | 4 | 0 | 0 | 14.0 | Vivaz/DA_18_Kobuko | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.6546103358268738 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-5 | 205 | PASS | STABILIZE | 91.0 | 4 | 0 | 0 | 14.0 | Vivaz/DA_18_Kobuko | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-6 | 213 | MOVE_BENCH | SLOWROLL | 91.0 | 5 | 7 | 0 | 14.0 | Vivaz/DA_18_Kobuko | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.40718433260917664 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-6 | 214 | BUY | SLOWROLL | 91.0 | 5 | 7 | 0 | 16.0 | Vivaz/DA_18_Kobuko | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5674986243247986 | 0.0 | 0.0 | +2ed895f2-1e83-426c-88fc-b9fb6403835d / -— |
+| Jogador 5 | 2-6 | 215 | REROLL | SLOWROLL | 91.0 | 5 | 5 | 0 | 16.0 | Vivaz/DA_18_Kobuko | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04041777551174164 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-6 | 216 | BUY | SLOWROLL | 91.0 | 5 | 3 | 0 | 16.0 | Vivaz/DA_18_Kobuko | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.806320309638977 | 0.0 | 0.0 | +62b9f2fe-f0ec-474d-9b5d-1c589c8fa2b2 / -— |
+| Jogador 5 | 2-6 | 217 | REROLL | SLOWROLL | 91.0 | 5 | 2 | 0 | 16.0 | Vivaz/DA_18_Kobuko | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10899999737739563 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-6 | 218 | MOVE_BOARD | SLOWROLL | 91.0 | 5 | 0 | 0 | 16.0 | Vivaz/DA_18_Kobuko | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.4511893823510036e-05 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-6 | 219 | MOVE_BOARD | SLOWROLL | 91.0 | 5 | 0 | 0 | 16.0 | Vivaz/DA_18_Kobuko | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01633770577609539 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-6 | 220 | MOVE_BOARD | SLOWROLL | 91.0 | 5 | 0 | 0 | 16.0 | Vivaz/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014479432255029678 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-6 | 221 | PASS | SLOWROLL | 91.0 | 5 | 0 | 0 | 16.0 | Vivaz/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-7 | 232 | SELL | SLOWROLL | 86.0 | 5 | 5 | 0 | 16.0 | Vivaz/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.007040000054985285 | 0.0 | 0.0 | +— / -f44d5eea-6187-4ea9-ab49-79077393b7de |
+| Jogador 5 | 2-7 | 233 | BUY | SLOWROLL | 86.0 | 5 | 8 | 0 | 16.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6810992956161499 | 0.0 | 0.0 | +8a52858d-da47-4de9-8e91-8612788cb8fd / -— |
+| Jogador 5 | 2-7 | 234 | REROLL | SLOWROLL | 86.0 | 5 | 7 | 0 | 16.0 | Vivaz/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11330796778202057 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-7 | 235 | REROLL | SLOWROLL | 86.0 | 5 | 5 | 0 | 16.0 | Vivaz/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.040549345314502716 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-7 | 236 | SELL | SLOWROLL | 86.0 | 5 | 3 | 0 | 16.0 | Vivaz/DA_18_Tristana | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0028800000436604023 | 0.0 | 0.0 | +— / -2892a7ad-b390-4e82-9aa5-6e15828881f4 |
+| Jogador 5 | 2-7 | 237 | BUY | SLOWROLL | 86.0 | 5 | 5 | 0 | 16.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8399556875228882 | 0.0 | 0.0 | +b750b244-a898-479e-9a8e-f30a3f4b0005 / -— |
+| Jogador 5 | 2-7 | 238 | REROLL | SLOWROLL | 86.0 | 5 | 2 | 0 | 16.0 | Vivaz/DA_18_Tristana | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10899999737739563 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-7 | 239 | MOVE_BENCH | SLOWROLL | 86.0 | 5 | 0 | 0 | 16.0 | Vivaz/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.03761308267712593 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-7 | 240 | MOVE_BOARD | SLOWROLL | 86.0 | 5 | 0 | 0 | 18.0 | Vivaz/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.015115621499717236 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 2-7 | 241 | PASS | SLOWROLL | 86.0 | 5 | 0 | 0 | 18.0 | Vivaz/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-1 | 252 | CRAFT_AND_EQUIP | SLOWROLL | 86.0 | 5 | 5 | 0 | 18.0 | Vivaz/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.17326264083385468 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-1 | 253 | SELL | SLOWROLL | 86.0 | 5 | 5 | 0 | 18.0 | Vivaz/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.005774328019469976 | 0.0 | 0.0 | +— / -6a5bf4a0-0a6d-4ee6-9b76-3b4923ba1d97 |
+| Jogador 5 | 3-1 | 254 | BUY | SLOWROLL | 86.0 | 5 | 6 | 0 | 18.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7378827333450317 | 0.0 | 0.0 | +a9588010-57fa-4baf-b226-a30f519342e7 / -— |
+| Jogador 5 | 3-1 | 255 | SELL | SLOWROLL | 86.0 | 5 | 5 | 0 | 18.0 | Vivaz/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.00384055869653821 | 0.0 | 0.0 | +— / -fa0e266f-ef5b-48c5-b9a3-511450e97169 |
+| Jogador 5 | 3-1 | 256 | BUY | SLOWROLL | 86.0 | 5 | 6 | 0 | 18.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7630488872528076 | 0.0 | 0.0 | +840740a6-45be-4107-a4b7-b10cefe1a667 / -02c39b42-90d5-4e01-9380-460b6c1cb993,62b9f2fe-f0ec-474d-9b5d-1c589c8fa2b2 |
+| Jogador 5 | 3-1 | 257 | MOVE_BENCH | SLOWROLL | 86.0 | 5 | 5 | 0 | 16.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3973104655742645 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-1 | 258 | REROLL | SLOWROLL | 86.0 | 5 | 5 | 0 | 18.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.041891299188137054 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-1 | 259 | BUY | SLOWROLL | 86.0 | 5 | 3 | 0 | 18.0 | Vivaz/DA_18_Tristana | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.21771816909313202 | 0.0 | 0.0 | +cc9b5fff-2223-4721-a8b2-4f70e196b851 / -— |
+| Jogador 5 | 3-1 | 260 | REROLL | SLOWROLL | 86.0 | 5 | 2 | 0 | 18.0 | Vivaz/DA_18_Tristana | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10899999737739563 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-1 | 261 | MOVE_BOARD | SLOWROLL | 86.0 | 5 | 0 | 0 | 18.0 | Vivaz/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0049163224175572395 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-1 | 262 | PASS | SLOWROLL | 86.0 | 5 | 0 | 0 | 18.0 | Vivaz/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-2 | 272 | BUY | SLOWROLL | 86.0 | 5 | 6 | 0 | 18.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7374764084815979 | 0.0 | 0.0 | +715d5bfc-c8c3-4dec-a247-9e07ee2755e8 / -— |
+| Jogador 5 | 3-2 | 273 | REROLL | SLOWROLL | 86.0 | 5 | 5 | 0 | 18.0 | Vivaz/DA_18_RekSai | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04299973323941231 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-2 | 274 | MOVE_BENCH | SLOWROLL | 86.0 | 5 | 3 | 0 | 18.0 | Vivaz/DA_18_RekSai | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.10094562917947769 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-2 | 275 | SELL | SLOWROLL | 86.0 | 5 | 3 | 0 | 18.0 | Vivaz/DA_18_RekSai | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.30934202671051025 | 0.0 | 0.0 | +— / -840740a6-45be-4107-a4b7-b10cefe1a667 |
+| Jogador 5 | 3-2 | 276 | EQUIP_FROM_INVENTORY | SLOWROLL | 86.0 | 5 | 6 | 0 | 18.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.18559569120407104 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-2 | 277 | EQUIP_FROM_INVENTORY | SLOWROLL | 86.0 | 5 | 6 | 0 | 18.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.18064065277576447 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-2 | 278 | BUY | SLOWROLL | 86.0 | 5 | 6 | 0 | 18.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7679442763328552 | 0.0 | 0.0 | +7e0d7932-1b83-4918-9292-6e60957e6022 / -9c678a7f-3209-4d1b-addd-385f7d4b89fa,a9588010-57fa-4baf-b226-a30f519342e7 |
+| Jogador 5 | 3-2 | 279 | MOVE_BENCH | SLOWROLL | 86.0 | 5 | 5 | 0 | 16.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3967447876930237 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-2 | 280 | BUY | SLOWROLL | 86.0 | 5 | 5 | 0 | 18.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6665757298469543 | 0.0 | 0.0 | +c65dacb1-5745-49d1-b7d4-e45d8e24aa84 / -2ed895f2-1e83-426c-88fc-b9fb6403835d,f2020469-2f4e-4b95-96e4-1e7d091f1ab0 |
+| Jogador 5 | 3-2 | 281 | MOVE_BENCH | SLOWROLL | 86.0 | 5 | 3 | 0 | 14.0 | Vivaz/DA_18_Warwick | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.4569889307022095 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-2 | 282 | PASS | SLOWROLL | 86.0 | 5 | 3 | 0 | 22.0 | Vivaz/DA_18_Warwick | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-3 | 292 | BUY | SLOWROLL | 86.0 | 5 | 10 | 1 | 22.0 | Vivaz/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.13788451254367828 | 0.0 | 0.0 | +2f5d8cb8-8ba3-45e9-a345-00e931d34490 / -— |
+| Jogador 5 | 3-3 | 293 | BUY | SLOWROLL | 86.0 | 5 | 9 | 0 | 22.0 | Vivaz/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2179926037788391 | 0.0 | 0.0 | +d6a929d8-6d7c-4bcd-880d-d819daca2ae0 / -— |
+| Jogador 5 | 3-3 | 294 | MOVE_BOARD | SLOWROLL | 86.0 | 5 | 8 | 0 | 22.0 | Vivaz/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-3 | 295 | MOVE_BOARD | SLOWROLL | 86.0 | 5 | 8 | 0 | 22.0 | Vivaz/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-3 | 296 | PASS | SLOWROLL | 86.0 | 5 | 8 | 0 | 22.0 | Vivaz/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-4 | 312 | BUY | SLOWROLL | 86.0 | 5 | 15 | 1 | 22.0 | Vivaz/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.16279670596122742 | 0.0 | 0.0 | +d5c73756-6784-44e9-b521-5c61db813319 / -— |
+| Jogador 5 | 3-4 | 313 | REROLL | SLOWROLL | 86.0 | 5 | 13 | 1 | 22.0 | Vivaz/DA_18_Warwick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04287960007786751 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-4 | 314 | SELL | SLOWROLL | 86.0 | 5 | 11 | 1 | 22.0 | Vivaz/DA_18_Warwick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.37049999833106995 | 0.0 | 0.0 | +— / -7e0d7932-1b83-4918-9292-6e60957e6022 |
+| Jogador 5 | 3-4 | 315 | BUY | SLOWROLL | 86.0 | 5 | 14 | 1 | 22.0 | Vivaz/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6722893118858337 | 0.0 | 0.0 | +95c9269d-881e-4c24-878b-d65e78fc7230 / -— |
+| Jogador 5 | 3-4 | 316 | REROLL | SLOWROLL | 86.0 | 5 | 12 | 1 | 22.0 | Vivaz/DA_18_Warwick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04295513778924942 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-4 | 317 | MOVE_BOARD | SLOWROLL | 86.0 | 5 | 10 | 1 | 22.0 | Vivaz/DA_18_Warwick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.07511818408966064 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-4 | 318 | SELL | SLOWROLL | 86.0 | 5 | 10 | 1 | 22.0 | Vivaz/DA_18_Warwick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.35671019554138184 | 0.0 | 0.0 | +— / -2f5d8cb8-8ba3-45e9-a345-00e931d34490 |
+| Jogador 5 | 3-4 | 319 | BUY | SLOWROLL | 86.0 | 5 | 11 | 1 | 22.0 | Vivaz/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.13481226563453674 | 0.0 | 0.0 | +54574f38-262f-44ac-83da-03088b8bdea3 / -— |
+| Jogador 5 | 3-4 | 320 | REROLL | SLOWROLL | 86.0 | 5 | 9 | 0 | 22.0 | Vivaz/DA_18_Warwick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.042999930679798126 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-4 | 321 | SELL | SLOWROLL | 86.0 | 5 | 7 | 0 | 22.0 | Vivaz/DA_18_Warwick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.25804680585861206 | 0.0 | 0.0 | +— / -8a52858d-da47-4de9-8e91-8612788cb8fd |
+| Jogador 5 | 3-4 | 322 | PASS | SLOWROLL | 86.0 | 5 | 8 | 0 | 22.0 | Vivaz/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-5 | 332 | BUY | SLOWROLL | 86.0 | 5 | 14 | 1 | 22.0 | Vivaz/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7377144694328308 | 0.0 | 0.0 | +dc423197-9320-4651-b71d-a62086416f9d / -— |
+| Jogador 5 | 3-5 | 333 | SELL | SLOWROLL | 86.0 | 5 | 13 | 1 | 22.0 | Vivaz/DA_18_Warwick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2581331431865692 | 0.0 | 0.0 | +— / -95c9269d-881e-4c24-878b-d65e78fc7230 |
+| Jogador 5 | 3-5 | 334 | BUY | SLOWROLL | 86.0 | 5 | 15 | 1 | 22.0 | Vivaz/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.19937118887901306 | 0.0 | 0.0 | +d79de824-d9b2-4dfb-a7be-a359b416aea1 / -— |
+| Jogador 5 | 3-5 | 335 | REROLL | SLOWROLL | 86.0 | 5 | 14 | 1 | 22.0 | Vivaz/DA_18_Warwick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04299985617399216 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-5 | 336 | SELL | SLOWROLL | 86.0 | 5 | 12 | 1 | 22.0 | Vivaz/DA_18_Warwick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.01309139933437109 | 0.0 | 0.0 | +— / -d5c73756-6784-44e9-b521-5c61db813319 |
+| Jogador 5 | 3-5 | 337 | BUY | SLOWROLL | 86.0 | 5 | 14 | 1 | 22.0 | Vivaz/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.21798482537269592 | 0.0 | 0.0 | +07080859-42b2-498e-9c11-257fea02f14b / -— |
+| Jogador 5 | 3-5 | 338 | REROLL | SLOWROLL | 86.0 | 5 | 13 | 1 | 22.0 | Vivaz/DA_18_Warwick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.042979829013347626 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-5 | 339 | SELL | SLOWROLL | 86.0 | 5 | 11 | 1 | 22.0 | Vivaz/DA_18_Warwick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.35661858320236206 | 0.0 | 0.0 | +— / -07080859-42b2-498e-9c11-257fea02f14b |
+| Jogador 5 | 3-5 | 340 | BUY | SLOWROLL | 86.0 | 5 | 12 | 1 | 22.0 | Vivaz/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7581924796104431 | 0.0 | 0.0 | +ee093d10-ed4b-4e0e-8e0a-37247f9aa517 / -715d5bfc-c8c3-4dec-a247-9e07ee2755e8,cc9b5fff-2223-4721-a8b2-4f70e196b851 |
+| Jogador 5 | 3-5 | 341 | REROLL | SLOWROLL | 86.0 | 5 | 11 | 1 | 20.0 | Vivaz/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.18959465622901917 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-5 | 342 | PASS | SLOWROLL | 86.0 | 5 | 9 | 0 | 20.0 | Vivaz/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-6 | 346 | BUY | SLOWROLL | 75.0 | 5 | 14 | 1 | 20.0 | Vivaz/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.06633736193180084 | 0.0 | 0.0 | +ac0e7aab-09c1-4762-8c74-09fedabcd769 / -— |
+| Jogador 5 | 3-6 | 347 | MOVE_BENCH | SLOWROLL | 75.0 | 5 | 11 | 1 | 20.0 | Vivaz/DA_18_Warwick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6069032549858093 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-6 | 348 | BUY | SLOWROLL | 75.0 | 5 | 11 | 1 | 22.0 | Vivaz/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.054443225264549255 | 0.0 | 0.0 | +6fe382fd-86c3-42ec-abb7-fb52c7a19c62 / -— |
+| Jogador 5 | 3-6 | 349 | REROLL | SLOWROLL | 75.0 | 5 | 10 | 1 | 22.0 | Vivaz/DA_18_Warwick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.03898591548204422 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-6 | 350 | SELL | SLOWROLL | 75.0 | 5 | 8 | 0 | 22.0 | Vivaz/DA_18_Warwick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.15238024294376373 | 0.0 | 0.0 | +— / -ee093d10-ed4b-4e0e-8e0a-37247f9aa517 |
+| Jogador 5 | 3-6 | 351 | BUY | SLOWROLL | 75.0 | 5 | 11 | 1 | 22.0 | Vivaz/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.43529409170150757 | 0.0 | 0.0 | +24985c10-0eb6-40fa-9d1a-99ceb7213e06 / -— |
+| Jogador 5 | 3-6 | 352 | REROLL | SLOWROLL | 75.0 | 5 | 10 | 1 | 22.0 | Vivaz/DA_18_Warwick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.1913546323776245 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-6 | 353 | REROLL | SLOWROLL | 75.0 | 5 | 8 | 0 | 22.0 | Vivaz/DA_18_Warwick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0429837703704834 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-6 | 354 | SELL | SLOWROLL | 75.0 | 5 | 6 | 0 | 22.0 | Vivaz/DA_18_Warwick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.012045861221849918 | 0.0 | 0.0 | +— / -6fe382fd-86c3-42ec-abb7-fb52c7a19c62 |
+| Jogador 5 | 3-6 | 355 | BUY | SLOWROLL | 75.0 | 5 | 7 | 0 | 22.0 | Vivaz/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7320301532745361 | 0.0 | 0.0 | +8ced6bcb-e43e-4925-bae6-818342efe6bf / -— |
+| Jogador 5 | 3-6 | 356 | PASS | SLOWROLL | 75.0 | 5 | 5 | 0 | 22.0 | Vivaz/DA_18_Warwick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-7 | 362 | MOVE_BOARD | SLOWROLL | 75.0 | 5 | 11 | 1 | 22.0 | Vivaz/DA_18_Warwick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0052076042629778385 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-7 | 363 | SELL | SLOWROLL | 75.0 | 5 | 11 | 1 | 22.0 | Vivaz/DA_18_Warwick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0011569586349651217 | 0.0 | 0.0 | +— / -ac0e7aab-09c1-4762-8c74-09fedabcd769 |
+| Jogador 5 | 3-7 | 364 | BUY | SLOWROLL | 75.0 | 5 | 14 | 1 | 22.0 | Vivaz/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.14144322276115417 | 0.0 | 0.0 | +a555195a-af05-4734-a909-5eadcfe58b24 / -— |
+| Jogador 5 | 3-7 | 365 | REROLL | SLOWROLL | 75.0 | 5 | 10 | 1 | 22.0 | Vivaz/DA_18_Warwick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.040038544684648514 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-7 | 366 | SELL | SLOWROLL | 75.0 | 5 | 8 | 0 | 22.0 | Vivaz/DA_18_Warwick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.18473853170871735 | 0.0 | 0.0 | +— / -d79de824-d9b2-4dfb-a7be-a359b416aea1 |
+| Jogador 5 | 3-7 | 367 | REROLL | SLOWROLL | 75.0 | 5 | 9 | 0 | 22.0 | Vivaz/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11352312564849854 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-7 | 368 | REROLL | SLOWROLL | 75.0 | 5 | 7 | 0 | 22.0 | Vivaz/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04299990087747574 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-7 | 369 | BUY | SLOWROLL | 75.0 | 5 | 5 | 0 | 22.0 | Vivaz/DA_18_Warwick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7637197375297546 | 0.0 | 0.0 | +e00cb4c6-0784-4be7-b937-2b2b4775be1c / -46320c4e-6bc0-49d6-b150-be378fa422cf,ae570779-3ae8-49b3-acdb-607fc512fcea |
+| Jogador 5 | 3-7 | 370 | BUY | SLOWROLL | 75.0 | 5 | 2 | 0 | 22.0 | Vivaz/DA_18_Rammus | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1947672814130783 | 0.0 | 0.0 | +178b4c65-905c-4e75-870a-db4e8031b746 / -— |
+| Jogador 5 | 3-7 | 371 | MOVE_BOARD | SLOWROLL | 75.0 | 5 | 1 | 0 | 22.0 | Vivaz/DA_18_Rammus | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -4.009881649835734e-06 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 3-7 | 372 | PASS | SLOWROLL | 75.0 | 5 | 1 | 0 | 22.0 | Vivaz/DA_18_Rammus | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-1 | 377 | BUY | SLOWROLL | 75.0 | 5 | 6 | 0 | 22.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | True | 0.7639936804771423 | 0.0 | 0.0 | +22f1ab5f-b752-49e7-b6f0-ed9b5e641d64 / -75005e9c-56d1-48d6-815e-573e489e3dd7,b750b244-a898-479e-9a8e-f30a3f4b0005 |
+| Jogador 5 | 4-1 | 378 | MOVE_BENCH | SLOWROLL | 75.0 | 5 | 3 | 0 | 16.0 | Vivaz/DA_18_Tristana | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | True | 0.49040862917900085 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-1 | 379 | CRAFT_AND_EQUIP | SLOWROLL | 75.0 | 5 | 3 | 0 | 20.0 | Vivaz/DA_18_Tristana | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.15219084918498993 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-1 | 380 | CRAFT_AND_EQUIP | SLOWROLL | 75.0 | 5 | 3 | 0 | 20.0 | Vivaz/DA_18_Tristana | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.14201664924621582 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-1 | 381 | MOVE_BOARD | SLOWROLL | 75.0 | 5 | 3 | 0 | 20.0 | Vivaz/DA_18_Tristana | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.00038589240284636617 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-1 | 382 | REROLL | SLOWROLL | 75.0 | 5 | 3 | 0 | 20.0 | Vivaz/DA_18_Tristana | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11168959736824036 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-1 | 383 | MOVE_BOARD | SLOWROLL | 75.0 | 5 | 1 | 0 | 20.0 | Vivaz/DA_18_Tristana | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0002084970910800621 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-1 | 384 | MOVE_BOARD | SLOWROLL | 75.0 | 5 | 1 | 0 | 20.0 | Vivaz/DA_18_Tristana | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014954437501728535 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-1 | 385 | MOVE_BOARD | SLOWROLL | 75.0 | 5 | 1 | 0 | 20.0 | Vivaz/DA_18_Tristana | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.016902731731534004 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-1 | 386 | PASS | SLOWROLL | 75.0 | 5 | 1 | 0 | 20.0 | Vivaz/DA_18_Tristana | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-2 | 389 | BUY | SLOWROLL | 63.0 | 6 | 6 | 0 | 20.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7678791284561157 | 0.0 | 0.0 | +4d7ec7ee-5678-4796-a6e4-43af72c50bc3 / -d6a929d8-6d7c-4bcd-880d-d819daca2ae0,dc423197-9320-4651-b71d-a62086416f9d |
+| Jogador 5 | 4-2 | 390 | MOVE_BENCH | SLOWROLL | 63.0 | 6 | 5 | 0 | 18.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.34608837962150574 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-2 | 391 | BUY | SLOWROLL | 63.0 | 6 | 5 | 0 | 22.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7073751091957092 | 0.0 | 0.0 | +9061935a-18ba-4903-a48c-8ff90432875e / -— |
+| Jogador 5 | 4-2 | 392 | REROLL | SLOWROLL | 63.0 | 6 | 4 | 0 | 22.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.03634971007704735 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-2 | 393 | REROLL | SLOWROLL | 63.0 | 6 | 2 | 0 | 22.0 | Vivaz/DA_18_Tristana | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10899999737739563 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-2 | 394 | MOVE_BOARD | SLOWROLL | 63.0 | 6 | 0 | 0 | 22.0 | Vivaz/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0011546736350283027 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-2 | 395 | MOVE_BOARD | SLOWROLL | 63.0 | 6 | 0 | 0 | 22.0 | Vivaz/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014983336441218853 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-2 | 396 | MOVE_BOARD | SLOWROLL | 63.0 | 6 | 0 | 0 | 22.0 | Vivaz/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014962761662900448 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-2 | 397 | MOVE_BENCH | SLOWROLL | 63.0 | 6 | 0 | 0 | 22.0 | Vivaz/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.39247357845306396 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-2 | 398 | PASS | SLOWROLL | 63.0 | 6 | 0 | 0 | 24.0 | Vivaz/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-3 | 402 | BUY | SLOWROLL | 51.0 | 6 | 6 | 0 | 24.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.765381932258606 | 0.0 | 0.0 | +f6e5ba4b-ca79-4acc-ade4-92acd8657926 / -54574f38-262f-44ac-83da-03088b8bdea3,8ced6bcb-e43e-4925-bae6-818342efe6bf |
+| Jogador 5 | 4-3 | 403 | MOVE_BENCH | SLOWROLL | 51.0 | 6 | 4 | 0 | 20.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5491235852241516 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-3 | 404 | BUY | FAST8 | 51.0 | 6 | 4 | 0 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2176685929298401 | 0.0 | 0.0 | +fc2d3537-f31f-4966-900d-5987737a1be0 / -— |
+| Jogador 5 | 4-3 | 405 | MOVE_BOARD | FAST8 | 51.0 | 6 | 3 | 0 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -8.326664828928187e-05 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-3 | 406 | MOVE_BENCH | FAST8 | 51.0 | 6 | 3 | 0 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.02134583704173565 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-3 | 407 | PASS | SLOWROLL | 51.0 | 6 | 3 | 0 | 22.0 | Vivaz/DA_18_Tristana | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-4 | 416 | MOVE_BOARD | SLOWROLL | 39.0 | 6 | 9 | 0 | 22.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10746479034423828 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-4 | 417 | MOVE_BOARD | SLOWROLL | 39.0 | 6 | 9 | 0 | 22.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.11946050822734833 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-4 | 418 | BUY | SLOWROLL | 39.0 | 6 | 9 | 0 | 22.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7538586258888245 | 0.0 | 0.0 | +e910829d-e867-4de5-9604-a0b85a3c6cda / -— |
+| Jogador 5 | 4-4 | 419 | MOVE_BENCH | SLOWROLL | 39.0 | 6 | 8 | 0 | 22.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.807503879070282 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-4 | 420 | MOVE_BENCH | FAST8 | 39.0 | 6 | 8 | 0 | 26.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.20797745883464813 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-4 | 421 | MOVE_BENCH | FAST8 | 39.0 | 6 | 8 | 0 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.7427131533622742 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-4 | 422 | MOVE_BENCH | SLOWROLL | 39.0 | 6 | 8 | 0 | 22.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.7787964344024658 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-4 | 423 | PASS | FAST8 | 39.0 | 6 | 8 | 0 | 26.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-5 | 429 | BUY | FAST8 | 39.0 | 6 | 14 | 1 | 26.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7673150897026062 | 0.0 | 0.0 | +e11eecd7-b251-4ce2-8801-9f8ce46a3953 / -178b4c65-905c-4e75-870a-db4e8031b746,9061935a-18ba-4903-a48c-8ff90432875e |
+| Jogador 5 | 4-5 | 430 | MOVE_BENCH | SLOWROLL | 39.0 | 6 | 13 | 1 | 24.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6523757576942444 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-5 | 431 | MOVE_BOARD | FAST8 | 39.0 | 6 | 13 | 1 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.021597210317850113 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-5 | 432 | MOVE_BOARD | FAST8 | 39.0 | 6 | 13 | 1 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.016251549124717712 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-5 | 433 | MOVE_BOARD | FAST8 | 39.0 | 6 | 13 | 1 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04979437589645386 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-5 | 434 | MOVE_BOARD | FAST8 | 39.0 | 6 | 13 | 1 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014965495094656944 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-5 | 435 | MOVE_BOARD | FAST8 | 39.0 | 6 | 13 | 1 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.4132056094240397e-05 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-5 | 436 | MOVE_BOARD | FAST8 | 39.0 | 6 | 13 | 1 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0008415013435296714 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-5 | 437 | MOVE_BOARD | FAST8 | 39.0 | 6 | 13 | 1 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.00010375845886301249 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-5 | 438 | PASS | FAST8 | 39.0 | 6 | 13 | 1 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-6 | 441 | MOVE_BOARD | FAST8 | 39.0 | 6 | 20 | 2 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -6.823764852015302e-05 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-6 | 442 | MOVE_BOARD | FAST8 | 39.0 | 6 | 20 | 2 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.23942093551158905 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-6 | 443 | PASS | FAST8 | 39.0 | 6 | 20 | 2 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11212698370218277 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-7 | 452 | MOVE_BOARD | STABILIZE | 28.0 | 6 | 27 | 2 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.06426103413105011 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-7 | 453 | MOVE_BOARD | STABILIZE | 28.0 | 6 | 27 | 2 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.016300281509757042 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 4-7 | 454 | PASS | STABILIZE | 28.0 | 6 | 27 | 2 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.1306973546743393 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 5-1 | 462 | CRAFT_AND_EQUIP | STABILIZE | 28.0 | 6 | 34 | 3 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.1706787496805191 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 5-1 | 463 | CRAFT_AND_EQUIP | STABILIZE | 28.0 | 6 | 34 | 3 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.16324280202388763 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 5-1 | 464 | MOVE_BENCH | STABILIZE | 28.0 | 6 | 34 | 3 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.02714250609278679 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 5-1 | 465 | MOVE_BENCH | STABILIZE | 28.0 | 6 | 34 | 3 | 22.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.35318711400032043 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 5-1 | 466 | MOVE_BENCH | STABILIZE | 28.0 | 6 | 34 | 3 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.31238096952438354 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 5-1 | 467 | PASS | STABILIZE | 28.0 | 6 | 34 | 3 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2230241298675537 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 5-2 | 472 | MOVE_BOARD | ALL_IN | 14.0 | 6 | 43 | 4 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.07685025036334991 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 5-2 | 473 | MOVE_BOARD | ALL_IN | 14.0 | 6 | 43 | 4 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 5-2 | 474 | MOVE_BOARD | ALL_IN | 14.0 | 6 | 43 | 4 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.16106083989143372 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 5-2 | 475 | MOVE_BOARD | ALL_IN | 14.0 | 6 | 43 | 4 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01284046471118927 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 5-2 | 476 | MOVE_BOARD | ALL_IN | 14.0 | 6 | 43 | 4 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.018306370824575424 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 5-2 | 477 | MOVE_BOARD | ALL_IN | 14.0 | 6 | 43 | 4 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.5022756088001188e-06 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 5-2 | 478 | MOVE_BOARD | ALL_IN | 14.0 | 6 | 43 | 4 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.00011820244981208816 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 5-2 | 479 | MOVE_BOARD | ALL_IN | 14.0 | 6 | 43 | 4 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 4.0276951040141284e-05 | 0.0 | 0.0 | +— / -— |
+| Jogador 5 | 5-2 | 480 | MOVE_BOARD | ALL_IN | 14.0 | 6 | 43 | 4 | 28.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 1-1 | 1 | MOVE_BENCH | ECON | 100.0 | 2 | 0 | 0 | 0.0 | —/— | MOVE_BENCH, SELL, PASS | True | True | 0.16343529522418976 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 1-1 | 2 | PASS | STABILIZE | 100.0 | 2 | 0 | 0 | 2.0 | —/DA_18_Sentry | MOVE_BOARD, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 1-2 | 29 | BUY | STABILIZE | 100.0 | 3 | 2 | 0 | 2.0 | —/DA_18_Sentry | BUY, REROLL, MOVE_BOARD, PASS | True | True | 0.1729409396648407 | 0.0 | 0.0 | +425b1e77-5887-40b3-875e-c1f60dc6c513 / -— |
+| Jogador 6 | 1-2 | 30 | BUY | STABILIZE | 100.0 | 3 | 1 | 0 | 2.0 | —/DA_18_Yorick | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9946255087852478 | 0.0 | 0.0 | +908afab9-748c-4057-a2a9-d2686c5d52e0 / -— |
+| Jogador 6 | 1-2 | 31 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 0 | 0 | 2.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1021408811211586 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 1-2 | 32 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 0 | 0 | 2.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1325889527797699 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 1-2 | 33 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.41499999165534973 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 1-2 | 34 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.07199164479970932 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 1-2 | 35 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.016835413873195648 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 1-2 | 36 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1587153822183609 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 1-2 | 37 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Yorick | MOVE_BOARD, PASS | True | True | 0.2716834247112274 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 1-2 | 38 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Yorick | MOVE_BOARD, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 1-2 | 39 | PASS | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Yorick | MOVE_BOARD, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 1-3 | 56 | BUY | STABILIZE | 100.0 | 3 | 2 | 0 | 6.0 | —/DA_18_Yorick | BUY, REROLL, MOVE_BOARD, PASS | True | True | 0.18404944241046906 | 0.0 | 0.0 | +c3c53e80-c8e2-4774-afa2-9b0f4ab3b326 / -— |
+| Jogador 6 | 1-3 | 57 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.004153294488787651 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 1-3 | 58 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014970219694077969 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 1-3 | 59 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.33136820793151855 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 1-3 | 60 | PASS | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 1-4 | 81 | BUY | STABILIZE | 100.0 | 3 | 3 | 0 | 6.0 | —/DA_18_Yorick | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.0279109477996826 | 0.0 | 0.0 | +3ad41699-a484-4178-be10-d8f72dfd1f35 / -— |
+| Jogador 6 | 1-4 | 82 | BUY | STABILIZE | 100.0 | 3 | 2 | 0 | 6.0 | —/DA_18_Yorick | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.20202119648456573 | 0.0 | 0.0 | +c19cf6a8-c66e-4670-b0fc-fb83453f22e7 / -— |
+| Jogador 6 | 1-4 | 83 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 1-4 | 84 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.012578782625496387 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 1-4 | 85 | PASS | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-1 | 108 | CRAFT_AND_EQUIP | STABILIZE | 100.0 | 4 | 4 | 0 | 6.0 | —/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.20336021482944489 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-1 | 109 | CRAFT_AND_EQUIP | STABILIZE | 100.0 | 4 | 4 | 0 | 6.0 | —/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.19139952957630157 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-1 | 110 | BUY | STABILIZE | 100.0 | 4 | 4 | 0 | 6.0 | —/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2592594623565674 | 0.0 | 0.0 | +242805ca-f275-4e04-a2f5-81e0b6680dd1 / -— |
+| Jogador 6 | 2-1 | 111 | MOVE_BENCH | STABILIZE | 100.0 | 4 | 3 | 0 | 6.0 | —/DA_18_Yorick | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.4303121864795685 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-1 | 112 | BUY | STABILIZE | 100.0 | 4 | 3 | 0 | 10.0 | —/DA_18_Yorick | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3652839958667755 | 0.0 | 0.0 | +de82e676-8d8b-4437-958e-a8398a3cfade / -— |
+| Jogador 6 | 2-1 | 113 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 1 | 0 | 10.0 | —/DA_18_Yorick | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0023105100262910128 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-1 | 114 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 1 | 0 | 10.0 | —/DA_18_Yorick | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3196319043636322 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-1 | 115 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 1 | 0 | 10.0 | —/DA_Murkwolf18 | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01495586708188057 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-1 | 116 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 1 | 0 | 10.0 | —/DA_Murkwolf18 | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-1 | 117 | PASS | STABILIZE | 100.0 | 4 | 1 | 0 | 10.0 | —/DA_Murkwolf18 | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-2 | 131 | BUY | STABILIZE | 100.0 | 4 | 7 | 0 | 10.0 | —/DA_Murkwolf18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1310281902551651 | 0.0 | 0.0 | +f75a22a6-8a32-4581-8724-bdb7712c21ee / -— |
+| Jogador 6 | 2-2 | 132 | REROLL | STABILIZE | 100.0 | 4 | 4 | 0 | 10.0 | —/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-2 | 133 | BUY | STABILIZE | 100.0 | 4 | 2 | 0 | 10.0 | —/DA_18_Tristana | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9594138264656067 | 0.0 | 0.0 | +0fff7760-179f-4d7c-8267-08d70cb6c1bd / -— |
+| Jogador 6 | 2-2 | 134 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.002190332394093275 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-2 | 135 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-2 | 136 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.015346044674515724 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-2 | 137 | PASS | STABILIZE | 100.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-3 | 154 | BUY | STABILIZE | 100.0 | 4 | 7 | 0 | 10.0 | —/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8355711102485657 | 0.0 | 0.0 | +6a071ec5-c3f4-41b3-a0d8-c1aee62cffee / -— |
+| Jogador 6 | 2-3 | 155 | BUY | STABILIZE | 100.0 | 4 | 6 | 0 | 10.0 | —/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9220459461212158 | 0.0 | 0.0 | +0c15e414-bc67-46de-a087-fb7708db0dfe / -242805ca-f275-4e04-a2f5-81e0b6680dd1,6a071ec5-c3f4-41b3-a0d8-c1aee62cffee |
+| Jogador 6 | 2-3 | 156 | BUY | STABILIZE | 100.0 | 4 | 5 | 0 | 10.0 | —/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2620187997817993 | 0.0 | 0.0 | +081b684f-5d42-45c5-9a68-12127e5330a7 / -— |
+| Jogador 6 | 2-3 | 157 | REROLL | STABILIZE | 100.0 | 4 | 4 | 0 | 10.0 | —/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-3 | 158 | BUY | STABILIZE | 100.0 | 4 | 2 | 0 | 10.0 | —/DA_18_Rakan | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.948382556438446 | 0.0 | 0.0 | +15893185-b1a5-4725-9e46-964e149ec287 / -425b1e77-5887-40b3-875e-c1f60dc6c513,908afab9-748c-4057-a2a9-d2686c5d52e0 |
+| Jogador 6 | 2-3 | 159 | MOVE_BENCH | STABILIZE | 100.0 | 4 | 1 | 0 | 6.0 | —/DA_18_Yorick | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2797510027885437 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-3 | 160 | BUY | STABILIZE | 100.0 | 4 | 1 | 0 | 10.0 | —/DA_18_Yorick | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.24079632759094238 | 0.0 | 0.0 | +2fd4f2d8-6e40-439a-a96d-3e49e05779ad / -— |
+| Jogador 6 | 2-3 | 161 | MOVE_BENCH | STABILIZE | 100.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.32945993542671204 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-3 | 162 | MOVE_BENCH | STABILIZE | 100.0 | 4 | 0 | 0 | 8.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5185539126396179 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-3 | 163 | SELL | STABILIZE | 100.0 | 4 | 0 | 0 | 12.0 | —/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.31488892436027527 | 0.0 | 0.0 | +— / -15893185-b1a5-4725-9e46-964e149ec287 |
+| Jogador 6 | 2-3 | 164 | PASS | STABILIZE | 100.0 | 4 | 3 | 0 | 12.0 | —/DA_18_Rakan | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-4 | 174 | EQUIP_FROM_INVENTORY | STABILIZE | 100.0 | 4 | 10 | 1 | 12.0 | —/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.09896949678659439 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-4 | 175 | EQUIP_FROM_INVENTORY | STABILIZE | 100.0 | 4 | 10 | 1 | 12.0 | —/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.11617457866668701 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-4 | 176 | BUY | STABILIZE | 100.0 | 4 | 10 | 1 | 12.0 | —/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8061061501502991 | 0.0 | 0.0 | +5e247068-fe03-467e-9e7d-ab85ade7fdae / -— |
+| Jogador 6 | 2-4 | 177 | BUY | STABILIZE | 100.0 | 4 | 9 | 0 | 12.0 | —/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9438981413841248 | 0.0 | 0.0 | +4a0403a3-c999-4d4c-83f0-7270e8576aed / -2fd4f2d8-6e40-439a-a96d-3e49e05779ad,5e247068-fe03-467e-9e7d-ab85ade7fdae |
+| Jogador 6 | 2-4 | 178 | MOVE_BENCH | STABILIZE | 100.0 | 4 | 8 | 0 | 10.0 | —/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5248135328292847 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-4 | 179 | REROLL | STABILIZE | 100.0 | 4 | 8 | 0 | 12.0 | —/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-4 | 180 | BUY | STABILIZE | 100.0 | 4 | 6 | 0 | 12.0 | —/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3170792758464813 | 0.0 | 0.0 | +2fa86b11-4e28-4652-890e-f00a79068223 / -— |
+| Jogador 6 | 2-4 | 181 | BUY | STABILIZE | 100.0 | 4 | 3 | 0 | 12.0 | —/DA_18_Rakan | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2810285687446594 | 0.0 | 0.0 | +19cf270e-27a1-4d3c-bef7-0b1af400d07c / -— |
+| Jogador 6 | 2-4 | 182 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 12.0 | —/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.004718133248388767 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-4 | 183 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 12.0 | —/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3645694851875305 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-4 | 184 | PASS | STABILIZE | 100.0 | 4 | 0 | 0 | 12.0 | —/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-5 | 196 | BUY | STABILIZE | 100.0 | 4 | 6 | 0 | 12.0 | —/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8864607214927673 | 0.0 | 0.0 | +3f253868-2de5-4189-95a0-705f62682958 / -— |
+| Jogador 6 | 2-5 | 197 | MOVE_BENCH | STABILIZE | 100.0 | 4 | 4 | 0 | 12.0 | Fera do Rift/DA_18_Rakan | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.08488429337739944 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-5 | 198 | REROLL | STABILIZE | 100.0 | 4 | 4 | 0 | 16.0 | Fera do Rift/DA_18_Rakan | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-5 | 199 | SELL | STABILIZE | 100.0 | 4 | 2 | 0 | 16.0 | Fera do Rift/DA_18_Rakan | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2777720093727112 | 0.0 | 0.0 | +— / -4a0403a3-c999-4d4c-83f0-7270e8576aed |
+| Jogador 6 | 2-5 | 200 | BUY | STABILIZE | 100.0 | 4 | 5 | 0 | 16.0 | Fera do Rift/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9497970342636108 | 0.0 | 0.0 | +2c9e300a-5b3d-46c6-a67d-1c7ddd2dd84c / -3ad41699-a484-4178-be10-d8f72dfd1f35,698cc451-66f5-4a58-901b-20de596311c9 |
+| Jogador 6 | 2-5 | 201 | MOVE_BENCH | STABILIZE | 100.0 | 4 | 4 | 0 | 14.0 | Fera do Rift/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5342000722885132 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-5 | 202 | BUY | STABILIZE | 100.0 | 4 | 4 | 0 | 20.0 | Fera do Rift/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3327631652355194 | 0.0 | 0.0 | +4ac49c80-f0c3-47ae-a031-96928d244e13 / -— |
+| Jogador 6 | 2-5 | 203 | REROLL | STABILIZE | 100.0 | 4 | 3 | 0 | 20.0 | Fera do Rift/DA_18_Rakan | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-5 | 204 | BUY | STABILIZE | 100.0 | 4 | 1 | 0 | 20.0 | Fera do Rift/DA_18_Rakan | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.23733605444431305 | 0.0 | 0.0 | +f116ca4e-dbe8-457e-83a5-958525aa384a / -— |
+| Jogador 6 | 2-5 | 205 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 20.0 | Fera do Rift/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3066851496696472 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-5 | 206 | PASS | STABILIZE | 100.0 | 4 | 0 | 0 | 20.0 | Fera do Rift/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-6 | 213 | SELL | SLOWROLL | 100.0 | 5 | 7 | 0 | 20.0 | Fera do Rift/DA_18_Rakan | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.271305650472641 | 0.0 | 0.0 | +— / -2c9e300a-5b3d-46c6-a67d-1c7ddd2dd84c |
+| Jogador 6 | 2-6 | 214 | EQUIP_FROM_INVENTORY | SLOWROLL | 100.0 | 5 | 10 | 1 | 20.0 | Fera do Rift/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.15058183670043945 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-6 | 215 | EQUIP_FROM_INVENTORY | SLOWROLL | 100.0 | 5 | 10 | 1 | 20.0 | Fera do Rift/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.09006442129611969 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-6 | 216 | BUY | SLOWROLL | 100.0 | 5 | 10 | 1 | 20.0 | Fera do Rift/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.562021791934967 | 0.0 | 0.0 | +7e545d27-1847-4016-b42b-e7db1960ae89 / -— |
+| Jogador 6 | 2-6 | 217 | REROLL | SLOWROLL | 100.0 | 5 | 7 | 0 | 20.0 | Fera do Rift/DA_18_Rakan | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04050939530134201 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-6 | 218 | REROLL | SLOWROLL | 100.0 | 5 | 5 | 0 | 20.0 | Fera do Rift/DA_18_Rakan | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11350938677787781 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-6 | 219 | REROLL | SLOWROLL | 100.0 | 5 | 3 | 0 | 20.0 | Fera do Rift/DA_18_Rakan | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10899999737739563 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-6 | 220 | SELL | SLOWROLL | 100.0 | 5 | 1 | 0 | 20.0 | Fera do Rift/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.28354355692863464 | 0.0 | 0.0 | +— / -0c15e414-bc67-46de-a087-fb7708db0dfe |
+| Jogador 6 | 2-6 | 221 | BUY | SLOWROLL | 100.0 | 5 | 4 | 0 | 20.0 | Fera do Rift/DA_KogMaw18_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8152425289154053 | 0.0 | 0.0 | +1457cd1e-c240-4ce5-9217-a91bddfc8807 / -— |
+| Jogador 6 | 2-6 | 222 | SELL | SLOWROLL | 100.0 | 5 | 1 | 0 | 20.0 | Fera do Rift/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.007840000092983246 | 0.0 | 0.0 | +— / -f116ca4e-dbe8-457e-83a5-958525aa384a |
+| Jogador 6 | 2-6 | 223 | PASS | SLOWROLL | 100.0 | 5 | 2 | 0 | 20.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-7 | 232 | BUY | SLOWROLL | 94.0 | 5 | 7 | 0 | 20.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.827288031578064 | 0.0 | 0.0 | +3625f791-4c9f-4b95-bdf7-4a322dcd55d3 / -— |
+| Jogador 6 | 2-7 | 233 | SELL | SLOWROLL | 94.0 | 5 | 6 | 0 | 20.0 | Fera do Rift/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.013133950531482697 | 0.0 | 0.0 | +— / -c3c53e80-c8e2-4774-afa2-9b0f4ab3b326 |
+| Jogador 6 | 2-7 | 234 | BUY | SLOWROLL | 94.0 | 5 | 8 | 0 | 20.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8073229193687439 | 0.0 | 0.0 | +a14e4b8f-77c5-4909-a9ee-0044b836a877 / -— |
+| Jogador 6 | 2-7 | 235 | REROLL | SLOWROLL | 94.0 | 5 | 7 | 0 | 20.0 | Fera do Rift/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.038806937634944916 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-7 | 236 | MOVE_BENCH | SLOWROLL | 94.0 | 5 | 5 | 0 | 20.0 | Fera do Rift/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.07969548553228378 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-7 | 237 | MOVE_BENCH | SLOWROLL | 94.0 | 5 | 5 | 0 | 16.0 | Fera do Rift/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3795713782310486 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-7 | 238 | BUY | SLOWROLL | 94.0 | 5 | 5 | 0 | 22.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.871503472328186 | 0.0 | 0.0 | +23793b7b-2dab-48f0-a8ba-db85fc14c1c5 / -1457cd1e-c240-4ce5-9217-a91bddfc8807,f75a22a6-8a32-4581-8724-bdb7712c21ee |
+| Jogador 6 | 2-7 | 239 | REROLL | SLOWROLL | 94.0 | 5 | 2 | 0 | 22.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10899999737739563 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-7 | 240 | MOVE_BOARD | SLOWROLL | 94.0 | 5 | 0 | 0 | 22.0 | Fera do Rift/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.24025151133537292 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-7 | 241 | MOVE_BOARD | SLOWROLL | 94.0 | 5 | 0 | 0 | 22.0 | Fera do Rift/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.011417380534112453 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 2-7 | 242 | PASS | SLOWROLL | 94.0 | 5 | 0 | 0 | 22.0 | Fera do Rift/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-1 | 252 | CRAFT_AND_EQUIP | SLOWROLL | 94.0 | 5 | 5 | 0 | 22.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.20709435641765594 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-1 | 253 | BUY | SLOWROLL | 94.0 | 5 | 5 | 0 | 22.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7585296034812927 | 0.0 | 0.0 | +80c51b33-0a85-4f21-a797-9551aa10760f / -4ac49c80-f0c3-47ae-a031-96928d244e13,a14e4b8f-77c5-4909-a9ee-0044b836a877 |
+| Jogador 6 | 3-1 | 254 | REROLL | SLOWROLL | 94.0 | 5 | 4 | 0 | 22.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04299987852573395 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-1 | 255 | BUY | SLOWROLL | 94.0 | 5 | 2 | 0 | 22.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7658065557479858 | 0.0 | 0.0 | +fb551efa-6ad5-4f97-aa05-bc5eb70943d4 / -0fff7760-179f-4d7c-8267-08d70cb6c1bd,de82e676-8d8b-4437-958e-a8398a3cfade |
+| Jogador 6 | 3-1 | 256 | MOVE_BENCH | SLOWROLL | 94.0 | 5 | 0 | 0 | 18.0 | Fera do Rift/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.29332616925239563 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-1 | 257 | MOVE_BENCH | SLOWROLL | 94.0 | 5 | 0 | 0 | 28.0 | Fera do Rift/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5032278299331665 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-1 | 258 | MOVE_BOARD | SLOWROLL | 94.0 | 5 | 0 | 0 | 30.0 | Fera do Rift/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0149838887155056 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-1 | 259 | MOVE_BOARD | SLOWROLL | 94.0 | 5 | 0 | 0 | 30.0 | Fera do Rift/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-1 | 260 | PASS | SLOWROLL | 94.0 | 5 | 0 | 0 | 30.0 | Fera do Rift/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-2 | 272 | BUY | SLOWROLL | 94.0 | 5 | 6 | 0 | 30.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.21683886647224426 | 0.0 | 0.0 | +4c1dab77-0e6d-401b-a341-40117b445957 / -— |
+| Jogador 6 | 3-2 | 273 | REROLL | SLOWROLL | 94.0 | 5 | 5 | 0 | 30.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04028032347559929 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-2 | 274 | BUY | SLOWROLL | 94.0 | 5 | 3 | 0 | 30.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7289497256278992 | 0.0 | 0.0 | +6fb9f857-4ee1-4b52-8825-57f514dc2d0f / -— |
+| Jogador 6 | 3-2 | 275 | MOVE_BOARD | SLOWROLL | 94.0 | 5 | 0 | 0 | 30.0 | Fera do Rift/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0021498375572264194 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-2 | 276 | MOVE_BOARD | SLOWROLL | 94.0 | 5 | 0 | 0 | 30.0 | Fera do Rift/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014882498420774937 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-2 | 277 | PASS | SLOWROLL | 94.0 | 5 | 0 | 0 | 30.0 | Fera do Rift/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-3 | 292 | BUY | SLOWROLL | 94.0 | 5 | 7 | 0 | 30.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.21596471965312958 | 0.0 | 0.0 | +5754c4b4-0a7d-49e5-93e4-b144c3090a41 / -— |
+| Jogador 6 | 3-3 | 293 | REROLL | SLOWROLL | 94.0 | 5 | 5 | 0 | 30.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0427216961979866 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-3 | 294 | REROLL | SLOWROLL | 94.0 | 5 | 3 | 0 | 30.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11581030488014221 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-3 | 295 | BUY | SLOWROLL | 94.0 | 5 | 1 | 0 | 30.0 | Fera do Rift/DA_18_Tristana | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.054753076285123825 | 0.0 | 0.0 | +2f75fcd7-1405-49fd-8a0c-649c1f8a9f09 / -— |
+| Jogador 6 | 3-3 | 296 | SELL | SLOWROLL | 94.0 | 5 | 0 | 0 | 30.0 | Fera do Rift/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.36649999022483826 | 0.0 | 0.0 | +— / -fb551efa-6ad5-4f97-aa05-bc5eb70943d4 |
+| Jogador 6 | 3-3 | 297 | EQUIP_FROM_INVENTORY | SLOWROLL | 94.0 | 5 | 5 | 0 | 30.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.09184477478265762 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-3 | 298 | EQUIP_FROM_INVENTORY | SLOWROLL | 94.0 | 5 | 5 | 0 | 30.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.08151838183403015 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-3 | 299 | BUY | SLOWROLL | 94.0 | 5 | 5 | 0 | 30.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7653895616531372 | 0.0 | 0.0 | +a492f78e-91f0-48cb-891a-6518551da328 / -3f253868-2de5-4189-95a0-705f62682958,c19cf6a8-c66e-4670-b0fc-fb83453f22e7 |
+| Jogador 6 | 3-3 | 300 | REROLL | SLOWROLL | 94.0 | 5 | 3 | 0 | 26.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.040527697652578354 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-3 | 301 | MOVE_BENCH | SLOWROLL | 94.0 | 5 | 1 | 0 | 26.0 | Fera do Rift/DA_18_Tristana | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09334827214479446 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-3 | 302 | PASS | SLOWROLL | 94.0 | 5 | 1 | 0 | 32.0 | Fera do Rift/DA_18_Tristana | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-4 | 312 | BUY | SLOWROLL | 94.0 | 5 | 8 | 0 | 32.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7331749796867371 | 0.0 | 0.0 | +f0264dc3-6749-4682-929e-fab42383532a / -— |
+| Jogador 6 | 3-4 | 313 | REROLL | SLOWROLL | 94.0 | 5 | 6 | 0 | 32.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.039955705404281616 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-4 | 314 | BUY | SLOWROLL | 94.0 | 5 | 4 | 0 | 32.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.39734768867492676 | 0.0 | 0.0 | +8da82a9e-0746-43e1-81c3-fa22ec3bb863 / -— |
+| Jogador 6 | 3-4 | 315 | REROLL | SLOWROLL | 94.0 | 5 | 3 | 0 | 32.0 | Fera do Rift/DA_18_Tristana | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04299981892108917 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-4 | 316 | SELL | SLOWROLL | 94.0 | 5 | 1 | 0 | 32.0 | Fera do Rift/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.34987959265708923 | 0.0 | 0.0 | +— / -80c51b33-0a85-4f21-a797-9551aa10760f |
+| Jogador 6 | 3-4 | 317 | BUY | SLOWROLL | 94.0 | 5 | 4 | 0 | 32.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7641913294792175 | 0.0 | 0.0 | +e5f61076-ec13-419b-a4e8-d91b9975cfd6 / -5754c4b4-0a7d-49e5-93e4-b144c3090a41,f0264dc3-6749-4682-929e-fab42383532a |
+| Jogador 6 | 3-4 | 318 | BUY | SLOWROLL | 94.0 | 5 | 2 | 0 | 32.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1796349287033081 | 0.0 | 0.0 | +0c5adb43-b194-486e-b59c-c0f3b5479d40 / -— |
+| Jogador 6 | 3-4 | 319 | MOVE_BOARD | SLOWROLL | 94.0 | 5 | 1 | 0 | 32.0 | Fera do Rift/DA_18_Tristana | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.13976514339447021 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-4 | 320 | BUY | SLOWROLL | 94.0 | 5 | 1 | 0 | 32.0 | Fera do Rift/DA_18_Tristana | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.011680597439408302 | 0.0 | 0.0 | +e978e901-0a52-4f01-ba52-a83fbcc3b439 / -— |
+| Jogador 6 | 3-4 | 321 | MOVE_BOARD | SLOWROLL | 94.0 | 5 | 0 | 0 | 32.0 | Fera do Rift/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.15576739609241486 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-4 | 322 | PASS | SLOWROLL | 94.0 | 5 | 0 | 0 | 32.0 | Fera do Rift/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-5 | 332 | SELL | SLOWROLL | 94.0 | 5 | 6 | 0 | 32.0 | Fera do Rift/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2479015290737152 | 0.0 | 0.0 | +— / -e5f61076-ec13-419b-a4e8-d91b9975cfd6 |
+| Jogador 6 | 3-5 | 333 | BUY | SLOWROLL | 94.0 | 5 | 11 | 1 | 32.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.1589147448539734 | 0.0 | 0.0 | +2ac6d717-87f1-4421-929e-1934a9317e72 / -— |
+| Jogador 6 | 3-5 | 334 | REROLL | SLOWROLL | 94.0 | 5 | 9 | 0 | 32.0 | Fera do Rift/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04297727346420288 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-5 | 335 | SELL | SLOWROLL | 94.0 | 5 | 7 | 0 | 32.0 | Fera do Rift/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.23460064828395844 | 0.0 | 0.0 | +— / -a492f78e-91f0-48cb-891a-6518551da328 |
+| Jogador 6 | 3-5 | 336 | BUY | SLOWROLL | 94.0 | 5 | 12 | 1 | 32.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7252375483512878 | 0.0 | 0.0 | +d47034a1-8b51-4b82-b1b4-5f2aee8f959a / -— |
+| Jogador 6 | 3-5 | 337 | REROLL | SLOWROLL | 94.0 | 5 | 11 | 1 | 32.0 | Fera do Rift/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.042089663445949554 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-5 | 338 | SELL | SLOWROLL | 94.0 | 5 | 9 | 0 | 32.0 | Fera do Rift/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.08444207161664963 | 0.0 | 0.0 | +— / -2ac6d717-87f1-4421-929e-1934a9317e72 |
+| Jogador 6 | 3-5 | 339 | BUY | SLOWROLL | 94.0 | 5 | 11 | 1 | 32.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11565963923931122 | 0.0 | 0.0 | +2328111b-018a-4ca1-a9e7-f7cd9627fd43 / -— |
+| Jogador 6 | 3-5 | 340 | REROLL | SLOWROLL | 94.0 | 5 | 10 | 1 | 32.0 | Fera do Rift/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.03704449534416199 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-5 | 341 | SELL | SLOWROLL | 94.0 | 5 | 8 | 0 | 32.0 | Fera do Rift/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.005919999908655882 | 0.0 | 0.0 | +— / -2328111b-018a-4ca1-a9e7-f7cd9627fd43 |
+| Jogador 6 | 3-5 | 342 | PASS | SLOWROLL | 94.0 | 5 | 9 | 0 | 32.0 | Fera do Rift/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-6 | 346 | BUY | SLOWROLL | 94.0 | 5 | 17 | 1 | 32.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7679318785667419 | 0.0 | 0.0 | +12d02679-e950-433b-ad9e-679a89cf86d8 / -081b684f-5d42-45c5-9a68-12127e5330a7,3625f791-4c9f-4b95-bdf7-4a322dcd55d3 |
+| Jogador 6 | 3-6 | 347 | BUY | SLOWROLL | 94.0 | 5 | 16 | 1 | 30.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0254196859896183 | 0.0 | 0.0 | +29c2eb81-6c39-41ff-96eb-a3b28d6e4b99 / -— |
+| Jogador 6 | 3-6 | 348 | REROLL | SLOWROLL | 94.0 | 5 | 15 | 1 | 30.0 | Adaptador/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04299993813037872 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-6 | 349 | SELL | SLOWROLL | 94.0 | 5 | 13 | 1 | 30.0 | Adaptador/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.37049999833106995 | 0.0 | 0.0 | +— / -12d02679-e950-433b-ad9e-679a89cf86d8 |
+| Jogador 6 | 3-6 | 350 | BUY | SLOWROLL | 94.0 | 5 | 16 | 1 | 30.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.21678632497787476 | 0.0 | 0.0 | +6d150146-2d96-4b53-a24b-05a486a348cf / -— |
+| Jogador 6 | 3-6 | 351 | SELL | SLOWROLL | 94.0 | 5 | 15 | 1 | 30.0 | Adaptador/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.004938320256769657 | 0.0 | 0.0 | +— / -e978e901-0a52-4f01-ba52-a83fbcc3b439 |
+| Jogador 6 | 3-6 | 352 | BUY | SLOWROLL | 94.0 | 5 | 16 | 1 | 30.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7353324890136719 | 0.0 | 0.0 | +af23c553-04de-4813-87d0-bb7e4becafe4 / -4c1dab77-0e6d-401b-a341-40117b445957,d47034a1-8b51-4b82-b1b4-5f2aee8f959a |
+| Jogador 6 | 3-6 | 353 | REROLL | SLOWROLL | 94.0 | 5 | 15 | 1 | 30.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04215610772371292 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-6 | 354 | BUY | SLOWROLL | 94.0 | 5 | 13 | 1 | 30.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6826063990592957 | 0.0 | 0.0 | +99c9fbf5-b28f-4743-b04a-5299e9e116e5 / -— |
+| Jogador 6 | 3-6 | 355 | BUY | SLOWROLL | 94.0 | 5 | 12 | 1 | 30.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5264915227890015 | 0.0 | 0.0 | +36a593e6-6199-441a-907d-77b9ea835889 / -— |
+| Jogador 6 | 3-6 | 356 | PASS | SLOWROLL | 94.0 | 5 | 11 | 1 | 30.0 | Adaptador/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-7 | 362 | SELL | SLOWROLL | 84.0 | 5 | 17 | 1 | 30.0 | Adaptador/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.18383599817752838 | 0.0 | 0.0 | +— / -af23c553-04de-4813-87d0-bb7e4becafe4 |
+| Jogador 6 | 3-7 | 363 | BUY | SLOWROLL | 84.0 | 5 | 20 | 2 | 30.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.07990042120218277 | 0.0 | 0.0 | +a2a3d5de-f8f7-4ab7-856f-443af0019aba / -— |
+| Jogador 6 | 3-7 | 364 | SELL | SLOWROLL | 84.0 | 5 | 19 | 1 | 30.0 | Adaptador/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.1888856440782547 | 0.0 | 0.0 | +— / -2f75fcd7-1405-49fd-8a0c-649c1f8a9f09 |
+| Jogador 6 | 3-7 | 365 | MOVE_BENCH | SLOWROLL | 84.0 | 5 | 20 | 2 | 30.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.4307557940483093 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-7 | 366 | BUY | SLOWROLL | 84.0 | 5 | 20 | 2 | 32.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.617189347743988 | 0.0 | 0.0 | +dca007d3-1486-416d-93f2-e353911c46c5 / -— |
+| Jogador 6 | 3-7 | 367 | REROLL | SLOWROLL | 84.0 | 5 | 19 | 1 | 32.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04299738630652428 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-7 | 368 | BUY | SLOWROLL | 84.0 | 5 | 17 | 1 | 32.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.21373391151428223 | 0.0 | 0.0 | +de08b337-73c7-408b-8b57-b2f5fb036fe2 / -— |
+| Jogador 6 | 3-7 | 369 | SELL | SLOWROLL | 84.0 | 5 | 14 | 1 | 32.0 | Adaptador/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.00618696678429842 | 0.0 | 0.0 | +— / -8da82a9e-0746-43e1-81c3-fa22ec3bb863 |
+| Jogador 6 | 3-7 | 370 | BUY | SLOWROLL | 84.0 | 5 | 15 | 1 | 32.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.737966001033783 | 0.0 | 0.0 | +0650ed76-f3bb-4dce-bd04-2ed294039e6d / -19cf270e-27a1-4d3c-bef7-0b1af400d07c,7e545d27-1847-4016-b42b-e7db1960ae89 |
+| Jogador 6 | 3-7 | 371 | REROLL | SLOWROLL | 84.0 | 5 | 12 | 1 | 26.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04299255087971687 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 3-7 | 372 | PASS | SLOWROLL | 84.0 | 5 | 10 | 1 | 26.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-1 | 377 | BUY | SLOWROLL | 84.0 | 5 | 16 | 1 | 26.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | True | 0.7639814615249634 | 0.0 | 0.0 | +bed45cda-85fd-407c-a664-ef8acc55b3bf / -2fa86b11-4e28-4652-890e-f00a79068223,6fb9f857-4ee1-4b52-8825-57f514dc2d0f |
+| Jogador 6 | 4-1 | 378 | MOVE_BENCH | SLOWROLL | 84.0 | 5 | 13 | 1 | 14.0 | Adaptador/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | True | 0.13030125200748444 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-1 | 379 | CRAFT_AND_EQUIP | SLOWROLL | 84.0 | 5 | 13 | 1 | 16.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.23240111768245697 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-1 | 380 | CRAFT_AND_EQUIP | SLOWROLL | 84.0 | 5 | 13 | 1 | 16.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.12097105383872986 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-1 | 381 | MOVE_BENCH | SLOWROLL | 84.0 | 5 | 13 | 1 | 16.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.14697307348251343 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-1 | 382 | BUY | SLOWROLL | 84.0 | 5 | 13 | 1 | 18.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7645391225814819 | 0.0 | 0.0 | +fe0cdc83-3953-4aad-86c0-cf907a803a8f / -a2a3d5de-f8f7-4ab7-856f-443af0019aba,dca007d3-1486-416d-93f2-e353911c46c5 |
+| Jogador 6 | 4-1 | 383 | MOVE_BENCH | SLOWROLL | 84.0 | 5 | 12 | 1 | 16.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.09736047685146332 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-1 | 384 | MOVE_BENCH | SLOWROLL | 84.0 | 5 | 12 | 1 | 16.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1292269378900528 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-1 | 385 | REROLL | SLOWROLL | 84.0 | 5 | 12 | 1 | 18.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.042966075241565704 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-1 | 386 | BUY | SLOWROLL | 84.0 | 5 | 10 | 1 | 18.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.678124189376831 | 0.0 | 0.0 | +71a71643-507c-4266-9f74-1fd7802fe094 / -29c2eb81-6c39-41ff-96eb-a3b28d6e4b99,36a593e6-6199-441a-907d-77b9ea835889 |
+| Jogador 6 | 4-1 | 387 | PASS | SLOWROLL | 84.0 | 5 | 9 | 0 | 16.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-2 | 389 | BUY | SLOWROLL | 72.0 | 6 | 15 | 1 | 16.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7502084970474243 | 0.0 | 0.0 | +786ad7ff-567c-4152-96b9-f05a1d09303d / -— |
+| Jogador 6 | 4-2 | 390 | MOVE_BENCH | SLOWROLL | 72.0 | 6 | 12 | 1 | 16.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0949879139661789 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-2 | 391 | MOVE_BENCH | SLOWROLL | 72.0 | 6 | 12 | 1 | 20.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.30101320147514343 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-2 | 392 | BUY | SLOWROLL | 72.0 | 6 | 12 | 1 | 22.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7473691701889038 | 0.0 | 0.0 | +fe064601-d4d8-4f7d-860d-cae70b1d7ee8 / -— |
+| Jogador 6 | 4-2 | 393 | MOVE_BENCH | SLOWROLL | 72.0 | 6 | 11 | 1 | 22.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.36907005310058594 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-2 | 394 | MOVE_BENCH | SLOWROLL | 72.0 | 6 | 11 | 1 | 18.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.37026122212409973 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-2 | 395 | PASS | SLOWROLL | 72.0 | 6 | 11 | 1 | 20.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-2 | 397 | MOVE_BENCH | SLOWROLL | 72.0 | 6 | 11 | 1 | 20.0 | Adaptador/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.02245379611849785 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-3 | 402 | BUY | SLOWROLL | 61.0 | 6 | 18 | 1 | 22.0 | Feérico/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.19544808566570282 | 0.0 | 0.0 | +2d5a0cea-5dd6-4973-aa83-e81afc2f9900 / -— |
+| Jogador 6 | 4-3 | 403 | BUY | SLOWROLL | 61.0 | 6 | 17 | 1 | 22.0 | Feérico/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.14209912717342377 | 0.0 | 0.0 | +5a9bb50e-c400-49f0-96bf-35de23a5e388 / -— |
+| Jogador 6 | 4-3 | 404 | REROLL | SLOWROLL | 61.0 | 6 | 15 | 1 | 22.0 | Feérico/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04294414073228836 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-3 | 405 | BUY | SLOWROLL | 61.0 | 6 | 13 | 1 | 22.0 | Feérico/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.21667562425136566 | 0.0 | 0.0 | +459e41e4-1737-4721-af77-b028c5288f35 / -— |
+| Jogador 6 | 4-3 | 406 | REROLL | SLOWROLL | 61.0 | 6 | 12 | 1 | 22.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11223482340574265 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-3 | 407 | REROLL | SLOWROLL | 61.0 | 6 | 10 | 1 | 22.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.03700000047683716 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-3 | 408 | REROLL | SLOWROLL | 61.0 | 6 | 8 | 0 | 22.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11599999666213989 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-3 | 409 | REROLL | SLOWROLL | 61.0 | 6 | 6 | 0 | 22.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0429999940097332 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-3 | 410 | REROLL | SLOWROLL | 61.0 | 6 | 4 | 0 | 22.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.042995940893888474 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-3 | 411 | REROLL | SLOWROLL | 61.0 | 6 | 2 | 0 | 22.0 | Feérico/DA_18_Tristana | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10899999737739563 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-3 | 412 | PASS | SLOWROLL | 61.0 | 6 | 0 | 0 | 22.0 | Feérico/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-4 | 416 | REROLL | SLOWROLL | 61.0 | 6 | 6 | 0 | 22.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.037379227578639984 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-4 | 417 | REROLL | SLOWROLL | 61.0 | 6 | 4 | 0 | 22.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.1098676323890686 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-4 | 418 | REROLL | SLOWROLL | 61.0 | 6 | 2 | 0 | 22.0 | Feérico/DA_18_Tristana | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10899999737739563 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-4 | 419 | MOVE_BOARD | SLOWROLL | 61.0 | 6 | 0 | 0 | 22.0 | Feérico/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01122246216982603 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-4 | 420 | MOVE_BOARD | SLOWROLL | 61.0 | 6 | 0 | 0 | 22.0 | Feérico/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.06330635398626328 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-4 | 421 | MOVE_BENCH | SLOWROLL | 61.0 | 6 | 0 | 0 | 22.0 | Feérico/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.4031260013580322 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-4 | 422 | MOVE_BOARD | SLOWROLL | 61.0 | 6 | 0 | 0 | 24.0 | Feérico/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01270212884992361 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-4 | 423 | MOVE_BOARD | SLOWROLL | 61.0 | 6 | 0 | 0 | 24.0 | Feérico/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-4 | 424 | PASS | SLOWROLL | 61.0 | 6 | 0 | 0 | 24.0 | Feérico/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-5 | 429 | BUY | SLOWROLL | 61.0 | 6 | 5 | 0 | 24.0 | Feérico/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7328050136566162 | 0.0 | 0.0 | +0bde5344-e810-4f64-92f4-fc0734a0fa1e / -— |
+| Jogador 6 | 4-5 | 430 | MOVE_BOARD | SLOWROLL | 61.0 | 6 | 4 | 0 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.005865872837603092 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-5 | 431 | MOVE_BOARD | SLOWROLL | 61.0 | 6 | 4 | 0 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0987335592508316 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-5 | 432 | PASS | SLOWROLL | 61.0 | 6 | 4 | 0 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-6 | 441 | MOVE_BOARD | SLOWROLL | 49.0 | 6 | 9 | 0 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.00608767569065094 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-6 | 442 | SELL | SLOWROLL | 49.0 | 6 | 9 | 0 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.1484600007534027 | 0.0 | 0.0 | +— / -fe0cdc83-3953-4aad-86c0-cf907a803a8f |
+| Jogador 6 | 4-6 | 443 | BUY | SLOWROLL | 49.0 | 6 | 12 | 1 | 24.0 | Feérico/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.18024876713752747 | 0.0 | 0.0 | +9c6e08e0-6dae-4229-a2b1-6b4cfebfbdb2 / -— |
+| Jogador 6 | 4-6 | 444 | MOVE_BOARD | SLOWROLL | 49.0 | 6 | 11 | 1 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0010085728717967868 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-6 | 445 | MOVE_BOARD | SLOWROLL | 49.0 | 6 | 11 | 1 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-6 | 446 | MOVE_BOARD | SLOWROLL | 49.0 | 6 | 11 | 1 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0033491775393486023 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-6 | 447 | PASS | SLOWROLL | 49.0 | 6 | 11 | 1 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-7 | 452 | SELL | STABILIZE | 37.0 | 6 | 18 | 1 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.28049999475479126 | 0.0 | 0.0 | +— / -bed45cda-85fd-407c-a664-ef8acc55b3bf |
+| Jogador 6 | 4-7 | 453 | EQUIP_FROM_INVENTORY | STABILIZE | 37.0 | 6 | 26 | 2 | 24.0 | Feérico/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.16157285869121552 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-7 | 454 | BUY | STABILIZE | 37.0 | 6 | 26 | 2 | 24.0 | Feérico/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.06370636820793152 | 0.0 | 0.0 | +7a633b87-7843-4229-97b6-87f15674a3a9 / -— |
+| Jogador 6 | 4-7 | 455 | MOVE_BOARD | STABILIZE | 37.0 | 6 | 24 | 2 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0018898681737482548 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-7 | 456 | MOVE_BOARD | STABILIZE | 37.0 | 6 | 24 | 2 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014551157131791115 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-7 | 457 | MOVE_BOARD | STABILIZE | 37.0 | 6 | 24 | 2 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 4-7 | 458 | PASS | STABILIZE | 37.0 | 6 | 24 | 2 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.03806560859084129 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 5-1 | 462 | CRAFT_AND_EQUIP | STABILIZE | 37.0 | 6 | 32 | 3 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.11868256330490112 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 5-1 | 463 | CRAFT_AND_EQUIP | STABILIZE | 37.0 | 6 | 32 | 3 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.1016695499420166 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 5-1 | 464 | SELL | STABILIZE | 37.0 | 6 | 32 | 3 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.17328089475631714 | 0.0 | 0.0 | +— / -0650ed76-f3bb-4dce-bd04-2ed294039e6d |
+| Jogador 6 | 5-1 | 465 | EQUIP_FROM_INVENTORY | STABILIZE | 37.0 | 6 | 40 | 4 | 24.0 | Feérico/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.08454754948616028 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 5-1 | 466 | EQUIP_FROM_INVENTORY | STABILIZE | 37.0 | 6 | 40 | 4 | 24.0 | Feérico/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.1251254677772522 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 5-1 | 467 | BUY | STABILIZE | 37.0 | 6 | 40 | 4 | 24.0 | Feérico/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7285987138748169 | 0.0 | 0.0 | +7073577c-eeed-41fe-b295-c65b4b2ff03c / -0bde5344-e810-4f64-92f4-fc0734a0fa1e,2d5a0cea-5dd6-4973-aa83-e81afc2f9900 |
+| Jogador 6 | 5-1 | 468 | BUY | STABILIZE | 37.0 | 6 | 39 | 3 | 22.0 | Feérico/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.05805213376879692 | 0.0 | 0.0 | +f9077646-3379-4461-9a5c-b9884c7da266 / -— |
+| Jogador 6 | 5-1 | 469 | MOVE_BOARD | STABILIZE | 37.0 | 6 | 38 | 3 | 22.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.02001604251563549 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 5-1 | 470 | REROLL | STABILIZE | 37.0 | 6 | 38 | 3 | 22.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 5-2 | 472 | SELL | STABILIZE | 23.0 | 6 | 45 | 4 | 22.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.1384119987487793 | 0.0 | 0.0 | +— / -7073577c-eeed-41fe-b295-c65b4b2ff03c |
+| Jogador 6 | 5-2 | 473 | BUY | STABILIZE | 23.0 | 6 | 48 | 4 | 22.0 | Feérico/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.20921224355697632 | 0.0 | 0.0 | +a311dbeb-8a41-4396-8538-85861b084f29 / -— |
+| Jogador 6 | 5-2 | 474 | MOVE_BENCH | STABILIZE | 23.0 | 6 | 44 | 4 | 22.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3996419608592987 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 5-2 | 475 | BUY | STABILIZE | 23.0 | 6 | 44 | 4 | 24.0 | Feérico/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.01476111076772213 | 0.0 | 0.0 | +b2692c06-cf9f-40f0-acad-9c43e7ce225b / -— |
+| Jogador 6 | 5-2 | 476 | MOVE_BOARD | STABILIZE | 23.0 | 6 | 43 | 4 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0010396880097687244 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 5-2 | 477 | MOVE_BOARD | STABILIZE | 23.0 | 6 | 43 | 4 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014816983602941036 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 5-2 | 478 | PASS | STABILIZE | 23.0 | 6 | 43 | 4 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09252221882343292 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 5-3 | 482 | SELL | STABILIZE | 23.0 | 6 | 53 | 5 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0013599999947473407 | 0.0 | 0.0 | +— / -b2692c06-cf9f-40f0-acad-9c43e7ce225b |
+| Jogador 6 | 5-3 | 483 | BUY | STABILIZE | 23.0 | 6 | 54 | 5 | 24.0 | Feérico/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7293244004249573 | 0.0 | 0.0 | +bf867a23-52f7-478c-99dc-5901430f5d53 / -— |
+| Jogador 6 | 5-3 | 484 | MOVE_BOARD | STABILIZE | 23.0 | 6 | 53 | 5 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 5-3 | 485 | MOVE_BOARD | STABILIZE | 23.0 | 6 | 53 | 5 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 5-3 | 486 | PASS | STABILIZE | 23.0 | 6 | 53 | 5 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.13276518881320953 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 5-4 | 492 | SELL | ALL_IN | 9.0 | 6 | 63 | 5 | 24.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0020490072201937437 | 0.0 | 0.0 | +— / -7a633b87-7843-4229-97b6-87f15674a3a9 |
+| Jogador 6 | 5-4 | 493 | BUY | ALL_IN | 9.0 | 6 | 65 | 5 | 24.0 | Feérico/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.0306764841079712 | 0.0 | 0.0 | +b0602b39-c2a7-4d79-a748-bd314de6f9ae / -0c5adb43-b194-486e-b59c-c0f3b5479d40,99c9fbf5-b28f-4743-b04a-5299e9e116e5 |
+| Jogador 6 | 5-4 | 494 | MOVE_BENCH | ALL_IN | 9.0 | 6 | 64 | 5 | 20.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.14310120046138763 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 5-4 | 495 | MOVE_BOARD | ALL_IN | 9.0 | 6 | 64 | 5 | 22.0 | Feérico/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.05526868626475334 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 5-4 | 496 | MOVE_BOARD | ALL_IN | 9.0 | 6 | 64 | 5 | 22.0 | Feérico/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.013269477523863316 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 5-4 | 497 | MOVE_BENCH | ALL_IN | 9.0 | 6 | 64 | 5 | 22.0 | Feérico/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5911946892738342 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 5-4 | 498 | BUY | ALL_IN | 9.0 | 6 | 64 | 5 | 28.0 | Feérico/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.16727356612682343 | 0.0 | 0.0 | +18257351-ec84-45ff-ac4f-3a51d55bc7b5 / -— |
+| Jogador 6 | 5-4 | 499 | MOVE_BOARD | ALL_IN | 9.0 | 6 | 61 | 5 | 28.0 | Feérico/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0031694183126091957 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 5-4 | 500 | MOVE_BOARD | ALL_IN | 9.0 | 6 | 61 | 5 | 28.0 | Feérico/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014204178936779499 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 5-5 | 502 | BUY | ALL_IN | 9.0 | 6 | 71 | 5 | 28.0 | Feérico/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7558692097663879 | 0.0 | 0.0 | +eda4820e-bb86-4f10-8dd4-59eeffb1cd65 / -— |
+| Jogador 6 | 5-5 | 503 | MOVE_BOARD | ALL_IN | 9.0 | 6 | 70 | 5 | 28.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 5-5 | 504 | MOVE_BOARD | ALL_IN | 9.0 | 6 | 70 | 5 | 28.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.015228171832859516 | 0.0 | 0.0 | +— / -— |
+| Jogador 6 | 5-5 | 505 | PASS | ALL_IN | 9.0 | 6 | 70 | 5 | 28.0 | Feérico/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.22244711220264435 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 1-1 | 1 | MOVE_BENCH | ECON | 100.0 | 2 | 0 | 0 | 0.0 | —/— | MOVE_BENCH, SELL, PASS | True | True | 0.5923603177070618 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 1-1 | 2 | MOVE_BOARD | STABILIZE | 100.0 | 2 | 0 | 0 | 2.0 | —/DA_18_Akali_AD | MOVE_BOARD, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 1-1 | 3 | MOVE_BOARD | STABILIZE | 100.0 | 2 | 0 | 0 | 2.0 | —/DA_18_Akali_AD | MOVE_BOARD, PASS | True | True | -0.012808687053620815 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 1-1 | 4 | PASS | STABILIZE | 100.0 | 2 | 0 | 0 | 2.0 | —/DA_18_Akali_AD | MOVE_BOARD, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 1-2 | 29 | BUY | STABILIZE | 100.0 | 3 | 2 | 0 | 2.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BOARD, PASS | True | True | 0.2574339807033539 | 0.0 | 0.0 | +47ec6577-cbf2-4275-b185-c19256223441 / -— |
+| Jogador 7 | 1-2 | 30 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 1 | 0 | 2.0 | —/DA_18_Akali_AD | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.019697334617376328 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 1-2 | 31 | BUY | STABILIZE | 100.0 | 3 | 1 | 0 | 4.0 | —/DA_18_Akali_AD | BUY, MOVE_BOARD, PASS | True | True | 0.18629083037376404 | 0.0 | 0.0 | +4e206e09-40e3-4699-81cb-8aaf01109dea / -— |
+| Jogador 7 | 1-2 | 32 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2014371007680893 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 1-2 | 33 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 1-2 | 34 | PASS | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 1-2 | 50 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.41111716628074646 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 1-3 | 56 | BUY | STABILIZE | 100.0 | 3 | 2 | 0 | 6.0 | —/DA_18_Rakan | BUY, REROLL, MOVE_BOARD, PASS | True | True | 1.046870231628418 | 0.0 | 0.0 | +96fb1ff5-06a8-439b-af2b-8700d7be8524 / -— |
+| Jogador 7 | 1-3 | 57 | BUY | STABILIZE | 100.0 | 3 | 1 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.23469983041286469 | 0.0 | 0.0 | +7159421f-b5ea-4d10-9cc5-59186d62983d / -— |
+| Jogador 7 | 1-3 | 58 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.007477642502635717 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 1-3 | 59 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.12264584004878998 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 1-3 | 60 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.13001605868339539 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 1-3 | 61 | PASS | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 1-4 | 81 | BUY | STABILIZE | 100.0 | 3 | 3 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.0217664241790771 | 0.0 | 0.0 | +d4c65b41-a22a-4d60-8a70-547d539e4903 / -— |
+| Jogador 7 | 1-4 | 82 | BUY | STABILIZE | 100.0 | 3 | 2 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1843847930431366 | 0.0 | 0.0 | +bb7ed7a4-035a-4798-a9b2-44893057ab84 / -— |
+| Jogador 7 | 1-4 | 83 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 1 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.06273697316646576 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 1-4 | 84 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 1 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.27117955684661865 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 1-4 | 85 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 1 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.016945255920290947 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 1-4 | 86 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 1 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014739423990249634 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 1-4 | 87 | PASS | STABILIZE | 100.0 | 3 | 1 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-1 | 108 | BUY | STABILIZE | 100.0 | 4 | 5 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | True | 0.969663679599762 | 0.0 | 0.0 | +630d9254-3856-4d88-b981-43a8270b4b3d / -— |
+| Jogador 7 | 2-1 | 109 | CRAFT_AND_EQUIP | STABILIZE | 100.0 | 4 | 4 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.24140101671218872 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-1 | 110 | CRAFT_AND_EQUIP | STABILIZE | 100.0 | 4 | 4 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.20909103751182556 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-1 | 111 | MOVE_BENCH | STABILIZE | 100.0 | 4 | 4 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.08892843872308731 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-1 | 112 | BUY | STABILIZE | 100.0 | 4 | 4 | 0 | 8.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.26878198981285095 | 0.0 | 0.0 | +a524fad3-c7d3-4fa7-9c62-1803c8e7c865 / -— |
+| Jogador 7 | 2-1 | 113 | MOVE_BENCH | STABILIZE | 100.0 | 4 | 2 | 0 | 8.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.022377312183380127 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-1 | 114 | REROLL | STABILIZE | 100.0 | 4 | 2 | 0 | 10.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-1 | 115 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0013883296633139253 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-1 | 116 | SELL | STABILIZE | 100.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Shen | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.07846063375473022 | 0.0 | 0.0 | +— / -bb7ed7a4-035a-4798-a9b2-44893057ab84 |
+| Jogador 7 | 2-1 | 117 | BUY | STABILIZE | 100.0 | 4 | 1 | 0 | 10.0 | —/DA_18_Shen | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.0477685928344727 | 0.0 | 0.0 | +4e00fb2f-75c1-4580-bd09-cb73c31af01f / -66b7d7c5-62d3-49aa-b8f4-b3f936b1f987,96fb1ff5-06a8-439b-af2b-8700d7be8524 |
+| Jogador 7 | 2-1 | 118 | PASS | STABILIZE | 100.0 | 4 | 0 | 0 | 8.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-2 | 131 | BUY | STABILIZE | 95.0 | 4 | 5 | 0 | 8.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.0456501245498657 | 0.0 | 0.0 | +99511886-d1a7-4910-b099-5072e5385c63 / -47ec6577-cbf2-4275-b185-c19256223441,d4c65b41-a22a-4d60-8a70-547d539e4903 |
+| Jogador 7 | 2-2 | 132 | MOVE_BENCH | STABILIZE | 95.0 | 4 | 4 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.288969486951828 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-2 | 133 | MOVE_BENCH | STABILIZE | 95.0 | 4 | 4 | 0 | 6.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.15560553967952728 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-2 | 134 | BUY | STABILIZE | 95.0 | 4 | 4 | 0 | 8.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1634378284215927 | 0.0 | 0.0 | +475e5206-4f54-4bbb-9db9-99d1895f0887 / -— |
+| Jogador 7 | 2-2 | 135 | MOVE_BOARD | STABILIZE | 95.0 | 4 | 3 | 0 | 8.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.002686429303139448 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-2 | 136 | REROLL | STABILIZE | 95.0 | 4 | 3 | 0 | 8.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-2 | 137 | BUY | STABILIZE | 95.0 | 4 | 1 | 0 | 8.0 | —/DA_18_Akali_AD | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.18493516743183136 | 0.0 | 0.0 | +a229cc5e-9f28-4ff3-b652-eab994251c92 / -— |
+| Jogador 7 | 2-2 | 138 | MOVE_BOARD | STABILIZE | 95.0 | 4 | 0 | 0 | 8.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-2 | 139 | MOVE_BOARD | STABILIZE | 95.0 | 4 | 0 | 0 | 8.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01680152863264084 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-2 | 140 | PASS | STABILIZE | 95.0 | 4 | 0 | 0 | 8.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-2 | 150 | MOVE_BENCH | STABILIZE | 95.0 | 4 | 0 | 0 | 8.0 | —/DA_18_Akali_AD | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5763655304908752 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-3 | 154 | BUY | STABILIZE | 89.0 | 4 | 6 | 0 | 12.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3166279196739197 | 0.0 | 0.0 | +d2a85061-235a-4ce6-816f-6fa27bf02754 / -— |
+| Jogador 7 | 2-3 | 155 | REROLL | STABILIZE | 89.0 | 4 | 5 | 0 | 12.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-3 | 156 | BUY | STABILIZE | 89.0 | 4 | 3 | 0 | 12.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9772830605506897 | 0.0 | 0.0 | +f957e607-dd51-492b-9186-252da4e0c12f / -— |
+| Jogador 7 | 2-3 | 157 | BUY | STABILIZE | 89.0 | 4 | 2 | 0 | 12.0 | —/DA_18_Akali_AD | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3331727087497711 | 0.0 | 0.0 | +c7d30607-e33e-4e6e-902a-3fd37223a8de / -— |
+| Jogador 7 | 2-3 | 158 | MOVE_BOARD | STABILIZE | 89.0 | 4 | 1 | 0 | 12.0 | —/DA_18_Akali_AD | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.011006686836481094 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-3 | 159 | MOVE_BOARD | STABILIZE | 89.0 | 4 | 1 | 0 | 12.0 | —/DA_18_Akali_AD | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.015000925399363041 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-3 | 160 | MOVE_BOARD | STABILIZE | 89.0 | 4 | 1 | 0 | 12.0 | —/DA_18_Akali_AD | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.30080655217170715 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-3 | 161 | PASS | STABILIZE | 89.0 | 4 | 1 | 0 | 12.0 | —/DA_18_Akali_AD | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-4 | 174 | BUY | LOSS_STREAK | 85.0 | 4 | 7 | 0 | 12.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8095971941947937 | 0.0 | 0.0 | +6eee9a92-4235-46af-ae42-c38acd6847ef / -— |
+| Jogador 7 | 2-4 | 175 | BUY | LOSS_STREAK | 85.0 | 4 | 5 | 0 | 12.0 | —/DA_18_Akali_AD | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5862553119659424 | 0.0 | 0.0 | +46838f8d-8037-485c-8c34-9639f14ada19 / -— |
+| Jogador 7 | 2-4 | 176 | REROLL | LOSS_STREAK | 85.0 | 4 | 4 | 0 | 12.0 | —/DA_18_Akali_AD | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-4 | 177 | SELL | LOSS_STREAK | 85.0 | 4 | 2 | 0 | 12.0 | —/DA_18_Akali_AD | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.28241392970085144 | 0.0 | 0.0 | +— / -4e00fb2f-75c1-4580-bd09-cb73c31af01f |
+| Jogador 7 | 2-4 | 178 | EQUIP_FROM_INVENTORY | LOSS_STREAK | 85.0 | 4 | 5 | 0 | 12.0 | —/DA_18_Varus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.15032429993152618 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-4 | 179 | EQUIP_FROM_INVENTORY | LOSS_STREAK | 85.0 | 4 | 5 | 0 | 12.0 | —/DA_18_Varus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.12734727561473846 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-4 | 180 | BUY | LOSS_STREAK | 85.0 | 4 | 5 | 0 | 12.0 | —/DA_18_Varus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7744861841201782 | 0.0 | 0.0 | +dca8bf82-80ac-4054-9a77-3891a7de23e2 / -— |
+| Jogador 7 | 2-4 | 181 | REROLL | LOSS_STREAK | 85.0 | 4 | 4 | 0 | 12.0 | —/DA_18_Varus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-4 | 182 | SELL | LOSS_STREAK | 85.0 | 4 | 2 | 0 | 12.0 | —/DA_18_Varus | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0025599999353289604 | 0.0 | 0.0 | +— / -475e5206-4f54-4bbb-9db9-99d1895f0887 |
+| Jogador 7 | 2-4 | 183 | BUY | LOSS_STREAK | 85.0 | 4 | 3 | 0 | 12.0 | —/DA_18_Varus | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8753109574317932 | 0.0 | 0.0 | +ab127012-83d7-46f0-a16c-b20582d1179b / -4e206e09-40e3-4699-81cb-8aaf01109dea,f957e607-dd51-492b-9186-252da4e0c12f |
+| Jogador 7 | 2-4 | 184 | PASS | LOSS_STREAK | 85.0 | 4 | 2 | 0 | 10.0 | —/DA_18_Rakan | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-5 | 196 | MOVE_BENCH | LOSS_STREAK | 85.0 | 4 | 8 | 0 | 10.0 | —/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.36753544211387634 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-5 | 197 | BUY | LOSS_STREAK | 85.0 | 4 | 8 | 0 | 12.0 | Inferno/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8783467411994934 | 0.0 | 0.0 | +68b28241-1946-4304-8b10-ae24a13a8e60 / -630d9254-3856-4d88-b981-43a8270b4b3d,7159421f-b5ea-4d10-9cc5-59186d62983d |
+| Jogador 7 | 2-5 | 198 | MOVE_BENCH | STABILIZE | 85.0 | 4 | 7 | 0 | 10.0 | Inferno/DA_18_Rakan | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.09885452687740326 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-5 | 199 | MOVE_BENCH | STABILIZE | 85.0 | 4 | 7 | 0 | 12.0 | Inferno/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.42268821597099304 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-5 | 200 | BUY | STABILIZE | 85.0 | 4 | 7 | 0 | 14.0 | Inferno/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.14876620471477509 | 0.0 | 0.0 | +d218597b-b641-4a4c-867a-41227b83fcff / -— |
+| Jogador 7 | 2-5 | 201 | MOVE_BOARD | STABILIZE | 85.0 | 4 | 5 | 0 | 14.0 | Inferno/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.00812661275267601 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-5 | 202 | REROLL | STABILIZE | 85.0 | 4 | 5 | 0 | 14.0 | Inferno/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-5 | 203 | BUY | STABILIZE | 85.0 | 4 | 3 | 0 | 14.0 | Inferno/DA_18_Yorick | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3333052098751068 | 0.0 | 0.0 | +ad00d1ae-ec5b-4851-b111-8ae36d2b8d7b / -— |
+| Jogador 7 | 2-5 | 204 | MOVE_BOARD | STABILIZE | 85.0 | 4 | 2 | 0 | 14.0 | Inferno/DA_18_Rakan | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.04485094174742699 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-5 | 205 | BUY | STABILIZE | 85.0 | 4 | 2 | 0 | 14.0 | Inferno/DA_18_Rakan | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0047021228820085526 | 0.0 | 0.0 | +31c30451-3999-47b1-8bcf-77e137137b2a / -— |
+| Jogador 7 | 2-5 | 206 | PASS | STABILIZE | 85.0 | 4 | 0 | 0 | 14.0 | Inferno/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-6 | 213 | SELL | SLOWROLL | 85.0 | 5 | 6 | 0 | 14.0 | Inferno/DA_18_Rakan | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.28881925344467163 | 0.0 | 0.0 | +— / -ab127012-83d7-46f0-a16c-b20582d1179b |
+| Jogador 7 | 2-6 | 214 | BUY | SLOWROLL | 85.0 | 5 | 9 | 0 | 14.0 | Inferno/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8698597550392151 | 0.0 | 0.0 | +d5848998-33f3-4632-94c0-60388a7cc6b8 / -d2a85061-235a-4ce6-816f-6fa27bf02754,dca8bf82-80ac-4054-9a77-3891a7de23e2 |
+| Jogador 7 | 2-6 | 215 | BUY | SLOWROLL | 85.0 | 5 | 8 | 0 | 14.0 | Inferno/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8491825461387634 | 0.0 | 0.0 | +eb7e36f0-cef9-4a2e-979a-f8a357da73e8 / -46838f8d-8037-485c-8c34-9639f14ada19,a229cc5e-9f28-4ff3-b652-eab994251c92 |
+| Jogador 7 | 2-6 | 216 | MOVE_BENCH | SLOWROLL | 85.0 | 5 | 7 | 0 | 12.0 | Inferno/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.7210072875022888 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-6 | 217 | MOVE_BENCH | SLOWROLL | 85.0 | 5 | 7 | 0 | 12.0 | Inferno/DA_18_Xayah | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1884467750787735 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-6 | 218 | MOVE_BENCH | SLOWROLL | 85.0 | 5 | 7 | 0 | 16.0 | Inferno/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.123265340924263 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-6 | 219 | MOVE_BENCH | SLOWROLL | 85.0 | 5 | 7 | 0 | 16.0 | Inferno/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.35779133439064026 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-6 | 220 | MOVE_BOARD | SLOWROLL | 85.0 | 5 | 7 | 0 | 20.0 | Inferno/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.06498539447784424 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-6 | 221 | MOVE_BOARD | SLOWROLL | 85.0 | 5 | 7 | 0 | 20.0 | Inferno/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-6 | 222 | REROLL | SLOWROLL | 85.0 | 5 | 7 | 0 | 20.0 | Inferno/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04004203900694847 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-6 | 223 | PASS | SLOWROLL | 85.0 | 5 | 5 | 0 | 20.0 | Inferno/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-7 | 232 | BUY | SLOWROLL | 85.0 | 5 | 12 | 1 | 20.0 | Inferno/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.16781549155712128 | 0.0 | 0.0 | +502a6e8c-8f81-456f-a1ef-c6bb8dd6fc7e / -— |
+| Jogador 7 | 2-7 | 233 | MOVE_BOARD | SLOWROLL | 85.0 | 5 | 9 | 0 | 20.0 | Inferno/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.08735176920890808 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-7 | 234 | REROLL | SLOWROLL | 85.0 | 5 | 9 | 0 | 20.0 | Inferno/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.03689805790781975 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-7 | 235 | BUY | SLOWROLL | 85.0 | 5 | 7 | 0 | 20.0 | Inferno/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.07467202097177505 | 0.0 | 0.0 | +ddf39480-6ce0-46d0-ac45-57114245ffba / -— |
+| Jogador 7 | 2-7 | 236 | REROLL | SLOWROLL | 85.0 | 5 | 6 | 0 | 20.0 | Inferno/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04051985964179039 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-7 | 237 | BUY | SLOWROLL | 85.0 | 5 | 4 | 0 | 20.0 | Inferno/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.26494720578193665 | 0.0 | 0.0 | +6f887b0c-3b11-42cb-8a9f-187b0ecd7dfb / -— |
+| Jogador 7 | 2-7 | 238 | REROLL | SLOWROLL | 85.0 | 5 | 3 | 0 | 20.0 | Inferno/DA_18_Yorick | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04053230583667755 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-7 | 239 | BUY | SLOWROLL | 85.0 | 5 | 1 | 0 | 20.0 | Inferno/DA_18_Yorick | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8203473091125488 | 0.0 | 0.0 | +7e0c9595-0ca2-44d4-bfe9-3752c7a89e0d / -— |
+| Jogador 7 | 2-7 | 240 | MOVE_BENCH | SLOWROLL | 85.0 | 5 | 0 | 0 | 20.0 | Inferno/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.708916425704956 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-7 | 241 | MOVE_BENCH | SLOWROLL | 85.0 | 5 | 0 | 0 | 18.0 | Inferno/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.1890275478363037 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 2-7 | 242 | PASS | SLOWROLL | 85.0 | 5 | 0 | 0 | 18.0 | Inferno/DA_18_Yorick | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-1 | 252 | CRAFT_AND_EQUIP | SLOWROLL | 85.0 | 5 | 6 | 0 | 18.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.2147432565689087 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-1 | 253 | SELL | SLOWROLL | 85.0 | 5 | 6 | 0 | 18.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.33120158314704895 | 0.0 | 0.0 | +— / -99511886-d1a7-4910-b099-5072e5385c63 |
+| Jogador 7 | 3-1 | 254 | BUY | SLOWROLL | 85.0 | 5 | 9 | 0 | 18.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7378889918327332 | 0.0 | 0.0 | +e85c6ab6-f36c-40b4-88e2-b7380b4c9652 / -— |
+| Jogador 7 | 3-1 | 255 | MOVE_BENCH | SLOWROLL | 85.0 | 5 | 8 | 0 | 18.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.09048819541931152 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-1 | 256 | REROLL | SLOWROLL | 85.0 | 5 | 8 | 0 | 20.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04296359419822693 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-1 | 257 | SELL | SLOWROLL | 85.0 | 5 | 6 | 0 | 20.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.006001426372677088 | 0.0 | 0.0 | +— / -31c30451-3999-47b1-8bcf-77e137137b2a |
+| Jogador 7 | 3-1 | 258 | BUY | SLOWROLL | 85.0 | 5 | 8 | 0 | 20.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7358203530311584 | 0.0 | 0.0 | +15c93ffb-d63e-43e6-aa46-ba2beed9cb53 / -— |
+| Jogador 7 | 3-1 | 259 | REROLL | SLOWROLL | 85.0 | 5 | 7 | 0 | 20.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.042474597692489624 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-1 | 260 | SELL | SLOWROLL | 85.0 | 5 | 5 | 0 | 20.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.19072912633419037 | 0.0 | 0.0 | +— / -c7d30607-e33e-4e6e-902a-3fd37223a8de |
+| Jogador 7 | 3-1 | 261 | BUY | SLOWROLL | 85.0 | 5 | 6 | 0 | 20.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7662107944488525 | 0.0 | 0.0 | +5477420d-3b98-4863-b2e7-f414d3fa1f01 / -7e0c9595-0ca2-44d4-bfe9-3752c7a89e0d,ad00d1ae-ec5b-4851-b111-8ae36d2b8d7b |
+| Jogador 7 | 3-1 | 262 | PASS | SLOWROLL | 85.0 | 5 | 5 | 0 | 20.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-2 | 272 | MOVE_BENCH | SLOWROLL | 75.0 | 5 | 10 | 1 | 20.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.06938481330871582 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-2 | 273 | MOVE_BENCH | SLOWROLL | 75.0 | 5 | 10 | 1 | 18.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.39933276176452637 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-2 | 274 | MOVE_BENCH | SLOWROLL | 75.0 | 5 | 10 | 1 | 18.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.031240632757544518 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-2 | 275 | MOVE_BENCH | SLOWROLL | 75.0 | 5 | 10 | 1 | 20.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.05653258413076401 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-2 | 276 | MOVE_BENCH | SLOWROLL | 75.0 | 5 | 10 | 1 | 18.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.39885345101356506 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-2 | 277 | MOVE_BENCH | SLOWROLL | 75.0 | 5 | 10 | 1 | 18.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.09356871992349625 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-2 | 278 | MOVE_BENCH | SLOWROLL | 75.0 | 5 | 10 | 1 | 18.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3538205325603485 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-2 | 279 | MOVE_BENCH | SLOWROLL | 75.0 | 5 | 10 | 1 | 16.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.38470780849456787 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-2 | 280 | PASS | SLOWROLL | 75.0 | 5 | 10 | 1 | 16.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-3 | 292 | MOVE_BENCH | SLOWROLL | 65.0 | 5 | 17 | 1 | 16.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.09001456946134567 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-3 | 293 | MOVE_BENCH | SLOWROLL | 65.0 | 5 | 17 | 1 | 18.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.36882051825523376 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-3 | 294 | MOVE_BENCH | SLOWROLL | 65.0 | 5 | 17 | 1 | 16.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.39959654211997986 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-3 | 295 | PASS | SLOWROLL | 65.0 | 5 | 17 | 1 | 16.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.05700000002980232 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-4 | 312 | MOVE_BENCH | SLOWROLL | 54.0 | 5 | 24 | 2 | 16.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.36875757575035095 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-4 | 313 | MOVE_BENCH | SLOWROLL | 54.0 | 5 | 24 | 2 | 16.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3983306884765625 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-4 | 314 | PASS | SLOWROLL | 54.0 | 5 | 24 | 2 | 18.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.060499999672174454 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-5 | 332 | MOVE_BENCH | SLOWROLL | 54.0 | 5 | 32 | 3 | 18.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.37346306443214417 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-5 | 333 | MOVE_BENCH | SLOWROLL | 54.0 | 5 | 32 | 3 | 16.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3800589442253113 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-5 | 334 | PASS | SLOWROLL | 54.0 | 5 | 32 | 3 | 18.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10649999976158142 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-6 | 346 | BUY | SLOWROLL | 45.0 | 5 | 41 | 4 | 18.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8129522800445557 | 0.0 | 0.0 | +d14fd3f6-4cb4-4ffe-8f73-ba7946765a85 / -6f887b0c-3b11-42cb-8a9f-187b0ecd7dfb,e85c6ab6-f36c-40b4-88e2-b7380b4c9652 |
+| Jogador 7 | 3-6 | 347 | MOVE_BENCH | SLOWROLL | 45.0 | 5 | 40 | 4 | 16.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5233480930328369 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-6 | 348 | BUY | SLOWROLL | 45.0 | 5 | 40 | 4 | 18.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.17925198376178741 | 0.0 | 0.0 | +fe772b41-d367-4385-b35f-eb5c07754a32 / -— |
+| Jogador 7 | 3-6 | 349 | MOVE_BENCH | SLOWROLL | 45.0 | 5 | 39 | 3 | 18.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.35713785886764526 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-6 | 350 | MOVE_BENCH | SLOWROLL | 45.0 | 5 | 39 | 3 | 20.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.49399176239967346 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-6 | 351 | PASS | SLOWROLL | 45.0 | 5 | 39 | 3 | 18.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10999999940395355 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-7 | 362 | BUY | STABILIZE | 36.0 | 5 | 49 | 4 | 18.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.33850929141044617 | 0.0 | 0.0 | +2fce1824-a070-4c9f-aa4c-f834afc2974b / -— |
+| Jogador 7 | 3-7 | 363 | MOVE_BENCH | STABILIZE | 36.0 | 5 | 48 | 4 | 18.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3801935017108917 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-7 | 364 | MOVE_BENCH | STABILIZE | 36.0 | 5 | 48 | 4 | 18.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3727002441883087 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 3-7 | 365 | PASS | STABILIZE | 36.0 | 5 | 48 | 4 | 20.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.14319999516010284 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-1 | 377 | BUY | STABILIZE | 36.0 | 5 | 59 | 5 | 20.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | True | 0.9076101779937744 | 0.0 | 0.0 | +722c4076-6e3d-4b6c-aa0d-398e801d7224 / -— |
+| Jogador 7 | 4-1 | 378 | CRAFT_AND_EQUIP | STABILIZE | 36.0 | 5 | 58 | 5 | 20.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.152123361825943 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-1 | 379 | CRAFT_AND_EQUIP | STABILIZE | 36.0 | 5 | 58 | 5 | 20.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.15890784561634064 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-1 | 380 | MOVE_BENCH | STABILIZE | 36.0 | 5 | 58 | 5 | 20.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.4896800220012665 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-1 | 381 | MOVE_BENCH | STABILIZE | 36.0 | 5 | 58 | 5 | 18.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3963305950164795 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-1 | 382 | PASS | STABILIZE | 36.0 | 5 | 58 | 5 | 18.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10066080093383789 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-2 | 389 | MOVE_BENCH | STABILIZE | 36.0 | 6 | 69 | 5 | 18.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5192731618881226 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-2 | 390 | BUY | STABILIZE | 36.0 | 6 | 69 | 5 | 20.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9594222903251648 | 0.0 | 0.0 | +b5df9bf6-5601-488f-bdb3-2109875f255d / -6eee9a92-4235-46af-ae42-c38acd6847ef,a524fad3-c7d3-4fa7-9c62-1803c8e7c865 |
+| Jogador 7 | 4-2 | 391 | MOVE_BENCH | STABILIZE | 36.0 | 6 | 67 | 5 | 16.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3096500337123871 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-2 | 392 | MOVE_BENCH | STABILIZE | 36.0 | 6 | 67 | 5 | 18.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.49856141209602356 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-2 | 393 | MOVE_BOARD | STABILIZE | 36.0 | 6 | 67 | 5 | 20.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.02359389327466488 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-2 | 394 | MOVE_BOARD | STABILIZE | 36.0 | 6 | 67 | 5 | 20.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.006341951433569193 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-2 | 395 | PASS | STABILIZE | 36.0 | 6 | 67 | 5 | 20.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.24667960405349731 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-3 | 402 | BUY | STABILIZE | 36.0 | 6 | 79 | 5 | 20.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.38749679923057556 | 0.0 | 0.0 | +0a2abead-5e72-4f76-b211-6bd13d9d2a8a / -— |
+| Jogador 7 | 4-3 | 403 | MOVE_BOARD | STABILIZE | 36.0 | 6 | 78 | 5 | 20.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-3 | 404 | MOVE_BOARD | STABILIZE | 36.0 | 6 | 78 | 5 | 20.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01969262585043907 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-3 | 405 | PASS | STABILIZE | 36.0 | 6 | 78 | 5 | 20.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.254489928483963 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-4 | 416 | MOVE_BENCH | STABILIZE | 25.0 | 6 | 88 | 5 | 20.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.5959433317184448 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-4 | 417 | MOVE_BENCH | STABILIZE | 25.0 | 6 | 88 | 5 | 18.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.39780405163764954 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-4 | 418 | PASS | STABILIZE | 25.0 | 6 | 88 | 5 | 20.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.28142714500427246 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-5 | 429 | BUY | STABILIZE | 25.0 | 6 | 98 | 5 | 20.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.899004340171814 | 0.0 | 0.0 | +69fc8f87-18fd-4557-ac3c-0807ed28df9c / -— |
+| Jogador 7 | 4-5 | 430 | MOVE_BENCH | STABILIZE | 25.0 | 6 | 95 | 5 | 20.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3771601617336273 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-5 | 431 | MOVE_BENCH | STABILIZE | 25.0 | 6 | 95 | 5 | 20.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.5909940600395203 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-5 | 432 | PASS | STABILIZE | 25.0 | 6 | 95 | 5 | 18.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.14671538770198822 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-6 | 441 | SELL | ALL_IN | 14.0 | 6 | 106 | 5 | 18.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.22951649129390717 | 0.0 | 0.0 | +— / -d5848998-33f3-4632-94c0-60388a7cc6b8 |
+| Jogador 7 | 4-6 | 442 | EQUIP_FROM_INVENTORY | ALL_IN | 14.0 | 6 | 109 | 5 | 18.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.12270718812942505 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-6 | 443 | EQUIP_FROM_INVENTORY | ALL_IN | 14.0 | 6 | 109 | 5 | 18.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.09177946299314499 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-6 | 444 | EQUIP_FROM_INVENTORY | ALL_IN | 14.0 | 6 | 109 | 5 | 18.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.1132597029209137 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-6 | 445 | BUY | ALL_IN | 14.0 | 6 | 109 | 5 | 18.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9655303359031677 | 0.0 | 0.0 | +ef978d68-7314-41e8-b0e3-244970fc0d1d / -— |
+| Jogador 7 | 4-6 | 446 | MOVE_BENCH | ALL_IN | 14.0 | 6 | 108 | 5 | 18.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.06636688113212585 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-6 | 447 | MOVE_BENCH | ALL_IN | 14.0 | 6 | 108 | 5 | 18.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.5830814838409424 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-6 | 448 | MOVE_BENCH | ALL_IN | 14.0 | 6 | 108 | 5 | 18.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.41499999165534973 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-6 | 449 | PASS | ALL_IN | 14.0 | 6 | 108 | 5 | 18.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.22630493342876434 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-7 | 452 | MOVE_BENCH | ALL_IN | 14.0 | 6 | 119 | 5 | 18.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.063392773270607 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-7 | 453 | MOVE_BENCH | ALL_IN | 14.0 | 6 | 119 | 5 | 18.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.6003416776657104 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-7 | 454 | MOVE_BENCH | ALL_IN | 14.0 | 6 | 119 | 5 | 18.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.5321990847587585 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 4-7 | 455 | PASS | ALL_IN | 14.0 | 6 | 119 | 5 | 16.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.23497605323791504 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 5-1 | 462 | CRAFT_AND_EQUIP | ALL_IN | 14.0 | 6 | 130 | 5 | 16.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.1519775092601776 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 5-1 | 463 | CRAFT_AND_EQUIP | ALL_IN | 14.0 | 6 | 130 | 5 | 16.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.16790936887264252 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 5-1 | 464 | SELL | ALL_IN | 14.0 | 6 | 130 | 5 | 16.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.5412750244140625 | 0.0 | 0.0 | +— / -68b28241-1946-4304-8b10-ae24a13a8e60 |
+| Jogador 7 | 5-1 | 465 | BUY | ALL_IN | 14.0 | 6 | 133 | 5 | 16.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.0099725723266602 | 0.0 | 0.0 | +edad2317-7476-408e-b2a1-095df8c6d3ff / -0a2abead-5e72-4f76-b211-6bd13d9d2a8a,ef978d68-7314-41e8-b0e3-244970fc0d1d |
+| Jogador 7 | 5-1 | 466 | MOVE_BENCH | ALL_IN | 14.0 | 6 | 132 | 5 | 12.0 | Defendente/DA_18_Yorick | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3727341592311859 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 5-1 | 467 | MOVE_BENCH | ALL_IN | 14.0 | 6 | 132 | 5 | 16.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5814242362976074 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 5-1 | 468 | BUY | ALL_IN | 14.0 | 6 | 132 | 5 | 24.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.13383479416370392 | 0.0 | 0.0 | +8daaa83b-241a-4851-9a68-3d09ca8a6a3f / -— |
+| Jogador 7 | 5-1 | 469 | MOVE_BOARD | ALL_IN | 14.0 | 6 | 129 | 5 | 24.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 3.163162182318047e-05 | 0.0 | 0.0 | +— / -— |
+| Jogador 7 | 5-1 | 470 | BUY | ALL_IN | 14.0 | 6 | 129 | 5 | 24.0 | Defendente/DA_18_Yorick | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6464748382568359 | 0.0 | 0.0 | +270bd445-51fa-4bcb-961f-92e1830e478d / -— |
+| Jogador 8 | 1-1 | 1 | MOVE_BENCH | ECON | 100.0 | 2 | 0 | 0 | 0.0 | —/— | MOVE_BENCH, SELL, PASS | True | True | 0.5923603177070618 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 1-1 | 2 | PASS | STABILIZE | 100.0 | 2 | 0 | 0 | 2.0 | —/DA_18_Rakan | MOVE_BOARD, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 1-2 | 29 | BUY | STABILIZE | 100.0 | 3 | 2 | 0 | 2.0 | —/DA_18_Rakan | BUY, REROLL, MOVE_BOARD, PASS | True | True | 0.09741609543561935 | 0.0 | 0.0 | +64afe66e-d5a9-466c-a4ff-9d32c9f153ce / -— |
+| Jogador 8 | 1-2 | 30 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 1 | 0 | 2.0 | —/DA_18_Rakan | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -1.1313155889511108 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 1-2 | 31 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 1 | 0 | 2.0 | —/DA_18_Veigar | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2545992434024811 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 1-2 | 32 | BUY | STABILIZE | 100.0 | 3 | 1 | 0 | 4.0 | —/DA_18_Veigar | BUY, MOVE_BOARD, PASS | True | True | 0.11721326410770416 | 0.0 | 0.0 | +47feb452-27a0-43f6-983f-ea1674f17ab8 / -— |
+| Jogador 8 | 1-2 | 33 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.04662492871284485 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 1-2 | 34 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.015587318688631058 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 1-2 | 35 | PASS | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 1-2 | 50 | MOVE_BENCH | STABILIZE | 100.0 | 3 | 0 | 0 | 4.0 | —/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.4153754711151123 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 1-3 | 56 | BUY | STABILIZE | 100.0 | 3 | 2 | 0 | 6.0 | —/DA_18_Rakan | BUY, REROLL, MOVE_BOARD, PASS | True | True | 0.2870001494884491 | 0.0 | 0.0 | +a349fd40-8d8c-4de8-9ff0-b3263fd120bc / -— |
+| Jogador 8 | 1-3 | 57 | BUY | STABILIZE | 100.0 | 3 | 1 | 0 | 6.0 | —/DA_18_Rakan | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2945544123649597 | 0.0 | 0.0 | +74c2d7f0-8d5d-460e-88fc-5407b717144a / -— |
+| Jogador 8 | 1-3 | 58 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3293716013431549 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 1-3 | 59 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.033787764608860016 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 1-3 | 60 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2954765856266022 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 1-3 | 61 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.018133027479052544 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 1-3 | 62 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014214812777936459 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 1-3 | 63 | PASS | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Rakan | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 1-4 | 81 | BUY | STABILIZE | 100.0 | 3 | 3 | 0 | 6.0 | —/DA_18_Rakan | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9869237542152405 | 0.0 | 0.0 | +4ea4d9af-5729-414b-a102-b7fc80667118 / -— |
+| Jogador 8 | 1-4 | 82 | BUY | STABILIZE | 100.0 | 3 | 2 | 0 | 6.0 | —/DA_18_Xayah | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.1147964000701904 | 0.0 | 0.0 | +322e9047-623a-4fec-a0f9-d21d2fbcd88a / -4ea4d9af-5729-414b-a102-b7fc80667118,74c2d7f0-8d5d-460e-88fc-5407b717144a |
+| Jogador 8 | 1-4 | 83 | BUY | STABILIZE | 100.0 | 3 | 1 | 0 | 6.0 | —/DA_18_Xayah | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3284256160259247 | 0.0 | 0.0 | +65a4f434-f421-47ab-ae23-86ad8971518d / -— |
+| Jogador 8 | 1-4 | 84 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Xayah | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.31911855936050415 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 1-4 | 85 | MOVE_BOARD | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Xayah | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.051390714943408966 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 1-4 | 86 | PASS | STABILIZE | 100.0 | 3 | 0 | 0 | 6.0 | —/DA_18_Xayah | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-1 | 108 | BUY | STABILIZE | 100.0 | 4 | 4 | 0 | 6.0 | —/DA_18_Xayah | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | True | 0.39232465624809265 | 0.0 | 0.0 | +56a8c7e1-c6a6-47e0-9a00-6416cf6f068f / -— |
+| Jogador 8 | 2-1 | 109 | CRAFT_AND_EQUIP | STABILIZE | 100.0 | 4 | 3 | 0 | 6.0 | —/DA_18_Xayah | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.14016322791576385 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-1 | 110 | CRAFT_AND_EQUIP | STABILIZE | 100.0 | 4 | 3 | 0 | 6.0 | —/DA_18_Xayah | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.11841151863336563 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-1 | 111 | MOVE_BENCH | STABILIZE | 100.0 | 4 | 3 | 0 | 6.0 | —/DA_18_Xayah | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.49665454030036926 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-1 | 112 | BUY | STABILIZE | 100.0 | 4 | 3 | 0 | 8.0 | —/DA_18_Xayah | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.299988329410553 | 0.0 | 0.0 | +7aea963f-f0a4-4fa2-8da0-cc5eb260f665 / -— |
+| Jogador 8 | 2-1 | 113 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 1 | 0 | 8.0 | —/DA_18_Xayah | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0021495886612683535 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-1 | 114 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 1 | 0 | 8.0 | —/DA_18_Xayah | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.33538371324539185 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-1 | 115 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 1 | 0 | 8.0 | —/DA_18_Xayah | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014848349615931511 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-1 | 116 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 1 | 0 | 8.0 | —/DA_18_Xayah | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.012908311560750008 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-1 | 117 | PASS | STABILIZE | 100.0 | 4 | 1 | 0 | 8.0 | —/DA_18_Xayah | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-2 | 131 | BUY | STABILIZE | 100.0 | 4 | 7 | 0 | 8.0 | —/DA_18_Xayah | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9447321891784668 | 0.0 | 0.0 | +e98ea24f-414b-4ccd-a19a-d98965ccc21c / -— |
+| Jogador 8 | 2-2 | 132 | REROLL | STABILIZE | 100.0 | 4 | 6 | 0 | 8.0 | —/DA_18_Xayah | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-2 | 133 | BUY | STABILIZE | 100.0 | 4 | 4 | 0 | 8.0 | —/DA_18_Xayah | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.977902352809906 | 0.0 | 0.0 | +dd5b4353-d201-4266-9fbe-72df320eb4f5 / -— |
+| Jogador 8 | 2-2 | 134 | BUY | STABILIZE | 100.0 | 4 | 3 | 0 | 8.0 | —/DA_18_Xayah | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.9497656226158142 | 0.0 | 0.0 | +3394d5fc-ee48-4a08-8669-05984c804b53 / -64afe66e-d5a9-466c-a4ff-9d32c9f153ce,dd5b4353-d201-4266-9fbe-72df320eb4f5 |
+| Jogador 8 | 2-2 | 135 | REROLL | STABILIZE | 100.0 | 4 | 2 | 0 | 6.0 | —/DA_18_Xayah | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-2 | 136 | MOVE_BENCH | STABILIZE | 100.0 | 4 | 0 | 0 | 6.0 | —/DA_18_Xayah | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.42048531770706177 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-2 | 137 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Xayah | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01780598796904087 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-2 | 138 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Xayah | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.015426147729158401 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-2 | 139 | PASS | STABILIZE | 100.0 | 4 | 0 | 0 | 10.0 | —/DA_18_Xayah | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-3 | 154 | BUY | STABILIZE | 100.0 | 4 | 7 | 0 | 10.0 | —/DA_18_Xayah | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.0406657457351685 | 0.0 | 0.0 | +a72d427f-f2f7-46dd-97bf-d28999772db0 / -47feb452-27a0-43f6-983f-ea1674f17ab8,e98ea24f-414b-4ccd-a19a-d98965ccc21c |
+| Jogador 8 | 2-3 | 155 | MOVE_BENCH | STABILIZE | 100.0 | 4 | 6 | 0 | 8.0 | —/DA_18_Xayah | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5479816794395447 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-3 | 156 | BUY | STABILIZE | 100.0 | 4 | 6 | 0 | 12.0 | —/DA_18_Xayah | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2859351336956024 | 0.0 | 0.0 | +c42b5c69-faa4-4147-bbb7-072c772c0f80 / -— |
+| Jogador 8 | 2-3 | 157 | REROLL | STABILIZE | 100.0 | 4 | 3 | 0 | 12.0 | —/DA_18_Xayah | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-3 | 158 | BUY | STABILIZE | 100.0 | 4 | 1 | 0 | 12.0 | —/DA_18_Xayah | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.977475643157959 | 0.0 | 0.0 | +8ea1c095-e10b-46d0-8097-a70a211e2881 / -— |
+| Jogador 8 | 2-3 | 159 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 12.0 | —/DA_18_Xayah | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.006722716148942709 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-3 | 160 | MOVE_BENCH | STABILIZE | 100.0 | 4 | 0 | 0 | 12.0 | —/DA_18_Xayah | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.6946226954460144 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-3 | 161 | PASS | STABILIZE | 100.0 | 4 | 0 | 0 | 16.0 | —/DA_18_Xayah | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-4 | 174 | BUY | STABILIZE | 100.0 | 4 | 7 | 0 | 16.0 | —/DA_18_Xayah | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3180752992630005 | 0.0 | 0.0 | +dc83202b-476c-4438-90aa-a615b764b7e4 / -— |
+| Jogador 8 | 2-4 | 175 | BUY | STABILIZE | 100.0 | 4 | 4 | 0 | 16.0 | —/DA_18_Xayah | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1965302973985672 | 0.0 | 0.0 | +eafa585a-9474-415b-b46b-d3ce86f4a066 / -— |
+| Jogador 8 | 2-4 | 176 | REROLL | STABILIZE | 100.0 | 4 | 3 | 0 | 16.0 | —/DA_18_Xayah | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-4 | 177 | BUY | STABILIZE | 100.0 | 4 | 1 | 0 | 16.0 | —/DA_18_Xayah | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0088641457259655 | 0.0 | 0.0 | +7115c5a0-d443-49d8-b8a4-e51e259572df / -— |
+| Jogador 8 | 2-4 | 178 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 16.0 | —/DA_18_Xayah | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.02158069983124733 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-4 | 179 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 16.0 | —/DA_18_Xayah | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.32267212867736816 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-4 | 180 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 16.0 | —/DA_18_Xayah | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014955027028918266 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-4 | 181 | MOVE_BOARD | STABILIZE | 100.0 | 4 | 0 | 0 | 16.0 | —/DA_18_Xayah | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.015395271591842175 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-4 | 182 | PASS | STABILIZE | 100.0 | 4 | 0 | 0 | 16.0 | —/DA_18_Xayah | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-5 | 196 | SELL | STABILIZE | 100.0 | 4 | 6 | 0 | 16.0 | —/DA_18_Xayah | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.25372010469436646 | 0.0 | 0.0 | +— / -322e9047-623a-4fec-a0f9-d21d2fbcd88a |
+| Jogador 8 | 2-5 | 197 | BUY | STABILIZE | 100.0 | 4 | 9 | 0 | 16.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.4813304841518402 | 0.0 | 0.0 | +f97943e4-cef9-4576-a33f-f2212ade2ae9 / -— |
+| Jogador 8 | 2-5 | 198 | REROLL | STABILIZE | 100.0 | 4 | 8 | 0 | 16.0 | Vivaz/DA_18_Veigar | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-5 | 199 | SELL | STABILIZE | 100.0 | 4 | 6 | 0 | 16.0 | Vivaz/DA_18_Veigar | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3704776167869568 | 0.0 | 0.0 | +— / -3394d5fc-ee48-4a08-8669-05984c804b53 |
+| Jogador 8 | 2-5 | 200 | BUY | STABILIZE | 100.0 | 4 | 9 | 0 | 16.0 | Vivaz/DA_18_Kobuko | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6268646717071533 | 0.0 | 0.0 | +45450b46-63b4-488f-9469-3348c6da8f4b / -— |
+| Jogador 8 | 2-5 | 201 | REROLL | STABILIZE | 100.0 | 4 | 8 | 0 | 16.0 | Vivaz/DA_18_Kobuko | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-5 | 202 | SELL | STABILIZE | 100.0 | 4 | 6 | 0 | 16.0 | Vivaz/DA_18_Kobuko | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.013120000250637531 | 0.0 | 0.0 | +— / -7115c5a0-d443-49d8-b8a4-e51e259572df |
+| Jogador 8 | 2-5 | 203 | BUY | STABILIZE | 100.0 | 4 | 7 | 0 | 16.0 | Vivaz/DA_18_Kobuko | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.1677660495042801 | 0.0 | 0.0 | +f0b6c16b-7610-454c-929d-7152f0a041d3 / -— |
+| Jogador 8 | 2-5 | 204 | REROLL | STABILIZE | 100.0 | 4 | 6 | 0 | 16.0 | Vivaz/DA_18_Kobuko | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-5 | 205 | REROLL | STABILIZE | 100.0 | 4 | 4 | 0 | 16.0 | Vivaz/DA_18_Kobuko | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-5 | 206 | PASS | STABILIZE | 100.0 | 4 | 2 | 0 | 16.0 | Vivaz/DA_18_Kobuko | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-6 | 213 | SELL | SLOWROLL | 94.0 | 5 | 7 | 0 | 16.0 | Vivaz/DA_18_Kobuko | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0032975045032799244 | 0.0 | 0.0 | +— / -a349fd40-8d8c-4de8-9ff0-b3263fd120bc |
+| Jogador 8 | 2-6 | 214 | BUY | SLOWROLL | 94.0 | 5 | 8 | 0 | 16.0 | Vivaz/DA_18_Kobuko | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8272538781166077 | 0.0 | 0.0 | +a9184317-58b7-4804-9aef-3e2c08c20935 / -— |
+| Jogador 8 | 2-6 | 215 | SELL | SLOWROLL | 94.0 | 5 | 6 | 0 | 16.0 | Vivaz/DA_18_Kobuko | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3535960018634796 | 0.0 | 0.0 | +— / -f0b6c16b-7610-454c-929d-7152f0a041d3 |
+| Jogador 8 | 2-6 | 216 | BUY | SLOWROLL | 94.0 | 5 | 7 | 0 | 16.0 | Vivaz/DA_18_Kobuko | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8699446320533752 | 0.0 | 0.0 | +9aa6122c-e49a-48a2-ba24-7adcd3b7cb56 / -45450b46-63b4-488f-9469-3348c6da8f4b,56a8c7e1-c6a6-47e0-9a00-6416cf6f068f |
+| Jogador 8 | 2-6 | 217 | REROLL | SLOWROLL | 94.0 | 5 | 6 | 0 | 16.0 | Vivaz/DA_18_Xayah | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0405450239777565 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-6 | 218 | BUY | SLOWROLL | 94.0 | 5 | 4 | 0 | 16.0 | Vivaz/DA_18_Xayah | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8042041659355164 | 0.0 | 0.0 | +23157bd6-5e8f-4416-bb7f-2e5d71a06543 / -— |
+| Jogador 8 | 2-6 | 219 | MOVE_BENCH | SLOWROLL | 94.0 | 5 | 3 | 0 | 16.0 | Vivaz/DA_18_Xayah | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.4161434471607208 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-6 | 220 | BUY | SLOWROLL | 94.0 | 5 | 3 | 0 | 18.0 | Vivaz/DA_18_Xayah | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2629810571670532 | 0.0 | 0.0 | +f1efd93e-603e-437a-a598-cafd605ddea8 / -— |
+| Jogador 8 | 2-6 | 221 | REROLL | SLOWROLL | 94.0 | 5 | 2 | 0 | 18.0 | Vivaz/DA_18_Xayah | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10899999737739563 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-6 | 222 | SELL | SLOWROLL | 94.0 | 5 | 0 | 0 | 18.0 | Vivaz/DA_18_Xayah | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.33309406042099 | 0.0 | 0.0 | +— / -9aa6122c-e49a-48a2-ba24-7adcd3b7cb56 |
+| Jogador 8 | 2-6 | 223 | PASS | SLOWROLL | 94.0 | 5 | 3 | 0 | 18.0 | Vivaz/DA_18_Kobuko | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-7 | 232 | BUY | SLOWROLL | 94.0 | 5 | 9 | 0 | 18.0 | Vivaz/DA_18_Kobuko | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.831768274307251 | 0.0 | 0.0 | +1d7ccf69-9aaa-4f0c-81ed-a94ef995d915 / -— |
+| Jogador 8 | 2-7 | 233 | REROLL | SLOWROLL | 94.0 | 5 | 8 | 0 | 18.0 | Vivaz/DA_18_Kobuko | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04038957506418228 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-7 | 234 | BUY | SLOWROLL | 94.0 | 5 | 6 | 0 | 18.0 | Vivaz/DA_18_Kobuko | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.148500457406044 | 0.0 | 0.0 | +210d2415-663d-4768-bbc2-238766c2b863 / -— |
+| Jogador 8 | 2-7 | 235 | REROLL | SLOWROLL | 94.0 | 5 | 3 | 0 | 18.0 | Vivaz/DA_18_Kobuko | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04054981842637062 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-7 | 236 | SELL | SLOWROLL | 94.0 | 5 | 1 | 0 | 18.0 | Vivaz/DA_18_Kobuko | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.25429999828338623 | 0.0 | 0.0 | +— / -f97943e4-cef9-4576-a33f-f2212ade2ae9 |
+| Jogador 8 | 2-7 | 237 | BUY | SLOWROLL | 94.0 | 5 | 2 | 0 | 18.0 | Vivaz/DA_18_Kobuko | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8793553113937378 | 0.0 | 0.0 | +bd0fdf98-49ca-4e4b-b4ec-72ac9a91e87b / -0832c739-e0cc-4b9d-9f18-a4dbfa570a02,8ea1c095-e10b-46d0-8097-a70a211e2881 |
+| Jogador 8 | 2-7 | 238 | MOVE_BENCH | SLOWROLL | 94.0 | 5 | 1 | 0 | 16.0 | Vivaz/DA_18_Rakan | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.09063094854354858 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-7 | 239 | MOVE_BENCH | SLOWROLL | 94.0 | 5 | 1 | 0 | 16.0 | Vivaz/DA_18_Rakan | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.39036494493484497 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-7 | 240 | BUY | SLOWROLL | 94.0 | 5 | 1 | 0 | 18.0 | Vivaz/DA_18_Rakan | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8799323439598083 | 0.0 | 0.0 | +0534477f-2ff8-47a7-b71b-1a1d5430589e / -1d7ccf69-9aaa-4f0c-81ed-a94ef995d915,f1efd93e-603e-437a-a598-cafd605ddea8 |
+| Jogador 8 | 2-7 | 241 | MOVE_BENCH | SLOWROLL | 94.0 | 5 | 0 | 0 | 16.0 | Vivaz/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5965091586112976 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 2-7 | 242 | PASS | SLOWROLL | 94.0 | 5 | 0 | 0 | 20.0 | Vivaz/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-1 | 252 | CRAFT_AND_EQUIP | SLOWROLL | 94.0 | 5 | 5 | 0 | 20.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.20995290577411652 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-1 | 253 | BUY | SLOWROLL | 94.0 | 5 | 5 | 0 | 20.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.15890416502952576 | 0.0 | 0.0 | +94e3fa7e-029d-4de6-a1e4-9e67ce1b699e / -— |
+| Jogador 8 | 3-1 | 254 | REROLL | SLOWROLL | 94.0 | 5 | 2 | 0 | 20.0 | Vivaz/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10899999737739563 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-1 | 255 | MOVE_BOARD | SLOWROLL | 94.0 | 5 | 0 | 0 | 20.0 | Vivaz/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0024000187404453754 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-1 | 256 | MOVE_BOARD | SLOWROLL | 94.0 | 5 | 0 | 0 | 20.0 | Vivaz/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014997819438576698 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-1 | 257 | MOVE_BOARD | SLOWROLL | 94.0 | 5 | 0 | 0 | 20.0 | Vivaz/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014998048543930054 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-1 | 258 | PASS | SLOWROLL | 94.0 | 5 | 0 | 0 | 20.0 | Vivaz/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-2 | 272 | BUY | SLOWROLL | 83.0 | 5 | 5 | 0 | 20.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.1762179434299469 | 0.0 | 0.0 | +f3e882b5-333e-44e3-ae82-cacacc8b1137 / -— |
+| Jogador 8 | 3-2 | 273 | REROLL | SLOWROLL | 83.0 | 5 | 2 | 0 | 20.0 | Vivaz/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10899999737739563 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-2 | 274 | SELL | SLOWROLL | 83.0 | 5 | 0 | 0 | 20.0 | Vivaz/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.30240398645401 | 0.0 | 0.0 | +— / -bd0fdf98-49ca-4e4b-b4ec-72ac9a91e87b |
+| Jogador 8 | 3-2 | 275 | BUY | SLOWROLL | 83.0 | 5 | 3 | 0 | 20.0 | Vivaz/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7656639218330383 | 0.0 | 0.0 | +5c931416-3aeb-40d4-9e6f-612b0d387226 / -7aea963f-f0a4-4fa2-8da0-cc5eb260f665,a9184317-58b7-4804-9aef-3e2c08c20935 |
+| Jogador 8 | 3-2 | 276 | MOVE_BOARD | SLOWROLL | 83.0 | 5 | 1 | 0 | 16.0 | Vivaz/DA_18_Teemo | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -2.1478966516497167e-07 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-2 | 277 | MOVE_BENCH | SLOWROLL | 83.0 | 5 | 1 | 0 | 16.0 | Vivaz/DA_18_Teemo | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.38501957058906555 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-2 | 278 | MOVE_BOARD | SLOWROLL | 83.0 | 5 | 1 | 0 | 22.0 | Vivaz/DA_18_Teemo | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014935619197785854 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-2 | 279 | MOVE_BOARD | SLOWROLL | 83.0 | 5 | 1 | 0 | 22.0 | Vivaz/DA_18_Teemo | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.015002094209194183 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-2 | 280 | PASS | SLOWROLL | 83.0 | 5 | 1 | 0 | 22.0 | Vivaz/DA_18_Teemo | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-3 | 292 | BUY | SLOWROLL | 83.0 | 5 | 7 | 0 | 22.0 | Vivaz/DA_18_Teemo | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.13663864135742188 | 0.0 | 0.0 | +58cbdbde-2151-438c-8897-902bef9bcd92 / -— |
+| Jogador 8 | 3-3 | 293 | REROLL | SLOWROLL | 83.0 | 5 | 5 | 0 | 22.0 | Vivaz/DA_18_Teemo | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11022879183292389 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-3 | 294 | REROLL | SLOWROLL | 83.0 | 5 | 3 | 0 | 22.0 | Vivaz/DA_18_Teemo | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.03853895142674446 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-3 | 295 | BUY | SLOWROLL | 83.0 | 5 | 1 | 0 | 22.0 | Vivaz/DA_18_Teemo | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.042665719985961914 | 0.0 | 0.0 | +79b461e3-2c4f-40a2-b967-e0b6d5248bf6 / -— |
+| Jogador 8 | 3-3 | 296 | MOVE_BOARD | SLOWROLL | 83.0 | 5 | 0 | 0 | 22.0 | Vivaz/DA_18_Teemo | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 1.0047596333606634e-05 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-3 | 297 | MOVE_BOARD | SLOWROLL | 83.0 | 5 | 0 | 0 | 22.0 | Vivaz/DA_18_Teemo | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01499911304563284 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-3 | 298 | MOVE_BOARD | SLOWROLL | 83.0 | 5 | 0 | 0 | 22.0 | Vivaz/DA_18_Teemo | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.015003026463091373 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-3 | 299 | PASS | SLOWROLL | 83.0 | 5 | 0 | 0 | 22.0 | Vivaz/DA_18_Teemo | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-4 | 312 | BUY | SLOWROLL | 83.0 | 5 | 7 | 0 | 22.0 | Vivaz/DA_18_Teemo | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2179829329252243 | 0.0 | 0.0 | +f00a538c-0607-4d8b-babe-7c13daf80c42 / -— |
+| Jogador 8 | 3-4 | 313 | SELL | SLOWROLL | 83.0 | 5 | 6 | 0 | 22.0 | Vivaz/DA_18_Veigar | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.25005200505256653 | 0.0 | 0.0 | +— / -5c931416-3aeb-40d4-9e6f-612b0d387226 |
+| Jogador 8 | 3-4 | 314 | EQUIP_FROM_INVENTORY | SLOWROLL | 83.0 | 5 | 11 | 1 | 22.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.18904860317707062 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-4 | 315 | BUY | SLOWROLL | 83.0 | 5 | 11 | 1 | 22.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7379816174507141 | 0.0 | 0.0 | +2cdf9a6a-5786-4a2b-8c4e-6fb9b151a92d / -— |
+| Jogador 8 | 3-4 | 316 | REROLL | SLOWROLL | 83.0 | 5 | 10 | 1 | 22.0 | Vivaz/DA_18_Veigar | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.03700026869773865 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-4 | 317 | SELL | SLOWROLL | 83.0 | 5 | 8 | 0 | 22.0 | Vivaz/DA_18_Veigar | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0987199991941452 | 0.0 | 0.0 | +— / -58cbdbde-2151-438c-8897-902bef9bcd92 |
+| Jogador 8 | 3-4 | 318 | BUY | SLOWROLL | 83.0 | 5 | 10 | 1 | 22.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6879916787147522 | 0.0 | 0.0 | +3ae84928-bc2a-4c1e-8663-b7ad05da4501 / -2cdf9a6a-5786-4a2b-8c4e-6fb9b151a92d,f00a538c-0607-4d8b-babe-7c13daf80c42 |
+| Jogador 8 | 3-4 | 319 | REROLL | SLOWROLL | 83.0 | 5 | 9 | 0 | 22.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11310654133558273 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-4 | 320 | REROLL | SLOWROLL | 83.0 | 5 | 7 | 0 | 22.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.042999424040317535 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-4 | 321 | BUY | SLOWROLL | 83.0 | 5 | 5 | 0 | 22.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2179572731256485 | 0.0 | 0.0 | +194da7dc-39b4-40e3-869d-326ace65137b / -— |
+| Jogador 8 | 3-4 | 322 | PASS | SLOWROLL | 83.0 | 5 | 4 | 0 | 22.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-5 | 332 | BUY | SLOWROLL | 83.0 | 5 | 10 | 1 | 22.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6773501038551331 | 0.0 | 0.0 | +3a17cc98-2024-4ac0-b627-9a751d138cd9 / -23157bd6-5e8f-4416-bb7f-2e5d71a06543,65a4f434-f421-47ab-ae23-86ad8971518d |
+| Jogador 8 | 3-5 | 333 | MOVE_BENCH | SLOWROLL | 83.0 | 5 | 9 | 0 | 20.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5985543131828308 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-5 | 334 | REROLL | SLOWROLL | 83.0 | 5 | 9 | 0 | 24.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.042997535318136215 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-5 | 335 | BUY | SLOWROLL | 83.0 | 5 | 7 | 0 | 24.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.733178436756134 | 0.0 | 0.0 | +8c4772c9-83f1-4021-b83f-a9ff1773bea0 / -— |
+| Jogador 8 | 3-5 | 336 | REROLL | SLOWROLL | 83.0 | 5 | 4 | 0 | 24.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10899999737739563 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-5 | 337 | REROLL | SLOWROLL | 83.0 | 5 | 2 | 0 | 24.0 | Vivaz/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10899999737739563 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-5 | 338 | MOVE_BENCH | SLOWROLL | 83.0 | 5 | 0 | 0 | 24.0 | Vivaz/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.6387074589729309 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-5 | 339 | MOVE_BOARD | SLOWROLL | 83.0 | 5 | 0 | 0 | 26.0 | Vivaz/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014998205006122589 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-5 | 340 | PASS | SLOWROLL | 83.0 | 5 | 0 | 0 | 26.0 | Vivaz/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-6 | 346 | BUY | SLOWROLL | 83.0 | 5 | 7 | 0 | 26.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.21584467589855194 | 0.0 | 0.0 | +e15f057a-185e-4f99-8417-2c2b059912af / -— |
+| Jogador 8 | 3-6 | 347 | REROLL | SLOWROLL | 83.0 | 5 | 6 | 0 | 26.0 | Vivaz/DA_18_Veigar | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11432913690805435 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-6 | 348 | REROLL | SLOWROLL | 83.0 | 5 | 4 | 0 | 26.0 | Vivaz/DA_18_Veigar | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0429999902844429 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-6 | 349 | REROLL | SLOWROLL | 83.0 | 5 | 2 | 0 | 26.0 | Vivaz/DA_18_Veigar | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.10899999737739563 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-6 | 350 | MOVE_BOARD | SLOWROLL | 83.0 | 5 | 0 | 0 | 26.0 | Vivaz/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-6 | 351 | MOVE_BOARD | SLOWROLL | 83.0 | 5 | 0 | 0 | 26.0 | Vivaz/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.15592093765735626 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-6 | 352 | PASS | SLOWROLL | 83.0 | 5 | 0 | 0 | 26.0 | Vivaz/DA_18_Veigar | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-7 | 362 | REROLL | SLOWROLL | 83.0 | 5 | 7 | 0 | 26.0 | Vivaz/DA_18_Veigar | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.042999979108572006 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-7 | 363 | SELL | SLOWROLL | 83.0 | 5 | 5 | 0 | 26.0 | Vivaz/DA_18_Veigar | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.5352749824523926 | 0.0 | 0.0 | +— / -3ae84928-bc2a-4c1e-8663-b7ad05da4501 |
+| Jogador 8 | 3-7 | 364 | BUY | SLOWROLL | 83.0 | 5 | 8 | 0 | 26.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7378398776054382 | 0.0 | 0.0 | +ffe0eb1e-8287-4a3e-8352-eb66c65b705f / -— |
+| Jogador 8 | 3-7 | 365 | SELL | SLOWROLL | 83.0 | 5 | 7 | 0 | 26.0 | Vivaz/DA_18_Veigar | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.25018998980522156 | 0.0 | 0.0 | +— / -3a17cc98-2024-4ac0-b627-9a751d138cd9 |
+| Jogador 8 | 3-7 | 366 | BUY | SLOWROLL | 83.0 | 5 | 10 | 1 | 26.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6579900979995728 | 0.0 | 0.0 | +4aad2eba-6da2-4e1f-8350-7a645cf03109 / -— |
+| Jogador 8 | 3-7 | 367 | REROLL | SLOWROLL | 83.0 | 5 | 9 | 0 | 26.0 | Vivaz/DA_18_Veigar | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04299883544445038 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-7 | 368 | SELL | SLOWROLL | 83.0 | 5 | 7 | 0 | 26.0 | Vivaz/DA_18_Veigar | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.008799999952316284 | 0.0 | 0.0 | +— / -eafa585a-9474-415b-b46b-d3ce86f4a066 |
+| Jogador 8 | 3-7 | 369 | BUY | SLOWROLL | 83.0 | 5 | 8 | 0 | 26.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7655148506164551 | 0.0 | 0.0 | +f074442b-5ccc-4174-ac90-ef9eb358f8c1 / -e15f057a-185e-4f99-8417-2c2b059912af,ffe0eb1e-8287-4a3e-8352-eb66c65b705f |
+| Jogador 8 | 3-7 | 370 | REROLL | SLOWROLL | 83.0 | 5 | 7 | 0 | 26.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.11433115601539612 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-7 | 371 | REROLL | SLOWROLL | 83.0 | 5 | 5 | 0 | 26.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.042999982833862305 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 3-7 | 372 | PASS | SLOWROLL | 83.0 | 5 | 3 | 0 | 26.0 | Vivaz/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-1 | 377 | CRAFT_AND_EQUIP | SLOWROLL | 83.0 | 5 | 9 | 0 | 26.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.14500653743743896 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-1 | 378 | CRAFT_AND_EQUIP | SLOWROLL | 83.0 | 5 | 9 | 0 | 26.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.09805811941623688 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-1 | 379 | REROLL | SLOWROLL | 83.0 | 5 | 9 | 0 | 26.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.04298645630478859 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-1 | 380 | BUY | SLOWROLL | 83.0 | 5 | 7 | 0 | 26.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2142825722694397 | 0.0 | 0.0 | +61c7960c-fbf3-452f-9b2e-da0961761371 / -— |
+| Jogador 8 | 4-1 | 381 | REROLL | SLOWROLL | 83.0 | 5 | 5 | 0 | 26.0 | Vivaz/DA_18_Veigar | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.03697364777326584 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-1 | 382 | REROLL | SLOWROLL | 83.0 | 5 | 3 | 0 | 26.0 | Vivaz/DA_18_Veigar | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0380391888320446 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-1 | 383 | MOVE_BOARD | SLOWROLL | 83.0 | 5 | 1 | 0 | 26.0 | Vivaz/DA_18_Veigar | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-1 | 384 | MOVE_BOARD | SLOWROLL | 83.0 | 5 | 1 | 0 | 26.0 | Vivaz/DA_18_Veigar | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.06076806038618088 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-1 | 385 | MOVE_BENCH | SLOWROLL | 83.0 | 5 | 1 | 0 | 26.0 | Vivaz/DA_18_Veigar | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.7872289419174194 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-1 | 386 | SELL | SLOWROLL | 83.0 | 5 | 1 | 0 | 24.0 | Vivaz/DA_18_Kobuko | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.4154999852180481 | 0.0 | 0.0 | +— / -0534477f-2ff8-47a7-b71b-1a1d5430589e |
+| Jogador 8 | 4-1 | 387 | PASS | SLOWROLL | 83.0 | 5 | 4 | 0 | 24.0 | Vivaz/DA_18_Kobuko | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-2 | 389 | EQUIP_FROM_INVENTORY | SLOWROLL | 83.0 | 6 | 12 | 1 | 24.0 | Vivaz/DA_18_Kobuko | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.1066858172416687 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-2 | 390 | MOVE_BENCH | SLOWROLL | 83.0 | 6 | 12 | 1 | 24.0 | Vivaz/DA_18_Kobuko | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.48755377531051636 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-2 | 391 | BUY | FAST8 | 83.0 | 6 | 12 | 1 | 28.0 | Vivaz/DA_18_Kobuko | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.32553526759147644 | 0.0 | 0.0 | +12e4262b-f19f-4b25-b401-acf685f81d79 / -— |
+| Jogador 8 | 4-2 | 392 | REROLL | FAST8 | 83.0 | 6 | 8 | 0 | 28.0 | Vivaz/DA_18_Kobuko | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-2 | 393 | BUY | FAST8 | 83.0 | 6 | 6 | 0 | 28.0 | Vivaz/DA_18_Kobuko | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7637801766395569 | 0.0 | 0.0 | +a4c663e8-5bdc-433d-93ae-5bf576160bd1 / -8c4772c9-83f1-4021-b83f-a9ff1773bea0,c42b5c69-faa4-4147-bbb7-072c772c0f80 |
+| Jogador 8 | 4-2 | 394 | MOVE_BENCH | SLOWROLL | 83.0 | 6 | 3 | 0 | 16.0 | Vivaz/DA_18_Rammus | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2590479850769043 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-2 | 395 | MOVE_BENCH | SLOWROLL | 83.0 | 6 | 3 | 0 | 24.0 | Vivaz/DA_18_Rammus | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5887395143508911 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-2 | 396 | REROLL | FAST8 | 83.0 | 6 | 3 | 0 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-2 | 397 | BUY | FAST8 | 83.0 | 6 | 1 | 0 | 36.0 | Vivaz/DA_18_Rammus | BUY, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7679849863052368 | 0.0 | 0.0 | +a2af07ad-0ed1-489f-ab19-506b76647e17 / -194da7dc-39b4-40e3-869d-326ace65137b,4aad2eba-6da2-4e1f-8350-7a645cf03109 |
+| Jogador 8 | 4-2 | 398 | MOVE_BOARD | FAST8 | 83.0 | 6 | 0 | 0 | 36.0 | Vivaz/DA_18_Rammus | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0013738791458308697 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-2 | 399 | PASS | FAST8 | 83.0 | 6 | 0 | 0 | 36.0 | Vivaz/DA_18_Rammus | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-3 | 402 | BUY | FAST8 | 83.0 | 6 | 9 | 0 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2139866203069687 | 0.0 | 0.0 | +25acb5b3-2fac-40a9-ae16-b4acc1e1abda / -— |
+| Jogador 8 | 4-3 | 403 | BUY | FAST8 | 83.0 | 6 | 6 | 0 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2143835574388504 | 0.0 | 0.0 | +d808103d-b13d-4bae-8190-4c6aa53889bd / -— |
+| Jogador 8 | 4-3 | 404 | REROLL | FAST8 | 83.0 | 6 | 5 | 0 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-3 | 405 | BUY | FAST8 | 83.0 | 6 | 3 | 0 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7339867949485779 | 0.0 | 0.0 | +dfd01578-1676-4fab-b8d1-0772e725d438 / -— |
+| Jogador 8 | 4-3 | 406 | MOVE_BOARD | FAST8 | 83.0 | 6 | 0 | 0 | 36.0 | Vivaz/DA_18_Rammus | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.004078710451722145 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-3 | 407 | MOVE_BOARD | FAST8 | 83.0 | 6 | 0 | 0 | 36.0 | Vivaz/DA_18_Rammus | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-3 | 408 | MOVE_BOARD | FAST8 | 83.0 | 6 | 0 | 0 | 36.0 | Vivaz/DA_18_Rammus | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09776526689529419 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-3 | 409 | PASS | FAST8 | 83.0 | 6 | 0 | 0 | 36.0 | Vivaz/DA_18_Rammus | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-4 | 416 | BUY | FAST8 | 83.0 | 6 | 9 | 0 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.21798540651798248 | 0.0 | 0.0 | +be744302-6d5a-43de-b670-727cb9597305 / -— |
+| Jogador 8 | 4-4 | 417 | MOVE_BENCH | FAST8 | 83.0 | 6 | 8 | 0 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.16284334659576416 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-4 | 418 | REROLL | FAST8 | 83.0 | 6 | 8 | 0 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-4 | 419 | REROLL | FAST8 | 83.0 | 6 | 6 | 0 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-4 | 420 | REROLL | FAST8 | 83.0 | 6 | 4 | 0 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-4 | 421 | SELL | FAST8 | 83.0 | 6 | 2 | 0 | 36.0 | Vivaz/DA_18_Rammus | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.20527063310146332 | 0.0 | 0.0 | +— / -f074442b-5ccc-4174-ac90-ef9eb358f8c1 |
+| Jogador 8 | 4-4 | 422 | BUY | FAST8 | 83.0 | 6 | 5 | 0 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.685918390750885 | 0.0 | 0.0 | +b2da3efe-dcf0-45d8-a04c-8479e0039c54 / -— |
+| Jogador 8 | 4-4 | 423 | REROLL | FAST8 | 83.0 | 6 | 4 | 0 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-4 | 424 | REROLL | FAST8 | 83.0 | 6 | 2 | 0 | 36.0 | Vivaz/DA_18_Rammus | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-4 | 425 | MOVE_BOARD | FAST8 | 83.0 | 6 | 0 | 0 | 36.0 | Vivaz/DA_18_Rammus | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.05318703502416611 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-4 | 426 | PASS | FAST8 | 83.0 | 6 | 0 | 0 | 36.0 | Vivaz/DA_18_Rammus | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-5 | 429 | REROLL | FAST8 | 83.0 | 6 | 8 | 0 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-5 | 430 | REROLL | FAST8 | 83.0 | 6 | 6 | 0 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-5 | 431 | SELL | FAST8 | 83.0 | 6 | 4 | 0 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.32962825894355774 | 0.0 | 0.0 | +— / -be744302-6d5a-43de-b670-727cb9597305 |
+| Jogador 8 | 4-5 | 432 | BUY | FAST8 | 83.0 | 6 | 5 | 0 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7325717806816101 | 0.0 | 0.0 | +0b8fa4cd-2707-4ec8-8ce0-c200efbc31e5 / -— |
+| Jogador 8 | 4-5 | 433 | MOVE_BOARD | FAST8 | 83.0 | 6 | 3 | 0 | 36.0 | Vivaz/DA_18_Rammus | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-5 | 434 | MOVE_BOARD | FAST8 | 83.0 | 6 | 3 | 0 | 36.0 | Vivaz/DA_18_Rammus | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999999664723873 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-5 | 435 | PASS | FAST8 | 83.0 | 6 | 3 | 0 | 36.0 | Vivaz/DA_18_Rammus | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-6 | 441 | MOVE_BOARD | FAST8 | 83.0 | 6 | 12 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.06376081705093384 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-6 | 442 | MOVE_BOARD | FAST8 | 83.0 | 6 | 12 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999471604824066 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-6 | 443 | MOVE_BOARD | FAST8 | 83.0 | 6 | 12 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014994536526501179 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-6 | 444 | PASS | FAST8 | 83.0 | 6 | 12 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-7 | 452 | REROLL | FAST8 | 83.0 | 6 | 22 | 2 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-7 | 453 | REROLL | FAST8 | 83.0 | 6 | 20 | 2 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.24400000274181366 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-7 | 454 | REROLL | FAST8 | 83.0 | 6 | 18 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-7 | 455 | MOVE_BOARD | FAST8 | 83.0 | 6 | 16 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 3.180087730925152e-07 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-7 | 456 | MOVE_BOARD | FAST8 | 83.0 | 6 | 16 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01499918196350336 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-7 | 457 | SELL | FAST8 | 83.0 | 6 | 16 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.017313065007328987 | 0.0 | 0.0 | +— / -f3e882b5-333e-44e3-ae82-cacacc8b1137 |
+| Jogador 8 | 4-7 | 458 | BUY | FAST8 | 83.0 | 6 | 19 | 1 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7645801305770874 | 0.0 | 0.0 | +789b9568-52f9-4b36-8878-041a1df030ec / -0b8fa4cd-2707-4ec8-8ce0-c200efbc31e5,61c7960c-fbf3-452f-9b2e-da0961761371 |
+| Jogador 8 | 4-7 | 459 | REROLL | FAST8 | 83.0 | 6 | 17 | 1 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 4-7 | 460 | REROLL | FAST8 | 83.0 | 6 | 15 | 1 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-1 | 462 | BUY | FAST8 | 83.0 | 6 | 22 | 2 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | True | 0.252750962972641 | 0.0 | 0.0 | +406d04ee-d50d-4293-823a-a44afcd72372 / -— |
+| Jogador 8 | 5-1 | 463 | CRAFT_AND_EQUIP | FAST8 | 83.0 | 6 | 20 | 2 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.10297630727291107 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-1 | 464 | CRAFT_AND_EQUIP | FAST8 | 83.0 | 6 | 20 | 2 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, CRAFT_AND_EQUIP | True | — | 0.13484543561935425 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-1 | 465 | REROLL | FAST8 | 83.0 | 6 | 20 | 2 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.24400000274181366 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-1 | 466 | BUY | FAST8 | 83.0 | 6 | 18 | 1 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.21747642755508423 | 0.0 | 0.0 | +1ff423b1-30e4-4ed9-8460-0f92a29ac6ae / -— |
+| Jogador 8 | 5-1 | 467 | REROLL | FAST8 | 83.0 | 6 | 17 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-1 | 468 | REROLL | FAST8 | 83.0 | 6 | 15 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-1 | 469 | REROLL | FAST8 | 83.0 | 6 | 13 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-1 | 470 | SELL | FAST8 | 83.0 | 6 | 11 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.330051988363266 | 0.0 | 0.0 | +— / -789b9568-52f9-4b36-8878-041a1df030ec |
+| Jogador 8 | 5-2 | 472 | REROLL | FAST8 | 83.0 | 6 | 26 | 2 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-2 | 473 | REROLL | FAST8 | 83.0 | 6 | 24 | 2 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-2 | 474 | BUY | FAST8 | 83.0 | 6 | 22 | 2 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6882705688476562 | 0.0 | 0.0 | +ca83a56b-ba83-49dd-9edc-1ede2c314aac / -— |
+| Jogador 8 | 5-2 | 475 | MOVE_BOARD | FAST8 | 83.0 | 6 | 19 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 8.145143226556684e-08 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-2 | 476 | SELL | FAST8 | 83.0 | 6 | 19 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.18075348436832428 | 0.0 | 0.0 | +— / -1ff423b1-30e4-4ed9-8460-0f92a29ac6ae |
+| Jogador 8 | 5-2 | 477 | BUY | FAST8 | 83.0 | 6 | 20 | 2 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7099061608314514 | 0.0 | 0.0 | +fa35466e-27f9-459b-b219-7c579660f2c9 / -b2da3efe-dcf0-45d8-a04c-8479e0039c54,d808103d-b13d-4bae-8190-4c6aa53889bd |
+| Jogador 8 | 5-2 | 478 | REROLL | FAST8 | 83.0 | 6 | 19 | 1 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-2 | 479 | MOVE_BOARD | FAST8 | 83.0 | 6 | 17 | 1 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -3.8727893070245045e-07 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-2 | 480 | BUY | FAST8 | 83.0 | 6 | 17 | 1 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.09980924427509308 | 0.0 | 0.0 | +ce187695-1692-4144-8966-dcd791cf848c / -— |
+| Jogador 8 | 5-3 | 482 | BUY | FAST8 | 69.0 | 6 | 20 | 2 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.17714698612689972 | 0.0 | 0.0 | +2f666573-57c7-46db-9be8-2f04c00686b0 / -— |
+| Jogador 8 | 5-3 | 483 | SELL | FAST8 | 69.0 | 6 | 19 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.12406029552221298 | 0.0 | 0.0 | +— / -fa35466e-27f9-459b-b219-7c579660f2c9 |
+| Jogador 8 | 5-3 | 484 | BUY | FAST8 | 69.0 | 6 | 22 | 2 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7568586468696594 | 0.0 | 0.0 | +cf278e27-49a1-41c5-bb90-a4d10b3babab / -— |
+| Jogador 8 | 5-3 | 485 | REROLL | FAST8 | 69.0 | 6 | 20 | 2 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.24400000274181366 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-3 | 486 | MOVE_BOARD | FAST8 | 69.0 | 6 | 18 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-3 | 487 | SELL | FAST8 | 69.0 | 6 | 18 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3291463553905487 | 0.0 | 0.0 | +— / -2f666573-57c7-46db-9be8-2f04c00686b0 |
+| Jogador 8 | 5-3 | 488 | BUY | FAST8 | 69.0 | 6 | 19 | 1 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.17051011323928833 | 0.0 | 0.0 | +62e15c47-d04c-469b-8439-f0ae0499b6aa / -— |
+| Jogador 8 | 5-3 | 489 | REROLL | FAST8 | 69.0 | 6 | 18 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-3 | 490 | REROLL | FAST8 | 69.0 | 6 | 16 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-4 | 492 | REROLL | FAST8 | 69.0 | 6 | 21 | 2 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.24400000274181366 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-4 | 493 | REROLL | FAST8 | 69.0 | 6 | 19 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-4 | 494 | SELL | FAST8 | 69.0 | 6 | 17 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.1383480578660965 | 0.0 | 0.0 | +— / -62e15c47-d04c-469b-8439-f0ae0499b6aa |
+| Jogador 8 | 5-4 | 495 | BUY | FAST8 | 69.0 | 6 | 18 | 1 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.4163362383842468 | 0.0 | 0.0 | +8b4c2718-a172-40e3-a525-9b469fd7e778 / -— |
+| Jogador 8 | 5-4 | 496 | REROLL | FAST8 | 69.0 | 6 | 15 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-4 | 497 | SELL | FAST8 | 69.0 | 6 | 13 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2562885582447052 | 0.0 | 0.0 | +— / -8b4c2718-a172-40e3-a525-9b469fd7e778 |
+| Jogador 8 | 5-4 | 498 | BUY | FAST8 | 69.0 | 6 | 16 | 1 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7645859718322754 | 0.0 | 0.0 | +c152f4bb-8458-4b75-928f-932f3916e217 / -406d04ee-d50d-4293-823a-a44afcd72372,cf278e27-49a1-41c5-bb90-a4d10b3babab |
+| Jogador 8 | 5-4 | 499 | BUY | FAST8 | 69.0 | 6 | 14 | 1 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7341325283050537 | 0.0 | 0.0 | +1fe7d79d-be62-4757-98a5-c9119df2f2ad / -— |
+| Jogador 8 | 5-4 | 500 | REROLL | FAST8 | 69.0 | 6 | 13 | 1 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-5 | 502 | BUY | FAST8 | 69.0 | 6 | 17 | 1 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7639873027801514 | 0.0 | 0.0 | +72962d93-b829-4277-85b9-bb37717e8641 / -25acb5b3-2fac-40a9-ae16-b4acc1e1abda,dfd01578-1676-4fab-b8d1-0772e725d438 |
+| Jogador 8 | 5-5 | 503 | REROLL | FAST8 | 69.0 | 6 | 14 | 1 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-5 | 504 | BUY | FAST8 | 69.0 | 6 | 12 | 1 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.12326554208993912 | 0.0 | 0.0 | +eb1cb374-eb26-46d7-b06e-e2cc49fe2d93 / -— |
+| Jogador 8 | 5-5 | 505 | BUY | FAST8 | 69.0 | 6 | 10 | 1 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3097544014453888 | 0.0 | 0.0 | +3c8e9cf3-add6-4e2e-91b1-a70f332f7706 / -— |
+| Jogador 8 | 5-5 | 506 | REROLL | FAST8 | 69.0 | 6 | 7 | 0 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-5 | 507 | SELL | FAST8 | 69.0 | 6 | 5 | 0 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.4452750086784363 | 0.0 | 0.0 | +— / -72962d93-b829-4277-85b9-bb37717e8641 |
+| Jogador 8 | 5-5 | 508 | BUY | FAST8 | 69.0 | 6 | 13 | 1 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.08044720441102982 | 0.0 | 0.0 | +6633c82b-2bac-41d0-9ac3-49695325fee4 / -— |
+| Jogador 8 | 5-5 | 509 | REROLL | FAST8 | 69.0 | 6 | 12 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-5 | 510 | SELL | FAST8 | 69.0 | 6 | 10 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.330051988363266 | 0.0 | 0.0 | +— / -c152f4bb-8458-4b75-928f-932f3916e217 |
+| Jogador 8 | 5-6 | 512 | BUY | FAST8 | 69.0 | 6 | 21 | 2 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2092740535736084 | 0.0 | 0.0 | +fe72286c-9c87-4ac2-bca6-4e4497b982fd / -— |
+| Jogador 8 | 5-6 | 513 | SELL | FAST8 | 69.0 | 6 | 18 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.09391999989748001 | 0.0 | 0.0 | +— / -eb1cb374-eb26-46d7-b06e-e2cc49fe2d93 |
+| Jogador 8 | 5-6 | 514 | BUY | FAST8 | 69.0 | 6 | 20 | 2 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.08759808540344238 | 0.0 | 0.0 | +8a77018b-083a-4025-930b-f2d786859d92 / -— |
+| Jogador 8 | 5-6 | 515 | REROLL | FAST8 | 69.0 | 6 | 19 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-6 | 516 | SELL | FAST8 | 69.0 | 6 | 17 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.01207985170185566 | 0.0 | 0.0 | +— / -6633c82b-2bac-41d0-9ac3-49695325fee4 |
+| Jogador 8 | 5-6 | 517 | BUY | FAST8 | 69.0 | 6 | 18 | 1 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6879642009735107 | 0.0 | 0.0 | +73469e1b-40b5-434c-abd1-1b9f0e4ae3ab / -— |
+| Jogador 8 | 5-6 | 518 | REROLL | FAST8 | 69.0 | 6 | 17 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-6 | 519 | REROLL | FAST8 | 69.0 | 6 | 15 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-6 | 520 | SELL | FAST8 | 69.0 | 6 | 13 | 1 | 36.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.28716108202934265 | 0.0 | 0.0 | +— / -1fe7d79d-be62-4757-98a5-c9119df2f2ad |
+| Jogador 8 | 5-7 | 522 | BUY | FAST8 | 69.0 | 6 | 22 | 2 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7921360731124878 | 0.0 | 0.0 | +156c9589-cb80-4283-9400-35f62c0a8882 / -73469e1b-40b5-434c-abd1-1b9f0e4ae3ab,8a77018b-083a-4025-930b-f2d786859d92 |
+| Jogador 8 | 5-7 | 523 | REROLL | FAST8 | 69.0 | 6 | 21 | 2 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.24400000274181366 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-7 | 524 | BUY | FAST8 | 69.0 | 6 | 19 | 1 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.21398651599884033 | 0.0 | 0.0 | +1c55243b-6223-4b50-9711-7fea0658858d / -— |
+| Jogador 8 | 5-7 | 525 | REROLL | FAST8 | 69.0 | 6 | 16 | 1 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-7 | 526 | REROLL | FAST8 | 69.0 | 6 | 14 | 1 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-7 | 527 | REROLL | FAST8 | 69.0 | 6 | 12 | 1 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 5-7 | 528 | BUY | FAST8 | 69.0 | 6 | 10 | 1 | 36.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.6839648485183716 | 0.0 | 0.0 | +323fb00f-51df-47c9-b2c3-58a4bc0529bd / -ca83a56b-ba83-49dd-9edc-1ede2c314aac,dc83202b-476c-4438-90aa-a615b764b7e4 |
+| Jogador 8 | 5-7 | 529 | BUY | FAST8 | 69.0 | 6 | 7 | 0 | 36.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.21796417236328125 | 0.0 | 0.0 | +2ce4cd9a-3316-4925-9e26-1f4f94f8181b / -— |
+| Jogador 8 | 5-7 | 530 | REROLL | FAST8 | 69.0 | 6 | 6 | 0 | 36.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-1 | 532 | EQUIP_FROM_INVENTORY | FAST8 | 69.0 | 6 | 10 | 1 | 36.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | -0.029999999329447746 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-1 | 533 | REROLL | FAST8 | 69.0 | 6 | 10 | 1 | 36.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.24400000274181366 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-1 | 534 | BUY | FAST8 | 69.0 | 6 | 8 | 0 | 36.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2134491503238678 | 0.0 | 0.0 | +74677afd-b0e2-4fea-a86b-70bb9d274eac / -— |
+| Jogador 8 | 6-1 | 535 | REROLL | FAST8 | 69.0 | 6 | 6 | 0 | 36.0 | Vivaz/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-1 | 536 | REROLL | FAST8 | 69.0 | 6 | 4 | 0 | 36.0 | Vivaz/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-1 | 537 | REROLL | FAST8 | 69.0 | 6 | 2 | 0 | 36.0 | Vivaz/DA_18_Tristana | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-1 | 538 | MOVE_BOARD | FAST8 | 69.0 | 6 | 0 | 0 | 36.0 | Vivaz/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -2.526764717458718e-07 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-1 | 539 | MOVE_BOARD | FAST8 | 69.0 | 6 | 0 | 0 | 36.0 | Vivaz/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014997473917901516 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-1 | 540 | PASS | FAST8 | 69.0 | 6 | 0 | 0 | 36.0 | Vivaz/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.0 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-2 | 542 | REROLL | FAST8 | 53.0 | 6 | 5 | 0 | 36.0 | Vivaz/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-2 | 543 | SELL | FAST8 | 53.0 | 6 | 3 | 0 | 36.0 | Vivaz/DA_18_Tristana | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.20411337912082672 | 0.0 | 0.0 | +— / -156c9589-cb80-4283-9400-35f62c0a8882 |
+| Jogador 8 | 6-2 | 544 | BUY | FAST8 | 53.0 | 6 | 6 | 0 | 36.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7329526543617249 | 0.0 | 0.0 | +6e1edeac-0328-4a50-a0d9-69246483f00d / -— |
+| Jogador 8 | 6-2 | 545 | MOVE_BENCH | FAST8 | 53.0 | 6 | 3 | 0 | 36.0 | Vivaz/DA_18_Tristana | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.38781729340553284 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-2 | 546 | REROLL | FAST8 | 53.0 | 6 | 3 | 0 | 38.0 | Vivaz/DA_18_Tristana | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-2 | 547 | MOVE_BOARD | FAST8 | 53.0 | 6 | 1 | 0 | 38.0 | Vivaz/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -3.94024766592338e-07 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-2 | 548 | MOVE_BENCH | FAST8 | 53.0 | 6 | 1 | 0 | 38.0 | Vivaz/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.08180401474237442 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-2 | 549 | MOVE_BENCH | FAST8 | 53.0 | 6 | 1 | 0 | 38.0 | Vivaz/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3066791594028473 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-2 | 550 | MOVE_BENCH | FAST8 | 53.0 | 6 | 1 | 0 | 36.0 | Vivaz/DA_18_Tristana | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.7645922899246216 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-3 | 552 | REROLL | FAST8 | 53.0 | 6 | 7 | 0 | 38.0 | Vivaz/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-3 | 553 | SELL | FAST8 | 53.0 | 6 | 5 | 0 | 38.0 | Vivaz/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.5352749824523926 | 0.0 | 0.0 | +— / -a2af07ad-0ed1-489f-ab19-506b76647e17 |
+| Jogador 8 | 6-3 | 554 | BUY | FAST8 | 53.0 | 6 | 8 | 0 | 38.0 | Vivaz/DA_18_Tristana | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7349702715873718 | 0.0 | 0.0 | +e6d9cb51-8b30-464b-8e5b-42f9488d5268 / -— |
+| Jogador 8 | 6-3 | 555 | REROLL | FAST8 | 53.0 | 6 | 6 | 0 | 38.0 | Vivaz/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-3 | 556 | SELL | FAST8 | 53.0 | 6 | 4 | 0 | 38.0 | Vivaz/DA_18_Tristana | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.28049999475479126 | 0.0 | 0.0 | +— / -323fb00f-51df-47c9-b2c3-58a4bc0529bd |
+| Jogador 8 | 6-3 | 557 | BUY | FAST8 | 53.0 | 6 | 12 | 1 | 38.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7656001448631287 | 0.0 | 0.0 | +97eb334a-143b-417b-afdb-b2457631361d / -74677afd-b0e2-4fea-a86b-70bb9d274eac,e6d9cb51-8b30-464b-8e5b-42f9488d5268 |
+| Jogador 8 | 6-3 | 558 | BUY | FAST8 | 53.0 | 6 | 10 | 1 | 38.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.10947290807962418 | 0.0 | 0.0 | +91042111-e7da-429b-a4d2-81a82452e70e / -— |
+| Jogador 8 | 6-3 | 559 | REROLL | FAST8 | 53.0 | 6 | 9 | 0 | 38.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-3 | 560 | BUY | FAST8 | 53.0 | 6 | 7 | 0 | 38.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7629366517066956 | 0.0 | 0.0 | +bbc9cfeb-2f33-46f6-9341-cc74bb294300 / -210d2415-663d-4768-bbc2-238766c2b863,6e1edeac-0328-4a50-a0d9-69246483f00d |
+| Jogador 8 | 6-4 | 562 | BUY | FAST8 | 53.0 | 6 | 9 | 0 | 32.0 | Vivaz/DA_Fiddlesticks18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7213010787963867 | 0.0 | 0.0 | +b7525fd3-8f95-42ae-9bbc-a430753dd69d / -— |
+| Jogador 8 | 6-4 | 563 | MOVE_BENCH | FAST8 | 53.0 | 6 | 6 | 0 | 32.0 | Vivaz/DA_Fiddlesticks18 | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.46363627910614014 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-4 | 564 | BUY | FAST8 | 53.0 | 6 | 6 | 0 | 38.0 | Vivaz/DA_Fiddlesticks18 | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.21395479142665863 | 0.0 | 0.0 | +4fd2698f-7ea5-4efa-bb00-5c37079258d7 / -— |
+| Jogador 8 | 6-4 | 565 | REROLL | FAST8 | 53.0 | 6 | 3 | 0 | 38.0 | Vivaz/DA_Fiddlesticks18 | REROLL, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-4 | 566 | SELL | FAST8 | 53.0 | 6 | 1 | 0 | 38.0 | Vivaz/DA_Fiddlesticks18 | MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3552328646183014 | 0.0 | 0.0 | +— / -bbc9cfeb-2f33-46f6-9341-cc74bb294300 |
+| Jogador 8 | 6-4 | 567 | BUY | FAST8 | 53.0 | 6 | 9 | 0 | 38.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7339954972267151 | 0.0 | 0.0 | +ff318e64-ab3c-4490-9659-71f75ac2fa21 / -— |
+| Jogador 8 | 6-4 | 568 | MOVE_BENCH | FAST8 | 53.0 | 6 | 6 | 0 | 38.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.09757111966609955 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-4 | 569 | REROLL | FAST8 | 53.0 | 6 | 6 | 0 | 38.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-4 | 570 | SELL | FAST8 | 53.0 | 6 | 4 | 0 | 38.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.3461320102214813 | 0.0 | 0.0 | +— / -97eb334a-143b-417b-afdb-b2457631361d |
+| Jogador 8 | 6-5 | 572 | REROLL | FAST8 | 53.0 | 6 | 14 | 1 | 38.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-5 | 573 | BUY | FAST8 | 53.0 | 6 | 12 | 1 | 38.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.2175373136997223 | 0.0 | 0.0 | +a4a2a76a-0512-44cc-a927-08c48681d5d9 / -— |
+| Jogador 8 | 6-5 | 574 | SELL | FAST8 | 53.0 | 6 | 11 | 1 | 38.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.24646000564098358 | 0.0 | 0.0 | +— / -3c8e9cf3-add6-4e2e-91b1-a70f332f7706 |
+| Jogador 8 | 6-5 | 575 | BUY | FAST8 | 53.0 | 6 | 14 | 1 | 38.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.21357247233390808 | 0.0 | 0.0 | +164d2907-e726-4191-bd17-3117da6e94b0 / -— |
+| Jogador 8 | 6-5 | 576 | REROLL | FAST8 | 53.0 | 6 | 12 | 1 | 38.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-5 | 577 | SELL | FAST8 | 53.0 | 6 | 10 | 1 | 38.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.01664000004529953 | 0.0 | 0.0 | +— / -fe72286c-9c87-4ac2-bca6-4e4497b982fd |
+| Jogador 8 | 6-5 | 578 | BUY | FAST8 | 53.0 | 6 | 13 | 1 | 38.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7379855513572693 | 0.0 | 0.0 | +974b3679-26a3-466d-b607-0feac1347999 / -— |
+| Jogador 8 | 6-5 | 579 | REROLL | FAST8 | 53.0 | 6 | 12 | 1 | 38.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.164000004529953 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-5 | 580 | SELL | FAST8 | 53.0 | 6 | 10 | 1 | 38.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.25925999879837036 | 0.0 | 0.0 | +— / -a4a2a76a-0512-44cc-a927-08c48681d5d9 |
+| Jogador 8 | 6-6 | 582 | MOVE_BENCH | STABILIZE | 36.0 | 7 | 17 | 1 | 38.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.6992067694664001 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-6 | 583 | MOVE_BENCH | STABILIZE | 36.0 | 7 | 17 | 1 | 34.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.5807954668998718 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-6 | 584 | MOVE_BOARD | STABILIZE | 36.0 | 7 | 17 | 1 | 40.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014466209337115288 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-6 | 585 | MOVE_BOARD | STABILIZE | 36.0 | 7 | 17 | 1 | 40.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.014999480918049812 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-6 | 586 | PASS | STABILIZE | 36.0 | 7 | 17 | 1 | 40.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.03619428724050522 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-7 | 592 | BUY | STABILIZE | 36.0 | 7 | 23 | 2 | 40.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.7198627591133118 | 0.0 | 0.0 | +d4607022-e763-458f-8e89-382e5f600ee1 / -— |
+| Jogador 8 | 6-7 | 593 | REROLL | STABILIZE | 36.0 | 7 | 19 | 1 | 40.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-7 | 594 | BUY | STABILIZE | 36.0 | 7 | 17 | 1 | 40.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.833990216255188 | 0.0 | 0.0 | +de4efe24-80b8-420a-8612-4e0123cefb1c / -1c55243b-6223-4b50-9711-7fea0658858d,ff318e64-ab3c-4490-9659-71f75ac2fa21 |
+| Jogador 8 | 6-7 | 595 | BUY | STABILIZE | 36.0 | 7 | 14 | 1 | 40.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.1264560967683792 | 0.0 | 0.0 | +02a6eb22-c783-4697-9f47-7d174a430ddf / -— |
+| Jogador 8 | 6-7 | 596 | REROLL | STABILIZE | 36.0 | 7 | 10 | 1 | 40.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.17399999499320984 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-7 | 597 | BUY | STABILIZE | 36.0 | 7 | 8 | 0 | 40.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.08872715383768082 | 0.0 | 0.0 | +5714b168-3565-4742-8b88-9c64af955c4c / -— |
+| Jogador 8 | 6-7 | 598 | REROLL | STABILIZE | 36.0 | 7 | 7 | 0 | 40.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 6-7 | 599 | SELL | STABILIZE | 36.0 | 7 | 5 | 0 | 40.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.4452750086784363 | 0.0 | 0.0 | +— / -de4efe24-80b8-420a-8612-4e0123cefb1c |
+| Jogador 8 | 6-7 | 600 | BUY | STABILIZE | 36.0 | 7 | 13 | 1 | 40.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8033856749534607 | 0.0 | 0.0 | +58a29ca7-288a-4e28-8954-b6f639f4da81 / -— |
+| Jogador 8 | 7-1 | 602 | EQUIP_FROM_INVENTORY | STABILIZE | 36.0 | 7 | 17 | 1 | 40.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS, EQUIP_FROM_INVENTORY | True | — | 0.09364569932222366 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 7-1 | 603 | SELL | STABILIZE | 36.0 | 7 | 17 | 1 | 40.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.0019309247145429254 | 0.0 | 0.0 | +— / -5714b168-3565-4742-8b88-9c64af955c4c |
+| Jogador 8 | 7-1 | 604 | BUY | STABILIZE | 36.0 | 7 | 18 | 1 | 40.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.8036749362945557 | 0.0 | 0.0 | +3b18a575-ba87-49ac-8d2a-7a5d0610a297 / -— |
+| Jogador 8 | 7-1 | 605 | SELL | STABILIZE | 36.0 | 7 | 15 | 1 | 40.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.008320000022649765 | 0.0 | 0.0 | +— / -02a6eb22-c783-4697-9f47-7d174a430ddf |
+| Jogador 8 | 7-1 | 606 | BUY | STABILIZE | 36.0 | 7 | 19 | 1 | 40.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.4950673282146454 | 0.0 | 0.0 | +527e0279-ddbe-458d-b8f0-d909b76ea02a / -— |
+| Jogador 8 | 7-1 | 607 | REROLL | STABILIZE | 36.0 | 7 | 16 | 1 | 40.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 7-1 | 608 | SELL | STABILIZE | 36.0 | 7 | 14 | 1 | 40.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.25558000802993774 | 0.0 | 0.0 | +— / -527e0279-ddbe-458d-b8f0-d909b76ea02a |
+| Jogador 8 | 7-1 | 609 | BUY | STABILIZE | 36.0 | 7 | 17 | 1 | 40.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.28398793935775757 | 0.0 | 0.0 | +fa5d4f6f-5af8-4cfb-bf7a-138f4d3152c6 / -— |
+| Jogador 8 | 7-1 | 610 | REROLL | STABILIZE | 36.0 | 7 | 14 | 1 | 40.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 7-2 | 612 | SELL | STABILIZE | 36.0 | 7 | 19 | 1 | 40.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.2567319869995117 | 0.0 | 0.0 | +— / -fa5d4f6f-5af8-4cfb-bf7a-138f4d3152c6 |
+| Jogador 8 | 7-2 | 613 | BUY | STABILIZE | 36.0 | 7 | 22 | 2 | 40.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.3326035737991333 | 0.0 | 0.0 | +bc1f59a4-3cb5-4cdf-8464-e05d5b1f1d74 / -— |
+| Jogador 8 | 7-2 | 614 | SELL | STABILIZE | 36.0 | 7 | 21 | 2 | 40.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.28606000542640686 | 0.0 | 0.0 | +— / -bc1f59a4-3cb5-4cdf-8464-e05d5b1f1d74 |
+| Jogador 8 | 7-2 | 615 | BUY | STABILIZE | 36.0 | 7 | 22 | 2 | 40.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.025135695934295654 | 0.0 | 0.0 | +e57b2162-b5dd-415b-9f68-7296cce1f00c / -— |
+| Jogador 8 | 7-2 | 616 | REROLL | STABILIZE | 36.0 | 7 | 20 | 2 | 40.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.17399999499320984 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 7-2 | 617 | SELL | STABILIZE | 36.0 | 7 | 18 | 1 | 40.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.08671999722719193 | 0.0 | 0.0 | +— / -e57b2162-b5dd-415b-9f68-7296cce1f00c |
+| Jogador 8 | 7-2 | 618 | BUY | STABILIZE | 36.0 | 7 | 20 | 2 | 40.0 | Vivaz/DA_18_Rammus | BUY, REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | 0.23638509213924408 | 0.0 | 0.0 | +b7b36e91-ed34-4c95-ba4d-18d1d78652aa / -— |
+| Jogador 8 | 7-2 | 619 | REROLL | STABILIZE | 36.0 | 7 | 17 | 1 | 40.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+| Jogador 8 | 7-2 | 620 | REROLL | STABILIZE | 36.0 | 7 | 15 | 1 | 40.0 | Vivaz/DA_18_Rammus | REROLL, BUY_XP, MOVE_BENCH, MOVE_BOARD, SELL, PASS | True | True | -0.09399999678134918 | 0.0 | 0.0 | +— / -— |
+
+Os dados estruturados de origem preservam máscaras, diagnósticos da política, estados antes/depois, componentes de recompensa e mudanças por UUID. Campo ausente não significa zero.
+
+## Auditoria econômica por ação
+
+| Jogador | Ações | Ouro gasto | Ouro recuperado | Juros potenciais perdidos | XP sem level-up | Level-up sem unidade implantada | Rerolls sem ganho imediato | Reroll → PASS | Ouro final | Força final |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Jogador 1 | 265 | 193 | 69 | 18 | 0 | 0 | 36 | 4 | 62 | 28.0 |
+- Jogador 1 — gasto por ação: BUY: 121g, CRAFT_AND_EQUIP: 0g, EQUIP_FROM_INVENTORY: 0g, MOVE_BENCH: 0g, MOVE_BOARD: 0g, PASS: 0g, REROLL: 72g, SELL: 0g
+- Jogador 1 — gasto por estágio: stage 1: 6g, stage 2: 52g, stage 3: 57g, stage 4: 62g, stage 5: 16g
+| Jogador 2 | 352 | 325 | 96 | 22 | 0 | 0 | 79 | 2 | 30 | 54.0 |
+- Jogador 2 — gasto por ação: BUY: 167g, CRAFT_AND_EQUIP: 0g, EQUIP_FROM_INVENTORY: 0g, MOVE_BENCH: 0g, MOVE_BOARD: 0g, PASS: 0g, REROLL: 158g, SELL: 0g
+- Jogador 2 — gasto por estágio: stage 1: 7g, stage 2: 54g, stage 3: 34g, stage 4: 110g, stage 5: 73g, stage 6: 47g, stage 7: 0g
+| Jogador 3 | 295 | 245 | 112 | 12 | 0 | 0 | 43 | 2 | 216 | 36.0 |
+- Jogador 3 — gasto por ação: BUY: 159g, CRAFT_AND_EQUIP: 0g, EQUIP_FROM_INVENTORY: 0g, MOVE_BENCH: 0g, MOVE_BOARD: 0g, PASS: 0g, REROLL: 86g, SELL: 0g
+- Jogador 3 — gasto por estágio: stage 1: 7g, stage 2: 25g, stage 3: 60g, stage 4: 58g, stage 5: 45g, stage 6: 48g, stage 7: 2g
+| Jogador 4 | 177 | 90 | 32 | 5 | 0 | 0 | 12 | 1 | 101 | 24.0 |
+- Jogador 4 — gasto por ação: BUY: 66g, CRAFT_AND_EQUIP: 0g, EQUIP_FROM_INVENTORY: 0g, MOVE_BENCH: 0g, MOVE_BOARD: 0g, PASS: 0g, REROLL: 24g, SELL: 0g
+- Jogador 4 — gasto por estágio: stage 1: 7g, stage 2: 57g, stage 3: 14g, stage 4: 12g
+| Jogador 5 | 231 | 142 | 40 | 6 | 0 | 0 | 28 | 1 | 43 | 28.0 |
+- Jogador 5 — gasto por ação: BUY: 86g, CRAFT_AND_EQUIP: 0g, EQUIP_FROM_INVENTORY: 0g, MOVE_BENCH: 0g, MOVE_BOARD: 0g, PASS: 0g, REROLL: 56g, SELL: 0g
+- Jogador 5 — gasto por estágio: stage 1: 7g, stage 2: 55g, stage 3: 64g, stage 4: 16g, stage 5: 0g
+| Jogador 6 | 256 | 183 | 70 | 10 | 0 | 0 | 36 | 2 | 70 | 28.0 |
+- Jogador 6 — gasto por ação: BUY: 111g, CRAFT_AND_EQUIP: 0g, EQUIP_FROM_INVENTORY: 0g, MOVE_BENCH: 0g, MOVE_BOARD: 0g, PASS: 0g, REROLL: 72g, SELL: 0g
+- Jogador 6 — gasto por estágio: stage 1: 7g, stage 2: 57g, stage 3: 65g, stage 4: 39g, stage 5: 15g
+| Jogador 7 | 184 | 80 | 20 | 2 | 0 | 0 | 12 | 1 | 126 | 24.0 |
+- Jogador 7 — gasto por ação: BUY: 56g, CRAFT_AND_EQUIP: 0g, EQUIP_FROM_INVENTORY: 0g, MOVE_BENCH: 0g, MOVE_BOARD: 0g, PASS: 0g, REROLL: 24g, SELL: 0g
+- Jogador 7 — gasto por estágio: stage 1: 6g, stage 2: 49g, stage 3: 10g, stage 4: 8g, stage 5: 7g
+| Jogador 8 | 356 | 368 | 127 | 23 | 0 | 0 | 94 | 2 | 13 | 40.0 |
+- Jogador 8 — gasto por ação: BUY: 180g, CRAFT_AND_EQUIP: 0g, EQUIP_FROM_INVENTORY: 0g, MOVE_BENCH: 0g, MOVE_BOARD: 0g, PASS: 0g, REROLL: 188g, SELL: 0g
+- Jogador 8 — gasto por estágio: stage 1: 7g, stage 2: 54g, stage 3: 57g, stage 4: 59g, stage 5: 92g, stage 6: 74g, stage 7: 25g
+
+Os motivos ficam em economic_diagnostics.reason_code. 'Sem ganho imediato' não significa automaticamente uma decisão ruim; o relatório não modifica a recompensa PPO.
+
+### Janelas de XP e estabilização para revisão
+
+| Jogador | Compras de XP | Janelas de revisão |
+|---|---:|---:|
+| Jogador 1 | 0 | 10 |
+- Jogador 1 · 2-2 · step 133: REROLL com 4g, HP 95, nível 4/8 (STABILIZE).
+- Jogador 1 · 2-4 · step 180: PASS com 6g, HP 89, nível 4/8 (STABILIZE).
+- Jogador 1 · 2-5 · step 201: REROLL com 7g, HP 89, nível 4/8 (STABILIZE).
+- Jogador 1 · 4-7 · step 457: PASS com 22g, HP 34, nível 6/8 (STABILIZE).
+- Jogador 1 · 5-1 · step 469: PASS com 28g, HP 34, nível 6/8 (STABILIZE).
+- Jogador 1 · 5-2 · step 477: PASS com 34g, HP 34, nível 6/8 (STABILIZE).
+- Jogador 1 · 5-3 · step 486: PASS com 37g, HP 34, nível 6/8 (STABILIZE).
+- Jogador 1 · 5-4 · step 495: PASS com 44g, HP 21, nível 6/8 (STABILIZE).
+- Jogador 1 · 5-5 · step 505: PASS com 53g, HP 21, nível 6/8 (STABILIZE).
+- Jogador 1 · 5-6 · step 518: PASS com 62g, HP 7, nível 6/8 (ALL_IN).
+| Jogador 2 | 0 | 63 |
+- Jogador 2 · 2-2 · step 132: REROLL com 5g, HP 100, nível 4/8 (STABILIZE).
+- Jogador 2 · 4-2 · step 391: REROLL com 36g, HP 48, nível 6/8 (FAST8).
+- Jogador 2 · 4-2 · step 394: REROLL com 36g, HP 48, nível 6/8 (FAST8).
+- Jogador 2 · 4-2 · step 396: REROLL com 33g, HP 48, nível 6/8 (FAST8).
+- Jogador 2 · 4-2 · step 399: PASS com 29g, HP 48, nível 6/8 (FAST8).
+- Jogador 2 · 4-3 · step 403: REROLL com 38g, HP 48, nível 6/8 (FAST8).
+- Jogador 2 · 4-3 · step 408: REROLL com 38g, HP 48, nível 6/8 (FAST8).
+- Jogador 2 · 4-3 · step 410: REROLL com 34g, HP 48, nível 6/8 (FAST8).
+- Jogador 2 · 4-4 · step 420: REROLL com 34g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 4-4 · step 421: REROLL com 32g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 4-4 · step 422: REROLL com 30g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 4-4 · step 423: REROLL com 28g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 4-4 · step 426: PASS com 24g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 4-5 · step 431: REROLL com 27g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 4-5 · step 434: REROLL com 25g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 4-5 · step 435: REROLL com 23g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 4-5 · step 436: REROLL com 21g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 4-5 · step 439: PASS com 22g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 4-6 · step 443: REROLL com 27g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 4-6 · step 444: REROLL com 25g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 4-6 · step 446: REROLL com 20g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 4-6 · step 449: REROLL com 12g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 4-7 · step 452: REROLL com 18g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 4-7 · step 455: REROLL com 20g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 4-7 · step 456: REROLL com 18g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 4-7 · step 457: REROLL com 16g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 4-7 · step 458: REROLL com 14g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 4-7 · step 459: REROLL com 12g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 4-7 · step 460: REROLL com 10g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 5-1 · step 464: REROLL com 14g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 5-1 · step 465: REROLL com 12g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 5-1 · step 468: REROLL com 15g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 5-2 · step 473: REROLL com 20g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 5-2 · step 474: REROLL com 18g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 5-2 · step 475: REROLL com 16g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 5-2 · step 476: REROLL com 14g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 5-2 · step 477: REROLL com 12g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 5-2 · step 478: REROLL com 10g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 5-2 · step 479: REROLL com 8g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 5-2 · step 480: REROLL com 6g, HP 38, nível 6/8 (STABILIZE).
+- Jogador 2 · 5-3 · step 485: REROLL com 7g, HP 22, nível 6/8 (STABILIZE).
+- Jogador 2 · 5-4 · step 493: REROLL com 7g, HP 22, nível 6/8 (STABILIZE).
+- Jogador 2 · 5-4 · step 494: REROLL com 5g, HP 22, nível 6/8 (STABILIZE).
+- Jogador 2 · 5-6 · step 513: REROLL com 5g, HP 22, nível 6/8 (STABILIZE).
+- Jogador 2 · 5-7 · step 524: REROLL com 13g, HP 22, nível 6/8 (STABILIZE).
+- Jogador 2 · 5-7 · step 525: REROLL com 11g, HP 22, nível 6/8 (STABILIZE).
+- Jogador 2 · 5-7 · step 528: REROLL com 15g, HP 22, nível 6/8 (STABILIZE).
+- Jogador 2 · 5-7 · step 529: REROLL com 13g, HP 22, nível 6/8 (STABILIZE).
+- Jogador 2 · 5-7 · step 530: REROLL com 11g, HP 22, nível 6/8 (STABILIZE).
+- Jogador 2 · 6-1 · step 533: REROLL com 15g, HP 22, nível 6/8 (STABILIZE).
+- Jogador 2 · 6-1 · step 534: REROLL com 13g, HP 22, nível 6/8 (STABILIZE).
+- Jogador 2 · 6-1 · step 536: REROLL com 10g, HP 22, nível 6/8 (STABILIZE).
+- Jogador 2 · 6-1 · step 540: REROLL com 5g, HP 22, nível 6/8 (STABILIZE).
+- Jogador 2 · 6-2 · step 543: REROLL com 8g, HP 22, nível 6/8 (STABILIZE).
+- Jogador 2 · 6-3 · step 553: REROLL com 5g, HP 5, nível 6/8 (ALL_IN).
+- Jogador 2 · 6-4 · step 564: PASS com 7g, HP 5, nível 6/8 (ALL_IN).
+- Jogador 2 · 6-5 · step 573: REROLL com 12g, HP 5, nível 6/8 (ALL_IN).
+- Jogador 2 · 6-5 · step 577: REROLL com 12g, HP 5, nível 6/8 (ALL_IN).
+- Jogador 2 · 6-6 · step 583: REROLL com 15g, HP 5, nível 7/8 (ALL_IN).
+- Jogador 2 · 6-6 · step 587: PASS com 10g, HP 5, nível 7/8 (ALL_IN).
+- Jogador 2 · 6-7 · step 595: PASS com 15g, HP 5, nível 7/8 (ALL_IN).
+- Jogador 2 · 7-1 · step 605: PASS com 22g, HP 5, nível 7/8 (ALL_IN).
+- Jogador 2 · 7-2 · step 615: PASS com 30g, HP 5, nível 7/8 (ALL_IN).
+| Jogador 3 | 0 | 38 |
+- Jogador 3 · 2-2 · step 134: PASS com 5g, HP 96, nível 4/8 (STABILIZE).
+- Jogador 3 · 2-3 · step 156: REROLL com 10g, HP 96, nível 4/8 (STABILIZE).
+- Jogador 3 · 2-3 · step 157: REROLL com 8g, HP 96, nível 4/8 (STABILIZE).
+- Jogador 3 · 2-3 · step 159: REROLL com 5g, HP 96, nível 4/8 (STABILIZE).
+- Jogador 3 · 2-4 · step 181: PASS com 6g, HP 91, nível 4/8 (STABILIZE).
+- Jogador 3 · 2-5 · step 199: PASS com 10g, HP 91, nível 4/8 (STABILIZE).
+- Jogador 3 · 4-2 · step 398: REROLL com 38g, HP 62, nível 6/8 (FAST8).
+- Jogador 3 · 4-2 · step 399: PASS com 36g, HP 62, nível 6/8 (FAST8).
+- Jogador 3 · 4-3 · step 402: REROLL com 45g, HP 62, nível 6/8 (FAST8).
+- Jogador 3 · 4-3 · step 404: REROLL com 41g, HP 62, nível 6/8 (FAST8).
+- Jogador 3 · 4-3 · step 409: REROLL com 40g, HP 62, nível 6/8 (FAST8).
+- Jogador 3 · 4-3 · step 410: REROLL com 38g, HP 62, nível 6/8 (FAST8).
+- Jogador 3 · 4-3 · step 412: PASS com 36g, HP 62, nível 6/8 (FAST8).
+- Jogador 3 · 4-4 · step 418: REROLL com 43g, HP 62, nível 6/8 (FAST8).
+- Jogador 3 · 4-4 · step 422: REROLL com 43g, HP 62, nível 6/8 (FAST8).
+- Jogador 3 · 4-4 · step 426: PASS com 44g, HP 62, nível 6/8 (FAST8).
+- Jogador 3 · 4-5 · step 432: PASS com 51g, HP 62, nível 6/8 (FAST8).
+- Jogador 3 · 4-6 · step 443: PASS com 63g, HP 62, nível 6/8 (FAST8).
+- Jogador 3 · 4-7 · step 455: REROLL com 72g, HP 62, nível 6/8 (FAST8).
+- Jogador 3 · 4-7 · step 459: REROLL com 73g, HP 62, nível 6/8 (FAST8).
+- Jogador 3 · 5-1 · step 465: REROLL com 80g, HP 62, nível 6/8 (FAST8).
+- Jogador 3 · 5-1 · step 468: REROLL com 78g, HP 62, nível 6/8 (FAST8).
+- Jogador 3 · 5-2 · step 476: REROLL com 83g, HP 62, nível 6/8 (FAST8).
+- Jogador 3 · 5-2 · step 478: REROLL com 78g, HP 62, nível 6/8 (FAST8).
+- Jogador 3 · 5-3 · step 488: PASS com 92g, HP 62, nível 6/8 (FAST8).
+- Jogador 3 · 5-4 · step 498: PASS com 110g, HP 62, nível 6/8 (FAST8).
+- Jogador 3 · 5-5 · step 506: REROLL com 122g, HP 62, nível 6/8 (FAST8).
+- Jogador 3 · 5-5 · step 509: REROLL com 123g, HP 62, nível 6/8 (FAST8).
+- Jogador 3 · 5-6 · step 514: PASS com 133g, HP 62, nível 6/8 (FAST8).
+- Jogador 3 · 5-7 · step 530: REROLL com 146g, HP 48, nível 6/8 (FAST8).
+- Jogador 3 · 6-1 · step 538: REROLL com 152g, HP 48, nível 6/8 (FAST8).
+- Jogador 3 · 6-2 · step 548: PASS com 158g, HP 48, nível 6/8 (FAST8).
+- Jogador 3 · 6-3 · step 557: REROLL com 164g, HP 48, nível 6/8 (FAST8).
+- Jogador 3 · 6-4 · step 568: REROLL com 180g, HP 32, nível 6/8 (STABILIZE).
+- Jogador 3 · 6-5 · step 580: PASS com 189g, HP 32, nível 6/8 (STABILIZE).
+- Jogador 3 · 6-6 · step 586: PASS com 198g, HP 32, nível 7/8 (STABILIZE).
+- Jogador 3 · 6-7 · step 595: PASS com 206g, HP 15, nível 7/8 (ALL_IN).
+- Jogador 3 · 7-1 · step 607: PASS com 216g, HP 15, nível 7/8 (ALL_IN).
+| Jogador 4 | 0 | 10 |
+- Jogador 4 · 2-2 · step 136: REROLL com 4g, HP 100, nível 4/8 (STABILIZE).
+- Jogador 4 · 2-4 · step 180: REROLL com 4g, HP 89, nível 4/8 (STABILIZE).
+- Jogador 4 · 2-5 · step 202: REROLL com 9g, HP 89, nível 4/8 (STABILIZE).
+- Jogador 4 · 2-5 · step 206: PASS com 10g, HP 89, nível 4/8 (STABILIZE).
+- Jogador 4 · 3-7 · step 367: PASS com 54g, HP 38, nível 5/8 (STABILIZE).
+- Jogador 4 · 4-1 · step 385: PASS com 65g, HP 38, nível 5/8 (STABILIZE).
+- Jogador 4 · 4-2 · step 392: PASS com 76g, HP 28, nível 6/8 (STABILIZE).
+- Jogador 4 · 4-3 · step 410: PASS com 85g, HP 15, nível 6/8 (ALL_IN).
+- Jogador 4 · 4-4 · step 424: PASS com 94g, HP 4, nível 6/8 (ALL_IN).
+- Jogador 4 · 4-5 · step 436: PASS com 101g, HP 4, nível 6/8 (ALL_IN).
+| Jogador 5 | 0 | 7 |
+- Jogador 5 · 2-3 · step 159: REROLL com 4g, HP 91, nível 4/8 (STABILIZE).
+- Jogador 5 · 2-4 · step 176: REROLL com 4g, HP 91, nível 4/8 (STABILIZE).
+- Jogador 5 · 4-4 · step 423: PASS com 8g, HP 39, nível 6/8 (FAST8).
+- Jogador 5 · 4-5 · step 438: PASS com 13g, HP 39, nível 6/8 (FAST8).
+- Jogador 5 · 4-6 · step 443: PASS com 20g, HP 39, nível 6/8 (FAST8).
+- Jogador 5 · 4-7 · step 454: PASS com 27g, HP 28, nível 6/8 (STABILIZE).
+- Jogador 5 · 5-1 · step 467: PASS com 34g, HP 28, nível 6/8 (STABILIZE).
+| Jogador 6 | 0 | 9 |
+- Jogador 6 · 2-2 · step 132: REROLL com 4g, HP 100, nível 4/8 (STABILIZE).
+- Jogador 6 · 2-3 · step 157: REROLL com 4g, HP 100, nível 4/8 (STABILIZE).
+- Jogador 6 · 2-4 · step 179: REROLL com 8g, HP 100, nível 4/8 (STABILIZE).
+- Jogador 6 · 2-5 · step 198: REROLL com 4g, HP 100, nível 4/8 (STABILIZE).
+- Jogador 6 · 4-7 · step 458: PASS com 24g, HP 37, nível 6/8 (STABILIZE).
+- Jogador 6 · 5-1 · step 470: REROLL com 38g, HP 37, nível 6/8 (STABILIZE).
+- Jogador 6 · 5-2 · step 478: PASS com 43g, HP 23, nível 6/8 (STABILIZE).
+- Jogador 6 · 5-3 · step 486: PASS com 53g, HP 23, nível 6/8 (STABILIZE).
+- Jogador 6 · 5-5 · step 505: PASS com 70g, HP 9, nível 6/8 (ALL_IN).
+| Jogador 7 | 0 | 10 |
+- Jogador 7 · 2-3 · step 155: REROLL com 5g, HP 89, nível 4/8 (STABILIZE).
+- Jogador 7 · 2-5 · step 202: REROLL com 5g, HP 85, nível 4/8 (STABILIZE).
+- Jogador 7 · 3-7 · step 365: PASS com 48g, HP 36, nível 5/8 (STABILIZE).
+- Jogador 7 · 4-1 · step 382: PASS com 58g, HP 36, nível 5/8 (STABILIZE).
+- Jogador 7 · 4-2 · step 395: PASS com 67g, HP 36, nível 6/8 (STABILIZE).
+- Jogador 7 · 4-3 · step 405: PASS com 78g, HP 36, nível 6/8 (STABILIZE).
+- Jogador 7 · 4-4 · step 418: PASS com 88g, HP 25, nível 6/8 (STABILIZE).
+- Jogador 7 · 4-5 · step 432: PASS com 95g, HP 25, nível 6/8 (STABILIZE).
+- Jogador 7 · 4-6 · step 449: PASS com 108g, HP 14, nível 6/8 (ALL_IN).
+- Jogador 7 · 4-7 · step 455: PASS com 119g, HP 14, nível 6/8 (ALL_IN).
+| Jogador 8 | 0 | 64 |
+- Jogador 8 · 2-2 · step 132: REROLL com 6g, HP 100, nível 4/8 (STABILIZE).
+- Jogador 8 · 2-5 · step 198: REROLL com 8g, HP 100, nível 4/8 (STABILIZE).
+- Jogador 8 · 2-5 · step 201: REROLL com 8g, HP 100, nível 4/8 (STABILIZE).
+- Jogador 8 · 2-5 · step 204: REROLL com 6g, HP 100, nível 4/8 (STABILIZE).
+- Jogador 8 · 2-5 · step 205: REROLL com 4g, HP 100, nível 4/8 (STABILIZE).
+- Jogador 8 · 4-2 · step 392: REROLL com 8g, HP 83, nível 6/8 (FAST8).
+- Jogador 8 · 4-3 · step 404: REROLL com 5g, HP 83, nível 6/8 (FAST8).
+- Jogador 8 · 4-4 · step 418: REROLL com 8g, HP 83, nível 6/8 (FAST8).
+- Jogador 8 · 4-4 · step 419: REROLL com 6g, HP 83, nível 6/8 (FAST8).
+- Jogador 8 · 4-4 · step 420: REROLL com 4g, HP 83, nível 6/8 (FAST8).
+- Jogador 8 · 4-4 · step 423: REROLL com 4g, HP 83, nível 6/8 (FAST8).
+- Jogador 8 · 4-5 · step 429: REROLL com 8g, HP 83, nível 6/8 (FAST8).
+- Jogador 8 · 4-5 · step 430: REROLL com 6g, HP 83, nível 6/8 (FAST8).
+- Jogador 8 · 4-6 · step 444: PASS com 12g, HP 83, nível 6/8 (FAST8).
+- Jogador 8 · 4-7 · step 452: REROLL com 22g, HP 83, nível 6/8 (FAST8).
+- Jogador 8 · 4-7 · step 453: REROLL com 20g, HP 83, nível 6/8 (FAST8).
+- Jogador 8 · 4-7 · step 454: REROLL com 18g, HP 83, nível 6/8 (FAST8).
+- Jogador 8 · 4-7 · step 459: REROLL com 17g, HP 83, nível 6/8 (FAST8).
+- Jogador 8 · 4-7 · step 460: REROLL com 15g, HP 83, nível 6/8 (FAST8).
+- Jogador 8 · 5-1 · step 465: REROLL com 20g, HP 83, nível 6/8 (FAST8).
+- Jogador 8 · 5-1 · step 467: REROLL com 17g, HP 83, nível 6/8 (FAST8).
+- Jogador 8 · 5-1 · step 468: REROLL com 15g, HP 83, nível 6/8 (FAST8).
+- Jogador 8 · 5-1 · step 469: REROLL com 13g, HP 83, nível 6/8 (FAST8).
+- Jogador 8 · 5-2 · step 472: REROLL com 26g, HP 83, nível 6/8 (FAST8).
+- Jogador 8 · 5-2 · step 473: REROLL com 24g, HP 83, nível 6/8 (FAST8).
+- Jogador 8 · 5-2 · step 478: REROLL com 19g, HP 83, nível 6/8 (FAST8).
+- Jogador 8 · 5-3 · step 485: REROLL com 20g, HP 69, nível 6/8 (FAST8).
+- Jogador 8 · 5-3 · step 489: REROLL com 18g, HP 69, nível 6/8 (FAST8).
+- Jogador 8 · 5-3 · step 490: REROLL com 16g, HP 69, nível 6/8 (FAST8).
+- Jogador 8 · 5-4 · step 492: REROLL com 21g, HP 69, nível 6/8 (FAST8).
+- Jogador 8 · 5-4 · step 493: REROLL com 19g, HP 69, nível 6/8 (FAST8).
+- Jogador 8 · 5-4 · step 496: REROLL com 15g, HP 69, nível 6/8 (FAST8).
+- Jogador 8 · 5-4 · step 500: REROLL com 13g, HP 69, nível 6/8 (FAST8).
+- Jogador 8 · 5-5 · step 503: REROLL com 14g, HP 69, nível 6/8 (FAST8).
+- Jogador 8 · 5-5 · step 506: REROLL com 7g, HP 69, nível 6/8 (FAST8).
+- Jogador 8 · 5-5 · step 509: REROLL com 12g, HP 69, nível 6/8 (FAST8).
+- Jogador 8 · 5-6 · step 515: REROLL com 19g, HP 69, nível 6/8 (FAST8).
+- Jogador 8 · 5-6 · step 518: REROLL com 17g, HP 69, nível 6/8 (FAST8).
+- Jogador 8 · 5-6 · step 519: REROLL com 15g, HP 69, nível 6/8 (FAST8).
+- Jogador 8 · 5-7 · step 523: REROLL com 21g, HP 69, nível 6/8 (FAST8).
+- Jogador 8 · 5-7 · step 525: REROLL com 16g, HP 69, nível 6/8 (FAST8).
+- Jogador 8 · 5-7 · step 526: REROLL com 14g, HP 69, nível 6/8 (FAST8).
+- Jogador 8 · 5-7 · step 527: REROLL com 12g, HP 69, nível 6/8 (FAST8).
+- Jogador 8 · 5-7 · step 530: REROLL com 6g, HP 69, nível 6/8 (FAST8).
+- Jogador 8 · 6-1 · step 533: REROLL com 10g, HP 69, nível 6/8 (FAST8).
+- Jogador 8 · 6-1 · step 535: REROLL com 6g, HP 69, nível 6/8 (FAST8).
+- Jogador 8 · 6-1 · step 536: REROLL com 4g, HP 69, nível 6/8 (FAST8).
+- Jogador 8 · 6-2 · step 542: REROLL com 5g, HP 53, nível 6/8 (FAST8).
+- Jogador 8 · 6-3 · step 552: REROLL com 7g, HP 53, nível 6/8 (FAST8).
+- Jogador 8 · 6-3 · step 555: REROLL com 6g, HP 53, nível 6/8 (FAST8).
+- Jogador 8 · 6-3 · step 559: REROLL com 9g, HP 53, nível 6/8 (FAST8).
+- Jogador 8 · 6-4 · step 569: REROLL com 6g, HP 53, nível 6/8 (FAST8).
+- Jogador 8 · 6-5 · step 572: REROLL com 14g, HP 53, nível 6/8 (FAST8).
+- Jogador 8 · 6-5 · step 576: REROLL com 12g, HP 53, nível 6/8 (FAST8).
+- Jogador 8 · 6-5 · step 579: REROLL com 12g, HP 53, nível 6/8 (FAST8).
+- Jogador 8 · 6-6 · step 586: PASS com 17g, HP 36, nível 7/8 (STABILIZE).
+- Jogador 8 · 6-7 · step 593: REROLL com 19g, HP 36, nível 7/8 (STABILIZE).
+- Jogador 8 · 6-7 · step 596: REROLL com 10g, HP 36, nível 7/8 (STABILIZE).
+- Jogador 8 · 6-7 · step 598: REROLL com 7g, HP 36, nível 7/8 (STABILIZE).
+- Jogador 8 · 7-1 · step 607: REROLL com 16g, HP 36, nível 7/8 (STABILIZE).
+- Jogador 8 · 7-1 · step 610: REROLL com 14g, HP 36, nível 7/8 (STABILIZE).
+- Jogador 8 · 7-2 · step 616: REROLL com 20g, HP 36, nível 7/8 (STABILIZE).
+- Jogador 8 · 7-2 · step 619: REROLL com 17g, HP 36, nível 7/8 (STABILIZE).
+- Jogador 8 · 7-2 · step 620: REROLL com 15g, HP 36, nível 7/8 (STABILIZE).
+
+Janelas candidatas não são penalidades nem provam que XP era a melhor ação. Compare loja, pares, upgrades, HP, nível-alvo, reserva de juros e estratégia; SLOWROLL é excluído.
+
+## Auditoria de mudanças de composição
+
+| Jogador | Mudanças | Com ganho mensurável | Sem ganho mensurável | Taxa sem ganho |
+|---|---:|---:|---:|---:|
+| Jogador 1 | 1 | 1 | 0 | 0.0% |
+| Jogador 2 | 2 | 2 | 0 | 0.0% |
+| Jogador 3 | 1 | 1 | 0 | 0.0% |
+| Jogador 4 | 2 | 2 | 0 | 0.0% |
+| Jogador 5 | 1 | 1 | 0 | 0.0% |
+| Jogador 6 | 1 | 1 | 0 | 0.0% |
+| Jogador 7 | 1 | 1 | 0 | 0.0% |
+| Jogador 8 | 1 | 1 | 0 | 0.0% |
+
+Os detalhes por transição permanecem nos dados estruturados de origem. ‘Sem ganho mensurável’ indica falta de evidência nos campos disponíveis, não prova de decisão ruim.
+
+## Qualidade estrutural e posicionamento do tabuleiro
+
+| Jogador | Ações com métrica | Ganhos | Pioras | Neutras | Δ score combinado | Estrutural médio | Δ estrutural médio | Posicional médio | Δ posicional médio | Δ score c/ combate + | Δ score c/ combate - |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Jogador 1 | 265 | 70 | 50 | 145 | 0.0020 | 0.2198 | 0.0006 | 0.3248 | 0.0013 | 0.0000 | 0.0000 |
+- Jogador 1 — ganho médio por ação: BUY: Δ -0.0430 (76 ações), CRAFT_AND_EQUIP: Δ 0.0076 (7 ações), EQUIP_FROM_INVENTORY: Δ 0.0014 (5 ações), MOVE_BENCH: Δ 0.0637 (43 ações), MOVE_BOARD: Δ 0.0074 (39 ações), PASS: Δ 0.0000 (30 ações), REROLL: Δ 0.0001 (36 ações), SELL: Δ 0.0241 (29 ações)
+| Jogador 2 | 352 | 72 | 73 | 207 | 0.0027 | -0.0095 | 0.0013 | 0.3674 | 0.0014 | 0.0000 | 0.0000 |
+- Jogador 2 — ganho médio por ação: BUY: Δ 0.0005 (91 ações), CRAFT_AND_EQUIP: Δ 0.0000 (7 ações), EQUIP_FROM_INVENTORY: Δ -0.0441 (10 ações), MOVE_BENCH: Δ 0.0110 (65 ações), MOVE_BOARD: Δ -0.0147 (40 ações), PASS: Δ 0.0004 (32 ações), REROLL: Δ -0.0010 (79 ações), SELL: Δ 0.0456 (28 ações)
+| Jogador 3 | 295 | 62 | 55 | 178 | 0.0025 | 0.3872 | 0.0015 | 0.3208 | 0.0009 | 0.0000 | 0.0000 |
+- Jogador 3 — ganho médio por ação: BUY: Δ -0.0237 (87 ações), CRAFT_AND_EQUIP: Δ 0.0012 (7 ações), EQUIP_FROM_INVENTORY: Δ -0.0655 (9 ações), MOVE_BENCH: Δ -0.0047 (24 ações), MOVE_BOARD: Δ 0.0443 (57 ações), PASS: Δ 0.0000 (32 ações), REROLL: Δ 0.0000 (43 ações), SELL: Δ 0.0267 (36 ações)
+| Jogador 4 | 177 | 49 | 54 | 74 | -0.0004 | -0.0424 | -0.0019 | 0.3361 | 0.0014 | 0.0000 | 0.0000 |
+- Jogador 4 — ganho médio por ação: BUY: Δ -0.0461 (48 ações), CRAFT_AND_EQUIP: Δ 0.0065 (5 ações), EQUIP_FROM_INVENTORY: Δ 0.0000 (2 ações), MOVE_BENCH: Δ 0.0337 (48 ações), MOVE_BOARD: Δ -0.0095 (27 ações), PASS: Δ 0.0000 (23 ações), REROLL: Δ 0.0012 (12 ações), SELL: Δ 0.0613 (12 ações)
+| Jogador 5 | 231 | 66 | 62 | 103 | 0.0029 | 0.1037 | 0.0015 | 0.3091 | 0.0014 | 0.0000 | 0.0000 |
+- Jogador 5 — ganho médio por ação: BUY: Δ -0.0408 (58 ações), CRAFT_AND_EQUIP: Δ 0.0110 (7 ações), EQUIP_FROM_INVENTORY: Δ 0.0778 (2 ações), MOVE_BENCH: Δ 0.0276 (31 ações), MOVE_BOARD: Δ 0.0233 (60 ações), PASS: Δ 0.0000 (26 ações), REROLL: Δ 0.0000 (28 ações), SELL: Δ 0.0283 (19 ações)
+| Jogador 6 | 256 | 66 | 54 | 136 | 0.0025 | -0.0921 | 0.0013 | 0.2844 | 0.0012 | 0.0000 | 0.0000 |
+- Jogador 6 — ganho médio por ação: BUY: Δ -0.0335 (71 ações), CRAFT_AND_EQUIP: Δ 0.0038 (7 ações), EQUIP_FROM_INVENTORY: Δ 0.0000 (9 ações), MOVE_BENCH: Δ 0.0626 (32 ações), MOVE_BOARD: Δ -0.0032 (50 ações), PASS: Δ 0.0000 (28 ações), REROLL: Δ 0.0000 (36 ações), SELL: Δ 0.0496 (23 ações)
+| Jogador 7 | 184 | 54 | 49 | 81 | 0.0029 | 0.0682 | 0.0013 | 0.3020 | 0.0016 | 0.0000 | 0.0000 |
+- Jogador 7 — ganho médio por ação: BUY: Δ -0.0531 (43 ações), CRAFT_AND_EQUIP: Δ 0.0060 (7 ações), EQUIP_FROM_INVENTORY: Δ 0.0272 (5 ações), MOVE_BENCH: Δ 0.0499 (56 ações), MOVE_BOARD: Δ -0.0171 (27 ações), PASS: Δ 0.0000 (25 ações), REROLL: Δ 0.0000 (12 ações), SELL: Δ 0.0341 (9 ações)
+| Jogador 8 | 356 | 73 | 63 | 220 | 0.0029 | 0.3935 | 0.0017 | 0.4017 | 0.0012 | 0.0000 | 0.0000 |
+- Jogador 8 — ganho médio por ação: BUY: Δ -0.0252 (100 ações), CRAFT_AND_EQUIP: Δ 0.0053 (7 ações), EQUIP_FROM_INVENTORY: Δ 0.0015 (4 ações), MOVE_BENCH: Δ -0.0209 (29 ações), MOVE_BOARD: Δ 0.0518 (53 ações), PASS: Δ 0.0000 (26 ações), REROLL: Δ 0.0000 (94 ações), SELL: Δ 0.0318 (43 ações)
+- Jogador 1 — rounds avaliados: 31; correlação estrutural/combate: -0.171; posicional/combate: -0.068.
+- Jogador 1 — combate positive: score estrutural prévio 0.116
+  score posicional prévio 0.308
+- Jogador 1 — combate negative: score estrutural prévio 0.295
+  score posicional prévio 0.325
+- Jogador 2 — rounds avaliados: 41; correlação estrutural/combate: 0.198; posicional/combate: 0.206.
+- Jogador 2 — combate positive: score estrutural prévio 0.147
+  score posicional prévio 0.394
+- Jogador 2 — combate negative: score estrutural prévio -0.099
+  score posicional prévio 0.347
+- Jogador 3 — rounds avaliados: 40; correlação estrutural/combate: -0.076; posicional/combate: 0.037.
+- Jogador 3 — combate positive: score estrutural prévio 0.331
+  score posicional prévio 0.315
+- Jogador 3 — combate negative: score estrutural prévio 0.353
+  score posicional prévio 0.304
+- Jogador 4 — rounds avaliados: 23; correlação estrutural/combate: 0.294; posicional/combate: -0.095.
+- Jogador 4 — combate positive: score estrutural prévio -0.060
+  score posicional prévio 0.353
+- Jogador 4 — combate negative: score estrutural prévio -0.134
+  score posicional prévio 0.353
+- Jogador 5 — rounds avaliados: 27; correlação estrutural/combate: 0.174; posicional/combate: 0.035.
+- Jogador 5 — combate positive: score estrutural prévio 0.167
+  score posicional prévio 0.307
+- Jogador 5 — combate negative: score estrutural prévio 0.014
+  score posicional prévio 0.291
+- Jogador 6 — rounds avaliados: 30; correlação estrutural/combate: 0.080; posicional/combate: 0.442.
+- Jogador 6 — combate positive: score estrutural prévio 0.018
+  score posicional prévio 0.314
+- Jogador 6 — combate negative: score estrutural prévio -0.076
+  score posicional prévio 0.226
+- Jogador 7 — rounds avaliados: 26; correlação estrutural/combate: -0.297; posicional/combate: -0.160.
+- Jogador 7 — combate positive: score estrutural prévio -0.098
+  score posicional prévio 0.267
+- Jogador 7 — combate negative: score estrutural prévio 0.206
+  score posicional prévio 0.314
+- Jogador 8 — rounds avaliados: 41; correlação estrutural/combate: -0.124; posicional/combate: -0.111.
+- Jogador 8 — combate positive: score estrutural prévio 0.369
+  score posicional prévio 0.390
+- Jogador 8 — combate negative: score estrutural prévio 0.652
+  score posicional prévio 0.435
+
+A pontuação é uma heurística para auditoria. A correlação usa o estado pré-combate e a recompensa real do round; amostras pequenas são descritivas e correlação não prova causalidade.
+
+## Auditoria de itens e componentes
+
+| Jogador | Snapshots | Com evidência | Itens equipados no tabuleiro | Itens no banco | Itens na bolsa | Componentes | Pico de itens equipados | Pico bolsa |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Jogador 1 | 295 | OK (295) | 7 | 0 | 0 | 0 | 7 | 3 |
+- Jogador 1 — IDs equipados observados: TFT_Item_ArchangelsStaff, TFT_Item_Crownguard, TFT_Item_InfinityEdge, TFT_Item_MadredsBloodrazor, TFT_Item_Morellonomicon, TFT_Item_RunaansHurricane, TFT_Item_SpectralGauntlet; eventos: COMPONENT_LOOT_GRANTED: 31.
+- Jogador 1 — bigornas: 0 escolhas; craft/equip: 7 (conversões observadas: 4); componentes persistentes entre rounds: TFT_Item_BFSword, TFT_Item_ChainVest, TFT_Item_GiantsBelt, TFT_Item_NeedlesslyLargeRod, TFT_Item_NegatronCloak, TFT_Item_RecurveBow, TFT_Item_TearOfTheGoddess.
+| Jogador 2 | 392 | OK (392) | 9 | 0 | 0 | 0 | 9 | 3 |
+- Jogador 2 — IDs equipados observados: TFT_Item_AdaptiveHelm, TFT_Item_BrambleVest, TFT_Item_GargoyleStoneplate, TFT_Item_InfinityEdge, TFT_Item_LastWhisper, TFT_Item_Quicksilver, TFT_Item_RabadonsDeathcap, TFT_Item_SpectralGauntlet, TFT_Item_TitansResolve; eventos: COMPONENT_LOOT_GRANTED: 31.
+- Jogador 2 — bigornas: 0 escolhas; craft/equip: 7 (conversões observadas: 4); componentes persistentes entre rounds: TFT_Item_BFSword, TFT_Item_ChainVest, TFT_Item_GiantsBelt, TFT_Item_NeedlesslyLargeRod, TFT_Item_NegatronCloak, TFT_Item_RecurveBow, TFT_Item_SparringGloves, TFT_Item_TearOfTheGoddess.
+| Jogador 3 | 334 | OK (334) | 9 | 0 | 0 | 0 | 9 | 3 |
+- Jogador 3 — IDs equipados observados: TFT_Item_AdaptiveHelm, TFT_Item_Deathblade, TFT_Item_GuinsoosRageblade, TFT_Item_InfinityEdge, TFT_Item_NightHarvester, TFT_Item_Redemption, TFT_Item_SteraksGage, TFT_Item_TitansResolve; eventos: COMPONENT_LOOT_GRANTED: 31.
+- Jogador 3 — bigornas: 0 escolhas; craft/equip: 7 (conversões observadas: 3); componentes persistentes entre rounds: TFT_Item_BFSword, TFT_Item_ChainVest, TFT_Item_GiantsBelt, TFT_Item_NegatronCloak, TFT_Item_SparringGloves, TFT_Item_TearOfTheGoddess.
+| Jogador 4 | 199 | OK (199) | 5 | 0 | 0 | 1 | 5 | 2 |
+- Jogador 4 — IDs equipados observados: TFT_Item_AdaptiveHelm, TFT_Item_Bloodthirster, TFT_Item_InfinityEdge, TFT_Item_Leviathan, TFT_Item_Redemption; eventos: COMPONENT_LOOT_GRANTED: 24.
+- Jogador 4 — bigornas: 0 escolhas; craft/equip: 5 (conversões observadas: 2); componentes persistentes entre rounds: TFT_Item_BFSword, TFT_Item_GiantsBelt, TFT_Item_NegatronCloak, TFT_Item_TearOfTheGoddess.
+| Jogador 5 | 257 | OK (257) | 4 | 3 | 0 | 0 | 7 | 2 |
+- Jogador 5 — IDs equipados observados: TFT_Item_Crownguard, TFT_Item_InfinityEdge, TFT_Item_IonicSpark, TFT_Item_Leviathan, TFT_Item_Morellonomicon, TFT_Item_NightHarvester, TFT_Item_RunaansHurricane; eventos: COMPONENT_LOOT_GRANTED: 31.
+- Jogador 5 — bigornas: 0 escolhas; craft/equip: 7 (conversões observadas: 4); componentes persistentes entre rounds: TFT_Item_BFSword, TFT_Item_ChainVest, TFT_Item_GiantsBelt, TFT_Item_NeedlesslyLargeRod, TFT_Item_NegatronCloak, TFT_Item_RecurveBow, TFT_Item_SparringGloves.
+| Jogador 6 | 285 | OK (285) | 6 | 1 | 0 | 0 | 7 | 2 |
+- Jogador 6 — IDs equipados observados: TFT_Item_AdaptiveHelm, TFT_Item_ArchangelsStaff, TFT_Item_Crownguard, TFT_Item_HextechGunblade, TFT_Item_InfinityEdge, TFT_Item_SpectralGauntlet, TFT_Item_SteraksGage; eventos: COMPONENT_LOOT_GRANTED: 31.
+- Jogador 6 — bigornas: 0 escolhas; craft/equip: 7 (conversões observadas: 4); componentes persistentes entre rounds: TFT_Item_BFSword, TFT_Item_GiantsBelt, TFT_Item_NeedlesslyLargeRod, TFT_Item_NegatronCloak, TFT_Item_SparringGloves, TFT_Item_TearOfTheGoddess.
+| Jogador 7 | 209 | OK (209) | 7 | 0 | 0 | 0 | 7 | 3 |
+- Jogador 7 — IDs equipados observados: TFT_Item_ArchangelsStaff, TFT_Item_GargoyleStoneplate, TFT_Item_GuinsoosRageblade, TFT_Item_NightHarvester, TFT_Item_SpectralGauntlet, TFT_Item_TitansResolve, TFT_Item_WarmogsArmor; eventos: COMPONENT_LOOT_GRANTED: 31.
+- Jogador 7 — bigornas: 0 escolhas; craft/equip: 7 (conversões observadas: 3); componentes persistentes entre rounds: TFT_Item_ChainVest, TFT_Item_GiantsBelt, TFT_Item_NeedlesslyLargeRod, TFT_Item_NegatronCloak, TFT_Item_RecurveBow, TFT_Item_SparringGloves.
+| Jogador 8 | 397 | OK (397) | 9 | 0 | 0 | 0 | 9 | 1 |
+- Jogador 8 — IDs equipados observados: DA_18_EmblemHunter, TFT_Item_AdaptiveHelm, TFT_Item_BrambleVest, TFT_Item_DragonsClaw, TFT_Item_InfinityEdge, TFT_Item_LastWhisper, TFT_Item_Morellonomicon, TFT_Item_RabadonsDeathcap, TFT_Item_SteraksGage; eventos: COMPONENT_LOOT_GRANTED: 31.
+- Jogador 8 — bigornas: 0 escolhas; craft/equip: 7 (conversões observadas: 4); componentes persistentes entre rounds: TFT_Item_BFSword, TFT_Item_GiantsBelt, TFT_Item_NeedlesslyLargeRod, TFT_Item_NegatronCloak, TFT_Item_SparringGloves, TFT_Item_TearOfTheGoddess.
+
+Os totais finais vêm do último snapshot disponível; picos e IDs distintos são métricas de observação, não inventário atual.
+
+## Evolução estratégica por jogador e estágio
+
+| Jogador | Estágio | Ações | Força tabuleiro Δ | Potencial banco Δ | 2★+ no tabuleiro | Pares totais | Ocupação | Ouro início → fim | Gasto | Nível início → fim | Δ posicionamento médio | Recompensa combate média |
+|---|---|---:|---:|---:|---:|---:|---:|---|---:|---|---:|---:|
+| Jogador 1 | 1-1 | 3 | 2.000 | -2.000 | 0 → 0 | 0 → 0 | 0% → 4% | 0 → 2 | 0 | 2 → 3 | 0.147 | 0.000 |
+| Jogador 1 | 1-2 | 10 | 4.000 | 0.000 | 0 → 0 | 0 → 0 | 4% → 11% | 2 → 2 | 2 | 3 → 3 | 0.015 | 0.000 |
+| Jogador 1 | 1-3 | 6 | 0.000 | 4.000 | 0 → 0 | 0 → 0 | 11% → 11% | 2 → 3 | 2 | 3 → 3 | -0.010 | 0.000 |
+| Jogador 1 | 1-4 | 7 | 0.000 | 4.000 | 0 → 0 | 0 → 2 | 11% → 11% | 3 → 5 | 2 | 3 → 4 | 0.008 | 0.000 |
+| Jogador 1 | 2-1 | 12 | 2.000 | 0.000 | 0 → 0 | 2 → 1 | 11% → 14% | 5 → 6 | 4 | 4 → 4 | 0.008 | -0.198 |
+| Jogador 1 | 2-2 | 9 | 0.000 | 8.000 | 0 → 0 | 1 → 3 | 14% → 14% | 6 → 6 | 6 | 4 → 4 | -0.102 | 0.264 |
+| Jogador 1 | 2-3 | 12 | -2.000 | 10.000 | 0 → 0 | 3 → 2 | 14% → 11% | 6 → 5 | 10 | 4 → 4 | 0.005 | -0.215 |
+| Jogador 1 | 2-4 | 9 | 2.000 | -4.000 | 0 → 0 | 2 → 2 | 11% → 14% | 5 → 11 | 2 | 4 → 4 | -0.028 | 0.000 |
+| Jogador 1 | 2-5 | 12 | 6.000 | 8.000 | 0 → 0 | 2 → 1 | 14% → 14% | 11 → 7 | 10 | 4 → 5 | 0.083 | -0.188 |
+| Jogador 1 | 2-6 | 12 | 4.000 | 4.000 | 0 → 1 | 1 → 4 | 14% → 18% | 7 → 6 | 10 | 5 → 5 | 0.022 | 0.238 |
+| Jogador 1 | 2-7 | 11 | 0.000 | 6.000 | 1 → 1 | 4 → 3 | 18% → 18% | 6 → 6 | 10 | 5 → 5 | -0.083 | 0.000 |
+| Jogador 1 | 3-1 | 12 | 0.000 | 0.000 | 1 → 1 | 3 → 4 | 18% → 18% | 6 → 9 | 8 | 5 → 5 | 0.017 | 0.238 |
+| Jogador 1 | 3-2 | 12 | 0.000 | -2.000 | 1 → 1 | 4 → 4 | 18% → 18% | 9 → 9 | 11 | 5 → 5 | 0.000 | 0.231 |
+| Jogador 1 | 3-3 | 12 | 0.000 | -4.000 | 1 → 1 | 4 → 3 | 18% → 14% | 9 → 10 | 9 | 5 → 5 | 0.060 | -0.232 |
+| Jogador 1 | 3-4 | 12 | 2.000 | 0.000 | 1 → 1 | 3 → 3 | 14% → 18% | 10 → 12 | 5 | 5 → 5 | -0.021 | 0.000 |
+| Jogador 1 | 3-5 | 8 | 2.000 | 2.000 | 1 → 1 | 3 → 3 | 18% → 18% | 12 → 14 | 5 | 5 → 5 | -0.035 | 0.370 |
+| Jogador 1 | 3-6 | 12 | -2.000 | 2.000 | 1 → 2 | 3 → 2 | 18% → 14% | 14 → 11 | 13 | 5 → 5 | -0.006 | -0.220 |
+| Jogador 1 | 3-7 | 12 | -2.000 | -10.000 | 2 → 1 | 2 → 4 | 14% → 18% | 11 → 24 | 6 | 5 → 5 | 0.029 | 0.000 |
+| Jogador 1 | 4-1 | 12 | 2.000 | 4.000 | 1 → 2 | 4 → 4 | 18% → 18% | 24 → 25 | 6 | 5 → 6 | 0.013 | 0.257 |
+| Jogador 1 | 4-2 | 7 | 4.000 | -4.000 | 2 → 1 | 4 → 4 | 18% → 21% | 25 → 32 | 0 | 6 → 6 | 0.039 | -0.416 |
+| Jogador 1 | 4-3 | 12 | 0.000 | 4.000 | 1 → 1 | 4 → 5 | 21% → 21% | 32 → 31 | 14 | 6 → 6 | 0.005 | 0.242 |
+| Jogador 1 | 4-4 | 12 | 0.000 | -4.000 | 1 → 1 | 5 → 5 | 21% → 21% | 31 → 34 | 12 | 6 → 6 | 0.000 | 0.000 |
+| Jogador 1 | 4-5 | 12 | -2.000 | -2.000 | 1 → 1 | 5 → 3 | 21% → 21% | 34 → 31 | 14 | 6 → 6 | -0.004 | -0.219 |
+| Jogador 1 | 4-6 | 11 | -2.000 | 4.000 | 1 → 2 | 3 → 2 | 21% → 18% | 31 → 25 | 13 | 6 → 6 | -0.006 | -0.239 |
+| Jogador 1 | 4-7 | 7 | 4.000 | 2.000 | 2 → 3 | 2 → 2 | 18% → 21% | 25 → 30 | 3 | 6 → 6 | 0.016 | 0.000 |
+| Jogador 1 | 5-1 | 9 | 0.000 | 2.000 | 3 → 3 | 2 → 1 | 21% → 21% | 30 → 36 | 2 | 6 → 6 | -0.003 | 0.000 |
+| Jogador 1 | 5-2 | 7 | 4.000 | -2.000 | 3 → 3 | 1 → 1 | 21% → 21% | 36 → 43 | 2 | 6 → 6 | -0.076 | 0.426 |
+| Jogador 1 | 5-3 | 6 | 0.000 | 12.000 | 3 → 3 | 1 → 2 | 21% → 21% | 43 → 45 | 6 | 6 → 6 | 0.002 | -0.450 |
+| Jogador 1 | 5-4 | 5 | 0.000 | 2.000 | 3 → 3 | 2 → 3 | 21% → 21% | 45 → 53 | 1 | 6 → 6 | -0.005 | 0.000 |
+| Jogador 1 | 5-5 | 5 | 0.000 | 0.000 | 3 → 3 | 3 → 3 | 21% → 21% | 53 → 64 | 0 | 6 → 6 | 0.005 | -0.556 |
+| Jogador 1 | 5-6 | 8 | -28.000 | -46.000 | 3 → 0 | 3 → 0 | 21% → 0% | 64 → 62 | 5 | 6 → 6 | -0.066 | -0.369 |
+- Jogador 1 — valor marginal das compras: BENCH_POTENTIAL_ONLY: 9, COMPOSITION_COMPATIBILITY: 26, IMMEDIATE_UPGRADE: 17, PAIR_POTENTIAL: 24; mudanças de composição: 0; posicionamento melhorou em 74 ações e piorou em 51.
+- Jogador 1 — estado final: ouro 62, nível 6, vida 7.0, colocação 4.
+| Jogador 2 | 1-1 | 3 | 2.000 | -2.000 | 0 → 0 | 0 → 0 | 0% → 4% | 0 → 2 | 0 | 2 → 3 | -0.214 | 0.000 |
+| Jogador 2 | 1-2 | 5 | 2.000 | 0.000 | 0 → 0 | 0 → 1 | 4% → 7% | 2 → 3 | 1 | 3 → 3 | -0.022 | 0.000 |
+| Jogador 2 | 1-3 | 12 | 4.000 | 0.000 | 0 → 1 | 1 → 0 | 7% → 11% | 3 → 3 | 3 | 3 → 3 | 0.057 | 0.000 |
+| Jogador 2 | 1-4 | 9 | 0.000 | 6.000 | 1 → 1 | 0 → 2 | 11% → 11% | 3 → 4 | 3 | 3 → 4 | 0.110 | 0.000 |
+| Jogador 2 | 2-1 | 10 | 2.000 | 6.000 | 1 → 1 | 2 → 2 | 11% → 14% | 4 → 6 | 4 | 4 → 4 | -0.064 | 0.238 |
+| Jogador 2 | 2-2 | 8 | 0.000 | 2.000 | 1 → 1 | 2 → 1 | 14% → 14% | 6 → 5 | 6 | 4 → 4 | -0.102 | -0.283 |
+| Jogador 2 | 2-3 | 12 | 0.000 | 8.000 | 1 → 1 | 1 → 2 | 14% → 14% | 5 → 6 | 10 | 4 → 4 | 0.027 | 0.228 |
+| Jogador 2 | 2-4 | 12 | 0.000 | 6.000 | 1 → 1 | 2 → 2 | 14% → 14% | 6 → 5 | 8 | 4 → 4 | -0.055 | 0.000 |
+| Jogador 2 | 2-5 | 12 | -2.000 | 6.000 | 1 → 0 | 2 → 3 | 14% → 14% | 5 → 6 | 7 | 4 → 5 | 0.074 | -0.193 |
+| Jogador 2 | 2-6 | 12 | 6.000 | -8.000 | 0 → 0 | 3 → 3 | 14% → 18% | 6 → 9 | 7 | 5 → 5 | 0.011 | -0.198 |
+| Jogador 2 | 2-7 | 12 | -2.000 | 8.000 | 0 → 0 | 3 → 4 | 18% → 14% | 9 → 9 | 12 | 5 → 5 | -0.032 | 0.000 |
+| Jogador 2 | 3-1 | 12 | -2.000 | 4.000 | 0 → 0 | 4 → 3 | 14% → 11% | 9 → 13 | 2 | 5 → 5 | 0.063 | -0.240 |
+| Jogador 2 | 3-2 | 6 | 6.000 | -6.000 | 0 → 0 | 3 → 3 | 11% → 14% | 13 → 20 | 0 | 5 → 5 | -0.029 | -0.431 |
+| Jogador 2 | 3-3 | 12 | 0.000 | 2.000 | 0 → 0 | 3 → 5 | 14% → 14% | 20 → 25 | 9 | 5 → 5 | -0.002 | -0.216 |
+| Jogador 2 | 3-4 | 12 | 4.000 | -10.000 | 0 → 0 | 5 → 4 | 14% → 14% | 25 → 30 | 8 | 5 → 5 | -0.032 | 0.000 |
+| Jogador 2 | 3-5 | 12 | 0.000 | 2.000 | 0 → 1 | 4 → 3 | 14% → 11% | 30 → 34 | 9 | 5 → 5 | 0.013 | -0.220 |
+| Jogador 2 | 3-6 | 12 | 10.000 | -4.000 | 1 → 1 | 3 → 2 | 11% → 14% | 34 → 36 | 6 | 5 → 5 | 0.017 | 0.231 |
+| Jogador 2 | 3-7 | 7 | 4.000 | -4.000 | 1 → 2 | 2 → 2 | 14% → 18% | 36 → 44 | 0 | 5 → 5 | 0.027 | 0.000 |
+| Jogador 2 | 4-1 | 12 | 0.000 | 20.000 | 2 → 2 | 2 → 2 | 18% → 18% | 44 → 35 | 18 | 5 → 6 | 0.004 | 0.238 |
+| Jogador 2 | 4-2 | 12 | 2.000 | -2.000 | 2 → 2 | 2 → 2 | 18% → 21% | 35 → 39 | 12 | 6 → 6 | -0.003 | 0.249 |
+| Jogador 2 | 4-3 | 12 | -12.000 | 10.000 | 2 → 2 | 2 → 1 | 21% → 14% | 39 → 36 | 16 | 6 → 6 | -0.015 | -0.224 |
+| Jogador 2 | 4-4 | 12 | 16.000 | -8.000 | 2 → 3 | 1 → 2 | 14% → 21% | 36 → 31 | 12 | 6 → 6 | 0.035 | 0.000 |
+| Jogador 2 | 4-5 | 12 | -4.000 | 6.000 | 3 → 3 | 2 → 3 | 21% → 18% | 31 → 30 | 17 | 6 → 6 | 0.003 | 0.234 |
+| Jogador 2 | 4-6 | 11 | 6.000 | 12.000 | 3 → 3 | 3 → 2 | 18% → 21% | 30 → 18 | 20 | 6 → 6 | 0.010 | 0.256 |
+| Jogador 2 | 4-7 | 10 | 0.000 | -6.000 | 3 → 3 | 2 → 3 | 21% → 21% | 18 → 14 | 15 | 6 → 6 | 0.006 | 0.000 |
+| Jogador 2 | 5-1 | 10 | 0.000 | -12.000 | 3 → 3 | 3 → 2 | 21% → 21% | 14 → 23 | 10 | 6 → 6 | 0.000 | 0.294 |
+| Jogador 2 | 5-2 | 10 | 0.000 | 6.000 | 3 → 3 | 2 → 3 | 21% → 21% | 23 → 9 | 19 | 6 → 6 | -0.000 | -0.290 |
+| Jogador 2 | 5-3 | 10 | 0.000 | 8.000 | 3 → 3 | 3 → 3 | 21% → 21% | 9 → 7 | 11 | 6 → 6 | -0.011 | 0.286 |
+| Jogador 2 | 5-4 | 10 | 2.000 | -2.000 | 3 → 3 | 3 → 3 | 21% → 21% | 7 → 6 | 6 | 6 → 6 | 0.068 | 0.000 |
+| Jogador 2 | 5-5 | 7 | 0.000 | 0.000 | 3 → 3 | 3 → 2 | 21% → 21% | 6 → 8 | 5 | 6 → 6 | -0.121 | 0.423 |
+| Jogador 2 | 5-6 | 9 | 0.000 | 8.000 | 3 → 3 | 2 → 3 | 21% → 21% | 8 → 7 | 8 | 6 → 6 | 0.045 | 0.321 |
+| Jogador 2 | 5-7 | 10 | 0.000 | -20.000 | 3 → 3 | 3 → 3 | 21% → 21% | 7 → 15 | 14 | 6 → 6 | 0.006 | 0.000 |
+| Jogador 2 | 6-1 | 10 | 6.000 | -4.000 | 3 → 4 | 3 → 1 | 21% → 21% | 15 → 10 | 12 | 6 → 6 | 0.025 | 0.297 |
+| Jogador 2 | 6-2 | 10 | 0.000 | 12.000 | 4 → 4 | 1 → 2 | 21% → 21% | 10 → 5 | 10 | 6 → 6 | 0.001 | -0.285 |
+| Jogador 2 | 6-3 | 10 | 0.000 | 2.000 | 4 → 4 | 2 → 3 | 21% → 21% | 5 → 7 | 7 | 6 → 6 | -0.040 | 0.292 |
+| Jogador 2 | 6-4 | 4 | 0.000 | 0.000 | 4 → 4 | 3 → 3 | 21% → 21% | 7 → 12 | 0 | 6 → 6 | 0.000 | 0.000 |
+| Jogador 2 | 6-5 | 10 | 0.000 | -8.000 | 4 → 4 | 3 → 2 | 21% → 21% | 12 → 18 | 7 | 6 → 7 | 0.017 | 0.309 |
+| Jogador 2 | 6-6 | 7 | 4.000 | 8.000 | 4 → 4 | 2 → 3 | 21% → 25% | 18 → 18 | 8 | 7 → 7 | -0.023 | 0.434 |
+| Jogador 2 | 6-7 | 5 | 0.000 | 6.000 | 4 → 4 | 3 → 3 | 25% → 25% | 18 → 22 | 3 | 7 → 7 | -0.003 | 0.000 |
+| Jogador 2 | 7-1 | 5 | 0.000 | 0.000 | 4 → 4 | 3 → 3 | 25% → 25% | 22 → 30 | 0 | 7 → 7 | 0.013 | 0.000 |
+| Jogador 2 | 7-2 | 5 | -54.000 | -54.000 | 4 → 0 | 3 → 0 | 25% → 0% | 30 → 30 | 0 | 7 → 7 | -0.166 | -0.590 |
+- Jogador 2 — valor marginal das compras: BENCH_POTENTIAL_ONLY: 9, COMPOSITION_COMPATIBILITY: 29, IMMEDIATE_UPGRADE: 24, PAIR_POTENTIAL: 29; mudanças de composição: 1; posicionamento melhorou em 77 ações e piorou em 75.
+- Jogador 2 — estado final: ouro 30, nível 7, vida 5.0, colocação 2.
+| Jogador 3 | 1-1 | 3 | 2.000 | -2.000 | 0 → 0 | 0 → 0 | 0% → 4% | 0 → 2 | 0 | 2 → 3 | 0.150 | 0.000 |
+| Jogador 3 | 1-2 | 9 | 4.000 | 0.000 | 0 → 0 | 0 → 0 | 4% → 11% | 2 → 2 | 2 | 3 → 3 | 0.010 | 0.000 |
+| Jogador 3 | 1-3 | 5 | 2.000 | 0.000 | 0 → 1 | 0 → 0 | 11% → 11% | 2 → 3 | 2 | 3 → 3 | -0.029 | 0.000 |
+| Jogador 3 | 1-4 | 6 | 0.000 | 6.000 | 1 → 1 | 0 → 0 | 11% → 11% | 3 → 4 | 3 | 3 → 4 | 0.028 | 0.000 |
+| Jogador 3 | 2-1 | 9 | 2.000 | 0.000 | 1 → 1 | 0 → 1 | 11% → 14% | 4 → 8 | 1 | 4 → 4 | -0.003 | -0.251 |
+| Jogador 3 | 2-2 | 5 | 0.000 | 6.000 | 1 → 1 | 1 → 1 | 14% → 14% | 8 → 11 | 3 | 4 → 4 | -0.038 | 0.527 |
+| Jogador 3 | 2-3 | 12 | 0.000 | 0.000 | 1 → 1 | 1 → 1 | 14% → 14% | 11 → 8 | 11 | 4 → 4 | -0.005 | -0.198 |
+| Jogador 3 | 2-4 | 9 | 2.000 | 0.000 | 1 → 2 | 1 → 0 | 14% → 14% | 8 → 11 | 2 | 4 → 4 | 0.034 | 0.000 |
+| Jogador 3 | 2-5 | 5 | 0.000 | 2.000 | 2 → 2 | 0 → 0 | 14% → 14% | 11 → 17 | 1 | 4 → 5 | 0.012 | 0.527 |
+| Jogador 3 | 2-6 | 8 | 2.000 | 2.000 | 2 → 2 | 0 → 0 | 14% → 18% | 17 → 19 | 6 | 5 → 5 | -0.017 | 0.317 |
+| Jogador 3 | 2-7 | 5 | 0.000 | 2.000 | 2 → 2 | 0 → 1 | 18% → 18% | 19 → 25 | 1 | 5 → 5 | 0.007 | 0.000 |
+| Jogador 3 | 3-1 | 7 | 0.000 | 0.000 | 2 → 2 | 1 → 1 | 18% → 18% | 25 → 30 | 4 | 5 → 5 | -0.000 | 0.395 |
+| Jogador 3 | 3-2 | 6 | 0.000 | 0.000 | 2 → 2 | 1 → 1 | 18% → 18% | 30 → 35 | 2 | 5 → 5 | 0.026 | -0.431 |
+| Jogador 3 | 3-3 | 5 | 0.000 | 2.000 | 2 → 2 | 1 → 2 | 18% → 18% | 35 → 43 | 1 | 5 → 5 | -0.011 | -0.507 |
+| Jogador 3 | 3-4 | 12 | 6.000 | 10.000 | 2 → 2 | 2 → 2 | 18% → 18% | 43 → 36 | 15 | 5 → 5 | -0.000 | 0.000 |
+| Jogador 3 | 3-5 | 12 | 2.000 | -6.000 | 2 → 2 | 2 → 2 | 18% → 18% | 36 → 44 | 7 | 5 → 5 | -0.009 | 0.226 |
+| Jogador 3 | 3-6 | 12 | 4.000 | 4.000 | 2 → 2 | 2 → 1 | 18% → 18% | 44 → 39 | 18 | 5 → 5 | 0.003 | 0.238 |
+| Jogador 3 | 3-7 | 12 | -10.000 | 12.000 | 2 → 2 | 1 → 2 | 18% → 14% | 39 → 40 | 13 | 5 → 5 | -0.006 | 0.000 |
+| Jogador 3 | 4-1 | 12 | 8.000 | 0.000 | 2 → 2 | 2 → 2 | 14% → 18% | 40 → 40 | 11 | 5 → 6 | 0.010 | -0.223 |
+| Jogador 3 | 4-2 | 12 | 4.000 | -6.000 | 2 → 2 | 2 → 3 | 18% → 21% | 40 → 45 | 12 | 6 → 6 | 0.002 | 0.255 |
+| Jogador 3 | 4-3 | 12 | 2.000 | 0.000 | 2 → 2 | 3 → 3 | 21% → 21% | 45 → 46 | 14 | 6 → 6 | -0.004 | 0.249 |
+| Jogador 3 | 4-4 | 12 | 0.000 | 0.000 | 2 → 2 | 3 → 3 | 21% → 21% | 46 → 54 | 8 | 6 → 6 | 0.008 | 0.000 |
+| Jogador 3 | 4-5 | 5 | 0.000 | 6.000 | 2 → 2 | 3 → 3 | 21% → 21% | 54 → 63 | 3 | 6 → 6 | 0.016 | 0.580 |
+| Jogador 3 | 4-6 | 4 | 0.000 | 0.000 | 2 → 2 | 3 → 3 | 21% → 21% | 63 → 75 | 0 | 6 → 6 | -0.004 | 0.733 |
+| Jogador 3 | 4-7 | 10 | 2.000 | -4.000 | 2 → 2 | 3 → 3 | 21% → 21% | 75 → 82 | 10 | 6 → 6 | 0.058 | 0.000 |
+| Jogador 3 | 5-1 | 10 | -8.000 | 6.000 | 2 → 2 | 3 → 2 | 21% → 18% | 82 → 87 | 11 | 6 → 6 | -0.067 | 0.294 |
+| Jogador 3 | 5-2 | 10 | 8.000 | 6.000 | 2 → 2 | 2 → 2 | 18% → 21% | 87 → 90 | 11 | 6 → 6 | 0.051 | 0.307 |
+| Jogador 3 | 5-3 | 8 | 0.000 | -2.000 | 2 → 2 | 2 → 4 | 21% → 21% | 90 → 105 | 4 | 6 → 6 | 0.010 | 0.000 |
+| Jogador 3 | 5-4 | 8 | 0.000 | -6.000 | 2 → 2 | 4 → 5 | 21% → 21% | 105 → 123 | 3 | 6 → 6 | -0.068 | 0.000 |
+| Jogador 3 | 5-5 | 10 | -4.000 | -2.000 | 2 → 2 | 5 → 3 | 21% → 18% | 123 → 133 | 12 | 6 → 6 | -0.001 | 0.294 |
+| Jogador 3 | 5-6 | 4 | 6.000 | -6.000 | 2 → 2 | 3 → 3 | 18% → 21% | 133 → 143 | 0 | 6 → 6 | 0.005 | -0.683 |
+| Jogador 3 | 5-7 | 10 | 0.000 | -4.000 | 2 → 2 | 3 → 5 | 21% → 21% | 143 → 154 | 4 | 6 → 6 | 0.067 | 0.000 |
+| Jogador 3 | 6-1 | 10 | 0.000 | 10.000 | 2 → 2 | 5 → 4 | 21% → 21% | 154 → 157 | 10 | 6 → 6 | -0.007 | 0.000 |
+| Jogador 3 | 6-2 | 8 | 0.000 | -2.000 | 2 → 2 | 4 → 4 | 21% → 21% | 157 → 168 | 5 | 6 → 6 | -0.036 | 0.000 |
+| Jogador 3 | 6-3 | 10 | 0.000 | -4.000 | 2 → 2 | 4 → 3 | 21% → 21% | 168 → 178 | 12 | 6 → 6 | -0.052 | -0.275 |
+| Jogador 3 | 6-4 | 10 | 0.000 | 2.000 | 2 → 2 | 3 → 3 | 21% → 21% | 178 → 186 | 9 | 6 → 6 | 0.000 | 0.000 |
+| Jogador 3 | 6-5 | 10 | 0.000 | -6.000 | 2 → 2 | 3 → 3 | 21% → 21% | 186 → 200 | 6 | 6 → 7 | 0.066 | 0.000 |
+| Jogador 3 | 6-6 | 6 | 2.000 | 2.000 | 2 → 2 | 3 → 3 | 21% → 25% | 200 → 209 | 3 | 7 → 7 | -0.020 | -0.475 |
+| Jogador 3 | 6-7 | 5 | 0.000 | 6.000 | 2 → 2 | 3 → 3 | 25% → 25% | 209 → 217 | 3 | 7 → 7 | -0.025 | 0.000 |
+| Jogador 3 | 7-1 | 7 | -36.000 | -36.000 | 2 → 0 | 3 → 0 | 25% → 0% | 217 → 216 | 2 | 7 → 7 | -0.130 | -0.414 |
+- Jogador 3 — valor marginal das compras: BENCH_POTENTIAL_ONLY: 15, COMPOSITION_COMPATIBILITY: 32, IMMEDIATE_UPGRADE: 18, PAIR_POTENTIAL: 22; mudanças de composição: 0; posicionamento melhorou em 68 ações e piorou em 57.
+- Jogador 3 — estado final: ouro 216, nível 7, vida 15.0, colocação 3.
+| Jogador 4 | 1-1 | 3 | 2.000 | -2.000 | 0 → 0 | 0 → 0 | 0% → 4% | 0 → 2 | 0 | 2 → 3 | 0.150 | 0.000 |
+| Jogador 4 | 1-2 | 10 | 4.000 | 0.000 | 0 → 0 | 0 → 0 | 4% → 11% | 2 → 2 | 2 | 3 → 3 | 0.017 | 0.000 |
+| Jogador 4 | 1-3 | 6 | 0.000 | 4.000 | 0 → 0 | 0 → 0 | 11% → 11% | 2 → 3 | 2 | 3 → 3 | -0.010 | 0.000 |
+| Jogador 4 | 1-4 | 8 | 0.000 | 6.000 | 0 → 0 | 0 → 2 | 11% → 11% | 3 → 4 | 3 | 3 → 4 | 0.007 | 0.000 |
+| Jogador 4 | 2-1 | 10 | 2.000 | 2.000 | 0 → 0 | 2 → 4 | 11% → 14% | 4 → 6 | 4 | 4 → 4 | -0.015 | 0.251 |
+| Jogador 4 | 2-2 | 12 | -2.000 | 6.000 | 0 → 0 | 4 → 3 | 14% → 11% | 6 → 5 | 6 | 4 → 4 | 0.009 | -0.206 |
+| Jogador 4 | 2-3 | 9 | 6.000 | 2.000 | 0 → 0 | 3 → 2 | 11% → 14% | 5 → 6 | 5 | 4 → 4 | -0.048 | -0.281 |
+| Jogador 4 | 2-4 | 12 | -2.000 | 6.000 | 0 → 0 | 2 → 3 | 14% → 11% | 6 → 9 | 9 | 4 → 4 | -0.002 | 0.000 |
+| Jogador 4 | 2-5 | 12 | 0.000 | -2.000 | 0 → 0 | 3 → 4 | 11% → 11% | 9 → 17 | 8 | 4 → 5 | 0.035 | -0.198 |
+| Jogador 4 | 2-6 | 12 | 2.000 | 8.000 | 0 → 0 | 4 → 2 | 11% → 14% | 17 → 8 | 15 | 5 → 5 | -0.025 | -0.224 |
+| Jogador 4 | 2-7 | 12 | -2.000 | 8.000 | 0 → 0 | 2 → 3 | 14% → 11% | 8 → 7 | 10 | 5 → 5 | -0.015 | 0.000 |
+| Jogador 4 | 3-1 | 6 | 4.000 | -4.000 | 0 → 1 | 3 → 3 | 11% → 14% | 7 → 14 | 0 | 5 → 5 | 0.014 | -0.431 |
+| Jogador 4 | 3-2 | 6 | 2.000 | 2.000 | 1 → 0 | 3 → 3 | 14% → 18% | 14 → 21 | 2 | 5 → 5 | -0.016 | -0.455 |
+| Jogador 4 | 3-3 | 5 | 2.000 | 2.000 | 0 → 1 | 3 → 3 | 18% → 18% | 21 → 27 | 2 | 5 → 5 | 0.013 | 0.553 |
+| Jogador 4 | 3-4 | 7 | 0.000 | -6.000 | 1 → 1 | 3 → 3 | 18% → 18% | 27 → 36 | 3 | 5 → 5 | 0.015 | 0.000 |
+| Jogador 4 | 3-5 | 9 | 0.000 | -2.000 | 1 → 0 | 3 → 4 | 18% → 18% | 36 → 44 | 3 | 5 → 5 | -0.005 | -0.309 |
+| Jogador 4 | 3-6 | 9 | 0.000 | -2.000 | 0 → 0 | 4 → 5 | 18% → 18% | 44 → 54 | 3 | 5 → 5 | 0.007 | -0.304 |
+| Jogador 4 | 3-7 | 7 | 0.000 | 0.000 | 0 → 0 | 5 → 5 | 18% → 18% | 54 → 65 | 1 | 5 → 5 | 0.000 | 0.000 |
+| Jogador 4 | 4-1 | 10 | 2.000 | -4.000 | 0 → 1 | 5 → 4 | 18% → 18% | 65 → 76 | 1 | 5 → 6 | 0.005 | -0.258 |
+| Jogador 4 | 4-2 | 6 | 2.000 | -2.000 | 1 → 1 | 4 → 4 | 18% → 21% | 76 → 87 | 0 | 6 → 6 | -0.013 | -0.483 |
+| Jogador 4 | 4-3 | 10 | 2.000 | 0.000 | 1 → 2 | 4 → 3 | 21% → 21% | 87 → 97 | 2 | 6 → 6 | -0.024 | -0.273 |
+| Jogador 4 | 4-4 | 10 | 0.000 | 6.000 | 2 → 2 | 3 → 4 | 21% → 21% | 97 → 106 | 3 | 6 → 6 | 0.049 | 0.000 |
+| Jogador 4 | 4-5 | 9 | -24.000 | -30.000 | 2 → 0 | 4 → 0 | 21% → 0% | 106 → 101 | 6 | 6 → 6 | -0.051 | -0.303 |
+- Jogador 4 — valor marginal das compras: BENCH_POTENTIAL_ONLY: 7, COMPOSITION_COMPATIBILITY: 15, IMMEDIATE_UPGRADE: 11, PAIR_POTENTIAL: 15; mudanças de composição: 1; posicionamento melhorou em 53 ações e piorou em 55.
+- Jogador 4 — estado final: ouro 101, nível 6, vida 4.0, colocação 8.
+| Jogador 5 | 1-1 | 3 | 2.000 | -2.000 | 0 → 0 | 0 → 0 | 0% → 4% | 0 → 2 | 0 | 2 → 3 | 0.149 | 0.000 |
+| Jogador 5 | 1-2 | 9 | 4.000 | 0.000 | 0 → 0 | 0 → 0 | 4% → 11% | 2 → 2 | 2 | 3 → 3 | -0.019 | 0.000 |
+| Jogador 5 | 1-3 | 10 | 0.000 | 4.000 | 0 → 0 | 0 → 0 | 11% → 11% | 2 → 3 | 2 | 3 → 3 | -0.041 | 0.000 |
+| Jogador 5 | 1-4 | 7 | 0.000 | 2.000 | 0 → 0 | 0 → 0 | 11% → 11% | 3 → 4 | 3 | 3 → 4 | 0.109 | 0.000 |
+| Jogador 5 | 2-1 | 12 | 2.000 | 6.000 | 0 → 0 | 0 → 1 | 11% → 14% | 4 → 5 | 4 | 4 → 4 | -0.007 | -0.188 |
+| Jogador 5 | 2-2 | 9 | 4.000 | 2.000 | 0 → 0 | 1 → 2 | 14% → 14% | 5 → 7 | 4 | 4 → 4 | -0.120 | -0.275 |
+| Jogador 5 | 2-3 | 12 | 0.000 | 12.000 | 0 → 0 | 2 → 2 | 14% → 14% | 7 → 6 | 13 | 4 → 4 | 0.111 | 0.209 |
+| Jogador 5 | 2-4 | 12 | 0.000 | 0.000 | 0 → 0 | 2 → 0 | 14% → 14% | 6 → 5 | 9 | 4 → 4 | -0.056 | 0.000 |
+| Jogador 5 | 2-5 | 11 | 2.000 | 6.000 | 0 → 1 | 0 → 1 | 14% → 14% | 5 → 7 | 8 | 4 → 5 | 0.056 | 0.221 |
+| Jogador 5 | 2-6 | 10 | 2.000 | 4.000 | 1 → 1 | 1 → 3 | 14% → 18% | 7 → 5 | 7 | 5 → 5 | -0.013 | -0.242 |
+| Jogador 5 | 2-7 | 11 | 2.000 | -4.000 | 1 → 1 | 3 → 5 | 18% → 18% | 5 → 5 | 10 | 5 → 5 | -0.001 | 0.000 |
+| Jogador 5 | 3-1 | 12 | 0.000 | 0.000 | 1 → 1 | 5 → 5 | 18% → 18% | 5 → 6 | 7 | 5 → 5 | -0.017 | 0.242 |
+| Jogador 5 | 3-2 | 12 | 4.000 | -6.000 | 1 → 2 | 5 → 4 | 18% → 18% | 6 → 10 | 6 | 5 → 5 | -0.013 | 0.243 |
+| Jogador 5 | 3-3 | 6 | 0.000 | 4.000 | 2 → 2 | 4 → 4 | 18% → 18% | 10 → 15 | 2 | 5 → 5 | -0.010 | 0.453 |
+| Jogador 5 | 3-4 | 12 | 0.000 | 4.000 | 2 → 2 | 4 → 4 | 18% → 18% | 15 → 14 | 12 | 5 → 5 | 0.014 | 0.000 |
+| Jogador 5 | 3-5 | 12 | -2.000 | -2.000 | 2 → 2 | 4 → 3 | 18% → 14% | 14 → 14 | 10 | 5 → 5 | -0.007 | -0.240 |
+| Jogador 5 | 3-6 | 12 | 2.000 | 6.000 | 2 → 2 | 3 → 5 | 14% → 18% | 14 → 11 | 13 | 5 → 5 | 0.014 | 0.235 |
+| Jogador 5 | 3-7 | 12 | 0.000 | 2.000 | 2 → 2 | 5 → 4 | 18% → 18% | 11 → 6 | 14 | 5 → 5 | 0.031 | 0.000 |
+| Jogador 5 | 4-1 | 11 | -2.000 | 2.000 | 2 → 2 | 4 → 3 | 18% → 18% | 6 → 6 | 5 | 5 → 6 | -0.021 | -0.260 |
+| Jogador 5 | 4-2 | 11 | 4.000 | -2.000 | 2 → 3 | 3 → 3 | 18% → 21% | 6 → 6 | 6 | 6 → 6 | 0.033 | -0.256 |
+| Jogador 5 | 4-3 | 7 | -2.000 | 4.000 | 3 → 3 | 3 → 2 | 21% → 21% | 6 → 9 | 3 | 6 → 6 | -0.122 | -0.402 |
+| Jogador 5 | 4-4 | 9 | 4.000 | -2.000 | 3 → 3 | 2 → 3 | 21% → 21% | 9 → 14 | 1 | 6 → 6 | -0.010 | 0.000 |
+| Jogador 5 | 4-5 | 11 | 2.000 | -2.000 | 3 → 4 | 3 → 2 | 21% → 21% | 14 → 20 | 1 | 6 → 6 | 0.055 | 0.255 |
+| Jogador 5 | 4-6 | 4 | 0.000 | 0.000 | 4 → 4 | 2 → 2 | 21% → 21% | 20 → 27 | 0 | 6 → 6 | -0.161 | -0.681 |
+| Jogador 5 | 4-7 | 4 | 0.000 | 0.000 | 4 → 4 | 2 → 2 | 21% → 21% | 27 → 34 | 0 | 6 → 6 | -0.023 | 0.000 |
+| Jogador 5 | 5-1 | 7 | 0.000 | 0.000 | 4 → 4 | 2 → 2 | 21% → 21% | 34 → 43 | 0 | 6 → 6 | 0.001 | -0.397 |
+| Jogador 5 | 5-2 | 10 | -28.000 | -40.000 | 4 → 0 | 2 → 0 | 21% → 0% | 43 → 43 | 0 | 6 → 6 | 0.014 | -0.283 |
+- Jogador 5 — valor marginal das compras: BENCH_POTENTIAL_ONLY: 8, COMPOSITION_COMPATIBILITY: 18, IMMEDIATE_UPGRADE: 14, PAIR_POTENTIAL: 18; mudanças de composição: 0; posicionamento melhorou em 70 ações e piorou em 63.
+- Jogador 5 — estado final: ouro 43, nível 6, vida 14.0, colocação 6.
+| Jogador 6 | 1-1 | 3 | 2.000 | -2.000 | 0 → 0 | 0 → 0 | 0% → 4% | 0 → 2 | 0 | 2 → 3 | -0.217 | 0.000 |
+| Jogador 6 | 1-2 | 12 | 4.000 | 0.000 | 0 → 0 | 0 → 1 | 4% → 11% | 2 → 2 | 2 | 3 → 3 | 0.091 | 0.000 |
+| Jogador 6 | 1-3 | 6 | 0.000 | 4.000 | 0 → 0 | 1 → 1 | 11% → 11% | 2 → 3 | 2 | 3 → 3 | -0.107 | 0.000 |
+| Jogador 6 | 1-4 | 6 | 0.000 | 6.000 | 0 → 0 | 1 → 2 | 11% → 11% | 3 → 4 | 3 | 3 → 4 | -0.011 | 0.000 |
+| Jogador 6 | 2-1 | 11 | 4.000 | 2.000 | 0 → 0 | 2 → 2 | 11% → 14% | 4 → 7 | 3 | 4 → 4 | 0.086 | 0.216 |
+| Jogador 6 | 2-2 | 8 | 0.000 | 10.000 | 0 → 0 | 2 → 3 | 14% → 14% | 7 → 7 | 7 | 4 → 4 | -0.007 | 0.327 |
+| Jogador 6 | 2-3 | 12 | 2.000 | 0.000 | 0 → 0 | 3 → 2 | 14% → 14% | 7 → 10 | 7 | 4 → 4 | 0.013 | 0.198 |
+| Jogador 6 | 2-4 | 12 | 0.000 | 14.000 | 0 → 0 | 2 → 2 | 14% → 14% | 10 → 6 | 10 | 4 → 4 | -0.101 | 0.000 |
+| Jogador 6 | 2-5 | 12 | 8.000 | -4.000 | 0 → 0 | 2 → 2 | 14% → 14% | 6 → 7 | 9 | 4 → 5 | 0.025 | 0.198 |
+| Jogador 6 | 2-6 | 12 | 0.000 | 2.000 | 0 → 0 | 2 → 4 | 14% → 14% | 7 → 7 | 12 | 5 → 5 | 0.010 | -0.202 |
+| Jogador 6 | 2-7 | 12 | 2.000 | -2.000 | 0 → 0 | 4 → 5 | 14% → 18% | 7 → 5 | 9 | 5 → 5 | 0.072 | 0.000 |
+| Jogador 6 | 3-1 | 10 | 8.000 | -8.000 | 0 → 1 | 5 → 3 | 18% → 18% | 5 → 6 | 5 | 5 → 5 | 0.006 | 0.305 |
+| Jogador 6 | 3-2 | 7 | 0.000 | 8.000 | 1 → 1 | 3 → 4 | 18% → 18% | 6 → 7 | 6 | 5 → 5 | -0.058 | 0.423 |
+| Jogador 6 | 3-3 | 12 | 2.000 | -4.000 | 1 → 1 | 4 → 3 | 18% → 18% | 7 → 8 | 11 | 5 → 5 | -0.059 | 0.247 |
+| Jogador 6 | 3-4 | 12 | 0.000 | 6.000 | 1 → 1 | 3 → 4 | 18% → 18% | 8 → 6 | 11 | 5 → 5 | -0.004 | 0.000 |
+| Jogador 6 | 3-5 | 12 | 0.000 | -14.000 | 1 → 1 | 4 → 5 | 18% → 18% | 6 → 17 | 10 | 5 → 5 | 0.010 | 0.254 |
+| Jogador 6 | 3-6 | 12 | -2.000 | 4.000 | 1 → 1 | 5 → 5 | 18% → 14% | 17 → 17 | 10 | 5 → 5 | -0.018 | -0.224 |
+| Jogador 6 | 3-7 | 12 | -4.000 | 6.000 | 1 → 1 | 5 → 4 | 14% → 14% | 17 → 16 | 12 | 5 → 5 | -0.014 | 0.000 |
+| Jogador 6 | 4-1 | 12 | -10.000 | 10.000 | 1 → 1 | 4 → 1 | 14% → 11% | 16 → 15 | 7 | 5 → 6 | 0.061 | -0.243 |
+| Jogador 6 | 4-2 | 9 | 6.000 | 2.000 | 1 → 2 | 1 → 3 | 11% → 18% | 15 → 18 | 4 | 6 → 6 | 0.025 | -0.314 |
+| Jogador 6 | 4-3 | 12 | 0.000 | 8.000 | 2 → 2 | 3 → 3 | 18% → 18% | 18 → 6 | 18 | 6 → 6 | -0.010 | 0.238 |
+| Jogador 6 | 4-4 | 10 | 2.000 | -2.000 | 2 → 2 | 3 → 3 | 18% → 21% | 6 → 5 | 6 | 6 → 6 | 0.078 | 0.000 |
+| Jogador 6 | 4-5 | 5 | 0.000 | 2.000 | 2 → 2 | 3 → 4 | 21% → 21% | 5 → 9 | 1 | 6 → 6 | -0.158 | -0.583 |
+| Jogador 6 | 4-6 | 8 | 0.000 | -2.000 | 2 → 2 | 4 → 4 | 21% → 21% | 9 → 18 | 1 | 6 → 6 | 0.013 | -0.346 |
+| Jogador 6 | 4-7 | 8 | 0.000 | -8.000 | 2 → 2 | 4 → 4 | 21% → 21% | 18 → 32 | 2 | 6 → 6 | 0.009 | 0.000 |
+| Jogador 6 | 5-1 | 10 | -2.000 | -8.000 | 2 → 2 | 4 → 3 | 21% → 18% | 32 → 45 | 4 | 6 → 6 | 0.012 | -0.278 |
+| Jogador 6 | 5-2 | 8 | 2.000 | 4.000 | 2 → 2 | 3 → 3 | 18% → 21% | 45 → 53 | 5 | 6 → 6 | -0.003 | 0.373 |
+| Jogador 6 | 5-3 | 6 | 0.000 | 0.000 | 2 → 2 | 3 → 4 | 21% → 21% | 53 → 63 | 1 | 6 → 6 | 0.010 | -0.472 |
+| Jogador 6 | 5-4 | 10 | 4.000 | -2.000 | 2 → 2 | 4 → 3 | 21% → 21% | 63 → 71 | 4 | 6 → 6 | 0.010 | 0.000 |
+| Jogador 6 | 5-5 | 5 | -28.000 | -34.000 | 2 → 0 | 3 → 0 | 21% → 0% | 71 → 70 | 1 | 6 → 6 | -0.109 | -0.560 |
+- Jogador 6 — valor marginal das compras: BENCH_POTENTIAL_ONLY: 10, COMPOSITION_COMPATIBILITY: 22, IMMEDIATE_UPGRADE: 17, PAIR_POTENTIAL: 22; mudanças de composição: 2; posicionamento melhorou em 70 ações e piorou em 55.
+- Jogador 6 — estado final: ouro 70, nível 6, vida 9.0, colocação 5.
+| Jogador 7 | 1-1 | 5 | 2.000 | -2.000 | 0 → 0 | 0 → 0 | 0% → 4% | 0 → 2 | 0 | 2 → 3 | 0.102 | 0.000 |
+| Jogador 7 | 1-2 | 8 | 4.000 | 0.000 | 0 → 0 | 0 → 0 | 4% → 11% | 2 → 2 | 2 | 3 → 3 | -0.016 | 0.000 |
+| Jogador 7 | 1-3 | 7 | 0.000 | 4.000 | 0 → 0 | 0 → 1 | 11% → 11% | 2 → 3 | 2 | 3 → 3 | -0.061 | 0.000 |
+| Jogador 7 | 1-4 | 8 | 0.000 | 4.000 | 0 → 0 | 1 → 2 | 11% → 11% | 3 → 5 | 2 | 3 → 4 | 0.079 | 0.000 |
+| Jogador 7 | 2-1 | 12 | 2.000 | 2.000 | 0 → 0 | 2 → 2 | 11% → 11% | 5 → 5 | 6 | 4 → 4 | -0.004 | -0.202 |
+| Jogador 7 | 2-2 | 12 | 4.000 | 0.000 | 0 → 1 | 2 → 1 | 11% → 14% | 5 → 6 | 5 | 4 → 4 | -0.016 | -0.207 |
+| Jogador 7 | 2-3 | 9 | 0.000 | 6.000 | 1 → 1 | 1 → 2 | 14% → 14% | 6 → 7 | 5 | 4 → 4 | -0.053 | -0.251 |
+| Jogador 7 | 2-4 | 12 | -2.000 | 4.000 | 1 → 1 | 2 → 4 | 14% → 11% | 7 → 8 | 9 | 4 → 4 | 0.004 | 0.000 |
+| Jogador 7 | 2-5 | 12 | 4.000 | 6.000 | 1 → 2 | 4 → 3 | 11% → 14% | 8 → 6 | 8 | 4 → 5 | -0.026 | 0.209 |
+| Jogador 7 | 2-6 | 12 | 6.000 | -10.000 | 2 → 3 | 3 → 1 | 14% → 18% | 6 → 12 | 4 | 5 → 5 | 0.027 | 0.214 |
+| Jogador 7 | 2-7 | 12 | -2.000 | 14.000 | 3 → 2 | 1 → 2 | 18% → 18% | 12 → 6 | 12 | 5 → 5 | 0.081 | 0.000 |
+| Jogador 7 | 3-1 | 12 | 2.000 | -8.000 | 2 → 3 | 2 → 3 | 18% → 18% | 6 → 10 | 7 | 5 → 5 | 0.007 | -0.224 |
+| Jogador 7 | 3-2 | 10 | -4.000 | 4.000 | 3 → 2 | 3 → 3 | 18% → 18% | 10 → 17 | 0 | 5 → 5 | -0.028 | -0.278 |
+| Jogador 7 | 3-3 | 5 | 0.000 | 0.000 | 2 → 2 | 3 → 3 | 18% → 18% | 17 → 24 | 0 | 5 → 5 | -0.001 | -0.575 |
+| Jogador 7 | 3-4 | 4 | 2.000 | -2.000 | 2 → 2 | 3 → 3 | 18% → 18% | 24 → 32 | 0 | 5 → 5 | 0.073 | 0.000 |
+| Jogador 7 | 3-5 | 4 | 0.000 | 0.000 | 2 → 2 | 3 → 3 | 18% → 18% | 32 → 41 | 0 | 5 → 5 | -0.024 | -0.634 |
+| Jogador 7 | 3-6 | 7 | 0.000 | 2.000 | 2 → 3 | 3 → 2 | 18% → 18% | 41 → 49 | 2 | 5 → 5 | -0.090 | -0.370 |
+| Jogador 7 | 3-7 | 5 | 2.000 | 0.000 | 3 → 3 | 2 → 2 | 18% → 18% | 49 → 59 | 1 | 5 → 5 | 0.041 | 0.000 |
+| Jogador 7 | 4-1 | 7 | -2.000 | 4.000 | 3 → 2 | 2 → 3 | 18% → 18% | 59 → 69 | 1 | 5 → 6 | -0.009 | 0.395 |
+| Jogador 7 | 4-2 | 8 | 2.000 | -2.000 | 2 → 3 | 3 → 2 | 18% → 21% | 69 → 79 | 2 | 6 → 6 | 0.058 | 0.375 |
+| Jogador 7 | 4-3 | 5 | 0.000 | 2.000 | 3 → 3 | 2 → 2 | 21% → 21% | 79 → 88 | 1 | 6 → 6 | -0.086 | -0.555 |
+| Jogador 7 | 4-4 | 4 | 0.000 | 0.000 | 3 → 3 | 2 → 2 | 21% → 21% | 88 → 98 | 0 | 6 → 6 | -0.011 | 0.000 |
+| Jogador 7 | 4-5 | 5 | -2.000 | 8.000 | 3 → 2 | 2 → 3 | 21% → 21% | 98 → 106 | 3 | 6 → 6 | -0.011 | -0.525 |
+| Jogador 7 | 4-6 | 10 | 0.000 | -2.000 | 2 → 2 | 3 → 4 | 21% → 21% | 106 → 119 | 1 | 6 → 6 | 0.020 | 0.000 |
+| Jogador 7 | 4-7 | 5 | -2.000 | 2.000 | 2 → 1 | 4 → 4 | 21% → 21% | 119 → 130 | 0 | 6 → 6 | -0.012 | 0.000 |
+| Jogador 7 | 5-1 | 10 | -16.000 | -38.000 | 1 → 0 | 4 → 0 | 21% → 0% | 130 → 126 | 7 | 6 → 6 | -0.047 | -0.278 |
+- Jogador 7 — valor marginal das compras: BENCH_POTENTIAL_ONLY: 3, COMPOSITION_COMPATIBILITY: 16, IMMEDIATE_UPGRADE: 10, PAIR_POTENTIAL: 14; mudanças de composição: 1; posicionamento melhorou em 58 ações e piorou em 51.
+- Jogador 7 — estado final: ouro 126, nível 6, vida 14.0, colocação 7.
+| Jogador 8 | 1-1 | 3 | 2.000 | -2.000 | 0 → 0 | 0 → 0 | 0% → 4% | 0 → 2 | 0 | 2 → 3 | 0.150 | 0.000 |
+| Jogador 8 | 1-2 | 9 | 4.000 | 0.000 | 0 → 0 | 0 → 0 | 4% → 11% | 2 → 2 | 2 | 3 → 3 | -0.023 | 0.000 |
+| Jogador 8 | 1-3 | 9 | 0.000 | 4.000 | 0 → 0 | 0 → 0 | 11% → 11% | 2 → 3 | 2 | 3 → 3 | 0.028 | 0.000 |
+| Jogador 8 | 1-4 | 7 | 0.000 | 4.000 | 0 → 0 | 0 → 0 | 11% → 11% | 3 → 4 | 3 | 3 → 4 | -0.151 | 0.000 |
+| Jogador 8 | 2-1 | 11 | 2.000 | 4.000 | 0 → 0 | 0 → 0 | 11% → 14% | 4 → 7 | 3 | 4 → 4 | 0.136 | 0.233 |
+| Jogador 8 | 2-2 | 10 | 2.000 | 2.000 | 0 → 0 | 0 → 1 | 14% → 14% | 7 → 7 | 7 | 4 → 4 | -0.047 | 0.261 |
+| Jogador 8 | 2-3 | 9 | 6.000 | 2.000 | 0 → 1 | 1 → 1 | 14% → 14% | 7 → 7 | 7 | 4 → 4 | -0.125 | 0.299 |
+| Jogador 8 | 2-4 | 10 | 0.000 | 10.000 | 1 → 1 | 1 → 1 | 14% → 14% | 7 → 6 | 7 | 4 → 4 | 0.130 | 0.000 |
+| Jogador 8 | 2-5 | 12 | 0.000 | -4.000 | 1 → 1 | 1 → 3 | 14% → 14% | 6 → 7 | 11 | 4 → 5 | 0.025 | -0.207 |
+| Jogador 8 | 2-6 | 12 | 2.000 | -2.000 | 1 → 1 | 3 → 4 | 14% → 18% | 7 → 9 | 9 | 5 → 5 | -0.001 | 0.216 |
+| Jogador 8 | 2-7 | 12 | 2.000 | 4.000 | 1 → 2 | 4 → 2 | 18% → 18% | 9 → 5 | 10 | 5 → 5 | -0.036 | 0.000 |
+| Jogador 8 | 3-1 | 8 | 0.000 | 6.000 | 2 → 2 | 2 → 2 | 18% → 18% | 5 → 5 | 5 | 5 → 5 | 0.062 | -0.341 |
+| Jogador 8 | 3-2 | 10 | 2.000 | 0.000 | 2 → 2 | 2 → 1 | 18% → 18% | 5 → 7 | 7 | 5 → 5 | 0.002 | 0.277 |
+| Jogador 8 | 3-3 | 9 | 0.000 | 6.000 | 2 → 2 | 1 → 1 | 18% → 18% | 7 → 7 | 7 | 5 → 5 | 0.010 | 0.339 |
+| Jogador 8 | 3-4 | 12 | 0.000 | -6.000 | 2 → 2 | 1 → 1 | 18% → 18% | 7 → 10 | 10 | 5 → 5 | 0.000 | 0.000 |
+| Jogador 8 | 3-5 | 10 | 4.000 | 2.000 | 2 → 2 | 1 → 1 | 18% → 18% | 10 → 7 | 10 | 5 → 5 | -0.010 | 0.282 |
+| Jogador 8 | 3-6 | 8 | 0.000 | 2.000 | 2 → 2 | 1 → 1 | 18% → 18% | 7 → 7 | 7 | 5 → 5 | -0.120 | 0.364 |
+| Jogador 8 | 3-7 | 12 | 0.000 | -6.000 | 2 → 2 | 1 → 2 | 18% → 18% | 7 → 9 | 11 | 5 → 5 | 0.005 | 0.000 |
+| Jogador 8 | 4-1 | 12 | -2.000 | 2.000 | 2 → 1 | 2 → 2 | 18% → 18% | 9 → 12 | 8 | 5 → 6 | 0.012 | 0.253 |
+| Jogador 8 | 4-2 | 12 | 12.000 | -4.000 | 1 → 2 | 2 → 0 | 18% → 21% | 12 → 9 | 12 | 6 → 6 | 0.017 | 0.257 |
+| Jogador 8 | 4-3 | 9 | 0.000 | 14.000 | 2 → 2 | 0 → 1 | 21% → 21% | 9 → 9 | 9 | 6 → 6 | -0.036 | 0.328 |
+| Jogador 8 | 4-4 | 12 | 0.000 | 0.000 | 2 → 3 | 1 → 2 | 21% → 21% | 9 → 8 | 12 | 6 → 6 | 0.003 | 0.000 |
+| Jogador 8 | 4-5 | 8 | 0.000 | 2.000 | 3 → 3 | 2 → 3 | 21% → 21% | 8 → 12 | 6 | 6 → 6 | 0.000 | 0.385 |
+| Jogador 8 | 4-6 | 5 | 0.000 | 0.000 | 3 → 3 | 3 → 3 | 21% → 21% | 12 → 22 | 0 | 6 → 6 | 0.213 | 0.580 |
+| Jogador 8 | 4-7 | 10 | 0.000 | -6.000 | 3 → 3 | 3 → 2 | 21% → 21% | 22 → 22 | 12 | 6 → 6 | 0.003 | 0.000 |
+| Jogador 8 | 5-1 | 10 | 0.000 | -2.000 | 3 → 3 | 2 → 2 | 21% → 21% | 22 → 26 | 11 | 6 → 6 | 0.006 | 0.294 |
+| Jogador 8 | 5-2 | 10 | 0.000 | 10.000 | 3 → 3 | 2 → 2 | 21% → 21% | 26 → 20 | 13 | 6 → 6 | -0.008 | -0.283 |
+| Jogador 8 | 5-3 | 10 | 0.000 | 2.000 | 3 → 3 | 2 → 3 | 21% → 21% | 20 → 21 | 10 | 6 → 6 | 0.006 | 0.299 |
+| Jogador 8 | 5-4 | 10 | 0.000 | 0.000 | 3 → 3 | 3 → 3 | 21% → 21% | 21 → 17 | 14 | 6 → 6 | -0.006 | 0.000 |
+| Jogador 8 | 5-5 | 10 | 0.000 | -8.000 | 3 → 3 | 3 → 2 | 21% → 21% | 17 → 21 | 15 | 6 → 6 | 0.006 | 0.000 |
+| Jogador 8 | 5-6 | 10 | 0.000 | 2.000 | 3 → 3 | 2 → 3 | 21% → 21% | 21 → 22 | 11 | 6 → 6 | 0.000 | 0.311 |
+| Jogador 8 | 5-7 | 10 | 0.000 | 8.000 | 3 → 3 | 3 → 1 | 21% → 21% | 22 → 10 | 18 | 6 → 6 | -0.019 | 0.000 |
+| Jogador 8 | 6-1 | 10 | 0.000 | 4.000 | 3 → 3 | 1 → 1 | 21% → 21% | 10 → 5 | 10 | 6 → 6 | 0.006 | -0.280 |
+| Jogador 8 | 6-2 | 10 | 2.000 | 0.000 | 3 → 2 | 1 → 2 | 21% → 21% | 5 → 7 | 7 | 6 → 6 | -0.012 | 0.304 |
+| Jogador 8 | 6-3 | 10 | -6.000 | -4.000 | 2 → 2 | 2 → 1 | 21% → 18% | 7 → 9 | 14 | 6 → 6 | -0.025 | 0.000 |
+| Jogador 8 | 6-4 | 10 | 6.000 | -8.000 | 2 → 2 | 1 → 3 | 18% → 21% | 9 → 14 | 13 | 6 → 6 | 0.035 | 0.000 |
+| Jogador 8 | 6-5 | 10 | 0.000 | -6.000 | 2 → 2 | 3 → 3 | 21% → 21% | 14 → 17 | 10 | 6 → 7 | 0.004 | -0.290 |
+| Jogador 8 | 6-6 | 6 | 2.000 | -2.000 | 2 → 2 | 3 → 3 | 21% → 25% | 17 → 23 | 0 | 7 → 7 | 0.010 | 0.000 |
+| Jogador 8 | 6-7 | 10 | 0.000 | 10.000 | 2 → 2 | 3 → 4 | 25% → 25% | 23 → 17 | 20 | 7 → 7 | 0.000 | 0.000 |
+| Jogador 8 | 7-1 | 10 | 0.000 | 2.000 | 2 → 2 | 4 → 5 | 25% → 25% | 17 → 19 | 13 | 7 → 7 | 0.000 | 0.313 |
+| Jogador 8 | 7-2 | 10 | 0.000 | 0.000 | 2 → 2 | 5 → 5 | 25% → 25% | 19 → 14 | 12 | 7 → 7 | 0.000 | 0.318 |
+- Jogador 8 — valor marginal das compras: BENCH_POTENTIAL_ONLY: 13, COMPOSITION_COMPATIBILITY: 35, IMMEDIATE_UPGRADE: 21, PAIR_POTENTIAL: 31; mudanças de composição: 0; posicionamento melhorou em 78 ações e piorou em 63.
+- Jogador 8 — estado final: ouro 14, nível 7, vida 36.0, colocação 1.
+
+Força do banco e pares representam potencial futuro, não força atual de combate. Classificações marginais são diagnósticas e não alteram a recompensa PPO; valide-as contra resultados de combate.
+
+## Auditoria de compras e vendas
+
+| Jogador | Compras | Vendas | Impulsivas ≤1 ação | ≤2 ações | ≤4 ações | Par/upgrade | Experimentais | Mudança comp. | Banco cheio | Necessidade econômica | Revisão | Ouro perdido |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Jogador 1 | 76 | 29 | 0 | 0 | 0 | 0 | 0 | 0 | 8 | 0 | 0 | 0 |
+| Jogador 2 | 91 | 28 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 |
+| Jogador 3 | 87 | 36 | 0 | 0 | 0 | 1 | 0 | 0 | 10 | 0 | 0 | 0 |
+| Jogador 4 | 48 | 12 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| Jogador 5 | 58 | 19 | 0 | 0 | 0 | 0 | 0 | 0 | 2 | 1 | 0 | 0 |
+| Jogador 6 | 71 | 23 | 0 | 0 | 0 | 0 | 0 | 0 | 2 | 0 | 0 | 0 |
+| Jogador 7 | 43 | 9 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| Jogador 8 | 100 | 43 | 0 | 0 | 0 | 0 | 0 | 0 | 5 | 0 | 0 | 0 |
+- Jogador 1 — venda DA_18_Rakan (2-6, step 218): core=True, par=False, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 1 — venda DA_Gromp18_AP (2-7, step 232): core=False, par=True, compensada=True; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=3.
+- Jogador 1 — venda DA_18_Xayah (2-7, step 237): core=True, par=False, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 1 — venda DA_18_Varus (3-3, step 301): core=True, par=False, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 1 — venda DA_CrimsonRaptor18 (3-7, step 366): core=True, par=False, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 1 — venda DA_18_Kayle (3-7, step 371): core=True, par=False, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 1 — venda DA_18_Xayah (4-3, step 404): core=True, par=False, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 1 — venda DA_18_Leona (4-3, step 408): core=False, par=True, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 1 — venda DA_18_Shen (4-4, step 417): core=False, par=True, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 1 — venda DA_Vi18 (4-4, step 421): core=False, par=True, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 1 — venda DA_CrimsonRaptor18 (4-5, step 429): core=True, par=False, compensada=True; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=1.
+- Jogador 1 — venda DA_18_Varus (4-5, step 431): core=False, par=True, compensada=True; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=3.
+- Jogador 2 — venda DA_18_Sentry (2-6, step 219): core=False, par=True, compensada=True; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=3.
+- Jogador 2 — venda DA_18_Veigar (2-7, step 236): core=False, par=True, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 2 — venda DA_18_Veigar (2-7, step 240): core=True, par=False, compensada=True; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=3.
+- Jogador 2 — venda DA_Cinderling18 (3-3, step 295): core=True, par=False, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 2 — venda DA_18_Warwick (3-4, step 312): core=False, par=True, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 2 — venda DA_18_Yorick (3-5, step 337): core=True, par=False, compensada=True; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=2.
+- Jogador 2 — venda DA_18_Rakan (4-3, step 404): core=True, par=False, compensada=True; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=1.
+- Jogador 2 — venda DA_Gromp18_AP (4-5, step 437): core=True, par=False, compensada=True; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=3.
+- Jogador 2 — venda DA_18_Azir (5-1, step 466): core=False, par=True, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 2 — venda DA_18_Azir (5-7, step 526): core=False, par=True, compensada=True; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=3.
+- Jogador 3 — venda DA_18_RekSai (3-5, step 332): core=False, par=True, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 3 — venda DA_18_Akali_AD (4-2, step 389): core=False, par=True, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 3 — venda DA_18_Akali_AD (4-4, step 419): core=False, par=True, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 3 — venda DA_18_Warwick (4-7, step 456): core=True, par=False, compensada=True; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=2.
+- Jogador 3 — venda DA_18_Warwick (5-3, step 482): core=True, par=False, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 3 — venda DA_18_Diana (5-4, step 492): core=True, par=False, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 3 — venda DA_Gromp18_AP (5-5, step 507): core=True, par=False, compensada=True; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=3.
+- Jogador 3 — venda DA_Murkwolf18 (5-7, step 525): core=True, par=False, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 3 — venda DA_Cinderling18 (6-1, step 533): core=False, par=True, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 3 — venda DA_Krug18 (6-3, step 558): core=True, par=False, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 4 — venda DA_18_Rakan (2-5, step 205): core=True, par=False, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 4 — venda DA_18_Yorick (3-5, step 332): core=True, par=False, compensada=True; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=1.
+- Jogador 5 — venda DA_18_Ornn (3-4, step 321): core=False, par=True, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 5 — venda DA_18_Caitlyn (3-5, step 333): core=False, par=True, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 6 — venda DA_18_Rakan (3-4, step 316): core=True, par=False, compensada=True; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=3.
+- Jogador 6 — venda DA_Scuttlecrab18 (3-5, step 332): core=True, par=False, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 6 — venda DA_Murkwolf18 (3-5, step 335): core=True, par=False, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 6 — venda DA_18_Akali_AD (3-6, step 349): core=True, par=False, compensada=True; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=1.
+- Jogador 6 — venda DA_Cinderling18 (3-7, step 362): core=True, par=False, compensada=True; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=1.
+- Jogador 6 — venda DA_18_Xayah (3-7, step 364): core=False, par=True, compensada=True; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=3.
+- Jogador 6 — venda DA_KogMaw18_AD (4-7, step 452): core=True, par=False, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 6 — venda DA_Vi18 (5-1, step 464): core=True, par=False, compensada=True; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=1.
+- Jogador 6 — venda DA_18_Sentry (5-2, step 472): core=True, par=False, compensada=True; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=2.
+- Jogador 7 — venda DA_18_Yorick (5-1, step 464): core=False, par=True, compensada=True; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=3.
+- Jogador 8 — venda DA_18_Veigar (2-5, step 199): core=True, par=False, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 8 — venda DA_18_Xayah (2-6, step 222): core=True, par=False, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 8 — venda DA_18_Akali_AD (2-7, step 236): core=False, par=True, compensada=True; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=3.
+- Jogador 8 — venda DA_18_Rakan (3-2, step 274): core=True, par=False, compensada=True; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=3.
+- Jogador 8 — venda DA_18_Teemo (3-4, step 313): core=True, par=False, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 8 — venda DA_18_Veigar (3-7, step 363): core=False, par=True, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 8 — venda DA_18_Veigar (4-1, step 386): core=True, par=False, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 8 — venda DA_18_Cassiopeia (5-4, step 497): core=False, par=True, compensada=True; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=3.
+- Jogador 8 — venda DA_18_Rammus (5-5, step 507): core=False, par=True, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 8 — venda DA_18_Teemo (5-5, step 510): core=True, par=False, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 8 — venda DA_18_Xayah (5-6, step 520): core=False, par=True, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 8 — venda DA_18_Kobuko (6-3, step 553): core=False, par=True, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 8 — venda DA_18_Tristana (6-3, step 556): core=True, par=False, compensada=True; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=3.
+- Jogador 8 — venda DA_Fiddlesticks18 (6-4, step 566): core=True, par=False, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 8 — venda DA_18_Teemo (6-4, step 570): core=True, par=False, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 8 — venda DA_18_Rengar (6-5, step 574): core=False, par=True, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 8 — venda DA_18_Rammus (6-7, step 599): core=False, par=True, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+- Jogador 8 — venda DA_18_Cassiopeia (7-1, step 608): core=False, par=True, compensada=False; ganho tabuleiro=False, sinergia=False, posicionamento=False, compensações posteriores=0.
+
+Vendas de core/pares ignoradas antes da decisão da composição: **10**.
+Round da decisão por jogador: Jogador 1: 2-5, Jogador 2: 2-5, Jogador 3: 2-5, Jogador 4: 2-5, Jogador 5: 2-5, Jogador 6: 2-5, Jogador 7: 2-5, Jogador 8: 2-5.
+As classificações detalhadas e sequências correlacionadas permanecem nos dados estruturados de origem.
+Compra/venda impulsiva exige baixo fit e baixo valor estratégico, sem par/upgrade, alternativa melhor ainda possuída, transição de composição, implantação, banco cheio ou venda que financie uma ação necessária.
+Compras de alto fit sem justificativa observável ficam em UNJUSTIFIED_REVIEW, não são tratadas como impulsivas. Uma venda sem compra correspondente na janela é UNKNOWN; identidades ambíguas nunca são penalizadas automaticamente.
+
+## Achados
+
+| Severidade | Jogador | Round | Step | Código | Descrição |
+|---|---|---:|---:|---|---|
+| HIGH | Jogador 1 | 2-6 | 218 | SOLD_CORE_UNIT | Venda de 'DA_18_Rakan' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 1 | 2-7 | 237 | SOLD_CORE_UNIT | Venda de 'DA_18_Xayah' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 1 | 3-3 | 301 | SOLD_CORE_UNIT | Venda de 'DA_18_Varus' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 1 | 3-7 | 366 | SOLD_CORE_UNIT | Venda de 'DA_CrimsonRaptor18' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 1 | 3-7 | 371 | SOLD_CORE_UNIT | Venda de 'DA_18_Kayle' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 1 | 4-3 | 404 | SOLD_CORE_UNIT | Venda de 'DA_18_Xayah' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 1 | 4-3 | 408 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Leona' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 1 | 4-4 | 417 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Shen' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 1 | 4-4 | 421 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_Vi18' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| LOW | Jogador 1 | 1-1 | 44 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem backline. |
+| LOW | Jogador 1 | 2-2 | 638 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 1 | 2-3 | 796 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 1 | 2-7 | 1387 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 1 | 3-1 | 1546 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 1 | 3-2 | 1708 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 1 | 3-7 | 2461 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 1 | 4-1 | 2620 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 1 | 4-2 | 2716 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 1 | 4-3 | 2876 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 1 | 4-4 | 3035 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 1 | 5-6 | 4037 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 1 | 5-6 | 4038 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem backline. |
+| MEDIUM | Jogador 1 | 4-6 | 3421 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 1 | 4-7 | 3549 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 1 | 5-1 | 3654 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 1 | 5-2 | 3744 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 1 | 5-3 | 3821 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 1 | 5-4 | 3898 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 2 | 2-7 | 236 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Veigar' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 2 | 3-3 | 295 | SOLD_CORE_UNIT | Venda de 'DA_Cinderling18' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 2 | 3-4 | 312 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Warwick' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 2 | 5-1 | 466 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Azir' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| LOW | Jogador 2 | 1-1 | 44 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 2 | 1-1 | 45 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem backline. |
+| LOW | Jogador 2 | 1-2 | 116 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 2 | 1-3 | 271 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 2 | 2-1 | 526 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 2 | 2-2 | 635 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 carry(s) expostos na frontline. |
+| LOW | Jogador 2 | 2-3 | 794 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 2 | 2-4 | 955 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 carry(s) expostos na frontline. |
+| LOW | Jogador 2 | 2-5 | 1124 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 2 | 2-6 | 1288 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 2 | 2-7 | 1449 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 2 | 3-4 | 2028 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 2 | 3-5 | 2198 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 2 | 3-6 | 2366 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 3-6 | 2367 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 2 | 3-7 | 2473 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 3-7 | 2474 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 2 | 4-1 | 2636 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 4-1 | 2637 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 2 | 4-2 | 2802 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 4-2 | 2803 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 2 | 4-3 | 2965 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 4-3 | 2966 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 2 | 4-4 | 3130 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 4-5 | 3293 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 4-6 | 3446 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 4-7 | 3580 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 5-1 | 3717 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 5-2 | 3855 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 5-3 | 3993 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 5-4 | 4140 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 5-5 | 4244 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 2 | 5-5 | 4245 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 5-6 | 4373 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 5-7 | 4510 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 6-1 | 4650 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 3 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 6-2 | 4787 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 3 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 6-3 | 4931 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 2 | 6-3 | 4932 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 6-4 | 4998 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 2 | 6-4 | 4999 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 6-5 | 5147 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 2 | 6-5 | 5148 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 6-6 | 5254 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 2 | 6-6 | 5255 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 6-7 | 5334 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 2 | 6-7 | 5335 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 7-1 | 5414 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 2 | 7-1 | 5415 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 2 | 7-2 | 5496 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 2 | 7-2 | 5497 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem backline. |
+| MEDIUM | Jogador 2 | 4-1 | 2678 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 2 | 4-1 | 2717 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 2 | 4-1 | 2742 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 2 | 4-2 | 2829 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 2 | 4-2 | 2890 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 2 | 4-2 | 2914 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 2 | 4-3 | 3107 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 2 | 4-4 | 3270 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 3 | 3-5 | 332 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_RekSai' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 3 | 4-2 | 389 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Akali_AD' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 3 | 4-4 | 419 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Akali_AD' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 3 | 5-3 | 482 | SOLD_CORE_UNIT | Venda de 'DA_18_Warwick' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 3 | 5-4 | 492 | SOLD_CORE_UNIT | Venda de 'DA_18_Diana' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 3 | 5-7 | 525 | SOLD_CORE_UNIT | Venda de 'DA_Murkwolf18' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 3 | 6-1 | 533 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_Cinderling18' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 3 | 6-3 | 558 | SOLD_CORE_UNIT | Venda de 'DA_Krug18' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| LOW | Jogador 3 | 1-1 | 44 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem backline. |
+| LOW | Jogador 3 | 3-6 | 1779 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 3 | 4-6 | 2725 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 3 | 4-7 | 2859 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 3 | 5-2 | 3131 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 3 | 5-3 | 3247 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 3 | 6-2 | 3969 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 3 | 6-2 | 3970 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 3 | 6-3 | 4110 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 3 | 6-3 | 4111 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 3 | 6-4 | 4248 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 3 | 6-4 | 4249 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 3 | 6-5 | 4385 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 3 | 6-6 | 4472 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 3 | 6-7 | 4549 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 3 | 7-1 | 4653 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 3 | 7-1 | 4654 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem backline. |
+| MEDIUM | Jogador 3 | 2-4 | 845 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 3 | 4-1 | 2233 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 3 | 4-2 | 2281 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 3 | 4-2 | 2305 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 3 | 4-2 | 2367 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 3 | 4-2 | 2379 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 3 | 4-3 | 2463 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 3 | 4-3 | 2513 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 3 | 4-6 | 2775 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 3 | 4-6 | 2823 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 3 | 4-7 | 2910 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 3 | 4-7 | 2948 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 3 | 5-1 | 3059 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 3 | 5-1 | 3083 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 3 | 5-4 | 3431 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 3 | 5-4 | 3471 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 3 | 5-6 | 3692 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 3 | 5-7 | 3807 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 3 | 6-2 | 4047 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 3 | 6-4 | 4362 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 3 | 6-5 | 4449 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| HIGH | Jogador 4 | 2-5 | 205 | SOLD_CORE_UNIT | Venda de 'DA_18_Rakan' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| LOW | Jogador 4 | 1-1 | 44 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem backline. |
+| LOW | Jogador 4 | 2-3 | 787 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 4 | 2-4 | 955 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 4 | 2-5 | 1115 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 4 | 2-6 | 1272 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 4 | 2-7 | 1433 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 4 | 2-7 | 1434 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 4 | 3-1 | 1518 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 4 | 3-1 | 1519 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 4 | 3-2 | 1603 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 4 | 3-2 | 1604 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 4 | 3-3 | 1675 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 4 | 3-3 | 1676 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 4 | 3-4 | 1773 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 4 | 3-4 | 1774 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 4 | 3-5 | 1897 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 4 | 3-5 | 1898 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 4 | 3-6 | 2021 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 4 | 3-6 | 2022 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 4 | 3-7 | 2121 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 4 | 3-7 | 2122 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 4 | 4-1 | 2263 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 4 | 4-1 | 2264 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 4 | 4-2 | 2352 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 4 | 4-2 | 2353 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 4 | 4-3 | 2500 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 carry(s) expostos na frontline. |
+| LOW | Jogador 4 | 4-3 | 2501 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 4 | 4-4 | 2646 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 4 | 4-4 | 2647 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 4 | 4-5 | 2778 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 4 | 4-5 | 2779 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem backline. |
+| MEDIUM | Jogador 4 | 2-4 | 1092 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 4 | 3-6 | 2098 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 4 | 3-7 | 2240 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 4 | 4-1 | 2317 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 5 | 3-4 | 321 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Ornn' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 5 | 3-5 | 333 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Caitlyn' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| LOW | Jogador 5 | 1-1 | 44 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem backline. |
+| LOW | Jogador 5 | 1-3 | 294 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 5 | 2-1 | 551 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 5 | 2-2 | 676 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 carry(s) expostos na frontline. |
+| LOW | Jogador 5 | 2-3 | 833 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 5 | 2-4 | 992 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 5 | 2-5 | 1143 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 5 | 2-6 | 1280 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 5 | 2-7 | 1428 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 5 | 3-1 | 1592 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 5 | 3-2 | 1753 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 5 | 3-3 | 1836 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 5 | 4-5 | 3145 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 5 | 4-6 | 3205 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 5 | 4-7 | 3267 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 5 | 5-1 | 3369 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 5 | 5-2 | 3516 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 5 | 5-2 | 3517 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem backline. |
+| MEDIUM | Jogador 5 | 4-6 | 3244 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 5 | 4-7 | 3346 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| HIGH | Jogador 6 | 3-5 | 332 | SOLD_CORE_UNIT | Venda de 'DA_Scuttlecrab18' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 6 | 3-5 | 335 | SOLD_CORE_UNIT | Venda de 'DA_Murkwolf18' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 6 | 4-7 | 452 | SOLD_CORE_UNIT | Venda de 'DA_KogMaw18_AD' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 6 | 4-2 | 401 | COMP_DIRECTION_CHURN | Episódio de mudanças repetidas de composição; revisar as transições listadas. |
+| MEDIUM | Jogador 6 | 4-6 | 451 | COMP_DIRECTION_CHURN | Episódio de mudanças repetidas de composição; revisar as transições listadas. |
+| MEDIUM | Jogador 6 | 5-3 | 491 | COMP_DIRECTION_CHURN | Episódio de mudanças repetidas de composição; revisar as transições listadas. |
+| LOW | Jogador 6 | 1-1 | 44 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 6 | 1-1 | 45 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem backline. |
+| LOW | Jogador 6 | 1-2 | 200 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 6 | 1-3 | 283 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 6 | 1-4 | 368 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 6 | 2-4 | 952 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 6 | 2-4 | 953 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 6 | 2-5 | 1114 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 6 | 2-5 | 1115 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 6 | 2-6 | 1279 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 6 | 2-6 | 1280 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 6 | 2-7 | 1440 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 6 | 3-2 | 1676 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 6 | 3-3 | 1837 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 6 | 3-4 | 1993 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 6 | 3-5 | 2156 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 6 | 3-6 | 2316 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 6 | 3-7 | 2475 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 6 | 4-1 | 2638 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 6 | 4-4 | 3059 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 6 | 4-5 | 3135 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 6 | 4-6 | 3250 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 6 | 4-7 | 3371 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 6 | 5-5 | 3942 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 6 | 5-5 | 3943 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem backline. |
+| MEDIUM | Jogador 6 | 4-6 | 3348 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 6 | 5-1 | 3607 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 6 | 5-2 | 3696 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| LOW | Jogador 7 | 1-1 | 68 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem backline. |
+| LOW | Jogador 7 | 1-3 | 271 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 7 | 1-3 | 272 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem backline. |
+| LOW | Jogador 7 | 1-4 | 380 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 7 | 2-1 | 541 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 7 | 2-2 | 696 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 7 | 2-3 | 817 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 7 | 2-3 | 818 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 7 | 2-4 | 978 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 7 | 2-4 | 979 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 7 | 2-5 | 1141 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 7 | 2-5 | 1142 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 7 | 2-6 | 1300 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 7 | 2-6 | 1301 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 7 | 2-7 | 1458 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 7 | 2-7 | 1459 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 7 | 3-1 | 1622 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 7 | 3-1 | 1623 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 7 | 3-2 | 1758 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 7 | 3-3 | 1830 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 7 | 3-4 | 1892 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 7 | 3-5 | 1956 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 7 | 3-5 | 1957 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 7 | 3-6 | 2057 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 7 | 3-7 | 2132 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 7 | 3-7 | 2133 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 7 | 4-1 | 2236 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 7 | 4-1 | 2237 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 7 | 4-2 | 2351 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 7 | 4-3 | 2428 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 7 | 4-4 | 2492 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 carry(s) expostos na frontline. |
+| LOW | Jogador 7 | 4-5 | 2566 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 7 | 4-6 | 2704 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 7 | 4-7 | 2777 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 7 | 5-1 | 2925 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem frontline. |
+| LOW | Jogador 7 | 5-1 | 2926 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem backline. |
+| MEDIUM | Jogador 7 | 3-6 | 2109 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 7 | 3-7 | 2213 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 7 | 4-1 | 2328 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 7 | 4-2 | 2405 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 7 | 4-3 | 2469 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 7 | 4-4 | 2543 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| HIGH | Jogador 8 | 2-5 | 199 | SOLD_CORE_UNIT | Venda de 'DA_18_Veigar' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 8 | 2-6 | 222 | SOLD_CORE_UNIT | Venda de 'DA_18_Xayah' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 8 | 3-4 | 313 | SOLD_CORE_UNIT | Venda de 'DA_18_Teemo' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 8 | 3-7 | 363 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Veigar' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 8 | 4-1 | 386 | SOLD_CORE_UNIT | Venda de 'DA_18_Veigar' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 8 | 5-5 | 507 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Rammus' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 8 | 5-5 | 510 | SOLD_CORE_UNIT | Venda de 'DA_18_Teemo' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 8 | 5-6 | 520 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Xayah' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 8 | 6-3 | 553 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Kobuko' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 8 | 6-4 | 566 | SOLD_CORE_UNIT | Venda de 'DA_Fiddlesticks18' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| HIGH | Jogador 8 | 6-4 | 570 | SOLD_CORE_UNIT | Venda de 'DA_18_Teemo' removeu a última cópia de uma unidade core após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 8 | 6-5 | 574 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Rengar' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 8 | 6-7 | 599 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Rammus' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| MEDIUM | Jogador 8 | 7-1 | 608 | SOLD_UPGRADE_PAIR_COPY | Venda de 'DA_18_Cassiopeia' removeu uma das cópias que formavam um par do mesmo campeão/estrela após a decisão da composição; conferir substituição e evolução de estrelas. |
+| LOW | Jogador 8 | 1-1 | 44 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: sem backline. |
+| LOW | Jogador 8 | 1-3 | 282 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 1-4 | 379 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 2-3 | 791 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 8 | 3-5 | 2075 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 8 | 3-6 | 2187 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 3-6 | 2188 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 8 | 3-7 | 2349 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 3-7 | 2350 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 8 | 4-1 | 2515 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 4-1 | 2516 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 8 | 4-2 | 2675 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 4-2 | 2676 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 8 | 4-3 | 2798 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 4-3 | 2799 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 8 | 4-4 | 2960 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 4-4 | 2961 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 8 | 4-5 | 3072 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 4-6 | 3146 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 5-2 | 3564 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 5-3 | 3704 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 5-3 | 3705 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 8 | 5-4 | 3844 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 5-4 | 3845 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 8 | 5-5 | 3982 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 5-5 | 3983 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 8 | 5-6 | 4119 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 5-6 | 4120 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 8 | 5-7 | 4260 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 5-7 | 4261 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 8 | 6-1 | 4399 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 6-1 | 4400 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 8 | 6-2 | 4539 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 6-2 | 4540 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 2 tank(s) posicionados atrás. |
+| LOW | Jogador 8 | 6-3 | 4680 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 6-3 | 4681 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 8 | 6-4 | 4820 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 6-4 | 4821 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 8 | 6-5 | 4958 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 6-5 | 4959 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 8 | 6-6 | 5044 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 6-6 | 5045 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 8 | 6-7 | 5183 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 6-7 | 5184 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 8 | 7-1 | 5321 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 7-1 | 5322 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| LOW | Jogador 8 | 7-2 | 5460 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 carry(s) expostos na frontline. |
+| LOW | Jogador 8 | 7-2 | 5461 | TEXT_POSITION_WARNING | Warning de posicionamento emitido pelo Viewer: 1 tank(s) posicionados atrás. |
+| MEDIUM | Jogador 8 | 4-1 | 2566 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 4-1 | 2615 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 4-2 | 2715 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 4-3 | 2837 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 4-3 | 2849 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 4-3 | 2861 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 4-3 | 2899 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 4-3 | 2911 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 4-4 | 2974 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 4-4 | 2986 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 4-6 | 3159 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 4-6 | 3171 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 4-6 | 3183 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 4-6 | 3247 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 4-6 | 3259 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 4-7 | 3334 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 4-7 | 3361 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 4-7 | 3373 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 4-7 | 3385 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-1 | 3436 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-1 | 3448 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-1 | 3514 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-2 | 3616 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-2 | 3668 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-2 | 3680 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-3 | 3719 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-3 | 3731 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-3 | 3769 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-3 | 3820 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-4 | 3871 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-4 | 3908 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-4 | 3945 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-5 | 4035 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-5 | 4071 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-5 | 4083 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-6 | 4146 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-6 | 4172 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-6 | 4184 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-6 | 4196 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-6 | 4236 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-7 | 4288 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-7 | 4312 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-7 | 4324 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 5-7 | 4336 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 6-1 | 4414 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 6-1 | 4463 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 6-2 | 4554 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 6-2 | 4592 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 6-2 | 4643 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 6-3 | 4733 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 6-3 | 4783 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 6-4 | 4835 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 6-4 | 4884 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 6-4 | 4921 | FAST8_REROLL_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+| MEDIUM | Jogador 8 | 6-5 | 5021 | STABILIZE_PASS_WITH_GOLD_REVIEW | Possível divergência entre estratégia observada e ação; revisar HP, nível, valor marginal e alternativas que não estão totalmente disponíveis no log legado. |
+
+## Como interpretar
+
+- Achados CRITICAL/HIGH são sinais fortes para investigar, não prova isolada da causa.
+- Troca de comp direction pode ser legítima conforme loja, unidades, nível e economia.
+- A checagem de fusão conta apenas unidades compradas no tabuleiro+banco, nunca as da loja.
+- Os registros estruturados são a fonte primária para estado de decisão, máscaras, política e recompensas; registros textuais legados são usados apenas quando faltam dados estruturados.
+- A auditoria não pode decidir se uma compra era ótima sem comparar loja, ouro, limite do banco, máscaras e avaliação de composição no mesmo estado.
+- Uma fusão só pode ser confirmada com segurança se o log registrar cópias elegíveis antes/depois e o evento de merge; contar cópias é apenas um indício.
+- Alertas de posicionamento dependem de role/row nos dados; em tabuleiro achatado assume-se grade 4x7 com rows 0-1 na frontline, convenção a validar no Viewer.
+- Alertas de unidade core ausente exigem três snapshots consecutivos; podem indicar estratégia em transição, então revise o contexto antes de concluir que é bug.

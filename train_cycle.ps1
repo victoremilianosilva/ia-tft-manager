@@ -12,7 +12,7 @@ Set-Location $PSScriptRoot
 # ------------------------------------------------------------
 
 # Um ciclo por modificacao. O horizonte do scheduler cobre 4 ciclos.
-$env:TFT_TOTAL_UPDATES = "300"
+$env:TFT_TOTAL_UPDATES = "1500"
 $env:TFT_PPO_LR = "0.0002"
 $env:TFT_PPO_MIN_LR = "0.00005"
 $env:TFT_PPO_LR_SCHEDULE_UPDATES = "1200"
