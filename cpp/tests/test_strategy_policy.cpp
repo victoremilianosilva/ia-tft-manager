@@ -58,10 +58,15 @@ int main() {
 
     s.composition_requests_fast8 = false;
     s.composition_requests_three_star = true;
-    s.gold = 10; s.level = 6;
+    s.gold = 10; s.level = 6; s.stage = 3;
     d = select_economic_strategy(s);
     require(d.selected == EconomicStrategy::Slowroll,
-            "SLOWROLL must be composition-driven by a 3-star target");
+            "SLOWROLL must be composition-driven by a 3-star target inside its stage window");
+    s.stage = 2;
+    d = select_economic_strategy(s);
+    require(d.selected != EconomicStrategy::Slowroll,
+            "SLOWROLL must not activate before stage 3");
+    s.stage = 3;
     s.composition_requests_three_star = false;
     d = select_economic_strategy(s);
     require(d.selected != EconomicStrategy::Slowroll,
