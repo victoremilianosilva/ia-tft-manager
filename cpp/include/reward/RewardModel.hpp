@@ -735,13 +735,16 @@ inline double sale_quality(double fit_score, bool core_unit,
     // Strategic importance is continuous: a core label alone is not enough;
     // actual composition fit and a concrete upgrade path determine retention.
     const double core_pressure = core_unit ? (0.20 + 0.80 * fit) : 0.0;
-    const double context_factor = justified_by_context ? 0.5 : 1.0;
-    return 0.015 - 0.24 * fit * context_factor -
+    // A sale is not a positive action merely because it produces gold. Keep a
+    // small retention cost unless the bench is genuinely full; the gold
+    // potential already rewards economically meaningful threshold crossings.
+    const double context_factor = justified_by_context ? 0.65 : 1.0;
+    return -0.025 - 0.24 * fit * context_factor -
         (core_pressure > 0.0 && !compensated_by_board_gain
-            ? 0.34 * core_pressure * context_factor : 0.0) -
+            ? 0.37 * core_pressure * context_factor : 0.0) -
         (upgrade_pressure > 0.0 && !compensated_by_board_gain
-            ? 0.36 * upgrade_pressure * context_factor : 0.0) +
-        (frees_bench_space ? 0.06 : 0.0);
+            ? 0.39 * upgrade_pressure * context_factor : 0.0) +
+        (frees_bench_space ? 0.045 : 0.0);
 }
 
 // Potential-based movement shaping. Using the difference of bounded absolute
