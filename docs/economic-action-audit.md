@@ -86,7 +86,7 @@ reduces the reward for demonstrably wasteful low-value buy/sell loops.
 ## Core units and upgrade-path sale potential
 
 Selling is never blocked solely because a champion is marked core or because
-copies exist. The native reward uses a graduated retention cost:
+copies exist. The native reward uses a graduated retention cost and a small default sale cost. Selling low-fit clutter is positively shaped only when the bench is actually full; the separate gold-potential delta still recognizes real interest-threshold recovery. The candidate feature vector exposes exact same-star upgrade-path strength to the SELL head instead of a redundant trait-overlap count:
 
 - Composition importance is based on the unit's normalized fit with the active
   plan; a core label with weak actual fit receives less protection than a

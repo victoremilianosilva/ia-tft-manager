@@ -420,6 +420,12 @@ int main() {
     require_close(strategy_action_reward(1, 1, 55, 53, 90.0, 3,
                                          false, true, false, true),
                   -0.08, "a good non-SLOWROLL reroll does not become the preferred spend");
+    require_close(strategy_action_reward(2, 1, 59, 57, 60.0, 5,
+                                         false, true, false, true),
+                  -0.12, "late rich FAST8 rerolls are more costly than planned XP progress");
+    require_close(strategy_action_reward(2, 1, 40, 38, 80.0, 3,
+                                         false, true, false, true),
+                  -0.08, "early FAST8 reroll cost remains unchanged");
     require_close(strategy_action_reward(3, 1, 55, 53, 90.0, 3,
                                          false, true, false, true),
                   0.12, "slow-roll strategy receives a stronger improved-reroll signal");
@@ -462,14 +468,16 @@ int main() {
     if (!(sale_quality(0.0, false, true, true) < 0.0)) {
         throw std::runtime_error("selling a pair copy must remain unattractive even when it frees bench space");
     }
-    require_close(sale_quality(0.0, false, false, true), 0.075,
-                  "sale of low-fit non-core unit frees space");
-    require_close(sale_quality(1.0, true, true, false), -0.925,
-                  "sale protects core unit and upgrade copies");
-    require_close(sale_quality(1.0, true, true, false, true), -0.225,
+    require_close(sale_quality(0.0, false, false, false), -0.025,
+                  "selling non-core bench clutter has a small retention/action cost");
+    require_close(sale_quality(0.0, false, false, true), 0.020,
+                  "selling low-fit clutter is rewarded only when the bench is full");
+    require_close(sale_quality(1.0, true, true, false), -1.025,
+                  "sale strongly protects core units and upgrade copies");
+    require_close(sale_quality(1.0, true, true, false, true), -0.265,
                   "measurable board gain removes the core and pair sale penalties");
-    require_close(sale_quality(1.0, true, true, false, false, true), -0.455,
-                  "verified replacement or urgent sale halves, but does not erase, retention cost");
+    require_close(sale_quality(1.0, true, true, false, false, true), -0.675,
+                  "verified replacement or urgent sale softens, but retains, protection cost");
     if (!(sale_quality(0.25, true, false, false) >
           sale_quality(1.0, true, false, false))) {
         throw std::runtime_error("core retention pressure must scale with actual composition fit");
