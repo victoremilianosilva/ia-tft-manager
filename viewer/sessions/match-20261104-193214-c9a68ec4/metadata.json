@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "match_id": "3efcf15b-10dd-41c4-a222-9e6cbde34903",
+  "match_id": "c9a68ec4-4d13-416d-afca-f42eca388209",
   "checkpoint_path": "C:\\Users\\Victor\\Desktop\\dev\\Projects\\TFT\\tft_checkpoint.pt",
-  "checkpoint_sha256": "df66ae38173f80ca2c7668478b31c7768356c6930600e2b86dcf24b9f1c90f3c",
+  "checkpoint_sha256": "e827f464e234eb812733bb6b9e0aca7965612c6e53b5f869c707567a2f261f0c",
   "seed": 20261016,
   "deterministic": true,
   "engine": "cpp",
-  "created_at": "2026-11-04T17:40:42.660609+00:00",
+  "created_at": "2026-11-04T22:32:14.099304+00:00",
   "policy_class": "TFTPolicy",
   "observation_dim": 7237,
   "action_dims": [
