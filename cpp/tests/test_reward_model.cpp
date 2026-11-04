@@ -62,7 +62,9 @@ int main() {
     require_close(xp_progress_reward(54, 50, 6, 6, 0, 4, 80.0, 4, 2, true),
                   0.0, "a useful shop pair keeps priority over incremental XP");
     require_close(xp_progress_reward(54, 50, 6, 6, 0, 4, 80.0, 4, 3, false),
-                  0.0, "SLOWROLL does not receive incremental XP progress reward");
+                  0.0, "SLOWROLL at level 6 does not receive further incremental XP progress reward");
+    require_close(xp_progress_reward(40, 36, 5, 5, 0, 4, 30.0, 4, 3, false),
+                  0.035, "SLOWROLL may receive urgent XP progress for its controlled transition to level 6");
     require_close(xp_progress_reward(40, 36, 6, 6, 0, 4, 30.0, 4, 1, false),
                   0.035, "STABILIZE can value urgent XP progress below the interest reserve");
     require_close(xp_progress_reward(40, 36, 6, 6, 0, 4, 30.0, 4, 2, false),
@@ -73,8 +75,8 @@ int main() {
                   0.0, "safe XP progress below the interest cap is not encouraged");
     require_close(xp_strategy_reward_scale(1), 0.95,
                   "STABILIZE positive XP shaping is reduced by five percent");
-    require_close(xp_strategy_reward_scale(3), 0.90,
-                  "SLOWROLL positive XP shaping is reduced by ten percent");
+    require_close(xp_strategy_reward_scale(3), 0.45,
+                  "SLOWROLL XP shaping is limited to a controlled transition toward level 6");
     require_close(xp_strategy_reward_scale(2), 1.0,
                   "FAST8 XP shaping remains unchanged");
     require_close(strategy_action_reward(3, 2, 12, 8, 80.0, 2,
