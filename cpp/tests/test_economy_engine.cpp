@@ -1,5 +1,6 @@
 
 #include "lobby/EconomyEngine.hpp"
+#include "reward/RewardModel.hpp"
 
 // Keep assertions active even when CMake builds the tests with Release/NDEBUG.
 #ifdef NDEBUG
@@ -197,6 +198,74 @@ int main() {
     assert(started_at_ten.gold_before_interest == 10);
     assert(started_at_ten.interest_gold == 1);
     assert(economy.gold_before_interest == 10);
+
+    // 16. Regressão econômica: FAST8 no late game deve receber sinal
+    // positivo ao comprar XP com excedente, mantendo o piso de 50 gold.
+    // Reproduz o padrão observado no P2 (stage 5, level 5, 82 gold).
+    {
+        constexpr int kFast8 = 2;
+        const bool xp_available = tft::reward_model::phase_xp_opportunity_available(
+            82, 5, 65.0, 5, kFast8);
+        assert(xp_available);
+
+        const double xp_progress = tft::reward_model::phase_xp_progress_reward(
+            82, 78, 5, 5, 0, 4, 65.0, 5, kFast8, false);
+        const double pass_penalty = tft::reward_model::pass_opportunity_penalty(
+            82, 65.0, 5, false, xp_available);
+
+        // Antes da correção, o guard de 60+ gold zerava este sinal de XP;
+        // PASS recebia penalidade e BUY_XP recebia apenas o fallback pequeno.
+        assert(xp_progress >= 0.055);
+        assert(pass_penalty < -0.10);
+        assert(xp_progress - pass_penalty > 0.15);
+    }
+
+    // 17. Reproduz o padrão do P3: STABILIZE em late game também deve
+    // reconhecer progresso parcial de XP sem exigir level-up imediato.
+    {
+        constexpr int kStabilize = 1;
+        const bool xp_available = tft::reward_model::phase_xp_opportunity_available(
+            79, 6, 45.0, 5, kStabilize);
+        assert(xp_available);
+
+        const double xp_progress = tft::reward_model::phase_xp_progress_reward(
+            79, 75, 6, 6, 0, 4, 45.0, 5, kStabilize, false);
+        assert(xp_progress > 0.04);
+    }
+
+    // 18. Não forçar gasto: no alvo de FAST8, em SLOWROLL ou sem
+    // oportunidade de progressão, PASS continua sem penalidade de XP.
+    {
+        assert(!tft::reward_model::phase_xp_opportunity_available(
+            82, 8, 65.0, 5, 2));
+        assert(!tft::reward_model::phase_xp_opportunity_available(
+            82, 6, 65.0, 5, 3));
+        // Mesmo sem XP disponível e sem oferta útil na loja, 82 gold
+        // exige converter o excedente via XP ou reroll estratégico.
+        assert(tft::reward_model::pass_opportunity_penalty(
+            82, 65.0, 5, false, false) < 0.0);
+        // O limite é estritamente acima de 50: não penalizar PASS por
+        // excedente inexistente quando o jogador está exatamente no cap.
+        assert(tft::reward_model::pass_opportunity_penalty(
+            50, 65.0, 5, false, false) == 0.0);
+        assert(tft::reward_model::pass_opportunity_penalty(
+            45, 65.0, 5, false, false) == 0.0);
+        // Reroll continua sendo a alternativa estratégica de SLOWROLL;
+        // outras estratégias devem priorizar XP, não rerollar sem plano.
+        assert(tft::reward_model::tactical_reroll_quality_scale(
+            3, 65.0, 82, 5) == 1.0);
+        assert(tft::reward_model::tactical_reroll_quality_scale(
+            2, 65.0, 82, 5) == 0.0);
+
+        // Uma compra útil na loja reduz, mas não elimina, o sinal de XP:
+        // a aquisição continua prioritária.
+        const double no_shop = tft::reward_model::phase_xp_progress_reward(
+            82, 78, 5, 5, 0, 4, 65.0, 5, 2, false);
+        const double useful_shop = tft::reward_model::phase_xp_progress_reward(
+            82, 78, 5, 5, 0, 4, 65.0, 5, 2, true);
+        assert(useful_shop > 0.0);
+        assert(useful_shop < no_shop);
+    }
 
     std::cout << "EconomyEngine: todos os testes passaram.\n";
     return 0;

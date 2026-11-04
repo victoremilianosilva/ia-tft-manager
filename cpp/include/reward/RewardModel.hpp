@@ -427,11 +427,11 @@ inline double phase_xp_progress_reward(
         new_xp <= old_xp)
         return 0.0;
 
-    // The surplus fallback already covers safe XP bought from 60+ gold while
-    // retaining 50+. Do not pay a second phase bonus for the same action.
-    if (stage >= 4 && gold_before >= 60 && gold_after >= 50 &&
-        !useful_purchase_available)
-        return 0.0;
+    // Keep phase-aware progress active with 60+ gold when the player
+    // retains the 50-gold interest floor. The generic surplus fallback is
+    // intentionally suppressed by the caller whenever this stronger,
+    // target-aware signal applies; otherwise FAST8/STABILIZE receives only
+    // the tiny fallback and can prefer PASS despite a valid level-up plan.
 
     const int target_level = economy_phase_target_level(stage, active_strategy);
     if (old_level >= target_level)
@@ -612,12 +612,17 @@ inline double pass_opportunity_penalty(
     bool useful_purchase_available,
     bool useful_xp_available = false
 ) noexcept {
-    if (gold < 15 || (!useful_purchase_available && !useful_xp_available))
+    if (gold < 15)
+        return 0.0;
+    // Above the 50-gold interest cap, an empty/weak shop is not a reason to
+    // PASS: the policy must choose its strategy-appropriate fallback (XP or
+    // reroll). At/below 50, keep the previous opportunity-based behavior.
+    if (gold <= 50 && !useful_purchase_available && !useful_xp_available)
         return 0.0;
 
-    // PASS is penalized only when a concrete spending path exists. A large
-    // bank by itself is not proof that spending is correct: the shop may be
-    // poor and the player may already be at the phase target.
+    // Rich PASS is always discouraged. A useful shop offer increases the
+    // penalty; otherwise the base surplus pressure teaches the policy to
+    // convert the excess through XP or a strategic reroll.
     const double surplus = std::clamp(
         (static_cast<double>(gold) - 50.0) / 100.0, 0.0, 2.0);
     const double stage_scale = stage <= 2 ? 0.25

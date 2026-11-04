@@ -4348,9 +4348,21 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     old_gold, economy.gold, this->info.hp, lobby.stage,
                     old_level, economy.level, unlocked_board_power,
                     xp_strategy_id);
-                action_reward += reward_model::surplus_xp_spending_reward(
-                    old_gold, economy.gold, static_cast<int>(lobby.stage),
-                    xp_strategy_id, useful_shop_purchase_available);
+                const double phase_xp_reward =
+                    reward_model::phase_xp_progress_reward(
+                        old_gold, economy.gold, old_level, economy.level,
+                        old_xp, economy.xp, this->info.hp,
+                        static_cast<int>(lobby.stage), xp_strategy_id,
+                        useful_shop_purchase_available);
+                action_reward += phase_xp_reward;
+                // Do not stack the generic surplus fallback on top of the
+                // stronger phase/target-aware signal. Retain it for cases
+                // where no phase progress signal applies.
+                if (phase_xp_reward <= 0.0) {
+                    action_reward += reward_model::surplus_xp_spending_reward(
+                        old_gold, economy.gold, static_cast<int>(lobby.stage),
+                        xp_strategy_id, useful_shop_purchase_available);
+                }
                 action_reward += reward_model::xp_progress_reward(
                     old_gold, economy.gold, old_level, economy.level,
                     old_xp, economy.xp, this->info.hp, static_cast<int>(lobby.stage),
