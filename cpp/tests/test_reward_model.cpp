@@ -420,6 +420,12 @@ int main() {
     require_close(strategy_action_reward(1, 1, 55, 53, 90.0, 3,
                                          false, true, false, true),
                   -0.08, "a good non-SLOWROLL reroll does not become the preferred spend");
+    require_close(strategy_action_reward(2, 1, 59, 57, 60.0, 5,
+                                         false, true, false, true),
+                  -0.12, "late rich FAST8 rerolls are more costly than planned XP progress");
+    require_close(strategy_action_reward(2, 1, 40, 38, 80.0, 3,
+                                         false, true, false, true),
+                  -0.08, "early FAST8 reroll cost remains unchanged");
     require_close(strategy_action_reward(3, 1, 55, 53, 90.0, 3,
                                          false, true, false, true),
                   0.12, "slow-roll strategy receives a stronger improved-reroll signal");
