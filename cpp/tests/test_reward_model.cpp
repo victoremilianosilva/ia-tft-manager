@@ -305,10 +305,12 @@ int main() {
     if (!(pass_opportunity_penalty(50, 100.0, 2, true) < 0.0)) {
         throw std::runtime_error("passing with a useful shop offer should be discouraged");
     }
-    // A high balance alone is not an actionable opportunity: do not punish
-    // PASS when the shop is poor and the player has reached the phase target.
-    require_close(pass_opportunity_penalty(200, 100.0, 6, false), 0.0,
-                  "no useful purchase or XP opportunity means PASS is neutral");
+    // Above the 50-gold interest cap, a poor shop and unavailable XP do
+    // not make PASS neutral: the policy must still choose a fallback action.
+    if (!(pass_opportunity_penalty(200, 100.0, 6, false) < 0.0)) {
+        throw std::runtime_error(
+            "PASS above 50 gold must be penalized even without purchase or XP opportunity");
+    }
     const double pass_50 = pass_opportunity_penalty(50, 100.0, 5, false, true);
     const double pass_75 = pass_opportunity_penalty(75, 100.0, 5, false, true);
     const double pass_125 = pass_opportunity_penalty(125, 100.0, 5, false, true);
