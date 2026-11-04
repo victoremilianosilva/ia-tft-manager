@@ -1597,10 +1597,14 @@ struct TFTEngine::Impl {
             // query this table for every bench/shop slot; repeated board+bench
             // scans were doing the same work for each candidate.
             std::unordered_map<std::int32_t, int> owned_copies;
+            std::unordered_map<std::int32_t, std::array<int, 3>> owned_star_counts;
             owned_copies.reserve(kBoardSlots + kBenchSlots);
-            const auto add_owned_copies = [&owned_copies](const UnitInstance& unit) {
+            owned_star_counts.reserve(kBoardSlots + kBenchSlots);
+            const auto add_owned_copies = [&owned_copies, &owned_star_counts](const UnitInstance& unit) {
                 const int copies = unit.star == 1 ? 1 : (unit.star == 2 ? 3 : 9);
                 owned_copies[unit.champion_internal_id] += copies;
+                if (unit.star >= 1 && unit.star <= 3)
+                    ++owned_star_counts[unit.champion_internal_id][static_cast<std::size_t>(unit.star - 1)];
             };
             for (const auto& unit : player_envs[i].board)
                 if (unit) add_owned_copies(*unit);
@@ -1611,6 +1615,25 @@ struct TFTEngine::Impl {
                 const auto it = owned_copies.find(candidate.champion_internal_id);
                 return it == owned_copies.end() ? 0 : it->second;
             };
+            // Distinguish a real same-star pair from a lone copy plus a
+            // different-star upgrade. Exclude the candidate itself for SELL;
+            // for shop offers, estimate the path created by buying the copy.
+            const auto candidate_upgrade_signal =
+                [&owned_star_counts](const UnitInstance& candidate, bool sale_candidate) {
+                    const auto it = owned_star_counts.find(candidate.champion_internal_id);
+                    if (it == owned_star_counts.end() || candidate.star < 1 || candidate.star > 3)
+                        return 0.0;
+                    const auto& counts = it->second;
+                    const int same_star = std::max(
+                        0, counts[static_cast<std::size_t>(candidate.star - 1)] -
+                            (sale_candidate ? 1 : 0));
+                    const int one_star = std::max(
+                        0, counts[0] - (sale_candidate && candidate.star == 1 ? 1 : 0));
+                    if (sale_candidate)
+                        return reward_model::upgrade_path_strength(
+                            candidate.star, same_star, one_star);
+                    return reward_model::upgrade_path_strength(1, counts[0], counts[0]);
+                };
             const auto append_candidate_features = [&](const UnitInstance* unit, bool sale_candidate) {
                 if (!unit) {
                     for (std::size_t n = 0; n < kCandidateFeatureDim; ++n)
@@ -1629,31 +1652,6 @@ struct TFTEngine::Impl {
                     std::find(strategy.planned_unit_ids.begin(),
                     strategy.planned_unit_ids.end(), def->internal_id) != strategy.planned_unit_ids.end();
                 const int copies = count_same_champion(*unit);
-                int trait_overlap = 0;
-                for (const auto& trait : def->traits) {
-                    bool shared = false;
-                    for (const auto& existing : player_envs[i].board) {
-                        if (!existing || &*existing == unit) continue;
-                        const auto* existing_def = catalog->find_by_id(existing->champion_internal_id);
-                        if (existing_def && std::find(existing_def->traits.begin(),
-                            existing_def->traits.end(), trait) != existing_def->traits.end()) {
-                            shared = true;
-                            break;
-                        }
-                    }
-                    if (!shared) {
-                        for (const auto& existing : player_envs[i].bench) {
-                            if (!existing || &*existing == unit) continue;
-                            const auto* existing_def = catalog->find_by_id(existing->champion_internal_id);
-                            if (existing_def && std::find(existing_def->traits.begin(),
-                                existing_def->traits.end(), trait) != existing_def->traits.end()) {
-                                shared = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (shared) ++trait_overlap;
-                }
                 out[offset++] = static_cast<float>(std::clamp(fit / 22.5, 0.0, 1.0));
                 out[offset++] = static_cast<float>(def->cost) / 5.0f;
                 out[offset++] = static_cast<float>(unit->star) / 3.0f;
@@ -1661,7 +1659,11 @@ struct TFTEngine::Impl {
                 out[offset++] = core ? 1.0f : 0.0f;
                 // Number of owned copies (including star-equivalent copies), normalized.
                 out[offset++] = static_cast<float>(std::min(copies, 9)) / 9.0f;
-                out[offset++] = static_cast<float>(std::min(trait_overlap, 5)) / 5.0f;
+                // Exact same-star upgrade risk/potential replaces trait overlap:
+                // composition fit already includes trait compatibility, while this
+                // feature tells the SELL head when a copy is a real pair.
+                out[offset++] = static_cast<float>(std::clamp(
+                    candidate_upgrade_signal(*unit, sale_candidate), 0.0, 1.0));
                 if (sale_candidate) {
                     out[offset++] = static_cast<float>(
                         EconomyEngine::get_sell_value(def->cost, unit->star)) / 50.0f;
@@ -4367,11 +4369,6 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     old_gold, economy.gold, old_level, economy.level,
                     old_xp, economy.xp, this->info.hp, static_cast<int>(lobby.stage),
                     xp_strategy_id, useful_shop_purchase_available);
-                action_reward += reward_model::phase_xp_progress_reward(
-                    old_gold, economy.gold, old_level, economy.level,
-                    old_xp, economy.xp, this->info.hp,
-                    static_cast<int>(lobby.stage), xp_strategy_id,
-                    useful_shop_purchase_available);
             }
             // RewardManager tracks the last rewarded level, initialized to 1,
             // not merely the level at the start of this action.
