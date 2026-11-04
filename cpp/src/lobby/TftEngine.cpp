@@ -939,6 +939,13 @@ struct TFTEngine::Impl {
         current = PlayerActionMasks{};
 
         current.type_mask = batch.type_mask;
+        // FAST8 is an XP-to-level-8 plan. REROLL is unavailable until level 8;
+        // enforce this in the native mask, not only through reward shaping.
+        const auto& active_strategy = player_envs[player_index].strategy;
+        if (player_envs[player_index].economy.level < 8 &&
+            !active_strategy.empty() && active_strategy.back().strategy == 2) {
+            current.type_mask[1] = 0;
+        }
         current.shop_mask = batch.shop_mask;
         current.bench_source_mask =
             batch.bench_source_mask;
@@ -2193,14 +2200,43 @@ struct TFTEngine::Impl {
         for (const auto& unit : player_envs[i].board) if (unit) count_owned_copy(*unit);
         for (const auto& unit : player_envs[i].bench) if (unit) count_owned_copy(*unit);
 
+        // SLOWROLL is enabled only while at least one concrete planned/core
+        // low-cost target remains realistically obtainable. Count copies held
+        // by opponents and check remaining pool supply so a completed, exhausted,
+        // or heavily contested target cannot keep the strategy active forever.
         bool composition_requests_three_star = false;
-        for (const auto& [unit_id, copies] : owned_copies) {
-            if (copies < 2 || copies >= 9 || !composition_has_unit(unit_id)) continue;
-            const auto* definition = catalog->find_by_id(unit_id);
-            if (definition && definition->cost <= 3 &&
-                economy.level >= 5 && economy.level <= 6) {
-                composition_requests_three_star = true;
-                break;
+        int best_three_star_copies = 0;
+        const int current_stage = static_cast<int>(stage_for_round(round + 1));
+        if (current_stage >= 3 && current_stage <= 4 &&
+            economy.level >= 5 && economy.level <= 6) {
+            for (const auto& [unit_id, copies] : owned_copies) {
+                if (copies < 2 || copies >= 9 || !composition_has_unit(unit_id)) continue;
+                const auto* definition = catalog->find_by_id(unit_id);
+                if (!definition || definition->cost > 3) continue;
+
+                int contested_copies = 0;
+                for (std::size_t opponent = 0; opponent < kPlayersPerLobby; ++opponent) {
+                    if (opponent == i) continue;
+                    const auto count_opponent_copy = [&](const UnitInstance& unit) {
+                        if (unit.champion_internal_id == unit_id)
+                            contested_copies += star_copies(unit.star);
+                    };
+                    for (const auto& unit : player_envs[opponent].board)
+                        if (unit) count_opponent_copy(*unit);
+                    for (const auto& unit : player_envs[opponent].bench)
+                        if (unit) count_opponent_copy(*unit);
+                }
+
+                const int pool_available = pool ? pool->available(unit_id) : 0;
+                const int copies_still_needed = 9 - copies;
+                const int minimum_supply_check = std::min(copies_still_needed, 3);
+                if (pool_available < minimum_supply_check || contested_copies >= 6)
+                    continue;
+
+                if (copies > best_three_star_copies) {
+                    best_three_star_copies = copies;
+                    composition_requests_three_star = true;
+                }
             }
         }
         const bool composition_requests_fast8 =
@@ -3667,7 +3703,11 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 }
                 return best;
             };
-            if (economy.gold >= EconomyEngine::REROLL_COST) {
+            const bool fast8_before_level_eight =
+                !this->strategy.empty() && this->strategy.back().strategy == 2 &&
+                economy.level < 8;
+            if (economy.gold >= EconomyEngine::REROLL_COST &&
+                !fast8_before_level_eight) {
                 // Compare both shops with the same post-reroll cash balance.
                 // Otherwise the new shop is unfairly downgraded just because
                 // the reroll itself removed two gold before its score is computed.
