@@ -368,6 +368,10 @@ inline double xp_progress_reward(
         case 4: // ALL_IN: only when life is critical and XP is a viable survival action.
             if (hp <= 25.0) value = 0.035;
             break;
+        case 3: // SLOWROLL: only an urgent, reserve-safe transition toward level 6.
+            if (stage >= 4 && old_level < 6)
+                value = 0.035;
+            break;
         case 5: // WINSTREAK: use only safe surplus.
             // Safe surplus XP is already covered by the shared fallback.
             break;
@@ -460,6 +464,7 @@ inline double phase_xp_progress_reward(
     double strategy_scale = 1.0;
     if (active_strategy == 2) strategy_scale = 1.20; // FAST8
     else if (active_strategy == 1) strategy_scale = 0.90; // STABILIZE: board first
+    else if (active_strategy == 3) strategy_scale = 0.45; // SLOWROLL: controlled transition to level 6 only
     else if (active_strategy == 5) strategy_scale = 0.90; // WINSTREAK: protect strength
     else if (active_strategy == 6) strategy_scale = 0.80; // LOSS_STREAK
 
