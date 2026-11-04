@@ -418,7 +418,7 @@ int main() {
                   -0.08, "non-SLOWROLL reroll is penalized even when its shop improved");
     require_close(strategy_action_reward(1, 1, 55, 53, 90.0, 3,
                                          false, false, false, true),
-                  -0.08, "all non-SLOWROLL rerolls receive a bounded penalty");
+                  -0.14, "unimproved STABILIZE rerolls receive the stronger bounded penalty");
     require_close(strategy_action_reward(1, 1, 55, 53, 90.0, 3,
                                          false, true, false, true),
                   -0.08, "a good non-SLOWROLL reroll does not become the preferred spend");
