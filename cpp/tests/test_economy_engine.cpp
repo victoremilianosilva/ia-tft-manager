@@ -240,8 +240,22 @@ int main() {
             82, 8, 65.0, 5, 2));
         assert(!tft::reward_model::phase_xp_opportunity_available(
             82, 6, 65.0, 5, 3));
+        // Mesmo sem XP disponível e sem oferta útil na loja, 82 gold
+        // exige converter o excedente via XP ou reroll estratégico.
         assert(tft::reward_model::pass_opportunity_penalty(
-            82, 65.0, 5, false, false) == 0.0);
+            82, 65.0, 5, false, false) < 0.0);
+        // O limite é estritamente acima de 50: não penalizar PASS por
+        // excedente inexistente quando o jogador está exatamente no cap.
+        assert(tft::reward_model::pass_opportunity_penalty(
+            50, 65.0, 5, false, false) == 0.0);
+        assert(tft::reward_model::pass_opportunity_penalty(
+            45, 65.0, 5, false, false) == 0.0);
+        // Reroll continua sendo a alternativa estratégica de SLOWROLL;
+        // outras estratégias devem priorizar XP, não rerollar sem plano.
+        assert(tft::reward_model::tactical_reroll_quality_scale(
+            3, 65.0, 82, 5) == 1.0);
+        assert(tft::reward_model::tactical_reroll_quality_scale(
+            2, 65.0, 82, 5) == 0.0);
 
         // Uma compra útil na loja reduz, mas não elimina, o sinal de XP:
         // a aquisição continua prioritária.
