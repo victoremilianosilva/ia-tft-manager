@@ -93,4 +93,5 @@ Comparar primeiro a engine com o mesmo checkpoint para isolar o efeito do códig
 - O sinal phase-aware passa a ser usado no late game quando há progresso rumo ao nível-alvo.
 - O bônus genérico de excedente só é aplicado quando o sinal phase-aware não se aplica, evitando empilhar os dois incentivos.
 - SLOWROLL continua sem incentivo genérico de XP; FAST8/STABILIZE só recebem sinal quando há progresso parcial válido e dentro da reserva da fase.
+- Correção complementar: PASS com mais de 50 gold é penalizado mesmo sem compra útil na loja e sem XP disponível; a política deve converter o excedente em XP ou reroll conforme a estratégia. Até 50 gold, permanece o comportamento baseado em oportunidade concreta.
 - Testes unitários adicionados para os cenários sintéticos P2/P3 e para garantir PASS legítimo sem penalidade.
