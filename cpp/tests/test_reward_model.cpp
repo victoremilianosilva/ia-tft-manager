@@ -338,7 +338,8 @@ int main() {
           stage4_xp_without_shop > stage4_xp_with_shop))
         throw std::runtime_error("stage 4 should give XP a clearer fallback signal only when no useful shop purchase exists");
     require_close(phase_xp_progress_reward(103, 99, 7, 7, 0, 4, 80.0, 5, 0, false),
-                  0.0, "safe surplus XP is rewarded only by the shared surplus fallback");
+                  0.034666666666666665,
+                  "stage 5 ECON receives phase-aware XP progress toward its level target");
     if (!(phase_xp_progress_reward(103, 99, 7, 7, 0, 4, 80.0, 5, 0, true) > 0.014))
         throw std::runtime_error("phase XP keeps a reduced signal when a useful shop offer exists");
     if (!(phase_xp_progress_reward(103, 99, 6, 6, 0, 4, 80.0, 4, 2, true) > 0.015))
