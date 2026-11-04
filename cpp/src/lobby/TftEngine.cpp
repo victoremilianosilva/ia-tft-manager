@@ -2206,8 +2206,8 @@ struct TFTEngine::Impl {
         // or heavily contested target cannot keep the strategy active forever.
         bool composition_requests_three_star = false;
         int best_three_star_copies = 0;
-        const int current_stage = static_cast<int>(stage_for_round(round + 1));
-        if (current_stage >= 3 && current_stage <= 4 &&
+        const int slowroll_stage_window = static_cast<int>(stage_for_round(round + 1));
+        if (slowroll_stage_window >= 3 && slowroll_stage_window <= 4 &&
             economy.level >= 5 && economy.level <= 6) {
             for (const auto& [unit_id, copies] : owned_copies) {
                 if (copies < 2 || copies >= 9 || !composition_has_unit(unit_id)) continue;
