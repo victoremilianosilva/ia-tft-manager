@@ -84,8 +84,9 @@ inline EconomicStrategyDecision select_economic_strategy(
 
     // Slowroll is a comp-driven plan, never a generic fallback just because
     // the player has gold and is at a low level.
-    if (s.composition_requests_three_star && s.level >= 5 &&
-        s.level <= 6 && s.hp > 38.0) {
+    if (s.composition_requests_three_star && !s.composition_requests_fast8 &&
+        s.level >= 5 && s.level <= 6 && s.stage >= 3 &&
+        s.stage <= 4 && s.hp > 38.0) {
         out.scores[3] = 76.0 + std::min(s.gold, 50) * 0.04;
         out.reason = "SLOWROLL: composição tem alvo de 3 estrelas";
     }

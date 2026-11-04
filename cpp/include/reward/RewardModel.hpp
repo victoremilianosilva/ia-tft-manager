@@ -131,7 +131,10 @@ inline double strategy_action_reward(
             }
             break;
         case 1: // STABILIZE: favor playable-board upgrades over routine leveling.
-            if (action_type == 1) reward -= 0.08;
+            // A reroll is only defensible here when it measurably improves the
+            // shop or HP is critical; otherwise it competes with board buys/XP.
+            if (action_type == 1)
+                reward -= (hp <= 25.0 || reroll_improved) ? 0.08 : 0.14;
             if (action_type == 0 && useful_purchase) reward += 0.07;
             if (action_type == 2 && leveled)
                 reward += 0.95 * (hp <= 30.0 ? 0.07 : (old_gold >= 50 ? 0.05 : 0.015));
@@ -272,7 +275,7 @@ inline double buy_xp_timing_reward(
 // never scaled: only the positive incentive is adjusted.
 inline double xp_strategy_reward_scale(int active_strategy) noexcept {
     if (active_strategy == 1) return 0.95; // STABILIZE: -5%
-    if (active_strategy == 3) return 0.90; // SLOWROLL: -10%
+    if (active_strategy == 3) return 0.45; // SLOWROLL: XP is a limited transition, not its primary spend.
     return 1.0;
 }
 
@@ -339,7 +342,10 @@ inline double xp_progress_reward(
     bool useful_purchase_available
 ) noexcept {
     if (gold_before < 4 || gold_after >= gold_before || new_level != old_level
-        || new_xp <= old_xp || active_strategy == 3)
+        || new_xp <= old_xp)
+        return 0.0;
+    if (active_strategy == 3 &&
+        (stage < 4 || old_level >= 6 || hp > 35.0))
         return 0.0;
     // The shared surplus fallback already rewards safe XP above 50 gold.
     // This extra signal is only for urgent progress below that reserve, and
@@ -364,6 +370,10 @@ inline double xp_progress_reward(
             break;
         case 4: // ALL_IN: only when life is critical and XP is a viable survival action.
             if (hp <= 25.0) value = 0.035;
+            break;
+        case 3: // SLOWROLL: only an urgent, reserve-safe transition toward level 6.
+            if (stage >= 4 && old_level < 6)
+                value = 0.035;
             break;
         case 5: // WINSTREAK: use only safe surplus.
             // Safe surplus XP is already covered by the shared fallback.
@@ -425,9 +435,13 @@ inline double phase_xp_progress_reward(
     // This signal is only for partial XP progress. Actual level transitions
     // already receive milestone, level-up and board-capacity rewards elsewhere.
     // Urgent low-HP partial progress remains covered by xp_progress_reward().
-    if (active_strategy == 3 || stage < 3 || hp <= 35.0 ||
+    if (stage < 3 || hp <= 35.0 ||
         gold_after >= gold_before || new_level != old_level ||
         new_xp <= old_xp)
+        return 0.0;
+    // SLOWROLL may make a controlled transition from level 5 to 6, but only
+    // from stage 4 onward; its reserve and target-level checks still apply.
+    if (active_strategy == 3 && (stage < 4 || old_level >= 6))
         return 0.0;
 
     // Keep phase-aware progress active with 60+ gold when the player
@@ -453,6 +467,7 @@ inline double phase_xp_progress_reward(
     double strategy_scale = 1.0;
     if (active_strategy == 2) strategy_scale = 1.20; // FAST8
     else if (active_strategy == 1) strategy_scale = 0.90; // STABILIZE: board first
+    else if (active_strategy == 3) strategy_scale = 0.45; // SLOWROLL: controlled transition to level 6 only
     else if (active_strategy == 5) strategy_scale = 0.90; // WINSTREAK: protect strength
     else if (active_strategy == 6) strategy_scale = 0.80; // LOSS_STREAK
 
@@ -473,7 +488,10 @@ inline double phase_xp_progress_reward(
 inline bool phase_xp_opportunity_available(
     int gold, int level, double hp, int stage, int active_strategy
 ) noexcept {
-    if (active_strategy == 3 || stage < 3 || gold < 4)
+    if (stage < 3 || gold < 4)
+        return false;
+    // Do not invite SLOWROLL XP unless it is a controlled transition to level 6.
+    if (active_strategy == 3 && (stage < 4 || level >= 6))
         return false;
     const int target_level = economy_phase_target_level(stage, active_strategy);
     if (level >= target_level)
