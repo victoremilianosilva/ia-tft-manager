@@ -2216,7 +2216,7 @@ struct TFTEngine::Impl {
 
                 int contested_copies = 0;
                 for (std::size_t opponent = 0; opponent < kPlayersPerLobby; ++opponent) {
-                    if (opponent == i) continue;
+                    if (opponent == i || !player_envs[opponent].info.alive) continue;
                     const auto count_opponent_copy = [&](const UnitInstance& unit) {
                         if (unit.champion_internal_id == unit_id)
                             contested_copies += star_copies(unit.star);
