@@ -142,7 +142,10 @@ inline double strategy_action_reward(
             if (action_type == 2 && leveled)
                 reward += hp <= 30.0 ? 0.11 : (old_gold >= 50 ? 0.08 : 0.03);
             // FAST8 advances through XP and useful purchases, not reroll.
-            if (action_type == 1) reward -= 0.08;
+            // Once the level-8 plan is late and liquidity is already above the
+            // interest cap, a reroll competes directly with guaranteed XP progress.
+            if (action_type == 1)
+                reward -= (stage >= 4 && old_gold >= 50) ? 0.12 : 0.08;
             break;
         case 3: // SLOWROLL: reward improved rolls without blocking useful XP progress.
             if (action_type == 1) reward += reroll_improved ? 0.12 : -0.025;
