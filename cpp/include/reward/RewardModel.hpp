@@ -400,6 +400,17 @@ inline int economy_phase_target_level(int stage, int active_strategy = -1) noexc
     }
 }
 
+// When a healthy player has surplus liquidity and is behind the phase target,
+// leveling is the strategic spend. Keep REROLL available for SLOWROLL and
+// emergency stabilization, but prevent it from competing with BUY_XP.
+inline bool should_defer_reroll_for_leveling(
+    int gold, int level, double hp, int stage, int active_strategy
+) noexcept {
+    if (active_strategy == 3 || hp <= 30.0 || stage < 3 || gold < 50)
+        return false;
+    return level < economy_phase_target_level(stage, active_strategy);
+}
+
 // The interest cap is a reference, not a hard reserve. As the match advances,
 // the amount kept liquid falls so the policy cannot finish rich and under-levelled.
 inline int economy_phase_minimum_reserve(
