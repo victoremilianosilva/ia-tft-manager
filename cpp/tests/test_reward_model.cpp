@@ -365,6 +365,14 @@ int main() {
     require_close(economy_phase_target_level(5), 9.0, "stage 5 target level");
     require_close(economy_phase_target_level(4, 2), 8.0, "FAST8 target level");
     require_close(economy_phase_target_level(4, 3), 6.0, "SLOWROLL target level");
+    if (!should_defer_reroll_for_leveling(80, 6, 80.0, 4, 2) ||
+        !should_defer_reroll_for_leveling(120, 7, 75.0, 5, 0) ||
+        should_defer_reroll_for_leveling(80, 6, 80.0, 4, 3) ||
+        should_defer_reroll_for_leveling(80, 6, 25.0, 4, 1) ||
+        should_defer_reroll_for_leveling(49, 6, 80.0, 4, 1) ||
+        should_defer_reroll_for_leveling(80, 8, 80.0, 4, 2)) {
+        throw std::runtime_error("surplus gold should defer rerolls to phase-relevant XP, except SLOWROLL/emergency states");
+    }
     require_close(economy_phase_minimum_reserve(3, 80.0, 0), 20.0,
                   "stage 3 releases liquidity gradually");
     require_close(economy_phase_minimum_reserve(4, 80.0, 0), 10.0,
