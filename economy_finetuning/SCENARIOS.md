@@ -14,6 +14,7 @@ ouro, HP, nível, estágio, lobby ou composição.
 | `low_hp_fast8_high_gold` | Estágio 3–7, FAST8, HP até 40, ouro 50+ | FAST8 | Monitor-only | Verificar trade-off entre XP e estabilização |
 | `slowroll_gold_reserve` | Estágio 2–5, nível 5–7, ouro 50+, HP 20+ | SLOWROLL | Treinável/proteção | Penalizar BUY_XP para preservar a lógica de slowroll |
 | `all_in_gold_hoarding` | Estágio 3–7, ouro 50+ | ALL_IN | Monitor-only | Investigar reservas incompatíveis com ALL_IN sem criar reward especulativo |
+| `player8_all_in_gold_hoarding` | Estágio 3–7, jogador 8 (player_id 7), ouro 50+ | ALL_IN | Monitor-only | Isolar o caso específico do oitavo jogador observado na auditoria |
 | `gold_above_50_any_strategy` | Qualquer estágio/nível/estratégia, ouro acima de 50 | Todas | Monitor-only | Medir BUY, BUY_XP, ROLL e PASS por contexto |
 | `useful_shop_opportunity` | Ouro acima de 50 e candidatos de loja | Todas | Monitor-only | Aguardar contrato semântico confiável para identificar compra realmente útil |
 
