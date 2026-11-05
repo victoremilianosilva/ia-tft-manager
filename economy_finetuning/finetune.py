@@ -269,6 +269,9 @@ def run(args):
             "engine_source_sha256": ROOT / "cpp" / "src" / "lobby" / "TftEngine.cpp",
             "action_mask_source_sha256": ROOT / "cpp" / "src" / "decision" / "ActionMaskEngine.cpp",
             "reward_model_source_sha256": ROOT / "cpp" / "include" / "reward" / "RewardModel.hpp",
+            "board_evaluation_source_sha256": ROOT / "cpp" / "include" / "strategy" / "BoardEvaluation.hpp",
+            "unit_combat_classifier_source_sha256": ROOT / "cpp" / "include" / "strategy" / "UnitCombatClassifier.hpp",
+            "scenario_generator_source_sha256": ROOT / "economy_finetuning" / "scenario_generator.py",
             "chain_manager_source_sha256": ROOT / "economy_finetuning" / "chain_manager.py",
         }
         metadata = {
