@@ -350,8 +350,9 @@ def run(args):
         # Always save a distinct fine-tuned artifact; never overwrite the source.
         torch.save({
             "policy": policy.state_dict(),
-            "optimizer": optimizer.state_dict(),
-            "update": args.updates,
+            # Do not serialize the partial optimizer: the main Trainer has a
+            # different full-parameter optimizer and must initialize it fresh.
+            "update": 0,
             "fine_tuning": metadata,
             "source_checkpoint_sha256": metadata["checkpoint_sha256"],
         }, output)
