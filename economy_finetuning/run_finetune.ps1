@@ -7,7 +7,11 @@ param(
         "s4_fast8_lvl7_gold60",
         "late_game_high_gold_underleveled",
         "slowroll_gold_reserve",
-        "critical_hp_high_gold"
+        "critical_hp_high_gold",
+        "core_sale_retention",
+        "bench_deployment_quality",
+        "carry_protection_positioning",
+        "movement_no_progress"
     )]
     [string]$Scenario,
 
@@ -40,6 +44,7 @@ if (-not (Test-Path -LiteralPath $checkpointPath -PathType Leaf)) {
     throw "Checkpoint original não encontrado: $checkpointPath"
 }
 
+
 $venvPython = Join-Path $repoRoot ".venv\Scripts\python.exe"
 if (Test-Path -LiteralPath $venvPython -PathType Leaf) {
     $python = $venvPython
@@ -49,6 +54,16 @@ if (Test-Path -LiteralPath $venvPython -PathType Leaf) {
         throw "Python não encontrado. Crie/ative o ambiente virtual do projeto."
     }
     $python = $pythonCommand.Source
+}
+
+# A cadeia valida a aprovação anterior e devolve o checkpoint correto de origem.
+$approvedInput = & $python -m economy_finetuning.chain_manager check --scenario $Scenario --checkpoint $checkpointPath
+if ($LASTEXITCODE -ne 0) {
+    throw "Cadeia de fine-tuning bloqueou o cenário $Scenario."
+}
+$checkpointPath = ($approvedInput | Select-Object -Last 1).ToString().Trim()
+if (-not (Test-Path -LiteralPath $checkpointPath -PathType Leaf)) {
+    throw "Checkpoint de origem validado pela cadeia não existe: $checkpointPath"
 }
 
 if ($Updates -le 0 -or $RolloutSteps -le 0 -or $BatchSize -le 0 -or $PpoEpochs -le 0) {
