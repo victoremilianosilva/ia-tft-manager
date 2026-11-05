@@ -427,7 +427,7 @@ int main() {
                   -0.15, "late rich FAST8 rerolls receive the strongest penalty");
     require_close(strategy_action_reward(2, 1, 40, 38, 80.0, 3,
                                          false, true, false, true),
-                  -0.09, "early FAST8 rerolls remain legal but discouraged");
+                  -0.12, "stage-three FAST8 rerolls remain legal but discouraged");
     require_close(strategy_action_reward(4, 1, 60, 58, 80.0, 4,
                                          false, false, false, false),
                   -0.15, "ALL_IN rerolls are discouraged outside SLOWROLL");
