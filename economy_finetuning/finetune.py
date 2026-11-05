@@ -29,6 +29,7 @@ from rollout import RolloutBuffer
 from economy_finetuning.scenario_generator import (
     SCENARIOS, decode_observation, matching_scenarios, shaped_action_reward,
 )
+from economy_finetuning.chain_manager import check_scenario, record_training
 
 ACTION_DIMS = [9, 5, 9, 28, 28, 28]
 MASK_SHAPES = {
@@ -190,8 +191,12 @@ def run(args):
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
-    device = torch.device("cpu")
+    if args.device == "cuda" and not torch.cuda.is_available():
+        raise RuntimeError("--device cuda solicitado, mas CUDA não está disponível.")
+    device_name = "cuda" if args.device == "cuda" or (args.device == "auto" and torch.cuda.is_available()) else "cpu"
+    device = torch.device(device_name)
     checkpoint_path = Path(args.checkpoint).expanduser().resolve()
+    checkpoint_path = check_scenario(args.scenario, checkpoint_path)
     if not checkpoint_path.is_file():
         raise FileNotFoundError(f"Checkpoint original não encontrado: {checkpoint_path}")
 
@@ -256,6 +261,7 @@ def run(args):
             "engine_source_sha256": ROOT / "cpp" / "src" / "lobby" / "TftEngine.cpp",
             "action_mask_source_sha256": ROOT / "cpp" / "src" / "decision" / "ActionMaskEngine.cpp",
             "reward_model_source_sha256": ROOT / "cpp" / "include" / "reward" / "RewardModel.hpp",
+            "chain_manager_source_sha256": ROOT / "economy_finetuning" / "chain_manager.py",
         }
         metadata = {
             "checkpoint": _display_path(checkpoint_path),
@@ -474,10 +480,13 @@ def run(args):
                 "The current C++ API exposes no arbitrary state injection."
             ),
         }
-        (reports_dir / "training_summary.json").write_text(
+        summary_path = reports_dir / "training_summary.json"
+        summary_path.write_text(
             json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8"
         )
+        record_training(selected_scenario.scenario_id, output, summary_path)
         print(f"Checkpoint fine-tuned salvo em: {output}")
+        print("Cenário registrado como TREINADO; o próximo permanece bloqueado até aprovação.")
         print(f"Relatórios e logs: {run_dir}")
     finally:
         if writer is not None:
