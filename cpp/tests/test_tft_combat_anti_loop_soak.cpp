@@ -176,13 +176,13 @@ int main(int argc, char** argv) {
                 }
             }
 
-}
+        }
 
         require(total_rounds >= 90,
                 "A simulação terminou cedo demais para ser um soak test.");
         require(total_combat_events > 0,
                 "Nenhum combate PVP foi integrado/executado durante o teste.");
-require(total_wins > 0 && total_losses > 0,
+        require(total_wins > 0 && total_losses > 0,
                 "Os resultados de combate não foram propagados para os jogadores.");
 
         std::cout
