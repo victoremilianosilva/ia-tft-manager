@@ -159,3 +159,35 @@ teste porque as trajetórias divergem após ações diferentes.
 - `runs/latest/reports/training_summary.json`: contagem de cenários encontrados.
 - `reports/ECONOMY_FINETUNING_AUDIT.md`: auditoria gerada em Markdown,
   fora dos diretórios ignorados, pronta para revisão e commit.
+
+## Avaliação em um único comando (PowerShell)
+
+Depois que `run_finetune.ps1` terminar, copie o caminho da pasta da execução
+mostrado no terminal e rode:
+
+```powershell
+.\economy_finetuning\evaluate_finetune.ps1 -Run "CAMINHO_DA_EXECUCAO"
+```
+
+Por padrão, o script:
+1. Lê o checkpoint fine-tuned, o checkpoint de origem e os metadados da própria execução.
+2. Executa a comparação pareada com 20 seeds (duas lobbies espelhadas por seed).
+3. Gera a auditoria Markdown combinando o trace shadow e os resultados pareados.
+4. Verifica cobertura, conclusão das partidas, igualdade dos estados iniciais e o alerta de divergência fora do cenário.
+5. Gera `reports/evaluation_review.json` com hash SHA-256 e resultado dos checks.
+
+As seeds padrão começam em `20261201`. Se essas seeds já tiverem sido usadas
+no treino ou em outra avaliação, escolha outras explicitamente, por exemplo:
+
+```powershell
+.\economy_finetuning\evaluate_finetune.ps1 -Run "CAMINHO_DA_EXECUCAO" -SeedStart 20270101 -SeedCount 20
+```
+
+Para abrir também o viewer ao final, use `-OpenViewer` (requer as dependências
+opcionais instaladas).
+
+**A avaliação não aprova automaticamente.** O status `READY_FOR_HUMAN_REVIEW`
+significa apenas que os checks técnicos mínimos passaram; não demonstra ganho
+de desempenho. O relatório precisa ser revisado. O arquivo de revisão é criado
+com `approved: false`. Somente depois de uma decisão humana explícita, altere
+esse campo para `true` e execute `approve_scenario.ps1` com o arquivo gerado.
