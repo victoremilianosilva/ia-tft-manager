@@ -25,8 +25,8 @@ Compile a engine C++ como já é necessário para o projeto:
 python economy_finetuning/finetune.py \
   --checkpoint tft_checkpoint.pt \
   --updates 100 \
-  --rollout-steps 128 \
-  --output economy_finetuning/checkpoints/economy_ft.pt
+  --rollout-steps 128
+# O script imprime o caminho exclusivo do checkpoint e da execução.
 ```
 
 O checkpoint de origem nunca é sobrescrito. Por padrão, somente `type_head`
@@ -48,8 +48,9 @@ Para avaliar consequências em partidas completas:
 ```bash
 python economy_finetuning/paired_evaluator.py \
   --original tft_checkpoint.pt \
-  --finetuned economy_finetuning/checkpoints/economy_ft.pt \
-  --seeds 20261105,20261106,20261107,20261108
+  --finetuned CAMINHO_DO_CHECKPOINT_GERADO.pt \
+  --seeds 20261105,20261106,20261107,20261108 \
+  --output CAMINHO_DA_EXECUCAO/logs/paired_match_results.jsonl
 ```
 
 Cada modelo joga sua própria lobby com a mesma seed. As trajetórias podem
@@ -69,7 +70,8 @@ Gere o relatório e abra o viewer:
 
 ```bash
 python economy_finetuning/audit.py \
-  --paired economy_finetuning/runs/latest/logs/paired_match_results.jsonl
+  --trace CAMINHO_DA_EXECUCAO/logs/decision_trace.jsonl \
+  --paired CAMINHO_DA_EXECUCAO/logs/paired_match_results.jsonl
 streamlit run economy_finetuning/viewer/app.py
 ```
 
