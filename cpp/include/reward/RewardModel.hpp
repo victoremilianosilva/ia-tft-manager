@@ -114,10 +114,20 @@ inline double strategy_action_reward(
     bool reroll_improved,
     bool leveled,
     bool has_composition_target) noexcept {
+    // Do not mask rerolls: the policy must learn their opportunity cost.
+    // Every strategy except SLOWROLL receives a context-sensitive penalty.
+    // The penalty grows with surplus liquidity and match progression, while
+    // critical HP softens (but never removes) the cost of an emergency roll.
+    if (action_type == 1 && strategy_id != 3) {
+        double penalty = stage >= 4 && old_gold >= 50 ? 0.15
+            : (stage >= 3 || old_gold >= 40 ? 0.12 : 0.09);
+        if (hp <= 25.0) penalty = std::min(penalty, 0.06);
+        return -penalty;
+    }
+
     double reward = 0.0;
     switch (strategy_id) {
         case 0: // ECON: protect early interest, but convert late reserves into strength.
-            if (action_type == 1) reward -= 0.08;
             if (new_gold >= 50 && old_gold < 50 && stage <= 2) reward += 0.04;
             if (old_gold >= 50 && action_type == 0 && useful_purchase)
                 reward += 0.04;
@@ -131,10 +141,6 @@ inline double strategy_action_reward(
             }
             break;
         case 1: // STABILIZE: favor playable-board upgrades over routine leveling.
-            // A reroll is only defensible here when it measurably improves the
-            // shop or HP is critical; otherwise it competes with board buys/XP.
-            if (action_type == 1)
-                reward -= (hp <= 25.0 || reroll_improved) ? 0.08 : 0.14;
             if (action_type == 0 && useful_purchase) reward += 0.07;
             if (action_type == 2 && leveled)
                 reward += 0.95 * (hp <= 30.0 ? 0.07 : (old_gold >= 50 ? 0.05 : 0.015));
@@ -144,11 +150,6 @@ inline double strategy_action_reward(
         case 2: // FAST8 is a plan, not permission to ignore early-game economy.
             if (action_type == 2 && leveled)
                 reward += hp <= 30.0 ? 0.11 : (old_gold >= 50 ? 0.08 : 0.03);
-            // FAST8 advances through XP and useful purchases, not reroll.
-            // Once the level-8 plan is late and liquidity is already above the
-            // interest cap, a reroll competes directly with guaranteed XP progress.
-            if (action_type == 1)
-                reward -= (stage >= 4 && old_gold >= 50) ? 0.12 : 0.08;
             break;
         case 3: // SLOWROLL: reward improved rolls without blocking useful XP progress.
             if (action_type == 1) reward += reroll_improved ? 0.12 : -0.025;
@@ -160,17 +161,14 @@ inline double strategy_action_reward(
                 hp > 50.0 && old_gold < 50) reward -= 0.04;
             break;
         case 4: // ALL_IN: useful immediate strength over passive saving.
-            if (action_type == 1) reward -= 0.08;
             if (action_type == 0 && useful_purchase) reward += 0.06;
             if (hp <= 15.0 && action_type == 6) reward -= 0.05;
             break;
         case 5: // WINSTREAK: preserve strength, avoid wasteful economy actions.
-            if (action_type == 1) reward -= 0.08;
             if (action_type == 0 && useful_purchase) reward += 0.05;
             if (action_type == 2 && leveled) reward += 0.04;
             break;
         case 6: // LOSS_STREAK: preserve the streak only while purchases are not useful.
-            if (action_type == 1) reward -= 0.08;
             if (hp >= 50.0 && !useful_purchase &&
                 (action_type == 0 || action_type == 1 || action_type == 2))
                 reward -= 0.04;
@@ -398,17 +396,6 @@ inline int economy_phase_target_level(int stage, int active_strategy = -1) noexc
         case 5: return 9;
         default: return 9;
     }
-}
-
-// When a healthy player has surplus liquidity and is behind the phase target,
-// leveling is the strategic spend. Keep REROLL available for SLOWROLL and
-// emergency stabilization, but prevent it from competing with BUY_XP.
-inline bool should_defer_reroll_for_leveling(
-    int gold, int level, double hp, int stage, int active_strategy
-) noexcept {
-    if (active_strategy == 3 || hp <= 30.0 || stage < 3 || gold < 50)
-        return false;
-    return level < economy_phase_target_level(stage, active_strategy);
 }
 
 // The interest cap is a reference, not a hard reserve. As the match advances,
