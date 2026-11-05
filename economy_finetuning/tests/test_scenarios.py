@@ -103,6 +103,12 @@ class ScenarioGeneratorTests(unittest.TestCase):
         )
         self.assertIn("critical_hp_high_gold", matches)
         self.assertEqual(reward, 0.0)
+        slowroll_state = dict(state, strategy=3)
+        slowroll_reward, slowroll_matches = shaped_action_reward(
+            slowroll_state, 2, selected_scenario_id="critical_hp_high_gold"
+        )
+        self.assertIn("critical_hp_high_gold", slowroll_matches)
+        self.assertEqual(slowroll_reward, 0.0)
 
 
 if __name__ == "__main__":
