@@ -126,6 +126,31 @@ def _freeze_non_target_heads(policy):
     return trainable
 
 
+@torch.no_grad()
+def _project_type_head_to_reference(policy, reference_policy, max_relative_drift: float):
+    """Keep the shared action-type head inside a small L2 trust region."""
+    if max_relative_drift <= 0:
+        raise ValueError("max_relative_drift deve ser > 0")
+    candidate = dict(policy.named_parameters())
+    reference = dict(reference_policy.named_parameters())
+    names = [name for name in candidate if name.startswith("type_head.")]
+    delta_sq = torch.zeros((), device=next(policy.parameters()).device)
+    reference_sq = torch.zeros_like(delta_sq)
+    for name in names:
+        delta_sq += (candidate[name] - reference[name]).pow(2).sum()
+        reference_sq += reference[name].pow(2).sum()
+    delta_norm = torch.sqrt(delta_sq)
+    reference_norm = torch.sqrt(reference_sq).clamp_min(1.0)
+    allowed = max_relative_drift * reference_norm
+    if delta_norm > allowed:
+        scale = allowed / delta_norm.clamp_min(1e-12)
+        for name in names:
+            candidate[name].copy_(
+                reference[name] + scale * (candidate[name] - reference[name])
+            )
+    return float(delta_norm.item()), float(allowed.item())
+
+
 def _write_jsonl(path: Path, row: dict):
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as stream:
@@ -280,7 +305,7 @@ def run(args):
                         "terminal_state": info.get("final_state", info.get("players", [])),
                     })
                     observations = env.reset(seed=args.seed + global_step)
-                    last_done = np.zeros(8, dtype=np.float32)
+                    # Keep terminal dones for GAE bootstrap at the rollout boundary.
                     episode_reward.fill(0.0)
 
             next_masks = _flatten_masks(env.get_action_masks(), device)
@@ -298,9 +323,14 @@ def run(args):
                 metrics = ppo.update(rollout, batch_size=args.batch_size, epochs=args.ppo_epochs) or {}
             else:
                 metrics = {"optimizer_steps": 0, "early_stop": False, "approx_kl_max": 0.0}
+            head_drift, head_drift_limit = _project_type_head_to_reference(
+                policy, original_policy, args.max_type_head_drift
+            )
             metrics_row = {
                 "update": update, "matched_transitions": matched_transitions,
                 "mean_reward": float(rollout.rewards[:rollout.ptr].mean().item()),
+                "type_head_relative_drift_before_projection": head_drift,
+                "type_head_relative_drift_limit": head_drift_limit,
                 **{key: value for key, value in metrics.items()
                    if isinstance(value, (int, float, bool))},
             }
@@ -359,12 +389,15 @@ def parse_args():
     parser.add_argument("--clip-coef", type=float, default=0.1)
     parser.add_argument("--target-kl", type=float, default=0.01)
     parser.add_argument("--entropy-coef", type=float, default=0.002)
+    parser.add_argument("--max-type-head-drift", type=float, default=0.02)
     parser.add_argument("--seed", type=int, default=20261105)
     args = parser.parse_args()
     if args.updates <= 0 or args.rollout_steps <= 0 or args.batch_size <= 0 or args.ppo_epochs <= 0:
         parser.error("updates, rollout-steps, batch-size e ppo-epochs devem ser positivos")
     if not 0 < args.clip_coef < 1 or args.learning_rate <= 0 or args.target_kl <= 0:
         parser.error("clip-coef, learning-rate ou target-kl inválido")
+    if args.max_type_head_drift <= 0:
+        parser.error("max-type-head-drift deve ser > 0")
     return args
 
 
