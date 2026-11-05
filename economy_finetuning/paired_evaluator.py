@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from collections import Counter
@@ -33,6 +34,9 @@ def run_match(policy, seed: int, max_steps: int, device):
     env = CppTFTLobbyWrapper(seed=seed)
     try:
         obs = env.reset(seed=seed)
+        initial_observation_sha256 = hashlib.sha256(
+            np.asarray(obs, dtype=np.float32).tobytes()
+        ).hexdigest()
         totals = np.zeros(8, dtype=np.float64)
         actions = [Counter() for _ in range(8)]
         final_info = None
@@ -52,6 +56,7 @@ def run_match(policy, seed: int, max_steps: int, device):
                 final_info = env.get_public_state()
                 return {
                     "seed": seed, "steps": step + 1, "completed": True,
+                    "initial_observation_sha256": initial_observation_sha256,
                     "total_rewards": totals.tolist(),
                     "action_counts": [dict(counter) for counter in actions],
                     "final_state": final_info,
@@ -59,6 +64,7 @@ def run_match(policy, seed: int, max_steps: int, device):
         final_info = env.get_public_state()
         return {
             "seed": seed, "steps": max_steps, "completed": False,
+            "initial_observation_sha256": initial_observation_sha256,
             "total_rewards": totals.tolist(),
             "action_counts": [dict(counter) for counter in actions],
             "final_state": final_info,
@@ -99,6 +105,15 @@ def main():
         for seed in seeds:
             original_result = run_match(original, seed, args.max_steps, device)
             tuned_result = run_match(tuned, seed, args.max_steps, device)
+            same_initial_state = (
+                original_result["initial_observation_sha256"]
+                == tuned_result["initial_observation_sha256"]
+            )
+            if not same_initial_state:
+                raise RuntimeError(
+                    f"Seed {seed}: os modelos não começaram da mesma observação; "
+                    "comparação pareada inválida."
+                )
             reward_deltas = [
                 round(b - a, 6)
                 for a, b in zip(original_result["total_rewards"], tuned_result["total_rewards"])
@@ -110,6 +125,7 @@ def main():
                 "reward_delta_per_player": reward_deltas,
                 "mean_reward_delta": float(np.mean(reward_deltas)),
                 "both_completed": original_result["completed"] and tuned_result["completed"],
+                "same_initial_state": same_initial_state,
             }
             stream.write(json.dumps(row, ensure_ascii=False, separators=(",", ":")) + "\n")
             print(
