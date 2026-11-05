@@ -207,6 +207,10 @@ inline double purchase_quality(double fit_delta, bool completes_upgrade) noexcep
 // A pair has option value even before it changes the board: the next copy can
 // produce a 2-star unit. Keep fit as a multiplier, not a gate, so useful pairs
 // are not ignored just because the current board is temporarily weak.
+inline bool is_pair_purchase(int same_star_copies, int offer_star) noexcept {
+    return same_star_copies == 1 && offer_star == 1;
+}
+
 inline double purchase_pair_quality(double fit_score) noexcept {
     // A pair is real upgrade progress even before the third copy appears.
     // Keep the baseline meaningful, while favoring units that fit the plan.
