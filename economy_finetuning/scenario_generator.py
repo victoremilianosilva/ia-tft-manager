@@ -181,7 +181,4 @@ def shaped_action_reward(state: dict[str, Any], action_type: int) -> tuple[float
             reward += scenario.reward_pass
         elif action_type == 1:     # REROLL
             reward += scenario.reward_roll
-    # A hard safety gate: never reward BUY_XP in critical-HP cohorts.
-    if state["hp"] <= 30.0 and action_type == 2:
-        reward = min(reward, -0.02)
     return float(max(-0.08, min(0.08, reward))), [item.scenario_id for item in matched]
