@@ -59,12 +59,15 @@ python economy_finetuning/paired_evaluator.py \
   --output CAMINHO_DA_EXECUCAO/logs/paired_match_results.jsonl
 ```
 
-Cada modelo joga sua própria lobby com a mesma seed. As trajetórias podem
-divergir depois das primeiras ações; isso é intencional e permite comparar
-consequências. O avaliador registra rewards nativos, contagens de ações,
-colocação terminal, Top 4, HP, ouro, nível e métricas atuais do BoardEvaluation.
-Quatro seeds servem apenas como smoke test; a aprovação final deve usar pelo
-menos 20 seeds inéditas, não usadas no treino.
+Cada seed executa duas lobbies mistas 4v4: uma com fine-tuned nos assentos pares
+e outra com a distribuição espelhada. Isso evita a métrica sem sentido de
+colocação média em self-play homogêneo (que tende sempre a 4,5) e permite
+comparar original vs. fine-tuned por assento, Top 4 e vitórias. O avaliador
+exige hashes iguais da observação e das máscaras iniciais nas duas lobbies.
+Registra rewards nativos, contagens de ações, colocação terminal, Top 4, HP,
+ouro, nível e métricas atuais do BoardEvaluation. Quatro seeds servem apenas
+como smoke test; a aprovação final deve usar pelo menos 20 seeds inéditas,
+não usadas no treino.
 
 ## Auditoria e visualizador
 
