@@ -79,7 +79,7 @@ def main():
     parser.add_argument("--finetuned", required=True)
     parser.add_argument("--seeds", default="20261105,20261106,20261107,20261108")
     parser.add_argument("--max-steps", type=int, default=2500)
-    parser.add_argument("--output", default="economy_finetuning/runs/latest/logs/paired_match_results.jsonl")
+    parser.add_argument("--output", required=True, help="JSONL de saída dentro do diretório da execução")
     args = parser.parse_args()
     original_path = Path(args.original).expanduser().resolve()
     tuned_path = Path(args.finetuned).expanduser().resolve()
