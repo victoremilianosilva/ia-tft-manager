@@ -150,8 +150,11 @@ def build_report(rows, paired_rows=None):
             ]
             return sum(values) / len(values) if values else None
 
-        def metric_text(value, suffix=""):
-            return f"{value:+.3f}{suffix}" if value is not None else "n/a"
+        def metric_text(value):
+            return f"{value:+.3f}" if value is not None else "n/a"
+
+        def percent_text(value):
+            return f"{value * 100:.1f}%" if value is not None else "n/a"
 
         placement_delta = mean_metric("placement_delta")
         top4_original = mean_metric("original_top4")
@@ -200,8 +203,8 @@ def build_report(rows, paired_rows=None):
             f"- Pares jogador/seed com colocação comparável: **{len(player_rows)}**\\n"
             f"- Diferença média de reward (fine-tuned - original): **{paired_mean_text}**\\n"
             f"- Diferença média de colocação (fine-tuned - original): **{metric_text(placement_delta)}** (negativo é melhor)\\n"
-            f"- Taxa Top 4: **{metric_text(top4_original, '%')} → {metric_text(top4_tuned, '%')}**\\n"
-            f"- Taxa de vitória: **{metric_text(win_original, '%')} → {metric_text(win_tuned, '%')}**\\n"
+            f"- Taxa Top 4: **{percent_text(top4_original)} → {percent_text(top4_tuned)}**\\n"
+            f"- Taxa de vitória: **{percent_text(win_original)} → {percent_text(win_tuned)}**\\n"
             f"- Delta médio de HP/ouro/nível/estrutura: **{metric_text(mean_metric('hp_delta'))} / "
             f"{metric_text(mean_metric('gold_delta'))} / {metric_text(mean_metric('level_delta'))} / "
             f"{metric_text(mean_metric('board_structural_score_delta'))}**\\n\\n"
