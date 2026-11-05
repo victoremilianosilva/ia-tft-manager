@@ -515,7 +515,13 @@ def parse_args():
         "learning_rate", "clip_coef", "target_kl", "entropy_coef",
         "max_type_head_drift", "min_scenario_transitions", "seed",
     }
-    config_path = Path(parser.get_default("config"))
+    config_parser = argparse.ArgumentParser(add_help=False)
+    config_parser.add_argument(
+        "--config",
+        default=str(ROOT / "economy_finetuning" / "config.json"),
+    )
+    config_args, _ = config_parser.parse_known_args()
+    config_path = Path(config_args.config).expanduser().resolve()
     if config_path.is_file():
         config_values = json.loads(config_path.read_text(encoding="utf-8"))
         parser.set_defaults(**{
