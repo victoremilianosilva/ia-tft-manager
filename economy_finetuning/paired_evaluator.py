@@ -1,4 +1,4 @@
-"""Paired full-lobby evaluation: original and fine-tuned policies, same seeds."""
+"""Paired mixed-lobby evaluation with mirrored policy seats."""
 from __future__ import annotations
 
 import argparse
@@ -23,7 +23,7 @@ from policy import TFTPolicy
 from economy_finetuning.finetune import ACTION_DIMS, _actions_to_native, _flatten_masks
 
 
-def file_sha256(path: Path):
+def file_sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
@@ -31,7 +31,7 @@ def file_sha256(path: Path):
     return digest.hexdigest()
 
 
-def repository_commit():
+def repository_commit() -> str | None:
     try:
         result = subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=ROOT,
@@ -42,7 +42,7 @@ def repository_commit():
         return os.environ.get("GITHUB_SHA")
 
 
-def load_policy(checkpoint_path: Path, obs_dim: int, device):
+def load_policy(checkpoint_path: Path, obs_dim: int, device) -> TFTPolicy:
     payload = torch.load(checkpoint_path, map_location=device, weights_only=False)
     state = payload.get("policy", payload)
     policy = TFTPolicy(obs_dim, ACTION_DIMS).to(device)
@@ -51,7 +51,7 @@ def load_policy(checkpoint_path: Path, obs_dim: int, device):
     return policy
 
 
-def masks_sha256(raw_masks):
+def masks_sha256(raw_masks) -> str:
     payload = [
         {
             key: np.asarray(mask[key], dtype=np.uint8).tolist()
@@ -97,7 +97,7 @@ def extract_final_metrics(final_state, audit_snapshot=None):
             "gold": float(player["gold"]) if player.get("gold") is not None else None,
             "level": float(player["level"]) if player.get("level") is not None else None,
         }
-        # PlayerInfo's cached board scores can be stale/zero. The audit snapshot
+        # PlayerInfo's cached board scores may be stale. The audit snapshot
         # recomputes BoardEvaluation from the actual terminal board.
         for key in (
             "board_power", "board_quality_score", "board_positional_score",
@@ -142,7 +142,10 @@ def compare_final_metrics(original_metrics, tuned_metrics):
     return result
 
 
-def run_match(policy, seed: int, max_steps: int, device):
+def run_match(policies_by_player, policy_variants, seed: int, max_steps: int, device):
+    """Run one 4-vs-4 lobby. Policy assignment is mirrored in the paired run."""
+    if len(policies_by_player) != 8 or len(policy_variants) != 8:
+        raise ValueError("A lobby requires exactly eight player policies and variants.")
     env = CppTFTLobbyWrapper(seed=seed)
     try:
         obs = env.reset(seed=seed)
@@ -157,13 +160,21 @@ def run_match(policy, seed: int, max_steps: int, device):
             raw_masks = env.get_action_masks()
             if step == 0:
                 initial_masks_sha256 = masks_sha256(raw_masks)
-            masks = _flatten_masks(raw_masks, device)
-            obs_tensor = torch.as_tensor(obs, dtype=torch.float32, device=device)
-            with torch.no_grad():
-                selected, _, _, _ = policy.get_action_and_value(
-                    obs_tensor, masks=masks, deterministic=True
+            action_array = np.zeros((8, len(ACTION_DIMS)), dtype=np.int64)
+            # Batch the four agents controlled by each policy.
+            policy_groups = {}
+            for player_id, policy in enumerate(policies_by_player):
+                policy_groups.setdefault(id(policy), (policy, []))[1].append(player_id)
+            for policy, player_ids in policy_groups.values():
+                mask_subset = _flatten_masks([raw_masks[i] for i in player_ids], device)
+                obs_subset = torch.as_tensor(
+                    obs[player_ids], dtype=torch.float32, device=device
                 )
-            action_array = selected.cpu().numpy().astype(np.int64)
+                with torch.no_grad():
+                    selected, _, _, _ = policy.get_action_and_value(
+                        obs_subset, masks=mask_subset, deterministic=True
+                    )
+                action_array[player_ids] = selected.cpu().numpy().astype(np.int64)
             for player_id, row in enumerate(action_array):
                 actions[player_id][ActionType(int(row[0])).name] += 1
             obs, rewards, done, info = env.step(_actions_to_native(action_array))
@@ -171,28 +182,122 @@ def run_match(policy, seed: int, max_steps: int, device):
             if done:
                 final_info = env.get_public_state()
                 final_audit = env.get_audit_snapshot()
+                final_metrics = extract_final_metrics(final_info, final_audit)
+                for metric in final_metrics:
+                    metric["policy_variant"] = policy_variants[metric["player_id"]]
                 return {
                     "seed": seed, "steps": step + 1, "completed": True,
+                    "policy_variants": list(policy_variants),
                     "initial_observation_sha256": initial_observation_sha256,
                     "initial_masks_sha256": initial_masks_sha256,
                     "total_rewards": totals.tolist(),
                     "action_counts": [dict(counter) for counter in actions],
-                    "final_state": final_info,
-                    "final_metrics": extract_final_metrics(final_info, final_audit),
+                    "final_metrics": final_metrics,
                 }
         final_info = env.get_public_state()
         final_audit = env.get_audit_snapshot()
+        final_metrics = extract_final_metrics(final_info, final_audit)
+        for metric in final_metrics:
+            metric["policy_variant"] = policy_variants[metric["player_id"]]
         return {
             "seed": seed, "steps": max_steps, "completed": False,
+            "policy_variants": list(policy_variants),
             "initial_observation_sha256": initial_observation_sha256,
             "initial_masks_sha256": initial_masks_sha256,
             "total_rewards": totals.tolist(),
             "action_counts": [dict(counter) for counter in actions],
-            "final_state": final_info,
-            "final_metrics": extract_final_metrics(final_info, final_audit),
+            "final_metrics": final_metrics,
         }
     finally:
         env.close()
+
+
+def aggregate_mirrored_runs(run_a, run_b, provenance):
+    """Pair each seat's original and tuned result across mirrored 4-vs-4 lobbies."""
+    original_metrics, tuned_metrics = {}, {}
+    original_rewards, tuned_rewards = {}, {}
+    original_actions, tuned_actions = {}, {}
+    for run in (run_a, run_b):
+        for player_id, variant in enumerate(run["policy_variants"]):
+            metric = next(
+                (item for item in run.get("final_metrics", [])
+                 if int(item["player_id"]) == player_id),
+                None,
+            )
+            if metric is not None:
+                if variant == "original":
+                    original_metrics[player_id] = {k: v for k, v in metric.items() if k != "policy_variant"}
+                else:
+                    tuned_metrics[player_id] = {k: v for k, v in metric.items() if k != "policy_variant"}
+            if variant == "original":
+                original_rewards[player_id] = float(run["total_rewards"][player_id])
+                original_actions[player_id] = run["action_counts"][player_id]
+            else:
+                tuned_rewards[player_id] = float(run["total_rewards"][player_id])
+                tuned_actions[player_id] = run["action_counts"][player_id]
+
+    original_ids = sorted(original_rewards)
+    tuned_ids = sorted(tuned_rewards)
+    paired_reward_deltas = [
+        tuned_rewards[player_id] - original_rewards[player_id]
+        for player_id in sorted(set(original_rewards) & set(tuned_rewards))
+    ]
+    mean_reward_delta = (
+        sum(paired_reward_deltas) / len(paired_reward_deltas)
+        if paired_reward_deltas else 0.0
+    )
+    same_initial_observation = (
+        run_a["initial_observation_sha256"] == run_b["initial_observation_sha256"]
+    )
+    same_initial_masks = (
+        run_a["initial_masks_sha256"] == run_b["initial_masks_sha256"]
+    )
+    original_metric_list = [original_metrics[i] for i in sorted(original_metrics)]
+    tuned_metric_list = [tuned_metrics[i] for i in sorted(tuned_metrics)]
+    return {
+        "seed": run_a["seed"],
+        "both_completed": bool(run_a["completed"] and run_b["completed"]),
+        "same_initial_observation": same_initial_observation,
+        "same_initial_masks": same_initial_masks,
+        "same_initial_state": bool(same_initial_observation and same_initial_masks),
+        "mean_reward_delta": round(mean_reward_delta, 6),
+        "reward_deltas_per_player_seat": {
+            str(player_id): round(tuned_rewards[player_id] - original_rewards[player_id], 6)
+            for player_id in sorted(set(original_rewards) & set(tuned_rewards))
+        },
+        "original": {
+            "total_rewards": [original_rewards[i] for i in original_ids],
+            "action_counts": [original_actions[i] for i in original_ids],
+            "final_metrics": original_metric_list,
+            "mean_reward": (
+                sum(original_rewards.values()) / len(original_rewards)
+                if original_rewards else None
+            ),
+        },
+        "finetuned": {
+            "total_rewards": [tuned_rewards[i] for i in tuned_ids],
+            "action_counts": [tuned_actions[i] for i in tuned_ids],
+            "final_metrics": tuned_metric_list,
+            "mean_reward": (
+                sum(tuned_rewards.values()) / len(tuned_rewards)
+                if tuned_rewards else None
+            ),
+        },
+        "final_player_deltas": compare_final_metrics(
+            original_metric_list, tuned_metric_list
+        ),
+        "mirror_runs": [
+            {
+                "completed": bool(run["completed"]),
+                "steps": int(run["steps"]),
+                "initial_observation_sha256": run["initial_observation_sha256"],
+                "initial_masks_sha256": run["initial_masks_sha256"],
+                "policy_variants": run["policy_variants"],
+            }
+            for run in (run_a, run_b)
+        ],
+        "provenance": provenance,
+    }
 
 
 def main():
@@ -229,6 +334,7 @@ def main():
         ),
         "observation_dim": obs_dim,
         "action_dims": ACTION_DIMS,
+        "evaluation_mode": "mixed_4v4_mirrored_seats",
     }
 
     output = Path(args.output)
@@ -239,50 +345,29 @@ def main():
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", encoding="utf-8") as stream:
         for seed in seeds:
-            original_result = run_match(original, seed, args.max_steps, device)
-            tuned_result = run_match(tuned, seed, args.max_steps, device)
-            same_initial_observation = (
-                original_result["initial_observation_sha256"]
-                == tuned_result["initial_observation_sha256"]
-            )
-            same_initial_masks = (
-                original_result["initial_masks_sha256"]
-                == tuned_result["initial_masks_sha256"]
-            )
-            same_initial_state = same_initial_observation and same_initial_masks
-            if not same_initial_state:
+            # First lobby: tuned policy occupies even seats.
+            variants_a = ["finetuned" if player_id % 2 == 0 else "original" for player_id in range(8)]
+            policies_a = [tuned if variant == "finetuned" else original for variant in variants_a]
+            run_a = run_match(policies_a, variants_a, seed, args.max_steps, device)
+
+            # Mirror the assignment to cancel deterministic seat/ordering bias.
+            variants_b = ["original" if player_id % 2 == 0 else "finetuned" for player_id in range(8)]
+            policies_b = [original if variant == "original" else tuned for variant in variants_b]
+            run_b = run_match(policies_b, variants_b, seed, args.max_steps, device)
+
+            row = aggregate_mirrored_runs(run_a, run_b, provenance)
+            if not row["same_initial_state"]:
                 raise RuntimeError(
-                    f"Seed {seed}: observação inicial ou máscaras iniciais divergiram; "
-                    "comparação pareada inválida."
+                    f"Seed {seed}: observação inicial ou máscaras iniciais divergiram "
+                    "entre as lobbies espelhadas; comparação pareada inválida."
                 )
-            reward_deltas = [
-                round(b - a, 6)
-                for a, b in zip(original_result["total_rewards"], tuned_result["total_rewards"])
-            ]
-            final_player_deltas = compare_final_metrics(
-                original_result.get("final_metrics", []),
-                tuned_result.get("final_metrics", []),
-            )
-            row = {
-                "seed": seed,
-                "provenance": provenance,
-                "original": original_result,
-                "finetuned": tuned_result,
-                "final_player_deltas": final_player_deltas,
-                "reward_delta_per_player": reward_deltas,
-                "mean_reward_delta": float(np.mean(reward_deltas)),
-                "both_completed": original_result["completed"] and tuned_result["completed"],
-                "same_initial_state": same_initial_state,
-                "same_initial_observation": same_initial_observation,
-                "same_initial_masks": same_initial_masks,
-            }
-            stream.write(json.dumps(row, ensure_ascii=False, separators=(",", ":")) + "\n")
+            stream.write(json.dumps(row, ensure_ascii=False) + "\\n")
+            stream.flush()
             print(
-                f"seed={seed} original_steps={original_result['steps']} "
-                f"finetuned_steps={tuned_result['steps']} "
-                f"mean_reward_delta={row['mean_reward_delta']:.4f}"
+                f"seed={seed} completed={row['both_completed']} "
+                f"mean_reward_delta={row['mean_reward_delta']:+.5f} "
+                f"paired_seats={len(row['final_player_deltas'])}"
             )
-    print(f"Resultados pareados: {output}")
 
 
 if __name__ == "__main__":
