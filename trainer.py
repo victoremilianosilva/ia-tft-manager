@@ -400,89 +400,6 @@ class Trainer:
     # 🎭 FLATTEN MASKS
     # ================================================================
 
-    # ================================================================
-    # AUDITAR AÇÃO ESCOLHIDA CONTRA AS MÁSCARAS
-    # ================================================================
-    def _audit_selected_action_masks(self, actions, masks, action_array=None):
-        """Conta ações incompatíveis com as máscaras usadas pela policy.
-
-        action_array permite reutilizar a conversão CPU/NumPy já feita
-        pelo loop de rollout, mantendo a chamada antiga compatível.
-        """
-        action_np = (
-            action_array
-            if action_array is not None
-            else actions.detach().cpu().numpy()
-        )
-        mask_np = {
-            key: value.detach().cpu().numpy().astype(np.bool_, copy=False)
-            for key, value in masks.items()
-        }
-        counts = {"actions_checked": int(action_np.shape[0]), "type_invalid": 0,
-                  "conditional_invalid": 0, "selected_invalid": 0}
-        for agent_idx, action in enumerate(action_np):
-            action_type = int(action[0])
-            type_valid = (0 <= action_type < mask_np["type_mask"].shape[1]
-                          and bool(mask_np["type_mask"][agent_idx, action_type]))
-            if not type_valid:
-                counts["type_invalid"] += 1
-                counts["selected_invalid"] += 1
-                continue
-            conditional_valid = True
-            if action_type == int(ActionType.BUY):
-                slot = int(action[1])
-                conditional_valid = (0 <= slot < mask_np["shop_mask"].shape[1]
-                                     and bool(mask_np["shop_mask"][agent_idx, slot]))
-            elif action_type == int(ActionType.SELL):
-                slot = int(action[2])
-                conditional_valid = (
-                    0 <= slot < mask_np["bench_source_mask"].shape[1]
-                    and bool(mask_np["bench_source_mask"][agent_idx, slot])
-                )
-            elif action_type == int(ActionType.MOVE_BENCH):
-                source, target = int(action[2]), int(action[3])
-                source_mask = mask_np["bench_move_source_mask"][agent_idx]
-                target_masks = mask_np["bench_to_board_target_masks"][agent_idx]
-                conditional_valid = (0 <= source < source_mask.shape[0]
-                                     and bool(source_mask[source])
-                                     and 0 <= target < target_masks.shape[1]
-                                     and bool(target_masks[source, target]))
-            elif action_type == int(ActionType.MOVE_BOARD):
-                source, target = int(action[4]), int(action[5])
-                source_mask = mask_np["board_source_mask"][agent_idx]
-                target_masks = mask_np["board_move_target_masks"][agent_idx]
-                conditional_valid = (0 <= source < source_mask.shape[0]
-                                     and bool(source_mask[source])
-                                     and 0 <= target < target_masks.shape[1]
-                                     and bool(target_masks[source, target]))
-            elif action_type == int(ActionType.EQUIP_FROM_INVENTORY):
-                item_slot, target = int(action[1]), int(action[2])
-                inventory_mask = mask_np["item_inventory_mask"][agent_idx]
-                target_mask = mask_np["item_target_mask"][agent_idx]
-                conditional_valid = (
-                    0 <= item_slot < inventory_mask.shape[0]
-                    and bool(inventory_mask[item_slot])
-                    and 0 <= target < target_mask.shape[0]
-                    and bool(target_mask[target])
-                )
-            elif action_type == int(ActionType.CRAFT_AND_EQUIP):
-                first, second, target = int(action[1]), int(action[2]), int(action[3])
-                first_mask = mask_np["item_component_first_mask"][agent_idx]
-                pair_masks = mask_np["item_component_pair_masks"][agent_idx]
-                target_mask = mask_np["item_target_mask"][agent_idx]
-                conditional_valid = (
-                    0 <= first < first_mask.shape[0]
-                    and bool(first_mask[first])
-                    and 0 <= second < pair_masks.shape[1]
-                    and bool(pair_masks[first, second])
-                    and 0 <= target < target_mask.shape[0]
-                    and bool(target_mask[target])
-                )
-            if not conditional_valid:
-                counts["conditional_invalid"] += 1
-                counts["selected_invalid"] += 1
-        return counts
-
     def _flatten_masks(
         self,
         gym_masks
@@ -997,14 +914,6 @@ class Trainer:
         # 🔁 UPDATE LOOP
         # ============================================================
 
-        # 📊 Métricas das máscaras durante este update
-        mask_valid_type_sum = 0.0
-        mask_valid_board_move_sum = 0.0
-        mask_valid_bench_move_sum = 0.0
-        mask_samples = 0
-
-        # 📊 Último snapshot acumulado da lobby
-        anti_loop_totals = {}
         match_steps = np.zeros(self.num_envs, dtype=np.int64)
         completed_matches = 0
         completed_wins = 0
@@ -1034,13 +943,6 @@ class Trainer:
             end
         ):
 
-            anti_loop_start_totals = dict(anti_loop_totals)
-            mask_audit_counts = {
-                "actions_checked": 0,
-                "type_invalid": 0,
-                "conditional_invalid": 0,
-                "selected_invalid": 0,
-            }
             rollout.reset()
 
             # --------------------------------------------------------
@@ -1085,44 +987,6 @@ class Trainer:
                 masks = self._flatten_masks(
                     gym_masks
                 )
-
-                # 📊 Quantas opções permaneceram válidas após as máscaras?
-                valid_type_mean = (
-                    masks["type_mask"].sum(dim=1).float().mean()
-                )
-
-                # Conta somente pares reais origem/destino; fallbacks técnicos
-                # não contam quando o tipo de movimento está desabilitado.
-                board_move_enabled = (
-                    masks["type_mask"][:, 4].view(-1, 1, 1)
-                    & masks["board_source_mask"].unsqueeze(-1)
-                    & masks["board_move_target_masks"]
-                )
-                bench_move_enabled = (
-                    masks["type_mask"][:, 3].view(-1, 1, 1)
-                    & masks["bench_move_source_mask"].unsqueeze(-1)
-                    & masks["bench_to_board_target_masks"]
-                )
-
-                valid_board_move_mean = (
-                    board_move_enabled.sum(dim=(1, 2)).float().mean()
-                )
-                valid_bench_move_mean = (
-                    bench_move_enabled.sum(dim=(1, 2)).float().mean()
-                )
-
-                # Transfer the three scalar diagnostics to the host together,
-                # avoiding three separate device synchronizations per step.
-                mask_metric_values = torch.stack((
-                    valid_type_mean,
-                    valid_board_move_mean,
-                    valid_bench_move_mean,
-                )).detach().cpu().tolist()
-                mask_valid_type_sum += mask_metric_values[0]
-                mask_valid_board_move_sum += mask_metric_values[1]
-                mask_valid_bench_move_sum += mask_metric_values[2]
-
-                mask_samples += 1
 
                 # ====================================================
                 # 🧠 STRATEGIES
@@ -1200,12 +1064,6 @@ class Trainer:
                     .cpu()
                     .numpy()
                 )
-
-                action_audit = self._audit_selected_action_masks(
-                    actions, masks, action_array=action_np
-                )
-                for key, value in action_audit.items():
-                    mask_audit_counts[key] += value
 
                 # Vectorized equivalent of the per-agent histogram loop.
                 # Ignore out-of-range action IDs exactly as the old loop did.
@@ -1332,21 +1190,6 @@ class Trainer:
                         except (TypeError, ValueError):
                             pass
                     match_steps[lobby_idx] = 0
-
-                # 📊 Captura os contadores reais de todas as lobbies
-                metrics_by_lobby = (
-                    self.vec_env.env_method(
-                        "get_anti_loop_metrics"
-                    )
-                )
-
-                anti_loop_totals = {}
-
-                for lobby_metrics in metrics_by_lobby:
-                    for key, value in lobby_metrics.items():
-                        anti_loop_totals[key] = (
-                            anti_loop_totals.get(key, 0) + value
-                        )
 
                 # ====================================================
                 # 👀 NEXT OBS
@@ -1698,117 +1541,6 @@ class Trainer:
                     valid_advantages.mean().item(),
                     update
                 )
-
-                # ========================================================
-                # 🔄 ANTI-LOOP — TENSORBOARD
-                # ========================================================
-
-                # Contadores cumulativos e deltas por update.
-                anti_loop_delta = {}
-                counter_reset_detected = False
-                for key, value in anti_loop_totals.items():
-                    previous_value = anti_loop_start_totals.get(key, 0)
-                    if value < previous_value:
-                        counter_reset_detected = True
-                        delta_value = value
-                    else:
-                        delta_value = value - previous_value
-                    anti_loop_delta[key] = delta_value
-                    self.writer.add_scalar(f"anti_loop/{key}", value, update)
-                    self.writer.add_scalar(f"anti_loop_delta/{key}", delta_value, update)
-
-                self.writer.add_scalar("anti_loop/counter_reset_detected", float(counter_reset_detected), update)
-                delta_attempts = anti_loop_delta.get("execution_attempts", 0)
-                delta_blocks = anti_loop_delta.get("execution_blocks", 0)
-                self.writer.add_scalar(
-                    "anti_loop/execution_block_rate_update",
-                    delta_blocks / delta_attempts if delta_attempts > 0 else 0.0,
-                    update,
-                )
-
-                # 📉 Proporção cumulativa de tentativas bloqueadas
-                attempts = anti_loop_totals.get(
-                    "execution_attempts", 0
-                )
-
-                blocks = anti_loop_totals.get(
-                    "execution_blocks", 0
-                )
-
-                block_rate = (
-                    blocks / attempts
-                    if attempts > 0
-                    else 0.0
-                )
-
-                self.writer.add_scalar(
-                    "anti_loop/execution_block_rate",
-                    block_rate,
-                    update,
-                )
-
-                # Bloqueios durante a criação da máscara são distintos dos
-                # bloqueios na execução de uma ação amostrada.
-                board_candidates = anti_loop_delta.get("mask_board_move_candidates", 0)
-                board_blocked = (
-                    anti_loop_delta.get("mask_board_move_blocked_anti_loop", 0)
-                    + anti_loop_delta.get("mask_board_move_blocked_seen_state", 0)
-                )
-                bench_candidates = anti_loop_delta.get("mask_bench_move_candidates", 0)
-                bench_blocked = (
-                    anti_loop_delta.get("mask_bench_move_blocked_anti_loop", 0)
-                    + anti_loop_delta.get("mask_bench_move_blocked_seen_state", 0)
-                )
-                self.writer.add_scalar(
-                    "mask_audit/board_move_candidate_filter_rate",
-                    board_blocked / board_candidates if board_candidates > 0 else 0.0,
-                    update,
-                )
-                self.writer.add_scalar(
-                    "mask_audit/bench_to_board_candidate_filter_rate",
-                    bench_blocked / bench_candidates if bench_candidates > 0 else 0.0,
-                    update,
-                )
-                self.writer.add_scalar(
-                    "mask_audit/board_move_candidates_update",
-                    board_candidates,
-                    update,
-                )
-                self.writer.add_scalar(
-                    "mask_audit/bench_to_board_candidates_update",
-                    bench_candidates,
-                    update,
-                )
-
-                # Auditoria das ações amostradas contra as máscaras.
-                checked = max(1, mask_audit_counts["actions_checked"])
-                for key in ("actions_checked", "type_invalid", "conditional_invalid", "selected_invalid"):
-                    self.writer.add_scalar(f"mask_audit/{key}", mask_audit_counts[key], update)
-                self.writer.add_scalar(
-                    "mask_audit/selected_invalid_rate",
-                    mask_audit_counts["selected_invalid"] / checked,
-                    update,
-                )
-
-                # 🎭 Médias das máscaras neste update
-                if mask_samples > 0:
-                    self.writer.add_scalar(
-                        "anti_loop/valid_action_types_mean",
-                        mask_valid_type_sum / mask_samples,
-                        update,
-                    )
-
-                    self.writer.add_scalar(
-                        "mask_audit/valid_board_move_pairs_mean",
-                        mask_valid_board_move_sum / mask_samples,
-                        update,
-                    )
-
-                    self.writer.add_scalar(
-                        "mask_audit/valid_bench_to_board_pairs_mean",
-                        mask_valid_bench_move_sum / mask_samples,
-                        update,
-                    )
 
             # ========================================================
             # 👥 AGENTS

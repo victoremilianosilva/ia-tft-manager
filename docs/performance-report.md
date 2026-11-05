@@ -46,3 +46,20 @@ configuração de CPU e carga de fundo para comparar.
 - Em scripts Python no Windows, a criação de processos deve ocorrer sob
   `if __name__ == "__main__":`. O `Trainer` mantém a opção
   `use_subprocess=False` para ambientes que não suportem spawn.
+
+
+## Remoção de telemetria de anti-loop e máscaras
+
+O caminho PPO deixa de consultar/exportar contadores de anti-loop e auditorias
+de máscaras para o TensorBoard. Também foi removida a conversão desses
+contadores no binding Python/C++ e o método público dedicado exclusivamente
+a essa telemetria.
+
+**Importante:** as máscaras de ação que a policy consome continuam sendo
+geradas pela engine e consultadas pelo Trainer. Os validadores de ações,
+bloqueios anti-loop, prevenção de ciclos e demais regras nativas continuam
+ativos. Esta alteração remove somente diagnóstico/telemetria, não controles
+que afetam decisões ou a legalidade das ações.
+
+A expectativa é reduzir sincronizações, conversões, alocações e IPC por lobby
+e por passo. O ganho exato será medido no benchmark; não é presumido.
