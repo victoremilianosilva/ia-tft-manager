@@ -80,7 +80,7 @@ class PairedEvaluatorTests(unittest.TestCase):
                 rewards.append(10.0 if variant == "finetuned" else 5.0)
                 counts.append({"BUY_XP": 1})
             return {
-                "seed": 99, "completed": True,
+                "seed": 99, "steps": 250, "completed": True,
                 "policy_variants": variants,
                 "initial_observation_sha256": "same-observation",
                 "initial_masks_sha256": "same-masks",
