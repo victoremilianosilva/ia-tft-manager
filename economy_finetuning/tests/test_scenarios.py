@@ -17,6 +17,7 @@ class ScenarioGeneratorTests(unittest.TestCase):
             "low_hp_fast8_high_gold",
             "slowroll_gold_reserve",
             "all_in_gold_hoarding",
+            "player8_all_in_gold_hoarding",
             "gold_above_50_any_strategy",
             "useful_shop_opportunity",
         }.issubset(ids))
@@ -39,6 +40,14 @@ class ScenarioGeneratorTests(unittest.TestCase):
         reward, matches = shaped_action_reward(state, 2)
         self.assertIn("slowroll_gold_reserve", matches)
         self.assertLess(reward, 0)
+
+    def test_player_eight_all_in_cohort_is_specific(self):
+        base = {"hp": 70, "gold": 70, "level": 7, "stage": 4, "strategy": 4, "player_id": 7}
+        ids = {item.scenario_id for item in matching_scenarios(base)}
+        self.assertIn("player8_all_in_gold_hoarding", ids)
+        base["player_id"] = 6
+        ids = {item.scenario_id for item in matching_scenarios(base)}
+        self.assertNotIn("player8_all_in_gold_hoarding", ids)
 
     def test_critical_hp_monitor_only_does_not_create_training_reward(self):
         state = {"hp": 20, "gold": 90, "level": 6, "stage": 4, "strategy": 2}
