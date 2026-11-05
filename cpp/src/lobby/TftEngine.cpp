@@ -4206,7 +4206,6 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
             const bool has_free_bench_slot = std::any_of(
                 this->bench.begin(), this->bench.end(),
                 [](const auto& unit) { return !unit.has_value(); });
-            if (!has_free_bench_slot) return false;
             const auto& current_strategy = this->strategy.back();
             for (std::size_t slot = 0; slot < kShopSlots; ++slot) {
                 const auto* offer = shop.get_unit(static_cast<std::int32_t>(slot));
@@ -4225,6 +4224,9 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     : (same_star_copies == 1 ? 0.2 : 0.0));
                 const bool completes_upgrade =
                     same_star_copies >= 2 && offer->star == 1;
+                // A full bench can still buy a copy that immediately merges
+                // into a higher-star unit and releases capacity.
+                if (!has_free_bench_slot && !completes_upgrade) continue;
                 const bool composition_fit =
                     unit_composition_score(current_strategy, *definition,
                         offer->star, lobby.trait_milestones) > 0.0 ||
