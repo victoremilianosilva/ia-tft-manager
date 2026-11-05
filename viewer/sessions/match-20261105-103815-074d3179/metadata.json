@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "match_id": "c77bd144-057a-4fab-9f0f-1c9c429a0b95",
+  "match_id": "074d3179-8d48-419f-816f-daa0e46b1627",
   "checkpoint_path": "C:\\Users\\cilio\\Desktop\\Ideia louca\\ia-tft-manager\\tft_checkpoint.pt",
-  "checkpoint_sha256": "75f85fcc863dec3a3ed733875b445fc41eabec9c8d0a4e5eb23247049009b7fd",
+  "checkpoint_sha256": "91cc7592dec788161f769463ee95a0b96147907425fe846e342d19944a0cd64f",
   "seed": 20261016,
   "deterministic": true,
   "engine": "cpp",
-  "created_at": "2026-11-05T11:52:06.773665+00:00",
+  "created_at": "2026-11-05T13:38:15.127484+00:00",
   "policy_class": "TFTPolicy",
   "observation_dim": 7237,
   "action_dims": [
