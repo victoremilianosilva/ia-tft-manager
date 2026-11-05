@@ -81,7 +81,8 @@ python economy_finetuning/audit.py \
   --trace CAMINHO_DA_EXECUCAO/logs/decision_trace.jsonl \
   --paired CAMINHO_DA_EXECUCAO/logs/paired_match_results.jsonl \
   --metadata CAMINHO_DA_EXECUCAO/reports/experiment_config.json \
-  --summary CAMINHO_DA_EXECUCAO/reports/training_summary.json
+  --summary CAMINHO_DA_EXECUCAO/reports/training_summary.json \
+  --output economy_finetuning/reports/ECONOMY_FINETUNING_AUDIT_critical_hp_high_gold.md
 streamlit run economy_finetuning/viewer/app.py
 ```
 
