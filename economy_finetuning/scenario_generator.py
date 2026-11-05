@@ -101,6 +101,7 @@ SCENARIOS: tuple[ScenarioSpec, ...] = (
         "Detecta acúmulo de ouro em meio/fim de jogo quando a estratégia não é SLOWROLL.",
         4, 5, 60, 250, 1, 7.99, 30.01, 100, (0, 1, 2, 4, 5, 6), True,
         "evitar_passividade_economica", 0.035, -0.008, -0.010,
+        round_min=23, round_max=30,
     ),
     ScenarioSpec(
         "critical_hp_high_gold",
