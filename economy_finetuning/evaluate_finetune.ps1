@@ -97,7 +97,8 @@ $evaluation = [ordered]@{
         note = "Pacote de revisão; approved permanece false até decisão humana. Os checks não provam melhoria de desempenho."
     }
 }
-$evaluation | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $evaluationPath -Encoding UTF8
+$evaluationJson = $evaluation | ConvertTo-Json -Depth 8
+[System.IO.File]::WriteAllText($evaluationPath, $evaluationJson, (New-Object System.Text.UTF8Encoding($false)))
 Write-Host ""
 Write-Host "AVALIAÇÃO CONCLUÍDA" -ForegroundColor Green
 Write-Host "Status: $reviewStatus"
