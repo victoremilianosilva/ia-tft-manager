@@ -31,7 +31,7 @@ class ScenarioGeneratorTests(unittest.TestCase):
         self.assertEqual(state["strategy_name"], "FAST8")
 
     def test_fast8_high_gold_scenario_matches(self):
-        state = {"hp": 70, "gold": 65, "level": 6, "stage": 4, "strategy": 2}
+        state = {"hp": 70, "gold": 65, "level": 6, "stage": 4, "round_number": 19, "strategy": 2}
         matches = {item.scenario_id for item in matching_scenarios(state)}
         self.assertIn("s4_fast8_lvl6_gold60_hp_ok", matches)
 
