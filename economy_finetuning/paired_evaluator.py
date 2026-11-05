@@ -361,7 +361,7 @@ def main():
                     f"Seed {seed}: observação inicial ou máscaras iniciais divergiram "
                     "entre as lobbies espelhadas; comparação pareada inválida."
                 )
-            stream.write(json.dumps(row, ensure_ascii=False) + "\\n")
+            stream.write(json.dumps(row, ensure_ascii=False) + "\n")
             stream.flush()
             print(
                 f"seed={seed} completed={row['both_completed']} "
