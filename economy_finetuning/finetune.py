@@ -183,6 +183,16 @@ def run(args):
     output.parent.mkdir(parents=True, exist_ok=True)
     logs_dir = run_dir / "logs"
     reports_dir = run_dir / "reports"
+    existing_logs = [
+        logs_dir / "decision_trace.jsonl",
+        logs_dir / "scenario_results.jsonl",
+        logs_dir / "training_metrics.jsonl",
+    ]
+    if any(path.exists() for path in existing_logs):
+        raise FileExistsError(
+            f"A execução já contém JSONL e não será misturada: {run_dir}. "
+            "Escolha outro --run-dir."
+        )
     logs_dir.mkdir(parents=True, exist_ok=True)
     reports_dir.mkdir(parents=True, exist_ok=True)
 
