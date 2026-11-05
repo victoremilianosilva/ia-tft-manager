@@ -17,6 +17,7 @@ econômicos, vendas e posicionamento no mesmo update PPO.
 | 7 | `core_sale_retention` | 23 vendas core HIGH e 13 vendas de cópias de pares; P6 vende Master Yi/Kog'Maw em ALL_IN | `type_head` + `sell_head` + `value_head` | Reward nativo de venda | Requer ampliar o runner e a auditoria de cabeças condicionais |
 | 8 | `bench_deployment_quality` | Tabuleiros subocupados/estruturalmente fracos e unidades úteis não implantadas | `type_head` + `bench_head` + `bench_to_board_head` + `value_head` | Reward nativo de implantação e melhoria estrutural | Requer contrato de cenário e auditoria de heads |
 | 9 | `carry_protection_positioning` | Carry exposto, frontline frágil/isolada e warnings de posicionamento | `type_head` + `board_source_head` + `board_move_target_head` + `value_head` | Reward de movimento validado por métrica tática | Bloqueado até alinhar classificação de roles na observação e no avaliador |
+| 10 | `movement_no_progress` | P4: 76 movimentos (MOVE_BENCH -0,042; MOVE_BOARD -0,008); P6: 76; P7: 87 | `type_head` + heads condicionais de movimento | Reward nativo + delta líquido da sequência | Depois de corrigir a semântica de role e separar deploy de reposition |
 
 Os seis primeiros são cenários econômicos e já podem ser selecionados pelo
 script PowerShell. Os cenários 7–9 **não são opções do PS1 ainda**; não vou
@@ -99,7 +100,9 @@ Antes do treino 9, alinhar a classificação usada na observação, nos candidat
 no banco e no `BoardEvaluation`. Depois criar o cenário com exposição de carry,
 frontline frágil/isolada e melhoria de score tático. O cenário 8 deve vir antes:
 um tabuleiro com poucos campeões ou sem unidades úteis implantadas não se
-resolve movendo posições.
+resolve movendo posições. O cenário 10 mede eficiência de movimento: não
+penaliza uma troca isolada útil, mas ensina a policy a evitar sequências cujo
+delta líquido de estrutura/posição não melhora o tabuleiro.
 
 Também é necessário separar na auditoria `positional_score`,
 `structural_score`, `exposed_main_carry_count`,
