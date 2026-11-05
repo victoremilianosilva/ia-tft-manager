@@ -42,15 +42,15 @@ inline EconomicStrategyDecision select_economic_strategy(
     out.scores.fill(kIneligible);
 
     // Emergency spending overrides greed and long-term plans.
-    if (s.hp <= 15.0) {
-        out.scores[4] = 100.0 + (15.0 - s.hp);
+    if (s.hp <= 25.0) {
+        out.scores[4] = 100.0 + (25.0 - s.hp);
         out.reason = "HP crítico: gastar para sobreviver";
     }
 
     if (s.hp <= 38.0 || (s.board_power < 25.0 && s.hp < 65.0)) {
         out.scores[1] = 65.0 + std::max(0.0, 38.0 - s.hp) * 0.25
             + std::max(0.0, 25.0 - s.board_power) * 0.15;
-        if (s.hp <= 15.0) out.scores[1] = kIneligible;
+        if (s.hp <= 25.0) out.scores[1] = kIneligible;
         out.reason = s.hp <= 38.0
             ? "STABILIZE: pressão de vida"
             : "STABILIZE: tabuleiro fraco sob pressão";
