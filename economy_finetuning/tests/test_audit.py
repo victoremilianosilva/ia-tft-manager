@@ -34,7 +34,7 @@ class AuditTests(unittest.TestCase):
         report = build_report([], paired)
         self.assertIn("Diferença média de colocação", report)
         self.assertIn("Taxa Top 4", report)
-        self.assertIn("board_structural_score", report)
+        self.assertIn("estrutura", report)
         self.assertIn("1/2 → 2/2", report)
 
     def test_report_includes_non_target_preservation(self):
