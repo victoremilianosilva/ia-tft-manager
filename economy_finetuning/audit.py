@@ -12,9 +12,9 @@ ACTION_NAMES = {
     4: "MOVE_BOARD", 5: "SELL", 6: "PASS",
     7: "EQUIP_FROM_INVENTORY", 8: "CRAFT_AND_EQUIP",
 }
-# The intended tuning scope is BUY_XP/PASS/REROLL in selected economic cohorts.
-# All other action families are explicitly audited as non-target behavior.
-NON_TARGET_TYPES = {0, 3, 4, 5, 7, 8}
+# Economic tuning may choose among BUY, REROLL, BUY_XP and PASS.
+# Movement, selling and item-management families are outside this head's target.
+NON_TARGET_TYPES = {3, 4, 5, 7, 8}
 
 
 def read_jsonl(path: Path):
@@ -42,6 +42,8 @@ def js_divergence(p, q):
 
 
 def build_report(rows, paired_rows=None, metadata=None, training_summary=None):
+    metadata = metadata or {}
+    selected_scenario = metadata.get("selected_scenario")
     total = action_divergences = non_target_states = non_target_divergences = 0
     conditional_argument_changes = 0
     type_divergences = []
@@ -59,7 +61,13 @@ def build_report(rows, paired_rows=None, metadata=None, training_summary=None):
         action_divergences += int(differs)
         if original_type == tuned_type and original_action[1:] != tuned_action[1:]:
             conditional_argument_changes += 1
-        non_target = original_type in NON_TARGET_TYPES or tuned_type in NON_TARGET_TYPES
+        # Regression scope is defined by state cohort, not by which action
+        # happened to be selected. BUY is a valid economic decision in the
+        # critical-HP cohort and must not be mislabeled as non-target.
+        non_target = (
+            selected_scenario is not None
+            and selected_scenario not in row.get("scenario_ids", [])
+        )
         if non_target:
             non_target_states += 1
             non_target_divergences += int(differs)
@@ -93,12 +101,15 @@ def build_report(rows, paired_rows=None, metadata=None, training_summary=None):
             f"| {ACTION_NAMES[action_type]} | {a} | {b} | {b-a:+d} |"
         )
 
-    strategy_lines = ["| Estratégia | Estados | Ações diferentes | Divergência |",
-                      "|---|---:|---:|---:|"]
+    strategy_lines = [
+        "| Estratégia | Estados | Ações diferentes | Divergência | Estados fora do cenário | Divergências fora |",
+        "|---|---:|---:|---:|---:|---:|",
+    ]
     for strategy, item in sorted(by_strategy.items()):
         rate = item["different"] / item["rows"] if item["rows"] else 0.0
         strategy_lines.append(
-            f"| {strategy} | {item['rows']} | {item['different']} | {rate:.1%} |"
+            f"| {strategy} | {item['rows']} | {item['different']} | {rate:.1%} | "
+            f"{item['non_target']} | {item['non_target_diff']} |"
         )
 
     preservation_lines = [
@@ -238,7 +249,6 @@ def build_report(rows, paired_rows=None, metadata=None, training_summary=None):
 
     provenance_section = "## Proveniência do experimento\\n\\nMetadados não fornecidos.\\n"
     if metadata is not None or training_summary is not None:
-        metadata = metadata or {}
         training_summary = training_summary or {}
         params = metadata.get("ppo_parameters", {})
         paired_provenance = (
@@ -276,8 +286,9 @@ def build_report(rows, paired_rows=None, metadata=None, training_summary=None):
 - Ações completas diferentes: **{action_divergences} ({action_rate:.1%})**
 - Mudanças de argumentos com mesmo tipo de ação: **{conditional_argument_changes}**
 - Divergência JS média da cabeça de tipo: **{js_text}**
-- Estados em que ao menos uma ação é fora do escopo: **{non_target_states}**
-- Divergência entre esses estados: **{non_target_divergences} ({non_target_text})**
+- Cenário-alvo: **{selected_scenario or 'não informado'}**
+- Estados fora do cenário-alvo: **{non_target_states}**
+- Divergência de ação nesses estados: **{non_target_divergences} ({non_target_text})**
 - Status preliminar: **{status}**
 
 O limite de 5% é apenas um alerta de triagem para mudanças fora do escopo, não um critério universal de aprovação.
