@@ -5,6 +5,7 @@ import argparse
 import copy
 import hashlib
 import json
+from datetime import datetime
 import random
 import sys
 from pathlib import Path
@@ -166,9 +167,20 @@ def run(args):
     if not checkpoint_path.is_file():
         raise FileNotFoundError(f"Checkpoint original não encontrado: {checkpoint_path}")
 
-    output = Path(args.output).expanduser().resolve()
+    run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    run_dir = (
+        Path(args.run_dir).expanduser().resolve()
+        if args.run_dir else ROOT / "economy_finetuning" / "runs" / f"run_{run_id}"
+    )
+    output = (
+        Path(args.output).expanduser().resolve()
+        if args.output else ROOT / "economy_finetuning" / "checkpoints" / f"economy_ft_{run_id}.pt"
+    )
+    if output.exists():
+        raise FileExistsError(
+            f"O checkpoint de saída já existe e não será sobrescrito: {output}"
+        )
     output.parent.mkdir(parents=True, exist_ok=True)
-    run_dir = Path(args.run_dir).expanduser().resolve()
     logs_dir = run_dir / "logs"
     reports_dir = run_dir / "reports"
     logs_dir.mkdir(parents=True, exist_ok=True)
@@ -390,8 +402,8 @@ def parse_args():
         help="Arquivo JSON com defaults do fine-tuning",
     )
     parser.add_argument("--checkpoint", required=True, help="Checkpoint original .pt")
-    parser.add_argument("--output", default="economy_finetuning/checkpoints/economy_ft.pt")
-    parser.add_argument("--run-dir", default="economy_finetuning/runs/latest")
+    parser.add_argument("--output", default=None, help="Checkpoint de saída; por padrão usa nome único")
+    parser.add_argument("--run-dir", default=None, help="Diretório da execução; por padrão usa nome único")
     parser.add_argument("--updates", type=int, default=100)
     parser.add_argument("--rollout-steps", type=int, default=128)
     parser.add_argument("--batch-size", type=int, default=64)
