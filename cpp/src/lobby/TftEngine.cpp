@@ -1280,7 +1280,7 @@ struct TFTEngine::Impl {
                 out[offset++] = 1.0f;
                 out[offset++] = static_cast<float>(def->cost) / 5.0f;
                 out[offset++] = static_cast<float>(unit.star) / 3.0f;
-                out[offset++] = role_state_value(def->combat_profile.role);
+                out[offset++] = role_state_value(observation_role(unit, *def));
                 out[offset++] = unit_strength(*def, unit);
             }
 
@@ -1306,7 +1306,7 @@ struct TFTEngine::Impl {
                 out[offset++] = 1.0f;
                 out[offset++] = static_cast<float>(def->cost) / 5.0f;
                 out[offset++] = 1.0f;
-                out[offset++] = role_state_value(def->combat_profile.role);
+                out[offset++] = role_state_value(observation_role(*unit, *def));
                 out[offset++] = 0.0f; // Python shop strength slot is intentionally zero.
             }
 
@@ -1529,7 +1529,7 @@ struct TFTEngine::Impl {
                     if (definition) {
                         const bool on_board = target < kBoardSlots;
                         const auto row = on_board ? target / 7 : 0;
-                        const int role = std::clamp(definition->combat_profile.role, 0, 4);
+                        const int role = std::clamp(observation_role(*unit, *definition), 0, 4);
                         const auto& stats = definition->stats;
                         const auto& combat = definition->combat_profile;
                         const auto fit = unit_composition_score(strategy, *definition,
@@ -1685,7 +1685,7 @@ struct TFTEngine::Impl {
                 out[offset++] = static_cast<float>(std::clamp(fit / 22.5, 0.0, 1.0));
                 out[offset++] = static_cast<float>(def->cost) / 5.0f;
                 out[offset++] = static_cast<float>(unit->star) / 3.0f;
-                out[offset++] = role_state_value(def->combat_profile.role);
+                out[offset++] = role_state_value(observation_role(*unit, *def));
                 out[offset++] = core ? 1.0f : 0.0f;
                 // Number of owned copies (including star-equivalent copies), normalized.
                 out[offset++] = static_cast<float>(std::min(copies, 9)) / 9.0f;
@@ -2160,7 +2160,7 @@ struct TFTEngine::Impl {
             const auto* def = catalog->find_by_id(unit->champion_internal_id);
             if (!def) continue;
             bench_profiles.push_back({
-                std::clamp(def->combat_profile.role, 0, 4),
+                classify_unit(*unit, *def).positioning_role,
                 unit->star
             });
         }
