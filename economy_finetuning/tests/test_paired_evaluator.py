@@ -3,10 +3,23 @@ import unittest
 from economy_finetuning.paired_evaluator import (
     compare_final_metrics,
     extract_final_metrics,
+    masks_sha256,
 )
 
 
 class PairedEvaluatorTests(unittest.TestCase):
+    def test_action_mask_hash_is_stable_and_detects_mask_changes(self):
+        masks = [
+            {"type_mask": [1, 0, 1], "bench_mask": [0, 1]},
+            {"type_mask": [0, 1, 0], "bench_mask": [1, 0]},
+        ]
+        self.assertEqual(masks_sha256(masks), masks_sha256(masks))
+        changed = [
+            {"type_mask": [1, 0, 1], "bench_mask": [0, 1]},
+            {"type_mask": [0, 1, 1], "bench_mask": [1, 0]},
+        ]
+        self.assertNotEqual(masks_sha256(masks), masks_sha256(changed))
+
     def test_terminal_ranking_and_fresh_audit_board_metrics_are_joined(self):
         public_state = {
             "finished": True,
