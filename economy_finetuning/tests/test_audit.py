@@ -38,6 +38,28 @@ class AuditTests(unittest.TestCase):
         self.assertIn("1/2 → 2/2", report)
         self.assertIn("50.0% → 100.0%", report)
 
+    def test_report_includes_checkpoint_engine_and_reward_provenance(self):
+        metadata = {
+            "repository_commit": "abc123",
+            "checkpoint_sha256": "original-hash",
+            "finetuned_checkpoint_sha256": "tuned-hash",
+            "reward_model_source_sha256": "reward-hash",
+            "engine_source_sha256": "engine-hash",
+            "config_sha256": "config-hash",
+            "selected_scenario": "critical_hp_high_gold",
+            "ppo_parameters": {"learning_rate": 1e-5, "clip_coef": 0.1},
+        }
+        summary = {
+            "selected_scenario_transitions": 120,
+            "optimizer_steps_total": 15,
+        }
+        report = build_report([], metadata=metadata, training_summary=summary)
+        self.assertIn("abc123", report)
+        self.assertIn("original-hash", report)
+        self.assertIn("reward-hash", report)
+        self.assertIn("critical_hp_high_gold", report)
+        self.assertIn("optimizer steps", report)
+
     def test_report_includes_non_target_preservation(self):
         rows = [{
             "original_action": [4, 0, 0, 0, 1, 2],
