@@ -2,7 +2,8 @@
 
 Os cenários abaixo são detectados em observações reais da engine C++. Eles não
 são estados sintéticos injetados: a API atual não possui setter público para
-ouro, HP, nível, estágio, lobby ou composição.
+ouro, HP, nível, estágio, lobby ou composição. Cada execução seleciona um único
+cenário treinável; todos os demais ficam apenas em monitoramento.
 
 | ID | Condições | Estratégia | Tipo | Objetivo |
 |---|---|---|---|---|
@@ -10,7 +11,7 @@ ouro, HP, nível, estágio, lobby ou composição.
 | `s4_fast8_lvl6_gold80` | Estágio 4 (4-1 a 4-7), nível 6, ouro 80+, HP acima de 40 | FAST8 | Treinável | Caso severo de acúmulo; maior incentivo contextual para BUY_XP |
 | `s4_fast8_lvl7_gold60` | Estágio 4 (4-1 a 4-7), nível 7, ouro 60+, HP acima de 30 | FAST8 | Treinável | Avaliar progressão para nível 8, sem forçar 9/10 |
 | `late_game_high_gold_underleveled` | Estágio 4–5, nível até 7, ouro 60+, HP acima de 30 | ECON, STABILIZE, FAST8, ALL_IN, WINSTREAK, LOSS_STREAK | Treinável | Reduzir passividade econômica fora de SLOWROLL |
-| `critical_hp_high_gold` | Estágio 3–7, HP até 30, ouro 50+ | Todas | Monitor-only | Investigar acúmulo com risco de eliminação; não forçar XP |
+| `critical_hp_high_gold` | Estágio 3–7, HP até 30, ouro 50+ | ECON, STABILIZE, FAST8, ALL_IN, WINSTREAK, LOSS_STREAK | Treinável — reward nativo | Aprender quando comprar unidade, XP, roll ou passar sem presumir que XP é sempre correto |
 | `low_hp_fast8_high_gold` | Estágio 3–7, FAST8, HP até 40, ouro 50+ | FAST8 | Monitor-only | Verificar trade-off entre XP e estabilização |
 | `slowroll_gold_reserve` | Estágio 3–4, nível 6, ouro 50+, HP acima de 50 | SLOWROLL | Treinável/proteção | Penalizar BUY_XP para preservar a lógica de slowroll |
 | `all_in_gold_hoarding` | Estágio 3–7, ouro 50+ | ALL_IN | Monitor-only | Investigar reservas incompatíveis com ALL_IN sem criar reward especulativo |
@@ -26,10 +27,11 @@ registrados como monitoramento, sem shaping e sem entrar no minibatch PPO. O sha
 decisão de tipo:
 
 - BUY_XP: incentivo contextual nos cenários FAST8/atraso de nível.
+- HP crítico: nenhum shaping sintético; o PPO aprende exclusivamente do reward nativo da engine nesse cohort.
 - PASS e REROLL: penalidades pequenas nos cenários específicos de acúmulo.
 - SLOWROLL: penalidade contextual para BUY_XP, evitando que a correção de
   economia se transforme em gasto indiscriminado de XP.
-- HP crítico: BUY_XP nunca recebe shaping positivo; os casos FAST8 com HP até 40 ficam monitor-only porque comprar XP pode ser pior que estabilizar o tabuleiro.
+- HP crítico: cenário treinável com reward nativo, sem bônus artificial para XP. Os casos FAST8 com HP até 40 também são monitorados; o agente aprende a comparar BUY, BUY_XP, REROLL e PASS pelo resultado já calculado pela engine.
 
 Não existe bônus genérico para qualquer compra ou qualquer gasto de ouro. A
 observação disponível não comprova, por si só, que cada unidade na loja é útil,
