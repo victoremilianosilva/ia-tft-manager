@@ -252,7 +252,7 @@ def main():
             same_initial_state = same_initial_observation and same_initial_masks
             if not same_initial_state:
                 raise RuntimeError(
-                    f"Seed {seed}: os modelos não começaram da mesma observação; "
+                    f"Seed {seed}: observação inicial ou máscaras iniciais divergiram; "
                     "comparação pareada inválida."
                 )
             reward_deltas = [
