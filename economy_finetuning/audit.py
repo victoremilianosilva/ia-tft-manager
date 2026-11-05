@@ -36,8 +36,8 @@ def js_divergence(p, q):
     q = [x / qs for x in q]
     m = [(a + b) / 2 for a, b in zip(p, q)]
     return 0.5 * (
-        sum(a * math.log(a / b) for a, b in zip(p, m))
-        + sum(a * math.log(a / b) for a, b in zip(q, b_m) for b_m in [m])
+        sum(a * math.log(a / middle) for a, middle in zip(p, m))
+        + sum(a * math.log(a / middle) for a, middle in zip(q, m))
     )
 
 
@@ -136,6 +136,7 @@ def build_report(rows, paired_rows=None):
         deltas = [float(item.get("mean_reward_delta", 0.0)) for item in paired_rows]
         completed = sum(bool(item.get("both_completed")) for item in paired_rows)
         paired_mean = sum(deltas) / len(deltas) if deltas else None
+        paired_mean_text = f"{paired_mean:.5f}" if paired_mean is not None else "n/a"
         paired_lines = [
             f"| {item.get('seed')} | {float(item.get('mean_reward_delta', 0.0)):+.5f} | "
             f"{'Sim' if item.get('both_completed') else 'Não'} |"
