@@ -20,7 +20,24 @@ class ScenarioGeneratorTests(unittest.TestCase):
             "player8_all_in_gold_hoarding",
             "gold_above_50_any_strategy",
             "useful_shop_opportunity",
+            "core_sale_retention",
+            "bench_deployment_quality",
+            "carry_protection_positioning",
+            "movement_no_progress",
         }.issubset(ids))
+
+    def test_strategic_scenarios_train_only_their_conditional_heads(self):
+        expected = {
+            "core_sale_retention": {"type_head", "sell_head", "value_head"},
+            "bench_deployment_quality": {"type_head", "bench_head", "bench_to_board_head", "value_head"},
+            "carry_protection_positioning": {"type_head", "board_source_head", "board_move_target_head", "value_head"},
+            "movement_no_progress": {"type_head", "board_source_head", "board_move_target_head", "bench_head", "bench_to_board_head", "value_head"},
+        }
+        for scenario_id, heads in expected.items():
+            scenario = next(item for item in SCENARIOS if item.scenario_id == scenario_id)
+            self.assertTrue(scenario.trainable)
+            self.assertEqual(set(scenario.trainable_heads), heads)
+            self.assertEqual(scenario.reward_mode, "native")
 
     def test_decodes_documented_core_fields(self):
         obs = [0.75, 1.2, 6 / 9, 0, 0, 0, 0.5] + [0.0] * 3 + [0, 0, 1, 0, 0, 0, 0]
