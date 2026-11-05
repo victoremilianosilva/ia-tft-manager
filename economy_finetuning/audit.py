@@ -142,6 +142,19 @@ def build_report(rows, paired_rows=None, metadata=None, training_summary=None):
             player for match in completed_rows
             for player in match.get("final_player_deltas", [])
         ]
+        paired_original_actions, paired_tuned_actions = Counter(), Counter()
+        for match in paired_rows:
+            for player_counts in match.get("original", {}).get("action_counts", []):
+                paired_original_actions.update(player_counts)
+            for player_counts in match.get("finetuned", {}).get("action_counts", []):
+                paired_tuned_actions.update(player_counts)
+        paired_action_lines = [
+            f"| {ACTION_NAMES[action_type]} | "
+            f"{paired_original_actions[ACTION_NAMES[action_type]]} | "
+            f"{paired_tuned_actions[ACTION_NAMES[action_type]]} | "
+            f"{paired_tuned_actions[ACTION_NAMES[action_type]] - paired_original_actions[ACTION_NAMES[action_type]]:+d} |"
+            for action_type in range(9)
+        ]
 
         def mean_metric(key):
             values = [
@@ -211,6 +224,9 @@ def build_report(rows, paired_rows=None, metadata=None, training_summary=None):
             "| Seed | Reward delta médio | Placement delta médio | Top 4 original → fine-tuned | Ambas concluídas |\\n"
             "|---:|---:|---:|:---:|:---:|\\n"
             + "\\n".join(paired_lines)
+            + "\\n\\n### Frequência de ações nas partidas completas\\n\\n"
+            + "| Ação | Original | Fine-tuned | Diferença |\\n|---|---:|---:|---:|\\n"
+            + "\\n".join(paired_action_lines)
             + "\\n\\nPlacement é calculada pelo ranking terminal nativo; partidas incompletas não entram nas métricas de colocação.\\n"
         )
 
