@@ -100,6 +100,10 @@ def main():
     tuned = load_policy(tuned_path, obs_dim, device)
 
     output = Path(args.output)
+    if output.exists():
+        raise FileExistsError(
+            f"O JSONL de saída já existe e não será sobrescrito: {output}"
+        )
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", encoding="utf-8") as stream:
         for seed in seeds:
