@@ -4616,7 +4616,14 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
 
         const double action_gold_reward =
             reward_model::gold_change_reward(old_gold, economy.gold);
-        action_reward += action_gold_reward;
+        const std::int32_t gold_reward_strategy_id =
+            this->strategy.empty() ? 0 : this->strategy.back().strategy;
+        // ALL_IN is the explicit exception to interest preservation: retain
+        // some opportunity-cost signal, but do not let crossing below 50
+        // overwhelm the action's survival-oriented spending reward.
+        const double liquidity_reward_scale =
+            gold_reward_strategy_id == 4 && (type == 0 || type == 2) ? 0.35 : 1.0;
+        action_reward += action_gold_reward * liquidity_reward_scale;
 
         // Persist the complete buy reward so a later proven reversal can be
         // prevented from making the aggregate purchase->sale sequence positive.
