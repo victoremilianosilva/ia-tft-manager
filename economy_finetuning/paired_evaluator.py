@@ -332,6 +332,13 @@ def main():
         "reward_model_source_sha256": file_sha256(
             ROOT / "cpp" / "include" / "reward" / "RewardModel.hpp"
         ),
+        "engine_source_sha256": file_sha256(
+            ROOT / "cpp" / "src" / "lobby" / "TftEngine.cpp"
+        ),
+        "action_mask_source_sha256": file_sha256(
+            ROOT / "cpp" / "src" / "decision" / "ActionMaskEngine.cpp"
+        ),
+        "policy_source_sha256": file_sha256(ROOT / "policy.py"),
         "observation_dim": obs_dim,
         "action_dims": ACTION_DIMS,
         "evaluation_mode": "mixed_4v4_mirrored_seats",
