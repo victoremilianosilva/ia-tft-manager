@@ -5,11 +5,14 @@ from pathlib import Path
 from unittest.mock import patch
 
 from economy_finetuning import chain_manager as chain
+from economy_finetuning.scenario_generator import SCENARIOS
 
 
 class ScenarioChainTests(unittest.TestCase):
     def test_order_is_ten_stages_and_strictly_sequential(self):
         self.assertEqual(len(chain.SCENARIO_ORDER), 10)
+        trainable = {item.scenario_id for item in SCENARIOS if item.trainable}
+        self.assertEqual(trainable, set(chain.SCENARIO_ORDER))
         self.assertEqual(chain.predecessor(chain.SCENARIO_ORDER[0]), None)
         self.assertEqual(chain.predecessor(chain.SCENARIO_ORDER[1]), chain.SCENARIO_ORDER[0])
 
