@@ -258,6 +258,8 @@ def run(args):
         update_path = logs_dir / "training_metrics.jsonl"
         last_done = np.zeros(8, dtype=np.float32)
         global_step = 0
+        optimizer_steps_total = 0
+        selected_scenario_transitions_total = 0
 
         for update in range(1, args.updates + 1):
             rollout = RolloutBuffer(
@@ -316,6 +318,7 @@ def run(args):
                 rewards = np.asarray(rewards, dtype=np.float32) + np.asarray(shaped_rewards, dtype=np.float32)
                 episode_reward += rewards
                 matched_transitions += int(sum(valid))
+                selected_scenario_transitions_total += int(sum(valid))
                 dones = _individual_dones(info, lobby_done)
 
                 rollout.add(
@@ -359,6 +362,7 @@ def run(args):
                         f"update={update}: apenas {matched_transitions} transições elegíveis; "
                         f"mínimo={args.min_scenario_transitions}, update ignorado"
                     )
+            optimizer_steps_total += int(metrics.get("optimizer_steps", 0))
             head_drift, head_drift_limit = _project_type_head_to_reference(
                 policy, original_policy, args.max_type_head_drift
             )
@@ -378,6 +382,12 @@ def run(args):
                 f"optimizer_steps={metrics_row.get('optimizer_steps', 0)}"
             )
 
+        if optimizer_steps_total <= 0 or selected_scenario_transitions_total <= 0:
+            raise RuntimeError(
+                f"O cenário {selected_scenario.scenario_id} não gerou transições "
+                "suficientes para nenhum update PPO. Nenhum checkpoint será salvo."
+            )
+
         # Always save a distinct fine-tuned artifact; never overwrite the source.
         torch.save({
             "policy": policy.state_dict(),
@@ -394,6 +404,9 @@ def run(args):
         summary = {
             "checkpoint_original": str(checkpoint_path),
             "checkpoint_finetuned": str(output),
+            "selected_scenario": selected_scenario.scenario_id,
+            "selected_scenario_transitions": selected_scenario_transitions_total,
+            "optimizer_steps_total": optimizer_steps_total,
             "scenario_matches": total_matches,
             "scenario_action_counts": action_counts,
             "matched_transitions_total": int(sum(total_matches.values())),
