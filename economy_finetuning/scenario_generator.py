@@ -190,10 +190,17 @@ def scenario_catalog() -> list[dict[str, Any]]:
     return [scenario.to_dict() for scenario in SCENARIOS]
 
 
-def shaped_action_reward(state: dict[str, Any], action_type: int) -> tuple[float, list[str]]:
-    """Return small, context-gated shaping and matched trainable scenario IDs."""
+def shaped_action_reward(
+    state: dict[str, Any], action_type: int, selected_scenario_id: str | None = None
+) -> tuple[float, list[str]]:
+    """Return shaping for exactly one selected scenario; retain all matches for audit."""
     matched = matching_scenarios(state)
-    trainable = [scenario for scenario in matched if scenario.trainable]
+    trainable = [
+        scenario for scenario in matched
+        if scenario.trainable and (
+            selected_scenario_id is None or scenario.scenario_id == selected_scenario_id
+        )
+    ]
     rewards = []
     for scenario in trainable:
         if action_type == 2:       # BUY_XP
