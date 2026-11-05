@@ -1196,6 +1196,34 @@ struct TFTEngine::Impl {
                     ++trait_counts[it->second].second;
                 }
             };
+            // Match the exact combat-role classifier used by BoardEvaluation.
+            // Otherwise PPO observes a catalog role while the reward evaluator
+            // scores the same unit as a carry/tank, creating contradictory labels.
+            const auto observation_role = [&](const UnitInstance& unit,
+                                               const ChampionDefinition& def) {
+                strategy::UnitCombatSignals signals;
+                signals.base_role = def.combat_profile.role;
+                signals.attack_range = def.stats.attack_range > 0.0
+                    ? def.stats.attack_range : def.combat_profile.attack_range;
+                signals.max_health = def.stats.max_hp;
+                signals.armor = def.stats.armor;
+                signals.magic_resist = def.stats.magic_resist;
+                signals.attack_damage = def.stats.attack_damage;
+                signals.attack_speed = def.stats.attack_speed;
+                signals.ability_text = def.ability.description + " " + def.ability.name;
+                signals.planned_main_carry =
+                    unit.champion_internal_id == strategy.planned_main_carry_id;
+                for (const auto& item : unit.items) {
+                    signals.item_health += item.health;
+                    signals.item_armor += item.armor;
+                    signals.item_magic_resist += item.magic_resist;
+                    signals.item_attack_damage += item.attack_damage;
+                    signals.item_attack_speed += item.attack_speed;
+                    signals.item_ability_power += item.ability_power;
+                    signals.item_crit += item.critical_strike_chance;
+                }
+                return strategy::UnitCombatClassifier::classify(signals).positioning_role;
+            };
 
             for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
                 if (!player_envs[i].board[slot]) continue;
@@ -1204,7 +1232,7 @@ struct TFTEngine::Impl {
                 const auto& unit = *player_envs[i].board[slot];
                 const auto* def = catalog->find_by_id(unit.champion_internal_id);
                 if (!def) continue;
-                const int role = std::clamp(def->combat_profile.role, 0, 4);
+                const int role = std::clamp(observation_role(unit, *def), 0, 4);
                 board_roles[slot] = role;
                 const auto role_index = static_cast<std::size_t>(role);
                 if (!seen_roles[role_index]) {
