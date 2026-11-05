@@ -207,7 +207,7 @@ Aprovação exige ganho econômico demonstrado, amostra suficiente, ausência de
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--trace", default="economy_finetuning/runs/latest/logs/decision_trace.jsonl")
+    parser.add_argument("--trace", required=True, help="JSONL de decisões da execução")
     parser.add_argument("--paired", default=None, help="JSONL opcional de partidas completas pareadas")
     parser.add_argument("--output", default="economy_finetuning/reports/ECONOMY_FINETUNING_AUDIT.md")
     args = parser.parse_args()
