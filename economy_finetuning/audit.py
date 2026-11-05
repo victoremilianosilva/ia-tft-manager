@@ -131,25 +131,84 @@ def build_report(rows, paired_rows=None):
         else "SEM ALERTA AUTOMÁTICO — REVISÃO DE CONSEQUÊNCIAS OBRIGATÓRIA"
     )
 
-    paired_section = "## Partidas completas pareadas\n\nNenhum arquivo de partidas pareadas foi fornecido.\n"
+    paired_section = "## Partidas completas pareadas\\n\\nNenhum arquivo de partidas pareadas foi fornecido.\\n"
     if paired_rows is not None:
         deltas = [float(item.get("mean_reward_delta", 0.0)) for item in paired_rows]
-        completed = sum(bool(item.get("both_completed")) for item in paired_rows)
+        completed_rows = [item for item in paired_rows if item.get("both_completed")]
+        completed = len(completed_rows)
         paired_mean = sum(deltas) / len(deltas) if deltas else None
         paired_mean_text = f"{paired_mean:.5f}" if paired_mean is not None else "n/a"
-        paired_lines = [
-            f"| {item.get('seed')} | {float(item.get('mean_reward_delta', 0.0)):+.5f} | "
-            f"{'Sim' if item.get('both_completed') else 'Não'} |"
-            for item in paired_rows
+        player_rows = [
+            player for match in completed_rows
+            for player in match.get("final_player_deltas", [])
         ]
+
+        def mean_metric(key):
+            values = [
+                float(player[key]) for player in player_rows
+                if player.get(key) is not None
+            ]
+            return sum(values) / len(values) if values else None
+
+        def metric_text(value, suffix=""):
+            return f"{value:+.3f}{suffix}" if value is not None else "n/a"
+
+        placement_delta = mean_metric("placement_delta")
+        top4_original = mean_metric("original_top4")
+        top4_tuned = mean_metric("finetuned_top4")
+        win_original = (
+            sum(1 for player in player_rows if player.get("original_placement") == 1) / len(player_rows)
+            if player_rows else None
+        )
+        win_tuned = (
+            sum(1 for player in player_rows if player.get("finetuned_placement") == 1) / len(player_rows)
+            if player_rows else None
+        )
+        paired_lines = []
+        for item in paired_rows:
+            players = item.get("final_player_deltas", [])
+            seed_placement = [
+                float(player["placement_delta"]) for player in players
+                if player.get("placement_delta") is not None
+            ]
+            seed_top4_orig = [
+                bool(player["original_top4"]) for player in players
+                if player.get("original_top4") is not None
+            ]
+            seed_top4_tuned = [
+                bool(player["finetuned_top4"]) for player in players
+                if player.get("finetuned_top4") is not None
+            ]
+            placement_text = (
+                f"{sum(seed_placement) / len(seed_placement):+.2f}"
+                if seed_placement else "n/a"
+            )
+            top4_text = (
+                f"{sum(seed_top4_orig)}/{len(seed_top4_orig)} → "
+                f"{sum(seed_top4_tuned)}/{len(seed_top4_tuned)}"
+                if seed_top4_orig and seed_top4_tuned else "n/a"
+            )
+            paired_lines.append(
+                f"| {item.get('seed')} | {float(item.get('mean_reward_delta', 0.0)):+.5f} | "
+                f"{placement_text} | {top4_text} | "
+                f"{'Sim' if item.get('both_completed') else 'Não'} |"
+            )
         paired_section = (
-            "## Partidas completas pareadas\n\n"
-            f"- Seeds avaliadas: **{len(paired_rows)}**\n"
-            f"- Ambas as partidas concluídas: **{completed}/{len(paired_rows)}**\n"
-            f"- Diferença média de reward (fine-tuned - original): **{paired_mean_text}**\n\n"
-            "| Seed | Reward delta médio | Ambas concluídas |\n|---:|---:|:---:|\n"
-            + "\n".join(paired_lines)
-            + "\n\nReward é reportado como soma nativa por jogador; não equivale a colocação sem validar o schema terminal.\n"
+            "## Partidas completas pareadas\\n\\n"
+            f"- Seeds avaliadas: **{len(paired_rows)}**\\n"
+            f"- Ambas as partidas concluídas: **{completed}/{len(paired_rows)}**\\n"
+            f"- Pares jogador/seed com colocação comparável: **{len(player_rows)}**\\n"
+            f"- Diferença média de reward (fine-tuned - original): **{paired_mean_text}**\\n"
+            f"- Diferença média de colocação (fine-tuned - original): **{metric_text(placement_delta)}** (negativo é melhor)\\n"
+            f"- Taxa Top 4: **{metric_text(top4_original, '%')} → {metric_text(top4_tuned, '%')}**\\n"
+            f"- Taxa de vitória: **{metric_text(win_original, '%')} → {metric_text(win_tuned, '%')}**\\n"
+            f"- Delta médio de HP/ouro/nível/estrutura: **{metric_text(mean_metric('hp_delta'))} / "
+            f"{metric_text(mean_metric('gold_delta'))} / {metric_text(mean_metric('level_delta'))} / "
+            f"{metric_text(mean_metric('board_structural_score_delta'))}**\\n\\n"
+            "| Seed | Reward delta médio | Placement delta médio | Top 4 original → fine-tuned | Ambas concluídas |\\n"
+            "|---:|---:|---:|:---:|:---:|\\n"
+            + "\\n".join(paired_lines)
+            + "\\n\\nPlacement é calculada pelo ranking terminal nativo; partidas incompletas não entram nas métricas de colocação.\\n"
         )
 
     js_text = f"{mean_js:.6f}" if mean_js is not None else "n/a"
