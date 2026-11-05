@@ -41,7 +41,7 @@ def js_divergence(p, q):
     )
 
 
-def build_report(rows, paired_rows=None):
+def build_report(rows, paired_rows=None, metadata=None, training_summary=None):
     total = action_divergences = non_target_states = non_target_divergences = 0
     conditional_argument_changes = 0
     type_divergences = []
@@ -214,6 +214,28 @@ def build_report(rows, paired_rows=None):
             + "\\n\\nPlacement é calculada pelo ranking terminal nativo; partidas incompletas não entram nas métricas de colocação.\\n"
         )
 
+    provenance_section = "## Proveniência do experimento\\n\\nMetadados não fornecidos.\\n"
+    if metadata is not None or training_summary is not None:
+        metadata = metadata or {}
+        training_summary = training_summary or {}
+        params = metadata.get("ppo_parameters", {})
+        parameter_lines = [
+            f"- {key}: `{value}`" for key, value in sorted(params.items())
+        ]
+        provenance_section = (
+            "## Proveniência do experimento\\n\\n"
+            f"- Commit do repositório/engine: `{metadata.get('repository_commit', 'n/a')}`\\n"
+            f"- SHA-256 checkpoint original: `{metadata.get('checkpoint_sha256', 'n/a')}`\\n"
+            f"- SHA-256 checkpoint fine-tuned: `{metadata.get('finetuned_checkpoint_sha256', training_summary.get('finetuned_checkpoint_sha256', 'n/a'))}`\\n"
+            f"- SHA-256 RewardModel: `{metadata.get('reward_model_source_sha256', 'n/a')}`\\n"
+            f"- SHA-256 TftEngine: `{metadata.get('engine_source_sha256', 'n/a')}`\\n"
+            f"- Cenário: **{metadata.get('selected_scenario', training_summary.get('selected_scenario', 'n/a'))}**\\n"
+            f"- Transições do cenário: **{training_summary.get('selected_scenario_transitions', 'n/a')}**\\n"
+            f"- PPO optimizer steps: **{training_summary.get('optimizer_steps_total', 'n/a')}**\\n"
+            f"- SHA-256 config: `{metadata.get('config_sha256', 'n/a')}`\\n"
+            + ("\\n".join(parameter_lines) + "\\n" if parameter_lines else "")
+        )
+
     js_text = f"{mean_js:.6f}" if mean_js is not None else "n/a"
     non_target_text = f"{non_target_rate:.1%}" if non_target_rate is not None else "n/a"
     return f"""# Auditoria de Fine-tuning Econômico
@@ -250,6 +272,8 @@ O limite de 5% é apenas um alerta de triagem para mudanças fora do escopo, nã
 
 {paired_section}
 
+{provenance_section}
+
 ## Interpretação e limitações
 
 - Ação divergente inclui mudanças em qualquer um dos seis componentes, inclusive slot, origem ou destino.
@@ -271,6 +295,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--trace", required=True, help="JSONL de decisões da execução")
     parser.add_argument("--paired", default=None, help="JSONL opcional de partidas completas pareadas")
+    parser.add_argument("--metadata", default=None, help="experiment_config.json da execução")
+    parser.add_argument("--summary", default=None, help="training_summary.json da execução")
     parser.add_argument("--output", default="economy_finetuning/reports/ECONOMY_FINETUNING_AUDIT.md")
     args = parser.parse_args()
     trace = Path(args.trace)
@@ -278,7 +304,11 @@ def main():
         raise FileNotFoundError(trace)
     paired_path = Path(args.paired) if args.paired else None
     paired_rows = list(read_jsonl(paired_path)) if paired_path and paired_path.is_file() else None
-    report = build_report(read_jsonl(trace), paired_rows)
+    metadata_path = Path(args.metadata) if args.metadata else None
+    summary_path = Path(args.summary) if args.summary else None
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8")) if metadata_path and metadata_path.is_file() else None
+    training_summary = json.loads(summary_path.read_text(encoding="utf-8")) if summary_path and summary_path.is_file() else None
+    report = build_report(read_jsonl(trace), paired_rows, metadata, training_summary)
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(report, encoding="utf-8")
