@@ -133,8 +133,8 @@ def build_report(rows, paired_rows=None, metadata=None, training_summary=None):
 
     paired_section = "## Partidas completas pareadas\\n\\nNenhum arquivo de partidas pareadas foi fornecido.\\n"
     if paired_rows is not None:
-        deltas = [float(item.get("mean_reward_delta", 0.0)) for item in paired_rows]
         completed_rows = [item for item in paired_rows if item.get("both_completed")]
+        deltas = [float(item.get("mean_reward_delta", 0.0)) for item in completed_rows]
         completed = len(completed_rows)
         same_initial = sum(bool(item.get("same_initial_state")) for item in paired_rows)
         paired_mean = sum(deltas) / len(deltas) if deltas else None
