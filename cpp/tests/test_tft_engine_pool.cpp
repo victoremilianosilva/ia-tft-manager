@@ -399,7 +399,7 @@ int main(int argc, char** argv) {
         const auto gold_before_invalid_move =
             engine.get_public_state().players[0].gold;
         const auto pool_before_invalid_move = engine.pool_total_available();
-actions[0].values = {3, 0, 8, 27, 0, 0}; // Slot 8 vazio.
+        actions[0].values = {3, 0, 8, 27, 0, 0}; // Slot 8 vazio.
         bool invalid_move_rejected = false;
         try {
             (void)step_with_pending_anvils(engine, actions);
@@ -415,7 +415,7 @@ actions[0].values = {3, 0, 8, 27, 0, 0}; // Slot 8 vazio.
                 "Movimento inválido alterou o ouro.");
         require(engine.pool_total_available() == pool_before_invalid_move,
                 "Movimento inválido alterou o estoque.");
-actions[0].values = {6, 0, 0, 0, 0, 0};
+        actions[0].values = {6, 0, 0, 0, 0, 0};
 
         require(engine.set_shop_locked(0, true),
                 "A loja deveria passar de desbloqueada para bloqueada.");
