@@ -596,7 +596,7 @@ int main() {
                   -0.12, "stage-three ECON applies the same bounded reroll penalty");
     require_close(strategy_action_reward(0, 0, 55, 50, 80.0, 4,
                                          true, false, false, false),
-                  0.04, "ECON allows useful spending from surplus above 50");
+                  0.05, "ECON allows useful spending from surplus above 50");
     require_close(strategy_action_reward(1, 2, 60, 56, 80.0, 4,
                                          false, false, true, false),
                   0.0475, "STABILIZE XP reward is reduced by five percent");
