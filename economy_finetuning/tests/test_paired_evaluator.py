@@ -1,5 +1,9 @@
 import unittest
 
+import numpy as np
+import torch
+
+from economy_finetuning.finetune import MASK_SHAPES, _flatten_masks
 from economy_finetuning.paired_evaluator import (
     compare_final_metrics,
     extract_final_metrics,
@@ -8,6 +12,14 @@ from economy_finetuning.paired_evaluator import (
 
 
 class PairedEvaluatorTests(unittest.TestCase):
+    def test_policy_subgroups_can_flatten_four_player_masks(self):
+        masks = [
+            {key: np.ones(shape, dtype=np.int8) for key, shape in MASK_SHAPES.items()}
+            for _ in range(4)
+        ]
+        flattened = _flatten_masks(masks, torch.device("cpu"))
+        self.assertEqual(flattened["type_mask"].shape[0], 4)
+
     def test_action_mask_hash_is_stable_and_detects_mask_changes(self):
         masks = [
             {"type_mask": [1, 0, 1], "bench_mask": [0, 1]},
