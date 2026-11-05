@@ -6,9 +6,9 @@ ouro, HP, nível, estágio, lobby ou composição.
 
 | ID | Condições | Estratégia | Tipo | Objetivo |
 |---|---|---|---|---|
-| `s4_fast8_lvl6_gold60_hp_ok` | Estágio 4, nível 1–6, ouro 60+, HP acima de 40 | FAST8 | Treinável | Incentivo pequeno para BUY_XP; desincentivo leve a PASS/ROLL |
-| `s4_fast8_lvl6_gold80` | Estágio 4, nível 1–6, ouro 80+, HP acima de 20 | FAST8 | Treinável | Caso severo de acúmulo; maior incentivo contextual para BUY_XP |
-| `s4_fast8_lvl7_gold60` | Estágio 4, nível 7, ouro 60+, HP acima de 30 | FAST8 | Treinável | Avaliar progressão para nível 8, sem forçar 9/10 |
+| `s4_fast8_lvl6_gold60_hp_ok` | Estágio 4-1, nível 1–6, ouro 60+, HP acima de 40 | FAST8 | Treinável | Incentivo pequeno para BUY_XP; desincentivo leve a PASS/ROLL |
+| `s4_fast8_lvl6_gold80` | Estágio 4-1, nível 1–6, ouro 80+, HP acima de 20 | FAST8 | Treinável | Caso severo de acúmulo; maior incentivo contextual para BUY_XP |
+| `s4_fast8_lvl7_gold60` | Estágio 4-1, nível 7, ouro 60+, HP acima de 30 | FAST8 | Treinável | Avaliar progressão para nível 8, sem forçar 9/10 |
 | `late_game_high_gold_underleveled` | Estágio 4–5, nível até 7, ouro 60+, HP acima de 30 | ECON, STABILIZE, FAST8, ALL_IN, WINSTREAK, LOSS_STREAK | Treinável | Reduzir passividade econômica fora de SLOWROLL |
 | `critical_hp_high_gold` | Estágio 3–7, HP até 30, ouro 50+ | Todas | Monitor-only | Investigar acúmulo com risco de eliminação; não forçar XP |
 | `low_hp_fast8_high_gold` | Estágio 3–7, FAST8, HP até 40, ouro 50+ | FAST8 | Monitor-only | Verificar trade-off entre XP e estabilização |
