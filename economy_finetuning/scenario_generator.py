@@ -108,7 +108,7 @@ SCENARIOS: tuple[ScenarioSpec, ...] = (
         "critical_hp_high_gold",
         "HP crítico / 50+ ouro",
         "Treina a escolha entre compra útil, XP, roll e PASS usando somente o reward nativo; não presume que XP seja sempre a resposta.",
-        3, 7, 50, 250, 1, 10, 0, 30, (0, 1, 2, 4, 5, 6), True,
+        3, 7, 50, 250, 1, 10, 0, 30, (0, 1, 2, 3, 4, 5, 6), True,
         "aprender_estabilizacao_com_reward_nativo",
         reward_mode="native",
     ),
