@@ -221,8 +221,12 @@ def run(args):
                     reference_actions, _, _, _ = original_policy.get_action_and_value(
                         obs_tensor, masks=masks, deterministic=True
                     )
+                    candidate_greedy_actions, _, _, _ = policy.get_action_and_value(
+                        obs_tensor, masks=masks, deterministic=True
+                    )
                 action_array = actions.cpu().numpy().astype(np.int64)
                 reference_array = reference_actions.cpu().numpy().astype(np.int64)
+                candidate_greedy_array = candidate_greedy_actions.cpu().numpy().astype(np.int64)
                 candidate_type_probs = _type_probabilities(policy, obs_tensor, masks)
                 reference_type_probs = _type_probabilities(original_policy, obs_tensor, masks)
 
@@ -246,10 +250,10 @@ def run(args):
                         "player_id": player_id, "state": state,
                         "scenario_ids": matched_ids,
                         "original_action": reference_array[player_id].tolist(),
-                        "finetuned_action": action_array[player_id].tolist(),
+                        "finetuned_action": candidate_greedy_array[player_id].tolist(),
+                        "training_action": action_type,
                         "original_type_probabilities": reference_type_probs[player_id].round(7).tolist(),
                         "finetuned_type_probabilities": candidate_type_probs[player_id].round(7).tolist(),
-                        "training_action": action_type,
                     })
 
                 next_observations, rewards, lobby_done, info = env.step(_actions_to_native(action_array))
