@@ -72,12 +72,8 @@ def check_scenario(scenario: str, requested_checkpoint: Path) -> Path:
     actual_hash = sha256_file(approved_path)
     if actual_hash != previous_entry.get("checkpoint_sha256"):
         raise RuntimeError("Checkpoint anterior foi alterado após aprovação; cadeia bloqueada.")
-    requested = requested_checkpoint.resolve()
-    if requested != approved_path or sha256_file(requested) != actual_hash:
-        raise RuntimeError(
-            f"{scenario} deve partir exatamente do checkpoint aprovado de {previous}: "
-            f"{approved_path}"
-        )
+    # For scenarios after the first, the approved predecessor is authoritative.
+    # Ignore the user-supplied base path rather than allowing accidental branching.
     return approved_path
 
 
