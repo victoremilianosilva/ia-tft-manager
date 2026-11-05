@@ -279,6 +279,7 @@ def run(args):
                 "entropy_coef": args.entropy_coef,
                 "max_type_head_drift": args.max_type_head_drift,
                 "min_scenario_transitions": args.min_scenario_transitions,
+                "device": str(device),
             },
             "checkpoint_migrated": bool(migrated),
             "observation_dim": obs_dim,
@@ -510,6 +511,7 @@ def parse_args():
     parser.add_argument("--max-type-head-drift", type=float, default=0.02)
     parser.add_argument("--min-scenario-transitions", type=int, default=8)
     parser.add_argument("--seed", type=int, default=20261105)
+    parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
     known_defaults = {
         "updates", "rollout_steps", "batch_size", "ppo_epochs",
         "learning_rate", "clip_coef", "target_kl", "entropy_coef",
