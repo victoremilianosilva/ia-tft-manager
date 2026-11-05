@@ -1,9 +1,9 @@
 # Fine-tuning Econômico Independente — TFT AI
 
-Este diretório é um pipeline isolado. Não altera `trainer.py`, `policy.py`,
-`ppo.py`, `rollout.py`, wrappers existentes, engine C++ ou auditoria de
-partidas reais. Os módulos existentes são importados apenas para reutilizar
-contratos, arquitetura, buffer PPO e engine nativa.
+Este diretório mantém o treino normal isolado: não altera `trainer.py`, `policy.py`,
+`ppo.py`, `rollout.py` nem `train_cycle.ps1`. A engine C++ recebeu duas correções
+estratégicas necessárias aos cenários: persistência/histerese de foco e core,
+e classificação de roles consistente entre observação e BoardEvaluation.
 
 ## Limitação importante do engine atual
 
@@ -36,12 +36,42 @@ python economy_finetuning/finetune.py \
 
 O checkpoint de origem nunca é sobrescrito. Cada execução exige `--scenario`
 e aplica shaping somente a esse cenário; os demais são registrados apenas
-para monitoramento. Por padrão, somente `type_head` e `value_head` são treináveis; encoder espacial/global, fusão, cabeças de
-loja, venda, banco, tabuleiro e itens permanecem congeladas. A cabeça de tipo
+para monitoramento. As cabeças treináveis dependem do cenário: economia usa `type_head`/`value_head`; vendas usa `sell_head`; implantação usa `bench_head`/`bench_to_board_head`; posicionamento usa `board_source_head`/`board_move_target_head`. Encoder, fusão e cabeças não relacionadas permanecem congeladas. A cabeça de tipo
 compartilhada é projetada de volta para uma pequena região L2 ao redor dos
 pesos originais a cada update. O shaping é pequeno e condicionado ao
 estado/estratégia; SLOWROLL recebe proteção explícita contra incentivo genérico
 de XP. O limite de drift pode ser ajustado com `--max-type-head-drift`.
+
+## Cadeia obrigatória e aprovação manual
+
+A ordem dos dez cenários é fixa. O cenário 1 parte do checkpoint original;
+cada cenário seguinte parte exclusivamente do checkpoint aprovado do anterior.
+O runner bloqueia qualquer etapa cujo predecessor não esteja aprovado. Um
+treino concluído é registrado como `trained`, nunca como aprovado.
+
+Depois de revisar a auditoria e a avaliação pareada, crie um JSON de aprovação
+com `approved: true` e o SHA-256 exato do checkpoint avaliado. Exemplo:
+
+```json
+{
+  "approved": true,
+  "checkpoint_sha256": "SHA256_DO_CHECKPOINT",
+  "summary": {
+    "paired_seeds": 20,
+    "regression_review": "passed"
+  }
+}
+```
+
+Libere o próximo estágio somente após essa revisão:
+
+```powershell
+.\\economy_finetuning\\approve_scenario.ps1 -Scenario critical_hp_high_gold -Evaluation .\\evaluation.json
+```
+
+O estado local fica em `economy_finetuning/chain_state.json` (ignorado pelo
+Git). A cadeia guarda o hash do checkpoint e da origem, e invalida etapas
+posteriores se uma etapa anterior for refeita.
 
 ## Avaliação comparativa
 
