@@ -124,6 +124,7 @@ int main() {
     require_close(gold_potential(0), 0.0, "zero gold potential");
     require_close(gold_potential(9), 0.018, "liquid gold potential below breakpoint");
     require_close(gold_potential(10), 0.10, "interest breakpoint potential");
+    require_close(gold_potential(100), 0.435, "surplus above 50 has a slightly stronger holding penalty");
     require_close(gold_change_reward(10, 9), -0.082, "spending below interest breakpoint");
     require_close(gold_change_reward(9, 10), 0.082, "saving to interest breakpoint");
     require_close(core_displacement_penalty(true, 0.0), -0.30,
