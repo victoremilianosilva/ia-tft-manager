@@ -40,10 +40,12 @@ class ScenarioGeneratorTests(unittest.TestCase):
         self.assertIn("slowroll_gold_reserve", matches)
         self.assertLess(reward, 0)
 
-    def test_critical_hp_never_receives_positive_xp_shaping(self):
+    def test_critical_hp_monitor_only_does_not_create_training_reward(self):
         state = {"hp": 20, "gold": 90, "level": 6, "stage": 4, "strategy": 2}
-        reward, _ = shaped_action_reward(state, 2)
-        self.assertLessEqual(reward, -0.02)
+        reward, matches = shaped_action_reward(state, 2)
+        self.assertIn("critical_hp_high_gold", matches)
+        self.assertIn("low_hp_fast8_high_gold", matches)
+        self.assertEqual(reward, 0.0)
 
 
 if __name__ == "__main__":
