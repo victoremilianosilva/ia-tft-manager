@@ -5,6 +5,8 @@ import argparse
 import copy
 import hashlib
 import json
+import os
+import subprocess
 from datetime import datetime
 import random
 import sys
@@ -45,6 +47,24 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _repository_commit() -> str | None:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=ROOT,
+            check=True, capture_output=True, text=True,
+        )
+        return result.stdout.strip()
+    except (OSError, subprocess.CalledProcessError):
+        return os.environ.get("GITHUB_SHA")
+
+
+def _display_path(path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(ROOT.resolve()))
+    except ValueError:
+        return path.name
 
 
 def _load_checkpoint(path: Path, obs_dim: int, device: torch.device):
@@ -226,9 +246,40 @@ def run(args):
             max_grad_norm=0.25, target_kl=args.target_kl,
         )
 
+        repository_commit = _repository_commit()
+        config_path = Path(args.config).expanduser().resolve()
+        source_files = {
+            "trainer_source_sha256": ROOT / "trainer.py",
+            "policy_source_sha256": ROOT / "policy.py",
+            "ppo_source_sha256": ROOT / "ppo.py",
+            "rollout_source_sha256": ROOT / "rollout.py",
+            "engine_source_sha256": ROOT / "cpp" / "src" / "lobby" / "TftEngine.cpp",
+            "action_mask_source_sha256": ROOT / "cpp" / "src" / "decision" / "ActionMaskEngine.cpp",
+            "reward_model_source_sha256": ROOT / "cpp" / "include" / "reward" / "RewardModel.hpp",
+        }
         metadata = {
-            "checkpoint": str(checkpoint_path),
+            "checkpoint": _display_path(checkpoint_path),
             "checkpoint_sha256": _sha256(checkpoint_path),
+            "repository_commit": repository_commit,
+            "engine_commit": repository_commit,
+            "training_script_sha256": _sha256(Path(__file__)),
+            "config_sha256": _sha256(config_path) if config_path.is_file() else None,
+            **{
+                key: _sha256(path) if path.is_file() else None
+                for key, path in source_files.items()
+            },
+            "ppo_parameters": {
+                "updates": args.updates,
+                "rollout_steps": args.rollout_steps,
+                "batch_size": args.batch_size,
+                "ppo_epochs": args.ppo_epochs,
+                "learning_rate": args.learning_rate,
+                "clip_coef": args.clip_coef,
+                "target_kl": args.target_kl,
+                "entropy_coef": args.entropy_coef,
+                "max_type_head_drift": args.max_type_head_drift,
+                "min_scenario_transitions": args.min_scenario_transitions,
+            },
             "checkpoint_migrated": bool(migrated),
             "observation_dim": obs_dim,
             "action_dims": ACTION_DIMS,
@@ -397,13 +448,20 @@ def run(args):
             "fine_tuning": metadata,
             "source_checkpoint_sha256": metadata["checkpoint_sha256"],
         }, output)
+        metadata["finetuned_checkpoint_sha256"] = _sha256(output)
+        (reports_dir / "experiment_config.json").write_text(
+            json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
         (reports_dir / "scenario_catalog.json").write_text(
             json.dumps([item.to_dict() for item in SCENARIOS], ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
         summary = {
-            "checkpoint_original": str(checkpoint_path),
-            "checkpoint_finetuned": str(output),
+            "checkpoint_original": _display_path(checkpoint_path),
+            "checkpoint_finetuned": _display_path(output),
+            "repository_commit": repository_commit,
+            "source_checkpoint_sha256": metadata["checkpoint_sha256"],
+            "finetuned_checkpoint_sha256": metadata["finetuned_checkpoint_sha256"],
             "selected_scenario": selected_scenario.scenario_id,
             "selected_scenario_transitions": selected_scenario_transitions_total,
             "optimizer_steps_total": optimizer_steps_total,
