@@ -22,7 +22,9 @@ param(
     [double]$EntropyCoef = 0.002,
     [double]$MaxTypeHeadDrift = 0.02,
     [int]$MinScenarioTransitions = 8,
-    [int]$Seed = 20261105
+    [int]$Seed = 20261105,
+    [ValidateSet("auto", "cpu", "cuda")]
+    [string]$Device = "auto"
 )
 
 $ErrorActionPreference = "Stop"
@@ -82,7 +84,8 @@ $arguments = @(
     "--entropy-coef", "$EntropyCoef",
     "--max-type-head-drift", "$MaxTypeHeadDrift",
     "--min-scenario-transitions", "$MinScenarioTransitions",
-    "--seed", "$Seed"
+    "--seed", "$Seed",
+    "--device", "$Device"
 )
 
 Write-Host ""
@@ -102,6 +105,7 @@ Write-Host "Clip:             $ClipCoef"
 Write-Host "Target KL:        $TargetKl"
 Write-Host "Drift type_head:  $MaxTypeHeadDrift"
 Write-Host "Seed:             $Seed"
+Write-Host "Device:           $Device"
 Write-Host "Run directory:    $runDirectory"
 Write-Host "Log:              $logFile"
 Write-Host ""
