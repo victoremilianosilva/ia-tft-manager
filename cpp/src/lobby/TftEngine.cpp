@@ -3518,7 +3518,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     // A second matching copy has real upgrade option value
                     // even if temporary comp fit is negative. Fit still scales
                     // the pair reward; it does not gate pair recognition.
-                    buy_builds_pair = same_star_copies == 1 && offer->star == 1;
+                    buy_builds_pair = reward_model::is_pair_purchase(same_star_copies, offer->star);
                 }
             }
         } else if (type == 3) {
