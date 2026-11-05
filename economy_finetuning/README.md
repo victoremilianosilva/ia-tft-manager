@@ -88,9 +88,9 @@ checkpoints e execuções são dados locais e ficam ignorados pelo Git.
 ## Cenários implementados
 
 Veja a lista integral em `SCENARIOS.md`. Os cenários são classificados como
-treináveis ou monitor-only. Casos de utilidade de loja e estabilização com HP
-crítico ficam monitor-only quando a observação disponível não permite provar
-que uma compra específica é útil; não criamos rótulos artificiais.
+treináveis ou monitor-only. O cenário de HP crítico é treinado com reward
+nativo, sem bônus artificial para XP; a utilidade de cada oferta continua
+sendo avaliada pelo reward/estado real da engine, sem rótulos inventados.
 
 ## O que a auditoria consegue provar
 
