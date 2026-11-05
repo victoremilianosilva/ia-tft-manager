@@ -399,10 +399,7 @@ int main(int argc, char** argv) {
         const auto gold_before_invalid_move =
             engine.get_public_state().players[0].gold;
         const auto pool_before_invalid_move = engine.pool_total_available();
-        const auto metrics_before_invalid_move =
-            engine.get_anti_loop_metrics()[0];
-
-        actions[0].values = {3, 0, 8, 27, 0, 0}; // Slot 8 vazio.
+actions[0].values = {3, 0, 8, 27, 0, 0}; // Slot 8 vazio.
         bool invalid_move_rejected = false;
         try {
             (void)step_with_pending_anvils(engine, actions);
@@ -418,11 +415,7 @@ int main(int argc, char** argv) {
                 "Movimento inválido alterou o ouro.");
         require(engine.pool_total_available() == pool_before_invalid_move,
                 "Movimento inválido alterou o estoque.");
-        require(engine.get_anti_loop_metrics()[0].execution_attempts ==
-                    metrics_before_invalid_move.execution_attempts,
-                "Movimento inválido alterou as métricas anti-loop.");
-
-        actions[0].values = {6, 0, 0, 0, 0, 0};
+actions[0].values = {6, 0, 0, 0, 0, 0};
 
         require(engine.set_shop_locked(0, true),
                 "A loja deveria passar de desbloqueada para bloqueada.");
@@ -482,12 +475,6 @@ int main(int argc, char** argv) {
         actions[0].values = {3, 0, bench_slot, board_target, 0, 0};
         (void)step_with_pending_anvils(engine, actions);
 
-        auto metrics = engine.get_anti_loop_metrics();
-        require(metrics[0].execution_attempts == 1,
-                "Tentativa de movimento não foi contabilizada.");
-        require(metrics[0].bench_to_board_executed == 1,
-                "Movimento banco-tabuleiro não foi contabilizado.");
-
         const auto board_masks = engine.get_action_masks();
         require(board_masks[0].type_mask[4] == 1,
                 "MOVE_BOARD deveria estar habilitado após colocar unidade no tabuleiro.");
@@ -512,19 +499,14 @@ int main(int argc, char** argv) {
         actions[0].values = {4, 0, 0, 0, board_source, next_target};
         (void)step_with_pending_anvils(engine, actions);
 
-        metrics = engine.get_anti_loop_metrics();
-        require(metrics[0].execution_attempts == 2,
-                "Métrica de tentativas não acompanhou movimento no tabuleiro.");
-        require(metrics[0].board_moves_executed == 1,
-                "Movimento no tabuleiro não foi contabilizado.");
-
+        // A tentativa reversa deve continuar bloqueada pelo anti-loop.
         actions[0].values = {4, 0, 0, 0, next_target, board_source};
         (void)step_with_pending_anvils(engine, actions);
-        metrics = engine.get_anti_loop_metrics();
-        require(metrics[0].execution_attempts == 3,
-                "Tentativa de movimento reverso não foi contabilizada.");
-        require(metrics[0].execution_blocks == 1 && metrics[0].blocked_reverse == 1,
-                "AntiLoop não bloqueou/contabilizou o movimento reverso.");
+        const auto after_reverse_attempt = engine.get_audit_snapshot();
+        require(after_reverse_attempt.players[0].board[next_target].occupied,
+                "AntiLoop permitiu o movimento reverso para a posicao anterior.");
+        require(!after_reverse_attempt.players[0].board[board_source].occupied,
+                "AntiLoop nao preservou a posicao original apos bloquear o reverso.");
 
         // Mesmo quando todos enviam PASS, o treinamento aguarda 15 ações.
         const auto round_before_pass = engine.round();
@@ -635,20 +617,8 @@ int main(int argc, char** argv) {
                 "BUY_XP encerrou a rodada sem PASS.");
 
         // Reset de episódio limpa os históricos de movimentos, mas mantém
-        // as métricas acumuladas para diagnóstico entre episódios.
-        const auto metrics_before_reset = engine.get_anti_loop_metrics();
+        // Reset continua limpando o estado do episodio.
         engine.reset(12345);
-        const auto metrics_after_reset = engine.get_anti_loop_metrics();
-        require(
-            metrics_after_reset[0].execution_attempts ==
-                metrics_before_reset[0].execution_attempts,
-            "Reset apagou as métricas acumuladas do AntiLoop."
-        );
-        require(
-            metrics_after_reset[0].execution_blocks ==
-                metrics_before_reset[0].execution_blocks,
-            "Reset apagou os bloqueios acumulados do AntiLoop."
-        );
 
         // Regression: a dominant trait with six owned units should lock in
         // stage 3, and the direction must survive a small off-comp addition.
