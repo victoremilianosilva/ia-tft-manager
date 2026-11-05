@@ -49,24 +49,27 @@ cada cenário seguinte parte exclusivamente do checkpoint aprovado do anterior.
 O runner bloqueia qualquer etapa cujo predecessor não esteja aprovado. Um
 treino concluído é registrado como `trained`, nunca como aprovado.
 
-Depois de revisar a auditoria e a avaliação pareada, crie um JSON de aprovação
-com `approved: true` e o SHA-256 exato do checkpoint avaliado. Exemplo:
+O arquivo de revisão não deve ser criado manualmente. Ele é gerado pelo
+`evaluate_finetune.ps1` com `approved: false`, o hash SHA-256 real do checkpoint
+e os resultados dos checks. Depois de ler a auditoria e os resultados pareados,
+a única edição manual necessária para aprovar é trocar `"approved": false` por
+`"approved": true` no arquivo gerado. **Não altere o campo do hash.**
 
-```json
-{
-  "approved": true,
-  "checkpoint_sha256": "SHA256_DO_CHECKPOINT",
-  "summary": {
-    "paired_seeds": 20,
-    "regression_review": "passed"
-  }
-}
-```
-
-Libere o próximo estágio somente após essa revisão:
+Exemplo do comando de aprovação (use o cenário treinado e o caminho real do
+arquivo `evaluation_review.json` da execução):
 
 ```powershell
-.\\economy_finetuning\\approve_scenario.ps1 -Scenario critical_hp_high_gold -Evaluation .\\evaluation.json
+.\economy_finetuning\approve_scenario.ps1 `
+  -Scenario critical_hp_high_gold `
+  -Evaluation ".\economy_finetuning\runs\critical_hp_high_gold_DATA_HORA\reports\evaluation_review.json"
+```
+
+O comando valida que `approved` é exatamente `true` e que o SHA-256 do arquivo
+avaliado corresponde ao checkpoint registrado no treino. Só então marca o
+cenário como aprovado e libera o próximo. Para consultar a cadeia:
+
+```powershell
+python -m economy_finetuning.chain_manager status
 ```
 
 O estado local fica em `economy_finetuning/chain_state.json` (ignorado pelo
@@ -160,34 +163,155 @@ teste porque as trajetórias divergem após ações diferentes.
 - `reports/ECONOMY_FINETUNING_AUDIT.md`: auditoria gerada em Markdown,
   fora dos diretórios ignorados, pronta para revisão e commit.
 
-## Avaliação em um único comando (PowerShell)
+## Fluxo completo de treino, avaliação e aprovação (PowerShell)
 
-Depois que `run_finetune.ps1` terminar, copie o caminho da pasta da execução
-mostrado no terminal e rode:
+Execute os comandos a partir da raiz do repositório, no PowerShell. O fluxo é
+**um cenário por vez**: treinar, avaliar, revisar e aprovar antes de iniciar o
+próximo cenário.
 
-```powershell
-.\economy_finetuning\evaluate_finetune.ps1 -Run "CAMINHO_DA_EXECUCAO"
-```
+### 1. Treinar um cenário
 
-Por padrão, o script:
-1. Lê o checkpoint fine-tuned, o checkpoint de origem e os metadados da própria execução.
-2. Executa a comparação pareada com 20 seeds (duas lobbies espelhadas por seed).
-3. Gera a auditoria Markdown combinando o trace shadow e os resultados pareados.
-4. Verifica cobertura, conclusão das partidas, igualdade dos estados iniciais e o alerta de divergência fora do cenário.
-5. Gera `reports/evaluation_review.json` com hash SHA-256 e resultado dos checks.
-
-As seeds padrão começam em `20261201`. Se essas seeds já tiverem sido usadas
-no treino ou em outra avaliação, escolha outras explicitamente, por exemplo:
+O checkpoint original fica na raiz do projeto como `tft_checkpoint.pt`. Para
+começar pelo primeiro cenário da cadeia:
 
 ```powershell
-.\economy_finetuning\evaluate_finetune.ps1 -Run "CAMINHO_DA_EXECUCAO" -SeedStart 20270101 -SeedCount 20
+.\economy_finetuning\run_finetune.ps1 -Scenario critical_hp_high_gold
 ```
 
-Para abrir também o viewer ao final, use `-OpenViewer` (requer as dependências
-opcionais instaladas).
+O script imprime o caminho exato da pasta da execução. Ela fica em
+`economy_finetuning/runs/`, com nome semelhante a
+`critical_hp_high_gold_20261105_183000`. Copie esse caminho: ele será usado no
+próximo comando. O checkpoint fine-tuned é salvo separadamente em
+`economy_finetuning/checkpoints/`; o original nunca é sobrescrito.
 
-**A avaliação não aprova automaticamente.** O status `READY_FOR_HUMAN_REVIEW`
-significa apenas que os checks técnicos mínimos passaram; não demonstra ganho
-de desempenho. O relatório precisa ser revisado. O arquivo de revisão é criado
-com `approved: false`. Somente depois de uma decisão humana explícita, altere
-esse campo para `true` e execute `approve_scenario.ps1` com o arquivo gerado.
+Para usar outro checkpoint original no primeiro cenário:
+
+```powershell
+.\economy_finetuning\run_finetune.ps1 -Scenario critical_hp_high_gold -Checkpoint "D:\Modelos\tft_checkpoint.pt"
+```
+
+Também é possível ajustar parâmetros, por exemplo:
+
+```powershell
+.\economy_finetuning\run_finetune.ps1 -Scenario critical_hp_high_gold -Updates 100 -RolloutSteps 512 -Device auto
+```
+
+### 2. Avaliar automaticamente
+
+Passe a pasta da execução que o treinamento imprimiu:
+
+```powershell
+.\economy_finetuning\evaluate_finetune.ps1 -Run ".\economy_finetuning\runs\critical_hp_high_gold_20261105_183000"
+```
+
+Por padrão, a avaliação:
+- executa 20 seeds pareadas, com duas lobbies espelhadas por seed;
+- usa o checkpoint original registrado nos metadados daquela execução e o
+  checkpoint fine-tuned indicado no resumo;
+- gera a auditoria Markdown e os resultados pareados;
+- calcula o SHA-256 do checkpoint fine-tuned;
+- cria `reports/evaluation_review.json` dentro da pasta da execução, com
+  `approved: false`.
+
+Se as seeds padrão já tiverem sido usadas no treino ou em avaliações
+anteriores, escolha um intervalo inédito:
+
+```powershell
+.\economy_finetuning\evaluate_finetune.ps1 -Run ".\economy_finetuning\runs\critical_hp_high_gold_20261105_183000" -SeedStart 20270101 -SeedCount 20
+```
+
+Para usar mais seeds, altere `-SeedCount`. O mínimo exigido para deixar o pacote
+tecnicamente pronto para revisão continua sendo 20 por padrão. Para abrir o
+visualizador ao final (dependências opcionais necessárias):
+
+```powershell
+.\economy_finetuning\evaluate_finetune.ps1 -Run ".\economy_finetuning\runs\critical_hp_high_gold_20261105_183000" -OpenViewer
+```
+
+### 3. Revisar os arquivos gerados
+
+Tudo fica dentro da pasta daquela execução:
+
+```text
+economy_finetuning/runs/<execucao>/
+├── logs/
+│   ├── decision_trace.jsonl
+│   └── paired_match_results.jsonl
+└── reports/
+    ├── experiment_config.json
+    ├── training_summary.json
+    ├── ECONOMY_FINETUNING_AUDIT_<cenario>.md
+    └── evaluation_review.json
+```
+
+Leia principalmente:
+- `reports/ECONOMY_FINETUNING_AUDIT_<cenario>.md`: auditoria das decisões,
+  divergências e resultados;
+- `logs/paired_match_results.jsonl`: resultados das partidas pareadas;
+- `reports/evaluation_review.json`: checks técnicos, hash e campo de aprovação.
+
+`READY_FOR_HUMAN_REVIEW` **não quer dizer que o modelo melhorou nem que foi
+aprovado**. Significa apenas que os checks automáticos mínimos passaram. A
+decisão depende da análise de desempenho e regressões.
+
+### 4. Aprovar manualmente (somente se os resultados forem satisfatórios)
+
+Abra o JSON gerado na pasta da execução. Por exemplo:
+
+```powershell
+notepad ".\economy_finetuning\runs\critical_hp_high_gold_20261105_183000\reports\evaluation_review.json"
+```
+
+Altere somente:
+
+```json
+"approved": false
+```
+
+para:
+
+```json
+"approved": true
+```
+
+Salve o arquivo. **Não modifique `checkpoint_sha256` nem outros campos.** Em
+seguida, execute o comando abaixo, substituindo a pasta pelo caminho real:
+
+```powershell
+.\economy_finetuning\approve_scenario.ps1 -Scenario critical_hp_high_gold -Evaluation ".\economy_finetuning\runs\critical_hp_high_gold_20261105_183000\reports\evaluation_review.json"
+```
+
+A aprovação só é registrada se o campo estiver como `true` e o hash do arquivo
+corresponder exatamente ao checkpoint treinado. O próximo cenário será então
+liberado.
+
+### 5. Treinar o próximo cenário
+
+Após aprovar o cenário anterior, execute o próximo da ordem definida em
+`chain_manager.py`. Exemplo:
+
+```powershell
+.\economy_finetuning\run_finetune.ps1 -Scenario late_game_high_gold_underleveled
+```
+
+Repita os passos 2, 3 e 4 para cada cenário. A cadeia impede pular etapas e usa
+automaticamente o checkpoint aprovado do cenário anterior como origem do
+próximo treino. Não é necessário informar manualmente o checkpoint predecessor.
+
+Para consultar o estado atual da cadeia a qualquer momento:
+
+```powershell
+python -m economy_finetuning.chain_manager status
+```
+
+### Observações importantes
+
+- Cada nova execução de um cenário invalida aprovações e artefatos dos cenários
+  posteriores, pois eles foram treinados sobre uma linhagem anterior.
+- Use seeds de avaliação inéditas, diferentes das usadas no treinamento e em
+  avaliações anteriores.
+- A avaliação não altera nem aprova o checkpoint automaticamente.
+- Se a avaliação falhar, investigue o erro e não altere `approved` para `true`.
+- O script não sobrescreve um arquivo `paired_match_results.jsonl` existente;
+  para repetir a avaliação, use uma nova pasta de execução ou trate os artefatos
+  anteriores antes de iniciar outra execução.
