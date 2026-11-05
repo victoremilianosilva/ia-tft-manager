@@ -490,8 +490,14 @@ int main() {
                   "sale strongly protects core units and upgrade copies");
     require_close(sale_quality(1.0, true, true, false, true), -0.265,
                   "measurable board gain removes the core and pair sale penalties");
-    require_close(sale_quality(1.0, true, true, false, false, true), -0.675,
-                  "verified replacement or urgent sale softens, but retains, protection cost");
+    require_close(sale_quality(1.0, true, true, false, false, true), -1.025,
+                  "context alone must not soften core and upgrade-path protection");
+    require_close(sale_quality(0.8, true, true, false, false, true, 1.0),
+                  sale_quality(0.8, true, true, false, false, false, 1.0),
+                  "context must not weaken core-plus-pair retention");
+    require_close(sale_quality(0.0, false, true, false, false, true, 1.0),
+                  sale_quality(0.0, false, true, false, false, false, 1.0),
+                  "context must not erase a real upgrade path");
     if (!(sale_quality(0.25, true, false, false) >
           sale_quality(1.0, true, false, false))) {
         throw std::runtime_error("core retention pressure must scale with actual composition fit");
