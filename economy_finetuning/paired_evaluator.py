@@ -30,6 +30,70 @@ def load_policy(checkpoint_path: Path, obs_dim: int, device):
     return policy
 
 
+def extract_final_metrics(final_state):
+    """Extract terminal placement and board/economy metrics without guessing."""
+    if not isinstance(final_state, dict):
+        return []
+    finished = bool(final_state.get("finished", False))
+    ranking = final_state.get("ranking", [])
+    rank_by_id = {
+        int(player_id): index + 1
+        for index, player_id in enumerate(ranking or [])
+    }
+    metrics = []
+    for player in final_state.get("players", []) or []:
+        if not isinstance(player, dict):
+            continue
+        player_id = int(player.get("player_id", -1))
+        placement = player.get("placement")
+        if placement is None and finished:
+            placement = rank_by_id.get(player_id)
+        metrics.append({
+            "player_id": player_id,
+            "placement": int(placement) if placement is not None else None,
+            "top4": bool(int(placement) <= 4) if placement is not None else None,
+            "hp": float(player["hp"]) if player.get("hp") is not None else None,
+            "gold": float(player["gold"]) if player.get("gold") is not None else None,
+            "level": float(player["level"]) if player.get("level") is not None else None,
+            "board_power": float(player["board_power"]) if player.get("board_power") is not None else None,
+            "board_quality_score": float(player["board_quality_score"]) if player.get("board_quality_score") is not None else None,
+            "board_positional_score": float(player["board_positional_score"]) if player.get("board_positional_score") is not None else None,
+            "board_structural_score": float(player["board_structural_score"]) if player.get("board_structural_score") is not None else None,
+        })
+    return metrics
+
+
+def _metric_delta(original, tuned, key):
+    a, b = original.get(key), tuned.get(key)
+    if a is None or b is None:
+        return None
+    return round(float(b) - float(a), 6)
+
+
+def compare_final_metrics(original_metrics, tuned_metrics):
+    original = {int(item["player_id"]): item for item in original_metrics}
+    tuned = {int(item["player_id"]): item for item in tuned_metrics}
+    result = []
+    for player_id in sorted(set(original) & set(tuned)):
+        a, b = original[player_id], tuned[player_id]
+        row = {"player_id": player_id}
+        for key in (
+            "placement", "hp", "gold", "level", "board_power",
+            "board_quality_score", "board_positional_score", "board_structural_score",
+        ):
+            row[f"original_{key}"] = a.get(key)
+            row[f"finetuned_{key}"] = b.get(key)
+            row[f"{key}_delta"] = _metric_delta(a, b, key)
+        row["original_top4"] = a.get("top4")
+        row["finetuned_top4"] = b.get("top4")
+        if a.get("top4") is not None and b.get("top4") is not None:
+            row["top4_delta"] = int(bool(b["top4"])) - int(bool(a["top4"]))
+        else:
+            row["top4_delta"] = None
+        result.append(row)
+    return result
+
+
 def run_match(policy, seed: int, max_steps: int, device):
     env = CppTFTLobbyWrapper(seed=seed)
     try:
@@ -60,6 +124,7 @@ def run_match(policy, seed: int, max_steps: int, device):
                     "total_rewards": totals.tolist(),
                     "action_counts": [dict(counter) for counter in actions],
                     "final_state": final_info,
+                    "final_metrics": extract_final_metrics(final_info),
                 }
         final_info = env.get_public_state()
         return {
@@ -68,6 +133,7 @@ def run_match(policy, seed: int, max_steps: int, device):
             "total_rewards": totals.tolist(),
             "action_counts": [dict(counter) for counter in actions],
             "final_state": final_info,
+            "final_metrics": extract_final_metrics(final_info),
         }
     finally:
         env.close()
@@ -122,10 +188,15 @@ def main():
                 round(b - a, 6)
                 for a, b in zip(original_result["total_rewards"], tuned_result["total_rewards"])
             ]
+            final_player_deltas = compare_final_metrics(
+                original_result.get("final_metrics", []),
+                tuned_result.get("final_metrics", []),
+            )
             row = {
                 "seed": seed,
                 "original": original_result,
                 "finetuned": tuned_result,
+                "final_player_deltas": final_player_deltas,
                 "reward_delta_per_player": reward_deltas,
                 "mean_reward_delta": float(np.mean(reward_deltas)),
                 "both_completed": original_result["completed"] and tuned_result["completed"],
