@@ -30,8 +30,8 @@ def load_policy(checkpoint_path: Path, obs_dim: int, device):
     return policy
 
 
-def extract_final_metrics(final_state):
-    """Extract terminal placement and board/economy metrics without guessing."""
+def extract_final_metrics(final_state, audit_snapshot=None):
+    """Join terminal placement/HP with freshly recomputed audit board metrics."""
     if not isinstance(final_state, dict):
         return []
     finished = bool(final_state.get("finished", False))
@@ -40,26 +40,41 @@ def extract_final_metrics(final_state):
         int(player_id): index + 1
         for index, player_id in enumerate(ranking or [])
     }
+    audit_players = {}
+    if isinstance(audit_snapshot, dict):
+        audit_players = {
+            int(item.get("player_id", -1)): item
+            for item in (audit_snapshot.get("players", []) or [])
+            if isinstance(item, dict)
+        }
     metrics = []
     for player in final_state.get("players", []) or []:
         if not isinstance(player, dict):
             continue
         player_id = int(player.get("player_id", -1))
+        audit_player = audit_players.get(player_id, {})
         placement = player.get("placement")
         if placement is None and finished:
             placement = rank_by_id.get(player_id)
-        metrics.append({
+        metric = {
             "player_id": player_id,
             "placement": int(placement) if placement is not None else None,
             "top4": bool(int(placement) <= 4) if placement is not None else None,
             "hp": float(player["hp"]) if player.get("hp") is not None else None,
             "gold": float(player["gold"]) if player.get("gold") is not None else None,
             "level": float(player["level"]) if player.get("level") is not None else None,
-            "board_power": float(player["board_power"]) if player.get("board_power") is not None else None,
-            "board_quality_score": float(player["board_quality_score"]) if player.get("board_quality_score") is not None else None,
-            "board_positional_score": float(player["board_positional_score"]) if player.get("board_positional_score") is not None else None,
-            "board_structural_score": float(player["board_structural_score"]) if player.get("board_structural_score") is not None else None,
-        })
+        }
+        # PlayerInfo's cached board scores can be stale/zero. The audit snapshot
+        # recomputes BoardEvaluation from the actual terminal board.
+        for key in (
+            "board_power", "board_quality_score", "board_positional_score",
+            "board_structural_score", "board_exposed_carries",
+            "board_frontline_count", "board_isolated_frontline_count",
+            "board_important_bench_units_unplayed",
+        ):
+            value = audit_player.get(key, player.get(key))
+            metric[key] = float(value) if value is not None else None
+        metrics.append(metric)
     return metrics
 
 
@@ -118,22 +133,24 @@ def run_match(policy, seed: int, max_steps: int, device):
             totals += np.asarray(rewards, dtype=np.float64)
             if done:
                 final_info = env.get_public_state()
+                final_audit = env.get_audit_snapshot()
                 return {
                     "seed": seed, "steps": step + 1, "completed": True,
                     "initial_observation_sha256": initial_observation_sha256,
                     "total_rewards": totals.tolist(),
                     "action_counts": [dict(counter) for counter in actions],
                     "final_state": final_info,
-                    "final_metrics": extract_final_metrics(final_info),
+                    "final_metrics": extract_final_metrics(final_info, final_audit),
                 }
         final_info = env.get_public_state()
+        final_audit = env.get_audit_snapshot()
         return {
             "seed": seed, "steps": max_steps, "completed": False,
             "initial_observation_sha256": initial_observation_sha256,
             "total_rewards": totals.tolist(),
             "action_counts": [dict(counter) for counter in actions],
             "final_state": final_info,
-            "final_metrics": extract_final_metrics(final_info),
+            "final_metrics": extract_final_metrics(final_info, final_audit),
         }
     finally:
         env.close()
