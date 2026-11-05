@@ -74,7 +74,7 @@ class ScenarioSpec:
 SCENARIOS: tuple[ScenarioSpec, ...] = (
     ScenarioSpec(
         "s4_fast8_lvl6_gold60_hp_ok",
-        "4-1 / FAST8 / nível 6 / 60+ ouro / HP preservado",
+        "Estágio 4 / FAST8 / nível 6 / 60+ ouro / HP preservado",
         "Detecta jogador FAST8 abaixo do nível-alvo, com ouro suficiente e HP acima de 40.",
         4, 4, 60, 250, 6, 6.99, 40.01, 100, (2,), True,
         "aprender_progressao_com_reward_nativo", 0.0, 0.0, 0.0,
@@ -82,7 +82,7 @@ SCENARIOS: tuple[ScenarioSpec, ...] = (
     ),
     ScenarioSpec(
         "s4_fast8_lvl6_gold80",
-        "4-1 / FAST8 / nível 6 / 80+ ouro",
+        "Estágio 4 / FAST8 / nível 6 / 80+ ouro / HP preservado",
         "Caso severo de acumulação: grande reserva de ouro e atraso de nível.",
         4, 4, 80, 250, 6, 6.99, 40.01, 100, (2,), True,
         "aprender_conversao_de_excedente_com_reward_nativo", 0.0, 0.0, 0.0,
@@ -90,7 +90,7 @@ SCENARIOS: tuple[ScenarioSpec, ...] = (
     ),
     ScenarioSpec(
         "s4_fast8_lvl7_gold60",
-        "4-1 / FAST8 / nível 7 / 60+ ouro",
+        "Estágio 4 / FAST8 / nível 7 / 60+ ouro",
         "Avalia progressão adicional sem obrigar nível 9/10 ou gasto indiscriminado.",
         4, 4, 60, 250, 7, 7.99, 30.01, 100, (2,), True,
         "aprender_timing_de_nivel8_com_reward_nativo", 0.0, 0.0, 0.0,
@@ -121,7 +121,7 @@ SCENARIOS: tuple[ScenarioSpec, ...] = (
     ),
     ScenarioSpec(
         "slowroll_gold_reserve",
-        "SLOWROLL / nível 5-7 / 50+ ouro",
+        "SLOWROLL / nível 6 / 50+ ouro / HP preservado",
         "Proteção explícita: não ensinar BUY_XP indiscriminadamente em SLOWROLL.",
         2, 4, 50, 250, 6, 6.99, 50.01, 100, (3,), True,
         "preservar_slowroll", -0.055, 0.0, 0.0,
