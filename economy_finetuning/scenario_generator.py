@@ -40,11 +40,14 @@ class ScenarioSpec:
     reward_pass: float = 0.0
     reward_roll: float = 0.0
     player_ids: tuple[int, ...] = ()
+    round_min: float = 1.0
+    round_max: float = 42.0
 
     def matches(self, state: dict[str, Any]) -> bool:
         strategy = int(state["strategy"])
         return (
             (not self.player_ids or int(state.get("player_id", -1)) in self.player_ids)
+            and self.round_min <= float(state.get("round_number", 1.0)) <= self.round_max
             and self.stage_min <= int(state["stage"]) <= self.stage_max
             and self.gold_min <= float(state["gold"]) <= self.gold_max
             and self.level_min <= float(state["level"]) <= self.level_max
@@ -71,6 +74,7 @@ SCENARIOS: tuple[ScenarioSpec, ...] = (
         "Detecta jogador FAST8 abaixo do nível-alvo, com ouro suficiente e HP acima de 40.",
         4, 4, 60, 250, 1, 6.99, 40.01, 100, (2,), True,
         "priorizar_progressao_comedida", 0.055, -0.012, -0.018,
+        round_min=19, round_max=19,
     ),
     ScenarioSpec(
         "s4_fast8_lvl6_gold80",
@@ -78,6 +82,7 @@ SCENARIOS: tuple[ScenarioSpec, ...] = (
         "Caso severo de acumulação: grande reserva de ouro e atraso de nível.",
         4, 4, 80, 250, 1, 6.99, 20.01, 100, (2,), True,
         "reduzir_hoarding", 0.075, -0.018, -0.025,
+        round_min=19, round_max=19,
     ),
     ScenarioSpec(
         "s4_fast8_lvl7_gold60",
@@ -85,6 +90,7 @@ SCENARIOS: tuple[ScenarioSpec, ...] = (
         "Avalia progressão adicional sem obrigar nível 9/10 ou gasto indiscriminado.",
         4, 4, 60, 250, 7, 7.99, 30.01, 100, (2,), True,
         "avaliar_progressao_para_nivel8", 0.035, -0.006, -0.008,
+        round_min=19, round_max=19,
     ),
     ScenarioSpec(
         "late_game_high_gold_underleveled",
@@ -184,12 +190,15 @@ def shaped_action_reward(state: dict[str, Any], action_type: int) -> tuple[float
     """Return small, context-gated shaping and matched trainable scenario IDs."""
     matched = matching_scenarios(state)
     trainable = [scenario for scenario in matched if scenario.trainable]
-    reward = 0.0
+    rewards = []
     for scenario in trainable:
         if action_type == 2:       # BUY_XP
-            reward += scenario.reward_buy_xp
+            rewards.append(scenario.reward_buy_xp)
         elif action_type == 6:     # PASS
-            reward += scenario.reward_pass
+            rewards.append(scenario.reward_pass)
         elif action_type == 1:     # REROLL
-            reward += scenario.reward_roll
+            rewards.append(scenario.reward_roll)
+    # Scenarios overlap by design; use the strongest single matching signal
+    # rather than summing bonuses and accidentally magnifying reward shaping.
+    reward = max(rewards, key=lambda value: abs(value)) if rewards else 0.0
     return float(max(-0.08, min(0.08, reward))), [item.scenario_id for item in matched]
