@@ -384,6 +384,11 @@ def run(args):
 
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--config",
+        default=str(ROOT / "economy_finetuning" / "config.json"),
+        help="Arquivo JSON com defaults do fine-tuning",
+    )
     parser.add_argument("--checkpoint", required=True, help="Checkpoint original .pt")
     parser.add_argument("--output", default="economy_finetuning/checkpoints/economy_ft.pt")
     parser.add_argument("--run-dir", default="economy_finetuning/runs/latest")
@@ -398,6 +403,18 @@ def parse_args():
     parser.add_argument("--max-type-head-drift", type=float, default=0.02)
     parser.add_argument("--min-scenario-transitions", type=int, default=8)
     parser.add_argument("--seed", type=int, default=20261105)
+    known_defaults = {
+        "updates", "rollout_steps", "batch_size", "ppo_epochs",
+        "learning_rate", "clip_coef", "target_kl", "entropy_coef",
+        "max_type_head_drift", "min_scenario_transitions", "seed",
+    }
+    config_path = Path(parser.get_default("config"))
+    if config_path.is_file():
+        config_values = json.loads(config_path.read_text(encoding="utf-8"))
+        parser.set_defaults(**{
+            key: value for key, value in config_values.items()
+            if key in known_defaults
+        })
     args = parser.parse_args()
     if args.updates <= 0 or args.rollout_steps <= 0 or args.batch_size <= 0 or args.ppo_epochs <= 0:
         parser.error("updates, rollout-steps, batch-size e ppo-epochs devem ser positivos")
