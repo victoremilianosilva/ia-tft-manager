@@ -6,6 +6,8 @@
   "entropy_coef": 0.002,
   "vf_coef": 0.5,
   "max_grad_norm": 0.25,
+  "max_type_head_drift": 0.02,
+  "min_scenario_transitions": 8,
   "ppo_epochs": 2,
   "batch_size": 64,
   "rollout_steps": 128,
