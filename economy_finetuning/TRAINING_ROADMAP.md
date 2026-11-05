@@ -14,14 +14,12 @@ econômicos, vendas e posicionamento no mesmo update PPO.
 | 4 | `s4_fast8_lvl6_gold80` | Caso de excedente mais severo no nível 6 | `type_head` + `value_head` | Reward nativo | Selecionável no PS1 |
 | 5 | `s4_fast8_lvl7_gold60` | FAST8 no nível 7, com reserva suficiente para avaliar a progressão ao 8 | `type_head` + `value_head` | Reward nativo | Selecionável no PS1 |
 | 6 | `slowroll_gold_reserve` | Proteção contra a correção de XP contaminar a janela de SLOWROLL | `type_head` + `value_head` | Shaping negativo pequeno apenas para BUY_XP | Selecionável no PS1 |
-| 7 | `core_sale_retention` | 23 vendas core HIGH e 13 vendas de cópias de pares; P6 vende Master Yi/Kog'Maw em ALL_IN | `type_head` + `sell_head` + `value_head` | Reward nativo de venda | Requer ampliar o runner e a auditoria de cabeças condicionais |
-| 8 | `bench_deployment_quality` | Tabuleiros subocupados/estruturalmente fracos e unidades úteis não implantadas | `type_head` + `bench_head` + `bench_to_board_head` + `value_head` | Reward nativo de implantação e melhoria estrutural | Requer contrato de cenário e auditoria de heads |
-| 9 | `carry_protection_positioning` | Carry exposto, frontline frágil/isolada e warnings de posicionamento | `type_head` + `board_source_head` + `board_move_target_head` + `value_head` | Reward de movimento validado por métrica tática | Bloqueado até alinhar classificação de roles na observação e no avaliador |
-| 10 | `movement_no_progress` | P4: 76 movimentos (MOVE_BENCH -0,042; MOVE_BOARD -0,008); P6: 76; P7: 87 | `type_head` + heads condicionais de movimento | Reward nativo + delta líquido da sequência | Depois de corrigir a semântica de role e separar deploy de reposition |
+| 7 | `core_sale_retention` | 23 vendas core HIGH e 13 vendas de cópias de pares; P6 vende Master Yi/Kog'Maw em ALL_IN | `type_head` + `sell_head` + `value_head` | Reward nativo de venda | Implementado; aguarda experimento e aprovação |
+| 8 | `bench_deployment_quality` | Tabuleiros subocupados/estruturalmente fracos e unidades úteis não implantadas | `type_head` + `bench_head` + `bench_to_board_head` + `value_head` | Reward nativo de implantação e melhoria estrutural | Implementado; aguarda experimento e aprovação |
+| 9 | `carry_protection_positioning` | Carry exposto, frontline frágil/isolada e warnings de posicionamento | `type_head` + `board_source_head` + `board_move_target_head` + `value_head` | Reward nativo de BoardEvaluation | Implementado após alinhar classificação de roles; aguarda experimento |
+| 10 | `movement_no_progress` | P4: 76 movimentos (MOVE_BENCH -0,042; MOVE_BOARD -0,008); P6: 76; P7: 87 | `type_head` + heads condicionais de movimento | Reward nativo de movimento/BoardEvaluation | Implementado; aguarda experimento e aprovação |
 
-Os seis primeiros são cenários econômicos e já podem ser selecionados pelo
-script PowerShell. Os cenários 7–9 **não são opções do PS1 ainda**; não vou
-marcá-los como treináveis antes de implementar e testar os contratos próprios.
+Os dez cenários são opções do runner PowerShell. A cadeia exige aprovação explícita após cada avaliação; a simples conclusão do treino não libera a etapa seguinte. Os quatro cenários estratégicos usam rewards nativos e liberam somente as cabeças condicionais pertinentes.
 
 ## Por que a economia pode ser aprendida sem alterar a engine
 
@@ -75,11 +73,11 @@ vantagem mínima e persistência de candidato. O foco não possui a mesma prote�
   sem uma política de candidato/confirmado equivalente à da direção.
 
 O plano de composição já tem alguma histerese via
-`should_replace_composition_plan()`, mas isso não estabiliza o foco nem a lista
-core. Como a policy não escolhe essas variáveis por uma ação do PPO, fine-tuning
-não consegue corrigir a causa. Implementar uma política C++ de foco confirmado,
-candidato, streak, vantagem mínima, motivo e transições auditáveis; aplicar
-proteção equivalente ao conjunto core.
+`should_replace_composition_plan()`. Esta PR agora preserva o foco enquanto a
+unidade continua owned/viável e só troca quando uma alternativa supera o score
+anterior por pelo menos 20% + 0,5 ponto. Os core IDs anteriores são retidos e
+preenchem primeiro as vagas; unidades novas só entram para preencher vagas
+livres. Isso reduz churn sem impedir substituições quando a peça sai do banco/tabuleiro.
 
 ## Posicionamento: precisa alinhar a representação antes do PPO
 
@@ -96,9 +94,10 @@ Assim, o avaliador/reward pode tratar uma unidade como carry enquanto a policy
 recebe a feature de fighter (ou outra role base). O modelo pode ser penalizado
 por uma formação que, segundo a própria entrada, parecia correta.
 
-Antes do treino 9, alinhar a classificação usada na observação, nos candidatos,
-no banco e no `BoardEvaluation`. Depois criar o cenário com exposição de carry,
-frontline frágil/isolada e melhoria de score tático. O cenário 8 deve vir antes:
+A observação de tabuleiro, banco, loja e candidatos agora usa o mesmo
+`UnitCombatClassifier` do `BoardEvaluation`; os perfis de banco enviados ao
+avaliador também usam a classificação efetiva. O cenário de carry/posicionamento
+pode, portanto, ser treinado com representação consistente. O cenário 8 deve vir antes:
 um tabuleiro com poucos campeões ou sem unidades úteis implantadas não se
 resolve movendo posições. O cenário 10 mede eficiência de movimento: não
 penaliza uma troca isolada útil, mas ensina a policy a evitar sequências cujo
@@ -139,3 +138,20 @@ textuais não são 255 decisões independentes.
    treino, comparar colocação, HP, nível, ouro, força/estrutura e decisões.
 6. Não promover nem encadear o próximo fine-tuning sem aprovação explícita do
    cenário atual.
+
+
+## Implementação nesta revisão
+
+- Cadeia de 10 cenários em `chain_manager.py`: predecessor aprovado obrigatório,
+  hash SHA-256 do checkpoint, hash de origem, relatório de treino e avaliação
+  vinculada ao checkpoint. Reexecução invalida as etapas posteriores.
+- `approve_scenario.ps1` libera explicitamente a próxima etapa depois que a
+  avaliação revisada fornece `approved: true` e o hash correto.
+- Fine-tuning libera apenas as cabeças do cenário selecionado; encoder e heads
+  não relacionados permanecem congelados.
+- `-Device auto|cpu|cuda` agora é respeitado; CUDA solicitado sem suporte falha
+  explicitamente em vez de cair silenciosamente para CPU.
+- Engine C++ estabiliza foco/core e alinha roles de observação com
+  `UnitCombatClassifier`/BoardEvaluation.
+- A implementação ainda precisa passar pela CI/build C++ e pelos testes Python
+  completos antes de qualquer treino experimental.
