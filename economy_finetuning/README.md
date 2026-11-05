@@ -23,11 +23,11 @@ Compile a engine C++ como já é necessário para o projeto:
 
 ```bash
 # PowerShell: escolha exatamente um cenário por execução
-.\economy_finetuning\run_finetune.ps1 -Scenario s4_fast8_lvl6_gold60_hp_ok
+.\economy_finetuning\run_finetune.ps1 -Scenario critical_hp_high_gold
 
 # Alternativa direta em Python
 python economy_finetuning/finetune.py \
-  --scenario s4_fast8_lvl6_gold60_hp_ok \
+  --scenario critical_hp_high_gold \
   --checkpoint tft_checkpoint.pt \
   --updates 100 \
   --rollout-steps 512
