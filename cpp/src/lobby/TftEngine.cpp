@@ -1201,7 +1201,7 @@ struct TFTEngine::Impl {
             // scores the same unit as a carry/tank, creating contradictory labels.
             const auto observation_role = [&](const UnitInstance& unit,
                                                const ChampionDefinition& def) {
-                strategy::UnitCombatSignals signals;
+                tft::strategy::UnitCombatSignals signals;
                 signals.base_role = def.combat_profile.role;
                 signals.attack_range = def.stats.attack_range > 0.0
                     ? def.stats.attack_range : def.combat_profile.attack_range;
@@ -1222,7 +1222,7 @@ struct TFTEngine::Impl {
                     signals.item_ability_power += item.ability_power;
                     signals.item_crit += item.critical_strike_chance;
                 }
-                return strategy::UnitCombatClassifier::classify(signals).positioning_role;
+                return tft::strategy::UnitCombatClassifier::classify(signals).positioning_role;
             };
 
             for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
