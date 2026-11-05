@@ -3515,17 +3515,10 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     buy_strategy_approved = should_buy_unit(candidate_board_impact, upgrade_value,
                         in_top_trait || in_planned_comp, old_bench_count,
                         offer_stage, def->cost) || early_flex_purchase;
-                    // A second matching copy is valuable future upgrade potential,
-                    // but only reward it when it also fits the current comp.
-                    const bool composition_fit =
-                        candidate_comp_score > 0.0 ||
-                        strategy_before.composition_direction.empty() ||
-                        lobby.stage <= 2;
-                    // A pair has future upgrade value even when the current
-                    // board-impact heuristic is conservative. Do not gate this
-                    // learning signal on buy_strategy_approved.
-                    buy_builds_pair = same_star_copies == 1 &&
-                        offer->star == 1 && composition_fit;
+                    // A second matching copy has real upgrade option value
+                    // even if temporary comp fit is negative. Fit still scales
+                    // the pair reward; it does not gate pair recognition.
+                    buy_builds_pair = reward_model::is_pair_purchase(same_star_copies, offer->star);
                 }
             }
         } else if (type == 3) {
@@ -4227,12 +4220,11 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                 // A full bench can still buy a copy that immediately merges
                 // into a higher-star unit and releases capacity.
                 if (!has_free_bench_slot && !completes_upgrade) continue;
-                const bool composition_fit =
-                    unit_composition_score(current_strategy, *definition,
-                        offer->star, lobby.trait_milestones) > 0.0 ||
-                    current_strategy.composition_direction.empty() || lobby.stage <= 2;
+                // A matching copy is genuine upgrade progress even when
+                // temporary comp-fit scores are negative. Fit still scales
+                // purchase quality; it must not erase the pair opportunity.
                 const bool builds_pair =
-                    same_star_copies == 1 && offer->star == 1 && composition_fit;
+                    same_star_copies == 1 && offer->star == 1;
                 const bool in_top_trait =
                     (!current_strategy.composition_direction.empty() &&
                      std::find(definition->traits.begin(), definition->traits.end(),
@@ -4530,6 +4522,14 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                     sale_has_legitimate_context,
                     sold_unit_upgrade_strength)
                 : -0.10;
+            if (success && !this->strategy.empty()) {
+                action_reward += reward_model::critical_all_in_sale_penalty(
+                    this->strategy.back().strategy,
+                    static_cast<double>(this->info.hp),
+                    sold_core_unit,
+                    sold_unit_protects_upgrade,
+                    sale_compensated_by_board_gain);
+            }
             if (success && purchase_was_recently_reversed &&
                 old_bench_count < static_cast<int>(kBenchSlots)) {
                 // Do not exempt a unit merely because update_strategy promoted

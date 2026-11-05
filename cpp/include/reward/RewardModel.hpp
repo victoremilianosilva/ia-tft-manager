@@ -99,7 +99,7 @@ inline double gold_potential(int gold) noexcept {
     const int surplus = std::clamp(gold - 50, 0, 150);
     return static_cast<double>(bounded) * 0.002 +
         static_cast<double>(bounded / 10) * 0.08 -
-        static_cast<double>(surplus) * 0.0012;
+        static_cast<double>(surplus) * 0.0013;
 }
 
 // Bounded action shaping for the active economic strategy. The base action
@@ -207,6 +207,10 @@ inline double purchase_quality(double fit_delta, bool completes_upgrade) noexcep
 // A pair has option value even before it changes the board: the next copy can
 // produce a 2-star unit. Keep fit as a multiplier, not a gate, so useful pairs
 // are not ignored just because the current board is temporarily weak.
+inline bool is_pair_purchase(int same_star_copies, int offer_star) noexcept {
+    return same_star_copies == 1 && offer_star == 1;
+}
+
 inline double purchase_pair_quality(double fit_score) noexcept {
     // A pair is real upgrade progress even before the third copy appears.
     // Keep the baseline meaningful, while favoring units that fit the plan.
@@ -466,6 +470,10 @@ inline double phase_xp_progress_reward(
 
     const double deficit = std::clamp(
         static_cast<double>(target_level - old_level) / 3.0, 0.0, 1.0);
+    // Keep useful XP purchases meaningful when only one level remains.
+    // Linear deficit scaling made each partial purchase worth less as the
+    // player approached the target, despite the same marginal XP progress.
+    const double target_proximity = 0.70 + 0.30 * deficit;
     const double stage_scale = stage >= 6 ? 1.05
         : (stage >= 5 ? 1.0 : (stage >= 4 ? 0.90 : 0.70));
     const double liquidity_scale = gold_after >= 50 ? 1.0 : 0.75;
@@ -484,7 +492,7 @@ inline double phase_xp_progress_reward(
     // previous lower value so XP does not compete with buying that unit.
     // This remains partial-progress shaping and never stacks on a level-up.
     const double base_signal = useful_purchase_available ? 0.045 : 0.052;
-    return std::clamp(base_signal * deficit * stage_scale * liquidity_scale *
+    return std::clamp(base_signal * target_proximity * stage_scale * liquidity_scale *
         shop_priority_scale * strategy_scale * progress, 0.0, 0.060);
 }
 
@@ -667,7 +675,7 @@ inline double pass_opportunity_penalty(
         std::clamp(static_cast<double>(gold - 10) / 30.0, 0.0, 1.0) * 0.08;
     const double low_hp_surplus_pressure =
         std::clamp((50.0 - hp) / 50.0, 0.0, 1.0) *
-        std::clamp((static_cast<double>(gold) - 50.0) / 75.0, 0.0, 1.0) * 0.045;
+        std::clamp((static_cast<double>(gold) - 50.0) / 75.0, 0.0, 1.0) * 0.050;
 
     return -std::clamp(
         stage_scale * (surplus_pressure + useful_offer_pressure +
@@ -753,6 +761,20 @@ inline bool protects_upgrade_path(
 // Selling should be attractive for low-value clutter, but not intrinsically
 // rewarding for disposing of useful bench units. Fit is normalized to [0, 1].
 // Gold recovery is shaped separately by gold_change_reward().
+// Additional retention signal for emergency ALL_IN states. This does not
+// block SELL: it only makes discarding core units or real upgrade paths less
+// attractive when HP is critical and the sale does not improve the board.
+inline double critical_all_in_sale_penalty(
+    int active_strategy, double hp, bool core_unit,
+    bool protects_upgrade, bool compensated_by_board_gain
+) noexcept {
+    if (active_strategy != 4 || hp > 25.0 ||
+        (!core_unit && !protects_upgrade) || compensated_by_board_gain)
+        return 0.0;
+    const double urgency = std::clamp((25.0 - hp) / 25.0, 0.0, 1.0);
+    return -(0.08 + 0.07 * urgency);
+}
+
 inline double sale_quality(double fit_score, bool core_unit,
                            bool protects_upgrade, bool frees_bench_space,
                            bool compensated_by_board_gain = false,

@@ -124,6 +124,7 @@ int main() {
     require_close(gold_potential(0), 0.0, "zero gold potential");
     require_close(gold_potential(9), 0.018, "liquid gold potential below breakpoint");
     require_close(gold_potential(10), 0.10, "interest breakpoint potential");
+    require_close(gold_potential(100), 0.435, "surplus above 50 has a slightly stronger holding penalty");
     require_close(gold_change_reward(10, 9), -0.082, "spending below interest breakpoint");
     require_close(gold_change_reward(9, 10), 0.082, "saving to interest breakpoint");
     require_close(core_displacement_penalty(true, 0.0), -0.30,
@@ -272,6 +273,10 @@ int main() {
     }
     require_close(reversed_sequence_adjustment(-0.10, -0.20), 0.0,
                   "already-negative reversal sequence needs no extra adjustment");
+    if (!is_pair_purchase(1, 1) || is_pair_purchase(0, 1) ||
+        is_pair_purchase(1, 2)) {
+        throw std::runtime_error("pair recognition must not depend on composition fit and must match the same star");
+    }
     require_close(purchase_pair_quality(0.0), 0.36,
                   "pair-building baseline bonus");
     if (!(purchase_pair_quality(10.0) > purchase_pair_quality(0.0))) {
@@ -348,8 +353,12 @@ int main() {
           stage4_xp_without_shop > stage4_xp_with_shop))
         throw std::runtime_error("stage 4 should give XP a clearer fallback signal only when no useful shop purchase exists");
     require_close(phase_xp_progress_reward(103, 99, 7, 7, 0, 4, 80.0, 5, 0, false),
-                  0.034666666666666665,
+                  0.0468,
                   "stage 5 ECON receives phase-aware XP progress toward its level target");
+    if (!(phase_xp_progress_reward(108, 104, 8, 8, 0, 4, 80.0, 5, 1, false) > 0.035))
+        throw std::runtime_error("level 8 with surplus gold must receive useful partial-XP signal toward level 9");
+    if (!(phase_xp_progress_reward(97, 93, 7, 7, 0, 4, 80.0, 5, 1, false) > 0.035))
+        throw std::runtime_error("level 7 with surplus gold must receive useful partial-XP signal toward level 9");
     if (!(phase_xp_progress_reward(103, 99, 7, 7, 0, 4, 80.0, 5, 0, true) > 0.014))
         throw std::runtime_error("phase XP keeps a reduced signal when a useful shop offer exists");
     if (!(phase_xp_progress_reward(103, 99, 6, 6, 0, 4, 80.0, 4, 2, true) > 0.015))
@@ -496,6 +505,15 @@ int main() {
     if (!(sale_quality(0.0, false, true, true) < 0.0)) {
         throw std::runtime_error("selling a pair copy must remain unattractive even when it frees bench space");
     }
+    require_close(critical_all_in_sale_penalty(4, 3.0, true, true, false),
+                  -0.1416,
+                  "critical ALL_IN at 3 HP adds retention pressure to core/pair sales");
+    require_close(critical_all_in_sale_penalty(4, 3.0, true, true, true),
+                  0.0,
+                  "measurable board improvement can justify a critical ALL_IN sale");
+    require_close(critical_all_in_sale_penalty(1, 3.0, true, true, false),
+                  0.0,
+                  "critical sale retention adjustment is scoped to ALL_IN");
     require_close(sale_quality(0.0, false, false, false), -0.025,
                   "selling non-core bench clutter has a small retention/action cost");
     require_close(sale_quality(0.0, false, false, true), 0.020,
