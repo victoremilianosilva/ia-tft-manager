@@ -4,6 +4,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
+import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
@@ -19,6 +21,25 @@ from cpp_lobby_env import CppTFTLobbyWrapper
 from engine_contracts import ActionType
 from policy import TFTPolicy
 from economy_finetuning.finetune import ACTION_DIMS, _actions_to_native, _flatten_masks
+
+
+def file_sha256(path: Path):
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def repository_commit():
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=ROOT,
+            check=True, capture_output=True, text=True,
+        )
+        return result.stdout.strip()
+    except (OSError, subprocess.CalledProcessError):
+        return os.environ.get("GITHUB_SHA")
 
 
 def load_policy(checkpoint_path: Path, obs_dim: int, device):
@@ -181,6 +202,16 @@ def main():
         probe.close()
     original = load_policy(original_path, obs_dim, device)
     tuned = load_policy(tuned_path, obs_dim, device)
+    provenance = {
+        "repository_commit": repository_commit(),
+        "original_checkpoint_sha256": file_sha256(original_path),
+        "finetuned_checkpoint_sha256": file_sha256(tuned_path),
+        "reward_model_source_sha256": file_sha256(
+            ROOT / "cpp" / "include" / "reward" / "RewardModel.hpp"
+        ),
+        "observation_dim": obs_dim,
+        "action_dims": ACTION_DIMS,
+    }
 
     output = Path(args.output)
     if output.exists():
@@ -211,6 +242,7 @@ def main():
             )
             row = {
                 "seed": seed,
+                "provenance": provenance,
                 "original": original_result,
                 "finetuned": tuned_result,
                 "final_player_deltas": final_player_deltas,
