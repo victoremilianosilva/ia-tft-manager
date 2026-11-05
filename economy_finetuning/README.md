@@ -108,4 +108,5 @@ teste porque as trajetórias divergem após ações diferentes.
   completas pareadas.
 - `runs/latest/reports/experiment_config.json`: configuração e hash do modelo.
 - `runs/latest/reports/training_summary.json`: contagem de cenários encontrados.
-- `runs/latest/reports/ECONOMY_FINETUNING_AUDIT.md`: auditoria gerada.
+- `reports/ECONOMY_FINETUNING_AUDIT.md`: auditoria gerada em Markdown,
+  fora dos diretórios ignorados, pronta para revisão e commit.
