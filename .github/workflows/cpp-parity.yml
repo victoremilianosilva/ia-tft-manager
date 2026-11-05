@@ -1,4 +1,5 @@
 name: C++ native engine
+# The same job also compiles and tests the isolated economy_finetuning package.
 
 on:
   push:
