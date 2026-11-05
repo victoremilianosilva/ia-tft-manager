@@ -39,11 +39,13 @@ class ScenarioSpec:
     reward_buy_xp: float = 0.0
     reward_pass: float = 0.0
     reward_roll: float = 0.0
+    player_ids: tuple[int, ...] = ()
 
     def matches(self, state: dict[str, Any]) -> bool:
         strategy = int(state["strategy"])
         return (
-            self.stage_min <= int(state["stage"]) <= self.stage_max
+            (not self.player_ids or int(state.get("player_id", -1)) in self.player_ids)
+            and self.stage_min <= int(state["stage"]) <= self.stage_max
             and self.gold_min <= float(state["gold"]) <= self.gold_max
             and self.level_min <= float(state["level"]) <= self.level_max
             and self.hp_min <= float(state["hp"]) <= self.hp_max
@@ -53,6 +55,7 @@ class ScenarioSpec:
     def to_dict(self) -> dict[str, Any]:
         value = asdict(self)
         value["strategies"] = [STRATEGY_NAMES.get(x, str(x)) for x in self.strategies]
+        value["player_ids"] = list(self.player_ids)
         return value
 
 
@@ -119,6 +122,13 @@ SCENARIOS: tuple[ScenarioSpec, ...] = (
         "investigar_all_in_sem_recompensa_artificial",
     ),
     ScenarioSpec(
+        "player8_all_in_gold_hoarding",
+        "Jogador 8 / ALL_IN / 50+ ouro",
+        "Cohort específico para investigar o comportamento ALL_IN observado no oitavo jogador.",
+        3, 7, 50, 250, 1, 10, 0, 100, (4,), False,
+        "auditar_player8_all_in", player_ids=(7,),
+    ),
+    ScenarioSpec(
         "gold_above_50_any_strategy",
         "Qualquer estratégia / ouro acima de 50",
         "Cohort geral para medir compras úteis, XP, roll e PASS sem presumir que gastar sempre é correto.",
@@ -135,7 +145,7 @@ SCENARIOS: tuple[ScenarioSpec, ...] = (
 )
 
 
-def decode_observation(observation) -> dict[str, Any]:
+def decode_observation(observation, player_id: int | None = None) -> dict[str, Any]:
     """Decode only stable, documented core observation fields."""
     obs = observation.tolist() if hasattr(observation, "tolist") else list(observation)
     if len(obs) < 17:
@@ -158,6 +168,7 @@ def decode_observation(observation) -> dict[str, Any]:
         "round_number": round_number,
         "strategy": strategy,
         "strategy_name": STRATEGY_NAMES.get(strategy, "UNKNOWN"),
+        "player_id": int(player_id) if player_id is not None else -1,
     }
 
 
