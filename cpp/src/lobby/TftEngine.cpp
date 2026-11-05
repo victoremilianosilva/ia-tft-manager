@@ -2318,6 +2318,11 @@ struct TFTEngine::Impl {
         for (const auto& unit : player_envs[i].board) if (unit) score_owned_unit(*unit);
         for (const auto& unit : player_envs[i].bench) if (unit) score_owned_unit(*unit);
 
+        // Retain the previous focus/core snapshot before rebuilding candidates.
+        // Owned, still-viable pieces should not churn merely because a refresh
+        // produces a tiny score fluctuation.
+        const std::int32_t previous_focus_id = info.composition_focus_id;
+        const auto previous_core_unit_ids = info.core_unit_ids;
         info.composition_focus.clear();
         info.composition_focus_id = -1;
         // Keep composition_direction persistent while composition_locked is true.
@@ -2735,13 +2740,25 @@ struct TFTEngine::Impl {
 
         if (!focus_scores.empty()) {
             auto best_score = -std::numeric_limits<double>::infinity();
+            std::int32_t best_id = -1;
             for (const auto& unit_id : unit_order) {
                 const auto found = focus_scores.find(unit_id);
                 if (found != focus_scores.end() && found->second > best_score) {
                     best_score = found->second;
-                    info.composition_focus_id = unit_id;
-                    info.composition_focus = unit_names[unit_id];
+                    best_id = unit_id;
                 }
+            }
+            const auto previous = focus_scores.find(previous_focus_id);
+            // A challenger must be materially stronger (20% and at least 0.5
+            // points) before replacing a still-owned focus unit.
+            if (previous != focus_scores.end() &&
+                (best_id == previous_focus_id ||
+                 best_score < previous->second * 1.20 + 0.5)) {
+                best_id = previous_focus_id;
+            }
+            if (best_id >= 0) {
+                info.composition_focus_id = best_id;
+                info.composition_focus = unit_names[best_id];
             }
         }
 
@@ -2753,8 +2770,21 @@ struct TFTEngine::Impl {
         }
         std::stable_sort(ordered_units.begin(), ordered_units.end(),
             [](const auto& lhs, const auto& rhs) { return lhs.second > rhs.second; });
-        for (std::size_t index = 0; index < std::min<std::size_t>(3, ordered_units.size()); ++index) {
-            const auto id = ordered_units[index].first;
+        // Preserve viable core IDs first; fill vacancies with the strongest
+        // newly observed units. This avoids core churn on near-tied scores.
+        for (const auto id : previous_core_unit_ids) {
+            if (info.core_unit_ids.size() >= 3) break;
+            if (focus_scores.find(id) == focus_scores.end()) continue;
+            if (std::find(info.core_unit_ids.begin(), info.core_unit_ids.end(), id) !=
+                info.core_unit_ids.end()) continue;
+            info.core_unit_ids.push_back(id);
+            info.core_units.push_back(unit_names[id]);
+        }
+        for (const auto& [id, score] : ordered_units) {
+            (void)score;
+            if (info.core_unit_ids.size() >= 3) break;
+            if (std::find(info.core_unit_ids.begin(), info.core_unit_ids.end(), id) !=
+                info.core_unit_ids.end()) continue;
             info.core_unit_ids.push_back(id);
             info.core_units.push_back(unit_names[id]);
         }
