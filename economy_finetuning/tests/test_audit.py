@@ -37,6 +37,7 @@ class AuditTests(unittest.TestCase):
         self.assertIn("estrutura", report)
         self.assertIn("1/2 → 2/2", report)
         self.assertIn("50.0% → 100.0%", report)
+        self.assertIn("Frequência de ações nas partidas completas", report)
 
     def test_report_includes_checkpoint_engine_and_reward_provenance(self):
         metadata = {
