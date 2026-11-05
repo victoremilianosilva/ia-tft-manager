@@ -43,6 +43,7 @@ class ScenarioSpec:
     round_min: float = 1.0
     round_max: float = 42.0
     requires_candidate_semantics: bool = False
+    reward_mode: str = "shaped"
 
     def matches(self, state: dict[str, Any]) -> bool:
         if self.requires_candidate_semantics:
@@ -106,9 +107,10 @@ SCENARIOS: tuple[ScenarioSpec, ...] = (
     ScenarioSpec(
         "critical_hp_high_gold",
         "HP crítico / 50+ ouro",
-        "Estado de risco: audita se o modelo continua guardando ouro com pouca vida.",
-        3, 7, 50, 250, 1, 10, 0, 30, (), False,
-        "monitorar_estabilizacao_sem_forcar_xp",
+        "Treina a escolha entre compra útil, XP, roll e PASS usando somente o reward nativo; não presume que XP seja sempre a resposta.",
+        3, 7, 50, 250, 1, 10, 0, 30, (0, 1, 2, 4, 5, 6), True,
+        "aprender_estabilizacao_com_reward_nativo",
+        reward_mode="native",
     ),
     ScenarioSpec(
         "low_hp_fast8_high_gold",
@@ -198,7 +200,7 @@ def shaped_action_reward(
     matched = matching_scenarios(state)
     trainable = [
         scenario for scenario in matched
-        if scenario.trainable and (
+        if scenario.trainable and scenario.reward_mode == "shaped" and (
             selected_scenario_id is None or scenario.scenario_id == selected_scenario_id
         )
     ]
