@@ -272,6 +272,10 @@ int main() {
     }
     require_close(reversed_sequence_adjustment(-0.10, -0.20), 0.0,
                   "already-negative reversal sequence needs no extra adjustment");
+    if (!is_pair_purchase(1, 1) || is_pair_purchase(0, 1) ||
+        is_pair_purchase(1, 2)) {
+        throw std::runtime_error("pair recognition must not depend on composition fit and must match the same star");
+    }
     require_close(purchase_pair_quality(0.0), 0.36,
                   "pair-building baseline bonus");
     if (!(purchase_pair_quality(10.0) > purchase_pair_quality(0.0))) {
