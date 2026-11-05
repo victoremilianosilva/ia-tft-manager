@@ -938,14 +938,9 @@ struct TFTEngine::Impl {
         auto& current = player_envs[player_index].action_masks;
         current = PlayerActionMasks{};
 
+        // Keep every legal action available. Reroll-vs-XP is learned
+        // through strategy-aware rewards rather than hard action suppression.
         current.type_mask = batch.type_mask;
-        // FAST8 is an XP-to-level-8 plan. REROLL is unavailable until level 8;
-        // enforce this in the native mask, not only through reward shaping.
-        const auto& active_strategy = player_envs[player_index].strategy;
-        if (player_envs[player_index].economy.level < 8 &&
-            !active_strategy.empty() && active_strategy.back().strategy == 2) {
-            current.type_mask[1] = 0;
-        }
         current.shop_mask = batch.shop_mask;
         current.bench_source_mask =
             batch.bench_source_mask;

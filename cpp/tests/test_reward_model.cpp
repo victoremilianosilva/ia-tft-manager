@@ -415,19 +415,31 @@ int main() {
     }
     require_close(strategy_action_reward(0, 1, 60, 58, 80.0, 4,
                                          false, true, false, false),
-                  -0.08, "non-SLOWROLL reroll is penalized even when its shop improved");
+                  -0.15, "rich late ECON rerolls receive a strong learnable penalty");
     require_close(strategy_action_reward(1, 1, 55, 53, 90.0, 3,
                                          false, false, false, true),
-                  -0.14, "unimproved STABILIZE rerolls receive the stronger bounded penalty");
+                  -0.12, "STABILIZE rerolls are penalized without masking the action");
     require_close(strategy_action_reward(1, 1, 55, 53, 90.0, 3,
                                          false, true, false, true),
-                  -0.08, "a good non-SLOWROLL reroll does not become the preferred spend");
+                  -0.12, "an improved non-SLOWROLL reroll remains costly");
     require_close(strategy_action_reward(2, 1, 59, 57, 60.0, 5,
                                          false, true, false, true),
-                  -0.12, "late rich FAST8 rerolls are more costly than planned XP progress");
+                  -0.15, "late rich FAST8 rerolls receive the strongest penalty");
     require_close(strategy_action_reward(2, 1, 40, 38, 80.0, 3,
                                          false, true, false, true),
-                  -0.08, "early FAST8 reroll cost remains unchanged");
+                  -0.12, "stage-three FAST8 rerolls remain legal but discouraged");
+    require_close(strategy_action_reward(4, 1, 60, 58, 80.0, 4,
+                                         false, false, false, false),
+                  -0.15, "ALL_IN rerolls are discouraged outside SLOWROLL");
+    require_close(strategy_action_reward(5, 1, 35, 33, 80.0, 2,
+                                         false, false, false, false),
+                  -0.09, "WINSTREAK rerolls are discouraged in the opening");
+    require_close(strategy_action_reward(6, 1, 60, 58, 80.0, 4,
+                                         false, false, false, false),
+                  -0.15, "LOSS_STREAK rerolls are discouraged with surplus gold");
+    require_close(strategy_action_reward(1, 1, 60, 58, 20.0, 4,
+                                         false, true, false, true),
+                  -0.06, "critical HP softens but does not erase non-SLOWROLL reroll cost");
     require_close(strategy_action_reward(3, 1, 55, 53, 90.0, 3,
                                          false, true, false, true),
                   0.12, "slow-roll strategy receives a stronger improved-reroll signal");
@@ -558,10 +570,10 @@ int main() {
                   0.0, "ECON permits planned XP progress below the old interest floor");
     require_close(strategy_action_reward(0, 1, 40, 38, 80.0, 3,
                                          false, true, false, false),
-                  -0.08, "ECON does not prefer improved rerolls over planned spending");
+                  -0.12, "stage-three ECON rerolls remain discouraged even when the shop improves");
     require_close(strategy_action_reward(0, 1, 40, 38, 80.0, 3,
                                          false, false, false, false),
-                  -0.08, "ECON applies one bounded penalty to rerolls");
+                  -0.12, "stage-three ECON applies the same bounded reroll penalty");
     require_close(strategy_action_reward(0, 0, 55, 50, 80.0, 4,
                                          true, false, false, false),
                   0.04, "ECON allows useful spending from surplus above 50");
