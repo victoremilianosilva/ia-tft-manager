@@ -1196,6 +1196,34 @@ struct TFTEngine::Impl {
                     ++trait_counts[it->second].second;
                 }
             };
+            // Match the exact combat-role classifier used by BoardEvaluation.
+            // Otherwise PPO observes a catalog role while the reward evaluator
+            // scores the same unit as a carry/tank, creating contradictory labels.
+            const auto observation_role = [&](const UnitInstance& unit,
+                                               const ChampionDefinition& def) {
+                tft::strategy::UnitCombatSignals signals;
+                signals.base_role = def.combat_profile.role;
+                signals.attack_range = def.stats.attack_range > 0.0
+                    ? def.stats.attack_range : def.combat_profile.attack_range;
+                signals.max_health = def.stats.max_hp;
+                signals.armor = def.stats.armor;
+                signals.magic_resist = def.stats.magic_resist;
+                signals.attack_damage = def.stats.attack_damage;
+                signals.attack_speed = def.stats.attack_speed;
+                signals.ability_text = def.ability.description + " " + def.ability.name;
+                signals.planned_main_carry =
+                    unit.champion_internal_id == strategy.planned_main_carry_id;
+                for (const auto& item : unit.items) {
+                    signals.item_health += item.health;
+                    signals.item_armor += item.armor;
+                    signals.item_magic_resist += item.magic_resist;
+                    signals.item_attack_damage += item.attack_damage;
+                    signals.item_attack_speed += item.attack_speed;
+                    signals.item_ability_power += item.ability_power;
+                    signals.item_crit += item.critical_strike_chance;
+                }
+                return tft::strategy::UnitCombatClassifier::classify(signals).positioning_role;
+            };
 
             for (std::size_t slot = 0; slot < kBoardSlots; ++slot) {
                 if (!player_envs[i].board[slot]) continue;
@@ -1204,7 +1232,7 @@ struct TFTEngine::Impl {
                 const auto& unit = *player_envs[i].board[slot];
                 const auto* def = catalog->find_by_id(unit.champion_internal_id);
                 if (!def) continue;
-                const int role = std::clamp(def->combat_profile.role, 0, 4);
+                const int role = std::clamp(observation_role(unit, *def), 0, 4);
                 board_roles[slot] = role;
                 const auto role_index = static_cast<std::size_t>(role);
                 if (!seen_roles[role_index]) {
@@ -1252,7 +1280,7 @@ struct TFTEngine::Impl {
                 out[offset++] = 1.0f;
                 out[offset++] = static_cast<float>(def->cost) / 5.0f;
                 out[offset++] = static_cast<float>(unit.star) / 3.0f;
-                out[offset++] = role_state_value(def->combat_profile.role);
+                out[offset++] = role_state_value(observation_role(unit, *def));
                 out[offset++] = unit_strength(*def, unit);
             }
 
@@ -1265,7 +1293,7 @@ struct TFTEngine::Impl {
                 out[offset++] = 1.0f;
                 out[offset++] = static_cast<float>(def->cost) / 5.0f;
                 out[offset++] = static_cast<float>(unit.star) / 3.0f;
-                out[offset++] = role_state_value(def->combat_profile.role);
+                out[offset++] = role_state_value(observation_role(unit, *def));
                 out[offset++] = unit_strength(*def, unit);
             }
 
@@ -1278,7 +1306,7 @@ struct TFTEngine::Impl {
                 out[offset++] = 1.0f;
                 out[offset++] = static_cast<float>(def->cost) / 5.0f;
                 out[offset++] = 1.0f;
-                out[offset++] = role_state_value(def->combat_profile.role);
+                out[offset++] = role_state_value(observation_role(*unit, *def));
                 out[offset++] = 0.0f; // Python shop strength slot is intentionally zero.
             }
 
@@ -1501,7 +1529,7 @@ struct TFTEngine::Impl {
                     if (definition) {
                         const bool on_board = target < kBoardSlots;
                         const auto row = on_board ? target / 7 : 0;
-                        const int role = std::clamp(definition->combat_profile.role, 0, 4);
+                        const int role = std::clamp(observation_role(*unit, *definition), 0, 4);
                         const auto& stats = definition->stats;
                         const auto& combat = definition->combat_profile;
                         const auto fit = unit_composition_score(strategy, *definition,
@@ -1657,7 +1685,7 @@ struct TFTEngine::Impl {
                 out[offset++] = static_cast<float>(std::clamp(fit / 22.5, 0.0, 1.0));
                 out[offset++] = static_cast<float>(def->cost) / 5.0f;
                 out[offset++] = static_cast<float>(unit->star) / 3.0f;
-                out[offset++] = role_state_value(def->combat_profile.role);
+                out[offset++] = role_state_value(observation_role(*unit, *def));
                 out[offset++] = core ? 1.0f : 0.0f;
                 // Number of owned copies (including star-equivalent copies), normalized.
                 out[offset++] = static_cast<float>(std::min(copies, 9)) / 9.0f;
@@ -2132,7 +2160,7 @@ struct TFTEngine::Impl {
             const auto* def = catalog->find_by_id(unit->champion_internal_id);
             if (!def) continue;
             bench_profiles.push_back({
-                std::clamp(def->combat_profile.role, 0, 4),
+                classify_unit(*unit, *def).positioning_role,
                 unit->star
             });
         }
@@ -2318,6 +2346,11 @@ struct TFTEngine::Impl {
         for (const auto& unit : player_envs[i].board) if (unit) score_owned_unit(*unit);
         for (const auto& unit : player_envs[i].bench) if (unit) score_owned_unit(*unit);
 
+        // Retain the previous focus/core snapshot before rebuilding candidates.
+        // Owned, still-viable pieces should not churn merely because a refresh
+        // produces a tiny score fluctuation.
+        const std::int32_t previous_focus_id = info.composition_focus_id;
+        const auto previous_core_unit_ids = info.core_unit_ids;
         info.composition_focus.clear();
         info.composition_focus_id = -1;
         // Keep composition_direction persistent while composition_locked is true.
@@ -2735,13 +2768,25 @@ struct TFTEngine::Impl {
 
         if (!focus_scores.empty()) {
             auto best_score = -std::numeric_limits<double>::infinity();
+            std::int32_t best_id = -1;
             for (const auto& unit_id : unit_order) {
                 const auto found = focus_scores.find(unit_id);
                 if (found != focus_scores.end() && found->second > best_score) {
                     best_score = found->second;
-                    info.composition_focus_id = unit_id;
-                    info.composition_focus = unit_names[unit_id];
+                    best_id = unit_id;
                 }
+            }
+            const auto previous = focus_scores.find(previous_focus_id);
+            // A challenger must be materially stronger (20% and at least 0.5
+            // points) before replacing a still-owned focus unit.
+            if (previous != focus_scores.end() &&
+                (best_id == previous_focus_id ||
+                 best_score < previous->second * 1.20 + 0.5)) {
+                best_id = previous_focus_id;
+            }
+            if (best_id >= 0) {
+                info.composition_focus_id = best_id;
+                info.composition_focus = unit_names[best_id];
             }
         }
 
@@ -2753,8 +2798,21 @@ struct TFTEngine::Impl {
         }
         std::stable_sort(ordered_units.begin(), ordered_units.end(),
             [](const auto& lhs, const auto& rhs) { return lhs.second > rhs.second; });
-        for (std::size_t index = 0; index < std::min<std::size_t>(3, ordered_units.size()); ++index) {
-            const auto id = ordered_units[index].first;
+        // Preserve viable core IDs first; fill vacancies with the strongest
+        // newly observed units. This avoids core churn on near-tied scores.
+        for (const auto id : previous_core_unit_ids) {
+            if (info.core_unit_ids.size() >= 3) break;
+            if (focus_scores.find(id) == focus_scores.end()) continue;
+            if (std::find(info.core_unit_ids.begin(), info.core_unit_ids.end(), id) !=
+                info.core_unit_ids.end()) continue;
+            info.core_unit_ids.push_back(id);
+            info.core_units.push_back(unit_names[id]);
+        }
+        for (const auto& [id, score] : ordered_units) {
+            (void)score;
+            if (info.core_unit_ids.size() >= 3) break;
+            if (std::find(info.core_unit_ids.begin(), info.core_unit_ids.end(), id) !=
+                info.core_unit_ids.end()) continue;
             info.core_unit_ids.push_back(id);
             info.core_units.push_back(unit_names[id]);
         }
