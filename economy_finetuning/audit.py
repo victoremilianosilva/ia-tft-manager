@@ -38,7 +38,7 @@ def js_divergence(p, q):
     return 0.5 * (kl_pm + kl_qm)
 
 
-def build_report(rows):
+def build_report(rows, paired_rows=None):
     total = 0
     type_divergences = []
     action_divergences = 0
@@ -104,6 +104,25 @@ def build_report(rows):
     mean_js = sum(type_divergences) / len(type_divergences) if type_divergences else float("nan")
     action_rate = action_divergences / total if total else 0.0
     status = "INCONCLUSIVO" if total == 0 else "REVISAR ALTERAÇÕES" if action_rate > 0.10 else "SEM ALERTA GLOBAL"
+    paired_section = "## Partidas completas pareadas\\n\\nNenhum arquivo de partidas pareadas foi fornecido.\\n"
+    if paired_rows is not None:
+        deltas = [float(item.get("mean_reward_delta", 0.0)) for item in paired_rows]
+        completed = sum(bool(item.get("both_completed")) for item in paired_rows)
+        paired_mean = sum(deltas) / len(deltas) if deltas else float("nan")
+        paired_section = (
+            "## Partidas completas pareadas\\n\\n"
+            f"- Seeds avaliadas: **{len(paired_rows)}**\\n"
+            f"- Ambas as partidas concluídas: **{completed}/{len(paired_rows)}**\\n"
+            f"- Diferença média de reward (fine-tuned - original): **{paired_mean:.5f}**\\n\\n"
+            "| Seed | Reward delta médio | Ambas concluídas |\\n|---:|---:|:---:|\\n"
+            + "\\n".join(
+                f"| {item.get('seed')} | {float(item.get('mean_reward_delta', 0.0)):+.5f} | "
+                f"{'Sim' if item.get('both_completed') else 'Não'} |"
+                for item in paired_rows
+            )
+            + "\\n\\nReward é reportado como a soma nativa por jogador; não deve ser interpretado como colocação sem validar o schema terminal.\\n"
+        )
+
     return f"""# Auditoria de Fine-tuning Econômico
 
 > Relatório gerado automaticamente a partir de `decision_trace.jsonl`.
@@ -130,6 +149,8 @@ O status é um alerta de triagem, não uma aprovação automática. A interpreta
 
 {chr(10).join(scenario_lines)}
 
+{paired_section}
+
 ## Interpretação e limitações
 
 - A comparação de ações usa vetores completos de seis componentes; mudanças de slot/destino também contam como divergência.
@@ -149,12 +170,15 @@ Aprovação exige melhoria econômica demonstrada, amostra suficiente, ausência
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--trace", default="economy_finetuning/runs/latest/logs/decision_trace.jsonl")
+    parser.add_argument("--paired", default=None, help="JSONL opcional de partidas completas pareadas")
     parser.add_argument("--output", default="economy_finetuning/runs/latest/reports/ECONOMY_FINETUNING_AUDIT.md")
     args = parser.parse_args()
     trace = Path(args.trace)
     if not trace.is_file():
         raise FileNotFoundError(trace)
-    report = build_report(read_jsonl(trace))
+    paired_path = Path(args.paired) if args.paired else None
+    paired_rows = list(read_jsonl(paired_path)) if paired_path and paired_path.is_file() else None
+    report = build_report(read_jsonl(trace), paired_rows)
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(report, encoding="utf-8")
