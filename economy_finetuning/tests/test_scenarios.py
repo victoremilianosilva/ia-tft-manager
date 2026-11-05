@@ -54,6 +54,21 @@ class ScenarioGeneratorTests(unittest.TestCase):
         ids = {item.scenario_id for item in matching_scenarios(state)}
         self.assertNotIn("useful_shop_opportunity", ids)
 
+    def test_selected_scenario_is_the_only_one_that_shapes_reward(self):
+        state = {
+            "hp": 70, "gold": 90, "level": 6, "stage": 4,
+            "round_number": 19, "strategy": 2,
+        }
+        all_reward, matches = shaped_action_reward(state, 2)
+        selected_reward, selected_matches = shaped_action_reward(
+            state, 2, selected_scenario_id="s4_fast8_lvl6_gold60_hp_ok"
+        )
+        self.assertIn("s4_fast8_lvl6_gold60_hp_ok", matches)
+        self.assertIn("s4_fast8_lvl6_gold80", matches)
+        self.assertEqual(selected_matches, matches)
+        self.assertAlmostEqual(selected_reward, 0.055)
+        self.assertNotEqual(selected_reward, all_reward)
+
     def test_critical_hp_monitor_only_does_not_create_training_reward(self):
         state = {"hp": 20, "gold": 90, "level": 6, "stage": 4, "strategy": 2}
         reward, matches = shaped_action_reward(state, 2)
