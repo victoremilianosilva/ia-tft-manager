@@ -5,7 +5,7 @@ param(
     [int]$SeedCount = 20,
     [int]$MinSeedsForReview = 20,
     [int]$MaxSteps = 2500,
-    [string]$OriginalCheckpoint = "tft_checkpoint.pt",
+    [string]$OriginalCheckpoint = "",
     [switch]$OpenViewer
 )
 $ErrorActionPreference = "Stop"
@@ -37,7 +37,8 @@ $training = Get-Content -LiteralPath $summaryPath -Raw | ConvertFrom-Json
 if (-not $metadata.selected_scenario -or $metadata.selected_scenario -ne $training.selected_scenario) { throw "Cenário divergente entre experiment_config.json e training_summary.json." }
 if (-not $training.checkpoint_finetuned -or -not (Test-Path -LiteralPath $training.checkpoint_finetuned -PathType Leaf)) { throw "Checkpoint fine-tuned indicado no training_summary.json não foi encontrado: $($training.checkpoint_finetuned)" }
 $finetunedPath = [System.IO.Path]::GetFullPath($training.checkpoint_finetuned)
-$originalPath = Resolve-RepoPath $OriginalCheckpoint
+$originalReference = if ([string]::IsNullOrWhiteSpace($OriginalCheckpoint)) { [string]$metadata.checkpoint } else { $OriginalCheckpoint }
+$originalPath = Resolve-RepoPath $originalReference
 if (-not (Test-Path -LiteralPath $originalPath -PathType Leaf)) { throw "Checkpoint original não encontrado: $originalPath" }
 $pairedPath = Join-Path $logsPath "paired_match_results.jsonl"
 if (Test-Path -LiteralPath $pairedPath) { throw "O arquivo pareado já existe e não será sobrescrito: $pairedPath" }
