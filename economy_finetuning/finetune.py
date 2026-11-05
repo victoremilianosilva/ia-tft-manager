@@ -77,8 +77,8 @@ def _load_checkpoint(path: Path, obs_dim: int, device: torch.device):
 
 def _flatten_masks(raw_masks, device):
     flattened = {}
-    if len(raw_masks) != 8:
-        raise ValueError(f"Esperadas 8 máscaras; recebidas {len(raw_masks)}")
+    if not raw_masks:
+        raise ValueError("É necessário ao menos um conjunto de máscaras.")
     for name, shape in MASK_SHAPES.items():
         values = []
         for player_id, player_mask in enumerate(raw_masks):
