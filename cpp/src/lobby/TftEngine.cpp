@@ -1293,7 +1293,7 @@ struct TFTEngine::Impl {
                 out[offset++] = 1.0f;
                 out[offset++] = static_cast<float>(def->cost) / 5.0f;
                 out[offset++] = static_cast<float>(unit.star) / 3.0f;
-                out[offset++] = role_state_value(def->combat_profile.role);
+                out[offset++] = role_state_value(observation_role(unit, *def));
                 out[offset++] = unit_strength(*def, unit);
             }
 
