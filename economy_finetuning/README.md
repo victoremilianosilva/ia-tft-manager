@@ -22,15 +22,21 @@ fora desta PR.
 Compile a engine C++ como já é necessário para o projeto:
 
 ```bash
+# PowerShell: escolha exatamente um cenário por execução
+.\economy_finetuning\run_finetune.ps1 -Scenario s4_fast8_lvl6_gold60_hp_ok
+
+# Alternativa direta em Python
 python economy_finetuning/finetune.py \
+  --scenario s4_fast8_lvl6_gold60_hp_ok \
   --checkpoint tft_checkpoint.pt \
   --updates 100 \
   --rollout-steps 128
 # O script imprime o caminho exclusivo do checkpoint e da execução.
 ```
 
-O checkpoint de origem nunca é sobrescrito. Por padrão, somente `type_head`
-e `value_head` são treináveis; encoder espacial/global, fusão, cabeças de
+O checkpoint de origem nunca é sobrescrito. Cada execução exige `--scenario`
+e aplica shaping somente a esse cenário; os demais são registrados apenas
+para monitoramento. Por padrão, somente `type_head` e `value_head` são treináveis; encoder espacial/global, fusão, cabeças de
 loja, venda, banco, tabuleiro e itens permanecem congeladas. A cabeça de tipo
 compartilhada é projetada de volta para uma pequena região L2 ao redor dos
 pesos originais a cada update. O shaping é pequeno e condicionado ao
