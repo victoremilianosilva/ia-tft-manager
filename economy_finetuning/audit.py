@@ -146,8 +146,7 @@ def build_report(rows, paired_rows=None):
             "## Partidas completas pareadas\n\n"
             f"- Seeds avaliadas: **{len(paired_rows)}**\n"
             f"- Ambas as partidas concluídas: **{completed}/{len(paired_rows)}**\n"
-            f"- Diferença média de reward (fine-tuned - original): **"
-            f"{paired_mean:.5f if paired_mean is not None else 'n/a'}**\n\n"
+            f"- Diferença média de reward (fine-tuned - original): **{paired_mean_text}**\n\n"
             "| Seed | Reward delta médio | Ambas concluídas |\n|---:|---:|:---:|\n"
             + "\n".join(paired_lines)
             + "\n\nReward é reportado como soma nativa por jogador; não equivale a colocação sem validar o schema terminal.\n"
