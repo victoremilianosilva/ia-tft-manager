@@ -119,3 +119,6 @@ player_*_log.json
 economy_finetuning/runs/
 economy_finetuning/checkpoints/
 economy_finetuning/tensorboard/
+
+# Local approval/lineage state for sequential fine-tuning
+economy_finetuning/chain_state.json
