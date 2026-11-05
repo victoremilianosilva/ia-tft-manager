@@ -757,7 +757,12 @@ inline double sale_quality(double fit_score, bool core_unit,
     // A sale is not a positive action merely because it produces gold. Keep a
     // small retention cost unless the bench is genuinely full; the gold
     // potential already rewards economically meaningful threshold crossings.
-    const double context_factor = justified_by_context ? 0.65 : 1.0;
+    // Context may soften retention pressure for ordinary bench clutter,
+    // but it must not erase protection for a core/planned unit or a real
+    // upgrade path. Those sales need measurable board compensation instead.
+    const double context_factor =
+        justified_by_context && core_pressure <= 0.0 && upgrade_pressure <= 0.0
+            ? 0.65 : 1.0;
     return -0.025 - 0.24 * fit * context_factor -
         (core_pressure > 0.0 && !compensated_by_board_gain
             ? 0.37 * core_pressure * context_factor : 0.0) -

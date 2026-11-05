@@ -4028,8 +4028,11 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                          gold_after_sale >= EconomyEngine::REROLL_COST) ||
                         (old_gold < EconomyEngine::BUY_XP_COST &&
                          gold_after_sale >= EconomyEngine::BUY_XP_COST);
-                    sale_has_legitimate_context =
-                        sale_bench_was_full || sale_economic_need;
+                    // Crossing a spending threshold is not, by itself, a
+                    // strategic reason to discard a core unit or an upgrade path.
+                    // It remains available to the recent-purchase reversal check,
+                    // but does not weaken the unit-retention signal.
+                    sale_has_legitimate_context = sale_bench_was_full;
                     const auto recent = std::find_if(
                         this->recent_purchases.rbegin(), this->recent_purchases.rend(),
                         [&sold_uuid](const RecentPurchase& purchase) {
@@ -4108,7 +4111,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             std::find(planned_unit_ids.begin(), planned_unit_ids.end(),
                                 unit.champion_internal_id) != planned_unit_ids.end();
                         sold_unit_fit_score = std::clamp(
-                            unit_composition_score(current_strategy, *definition, unit.star, lobby.trait_milestones) / 32.5,
+                            unit_composition_score(current_strategy, *definition, unit.star, lobby.trait_milestones) / 18.0,
                             0.0, 1.0);
                     }
                     int same_star_copies = 0;
@@ -4144,7 +4147,7 @@ TFTEngine::Impl::PlayerTransition TFTEngine::Impl::PlayerEnv::step(
                             if (!candidate_def) return false;
                             const double candidate_fit = std::clamp(
                                 unit_composition_score(current_strategy, *candidate_def,
-                                    candidate->star, lobby.trait_milestones) / 32.5,
+                                    candidate->star, lobby.trait_milestones) / 18.0,
                                 0.0, 1.0);
                             return candidate_fit >= sold_unit_fit_score + 0.10;
                         };
