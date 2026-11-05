@@ -42,8 +42,11 @@ class ScenarioSpec:
     player_ids: tuple[int, ...] = ()
     round_min: float = 1.0
     round_max: float = 42.0
+    requires_candidate_semantics: bool = False
 
     def matches(self, state: dict[str, Any]) -> bool:
+        if self.requires_candidate_semantics:
+            return False
         strategy = int(state["strategy"])
         return (
             (not self.player_ids or int(state.get("player_id", -1)) in self.player_ids)
@@ -146,7 +149,7 @@ SCENARIOS: tuple[ScenarioSpec, ...] = (
         "Oportunidade de compra útil com ouro acima de 50",
         "Monitor-only: requer semântica confiável dos candidatos da loja para definir utilidade.",
         1, 7, 50.01, 250, 1, 10, 0, 100, (), False,
-        "monitorar_compra_util",
+        "monitorar_compra_util", requires_candidate_semantics=True,
     ),
 )
 
