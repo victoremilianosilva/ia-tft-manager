@@ -44,6 +44,7 @@ class ScenarioSpec:
     round_max: float = 42.0
     requires_candidate_semantics: bool = False
     reward_mode: str = "shaped"
+    trainable_heads: tuple[str, ...] = ("type_head", "value_head")
 
     def matches(self, state: dict[str, Any]) -> bool:
         if self.requires_candidate_semantics:
@@ -63,6 +64,7 @@ class ScenarioSpec:
         value = asdict(self)
         value["strategies"] = [STRATEGY_NAMES.get(x, str(x)) for x in self.strategies]
         value["player_ids"] = list(self.player_ids)
+        value["trainable_heads"] = list(self.trainable_heads)
         return value
 
 
@@ -147,6 +149,44 @@ SCENARIOS: tuple[ScenarioSpec, ...] = (
         "Cohort geral para medir compras úteis, XP, roll e PASS sem presumir que gastar sempre é correto.",
         1, 7, 50.01, 250, 1, 10, 0, 100, (), False,
         "auditoria_geral_do_excedente",
+    ),
+    # Strategic scenarios use only native rewards and train the conditional
+    # heads that already consume candidate/board semantics from the engine.
+    ScenarioSpec(
+        "core_sale_retention",
+        "Proteção de unidades core e pares",
+        "Cohort de meio/fim de jogo; o sell_head aprende com o reward nativo e os sinais de fit/cópias já presentes nos candidatos.",
+        3, 7, 20, 250, 1, 10, 1, 100, (), True,
+        "reduzir_vendas_danificantes_sem_bloquear_substituicoes",
+        round_min=12, round_max=42, reward_mode="native",
+        trainable_heads=("type_head", "sell_head", "value_head"),
+    ),
+    ScenarioSpec(
+        "bench_deployment_quality",
+        "Qualidade de implantação do banco",
+        "Treina escolha de unidade do banco e casa de destino usando reward nativo de força/estrutura.",
+        2, 7, 10, 250, 1, 10, 20, 100, (), True,
+        "implantar_unidades_uteis_sem_movimentacao_forcada",
+        round_min=8, round_max=42, reward_mode="native",
+        trainable_heads=("type_head", "bench_head", "bench_to_board_head", "value_head"),
+    ),
+    ScenarioSpec(
+        "carry_protection_positioning",
+        "Proteção e posicionamento do carry",
+        "Treina origem/destino de movimentos no tabuleiro usando BoardEvaluation e reward nativo após mudanças reais.",
+        3, 7, 0, 250, 1, 10, 1, 100, (), True,
+        "melhorar_posicionamento_sem_regra_dura",
+        round_min=15, round_max=42, reward_mode="native",
+        trainable_heads=("type_head", "board_source_head", "board_move_target_head", "value_head"),
+    ),
+    ScenarioSpec(
+        "movement_no_progress",
+        "Movimento sem progresso",
+        "Aprende a evitar movimentos sem ganho estrutural/posicional a partir do reward nativo; não penaliza todo movimento.",
+        2, 7, 0, 250, 1, 10, 1, 100, (), True,
+        "reduzir_movimentos_sem_melhoria",
+        round_min=8, round_max=42, reward_mode="native",
+        trainable_heads=("type_head", "board_source_head", "board_move_target_head", "bench_head", "bench_to_board_head", "value_head"),
     ),
     ScenarioSpec(
         "useful_shop_opportunity",
