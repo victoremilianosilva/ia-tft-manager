@@ -99,7 +99,7 @@ inline double gold_potential(int gold) noexcept {
     const int surplus = std::clamp(gold - 50, 0, 150);
     return static_cast<double>(bounded) * 0.002 +
         static_cast<double>(bounded / 10) * 0.08 -
-        static_cast<double>(surplus) * 0.0012;
+        static_cast<double>(surplus) * 0.0013;
 }
 
 // Bounded action shaping for the active economic strategy. The base action
@@ -675,7 +675,7 @@ inline double pass_opportunity_penalty(
         std::clamp(static_cast<double>(gold - 10) / 30.0, 0.0, 1.0) * 0.08;
     const double low_hp_surplus_pressure =
         std::clamp((50.0 - hp) / 50.0, 0.0, 1.0) *
-        std::clamp((static_cast<double>(gold) - 50.0) / 75.0, 0.0, 1.0) * 0.045;
+        std::clamp((static_cast<double>(gold) - 50.0) / 75.0, 0.0, 1.0) * 0.050;
 
     return -std::clamp(
         stage_scale * (surplus_pressure + useful_offer_pressure +
