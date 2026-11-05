@@ -127,8 +127,12 @@ def main():
         st.subheader("Resultados de episódios")
         st.dataframe(scenarios, use_container_width=True, hide_index=True)
 
-    report_path = reports / "ECONOMY_FINETUNING_AUDIT.md"
-    if report_path.is_file():
+    report_candidates = [
+        reports / "ECONOMY_FINETUNING_AUDIT.md",
+        ROOT / "economy_finetuning" / "reports" / "ECONOMY_FINETUNING_AUDIT.md",
+    ]
+    report_path = next((candidate for candidate in report_candidates if candidate.is_file()), None)
+    if report_path is not None:
         st.subheader("Auditoria Markdown")
         st.markdown(report_path.read_text(encoding="utf-8"))
     else:
