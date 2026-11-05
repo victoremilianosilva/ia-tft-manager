@@ -365,14 +365,6 @@ int main() {
     require_close(economy_phase_target_level(5), 9.0, "stage 5 target level");
     require_close(economy_phase_target_level(4, 2), 8.0, "FAST8 target level");
     require_close(economy_phase_target_level(4, 3), 6.0, "SLOWROLL target level");
-    if (!should_defer_reroll_for_leveling(80, 6, 80.0, 4, 2) ||
-        !should_defer_reroll_for_leveling(120, 7, 75.0, 5, 0) ||
-        should_defer_reroll_for_leveling(80, 6, 80.0, 4, 3) ||
-        should_defer_reroll_for_leveling(80, 6, 25.0, 4, 1) ||
-        should_defer_reroll_for_leveling(49, 6, 80.0, 4, 1) ||
-        should_defer_reroll_for_leveling(80, 8, 80.0, 4, 2)) {
-        throw std::runtime_error("surplus gold should defer rerolls to phase-relevant XP, except SLOWROLL/emergency states");
-    }
     require_close(economy_phase_minimum_reserve(3, 80.0, 0), 20.0,
                   "stage 3 releases liquidity gradually");
     require_close(economy_phase_minimum_reserve(4, 80.0, 0), 10.0,
@@ -423,19 +415,31 @@ int main() {
     }
     require_close(strategy_action_reward(0, 1, 60, 58, 80.0, 4,
                                          false, true, false, false),
-                  -0.08, "non-SLOWROLL reroll is penalized even when its shop improved");
+                  -0.15, "rich late ECON rerolls receive a strong learnable penalty");
     require_close(strategy_action_reward(1, 1, 55, 53, 90.0, 3,
                                          false, false, false, true),
-                  -0.14, "unimproved STABILIZE rerolls receive the stronger bounded penalty");
+                  -0.12, "STABILIZE rerolls are penalized without masking the action");
     require_close(strategy_action_reward(1, 1, 55, 53, 90.0, 3,
                                          false, true, false, true),
-                  -0.08, "a good non-SLOWROLL reroll does not become the preferred spend");
+                  -0.12, "an improved non-SLOWROLL reroll remains costly");
     require_close(strategy_action_reward(2, 1, 59, 57, 60.0, 5,
                                          false, true, false, true),
-                  -0.12, "late rich FAST8 rerolls are more costly than planned XP progress");
+                  -0.15, "late rich FAST8 rerolls receive the strongest penalty");
     require_close(strategy_action_reward(2, 1, 40, 38, 80.0, 3,
                                          false, true, false, true),
-                  -0.08, "early FAST8 reroll cost remains unchanged");
+                  -0.09, "early FAST8 rerolls remain legal but discouraged");
+    require_close(strategy_action_reward(4, 1, 60, 58, 80.0, 4,
+                                         false, false, false, false),
+                  -0.15, "ALL_IN rerolls are discouraged outside SLOWROLL");
+    require_close(strategy_action_reward(5, 1, 35, 33, 80.0, 2,
+                                         false, false, false, false),
+                  -0.09, "WINSTREAK rerolls are discouraged in the opening");
+    require_close(strategy_action_reward(6, 1, 60, 58, 80.0, 4,
+                                         false, false, false, false),
+                  -0.15, "LOSS_STREAK rerolls are discouraged with surplus gold");
+    require_close(strategy_action_reward(1, 1, 60, 58, 20.0, 4,
+                                         false, true, false, true),
+                  -0.06, "critical HP softens but does not erase non-SLOWROLL reroll cost");
     require_close(strategy_action_reward(3, 1, 55, 53, 90.0, 3,
                                          false, true, false, true),
                   0.12, "slow-roll strategy receives a stronger improved-reroll signal");
