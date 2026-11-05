@@ -3,6 +3,7 @@ import torch.optim as optim
 import numpy as np
 import os
 import json
+import time
 from functools import partial
 
 from rich.console import Console
@@ -1063,6 +1064,10 @@ class Trainer:
             # 📥 COLETA DE EXPERIÊNCIAS
             # ========================================================
 
+            rollout_started = time.perf_counter()
+            policy_inference_seconds = 0.0
+            environment_step_seconds = 0.0
+
             for step in range(
                 rollout_steps
             ):
@@ -1149,6 +1154,7 @@ class Trainer:
                 # ====================================================
 
                 head_entropy_diagnostics = None
+                policy_started = time.perf_counter()
                 with torch.no_grad():
                     if step % 10 == 0:
                         (
@@ -1164,6 +1170,7 @@ class Trainer:
                         actions, logprobs, _, values = self.policy.get_action(
                             obs, masks=masks
                         )
+                policy_inference_seconds += time.perf_counter() - policy_started
 
                 # Sample entropy diagnostics every ten rollout steps to avoid
                 # CPU synchronization/logging overhead on every action batch.
@@ -1225,6 +1232,7 @@ class Trainer:
                 # 🏟️ EXECUTAR LOBBIES
                 # ====================================================
 
+                environment_started = time.perf_counter()
                 (
                     next_obs_raw,
                     rewards_raw,
@@ -1233,6 +1241,7 @@ class Trainer:
                 ) = self.vec_env.step(
                     lobby_actions
                 )
+                environment_step_seconds += time.perf_counter() - environment_started
 
                 # Resultado final, colocação e duração de cada partida.
                 for lobby_idx, info in enumerate(infos):
@@ -1463,6 +1472,16 @@ class Trainer:
                         episode_active[start_idx:end_idx] = True
                         episode_returns[start_idx:end_idx] = 0.0
 
+            rollout_elapsed = time.perf_counter() - rollout_started
+            self.writer.add_scalar("performance/rollout_seconds", rollout_elapsed, update)
+            self.writer.add_scalar("performance/policy_inference_seconds", policy_inference_seconds, update)
+            self.writer.add_scalar("performance/environment_step_seconds", environment_step_seconds, update)
+            self.writer.add_scalar(
+                "performance/non_environment_rollout_seconds",
+                max(0.0, rollout_elapsed - environment_step_seconds),
+                update,
+            )
+
             # ========================================================
             # 🧮 BOOTSTRAP VALUE
             # ========================================================
@@ -1591,11 +1610,17 @@ class Trainer:
 
             self.policy.train()
 
+            ppo_started = time.perf_counter()
             ppo_metrics = self.ppo.update(
                 rollout,
                 batch_size=self.config.batch_size,
                 epochs=self.config.ppo_epochs,
             ) or {}
+            self.writer.add_scalar(
+                "performance/ppo_update_seconds",
+                time.perf_counter() - ppo_started,
+                update,
+            )
             self.writer.add_scalar("training/optimizer_steps", ppo_metrics.get("optimizer_steps", 0), update)
             self.writer.add_scalar("training/grad_norm_mean", ppo_metrics.get("grad_norm_mean", 0.0), update)
             self.writer.add_scalar("training/grad_norm_max", ppo_metrics.get("grad_norm_max", 0.0), update)
