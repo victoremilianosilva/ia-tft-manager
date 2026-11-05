@@ -319,10 +319,15 @@ def run(args):
                 gamma=0.99, gae_lambda=0.95,
             )
 
-            if matched_transitions:
+            if matched_transitions >= args.min_scenario_transitions:
                 metrics = ppo.update(rollout, batch_size=args.batch_size, epochs=args.ppo_epochs) or {}
             else:
                 metrics = {"optimizer_steps": 0, "early_stop": False, "approx_kl_max": 0.0}
+                if matched_transitions:
+                    print(
+                        f"update={update}: apenas {matched_transitions} transições elegíveis; "
+                        f"mínimo={args.min_scenario_transitions}, update ignorado"
+                    )
             head_drift, head_drift_limit = _project_type_head_to_reference(
                 policy, original_policy, args.max_type_head_drift
             )
@@ -390,14 +395,15 @@ def parse_args():
     parser.add_argument("--target-kl", type=float, default=0.01)
     parser.add_argument("--entropy-coef", type=float, default=0.002)
     parser.add_argument("--max-type-head-drift", type=float, default=0.02)
+    parser.add_argument("--min-scenario-transitions", type=int, default=8)
     parser.add_argument("--seed", type=int, default=20261105)
     args = parser.parse_args()
     if args.updates <= 0 or args.rollout_steps <= 0 or args.batch_size <= 0 or args.ppo_epochs <= 0:
         parser.error("updates, rollout-steps, batch-size e ppo-epochs devem ser positivos")
     if not 0 < args.clip_coef < 1 or args.learning_rate <= 0 or args.target_kl <= 0:
         parser.error("clip-coef, learning-rate ou target-kl inválido")
-    if args.max_type_head_drift <= 0:
-        parser.error("max-type-head-drift deve ser > 0")
+    if args.max_type_head_drift <= 0 or args.min_scenario_transitions <= 0:
+        parser.error("max-type-head-drift e min-scenario-transitions devem ser > 0")
     return args
 
 
