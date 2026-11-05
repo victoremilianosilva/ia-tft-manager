@@ -51,6 +51,18 @@ def load_policy(checkpoint_path: Path, obs_dim: int, device):
     return policy
 
 
+def masks_sha256(raw_masks):
+    payload = [
+        {
+            key: np.asarray(mask[key], dtype=np.uint8).tolist()
+            for key in sorted(mask)
+        }
+        for mask in raw_masks
+    ]
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
 def extract_final_metrics(final_state, audit_snapshot=None):
     """Join terminal placement/HP with freshly recomputed audit board metrics."""
     if not isinstance(final_state, dict):
@@ -137,11 +149,15 @@ def run_match(policy, seed: int, max_steps: int, device):
         initial_observation_sha256 = hashlib.sha256(
             np.asarray(obs, dtype=np.float32).tobytes()
         ).hexdigest()
+        initial_masks_sha256 = None
         totals = np.zeros(8, dtype=np.float64)
         actions = [Counter() for _ in range(8)]
         final_info = None
         for step in range(max_steps):
-            masks = _flatten_masks(env.get_action_masks(), device)
+            raw_masks = env.get_action_masks()
+            if step == 0:
+                initial_masks_sha256 = masks_sha256(raw_masks)
+            masks = _flatten_masks(raw_masks, device)
             obs_tensor = torch.as_tensor(obs, dtype=torch.float32, device=device)
             with torch.no_grad():
                 selected, _, _, _ = policy.get_action_and_value(
@@ -158,6 +174,7 @@ def run_match(policy, seed: int, max_steps: int, device):
                 return {
                     "seed": seed, "steps": step + 1, "completed": True,
                     "initial_observation_sha256": initial_observation_sha256,
+                    "initial_masks_sha256": initial_masks_sha256,
                     "total_rewards": totals.tolist(),
                     "action_counts": [dict(counter) for counter in actions],
                     "final_state": final_info,
@@ -168,6 +185,7 @@ def run_match(policy, seed: int, max_steps: int, device):
         return {
             "seed": seed, "steps": max_steps, "completed": False,
             "initial_observation_sha256": initial_observation_sha256,
+            "initial_masks_sha256": initial_masks_sha256,
             "total_rewards": totals.tolist(),
             "action_counts": [dict(counter) for counter in actions],
             "final_state": final_info,
@@ -223,10 +241,15 @@ def main():
         for seed in seeds:
             original_result = run_match(original, seed, args.max_steps, device)
             tuned_result = run_match(tuned, seed, args.max_steps, device)
-            same_initial_state = (
+            same_initial_observation = (
                 original_result["initial_observation_sha256"]
                 == tuned_result["initial_observation_sha256"]
             )
+            same_initial_masks = (
+                original_result["initial_masks_sha256"]
+                == tuned_result["initial_masks_sha256"]
+            )
+            same_initial_state = same_initial_observation and same_initial_masks
             if not same_initial_state:
                 raise RuntimeError(
                     f"Seed {seed}: os modelos não começaram da mesma observação; "
@@ -250,6 +273,8 @@ def main():
                 "mean_reward_delta": float(np.mean(reward_deltas)),
                 "both_completed": original_result["completed"] and tuned_result["completed"],
                 "same_initial_state": same_initial_state,
+                "same_initial_observation": same_initial_observation,
+                "same_initial_masks": same_initial_masks,
             }
             stream.write(json.dumps(row, ensure_ascii=False, separators=(",", ":")) + "\n")
             print(
