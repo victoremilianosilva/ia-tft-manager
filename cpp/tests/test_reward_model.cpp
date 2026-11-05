@@ -170,8 +170,16 @@ int main() {
                   "even a large surplus must not turn SLOWROLL into a leveling strategy");
     const double late_surplus_xp =
         surplus_xp_spending_reward(103, 99, 5, 1, false);
+    const double all_in_surplus_xp =
+        surplus_xp_spending_reward(103, 45, 5, 4, false);
+    if (!(all_in_surplus_xp > 0.0))
+        throw std::runtime_error("ALL_IN may spend surplus XP below the 50-gold interest floor");
     const double late_surplus_pass =
         pass_opportunity_penalty(103, 80.0, 5, false);
+    const double low_hp_surplus_pass =
+        pass_opportunity_penalty(103, 20.0, 5, false);
+    if (!(low_hp_surplus_pass < late_surplus_pass))
+        throw std::runtime_error("holding surplus gold under low HP receives additional pass pressure");
     if (!(late_surplus_xp > late_surplus_pass)) {
         throw std::runtime_error(
             "late-game surplus XP progress must be preferred over passive hoarding");
@@ -431,6 +439,12 @@ int main() {
     require_close(strategy_action_reward(4, 1, 60, 58, 80.0, 4,
                                          false, false, false, false),
                   -0.15, "ALL_IN rerolls are discouraged outside SLOWROLL");
+    require_close(strategy_action_reward(4, 6, 90, 90, 20.0, 5,
+                                         false, false, false, false),
+                  -0.32, "ALL_IN strongly penalizes PASS while meaningful gold remains");
+    if (!(strategy_action_reward(0, 2, 80, 76, 80.0, 4,
+                                 false, false, false, false) > 0.0))
+        throw std::runtime_error("ECON receives a small XP incentive when spending above 50 gold");
     require_close(strategy_action_reward(5, 1, 35, 33, 80.0, 2,
                                          false, false, false, false),
                   -0.09, "WINSTREAK rerolls are discouraged in the opening");
@@ -573,7 +587,7 @@ int main() {
                   0.0, "ECON no longer adds a blanket XP penalty after stage 2");
     require_close(strategy_action_reward(0, 2, 50, 46, 80.0, 3,
                                          false, false, false, false),
-                  0.0, "ECON permits planned XP progress below the old interest floor");
+                  0.025, "ECON gives a small XP spending incentive above 50 gold");
     require_close(strategy_action_reward(0, 1, 40, 38, 80.0, 3,
                                          false, true, false, false),
                   -0.12, "stage-three ECON rerolls remain discouraged even when the shop improves");
@@ -582,7 +596,7 @@ int main() {
                   -0.12, "stage-three ECON applies the same bounded reroll penalty");
     require_close(strategy_action_reward(0, 0, 55, 50, 80.0, 4,
                                          true, false, false, false),
-                  0.04, "ECON allows useful spending from surplus above 50");
+                  0.05, "ECON allows useful spending from surplus above 50");
     require_close(strategy_action_reward(1, 2, 60, 56, 80.0, 4,
                                          false, false, true, false),
                   0.0475, "STABILIZE XP reward is reduced by five percent");
