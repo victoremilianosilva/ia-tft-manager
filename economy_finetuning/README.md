@@ -30,7 +30,7 @@ python economy_finetuning/finetune.py \
   --scenario s4_fast8_lvl6_gold60_hp_ok \
   --checkpoint tft_checkpoint.pt \
   --updates 100 \
-  --rollout-steps 128
+  --rollout-steps 512
 # O script imprime o caminho exclusivo do checkpoint e da execução.
 ```
 
