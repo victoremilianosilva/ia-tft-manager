@@ -96,8 +96,10 @@ inline double board_capacity_completion() noexcept {
 // for sitting on the same balance.
 inline double gold_potential(int gold) noexcept {
     const int bounded = std::clamp(gold, 0, 50);
+    const int surplus = std::clamp(gold - 50, 0, 150);
     return static_cast<double>(bounded) * 0.002 +
-        static_cast<double>(bounded / 10) * 0.08;
+        static_cast<double>(bounded / 10) * 0.08 -
+        static_cast<double>(surplus) * 0.0012;
 }
 
 // Bounded action shaping for the active economic strategy. The base action
@@ -130,7 +132,9 @@ inline double strategy_action_reward(
         case 0: // ECON: protect early interest, but convert late reserves into strength.
             if (new_gold >= 50 && old_gold < 50 && stage <= 2) reward += 0.04;
             if (old_gold >= 50 && action_type == 0 && useful_purchase)
-                reward += 0.04;
+                reward += 0.05;
+            if (old_gold >= 50 && action_type == 2 && new_gold < old_gold)
+                reward += 0.025;
             if (new_gold < 50 && new_gold < old_gold && hp > 40.0) {
                 // A comp target can justify buying units, not routine XP that
                 // fails to reach a level. Keep the purchase-specific exception.
@@ -160,9 +164,11 @@ inline double strategy_action_reward(
             if (action_type == 2 && !leveled && stage <= 3 &&
                 hp > 50.0 && old_gold < 50) reward -= 0.04;
             break;
-        case 4: // ALL_IN: useful immediate strength over passive saving.
-            if (action_type == 0 && useful_purchase) reward += 0.06;
-            if (hp <= 15.0 && action_type == 6) reward -= 0.05;
+        case 4: // ALL_IN: convert remaining gold into immediate board strength.
+            if (action_type == 0 && useful_purchase) reward += 0.10;
+            if (action_type == 2 && old_gold > 0 && new_gold < old_gold)
+                reward += 0.08;
+            if (action_type == 6) reward -= 0.32;
             break;
         case 5: // WINSTREAK: preserve strength, avoid wasteful economy actions.
             if (action_type == 0 && useful_purchase) reward += 0.05;
@@ -178,7 +184,7 @@ inline double strategy_action_reward(
     }
     (void)stage;
     (void)old_gold;
-    return std::clamp(reward, -0.15, 0.15);
+    return std::clamp(reward, -0.40, 0.15);
 }
 
 inline double gold_change_reward(int old_gold, int new_gold) noexcept {
@@ -318,7 +324,8 @@ inline double surplus_xp_spending_reward(
     bool useful_purchase_available
 ) noexcept {
     if (active_strategy == 3 || useful_purchase_available || stage < 4 ||
-        gold_before < 60 || gold_after < 50 || gold_after >= gold_before)
+        gold_before < 60 || gold_after >= gold_before ||
+        (active_strategy != 4 && gold_after < 50))
         return 0.0;
     const double surplus = std::clamp(
         (static_cast<double>(gold_before) - 50.0) / 100.0, 0.0, 1.0);
@@ -326,7 +333,8 @@ inline double surplus_xp_spending_reward(
     // reward below useful acquisition/pair signals and preserve the 50-gold
     // interest floor. This applies to every non-SLOWROLL plan; no ECON mode
     // assumption is made about balances at or above the interest cap.
-    return xp_strategy_reward_scale(active_strategy) *
+    const double all_in_scale = active_strategy == 4 ? 1.25 : 1.0;
+    return all_in_scale * xp_strategy_reward_scale(active_strategy) *
         (0.020 + 0.015 * surplus);
 }
 
@@ -657,11 +665,15 @@ inline double pass_opportunity_penalty(
     const double health_pressure =
         std::clamp((45.0 - hp) / 45.0, 0.0, 1.0) *
         std::clamp(static_cast<double>(gold - 10) / 30.0, 0.0, 1.0) * 0.08;
+    const double low_hp_surplus_pressure =
+        std::clamp((50.0 - hp) / 50.0, 0.0, 1.0) *
+        std::clamp((static_cast<double>(gold) - 50.0) / 75.0, 0.0, 1.0) * 0.045;
 
     return -std::clamp(
         stage_scale * (surplus_pressure + useful_offer_pressure +
-                       useful_xp_pressure + health_pressure),
-        0.0, 0.45);
+                       useful_xp_pressure + health_pressure +
+                       low_hp_surplus_pressure),
+        0.0, 0.50);
 }
 
 // A recent buy/sell sequence is not automatically a mistake. Penalize only
