@@ -19,11 +19,9 @@ fora desta PR.
 
 ## Treinamento
 
-Compile a engine C++ como já é necessário para o projeto e instale as
-dependências opcionais:
+Compile a engine C++ como já é necessário para o projeto:
 
 ```bash
-pip install -r economy_finetuning/requirements-viewer.txt
 python economy_finetuning/finetune.py \
   --checkpoint tft_checkpoint.pt \
   --updates 100 \
@@ -33,20 +31,58 @@ python economy_finetuning/finetune.py \
 
 O checkpoint de origem nunca é sobrescrito. Por padrão, somente `type_head`
 e `value_head` são treináveis; encoder espacial/global, fusão, cabeças de
-loja, venda, banco, tabuleiro e itens permanecem congeladas. O shaping é
-pequeno e condicionado ao estado/estratégia; SLOWROLL recebe proteção explícita
-contra incentivo genérico de XP.
+loja, venda, banco, tabuleiro e itens permanecem congeladas. A cabeça de tipo
+compartilhada é projetada de volta para uma pequena região L2 ao redor dos
+pesos originais a cada update. O shaping é pequeno e condicionado ao
+estado/estratégia; SLOWROLL recebe proteção explícita contra incentivo genérico
+de XP. O limite de drift pode ser ajustado com `--max-type-head-drift`.
+
+## Avaliação comparativa
+
+O trace gerado durante o treino compara os dois modelos deterministicamente no
+mesmo estado e com as mesmas máscaras. A ação estocástica do candidato usada
+para coletar PPO é registrada separadamente.
+
+Para avaliar consequências em partidas completas:
+
+```bash
+python economy_finetuning/paired_evaluator.py \
+  --original tft_checkpoint.pt \
+  --finetuned economy_finetuning/checkpoints/economy_ft.pt \
+  --seeds 20261105,20261106,20261107,20261108
+```
+
+Cada modelo joga sua própria lobby com a mesma seed. As trajetórias podem
+divergir depois das primeiras ações; isso é intencional e permite comparar
+consequências. O avaliador registra rewards nativos, contagens de ações e
+snapshot terminal. Reward não é tratado automaticamente como colocação.
 
 ## Auditoria e visualizador
 
+Instale as dependências opcionais:
+
 ```bash
-python economy_finetuning/audit.py
+pip install -r economy_finetuning/requirements-viewer.txt
+```
+
+Gere o relatório e abra o viewer:
+
+```bash
+python economy_finetuning/audit.py \
+  --paired economy_finetuning/runs/latest/logs/paired_match_results.jsonl
 streamlit run economy_finetuning/viewer/app.py
 ```
 
 O visualizador lê JSONL localmente, limita a leitura padrão a 200 mil linhas e
 permite filtrar divergências e exportar o subconjunto investigado. Os JSONL,
 checkpoints e execuções são dados locais e ficam ignorados pelo Git.
+
+## Cenários implementados
+
+Veja a lista integral em `SCENARIOS.md`. Os cenários são classificados como
+treináveis ou monitor-only. Casos de utilidade de loja e estabilização com HP
+crítico ficam monitor-only quando a observação disponível não permite provar
+que uma compra específica é útil; não criamos rótulos artificiais.
 
 ## O que a auditoria consegue provar
 
@@ -55,6 +91,7 @@ checkpoints e execuções são dados locais e ficam ignorados pelo Git.
 - Divergência de distribuição: compara Jensen-Shannon da distribuição da
   cabeça de tipo (não de todas as cabeças condicionais).
 - Preservação por estratégia e cenário: somente para estados realmente vistos.
+- Partidas completas pareadas: medem reward e guardam estado terminal bruto.
 - A auditoria não classifica uma divergência como melhoria sem medir o efeito.
 
 A validação de partidas completas pareadas ainda precisa ser executada antes de
@@ -67,6 +104,8 @@ teste porque as trajetórias divergem após ações diferentes.
   mesmo estado, incluindo probabilidades da cabeça de tipo.
 - `runs/latest/logs/training_metrics.jsonl`: métricas PPO por update.
 - `runs/latest/logs/scenario_results.jsonl`: resumos de episódios completos.
+- `runs/latest/logs/paired_match_results.jsonl`: resultados de partidas
+  completas pareadas.
 - `runs/latest/reports/experiment_config.json`: configuração e hash do modelo.
 - `runs/latest/reports/training_summary.json`: contagem de cenários encontrados.
 - `runs/latest/reports/ECONOMY_FINETUNING_AUDIT.md`: auditoria gerada.
