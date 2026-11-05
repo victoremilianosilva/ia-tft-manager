@@ -82,7 +82,7 @@ class ScenarioGeneratorTests(unittest.TestCase):
         self.assertEqual(selected, -0.055)
         self.assertEqual(wrong_scenario, 0.0)
 
-    def test_critical_hp_fast8_case_stays_monitor_only(self):
+    def test_critical_hp_fast8_uses_no_synthetic_xp_reward(self):
         # P4-like: low HP, high gold and level deficit. XP is not assumed to
         # be better than a useful shop purchase or emergency board stabilization.
         state = {
