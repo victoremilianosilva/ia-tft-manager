@@ -80,11 +80,15 @@ class ScenarioGeneratorTests(unittest.TestCase):
         self.assertIn("low_hp_fast8_high_gold", matches)
         self.assertEqual(reward, 0.0)
 
-    def test_critical_hp_monitor_only_does_not_create_training_reward(self):
+    def test_critical_hp_scenario_trains_only_from_native_reward(self):
+        scenario = next(item for item in SCENARIOS if item.scenario_id == "critical_hp_high_gold")
+        self.assertTrue(scenario.trainable)
+        self.assertEqual(scenario.reward_mode, "native")
         state = {"hp": 20, "gold": 90, "level": 6, "stage": 4, "strategy": 2}
-        reward, matches = shaped_action_reward(state, 2)
+        reward, matches = shaped_action_reward(
+            state, 2, selected_scenario_id="critical_hp_high_gold"
+        )
         self.assertIn("critical_hp_high_gold", matches)
-        self.assertIn("low_hp_fast8_high_gold", matches)
         self.assertEqual(reward, 0.0)
 
 
