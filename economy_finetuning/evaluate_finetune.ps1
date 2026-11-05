@@ -98,7 +98,7 @@ $evaluation = [ordered]@{
     }
 }
 $evaluationJson = $evaluation | ConvertTo-Json -Depth 8
-[System.IO.File]::WriteAllText($evaluationPath, $evaluationJson, (New-Object System.Text.UTF8Encoding($false)))
+[System.IO.File]::WriteAllText($evaluationPath, $evaluationJson, ([System.Text.UTF8Encoding]::new($false)))
 Write-Host ""
 Write-Host "AVALIAÇÃO CONCLUÍDA" -ForegroundColor Green
 Write-Host "Status: $reviewStatus"
