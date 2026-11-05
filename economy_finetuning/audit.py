@@ -223,7 +223,7 @@ def build_report(rows, paired_rows=None, metadata=None, training_summary=None):
             f"- Diferença média de colocação (fine-tuned - original): **{metric_text(placement_delta)}** (negativo é melhor)\\n"
             f"- Taxa Top 4: **{percent_text(top4_original)} → {percent_text(top4_tuned)}**\\n"
             f"- Taxa de vitória: **{percent_text(win_original)} → {percent_text(win_tuned)}**\\n"
-            f"- Delta médio de HP/ouro/nível/estrutura: **{metric_text(mean_metric('hp_delta'))} / "
+            f"- Delta médio de HP/ouro/nível/estrutura/posição: **{metric_text(mean_metric('hp_delta'))} / "
             f"{metric_text(mean_metric('gold_delta'))} / {metric_text(mean_metric('level_delta'))} / "
             f"{metric_text(mean_metric('board_structural_score_delta'))} / "
             f"{metric_text(mean_metric('board_positional_score_delta'))}**\\n\\n"
