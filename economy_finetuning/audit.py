@@ -219,6 +219,10 @@ def build_report(rows, paired_rows=None, metadata=None, training_summary=None):
         metadata = metadata or {}
         training_summary = training_summary or {}
         params = metadata.get("ppo_parameters", {})
+        paired_provenance = (
+            paired_rows[0].get("provenance", {})
+            if paired_rows else {}
+        )
         parameter_lines = [
             f"- {key}: `{value}`" for key, value in sorted(params.items())
         ]
@@ -233,6 +237,8 @@ def build_report(rows, paired_rows=None, metadata=None, training_summary=None):
             f"- Transições do cenário: **{training_summary.get('selected_scenario_transitions', 'n/a')}**\\n"
             f"- PPO optimizer steps: **{training_summary.get('optimizer_steps_total', 'n/a')}**\\n"
             f"- SHA-256 config: `{metadata.get('config_sha256', 'n/a')}`\\n"
+            f"- Commit usado na avaliação pareada: `{paired_provenance.get('repository_commit', 'n/a')}`\\n"
+            f"- SHA-256 RewardModel na avaliação: `{paired_provenance.get('reward_model_source_sha256', 'n/a')}`\\n"
             + ("\\n".join(parameter_lines) + "\\n" if parameter_lines else "")
         )
 
