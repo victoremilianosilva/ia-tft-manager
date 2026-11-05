@@ -157,13 +157,13 @@ def _freeze_non_target_heads(policy, trainable_heads):
 
 
 @torch.no_grad()
-def _project_type_head_to_reference(policy, reference_policy, max_relative_drift: float):
-    """Keep the shared action-type head inside a small L2 trust region."""
+def _project_trainable_heads_to_reference(policy, reference_policy, max_relative_drift: float):
+    """Keep only the scenario-enabled PPO heads inside a small L2 trust region."""
     if max_relative_drift <= 0:
         raise ValueError("max_relative_drift deve ser > 0")
     candidate = dict(policy.named_parameters())
     reference = dict(reference_policy.named_parameters())
-    names = [name for name in candidate if name.startswith("type_head.")]
+    names = [name for name, parameter in candidate.items() if parameter.requires_grad]
     delta_sq = torch.zeros((), device=next(policy.parameters()).device)
     reference_sq = torch.zeros_like(delta_sq)
     for name in names:
@@ -434,14 +434,14 @@ def run(args):
                         f"mínimo={args.min_scenario_transitions}, update ignorado"
                     )
             optimizer_steps_total += int(metrics.get("optimizer_steps", 0))
-            head_drift, head_drift_limit = _project_type_head_to_reference(
+            head_drift, head_drift_limit = _project_trainable_heads_to_reference(
                 policy, original_policy, args.max_type_head_drift
             )
             metrics_row = {
                 "update": update, "matched_transitions": matched_transitions,
                 "mean_reward": float(rollout.rewards[:rollout.ptr].mean().item()),
-                "type_head_relative_drift_before_projection": head_drift,
-                "type_head_relative_drift_limit": head_drift_limit,
+                "trainable_heads_relative_drift_before_projection": head_drift,
+                "trainable_heads_relative_drift_limit": head_drift_limit,
                 **{key: value for key, value in metrics.items()
                    if isinstance(value, (int, float, bool))},
             }
