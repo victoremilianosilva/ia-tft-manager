@@ -13,7 +13,7 @@ param(
 
     [string]$Checkpoint = "tft_checkpoint.pt",
     [int]$Updates = 100,
-    [int]$RolloutSteps = 128,
+    [int]$RolloutSteps = 512,
     [int]$BatchSize = 64,
     [int]$PpoEpochs = 2,
     [double]$LearningRate = 0.00001,
