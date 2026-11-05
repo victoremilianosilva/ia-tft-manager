@@ -170,8 +170,16 @@ int main() {
                   "even a large surplus must not turn SLOWROLL into a leveling strategy");
     const double late_surplus_xp =
         surplus_xp_spending_reward(103, 99, 5, 1, false);
+    const double all_in_surplus_xp =
+        surplus_xp_spending_reward(103, 45, 5, 4, false);
+    if (!(all_in_surplus_xp > 0.0))
+        throw std::runtime_error("ALL_IN may spend surplus XP below the 50-gold interest floor");
     const double late_surplus_pass =
         pass_opportunity_penalty(103, 80.0, 5, false);
+    const double low_hp_surplus_pass =
+        pass_opportunity_penalty(103, 20.0, 5, false);
+    if (!(low_hp_surplus_pass < late_surplus_pass))
+        throw std::runtime_error("holding surplus gold under low HP receives additional pass pressure");
     if (!(late_surplus_xp > late_surplus_pass)) {
         throw std::runtime_error(
             "late-game surplus XP progress must be preferred over passive hoarding");
@@ -431,6 +439,12 @@ int main() {
     require_close(strategy_action_reward(4, 1, 60, 58, 80.0, 4,
                                          false, false, false, false),
                   -0.15, "ALL_IN rerolls are discouraged outside SLOWROLL");
+    require_close(strategy_action_reward(4, 6, 90, 90, 20.0, 5,
+                                         false, false, false, false),
+                  -0.32, "ALL_IN strongly penalizes PASS while meaningful gold remains");
+    if (!(strategy_action_reward(0, 2, 80, 76, 80.0, 4,
+                                 false, false, false, false) > 0.0))
+        throw std::runtime_error("ECON receives a small XP incentive when spending above 50 gold");
     require_close(strategy_action_reward(5, 1, 35, 33, 80.0, 2,
                                          false, false, false, false),
                   -0.09, "WINSTREAK rerolls are discouraged in the opening");
