@@ -106,3 +106,16 @@ audit_report.json
 
 # Sidecars JSON individuais dos jogadores gerados pelo Viewer
 player_*_log.json
+
+# ============================================================
+# Fine-tuning econômico independente (artefatos locais)
+# ============================================================
+
+# JSONL de treinamento, cenários, traces e auditorias: potencialmente enormes
+*.jsonl
+**/*.jsonl
+
+# Execuções locais do fine-tuning e TensorBoard
+economy_finetuning/runs/
+economy_finetuning/checkpoints/
+economy_finetuning/tensorboard/
