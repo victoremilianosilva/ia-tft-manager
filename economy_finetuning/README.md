@@ -61,8 +61,10 @@ python economy_finetuning/paired_evaluator.py \
 
 Cada modelo joga sua própria lobby com a mesma seed. As trajetórias podem
 divergir depois das primeiras ações; isso é intencional e permite comparar
-consequências. O avaliador registra rewards nativos, contagens de ações e
-snapshot terminal. Reward não é tratado automaticamente como colocação.
+consequências. O avaliador registra rewards nativos, contagens de ações,
+colocação terminal, Top 4, HP, ouro, nível e métricas atuais do BoardEvaluation.
+Quatro seeds servem apenas como smoke test; a aprovação final deve usar pelo
+menos 20 seeds inéditas, não usadas no treino.
 
 ## Auditoria e visualizador
 
@@ -77,7 +79,9 @@ Gere o relatório e abra o viewer:
 ```bash
 python economy_finetuning/audit.py \
   --trace CAMINHO_DA_EXECUCAO/logs/decision_trace.jsonl \
-  --paired CAMINHO_DA_EXECUCAO/logs/paired_match_results.jsonl
+  --paired CAMINHO_DA_EXECUCAO/logs/paired_match_results.jsonl \
+  --metadata CAMINHO_DA_EXECUCAO/reports/experiment_config.json \
+  --summary CAMINHO_DA_EXECUCAO/reports/training_summary.json
 streamlit run economy_finetuning/viewer/app.py
 ```
 
@@ -99,7 +103,10 @@ sendo avaliada pelo reward/estado real da engine, sem rótulos inventados.
 - Divergência de distribuição: compara Jensen-Shannon da distribuição da
   cabeça de tipo (não de todas as cabeças condicionais).
 - Preservação por estratégia e cenário: somente para estados realmente vistos.
-- Partidas completas pareadas: medem reward e guardam estado terminal bruto.
+- Partidas completas pareadas: comparam reward, colocação, Top 4, HP, ouro,
+  nível e métricas estruturais/posicionais do snapshot terminal.
+- Proveniência: checkpoint original/fine-tuned, commit do repositório, hashes
+  do TftEngine/RewardModel/policy/PPO/config e parâmetros do experimento.
 - A auditoria não classifica uma divergência como melhoria sem medir o efeito.
 
 A validação de partidas completas pareadas ainda precisa ser executada antes de
