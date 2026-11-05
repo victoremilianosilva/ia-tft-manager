@@ -271,6 +271,9 @@ def build_report(rows, paired_rows=None, metadata=None, training_summary=None):
             f"- SHA-256 config: `{metadata.get('config_sha256', 'n/a')}`\\n"
             f"- Commit usado na avaliação pareada: `{paired_provenance.get('repository_commit', 'n/a')}`\\n"
             f"- SHA-256 RewardModel na avaliação: `{paired_provenance.get('reward_model_source_sha256', 'n/a')}`\\n"
+            f"- SHA-256 TftEngine na avaliação: `{paired_provenance.get('engine_source_sha256', 'n/a')}`\\n"
+            f"- SHA-256 ActionMaskEngine na avaliação: `{paired_provenance.get('action_mask_source_sha256', 'n/a')}`\\n"
+            f"- SHA-256 policy.py na avaliação: `{paired_provenance.get('policy_source_sha256', 'n/a')}`\\n"
             + ("\\n".join(parameter_lines) + "\\n" if parameter_lines else "")
         )
 
