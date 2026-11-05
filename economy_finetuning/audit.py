@@ -143,7 +143,7 @@ def build_report(rows, paired_rows=None, metadata=None, training_summary=None):
             for player in match.get("final_player_deltas", [])
         ]
         paired_original_actions, paired_tuned_actions = Counter(), Counter()
-        for match in paired_rows:
+        for match in completed_rows:
             for player_counts in match.get("original", {}).get("action_counts", []):
                 paired_original_actions.update(player_counts)
             for player_counts in match.get("finetuned", {}).get("action_counts", []):
