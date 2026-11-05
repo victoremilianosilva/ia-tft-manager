@@ -49,6 +49,11 @@ class ScenarioGeneratorTests(unittest.TestCase):
         ids = {item.scenario_id for item in matching_scenarios(base)}
         self.assertNotIn("player8_all_in_gold_hoarding", ids)
 
+    def test_useful_shop_scenario_is_not_guessed_from_gold_alone(self):
+        state = {"hp": 70, "gold": 80, "level": 7, "stage": 4, "strategy": 2}
+        ids = {item.scenario_id for item in matching_scenarios(state)}
+        self.assertNotIn("useful_shop_opportunity", ids)
+
     def test_critical_hp_monitor_only_does_not_create_training_reward(self):
         state = {"hp": 20, "gold": 90, "level": 6, "stage": 4, "strategy": 2}
         reward, matches = shaped_action_reward(state, 2)
