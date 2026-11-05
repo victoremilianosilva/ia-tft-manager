@@ -258,7 +258,7 @@ def run(args):
                 shaped_rewards = []
                 valid = []
                 for player_id in range(8):
-                    state = decode_observation(observations[player_id])
+                    state = decode_observation(observations[player_id], player_id=player_id)
                     action_type = int(action_array[player_id, 0])
                     shaping, matched_ids = shaped_action_reward(state, action_type)
                     shaped_rewards.append(shaping)
