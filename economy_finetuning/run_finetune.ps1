@@ -25,18 +25,19 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-Set-Location $PSScriptRoot
+$repoRoot = Split-Path -Parent $PSScriptRoot
+Set-Location $repoRoot
 
 $checkpointPath = if ([System.IO.Path]::IsPathRooted($Checkpoint)) {
     $Checkpoint
 } else {
-    Join-Path $PSScriptRoot $Checkpoint
+    Join-Path $repoRoot $Checkpoint
 }
 if (-not (Test-Path -LiteralPath $checkpointPath -PathType Leaf)) {
     throw "Checkpoint original não encontrado: $checkpointPath"
 }
 
-$venvPython = Join-Path $PSScriptRoot ".venv\Scripts\python.exe"
+$venvPython = Join-Path $repoRoot ".venv\Scripts\python.exe"
 if (Test-Path -LiteralPath $venvPython -PathType Leaf) {
     $python = $venvPython
 } else {
@@ -56,9 +57,9 @@ if ($LearningRate -le 0 -or $ClipCoef -le 0 -or $ClipCoef -ge 1 -or $TargetKl -l
 
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
 $runName = "${Scenario}_${timestamp}"
-$runDirectory = Join-Path $PSScriptRoot "economy_finetuning\runs\$runName"
-$outputDirectory = Join-Path $PSScriptRoot "economy_finetuning\checkpoints"
-$logDirectory = Join-Path $PSScriptRoot "logs\fine_tuning"
+$runDirectory = Join-Path $repoRoot "economy_finetuning\runs\$runName"
+$outputDirectory = Join-Path $repoRoot "economy_finetuning\checkpoints"
+$logDirectory = Join-Path $repoRoot "logs\fine_tuning"
 New-Item -ItemType Directory -Force -Path $runDirectory, $outputDirectory, $logDirectory | Out-Null
 
 $outputCheckpoint = Join-Path $outputDirectory "tft_${Scenario}_${timestamp}.pt"
