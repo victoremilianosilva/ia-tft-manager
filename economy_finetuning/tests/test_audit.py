@@ -61,6 +61,31 @@ class AuditTests(unittest.TestCase):
         self.assertIn("critical_hp_high_gold", report)
         self.assertIn("optimizer steps", report)
 
+    def test_non_target_regression_uses_scenario_cohort_not_action_family(self):
+        rows = [
+            {
+                "original_action": [0, 0, 0, 0, 0, 0],
+                "finetuned_action": [2, 0, 0, 0, 0, 0],
+                "scenario_ids": ["critical_hp_high_gold"],
+                "state": {"strategy_name": "FAST8"},
+            },
+            {
+                "original_action": [4, 0, 0, 0, 0, 0],
+                "finetuned_action": [4, 0, 0, 0, 0, 0],
+                "scenario_ids": [],
+                "state": {"strategy_name": "FAST8"},
+            },
+            {
+                "original_action": [6, 0, 0, 0, 0, 0],
+                "finetuned_action": [1, 0, 0, 0, 0, 0],
+                "scenario_ids": [],
+                "state": {"strategy_name": "FAST8"},
+            },
+        ]
+        report = build_report(rows, metadata={"selected_scenario": "critical_hp_high_gold"})
+        self.assertIn("Estados fora do cenário-alvo: **2**", report)
+        self.assertIn("Divergência de ação nesses estados: **1 (50.0%)**", report)
+
     def test_report_includes_non_target_preservation(self):
         rows = [{
             "original_action": [4, 0, 0, 0, 1, 2],
