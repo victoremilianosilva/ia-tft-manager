@@ -36,7 +36,7 @@ class ScenarioGeneratorTests(unittest.TestCase):
         self.assertIn("s4_fast8_lvl6_gold60_hp_ok", matches)
 
     def test_slowroll_is_not_rewarded_for_xp(self):
-        state = {"hp": 80, "gold": 60, "level": 6, "stage": 4, "strategy": 3}
+        state = {"hp": 80, "gold": 60, "level": 6, "stage": 4, "round_number": 19, "strategy": 3}
         reward, matches = shaped_action_reward(state, 2)
         self.assertIn("slowroll_gold_reserve", matches)
         self.assertLess(reward, 0)
@@ -68,6 +68,17 @@ class ScenarioGeneratorTests(unittest.TestCase):
         self.assertEqual(selected_matches, matches)
         self.assertAlmostEqual(selected_reward, 0.055)
         self.assertNotEqual(selected_reward, all_reward)
+
+    def test_critical_hp_fast8_case_stays_monitor_only(self):
+        # P4-like: low HP, high gold and level deficit. XP is not assumed to
+        # be better than a useful shop purchase or emergency board stabilization.
+        state = {
+            "hp": 21, "gold": 125, "level": 6, "stage": 4,
+            "round_number": 21, "strategy": 2,
+        }
+        reward, matches = shaped_action_reward(state, 2)
+        self.assertIn("low_hp_fast8_high_gold", matches)
+        self.assertEqual(reward, 0.0)
 
     def test_critical_hp_monitor_only_does_not_create_training_reward(self):
         state = {"hp": 20, "gold": 90, "level": 6, "stage": 4, "strategy": 2}
