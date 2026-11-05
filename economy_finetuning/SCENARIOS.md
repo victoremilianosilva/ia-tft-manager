@@ -19,6 +19,11 @@ cenário treinável; todos os demais ficam apenas em monitoramento.
 | `gold_above_50_any_strategy` | Qualquer estágio/nível/estratégia, ouro acima de 50 | Todas | Monitor-only | Medir BUY, BUY_XP, ROLL e PASS por contexto |
 | `useful_shop_opportunity` | Ouro acima de 50 e candidatos de loja | Todas | Monitor-only | Aguardar contrato semântico confiável para identificar compra realmente útil |
 
+| `core_sale_retention` | Estágio 3+, com banco e histórico de candidatos disponíveis na observação nativa | Todas | Treinável — reward nativo | Ajustar `sell_head` e `type_head` sem bloquear substituições legítimas |
+| `bench_deployment_quality` | Estágio 2+, estado real do tabuleiro/banco | Todas | Treinável — reward nativo | Ajustar `bench_head` e `bench_to_board_head` |
+| `carry_protection_positioning` | Estágio 3+, tabuleiro real e sinais de carry/frontline | Todas | Treinável — reward nativo | Ajustar `board_source_head` e `board_move_target_head` após unificação dos roles |
+| `movement_no_progress` | Estágio 2+, movimentos de banco/tabuleiro avaliados pelo reward nativo | Todas | Treinável — reward nativo | Reduzir movimentos sem ganho sem punir reposicionamentos úteis |
+
 ## O que é treinado
 
 O script seleciona um único cohort por execução. FAST8, economia tardia e HP
@@ -46,3 +51,31 @@ snapshot da engine.
 
 O número de ocorrências de cada cenário é reportado. Zero ocorrências significa
 **não coberto**, não sucesso.
+
+## Sequência obrigatória de execução
+
+1. `critical_hp_high_gold`
+2. `late_game_high_gold_underleveled`
+3. `s4_fast8_lvl6_gold60_hp_ok`
+4. `s4_fast8_lvl6_gold80`
+5. `s4_fast8_lvl7_gold60`
+6. `slowroll_gold_reserve`
+7. `core_sale_retention`
+8. `bench_deployment_quality`
+9. `carry_protection_positioning`
+10. `movement_no_progress`
+
+O arquivo local `chain_state.json` registra hashes de checkpoint, origem,
+relatório e avaliação. Treino concluído fica com status `trained`, não libera
+o próximo. Para liberar, a avaliação revisada deve ser salva em JSON com
+`approved: true` e `checkpoint_sha256` igual ao hash do checkpoint treinado,
+e então executada:
+
+```powershell
+.\\economy_finetuning\\approve_scenario.ps1 -Scenario critical_hp_high_gold -Evaluation .\\evaluation_critical_hp.json
+```
+
+Para cenários 2–10, o runner resolve automaticamente o checkpoint aprovado
+do predecessor e ignora o checkpoint-base fornecido. Alterar um checkpoint
+aprovado invalida a cadeia. Reexecutar um cenário também invalida todas as
+aprovações posteriores.
