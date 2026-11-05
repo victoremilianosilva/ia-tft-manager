@@ -570,10 +570,10 @@ int main() {
                   0.0, "ECON permits planned XP progress below the old interest floor");
     require_close(strategy_action_reward(0, 1, 40, 38, 80.0, 3,
                                          false, true, false, false),
-                  -0.08, "ECON does not prefer improved rerolls over planned spending");
+                  -0.12, "stage-three ECON rerolls remain discouraged even when the shop improves");
     require_close(strategy_action_reward(0, 1, 40, 38, 80.0, 3,
                                          false, false, false, false),
-                  -0.08, "ECON applies one bounded penalty to rerolls");
+                  -0.12, "stage-three ECON applies the same bounded reroll penalty");
     require_close(strategy_action_reward(0, 0, 55, 50, 80.0, 4,
                                          true, false, false, false),
                   0.04, "ECON allows useful spending from surplus above 50");
