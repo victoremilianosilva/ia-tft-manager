@@ -159,6 +159,14 @@ def _write_jsonl(path: Path, row: dict):
 
 
 def run(args):
+    selected_scenario = next(
+        (item for item in SCENARIOS if item.scenario_id == args.scenario), None
+    )
+    if selected_scenario is None or not selected_scenario.trainable:
+        raise ValueError(
+            f"Cenário não treinável ou inexistente: {args.scenario}. "
+            "Escolha um ID marcado como TREINÁVEL em SCENARIOS.md."
+        )
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -232,15 +240,16 @@ def run(args):
             "updates": args.updates,
             "rollout_steps": args.rollout_steps,
             "scenario_catalog": [item.to_dict() for item in SCENARIOS],
+            "selected_scenario": selected_scenario.scenario_id,
             "state_initialization": "natural_native_simulation_state_mining",
             "state_injection_available": False,
         }
         (reports_dir / "experiment_config.json").write_text(
             json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8"
         )
-        print("Cenários econômicos monitorados:")
-        for scenario in SCENARIOS:
-            print(f"- {scenario.scenario_id}: {scenario.title} | {'TREINO' if scenario.trainable else 'MONITOR'}")
+        print(f"Cenário selecionado para este experimento: {selected_scenario.scenario_id}")
+        print(f"Objetivo: {selected_scenario.objective}")
+        print("Os demais cenários serão apenas monitorados; não receberão shaping neste treino.")
 
         total_matches = {scenario.scenario_id: 0 for scenario in SCENARIOS}
         action_counts = {scenario.scenario_id: {} for scenario in SCENARIOS}
@@ -282,11 +291,11 @@ def run(args):
                 for player_id in range(8):
                     state = decode_observation(observations[player_id], player_id=player_id)
                     action_type = int(action_array[player_id, 0])
-                    shaping, matched_ids = shaped_action_reward(state, action_type)
-                    shaped_rewards.append(shaping)
-                    trainable_match = any(
-                        item.scenario_id in matched_ids and item.trainable for item in SCENARIOS
+                    shaping, matched_ids = shaped_action_reward(
+                        state, action_type, selected_scenario_id=selected_scenario.scenario_id
                     )
+                    shaped_rewards.append(shaping)
+                    trainable_match = selected_scenario.matches(state)
                     valid.append(trainable_match)
                     for scenario_id in matched_ids:
                         total_matches[scenario_id] += 1
@@ -410,6 +419,11 @@ def parse_args():
         "--config",
         default=str(ROOT / "economy_finetuning" / "config.json"),
         help="Arquivo JSON com defaults do fine-tuning",
+    )
+    parser.add_argument(
+        "--scenario", required=True,
+        choices=[item.scenario_id for item in SCENARIOS if item.trainable],
+        help="Treina exclusivamente este cenário; os demais ficam em monitoramento.",
     )
     parser.add_argument("--checkpoint", required=True, help="Checkpoint original .pt")
     parser.add_argument("--output", default=None, help="Checkpoint de saída; por padrão usa nome único")
