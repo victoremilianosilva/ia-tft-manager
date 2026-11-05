@@ -136,11 +136,19 @@ def _type_probabilities(policy, observations, masks):
         return torch.softmax(logits, dim=-1).cpu().numpy()
 
 
-def _freeze_non_target_heads(policy):
+def _freeze_non_target_heads(policy, trainable_heads):
+    allowed = tuple(f"{name}." for name in trainable_heads)
+    valid_heads = {
+        "type_head", "value_head", "sell_head", "bench_head",
+        "bench_to_board_head", "board_source_head", "board_move_target_head",
+    }
+    unknown = set(trainable_heads) - valid_heads
+    if unknown:
+        raise ValueError(f"Cabeças de fine-tuning desconhecidas: {sorted(unknown)}")
     for parameter in policy.parameters():
         parameter.requires_grad = False
     for name, parameter in policy.named_parameters():
-        if name.startswith("type_head.") or name.startswith("value_head."):
+        if name.startswith(allowed):
             parameter.requires_grad = True
     trainable = [name for name, p in policy.named_parameters() if p.requires_grad]
     if not trainable:
@@ -238,7 +246,7 @@ def run(args):
         obs_dim = int(observations.shape[-1])
         original_checkpoint, policy, migrated = _load_checkpoint(checkpoint_path, obs_dim, device)
         original_policy = copy.deepcopy(policy).eval()
-        trainable_names = _freeze_non_target_heads(policy)
+        trainable_names = _freeze_non_target_heads(policy, selected_scenario.trainable_heads)
         optimizer = optim.Adam(
             [parameter for parameter in policy.parameters() if parameter.requires_grad],
             lr=args.learning_rate,
@@ -299,6 +307,7 @@ def run(args):
             "rollout_steps": args.rollout_steps,
             "scenario_catalog": [item.to_dict() for item in SCENARIOS],
             "selected_scenario": selected_scenario.scenario_id,
+            "selected_trainable_heads": list(selected_scenario.trainable_heads),
             "state_initialization": "natural_native_simulation_state_mining",
             "state_injection_available": False,
         }
@@ -307,6 +316,7 @@ def run(args):
         )
         print(f"Cenário selecionado para este experimento: {selected_scenario.scenario_id}")
         print(f"Objetivo: {selected_scenario.objective}")
+        print("Cabeças liberadas: " + ", ".join(selected_scenario.trainable_heads))
         print("Os demais cenários serão apenas monitorados; não receberão shaping neste treino.")
 
         total_matches = {scenario.scenario_id: 0 for scenario in SCENARIOS}
