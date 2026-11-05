@@ -3,6 +3,7 @@ import torch.optim as optim
 import numpy as np
 import os
 import json
+from functools import partial
 
 from rich.console import Console
 from rich.progress import (
@@ -209,17 +210,21 @@ class Trainer:
         print("🧩 Engine selecionada: C++ (única engine)")
 
         resolved_item_catalog = item_catalog_path or os.environ.get("TFT_ITEM_CATALOG_PATH")
-        def make_env():
-            return CppTFTLobbyWrapper(item_catalog_path=resolved_item_catalog)
+        make_env = partial(
+            CppTFTLobbyWrapper,
+            item_catalog_path=resolved_item_catalog,
+        )
 
-# ============================================================
+        # ============================================================
         # 🚀 VECTOR ENV
         # ============================================================
 
-        # LobbyVectorEnv é serial: uma instância por lobby.
-        # Inicializamos independentemente de use_subprocess.
+        # Cada processo mantém uma lobby C++ independente. A policy e o PPO
+        # continuam centralizados neste processo e compartilhados entre todos.
         self.vec_env = LobbyVectorEnv(
-            [make_env for _ in range(self.num_envs)]
+            [make_env for _ in range(self.num_envs)],
+            use_subprocess=self.use_subprocess,
+            max_workers=self.num_envs,
         )
 
         dummy_obs = self.vec_env.reset()
