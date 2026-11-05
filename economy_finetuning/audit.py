@@ -136,6 +136,7 @@ def build_report(rows, paired_rows=None, metadata=None, training_summary=None):
         deltas = [float(item.get("mean_reward_delta", 0.0)) for item in paired_rows]
         completed_rows = [item for item in paired_rows if item.get("both_completed")]
         completed = len(completed_rows)
+        same_initial = sum(bool(item.get("same_initial_state")) for item in paired_rows)
         paired_mean = sum(deltas) / len(deltas) if deltas else None
         paired_mean_text = f"{paired_mean:.5f}" if paired_mean is not None else "n/a"
         player_rows = [
@@ -213,6 +214,7 @@ def build_report(rows, paired_rows=None, metadata=None, training_summary=None):
             "## Partidas completas pareadas\\n\\n"
             f"- Seeds avaliadas: **{len(paired_rows)}**\\n"
             f"- Ambas as partidas concluídas: **{completed}/{len(paired_rows)}**\\n"
+            f"- Estado e máscaras iniciais idênticos: **{same_initial}/{len(paired_rows)}**\\n"
             f"- Pares jogador/seed com colocação comparável: **{len(player_rows)}**\\n"
             f"- Diferença média de reward (fine-tuned - original): **{paired_mean_text}**\\n"
             f"- Diferença média de colocação (fine-tuned - original): **{metric_text(placement_delta)}** (negativo é melhor)\\n"
