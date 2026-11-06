@@ -33,6 +33,15 @@ class ReferenceReplayBuffer:
         for key, value in self.masks.items():
             if value.shape[0] != count:
                 raise ValueError(f"Quantidade de máscaras divergente: {key}")
+        coverage = payload.get("scenario_counts", {})
+        minimum = int(payload.get("minimum_per_scenario", 1))
+        missing_coverage = sorted(key for key, value in coverage.items() if int(value) < minimum)
+        if missing_coverage:
+            raise ValueError(
+                "Replay sem cobertura mínima para todos os cenários treináveis: "
+                + ", ".join(missing_coverage)
+                + ". Execute novamente o coletor com mais steps/seeds."
+            )
         self.groups = {}
         for index, labels in enumerate(self.scenario_ids):
             for label in labels:
