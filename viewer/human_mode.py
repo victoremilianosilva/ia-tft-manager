@@ -680,6 +680,7 @@ class HumanDemonstrationWindow(QMainWindow):
             return
         self.selected_item = slot
         self.first_component = None
+        self._second_component = None
         self.selection_label.setText(f"Item {slot} selecionado. Clique em um campeão do banco ou tabuleiro para equipar.")
 
     def _select_component(self, slot):
@@ -688,7 +689,9 @@ class HumanDemonstrationWindow(QMainWindow):
             if not self._mask_ok(mask, "item_component_first_mask", slot):
                 QMessageBox.information(self, "Componente indisponível", "Esse componente não está liberado pela máscara nativa.")
                 return
+            self.selected_item = None
             self.first_component = slot
+            self._second_component = None
             self.selection_label.setText(f"Primeiro componente {slot} selecionado. Escolha o segundo componente.")
             return
         self._second_component = slot
