@@ -17,6 +17,7 @@ import torch
 from policy import TFTPolicy
 from economy_finetuning.finetune import ACTION_DIMS
 from economy_finetuning.scenario_generator import SCENARIOS
+from ppo_protection.replay_buffer import ReferenceReplayBuffer
 
 
 def _mean_ci(values):
@@ -43,16 +44,16 @@ def _load_rows(path):
 
 
 def replay_agreement(checkpoint_path, replay_path, min_type_agreement):
-    replay = torch.load(replay_path, map_location="cpu", weights_only=False)
-    observations = torch.as_tensor(replay["observations"], dtype=torch.float32)
-    actions = torch.as_tensor(replay["actions"], dtype=torch.long)
-    masks = {key: torch.as_tensor(value, dtype=torch.bool) for key, value in replay["masks"].items()}
+    replay = ReferenceReplayBuffer.load(replay_path, "cpu")
+    observations = replay.observations
+    actions = replay.actions
+    masks = replay.masks
     policy_payload = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
     policy = TFTPolicy(observations.shape[-1], ACTION_DIMS)
     policy.load_compatible_state_dict(policy_payload.get("policy", policy_payload))
     policy.eval()
     by_scenario = {}
-    for index, labels in enumerate(replay["scenario_ids"]):
+    for index, labels in enumerate(replay.scenario_ids):
         for label in labels:
             by_scenario.setdefault(label, []).append(index)
     report = {}
@@ -79,7 +80,7 @@ def replay_agreement(checkpoint_path, replay_path, min_type_agreement):
             }
             passed = passed and report[label]["meets_minimum"]
     return {"passed": passed, "minimum_type_agreement": min_type_agreement, "scenarios": report,
-            "source_checkpoint_sha256": replay.get("source_checkpoint_sha256")}
+            "source_checkpoint_sha256": replay.source_checkpoint_sha256}
 
 
 def main():
