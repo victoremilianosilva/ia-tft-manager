@@ -108,6 +108,8 @@ def main():
         coverage_rows.get(key, {}).get("meets_minimum", False) for key in expected_scenarios
     )
     completed = all(row.get("both_completed") and row.get("same_initial_state") for row in rows)
+    seed_values = [row.get("seed") for row in rows]
+    unique_seeds_pass = all(value is not None for value in seed_values) and len(set(seed_values)) == len(seed_values)
     seed_count_pass = len(rows) >= args.min_seeds
     deltas = [item for row in rows for item in row.get("final_player_deltas", [])]
     # Seeds, not individual player seats, are the independent statistical units.
@@ -141,6 +143,7 @@ def main():
 
     checks = {
         "minimum_seed_count": seed_count_pass,
+        "unique_complete_seed_ids": unique_seeds_pass,
         "all_pairs_completed_and_identical_initial_state": completed,
         "all_finetuning_scenarios_have_replay_coverage": coverage_pass,
         "complete_placement_metrics": bool(placement and placement["n"] == len(rows)),
