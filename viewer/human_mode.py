@@ -243,6 +243,42 @@ class HumanDemonstrationWindow(QMainWindow):
                 f"Classificação final: {self.session.public_state.get('ranking', [])}"
             )
 
+    @staticmethod
+    def _mask_enabled(mask: dict, key: str, *indices: int) -> bool:
+        value = mask.get(key)
+        try:
+            for index in indices:
+                if index < 0 or index >= len(value):
+                    return False
+                value = value[index]
+            return bool(value)
+        except (TypeError, IndexError, KeyError):
+            return False
+
+    @classmethod
+    def _validate_action_arguments(cls, action: list[int], mask: dict) -> bool:
+        kind = int(action[0])
+        if kind == 0:
+            return cls._mask_enabled(mask, "shop_mask", action[1])
+        if kind == 3:
+            return cls._mask_enabled(mask, "bench_to_board_target_masks", action[2], action[3])
+        if kind == 4:
+            return cls._mask_enabled(mask, "board_move_target_masks", action[4], action[5])
+        if kind == 5:
+            return cls._mask_enabled(mask, "bench_source_mask", action[2])
+        if kind == 7:
+            return (
+                cls._mask_enabled(mask, "item_inventory_mask", action[1])
+                and cls._mask_enabled(mask, "item_target_mask", action[2])
+            )
+        if kind == 8:
+            return (
+                cls._mask_enabled(mask, "item_component_first_mask", action[1])
+                and cls._mask_enabled(mask, "item_component_pair_masks", action[1], action[2])
+                and cls._mask_enabled(mask, "item_target_mask", action[3])
+            )
+        return True
+
     def _submit_action(self):
         s = self.session
         if not s.started or s.finished or s.lobby is None:
@@ -261,6 +297,13 @@ class HumanDemonstrationWindow(QMainWindow):
         type_mask = human_mask.get("type_mask")
         if type_mask is not None and (action_type >= len(type_mask) or not bool(type_mask[action_type])):
             QMessageBox.warning(self, "Ação indisponível", "Essa categoria de ação não está liberada pela máscara nativa.")
+            return
+        if not self._validate_action_arguments(action, human_mask):
+            QMessageBox.warning(
+                self, "Argumentos inválidos",
+                "Os índices escolhidos não correspondem a uma combinação liberada pelas máscaras nativas. "
+                "Consulte as máscaras exibidas e ajuste os argumentos.",
+            )
             return
 
         before = s._snapshot_for_event()
