@@ -1969,8 +1969,16 @@ class Trainer:
                             self.config.to_dict(),
                         "scheduler_type":
                             "cosine_clamped",
+                        "reference_protection": ({
+                            "enabled": True,
+                            "anchor_checkpoint_path": self.reference_anchor_path,
+                            "anchor_checkpoint_sha256": self.reference_anchor_sha256,
+                            "max_relative_drift": self.config.reference_max_relative_drift,
+                            "replay_path": self.config.reference_replay_path,
+                            "replay_coef": self.config.reference_replay_coef,
+                        } if self.reference_guard_enabled else None),
                     },
-                    self.config.checkpoint_path
+                    self.checkpoint_output_path
                 )
 
                 print(
@@ -2003,8 +2011,16 @@ class Trainer:
                 "update": end - 1,
                 "training_config": self.config.to_dict(),
                 "scheduler_type": "cosine_clamped",
+                "reference_protection": ({
+                    "enabled": True,
+                    "anchor_checkpoint_path": self.reference_anchor_path,
+                    "anchor_checkpoint_sha256": self.reference_anchor_sha256,
+                    "max_relative_drift": self.config.reference_max_relative_drift,
+                    "replay_path": self.config.reference_replay_path,
+                    "replay_coef": self.config.reference_replay_coef,
+                } if self.reference_guard_enabled else None),
             },
-            self.config.checkpoint_path,
+            self.checkpoint_output_path,
         )
         print(f"💾 Checkpoint final salvo | update={end - 1}")
 
