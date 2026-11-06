@@ -3,7 +3,6 @@ import torch.optim as optim
 import numpy as np
 import os
 import json
-import copy
 import hashlib
 
 from rich.console import Console
