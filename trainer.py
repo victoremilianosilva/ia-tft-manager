@@ -342,6 +342,7 @@ class Trainer:
                 "O checkpoint fine-tuned/âncora não pode ser sobrescrito. Configure "
                 "TFT_CHECKPOINT_OUTPUT_PATH com um arquivo novo."
             )
+        os.makedirs(os.path.dirname(os.path.abspath(self.checkpoint_output_path)), exist_ok=True)
 
         self.optimizer = optim.Adam(
             self.policy.parameters(),
