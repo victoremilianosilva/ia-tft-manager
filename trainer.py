@@ -311,6 +311,14 @@ class Trainer:
             self.reference_replay = ReferenceReplayBuffer.load(
                 self.config.reference_replay_path, self.device
             )
+            if (
+                self.reference_replay.source_checkpoint_sha256
+                and self.reference_replay.source_checkpoint_sha256 != self.reference_anchor_sha256
+            ):
+                raise RuntimeError(
+                    "O replay não foi coletado do checkpoint âncora carregado; "
+                    "gere novamente o replay com o modelo correto."
+                )
             print(
                 f"🛡️ Proteção PPO ativa | âncora={anchor_path} | "
                 f"replay={self.config.reference_replay_path} | "
