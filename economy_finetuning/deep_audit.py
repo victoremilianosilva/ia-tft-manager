@@ -48,7 +48,7 @@ def trace_audit(path,selected):
         add(strategies,strategy,a,b,diff)
         gold,hp=s.get("gold"),s.get("hp")
         add(cohorts,"ouro "+bucket(gold,[50,60,80],["<50","50–59","60–79","80+"]),a,b,diff)
-        add(cohorts,"HP "+bucket(hp,[20,40],["≤20","21–40",">40"]),a,b,diff)
+        add(cohorts,"HP "+bucket(hp,[20.000001,40.000001],["≤20","21–40",">40"]),a,b,diff)
         if gold is not None and float(gold)>=50:
             add(cohorts,"ouro ≥50",a,b,diff)
             if hp is not None and float(hp)<=30: add(cohorts,"ouro ≥50 + HP ≤30",a,b,diff)
