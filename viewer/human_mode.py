@@ -69,6 +69,8 @@ class HumanDemonstrationWindow(QMainWindow):
         self._round_started_at = None
         self._next_step_at = None
         self._deadline_action_flushed = False
+        self._paused = False
+        self._paused_at = None
         self._step_interval_seconds = 0.7
         self.icon_loader = ChampionIconLoader(ROOT / "data" / "units_gerado.json", self)
         self.icon_loader.loaded.connect(self._render)
@@ -192,6 +194,14 @@ class HumanDemonstrationWindow(QMainWindow):
         self.events.setMaximumHeight(105)
         outer.addWidget(self.events)
 
+        footer = QHBoxLayout()
+        footer.addStretch(1)
+        self.pause_button = QPushButton("Pausar tempo")
+        self.pause_button.setEnabled(False)
+        self.pause_button.clicked.connect(self._toggle_pause)
+        footer.addWidget(self.pause_button)
+        outer.addLayout(footer)
+
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setWidget(page)
@@ -233,6 +243,10 @@ class HumanDemonstrationWindow(QMainWindow):
             self.session.config.use_wall_clock_preparation = True
             self.session.config.preparation_seconds = 15.0
             self._action_queue.clear()
+            self._paused = False
+            self._paused_at = None
+            self.pause_button.setText("Pausar tempo")
+            self.pause_button.setEnabled(True)
             self._round_key = (
                 int(self.session.public_state.get("round", 1) or 1),
                 int(self.session.public_state.get("stage", 1) or 1),
@@ -255,6 +269,35 @@ class HumanDemonstrationWindow(QMainWindow):
         except Exception as exc:
             QMessageBox.critical(self, "Falha ao iniciar partida", str(exc))
 
+    def _toggle_pause(self):
+        if not self.session.started or self.session.finished or self._round_started_at is None:
+            return
+        now = time.monotonic()
+        if not self._paused:
+            self._paused = True
+            self._paused_at = now
+            self.pause_button.setText("Continuar jogo")
+            self.phase_clock.setText(
+                f"RODADA {self._round_key[0]} · TEMPO PAUSADO"
+            )
+            self.selection_label.setText(
+                "Tempo pausado. Você pode continuar comprando, movendo unidades e equipando itens; "
+                "cada ação será executada e registrada normalmente."
+            )
+        else:
+            paused_for = max(0.0, now - (self._paused_at or now))
+            self._round_started_at += paused_for
+            if self._next_step_at is not None:
+                self._next_step_at += paused_for
+            self._paused = False
+            self._paused_at = None
+            self.pause_button.setText("Pausar tempo")
+            self.phase_clock.setText(
+                f"RODADA {self._round_key[0]} · Preparação retomada"
+            )
+            # Keep the normal action cadence after unpausing.
+            self._next_step_at = now + self._step_interval_seconds
+
     def _human_audit(self):
         return _by_id(self.session.audit_snapshot.get("players", []), self.human_player)
 
@@ -271,6 +314,17 @@ class HumanDemonstrationWindow(QMainWindow):
                 value = value[int(index)]
             return bool(value)
         except (TypeError, IndexError, KeyError):
+            return False
+
+    @staticmethod
+    def _flat_mask_ok(mask, key, *indices):
+        values = mask.get(key)
+        try:
+            flat_index = 0
+            for index, width in zip(indices, (10,)):
+                flat_index = flat_index * width + int(index)
+            return 0 <= flat_index < len(values) and bool(values[flat_index])
+        except (TypeError, ValueError, IndexError):
             return False
 
     def _legal(self, action):
@@ -296,7 +350,7 @@ class HumanDemonstrationWindow(QMainWindow):
         if kind == 8:
             return (
                 self._mask_ok(mask, "item_component_first_mask", action[1])
-                and self._mask_ok(mask, "item_component_pair_masks", action[1], action[2])
+                and self._flat_mask_ok(mask, "item_component_pair_masks", action[1], action[2])
                 and self._mask_ok(mask, "item_target_mask", action[3])
             )
         return True
@@ -309,7 +363,7 @@ class HumanDemonstrationWindow(QMainWindow):
         if not _by_id(s.public_state.get("players", []), self.human_player).get("alive", True):
             QMessageBox.information(self, "Jogador eliminado", "Seu jogador já foi eliminado.")
             return
-        if self._round_started_at is not None:
+        if self._round_started_at is not None and not self._paused:
             elapsed = time.monotonic() - self._round_started_at
             if elapsed >= float(s.config.preparation_seconds) and self._deadline_action_flushed:
                 self.selection_label.setText("O tempo de preparação terminou; a ação ficará para a próxima rodada.")
@@ -344,6 +398,16 @@ class HumanDemonstrationWindow(QMainWindow):
             self._reset_round_clock()
 
         now = time.monotonic()
+        if self._paused:
+            self.phase_clock.setText(
+                f"RODADA {current_key[0]} · TEMPO PAUSADO"
+            )
+            if self._action_queue and now >= (self._next_step_at or now):
+                queued = self._action_queue.pop(0)
+                self._next_step_at = now + self._step_interval_seconds
+                self._execute_step(queued, timer_expired=False)
+            return
+
         elapsed = now - self._round_started_at
         duration = float(s.config.preparation_seconds)
         remaining = max(0.0, duration - elapsed)
@@ -598,7 +662,7 @@ class HumanDemonstrationWindow(QMainWindow):
             self.selection_label.setText(f"Primeiro componente {slot} selecionado. Escolha o segundo componente.")
             return
         self._second_component = slot
-        if not self._mask_ok(mask, "item_component_pair_masks", self.first_component, slot):
+        if not self._flat_mask_ok(mask, "item_component_pair_masks", self.first_component, slot):
             QMessageBox.information(self, "Combinação indisponível", "A engine não permite essa combinação.")
             self._second_component = None
             return
@@ -640,6 +704,7 @@ class HumanDemonstrationWindow(QMainWindow):
         self.xp_button.setEnabled(not s.finished and alive and len(type_mask) > 2 and bool(type_mask[2]))
         self.roll_button.setEnabled(not s.finished and alive and len(type_mask) > 1 and bool(type_mask[1]))
         self.sell_button.setEnabled(not s.finished and alive)
+        self.pause_button.setEnabled(not s.finished and alive)
         shop_mask = masks.get("shop_mask", [])
         shop_units = audit.get("shop", []) or []
         shop_has_offers = any(_occupied(unit) for unit in shop_units)
@@ -661,6 +726,10 @@ class HumanDemonstrationWindow(QMainWindow):
             else:
                 self.shop_box.setTitle("LOJA — sem ofertas disponíveis neste momento")
         if s.finished:
+            self.pause_button.setEnabled(False)
+            self.pause_button.setText("Pausar tempo")
+            self._paused = False
+            self._paused_at = None
             self.status.setText(f"Partida finalizada · ranking: {s.public_state.get('ranking', [])}")
         else:
             self.status.setText(
@@ -680,6 +749,18 @@ class HumanDemonstrationWindow(QMainWindow):
             self.selection_label.setText(
                 f"Selecionado: {_name(unit)} · {area} slot {index}. "
                 "A seleção permanece ativa até você escolher o destino."
+            )
+        elif self.selected_item is not None:
+            self.selection_label.setText(
+                f"Item {self.selected_item} selecionado. Clique no campeão do banco ou tabuleiro para equipar."
+            )
+        elif self.first_component is not None and self._second_component is not None:
+            self.selection_label.setText(
+                "Receita selecionada. Clique no campeão-alvo para criar e equipar."
+            )
+        elif self.first_component is not None:
+            self.selection_label.setText(
+                f"Primeiro componente {self.first_component} selecionado. Escolha o segundo componente."
             )
         else:
             self.selection_label.setText(
