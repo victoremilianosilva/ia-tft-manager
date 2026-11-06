@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 
 import numpy as np
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QTimer
 from PySide6.QtWidgets import (
     QApplication, QComboBox, QFileDialog, QGridLayout, QGroupBox, QHBoxLayout,
     QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton, QScrollArea,
@@ -63,6 +63,12 @@ class HumanDemonstrationWindow(QMainWindow):
         self.selected_item = None
         self.first_component = None
         self._second_component = None
+        self._round_key = None
+        self._seconds_left = 15
+        self._timeout_submitting = False
+        self.round_timer = QTimer(self)
+        self.round_timer.setInterval(1000)
+        self.round_timer.timeout.connect(self._tick_round_timer)
         self.icon_loader = ChampionIconLoader(ROOT / "data" / "units_gerado.json", self)
         self.icon_loader.loaded.connect(self._render)
         self._build_ui()
@@ -95,6 +101,9 @@ class HumanDemonstrationWindow(QMainWindow):
         self.status = QLabel("Carregue o checkpoint. Você controla um jogador; os outros sete são controlados pela policy.")
         self.status.setWordWrap(True)
         outer.addWidget(self.status)
+        self.timer_label = QLabel("TEMPO DE PREPARAÇÃO: --:--")
+        self.timer_label.setStyleSheet("font-size:18pt;font-weight:800;color:#fbbf24;")
+        outer.addWidget(self.timer_label)
 
         self.cards = []
         cards_box = QGroupBox("Lobby — visão geral dos 8 jogadores")
@@ -116,11 +125,9 @@ class HumanDemonstrationWindow(QMainWindow):
         self.xp_button.clicked.connect(lambda: self._perform([2, 0, 0, 0, 0, 0], "BUY_XP"))
         self.roll_button = QPushButton("Atualizar loja")
         self.roll_button.clicked.connect(lambda: self._perform([1, 0, 0, 0, 0, 0], "REROLL"))
-        self.pass_button = QPushButton("Concluir decisão")
-        self.pass_button.clicked.connect(lambda: self._perform([6, 0, 0, 0, 0, 0], "PASS"))
         self.sell_button = QPushButton("Vender unidade selecionada")
         self.sell_button.clicked.connect(self._sell_selected)
-        for widget in (self.xp_button, self.roll_button, self.pass_button, self.sell_button):
+        for widget in (self.xp_button, self.roll_button, self.sell_button):
             controls.addWidget(widget)
         outer.addLayout(controls)
 
@@ -214,7 +221,13 @@ class HumanDemonstrationWindow(QMainWindow):
                 self.checkpoint.text().strip(), self.seed.value(), True,
                 ROOT / "viewer" / "human_sessions", record=True,
             )
-            self.session.config.use_wall_clock_preparation = False
+            self.session.config.use_wall_clock_preparation = True
+            self.session.config.preparation_seconds = 15.0
+            self._round_key = self._current_round_key()
+            self._seconds_left = 15
+            self._timeout_submitting = False
+            self.timer_label.setText("TEMPO DE PREPARAÇÃO: 00:15")
+            self.round_timer.start()
             self.seat.setEnabled(False)
             self.load_button.setText("Reiniciar partida")
             self.events.appendPlainText(
@@ -228,6 +241,34 @@ class HumanDemonstrationWindow(QMainWindow):
             )
         except Exception as exc:
             QMessageBox.critical(self, "Falha ao iniciar partida", str(exc))
+
+    def _current_round_key(self):
+        state = self.session.public_state or {}
+        return (int(state.get("round", 1) or 1), int(state.get("stage", 1) or 1))
+
+    def _tick_round_timer(self):
+        if not self.session.started or self.session.finished:
+            self.round_timer.stop()
+            return
+        self._seconds_left = max(0, self._seconds_left - 1)
+        self.timer_label.setText(
+            f"TEMPO DE PREPARAÇÃO: 00:{self._seconds_left:02d}"
+        )
+        if self._seconds_left <= 0:
+            self.round_timer.stop()
+            if not self._timeout_submitting:
+                self._timeout_submitting = True
+                self.status.setText("Tempo esgotado — encerrando suas ações desta preparação.")
+                self._perform([6, 0, 0, 0, 0, 0], "PASS_TIMEOUT")
+
+    def _reset_round_timer_if_needed(self, previous_round):
+        current_round = self._current_round_key()
+        if current_round != previous_round and not self.session.finished:
+            self._round_key = current_round
+            self._seconds_left = 15
+            self._timeout_submitting = False
+            self.timer_label.setText("TEMPO DE PREPARAÇÃO: 00:15")
+            self.round_timer.start()
 
     def _human_audit(self):
         return _by_id(self.session.audit_snapshot.get("players", []), self.human_player)
@@ -282,6 +323,7 @@ class HumanDemonstrationWindow(QMainWindow):
             QMessageBox.information(self, "Ação indisponível", "A engine não liberou essa ação ou combinação de origem/destino neste estado.")
             return
 
+        previous_round = self._current_round_key()
         before = s._snapshot_for_event()
         masks_before = s.masks
         actions, diagnostics = [], []
@@ -366,6 +408,10 @@ class HumanDemonstrationWindow(QMainWindow):
         self.first_component = None
         self._second_component = None
         self._render(after)
+        self._reset_round_timer_if_needed(previous_round)
+        if s.finished:
+            self.round_timer.stop()
+            self.timer_label.setText("PARTIDA FINALIZADA")
 
     def _cell_clicked(self, index, area):
         if not self.session.started or self.session.finished:
@@ -488,9 +534,10 @@ class HumanDemonstrationWindow(QMainWindow):
                 cell.set_unit(unit if _occupied(unit) else None, self.icon_loader)
         self._render_items(audit)
         alive = bool(player.get("alive", True))
-        for widget in (self.xp_button, self.roll_button, self.pass_button, self.sell_button):
+        for widget in (self.xp_button, self.roll_button, self.sell_button):
             widget.setEnabled(not s.finished and alive)
         if s.finished:
+            self.round_timer.stop()
             self.status.setText(f"Partida finalizada · ranking: {s.public_state.get('ranking', [])}")
         else:
             self.status.setText(
