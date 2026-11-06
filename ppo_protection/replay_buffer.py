@@ -6,6 +6,8 @@ from pathlib import Path
 
 import torch
 
+from economy_finetuning.scenario_generator import SCENARIOS
+
 
 class ReferenceReplayBuffer:
     REQUIRED_MASKS = {
@@ -36,7 +38,11 @@ class ReferenceReplayBuffer:
                 raise ValueError(f"Quantidade de máscaras divergente: {key}")
         coverage = payload.get("scenario_counts", {})
         minimum = int(payload.get("minimum_per_scenario", 1))
-        missing_coverage = sorted(key for key, value in coverage.items() if int(value) < minimum)
+        expected_scenarios = {item.scenario_id for item in SCENARIOS if item.trainable}
+        missing_coverage = sorted(
+            key for key in expected_scenarios
+            if int(coverage.get(key, 0)) < minimum
+        )
         if missing_coverage:
             raise ValueError(
                 "Replay sem cobertura mínima para todos os cenários treináveis: "
