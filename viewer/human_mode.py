@@ -329,6 +329,7 @@ class HumanDemonstrationWindow(QMainWindow):
         if kind == 7:
             # Let the native engine validate inventory/target against its live item state.
             # The Viewer snapshot can be one interaction behind after item selection.
+            return True
         if kind == 8:
             return (
                 self._mask_ok(mask, "item_component_first_mask", action[1])
