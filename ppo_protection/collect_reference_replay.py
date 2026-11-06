@@ -71,7 +71,7 @@ def main():
                 rows_actions.append(action_array[player_id].copy())
                 rows_labels.append(labels)
                 for key in MASK_SHAPES:
-                    rows_masks[key].append(np.asarray(raw_masks[player_id][key], dtype=np.bool_).copy())
+                    rows_masks[key].append(masks[key][player_id].detach().cpu().numpy().astype(np.bool_, copy=True))
                 for label in labels:
                     counts[label] += 1
             obs, _, done, _ = env.step(_actions_to_native(action_array))
