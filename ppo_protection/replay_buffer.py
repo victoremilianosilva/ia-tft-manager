@@ -1,7 +1,6 @@
 """Validated, scenario-balanced behavior replay for PPO."""
 from __future__ import annotations
 
-import random
 from pathlib import Path
 
 import torch
@@ -73,8 +72,11 @@ class ReferenceReplayBuffer:
             raise ValueError("batch_size deve ser > 0.")
         selected = []
         for _ in range(batch_size):
-            label = random.choice(self.labels)
-            selected.append(random.choice(self.groups[label]))
+            label_index = int(torch.randint(len(self.labels), (1,)).item())
+            label = self.labels[label_index]
+            group = self.groups[label]
+            row_index = int(torch.randint(len(group), (1,)).item())
+            selected.append(group[row_index])
         indices = torch.as_tensor(selected, dtype=torch.long, device=self.device)
         return {
             "obs": self.observations.index_select(0, indices),
