@@ -1,0 +1,33 @@
+name: PPO reference protection tests
+
+on:
+  pull_request:
+    paths:
+      - "ppo_protection/**"
+      - "tests/test_ppo_reference_*.py"
+      - "trainer.py"
+      - "ppo.py"
+      - "training_config.py"
+  push:
+    branches: [main, feat/ppo-reference-protection-v2]
+    paths:
+      - "ppo_protection/**"
+      - "tests/test_ppo_reference_*.py"
+      - "trainer.py"
+      - "ppo.py"
+      - "training_config.py"
+
+jobs:
+  reference-protection:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install test dependencies
+        run: python -m pip install --upgrade pip pytest numpy torch
+      - name: Compile protected PPO modules
+        run: python -m compileall -q trainer.py ppo.py training_config.py ppo_protection
+      - name: Run reference protection tests
+        run: python -m pytest -q tests/test_ppo_reference_guard.py tests/test_ppo_reference_replay.py

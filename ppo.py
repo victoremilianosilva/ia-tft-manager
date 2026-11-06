@@ -30,7 +30,10 @@ class PPOTrainer:
         ent_coef=0.02,
         vf_coef=0.5,
         max_grad_norm=0.5,
-        target_kl=0.02
+        target_kl=0.02,
+        reference_replay=None,
+        reference_replay_coef=0.01,
+        reference_replay_batch_size=64
     ):
         """
         PPO Trainer compatível com Self-Play.
@@ -72,6 +75,11 @@ class PPOTrainer:
 
         self.max_grad_norm = max_grad_norm
         self.target_kl = target_kl
+        self.reference_replay = reference_replay
+        self.reference_replay_coef = float(reference_replay_coef)
+        self.reference_replay_batch_size = int(reference_replay_batch_size)
+        if self.reference_replay_coef < 0.0 or self.reference_replay_batch_size <= 0:
+            raise ValueError("Parâmetros de replay de referência inválidos.")
         if not 0.0 < float(clip_coef) < 1.0:
             raise ValueError("clip_coef deve estar entre 0 e 1.")
         if float(vf_coef) < 0.0 or float(max_grad_norm) <= 0.0:
@@ -331,6 +339,8 @@ class PPOTrainer:
         optimizer_steps = 0
         grad_norm_sum = 0.0
         grad_norm_max = 0.0
+        replay_loss_sum = 0.0
+        replay_batches = 0
 
         stop_early = False
 
@@ -375,6 +385,16 @@ class PPOTrainer:
 
                     batch["masks"]
                 )
+
+                if self.reference_replay is not None and self.reference_replay_coef > 0.0:
+                    replay_batch = self.reference_replay.sample(self.reference_replay_batch_size)
+                    replay_logprob, _, _ = self.policy.evaluate_actions(
+                        replay_batch["obs"], replay_batch["actions"], masks=replay_batch["masks"]
+                    )
+                    replay_loss = -replay_logprob.reshape(-1).mean()
+                    loss = loss + self.reference_replay_coef * replay_loss
+                    replay_loss_sum += float(replay_loss.detach().item())
+                    replay_batches += 1
 
                 max_kl = max(max_kl, float(approx_kl.item()))
 
@@ -597,6 +617,8 @@ class PPOTrainer:
 
         self.update_step += 1
         return {
+            "reference_replay_loss": replay_loss_sum / replay_batches if replay_batches else 0.0,
+            "reference_replay_batches": replay_batches,
             "approx_kl_mean": mean_kl,
             "approx_kl_max": max_kl,
             "early_stop": early_stop_triggered,
