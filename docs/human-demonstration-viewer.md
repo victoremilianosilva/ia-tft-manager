@@ -1,11 +1,12 @@
 # Human Demonstration Viewer
 
-The human demonstration interface is an independent desktop entrypoint. It does not replace
-or modify the evaluation Viewer.
+This is a separate interactive desktop Viewer. It reuses the visual components of
+`viewer/main.py` and the existing `ViewerSession`; it does not replace the normal
+evaluation Viewer.
 
 ## Run
 
-From the repository root, after installing the existing project and Viewer dependencies and
+From the repository root, after installing the project and Viewer dependencies and
 building the native extension:
 
 ```powershell
@@ -15,38 +16,46 @@ $env:PYTHONPATH = "$PWD\cpp\build\bin\Release;$PWD"
 python -m viewer.human_main
 ```
 
-Choose a trained checkpoint, a seed, and the player seat. The selected seat is controlled
-manually; the other seven living seats receive one action from the loaded policy at each
-joint lobby step. The engine still resolves the eight actions together.
+Choose a checkpoint, seed and human seat, then start a new match.
 
-## Isolation guarantees
+## Playing
 
-- This entrypoint creates no `Trainer`, `PPOTrainer`, optimizer, or training loop.
-- The checkpoint is loaded for inference only; policy parameters have gradients disabled.
-- The C++ engine and its reward implementation are used unchanged.
-- No PPO configuration, reward, policy weights, or training data is modified.
-- The existing Viewer session writer is reused for state/action/reward snapshots. Human
-  decisions additionally emit a `human_decision` event with the selected action and optional
-  free-text rationale. Bot decisions are marked `frozen_policy`.
-- Sessions are written under `viewer/human_sessions/`.
+- The eight player cards show the same live lobby overview used by the normal Viewer.
+- Click a shop champion to buy it.
+- Use **Comprar XP**, **Atualizar loja** and **Concluir decisão** for economy actions.
+- Click a bench unit and then an empty board cell to deploy it.
+- Click a board unit and then another board cell to reposition it.
+- Select a bench unit and use **Vender unidade selecionada** to sell it.
+- Select a completed item from the inventory, then click a board/bench unit to equip it.
+- Select two components in sequence, then click a target unit to craft and equip.
+- The native action masks are checked before every human action. The UI does not send
+  actions that are illegal according to the current masks.
 
-## Decision workflow
+Every human action is submitted in one simultaneous lobby batch with one inference action
+from each of the other seven living agents. Eliminated seats submit PASS. The seven policies
+remain in inference/eval mode; there is no optimizer, PPO update, or checkpoint mutation.
 
-Each click submits exactly one action for the human seat and one policy action for each
-other living seat. Eliminated seats submit PASS. The action selector is refreshed from the
-native `type_mask`; the complete current masks are visible for reference. Action arguments
-are entered as numeric indices and must match the native action contract shown in the UI.
+## Logging
 
-The rationale field is optional. It is useful for recording intent that cannot be inferred
-from state transitions alone (for example, why a player held gold or chose a flexible unit).
+Sessions are saved under `viewer/human_sessions/` using the existing per-player `.tft`
+and structured `.json` logs. Human decisions are marked with `source: human`, the other
+seats with `source: frozen_policy`, and each completed step records `human_player_id`,
+the eight actions, state snapshots, rewards and engine events. The optional note field
+records the human's rationale.
 
-## Important limitations
+## Isolation and current engine limitation
 
-This first version is a demonstration recorder, not an imitation trainer. It does not change
-the PPO policy or rewards and does not claim to teach from a match automatically. Logs are
-collected for later review and dataset design. A human action can still be rejected or become
-a no-op if its numeric arguments do not describe a legal target; consult the displayed masks.
-
-The simulator advances in joint action batches, so the seven agents also act once every time
-you submit a human action. This is not a real-time pause/resume implementation of a live TFT
-client.
+- No C++ source, PPO code, reward implementation, policy weights, or training configuration
+  is modified by this feature.
+- The game state and action legality remain owned by the native C++ engine.
+- The current native lobby action contract exposes BUY, REROLL, BUY_XP, movement, SELL,
+  PASS and item actions. It does **not** expose a carousel-pick action. The Viewer displays
+  a notice if a carousel state is present, but cannot honestly implement a clickable
+  carousel selection until the engine exports that action and its legal-choice mask.
+- Moving units between two bench slots and moving a board unit back to the bench are also
+  not exposed by the action contract used here.
+- This is a turn-by-turn simulator Viewer, not a live client for the official TFT game.
+  Each human action advances the joint lobby by one native step; it does not pause a live
+  round in real time.
+- This PR has not been validated against the user's Windows native build yet. A complete
+  match smoke test is required before merging.
