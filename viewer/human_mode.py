@@ -131,7 +131,8 @@ class HumanDemonstrationWindow(QMainWindow):
             controls.addWidget(widget)
         outer.addLayout(controls)
 
-        shop_box = QGroupBox("LOJA — clique em um campeão para comprar")
+        self.shop_box = QGroupBox("LOJA — clique em um campeão para comprar")
+        shop_box = self.shop_box
         self.shop_layout = QHBoxLayout(shop_box)
         self.shop_cells = []
         for slot in range(5):
@@ -524,14 +525,24 @@ class HumanDemonstrationWindow(QMainWindow):
             f"HP {player.get('hp', '?')} · OURO {player.get('gold', '?')} · "
             f"NÍVEL {player.get('level', '?')} · XP {player.get('xp', '?')}"
         )
+        shop_units = audit.get("shop", []) or []
+        shop_mask = (s.masks[self.human_player] or {}).get("shop_mask", [])
+        shop_available = any(
+            _occupied(unit) and index < len(shop_mask) and bool(shop_mask[index])
+            for index, unit in enumerate(shop_units)
+        )
+        self.shop_box.setVisible(shop_available)
         for cells, units in (
-            (self.shop_cells, audit.get("shop", [])),
+            (self.shop_cells, shop_units),
             (self.bench_cells, audit.get("bench", [])),
             (self.board_cells, audit.get("board", [])),
         ):
             for index, cell in enumerate(cells):
                 unit = units[index] if index < len(units) else None
                 cell.set_unit(unit if _occupied(unit) else None, self.icon_loader)
+                if cells is self.shop_cells:
+                    legal_slot = index < len(shop_mask) and bool(shop_mask[index])
+                    cell.setEnabled(bool(shop_available and legal_slot and _occupied(unit)))
         self._render_items(audit)
         alive = bool(player.get("alive", True))
         for widget in (self.xp_button, self.roll_button, self.sell_button):
