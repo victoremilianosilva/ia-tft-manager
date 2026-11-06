@@ -339,6 +339,8 @@ class PPOTrainer:
         optimizer_steps = 0
         grad_norm_sum = 0.0
         grad_norm_max = 0.0
+        replay_loss_sum = 0.0
+        replay_batches = 0
 
         stop_early = False
 
