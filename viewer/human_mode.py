@@ -62,6 +62,7 @@ class HumanDemonstrationWindow(QMainWindow):
         self.selected_source = None
         self.selected_item = None
         self.first_component = None
+        self._second_component = None
         self.icon_loader = ChampionIconLoader(ROOT / "data" / "units_gerado.json", self)
         self.icon_loader.loaded.connect(self._render)
         self._build_ui()
@@ -363,6 +364,7 @@ class HumanDemonstrationWindow(QMainWindow):
         self.selected_source = None
         self.selected_item = None
         self.first_component = None
+        self._second_component = None
         self._render(after)
 
     def _cell_clicked(self, index, area):
