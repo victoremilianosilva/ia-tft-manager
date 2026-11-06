@@ -127,8 +127,6 @@ class HumanDemonstrationWindow(QMainWindow):
         action_box = QGroupBox("Sua decisão")
         form = QFormLayout(action_box)
         self.action = QComboBox()
-        for action_id, name in ACTION_NAMES.items():
-            self.action.addItem(f"{name} ({action_id})", action_id)
         self.action.currentIndexChanged.connect(self._action_changed)
         form.addRow("Ação", self.action)
 
@@ -227,10 +225,17 @@ class HumanDemonstrationWindow(QMainWindow):
         self.legal.setPlainText(json.dumps(rendered, ensure_ascii=False, indent=2))
         type_mask = masks.get("type_mask")
         if type_mask is not None:
-            allowed = {int(i) for i, flag in enumerate(type_mask) if bool(flag)}
-            for i in range(self.action.count()):
-                action_id = int(self.action.itemData(i))
-                self.action.setItemData(i, action_id not in allowed, Qt.ItemDataRole.UserRole - 1)
+            allowed = [int(i) for i, flag in enumerate(type_mask) if bool(flag)]
+            previous = self.action.currentData()
+            self.action.blockSignals(True)
+            self.action.clear()
+            for action_id in allowed:
+                name = ACTION_NAMES.get(action_id, f"UNKNOWN_{action_id}")
+                self.action.addItem(f"{name} ({action_id})", action_id)
+            if previous in allowed:
+                self.action.setCurrentIndex(allowed.index(previous))
+            self.action.blockSignals(False)
+            self._action_changed()
         self.submit.setEnabled(not self.session.finished)
         if self.session.finished:
             self.status.setText("Partida finalizada. A sessão e as demonstrações foram gravadas.")
