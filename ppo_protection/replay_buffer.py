@@ -19,6 +19,7 @@ class ReferenceReplayBuffer:
         if payload.get("schema_version") != 1:
             raise ValueError("Versão de replay não suportada; esperado schema_version=1.")
         self.device = torch.device(device)
+        self.source_checkpoint_sha256 = payload.get("source_checkpoint_sha256")
         self.observations = torch.as_tensor(payload["observations"], dtype=torch.float32, device=self.device)
         self.actions = torch.as_tensor(payload["actions"], dtype=torch.long, device=self.device)
         raw_masks = payload["masks"]
