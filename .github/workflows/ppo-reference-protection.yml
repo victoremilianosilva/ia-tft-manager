@@ -9,7 +9,7 @@ on:
       - "ppo.py"
       - "training_config.py"
   push:
-    branches: [main]
+    branches: [main, feat/ppo-reference-protection-v2]
     paths:
       - "ppo_protection/**"
       - "tests/test_ppo_reference_*.py"
