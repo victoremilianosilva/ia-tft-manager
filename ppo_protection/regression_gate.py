@@ -7,7 +7,6 @@ reviews the report before choosing the production checkpoint.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import math
 from pathlib import Path
