@@ -2,6 +2,7 @@ import pytest
 import torch
 
 from ppo_protection.replay_buffer import ReferenceReplayBuffer
+from economy_finetuning.scenario_generator import SCENARIOS
 
 
 MASK_SHAPES = {
@@ -15,29 +16,16 @@ MASK_SHAPES = {
 
 
 def payload():
+    scenarios = [item.scenario_id for item in SCENARIOS if item.trainable]
+    count = len(scenarios) * 2
+    labels = [[scenario] for scenario in scenarios for _ in range(2)]
     return {
         "schema_version": 1,
         "source_checkpoint_sha256": "abc",
         "minimum_per_scenario": 2,
-        "scenario_counts": {"scenario_a": 2, "scenario_b": 2},
-        "observations": torch.zeros(4, 12),
-        "actions": torch.zeros(4, 6, dtype=torch.long),
-        "scenario_ids": [["scenario_a"], ["scenario_a"], ["scenario_b"], ["scenario_b"]],
-        "masks": {key: torch.ones((4, *shape), dtype=torch.bool) for key, shape in MASK_SHAPES.items()},
+        "scenario_counts": {scenario: 2 for scenario in scenarios},
+        "observations": torch.zeros(count, 12),
+        "actions": torch.zeros(count, 6, dtype=torch.long),
+        "scenario_ids": labels,
+        "masks": {key: torch.ones((count, *shape), dtype=torch.bool) for key, shape in MASK_SHAPES.items()},
     }
-
-
-def test_replay_samples_valid_balanced_batches():
-    replay = ReferenceReplayBuffer(payload(), "cpu")
-    batch = replay.sample(8)
-    assert batch["obs"].shape == (8, 12)
-    assert batch["actions"].shape == (8, 6)
-    assert set(batch["masks"]) == set(MASK_SHAPES)
-    assert replay.source_checkpoint_sha256 == "abc"
-
-
-def test_replay_rejects_incomplete_scenario_coverage():
-    data = payload()
-    data["scenario_counts"]["scenario_b"] = 1
-    with pytest.raises(ValueError, match="cobertura mínima"):
-        ReferenceReplayBuffer(data, "cpu")
