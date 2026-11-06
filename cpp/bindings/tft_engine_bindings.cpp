@@ -600,13 +600,19 @@ PYBIND11_MODULE(tft_engine, module) {
             [](TFTEngine& self,
                const std::vector<std::vector<std::int32_t>>& raw_actions,
                bool timer_enabled,
-               bool timer_expired) {
+               bool timer_expired,
+               const std::vector<bool>& raw_active_players) {
                 if (raw_actions.size() != tft::kPlayersPerLobby) {
                     throw py::value_error("actions deve conter 8 jogadores.");
                 }
+                if (raw_active_players.size() != tft::kPlayersPerLobby) {
+                    throw py::value_error("active_players deve conter 8 valores.");
+                }
 
+                std::array<bool, tft::kPlayersPerLobby> active_players{};
                 std::array<tft::PlayerAction, tft::kPlayersPerLobby> actions{};
                 for (std::size_t player = 0; player < tft::kPlayersPerLobby; ++player) {
+                    active_players[player] = raw_active_players[player];
                     if (raw_actions[player].size() != tft::kActionComponents) {
                         throw py::value_error(
                             "Cada acao deve conter 6 componentes."
@@ -619,11 +625,15 @@ PYBIND11_MODULE(tft_engine, module) {
                             raw_actions[player][component];
                     }
                 }
-                return step_to_dict(self.step(actions, timer_enabled, timer_expired));
+                return step_to_dict(
+                    self.step(actions, timer_enabled, timer_expired, active_players)
+                );
             },
             py::arg("actions"),
             py::arg("timer_enabled") = false,
-            py::arg("timer_expired") = false
+            py::arg("timer_expired") = false,
+            py::arg("active_players") =
+                std::vector<bool>(tft::kPlayersPerLobby, true)
         )
         .def(
             "get_audit_snapshot",
