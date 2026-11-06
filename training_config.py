@@ -45,6 +45,12 @@ class TrainingConfig:
     num_lobbies: int = 4
     total_updates: int = 280
     checkpoint_path: str = "tft_checkpoint.pt"
+    checkpoint_output_path: str = ""
+
+    reference_replay_path: str = ""
+    reference_replay_coef: float = 0.01
+    reference_replay_batch_size: int = 64
+    reference_max_relative_drift: float = 0.02
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -54,7 +60,7 @@ class TrainingConfig:
             "learning_rate", "min_learning_rate", "adam_eps", "adam_beta1", "adam_beta2",
             "weight_decay", "clip_coef",
             "entropy_coef_initial", "entropy_coef_final", "entropy_decay_rate",
-            "vf_coef", "max_grad_norm", "gamma", "gae_lambda",
+            "vf_coef", "max_grad_norm", "gamma", "gae_lambda", "reference_replay_coef", "reference_max_relative_drift",
         )
         for name in finite_fields:
             if not math.isfinite(float(getattr(self, name))):
@@ -63,7 +69,7 @@ class TrainingConfig:
             raise ValueError("target_kl deve ser finito ou None.")
         integer_fields = (
             "lr_schedule_updates", "entropy_schedule_updates", "batch_size",
-            "ppo_epochs", "rollout_steps", "num_lobbies", "total_updates",
+            "ppo_epochs", "rollout_steps", "num_lobbies", "total_updates", "reference_replay_batch_size",
         )
         for name in integer_fields:
             value = getattr(self, name)
@@ -80,6 +86,8 @@ class TrainingConfig:
             raise ValueError("entropy_decay_rate deve ser > 0.")
         if not 0 < self.adam_beta1 < 1 or not 0 < self.adam_beta2 < 1:
             raise ValueError("adam_beta1 e adam_beta2 devem estar entre 0 e 1.")
+        if self.reference_replay_coef < 0 or not 0 < self.reference_max_relative_drift <= 1:
+            raise ValueError("Parâmetros de proteção de referência inválidos.")
         if self.weight_decay < 0:
             raise ValueError("weight_decay deve ser >= 0.")
         if not 0 < self.clip_coef < 1:
@@ -131,6 +139,9 @@ class TrainingConfig:
             "total_updates": ("TFT_TOTAL_UPDATES", int),
             "gamma": ("TFT_PPO_GAMMA", float),
             "gae_lambda": ("TFT_PPO_GAE_LAMBDA", float),
+            "reference_replay_coef": ("TFT_REFERENCE_REPLAY_COEF", float),
+            "reference_replay_batch_size": ("TFT_REFERENCE_REPLAY_BATCH_SIZE", int),
+            "reference_max_relative_drift": ("TFT_REFERENCE_MAX_DRIFT", float),
         }
         for name, (env_name, converter) in env_fields.items():
             raw = os.getenv(env_name)
@@ -143,6 +154,12 @@ class TrainingConfig:
         raw_kl = os.getenv("TFT_PPO_TARGET_KL")
         if raw_kl is not None and raw_kl.strip():
             config.target_kl = None if raw_kl.strip().lower() in {"none", "off", "disabled"} else float(raw_kl)
+        raw_replay = os.getenv("TFT_REFERENCE_REPLAY_PATH")
+        if raw_replay is not None:
+            config.reference_replay_path = raw_replay
+        raw_output = os.getenv("TFT_CHECKPOINT_OUTPUT_PATH")
+        if raw_output is not None:
+            config.checkpoint_output_path = raw_output
         raw_checkpoint = os.getenv("TFT_CHECKPOINT_PATH")
         if raw_checkpoint:
             config.checkpoint_path = raw_checkpoint
