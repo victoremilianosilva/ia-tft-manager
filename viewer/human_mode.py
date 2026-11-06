@@ -320,9 +320,13 @@ class HumanDemonstrationWindow(QMainWindow):
     def _flat_mask_ok(mask, key, *indices):
         values = mask.get(key)
         try:
-            flat_index = 0
-            for index, width in zip(indices, (10,)):
-                flat_index = flat_index * width + int(index)
+            if len(indices) == 1:
+                flat_index = int(indices[0])
+            elif len(indices) == 2:
+                # Native component-pair mask is [first * 10 + second].
+                flat_index = int(indices[0]) * 10 + int(indices[1])
+            else:
+                return False
             return 0 <= flat_index < len(values) and bool(values[flat_index])
         except (TypeError, ValueError, IndexError):
             return False
