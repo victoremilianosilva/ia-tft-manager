@@ -350,7 +350,9 @@ class HumanDemonstrationWindow(QMainWindow):
         if kind == 5:
             return self._mask_ok(mask, "bench_source_mask", action[2])
         if kind == 7:
-            return self._mask_ok(mask, "item_inventory_mask", action[1]) and self._mask_ok(mask, "item_target_mask", action[2])
+            # The audit inventory can be newer than the Viewer mask snapshot.
+            # The native engine remains authoritative for inventory and target.
+            return True
         if kind == 8:
             return (
                 self._mask_ok(mask, "item_component_first_mask", action[1])
