@@ -48,7 +48,7 @@ class TrainingConfig:
     checkpoint_output_path: str = ""
 
     reference_replay_path: str = ""
-    reference_replay_coef: float = 0.05
+    reference_replay_coef: float = 0.01
     reference_replay_batch_size: int = 64
     reference_max_relative_drift: float = 0.02
 
