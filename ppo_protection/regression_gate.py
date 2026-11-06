@@ -25,7 +25,9 @@ def _mean_ci(values):
     if values.size == 0:
         return None
     mean = float(values.mean())
-    se = float(values.std(ddof=1) / math.sqrt(values.size)) if values.size > 1 else float("inf")
+    if values.size < 2:
+        return {"n": int(values.size), "mean": mean, "lower95": None, "upper95": None}
+    se = float(values.std(ddof=1) / math.sqrt(values.size))
     return {"n": int(values.size), "mean": mean, "lower95": mean - 1.96 * se, "upper95": mean + 1.96 * se}
 
 
@@ -141,11 +143,11 @@ def main():
         "minimum_seed_count": seed_count_pass,
         "all_pairs_completed_and_identical_initial_state": completed,
         "all_finetuning_scenarios_have_replay_coverage": coverage_pass,
-        "placement_not_regressed": bool(placement and placement["upper95"] <= args.max_placement_regression),
-        "top4_not_regressed": bool(top4 and top4["lower95"] >= -args.max_top4_drop),
-        "reward_not_regressed": bool(reward and reward["lower95"] >= -args.max_reward_drop),
+        "placement_not_regressed": bool(placement and placement["upper95"] is not None and placement["upper95"] <= args.max_placement_regression),
+        "top4_not_regressed": bool(top4 and top4["lower95"] is not None and top4["lower95"] >= -args.max_top4_drop),
+        "reward_not_regressed": bool(reward and reward["lower95"] is not None and reward["lower95"] >= -args.max_reward_drop),
         "board_scores_not_regressed": all(
-            board_metrics[key] is not None and board_metrics[key]["lower95"] >= -args.max_board_score_drop
+            board_metrics[key] is not None and board_metrics[key]["lower95"] is not None and board_metrics[key]["lower95"] >= -args.max_board_score_drop
             for key in board_metrics
         ),
         "scenario_action_type_retention": replay["passed"],
