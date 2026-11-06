@@ -60,7 +60,11 @@ if ($LASTEXITCODE -ne 0) { throw "Comparação pareada falhou. Consulte o erro a
 Write-Host "[2/3] Gerando auditoria consolidada..." -ForegroundColor Cyan
 & $python "economy_finetuning/audit.py" --trace $tracePath --paired $pairedPath --metadata $metadataPath --summary $summaryPath --output $auditPath
 if ($LASTEXITCODE -ne 0) { throw "Geração da auditoria falhou." }
-Write-Host "[3/3] Verificando integridade e cobertura..." -ForegroundColor Cyan
+$deepAuditPath = Join-Path $reportsPath ("DEEP_AUDIT_{0}.md" -f $metadata.selected_scenario)
+Write-Host "[3/4] Gerando auditoria complementar detalhada..." -ForegroundColor Cyan
+& $python "economy_finetuning/deep_audit.py" --trace $tracePath --paired $pairedPath --metadata $metadataPath --summary $summaryPath --output $deepAuditPath
+if ($LASTEXITCODE -ne 0) { throw "Auditoria complementar falhou." }
+Write-Host "[4/4] Verificando integridade e cobertura..." -ForegroundColor Cyan
 $pairedRows = @(Get-Content -LiteralPath $pairedPath | Where-Object { $_.Trim() } | ForEach-Object { $_ | ConvertFrom-Json })
 $completed = @($pairedRows | Where-Object { $_.both_completed -eq $true }).Count
 $sameInitial = @($pairedRows | Where-Object { $_.same_initial_state -eq $true }).Count
@@ -103,6 +107,7 @@ Write-Host ""
 Write-Host "AVALIAÇÃO CONCLUÍDA" -ForegroundColor Green
 Write-Host "Status: $reviewStatus"
 Write-Host "Auditoria: $auditPath"
+Write-Host "Auditoria complementar: $deepAuditPath"
 Write-Host "Resultados pareados: $pairedPath"
 Write-Host "Pacote de revisão: $evaluationPath"
 Write-Host "Hash: $checkpointHash"
