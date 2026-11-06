@@ -70,6 +70,55 @@ def test_lobby_step_contract():
         engine.close()
 
 
+def test_inactive_seats_are_frozen_and_do_not_consume_pass_decisions():
+    """Inactive seats are neither validated nor advanced as PASS actions."""
+    engine = TFTLobby(seed=2026)
+
+    try:
+        engine.reset()
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        # An invalid action in an inactive seat must be ignored by native
+        # preflight; the active human seat still executes its own PASS.
+        actions[1] = [999, 0, 0, 0, 0, 0]
+        active_players = [True] + [False] * 7
+
+        for _ in range(15):
+            engine.step(actions, active_players=active_players)
+
+        state = engine.get_public_state()
+        assert state["round"] == 1
+        assert state["round_index"] == 0
+
+        # Reactivating the seven seats lets their normal decisions complete
+        # the preparation. The default path below also exercises all-active.
+        pass_actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+        for _ in range(15):
+            engine.step(pass_actions)
+
+        state = engine.get_public_state()
+        assert state["round"] == 2
+        assert state["round_index"] == 1
+    finally:
+        engine.close()
+
+
+def test_step_rejects_wrong_active_players_shape_without_advancing():
+    engine = TFTLobby(seed=2026)
+
+    try:
+        engine.reset()
+        actions = [[6, 0, 0, 0, 0, 0] for _ in range(8)]
+
+        with pytest.raises(ValueError, match="active_players"):
+            engine.step(actions, active_players=[True] * 7)
+
+        state = engine.get_public_state()
+        assert state["round"] == 1
+        assert state["round_index"] == 0
+    finally:
+        engine.close()
+
+
 def test_public_state_matches_python_lobby_contract():
     engine = TFTLobby(seed=2026)
 
