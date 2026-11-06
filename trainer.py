@@ -294,6 +294,7 @@ class Trainer:
                 self.config.clip_coef = min(self.config.clip_coef, 0.10)
             self.reference_anchor_path = protection_metadata.get("anchor_checkpoint_path") or checkpoint_path
             anchor_path = os.path.abspath(os.path.expanduser(self.reference_anchor_path))
+            self.reference_anchor_path = anchor_path
             if not os.path.isfile(anchor_path):
                 raise FileNotFoundError(f"Checkpoint âncora imutável não encontrado: {anchor_path}")
             digest = hashlib.sha256()
