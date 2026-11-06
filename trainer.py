@@ -322,6 +322,10 @@ class Trainer:
             self.reference_replay = ReferenceReplayBuffer.load(
                 self.config.reference_replay_path, self.device
             )
+            if self.reference_replay.observations.shape[1] != self.obs_dim:
+                raise RuntimeError(
+                    "Dimensão das observações do replay não corresponde à engine/Policy atual."
+                )
             if (
                 self.reference_replay.source_checkpoint_sha256
                 and self.reference_replay.source_checkpoint_sha256 != self.reference_anchor_sha256
