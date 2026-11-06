@@ -7,6 +7,7 @@ reviews the report before choosing the production checkpoint.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -16,6 +17,7 @@ import torch
 
 from policy import TFTPolicy
 from economy_finetuning.finetune import ACTION_DIMS
+from economy_finetuning.scenario_generator import SCENARIOS
 
 
 def _mean_ci(values):
@@ -75,7 +77,8 @@ def replay_agreement(checkpoint_path, replay_path, min_type_agreement):
                 "meets_minimum": type_agreement >= min_type_agreement,
             }
             passed = passed and report[label]["meets_minimum"]
-    return {"passed": passed, "minimum_type_agreement": min_type_agreement, "scenarios": report}
+    return {"passed": passed, "minimum_type_agreement": min_type_agreement, "scenarios": report,
+            "source_checkpoint_sha256": replay.get("source_checkpoint_sha256")}
 
 
 def main():
@@ -98,7 +101,10 @@ def main():
     rows = _load_rows(args.paired)
     coverage = json.loads(Path(args.coverage).read_text(encoding="utf-8"))
     coverage_rows = coverage.get("coverage", {})
-    coverage_pass = bool(coverage_rows) and all(item.get("meets_minimum") for item in coverage_rows.values())
+    expected_scenarios = {item.scenario_id for item in SCENARIOS if item.trainable}
+    coverage_pass = expected_scenarios.issubset(coverage_rows) and all(
+        coverage_rows.get(key, {}).get("meets_minimum", False) for key in expected_scenarios
+    )
     completed = all(row.get("both_completed") and row.get("same_initial_state") for row in rows)
     seed_count_pass = len(rows) >= args.min_seeds
     deltas = [item for row in rows for item in row.get("final_player_deltas", [])]
@@ -122,6 +128,14 @@ def main():
     reward = _mean_ci([row["mean_reward_delta"] for row in rows if row.get("mean_reward_delta") is not None])
     board_metrics = {key: _mean_ci(values) for key, values in board_by_seed.items()}
     replay = replay_agreement(args.checkpoint, args.replay, args.min_type_agreement)
+    reference_hashes = {
+        row.get("provenance", {}).get("original_checkpoint_sha256") for row in rows
+        if row.get("provenance", {}).get("original_checkpoint_sha256")
+    }
+    replay_matches_reference = (
+        len(reference_hashes) == 1
+        and replay.get("source_checkpoint_sha256") in reference_hashes
+    )
 
     checks = {
         "minimum_seed_count": seed_count_pass,
@@ -135,6 +149,7 @@ def main():
             for key in board_metrics
         ),
         "scenario_action_type_retention": replay["passed"],
+        "replay_collected_from_evaluation_reference": replay_matches_reference,
     }
     promotion_allowed = all(checks.values())
     result = {
