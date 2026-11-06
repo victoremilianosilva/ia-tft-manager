@@ -57,7 +57,6 @@ logs/
 
 checkpoints/
 models/
-runs/
 tensorboard/
 wandb/
 
@@ -116,7 +115,6 @@ player_*_log.json
 **/*.jsonl
 
 # Execuções locais do fine-tuning e TensorBoard
-economy_finetuning/runs/
 economy_finetuning/checkpoints/
 economy_finetuning/tensorboard/
 
