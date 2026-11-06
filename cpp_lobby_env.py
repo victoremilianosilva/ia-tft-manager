@@ -215,10 +215,6 @@ class CppTFTLobbyWrapper:
                 result.append(Strategy.ECON)
         return result
 
-    def get_anti_loop_metrics(self):
-        return dict(self._engine.get_anti_loop_metrics())
-
-
     def close(self):
         if not self._closed:
             self._engine.close()

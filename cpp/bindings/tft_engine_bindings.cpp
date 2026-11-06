@@ -412,89 +412,6 @@ py::dict public_state_to_dict(const tft::PublicState& state) {
 }
 
 
-py::dict anti_loop_to_dict(
-    const std::array<
-        tft::AntiLoopMetrics,
-        tft::kPlayersPerLobby
-    >& metrics
-) {
-    py::dict result;
-
-    std::uint64_t execution_attempts = 0;
-    std::uint64_t execution_blocks = 0;
-    std::uint64_t blocked_reverse = 0;
-    std::uint64_t blocked_oscillation = 0;
-    std::uint64_t blocked_explicit = 0;
-    std::uint64_t blocked_bench_board_loop = 0;
-    std::uint64_t blocked_cycle = 0;
-    std::uint64_t board_moves_executed = 0;
-    std::uint64_t bench_to_board_executed = 0;
-    std::uint64_t mask_board_move_candidates = 0;
-    std::uint64_t mask_board_move_valid = 0;
-    std::uint64_t mask_board_move_blocked_anti_loop = 0;
-    std::uint64_t mask_board_move_blocked_seen_state = 0;
-    std::uint64_t mask_bench_move_candidates = 0;
-    std::uint64_t mask_bench_move_valid = 0;
-    std::uint64_t mask_bench_move_blocked_anti_loop = 0;
-    std::uint64_t mask_bench_move_blocked_seen_state = 0;
-    std::uint64_t mask_blocked_reverse = 0;
-    std::uint64_t mask_blocked_oscillation = 0;
-    std::uint64_t mask_blocked_explicit = 0;
-    std::uint64_t mask_blocked_bench_board_loop = 0;
-    std::uint64_t mask_blocked_cycle = 0;
-
-    for (const auto& metric : metrics) {
-        execution_attempts += metric.execution_attempts;
-        execution_blocks += metric.execution_blocks;
-        blocked_reverse += metric.blocked_reverse;
-        blocked_oscillation += metric.blocked_oscillation;
-        blocked_explicit += metric.blocked_explicit;
-        blocked_bench_board_loop += metric.blocked_bench_board_loop;
-        blocked_cycle += metric.blocked_cycle;
-        board_moves_executed += metric.board_moves_executed;
-        bench_to_board_executed += metric.bench_to_board_executed;
-        mask_board_move_candidates += metric.mask_board_move_candidates;
-        mask_board_move_valid += metric.mask_board_move_valid;
-        mask_board_move_blocked_anti_loop += metric.mask_board_move_blocked_anti_loop;
-        mask_board_move_blocked_seen_state += metric.mask_board_move_blocked_seen_state;
-        mask_bench_move_candidates += metric.mask_bench_move_candidates;
-        mask_bench_move_valid += metric.mask_bench_move_valid;
-        mask_bench_move_blocked_anti_loop += metric.mask_bench_move_blocked_anti_loop;
-        mask_bench_move_blocked_seen_state += metric.mask_bench_move_blocked_seen_state;
-        mask_blocked_reverse += metric.mask_blocked_reverse;
-        mask_blocked_oscillation += metric.mask_blocked_oscillation;
-        mask_blocked_explicit += metric.mask_blocked_explicit;
-        mask_blocked_bench_board_loop += metric.mask_blocked_bench_board_loop;
-        mask_blocked_cycle += metric.mask_blocked_cycle;
-    }
-
-    result["execution_attempts"] = execution_attempts;
-    result["execution_blocks"] = execution_blocks;
-    result["blocked_reverse"] = blocked_reverse;
-    result["blocked_oscillation"] = blocked_oscillation;
-    result["blocked_explicit"] = blocked_explicit;
-    result["blocked_bench_board_loop"] = blocked_bench_board_loop;
-    result["blocked_cycle"] = blocked_cycle;
-    result["board_moves_executed"] = board_moves_executed;
-    result["bench_to_board_executed"] = bench_to_board_executed;
-    result["mask_board_move_candidates"] = mask_board_move_candidates;
-    result["mask_board_move_valid"] = mask_board_move_valid;
-    result["mask_board_move_blocked_anti_loop"] = mask_board_move_blocked_anti_loop;
-    result["mask_board_move_blocked_seen_state"] = mask_board_move_blocked_seen_state;
-    result["mask_bench_move_candidates"] = mask_bench_move_candidates;
-    result["mask_bench_move_valid"] = mask_bench_move_valid;
-    result["mask_bench_move_blocked_anti_loop"] = mask_bench_move_blocked_anti_loop;
-    result["mask_bench_move_blocked_seen_state"] = mask_bench_move_blocked_seen_state;
-    result["mask_blocked_reverse"] = mask_blocked_reverse;
-    result["mask_blocked_oscillation"] = mask_blocked_oscillation;
-    result["mask_blocked_explicit"] = mask_blocked_explicit;
-    result["mask_blocked_bench_board_loop"] = mask_blocked_bench_board_loop;
-    result["mask_blocked_cycle"] = mask_blocked_cycle;
-
-    return result;
-}
-
-
 }  // namespace
 
 PYBIND11_MODULE(tft_engine, module) {
@@ -712,12 +629,6 @@ PYBIND11_MODULE(tft_engine, module) {
             "get_strategies",
             [](const TFTEngine& self) {
                 return strategies_to_list(self.get_strategies());
-            }
-        )
-        .def(
-            "get_anti_loop_metrics",
-            [](const TFTEngine& self) {
-                return anti_loop_to_dict(self.get_anti_loop_metrics());
             }
         )
         // Contrato público de diagnóstico e fixtures de paridade.
