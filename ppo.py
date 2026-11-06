@@ -32,7 +32,7 @@ class PPOTrainer:
         max_grad_norm=0.5,
         target_kl=0.02,
         reference_replay=None,
-        reference_replay_coef=0.05,
+        reference_replay_coef=0.01,
         reference_replay_batch_size=64
     ):
         """
