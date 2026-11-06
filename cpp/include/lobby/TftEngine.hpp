@@ -469,7 +469,10 @@ public:
     StepResult step(
         const std::array<PlayerAction, kPlayersPerLobby>& actions,
         bool timer_enabled = false,
-        bool timer_expired = false
+        bool timer_expired = false,
+        const std::array<bool, kPlayersPerLobby>& active_players = {
+            true, true, true, true, true, true, true, true
+        }
     );
 
     std::array<PlayerActionMasks, kPlayersPerLobby>
