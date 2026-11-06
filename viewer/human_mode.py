@@ -634,17 +634,23 @@ class HumanDemonstrationWindow(QMainWindow):
         self.roll_button.setEnabled(not s.finished and alive and len(type_mask) > 1 and bool(type_mask[1]))
         self.sell_button.setEnabled(not s.finished and alive)
         shop_mask = masks.get("shop_mask", [])
-        shop_available = any(
+        shop_units = audit.get("shop", []) or []
+        shop_has_offers = any(_occupied(unit) for unit in shop_units)
+        shop_buy_legal = any(
             _occupied(unit) and slot < len(shop_mask) and bool(shop_mask[slot])
-            for slot, unit in enumerate(audit.get("shop", []) or [])
+            for slot, unit in enumerate(shop_units)
         )
         for slot, cell in enumerate(self.shop_cells):
-            cell.setEnabled(not s.finished and alive and shop_available and slot < len(shop_mask) and bool(shop_mask[slot]))
+            has_offer = slot < len(shop_units) and _occupied(shop_units[slot])
+            legal_offer = slot < len(shop_mask) and bool(shop_mask[slot])
+            cell.setEnabled(not s.finished and alive and has_offer and legal_offer)
         if hasattr(self, "shop_box"):
-            if shop_available:
+            if shop_buy_legal:
                 self.shop_box.setTitle("LOJA — clique em um campeão para comprar")
+            elif shop_has_offers:
+                self.shop_box.setTitle("LOJA — ofertas visíveis, mas nenhuma compra está liberada pela máscara")
             elif int(s.public_state.get("round", 1) or 1) == 1:
-                self.shop_box.setTitle("LOJA — indisponível na rodada 1-1; aguarde a próxima preparação")
+                self.shop_box.setTitle("LOJA — sem ofertas no snapshot inicial 1-1")
             else:
                 self.shop_box.setTitle("LOJA — sem ofertas disponíveis neste momento")
         if s.finished:
