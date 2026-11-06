@@ -315,3 +315,40 @@ python -m economy_finetuning.chain_manager status
 - O script não sobrescreve um arquivo `paired_match_results.jsonl` existente;
   para repetir a avaliação, use uma nova pasta de execução ou trate os artefatos
   anteriores antes de iniciar outra execução.
+
+
+## Auditoria complementar profunda (JSONL grande)
+
+O script `deep_audit.py` lê `decision_trace.jsonl` e
+`paired_match_results.jsonl` em streaming, sem carregar os arquivos inteiros
+na memória e sem copiá-los para o Git. Ele gera um segundo relatório compacto:
+`reports/DEEP_AUDIT_<cenario>.md`.
+
+O fluxo `evaluate_finetune.ps1` já executa essa auditoria automaticamente
+depois da auditoria original. Para analisar novamente uma execução que já foi
+avaliada, rode:
+
+```powershell
+python economy_finetuning/deep_audit.py `
+  --trace ".\economy_finetuning\runs\critical_hp_high_gold_20261106_073018\logs\decision_trace.jsonl" `
+  --paired ".\economy_finetuning\runs\critical_hp_high_gold_20261106_073018\logs\paired_match_results.jsonl" `
+  --metadata ".\economy_finetuning\runs\critical_hp_high_gold_20261106_073018\reports\experiment_config.json" `
+  --summary ".\economy_finetuning\runs\critical_hp_high_gold_20261106_073018\reports\training_summary.json" `
+  --output ".\economy_finetuning\runs\critical_hp_high_gold_20261106_073018\reports\DEEP_AUDIT_critical_hp_high_gold.md"
+```
+
+O relatório aprofunda:
+- diferenças BUY / BUY_XP / REROLL / PASS por estratégia;
+- comportamento com ouro abaixo/acima de 50, 60 e 80;
+- coortes de HP crítico e cruzamento HP baixo + ouro alto;
+- cobertura real de FAST8 e SLOWROLL;
+- consistência de colocação por seed, intervalo aproximado por seed,
+  Top4, reward, HP, ouro, nível e métricas de tabuleiro;
+- limitações do que os arquivos atuais permitem concluir.
+
+**Limitação conhecida:** o trace atual não registra a loja, unidades disponíveis,
+pares ou identidade da unidade vendida. Portanto, nenhum relatório feito apenas
+com esses dois JSONL pode provar se uma compra específica era melhor que XP,
+nem confirmar a perda de um par/core. Para isso será necessária uma evolução
+futura do schema de trace. A auditoria complementar não altera a aprovação:
+`evaluation_review.json` continua com `approved: false`.
