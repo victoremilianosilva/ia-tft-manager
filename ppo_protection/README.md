@@ -21,7 +21,7 @@ Execute na raiz do repositório, usando o caminho do checkpoint final da cadeia:
 python -m ppo_protection.collect_reference_replay --checkpoint "CAMINHO_DO_CHECKPOINT_FINAL.pt" --output "ppo_protection/reference_replay.pt" --steps 500000 --min-per-scenario 32 --seed 20270101
 ~~~
 
-O coletor só usa estados reais alcançados pela engine C++. Ele grava reference_replay.pt e reference_replay.coverage.json. Se algum cenário não atingir 32 exemplos, não use o replay: aumente --steps ou repita com outra seed e um arquivo de saída novo. A cobertura ausente não é considerada aprovada.
+O coletor só usa estados reais alcançados pela engine C++. Ele grava reference_replay.pt e reference_replay.coverage.json. Se algum cenário não atingir 32 exemplos, não use o replay: aumente --steps e execute novamente com um caminho de saída novo. Use apenas um arquivo cuja cobertura esteja completa; não há mesclagem automática de arquivos de replay.
 
 ### 2. Configurar o PPO geral
 
