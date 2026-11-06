@@ -227,10 +227,11 @@ class HumanDemonstrationWindow(QMainWindow):
                 self.checkpoint.text().strip(), self.seed.value(), True,
                 ROOT / "viewer" / "human_sessions", record=True,
             )
-            # Same six-second preparation window as the normal Viewer.
-            # Human actions are queued; the 700 ms cadence keeps agent decisions
-            # synchronized with the regular Viewer instead of advancing a round per click.
+            # Human demonstration mode gives the player 15 seconds per preparation.
+            # Actions remain queued and are processed at the same 700 ms cadence as
+            # the Viewer, so clicks do not advance the round individually.
             self.session.config.use_wall_clock_preparation = True
+            self.session.config.preparation_seconds = 15.0
             self._action_queue.clear()
             self._round_key = (
                 int(self.session.public_state.get("round", 1) or 1),
