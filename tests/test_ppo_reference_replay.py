@@ -21,7 +21,7 @@ def payload():
     labels = [[scenario] for scenario in scenarios for _ in range(2)]
     return {
         "schema_version": 1,
-        "source_checkpoint_sha256": "abc",
+        "source_checkpoint_sha256": "a" * 64,
         "minimum_per_scenario": 2,
         "scenario_counts": {scenario: 2 for scenario in scenarios},
         "observations": torch.zeros(count, 12),
