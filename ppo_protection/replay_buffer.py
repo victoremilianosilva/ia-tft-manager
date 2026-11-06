@@ -52,6 +52,8 @@ class ReferenceReplayBuffer:
                 raise ValueError(f"Shape de máscara inválido no replay: {key}")
         coverage = payload.get("scenario_counts", {})
         minimum = int(payload.get("minimum_per_scenario", 1))
+        if minimum <= 0:
+            raise ValueError("minimum_per_scenario deve ser > 0.")
         expected_scenarios = {item.scenario_id for item in SCENARIOS if item.trainable}
         missing_coverage = sorted(
             key for key in expected_scenarios
