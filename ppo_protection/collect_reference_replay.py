@@ -29,7 +29,7 @@ def main():
     parser.add_argument("--output", default="ppo_protection/reference_replay.pt")
     parser.add_argument("--steps", type=int, default=100000)
     parser.add_argument("--min-per-scenario", type=int, default=64)
-    parser.add_argument("--max-per-scenario", type=int, default=2048)
+    parser.add_argument("--max-per-scenario", type=int, default=512)
     parser.add_argument("--seed", type=int, default=20270101)
     parser.add_argument("--device", choices=("cpu", "cuda"), default="cpu")
     args = parser.parse_args()
@@ -86,6 +86,8 @@ def main():
     if not rows_obs:
         raise RuntimeError("Nenhum estado de cenário treinável foi encontrado; replay não foi salvo.")
     output = Path(args.output).expanduser().resolve()
+    if output.exists():
+        raise FileExistsError(f"Replay existente não será sobrescrito: {output}")
     output.parent.mkdir(parents=True, exist_ok=True)
     data = {
         "schema_version": 1,
