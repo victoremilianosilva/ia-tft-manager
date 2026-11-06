@@ -29,3 +29,20 @@ def payload():
         "scenario_ids": labels,
         "masks": {key: torch.ones((count, *shape), dtype=torch.bool) for key, shape in MASK_SHAPES.items()},
     }
+
+
+def test_replay_samples_valid_balanced_batches():
+    replay = ReferenceReplayBuffer(payload(), "cpu")
+    batch = replay.sample(8)
+    assert batch["obs"].shape == (8, 12)
+    assert batch["actions"].shape == (8, 6)
+    assert set(batch["masks"]) == set(MASK_SHAPES)
+    assert replay.source_checkpoint_sha256 == "a" * 64
+
+
+def test_replay_rejects_incomplete_scenario_coverage():
+    data = payload()
+    scenario = next(item.scenario_id for item in SCENARIOS if item.trainable)
+    data["scenario_counts"][scenario] = 1
+    with pytest.raises(ValueError, match="cobertura mínima"):
+        ReferenceReplayBuffer(data, "cpu")
