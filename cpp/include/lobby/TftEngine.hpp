@@ -464,8 +464,9 @@ public:
     );
 
     // timer_enabled=true: a lobby step cannot resolve preparation until
-    // timer_expired=true. When expired, all living players are forced to PASS.
-    // Defaults preserve turn-based PPO/training behavior.
+    // timer_expired=true. active_players controls which seats apply actions;
+    // inactive seats are fully skipped (not treated as PASS).
+    // Defaults preserve simultaneous turn-based PPO/training behavior.
     StepResult step(
         const std::array<PlayerAction, kPlayersPerLobby>& actions,
         bool timer_enabled = false,
