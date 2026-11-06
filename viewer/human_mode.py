@@ -505,10 +505,17 @@ class HumanDemonstrationWindow(QMainWindow):
             })
 
         try:
+            # While paused, only the human seat is active. Native C++ skips
+            # inactive seats entirely; their PASS placeholders are not actions.
+            active_players = [
+                bool(timer_expired or not self._paused or seat == self.human_player)
+                for seat in range(8)
+            ]
             obs, rewards, done, info = s.lobby.step(
                 actions,
                 timer_enabled=True,
                 timer_expired=bool(timer_expired),
+                active_players=active_players,
             )
         except Exception as exc:
             QMessageBox.critical(
