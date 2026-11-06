@@ -116,13 +116,13 @@ def main():
         seed_deltas = row.get("final_player_deltas", [])
         placements = [item["placement_delta"] for item in seed_deltas if item.get("placement_delta") is not None]
         top4_values = [item["top4_delta"] for item in seed_deltas if item.get("top4_delta") is not None]
-        if placements:
+        if seed_deltas and len(placements) == len(seed_deltas):
             placement_by_seed.append(float(np.mean(placements)))
-        if top4_values:
+        if seed_deltas and len(top4_values) == len(seed_deltas):
             top4_by_seed.append(float(np.mean(top4_values)))
         for key in board_by_seed:
             values = [item[key + "_delta"] for item in seed_deltas if item.get(key + "_delta") is not None]
-            if values:
+            if seed_deltas and len(values) == len(seed_deltas):
                 board_by_seed[key].append(float(np.mean(values)))
     placement = _mean_ci(placement_by_seed)
     top4 = _mean_ci(top4_by_seed)
@@ -142,11 +142,14 @@ def main():
         "minimum_seed_count": seed_count_pass,
         "all_pairs_completed_and_identical_initial_state": completed,
         "all_finetuning_scenarios_have_replay_coverage": coverage_pass,
-        "placement_not_regressed": bool(placement and placement["upper95"] is not None and placement["upper95"] <= args.max_placement_regression),
-        "top4_not_regressed": bool(top4 and top4["lower95"] is not None and top4["lower95"] >= -args.max_top4_drop),
-        "reward_not_regressed": bool(reward and reward["lower95"] is not None and reward["lower95"] >= -args.max_reward_drop),
+        "complete_placement_metrics": bool(placement and placement["n"] == len(rows)),
+        "placement_not_regressed": bool(placement and placement["n"] == len(rows) and placement["upper95"] is not None and placement["upper95"] <= args.max_placement_regression),
+        "complete_top4_metrics": bool(top4 and top4["n"] == len(rows)),
+        "top4_not_regressed": bool(top4 and top4["n"] == len(rows) and top4["lower95"] is not None and top4["lower95"] >= -args.max_top4_drop),
+        "complete_reward_metrics": bool(reward and reward["n"] == len(rows)),
+        "reward_not_regressed": bool(reward and reward["n"] == len(rows) and reward["lower95"] is not None and reward["lower95"] >= -args.max_reward_drop),
         "board_scores_not_regressed": all(
-            board_metrics[key] is not None and board_metrics[key]["lower95"] is not None and board_metrics[key]["lower95"] >= -args.max_board_score_drop
+            board_metrics[key] is not None and board_metrics[key]["n"] == len(rows) and board_metrics[key]["lower95"] is not None and board_metrics[key]["lower95"] >= -args.max_board_score_drop
             for key in board_metrics
         ),
         "scenario_action_type_retention": replay["passed"],
