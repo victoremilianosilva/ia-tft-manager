@@ -9,6 +9,14 @@ from economy_finetuning.scenario_generator import SCENARIOS
 
 
 class ReferenceReplayBuffer:
+    MASK_SHAPES = {
+        "type_mask": (9,), "shop_mask": (5,), "bench_source_mask": (9,),
+        "board_target_mask": (28,), "board_source_mask": (28,),
+        "board_move_target_masks": (28, 28), "bench_move_source_mask": (9,),
+        "bench_to_board_target_masks": (9, 28), "item_inventory_mask": (9,),
+        "item_component_first_mask": (10,), "item_component_pair_masks": (10, 10),
+        "item_target_mask": (37,),
+    }
     REQUIRED_MASKS = {
         "type_mask", "shop_mask", "bench_source_mask", "board_target_mask",
         "board_source_mask", "board_move_target_masks", "bench_move_source_mask",
@@ -32,11 +40,16 @@ class ReferenceReplayBuffer:
         self.masks = {key: torch.as_tensor(value, dtype=torch.bool, device=self.device) for key, value in raw_masks.items()}
         self.scenario_ids = payload["scenario_ids"]
         count = self.observations.shape[0]
-        if count == 0 or self.actions.shape != (count, 6) or len(self.scenario_ids) != count:
+        if self.observations.ndim != 2 or count == 0 or self.actions.shape != (count, 6) or len(self.scenario_ids) != count:
             raise ValueError("Replay vazio ou com shapes inconsistentes.")
-        for key, value in self.masks.items():
-            if value.shape[0] != count:
-                raise ValueError(f"Quantidade de máscaras divergente: {key}")
+        if not bool(torch.isfinite(self.observations).all()):
+            raise ValueError("Replay contém observações NaN/Inf.")
+        action_limits = (9, 5, 9, 28, 28, 28)
+        if any(bool(((self.actions[:, index] < 0) | (self.actions[:, index] >= limit)).any()) for index, limit in enumerate(action_limits)):
+            raise ValueError("Replay contém componentes de ação fora dos limites.")
+        for key, shape in self.MASK_SHAPES.items():
+            if key not in self.masks or tuple(self.masks[key].shape) != (count, *shape):
+                raise ValueError(f"Shape de máscara inválido no replay: {key}")
         coverage = payload.get("scenario_counts", {})
         minimum = int(payload.get("minimum_per_scenario", 1))
         expected_scenarios = {item.scenario_id for item in SCENARIOS if item.trainable}
@@ -57,6 +70,9 @@ class ReferenceReplayBuffer:
         self.groups = {key: values for key, values in self.groups.items() if values}
         if not self.groups:
             raise ValueError("Replay não contém cenários treináveis rotulados.")
+        missing_groups = sorted(key for key in expected_scenarios if len(self.groups.get(key, [])) < minimum)
+        if missing_groups:
+            raise ValueError("Replay sem amostras rotuladas suficientes: " + ", ".join(missing_groups))
         self.labels = sorted(self.groups)
 
     @classmethod
