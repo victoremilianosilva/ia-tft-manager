@@ -60,7 +60,7 @@ class TrainingConfig:
             "learning_rate", "min_learning_rate", "adam_eps", "adam_beta1", "adam_beta2",
             "weight_decay", "clip_coef",
             "entropy_coef_initial", "entropy_coef_final", "entropy_decay_rate",
-            "vf_coef", "max_grad_norm", "gamma", "gae_lambda",
+            "vf_coef", "max_grad_norm", "gamma", "gae_lambda", "reference_replay_coef", "reference_max_relative_drift",
         )
         for name in finite_fields:
             if not math.isfinite(float(getattr(self, name))):
@@ -69,7 +69,7 @@ class TrainingConfig:
             raise ValueError("target_kl deve ser finito ou None.")
         integer_fields = (
             "lr_schedule_updates", "entropy_schedule_updates", "batch_size",
-            "ppo_epochs", "rollout_steps", "num_lobbies", "total_updates",
+            "ppo_epochs", "rollout_steps", "num_lobbies", "total_updates", "reference_replay_batch_size",
         )
         for name in integer_fields:
             value = getattr(self, name)
@@ -86,6 +86,8 @@ class TrainingConfig:
             raise ValueError("entropy_decay_rate deve ser > 0.")
         if not 0 < self.adam_beta1 < 1 or not 0 < self.adam_beta2 < 1:
             raise ValueError("adam_beta1 e adam_beta2 devem estar entre 0 e 1.")
+        if self.reference_replay_coef < 0 or not 0 < self.reference_max_relative_drift <= 1:
+            raise ValueError("Parâmetros de proteção de referência inválidos.")
         if self.weight_decay < 0:
             raise ValueError("weight_decay deve ser >= 0.")
         if not 0 < self.clip_coef < 1:
