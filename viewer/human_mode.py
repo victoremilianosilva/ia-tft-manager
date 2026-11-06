@@ -273,17 +273,6 @@ class HumanDemonstrationWindow(QMainWindow):
         except (TypeError, IndexError, KeyError):
             return False
 
-    @staticmethod
-    def _flat_move_mask_ok(mask, key, source, target):
-        # Native movement masks are exported as flat arrays:
-        # [source * 28 + target], not nested [source][target] matrices.
-        values = mask.get(key)
-        try:
-            flat_index = int(source) * 28 + int(target)
-            return 0 <= flat_index < len(values) and bool(values[flat_index])
-        except (TypeError, ValueError, IndexError):
-            return False
-
     def _legal(self, action):
         mask = self.session.masks[self.human_player]
         kind = int(action[0])
@@ -293,11 +282,11 @@ class HumanDemonstrationWindow(QMainWindow):
         if kind == 0:
             return self._mask_ok(mask, "shop_mask", action[1])
         if kind == 3:
-            return self._flat_move_mask_ok(
+            return self._mask_ok(
                 mask, "bench_to_board_target_masks", action[2], action[3]
             )
         if kind == 4:
-            return self._flat_move_mask_ok(
+            return self._mask_ok(
                 mask, "board_move_target_masks", action[4], action[5]
             )
         if kind == 5:
@@ -683,6 +672,14 @@ class HumanDemonstrationWindow(QMainWindow):
         if carousel:
             self.selection_label.setText(
                 "A engine expôs estado de carrossel, mas ainda não há ação de escolha de carrossel no contrato de ações nativo."
+            )
+        elif self.selected_source is not None:
+            area, index = self.selected_source
+            units = audit.get("bench" if area == "bench" else "board", [])
+            unit = units[index] if index < len(units) else None
+            self.selection_label.setText(
+                f"Selecionado: {_name(unit)} · {area} slot {index}. "
+                "A seleção permanece ativa até você escolher o destino."
             )
         else:
             self.selection_label.setText(
