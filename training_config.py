@@ -45,6 +45,7 @@ class TrainingConfig:
     num_lobbies: int = 4
     total_updates: int = 280
     checkpoint_path: str = "tft_checkpoint.pt"
+    checkpoint_output_path: str = ""
 
     reference_replay_path: str = ""
     reference_replay_coef: float = 0.05
@@ -154,6 +155,9 @@ class TrainingConfig:
         raw_replay = os.getenv("TFT_REFERENCE_REPLAY_PATH")
         if raw_replay is not None:
             config.reference_replay_path = raw_replay
+        raw_output = os.getenv("TFT_CHECKPOINT_OUTPUT_PATH")
+        if raw_output is not None:
+            config.checkpoint_output_path = raw_output
         raw_checkpoint = os.getenv("TFT_CHECKPOINT_PATH")
         if raw_checkpoint:
             config.checkpoint_path = raw_checkpoint
