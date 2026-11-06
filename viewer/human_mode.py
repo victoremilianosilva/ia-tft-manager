@@ -7,10 +7,11 @@ Each submitted human action is batched with one inference action for each other 
 from __future__ import annotations
 
 import json
+import time
 from pathlib import Path
 
 import numpy as np
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QTimer
 from PySide6.QtWidgets import (
     QApplication, QComboBox, QFileDialog, QGridLayout, QGroupBox, QHBoxLayout,
     QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton, QScrollArea,
@@ -63,9 +64,18 @@ class HumanDemonstrationWindow(QMainWindow):
         self.selected_item = None
         self.first_component = None
         self._second_component = None
+        self._action_queue = []
+        self._round_key = None
+        self._round_started_at = None
+        self._next_step_at = None
+        self._deadline_action_flushed = False
+        self._step_interval_seconds = 0.7
         self.icon_loader = ChampionIconLoader(ROOT / "data" / "units_gerado.json", self)
         self.icon_loader.loaded.connect(self._render)
         self._build_ui()
+        self.preparation_timer = QTimer(self)
+        self.preparation_timer.setInterval(100)
+        self.preparation_timer.timeout.connect(self._on_preparation_tick)
 
     def _build_ui(self):
         page = QWidget()
@@ -95,6 +105,9 @@ class HumanDemonstrationWindow(QMainWindow):
         self.status = QLabel("Carregue o checkpoint. Você controla um jogador; os outros sete são controlados pela policy.")
         self.status.setWordWrap(True)
         outer.addWidget(self.status)
+        self.phase_clock = QLabel("Preparação: aguardando partida")
+        self.phase_clock.setStyleSheet("font-size:12pt;font-weight:700;color:#fbbf24;")
+        outer.addWidget(self.phase_clock)
 
         self.cards = []
         cards_box = QGroupBox("Lobby — visão geral dos 8 jogadores")
@@ -116,15 +129,14 @@ class HumanDemonstrationWindow(QMainWindow):
         self.xp_button.clicked.connect(lambda: self._perform([2, 0, 0, 0, 0, 0], "BUY_XP"))
         self.roll_button = QPushButton("Atualizar loja")
         self.roll_button.clicked.connect(lambda: self._perform([1, 0, 0, 0, 0, 0], "REROLL"))
-        self.pass_button = QPushButton("Concluir decisão")
-        self.pass_button.clicked.connect(lambda: self._perform([6, 0, 0, 0, 0, 0], "PASS"))
         self.sell_button = QPushButton("Vender unidade selecionada")
         self.sell_button.clicked.connect(self._sell_selected)
-        for widget in (self.xp_button, self.roll_button, self.pass_button, self.sell_button):
+        for widget in (self.xp_button, self.roll_button, self.sell_button):
             controls.addWidget(widget)
         outer.addLayout(controls)
 
         shop_box = QGroupBox("LOJA — clique em um campeão para comprar")
+        self.shop_box = shop_box
         self.shop_layout = QHBoxLayout(shop_box)
         self.shop_cells = []
         for slot in range(5):
@@ -209,12 +221,25 @@ class HumanDemonstrationWindow(QMainWindow):
             )
 
     def _load_match(self):
+        self.preparation_timer.stop()
         try:
             snapshot = self.session.load_checkpoint(
                 self.checkpoint.text().strip(), self.seed.value(), True,
                 ROOT / "viewer" / "human_sessions", record=True,
             )
-            self.session.config.use_wall_clock_preparation = False
+            # Same six-second preparation window as the normal Viewer.
+            # Human actions are queued; the 700 ms cadence keeps agent decisions
+            # synchronized with the regular Viewer instead of advancing a round per click.
+            self.session.config.use_wall_clock_preparation = True
+            self._action_queue.clear()
+            self._round_key = (
+                int(self.session.public_state.get("round", 1) or 1),
+                int(self.session.public_state.get("stage", 1) or 1),
+            )
+            self._round_started_at = time.monotonic()
+            self._next_step_at = self._round_started_at + self._step_interval_seconds
+            self._deadline_action_flushed = False
+            self.preparation_timer.start()
             self.seat.setEnabled(False)
             self.load_button.setText("Reiniciar partida")
             self.events.appendPlainText(
@@ -272,31 +297,130 @@ class HumanDemonstrationWindow(QMainWindow):
         return True
 
     def _perform(self, human_action, action_label=None):
+        """Queue a click; the shared preparation clock controls when it reaches the engine."""
         s = self.session
         if not s.started or s.finished or s.lobby is None:
             return
         if not _by_id(s.public_state.get("players", []), self.human_player).get("alive", True):
             QMessageBox.information(self, "Jogador eliminado", "Seu jogador já foi eliminado.")
             return
-        if not self._legal(human_action):
-            QMessageBox.information(self, "Ação indisponível", "A engine não liberou essa ação ou combinação de origem/destino neste estado.")
+        if self._round_started_at is not None:
+            elapsed = time.monotonic() - self._round_started_at
+            if elapsed >= float(s.config.preparation_seconds) and self._deadline_action_flushed:
+                self.selection_label.setText("O tempo de preparação terminou; a ação ficará para a próxima rodada.")
+                return
+        self._action_queue.append((list(map(int, human_action)), str(action_label or ACTION_NAMES.get(int(human_action[0]), "UNKNOWN")), self.note.text().strip()))
+        self.selection_label.setText(
+            f"Ação enfileirada ({len(self._action_queue)}). Será executada durante a preparação, sem encerrar a rodada."
+        )
+
+    def _reset_round_clock(self):
+        s = self.session
+        self._round_key = (
+            int(s.public_state.get("round", 1) or 1),
+            int(s.public_state.get("stage", 1) or 1),
+        )
+        self._round_started_at = time.monotonic()
+        self._next_step_at = self._round_started_at + self._step_interval_seconds
+        self._deadline_action_flushed = False
+        self._action_queue.clear()
+
+    def _on_preparation_tick(self):
+        s = self.session
+        if not s.started or s.finished or s.lobby is None or self._round_started_at is None:
+            self.preparation_timer.stop()
+            return
+
+        current_key = (
+            int(s.public_state.get("round", 1) or 1),
+            int(s.public_state.get("stage", 1) or 1),
+        )
+        if current_key != self._round_key:
+            self._reset_round_clock()
+
+        now = time.monotonic()
+        elapsed = now - self._round_started_at
+        duration = float(s.config.preparation_seconds)
+        remaining = max(0.0, duration - elapsed)
+        self.phase_clock.setText(
+            f"RODADA {current_key[0]} · Preparação: {remaining:0.1f}s"
+        )
+
+        timer_expired = elapsed >= duration
+        queued = None
+        if timer_expired:
+            # Honor one click made just before the deadline; then resolve the round
+            # on the following timer pulse. Do not let a backlog extend preparation.
+            if self._action_queue and not self._deadline_action_flushed:
+                queued = self._action_queue.pop(0)
+                self._deadline_action_flushed = True
+                timer_expired = False
+            else:
+                self._action_queue.clear()
+        elif now < (self._next_step_at or now):
+            return
+
+        if not timer_expired and queued is None and self._action_queue:
+            queued = self._action_queue.pop(0)
+        if not timer_expired and queued is None and now < (self._next_step_at or now):
+            return
+
+        self._next_step_at = now + self._step_interval_seconds
+        self._execute_step(queued, timer_expired=timer_expired)
+
+    def _execute_step(self, queued_action=None, *, timer_expired=False):
+        s = self.session
+        if not s.started or s.finished or s.lobby is None:
             return
 
         before = s._snapshot_for_event()
         masks_before = s.masks
+        human_mask = masks_before[self.human_player]
+        human_action = queued_action[0] if queued_action else [6, 0, 0, 0, 0, 0]
+        human_label = queued_action[1] if queued_action else "PASS"
+        human_note = queued_action[2] if queued_action else ""
+        human_is_action = queued_action is not None
+
+        if human_is_action and not self._legal(human_action):
+            QMessageBox.information(
+                self, "Ação indisponível",
+                "A ação deixou de ser válida antes de chegar à engine; ela foi descartada.",
+            )
+            human_action = [6, 0, 0, 0, 0, 0]
+            human_label = "PASS"
+            human_note = ""
+            human_is_action = False
+
         actions, diagnostics = [], []
         for seat in range(8):
             player = _by_id(s.public_state.get("players", []), seat)
             if not player.get("alive", True):
                 action = [6, 0, 0, 0, 0, 0]
                 diagnostic = {"action_name": "PASS", "action": action, "status": "eliminated_seat"}
+            elif timer_expired:
+                # Mirror the normal Viewer timeout: idle seats PASS. A mandatory
+                # pending anvil is the only exception and is resolved by frozen policy.
+                seat_mask = masks_before[seat]
+                type_mask = seat_mask.get("type_mask")
+                pending_choice = (
+                    type_mask is not None
+                    and len(type_mask) > 7
+                    and bool(type_mask[7])
+                    and sum(bool(value) for value in type_mask) == 1
+                )
+                if pending_choice:
+                    action, diagnostic = s._action_for_player(seat)
+                    diagnostic = {**diagnostic, "source": "automatic_pending_choice"}
+                else:
+                    action = [6, 0, 0, 0, 0, 0]
+                    diagnostic = {"action_name": "PASS", "action": action, "status": "preparation_timeout"}
             elif seat == self.human_player:
-                action = list(map(int, human_action))
+                action = human_action
                 diagnostic = {
-                    "action_name": action_label or ACTION_NAMES.get(action[0], "UNKNOWN"),
+                    "action_name": human_label,
                     "action": action,
-                    "source": "human",
-                    "human_note": self.note.text().strip(),
+                    "source": "human" if human_is_action else "human_idle",
+                    "human_note": human_note,
                 }
             else:
                 action, diagnostic = s._action_for_player(seat)
@@ -304,17 +428,23 @@ class HumanDemonstrationWindow(QMainWindow):
             actions.append(action)
             diagnostics.append(diagnostic)
 
-        s._emit("human_decision", {
-            "player_id": self.human_player,
-            "action": human_action,
-            "action_name": action_label or ACTION_NAMES.get(int(human_action[0]), "UNKNOWN"),
-            "human_note": self.note.text().strip(),
-            "state_before": before,
-            "action_masks_before": masks_before[self.human_player],
-            "available_actions_mask": masks_before[self.human_player].get("type_mask"),
-        })
+        if human_is_action:
+            s._emit("human_decision", {
+                "player_id": self.human_player,
+                "action": human_action,
+                "action_name": human_label,
+                "human_note": human_note,
+                "state_before": before,
+                "action_masks_before": human_mask,
+                "available_actions_mask": human_mask.get("type_mask"),
+            })
+
         try:
-            obs, rewards, done, info = s.lobby.step(actions)
+            obs, rewards, done, info = s.lobby.step(
+                actions,
+                timer_enabled=True,
+                timer_expired=bool(timer_expired),
+            )
         except Exception as exc:
             QMessageBox.critical(self, "Erro da engine", str(exc))
             return
@@ -341,6 +471,8 @@ class HumanDemonstrationWindow(QMainWindow):
             "after": after,
             "players": after.get("players", []),
             "human_player_id": self.human_player,
+            "human_action_was_submitted": human_is_action,
+            "preparation_timer_expired": bool(timer_expired),
         })
         if s._player_log_writer is not None:
             s._player_log_writer.record_step(
@@ -356,15 +488,23 @@ class HumanDemonstrationWindow(QMainWindow):
                 "final_snapshot": after,
             })
             s._flush_close_log()
+
         self.events.appendPlainText(
-            f"Passo {s.step_count} · {action_label or ACTION_NAMES.get(int(human_action[0]))} · "
+            f"Passo {s.step_count} · {'ação humana: ' + human_label if human_is_action else 'agentes / espera'} · "
             f"eventos: {', '.join(map(str, info.get('events', [])))}"
         )
-        self.note.clear()
+        if human_is_action:
+            self.note.clear()
         self.selected_source = None
         self.selected_item = None
         self.first_component = None
         self._second_component = None
+
+        if s.finished:
+            self.preparation_timer.stop()
+            self.phase_clock.setText("PARTIDA FINALIZADA")
+        elif any(str(event).strip() == "ROUND_RESOLVED" for event in info.get("events", [])):
+            self._reset_round_clock()
         self._render(after)
 
     def _cell_clicked(self, index, area):
@@ -488,8 +628,31 @@ class HumanDemonstrationWindow(QMainWindow):
                 cell.set_unit(unit if _occupied(unit) else None, self.icon_loader)
         self._render_items(audit)
         alive = bool(player.get("alive", True))
-        for widget in (self.xp_button, self.roll_button, self.pass_button, self.sell_button):
-            widget.setEnabled(not s.finished and alive)
+        masks = s.masks[self.human_player] if s.masks else {}
+        type_mask = masks.get("type_mask", [])
+        self.xp_button.setEnabled(not s.finished and alive and len(type_mask) > 2 and bool(type_mask[2]))
+        self.roll_button.setEnabled(not s.finished and alive and len(type_mask) > 1 and bool(type_mask[1]))
+        self.sell_button.setEnabled(not s.finished and alive)
+        shop_mask = masks.get("shop_mask", [])
+        shop_units = audit.get("shop", []) or []
+        shop_has_offers = any(_occupied(unit) for unit in shop_units)
+        shop_buy_legal = any(
+            _occupied(unit) and slot < len(shop_mask) and bool(shop_mask[slot])
+            for slot, unit in enumerate(shop_units)
+        )
+        for slot, cell in enumerate(self.shop_cells):
+            has_offer = slot < len(shop_units) and _occupied(shop_units[slot])
+            legal_offer = slot < len(shop_mask) and bool(shop_mask[slot])
+            cell.setEnabled(not s.finished and alive and has_offer and legal_offer)
+        if hasattr(self, "shop_box"):
+            if shop_buy_legal:
+                self.shop_box.setTitle("LOJA — clique em um campeão para comprar")
+            elif shop_has_offers:
+                self.shop_box.setTitle("LOJA — ofertas visíveis, mas nenhuma compra está liberada pela máscara")
+            elif int(s.public_state.get("round", 1) or 1) == 1:
+                self.shop_box.setTitle("LOJA — sem ofertas no snapshot inicial 1-1")
+            else:
+                self.shop_box.setTitle("LOJA — sem ofertas disponíveis neste momento")
         if s.finished:
             self.status.setText(f"Partida finalizada · ranking: {s.public_state.get('ranking', [])}")
         else:
@@ -515,6 +678,7 @@ class HumanDemonstrationWindow(QMainWindow):
         )
 
     def closeEvent(self, event):
+        self.preparation_timer.stop()
         try:
             self.session.close()
         finally:
