@@ -221,6 +221,7 @@ class HumanDemonstrationWindow(QMainWindow):
             )
 
     def _load_match(self):
+        self.preparation_timer.stop()
         try:
             snapshot = self.session.load_checkpoint(
                 self.checkpoint.text().strip(), self.seed.value(), True,
@@ -671,6 +672,7 @@ class HumanDemonstrationWindow(QMainWindow):
         )
 
     def closeEvent(self, event):
+        self.preparation_timer.stop()
         try:
             self.session.close()
         finally:
