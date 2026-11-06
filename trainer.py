@@ -269,12 +269,14 @@ class Trainer:
         if protection_metadata:
             if not self.config.reference_replay_path:
                 self.config.reference_replay_path = protection_metadata.get("replay_path", "")
-            self.config.reference_replay_coef = float(
-                protection_metadata.get("replay_coef", self.config.reference_replay_coef)
-            )
-            self.config.reference_max_relative_drift = float(
-                protection_metadata.get("max_relative_drift", self.config.reference_max_relative_drift)
-            )
+            if not os.environ.get("TFT_REFERENCE_REPLAY_COEF"):
+                self.config.reference_replay_coef = float(
+                    protection_metadata.get("replay_coef", self.config.reference_replay_coef)
+                )
+            if not os.environ.get("TFT_REFERENCE_MAX_DRIFT"):
+                self.config.reference_max_relative_drift = float(
+                    protection_metadata.get("max_relative_drift", self.config.reference_max_relative_drift)
+                )
         self.reference_guard_enabled = bool(
             checkpoint and (checkpoint.get("fine_tuning") or protection_metadata)
         )
