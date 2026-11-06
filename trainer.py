@@ -267,6 +267,15 @@ class Trainer:
 
         # Fine-tuned checkpoints activate fail-closed retention protection.
         protection_metadata = (checkpoint or {}).get("reference_protection") or {}
+        if protection_metadata:
+            if not self.config.reference_replay_path:
+                self.config.reference_replay_path = protection_metadata.get("replay_path", "")
+            self.config.reference_replay_coef = float(
+                protection_metadata.get("replay_coef", self.config.reference_replay_coef)
+            )
+            self.config.reference_max_relative_drift = float(
+                protection_metadata.get("max_relative_drift", self.config.reference_max_relative_drift)
+            )
         self.reference_guard_enabled = bool(
             checkpoint and (checkpoint.get("fine_tuning") or protection_metadata)
         )
@@ -1671,6 +1680,7 @@ class Trainer:
             self.writer.add_scalar("training/processed_minibatches", ppo_metrics.get("batches_processed", 0), update)
             self.writer.add_scalar("training/early_stop", float(ppo_metrics.get("early_stop", False)), update)
             self.writer.add_scalar("training/early_stop_kl", ppo_metrics.get("early_stop_kl", 0.0), update)
+            self.writer.add_scalar("reference_replay/loss", ppo_metrics.get("reference_replay_loss", 0.0), update)
             self.writer.add_scalar("training/approx_kl_max", ppo_metrics.get("approx_kl_max", 0.0), update)
 
             # ========================================================
