@@ -102,14 +102,25 @@ def main():
     completed = all(row.get("both_completed") and row.get("same_initial_state") for row in rows)
     seed_count_pass = len(rows) >= args.min_seeds
     deltas = [item for row in rows for item in row.get("final_player_deltas", [])]
-    placement = _mean_ci([item["placement_delta"] for item in deltas if item.get("placement_delta") is not None])
-    top4 = _mean_ci([item["top4_delta"] for item in deltas if item.get("top4_delta") is not None])
+    # Seeds, not individual player seats, are the independent statistical units.
+    placement_by_seed, top4_by_seed = [], []
+    board_by_seed = {"board_quality_score": [], "board_positional_score": [], "board_structural_score": []}
+    for row in rows:
+        seed_deltas = row.get("final_player_deltas", [])
+        placements = [item["placement_delta"] for item in seed_deltas if item.get("placement_delta") is not None]
+        top4_values = [item["top4_delta"] for item in seed_deltas if item.get("top4_delta") is not None]
+        if placements:
+            placement_by_seed.append(float(np.mean(placements)))
+        if top4_values:
+            top4_by_seed.append(float(np.mean(top4_values)))
+        for key in board_by_seed:
+            values = [item[key + "_delta"] for item in seed_deltas if item.get(key + "_delta") is not None]
+            if values:
+                board_by_seed[key].append(float(np.mean(values)))
+    placement = _mean_ci(placement_by_seed)
+    top4 = _mean_ci(top4_by_seed)
     reward = _mean_ci([row["mean_reward_delta"] for row in rows if row.get("mean_reward_delta") is not None])
-    board_metrics = {}
-    for key in ("board_quality_score", "board_positional_score", "board_structural_score"):
-        board_metrics[key] = _mean_ci([
-            item[f"{key}_delta"] for item in deltas if item.get(f"{key}_delta") is not None
-        ])
+    board_metrics = {key: _mean_ci(values) for key, values in board_by_seed.items()}
     replay = replay_agreement(args.checkpoint, args.replay, args.min_type_agreement)
 
     checks = {
