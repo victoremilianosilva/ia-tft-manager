@@ -568,6 +568,7 @@ class HumanDemonstrationWindow(QMainWindow):
             "players": after.get("players", []),
             "human_player_id": self.human_player,
             "human_action_was_submitted": human_is_action,
+            "active_players": active_players,
             "preparation_timer_expired": bool(timer_expired),
         })
         if s._player_log_writer is not None:
