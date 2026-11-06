@@ -46,6 +46,11 @@ class TrainingConfig:
     total_updates: int = 280
     checkpoint_path: str = "tft_checkpoint.pt"
 
+    reference_replay_path: str = ""
+    reference_replay_coef: float = 0.05
+    reference_replay_batch_size: int = 64
+    reference_max_relative_drift: float = 0.02
+
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
@@ -131,6 +136,9 @@ class TrainingConfig:
             "total_updates": ("TFT_TOTAL_UPDATES", int),
             "gamma": ("TFT_PPO_GAMMA", float),
             "gae_lambda": ("TFT_PPO_GAE_LAMBDA", float),
+            "reference_replay_coef": ("TFT_REFERENCE_REPLAY_COEF", float),
+            "reference_replay_batch_size": ("TFT_REFERENCE_REPLAY_BATCH_SIZE", int),
+            "reference_max_relative_drift": ("TFT_REFERENCE_MAX_DRIFT", float),
         }
         for name, (env_name, converter) in env_fields.items():
             raw = os.getenv(env_name)
@@ -143,6 +151,9 @@ class TrainingConfig:
         raw_kl = os.getenv("TFT_PPO_TARGET_KL")
         if raw_kl is not None and raw_kl.strip():
             config.target_kl = None if raw_kl.strip().lower() in {"none", "off", "disabled"} else float(raw_kl)
+        raw_replay = os.getenv("TFT_REFERENCE_REPLAY_PATH")
+        if raw_replay is not None:
+            config.reference_replay_path = raw_replay
         raw_checkpoint = os.getenv("TFT_CHECKPOINT_PATH")
         if raw_checkpoint:
             config.checkpoint_path = raw_checkpoint
