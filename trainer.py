@@ -284,6 +284,15 @@ class Trainer:
         self.reference_anchor_path = None
         self.reference_anchor_sha256 = None
         if self.reference_guard_enabled:
+            # First return to general PPO with a conservative learning-rate/KL envelope.
+            # Explicit environment settings remain authoritative for deliberate experiments.
+            if not os.environ.get("TFT_PPO_LR"):
+                self.config.learning_rate = min(self.config.learning_rate, 5e-5)
+                self.config.min_learning_rate = min(self.config.min_learning_rate, 1e-5)
+            if not os.environ.get("TFT_PPO_TARGET_KL"):
+                self.config.target_kl = min(float(self.config.target_kl or 0.01), 0.01)
+            if not os.environ.get("TFT_PPO_CLIP_COEF"):
+                self.config.clip_coef = min(self.config.clip_coef, 0.10)
             self.reference_anchor_path = protection_metadata.get("anchor_checkpoint_path") or checkpoint_path
             anchor_path = os.path.abspath(os.path.expanduser(self.reference_anchor_path))
             if not os.path.isfile(anchor_path):
