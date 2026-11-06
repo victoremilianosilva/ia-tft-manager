@@ -44,9 +44,14 @@ Controls:
 - Select two components in sequence, then click a target unit to craft and equip.
 - The native action masks are checked before every human action. The UI does not send
   actions that are illegal according to the current masks.
-- If the native snapshot has no legal shop offers (including the opening 1-1 state),
-  shop cells are disabled and the UI explains that the shop is unavailable instead
-  of presenting clickable empty slots.
+- Shop portraits are rendered whenever offers exist in the native snapshot. A slot is
+  clickable only when its unit is occupied and the native shop mask allows BUY.
+- If offers exist but none can currently be bought (for example, insufficient gold),
+  the UI keeps them visible but explains that no purchase is legal.
+- If the native snapshot itself contains no offers in 1-1, the UI reports that state
+  and waits for the next preparation. The current C++ initializer does call
+  `ShopEngine::roll` when players are created, so an actually empty 1-1 snapshot
+  should be diagnosed from the runtime snapshot rather than assumed by the UI.
 
 Every human action is submitted in one simultaneous lobby batch with one inference action
 from each of the other seven living agents. The seven policies remain in inference/eval
