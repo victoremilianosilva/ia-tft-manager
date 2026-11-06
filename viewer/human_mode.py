@@ -511,10 +511,12 @@ class HumanDemonstrationWindow(QMainWindow):
         )
         if human_is_action:
             self.note.clear()
-        self.selected_source = None
-        self.selected_item = None
-        self.first_component = None
-        self._second_component = None
+            # Idle PASS ticks run every ~700 ms while the player is deciding.
+            # They must not cancel the first click of a two-click move.
+            self.selected_source = None
+            self.selected_item = None
+            self.first_component = None
+            self._second_component = None
 
         if s.finished:
             self.preparation_timer.stop()
