@@ -203,7 +203,7 @@ class HumanDemonstrationWindow(QMainWindow):
         items_layout.addLayout(self.component_buttons)
         side.addWidget(items_box)
 
-        synergies_box = QGroupBox("SINERGIAS ATIVAS — seu tabuleiro")
+        synergies_box = QGroupBox("SINERGIAS DO TABULEIRO — ativas e em progresso")
         synergies_layout = QVBoxLayout(synergies_box)
         self.synergies_label = QLabel("Aguardando unidades no tabuleiro.")
         self.synergies_label.setWordWrap(True)
@@ -380,27 +380,39 @@ class HumanDemonstrationWindow(QMainWindow):
             ).casefold()
             counts.update(set(self._unit_traits.get(champion, [])))
 
-        active_rows = []
+        rows = []
         for key, count in counts.items():
             record = self._trait_milestones.get(key)
             if record is None:
-                continue
-            name, thresholds = record
+                # Keep a trait visible if a future catalog omits milestone metadata.
+                name, thresholds = key.title(), [2]
+            else:
+                name, thresholds = record
             reached = [value for value in thresholds if count >= value]
-            if reached:
-                active_rows.append((name, count, max(reached), min(
-                    (value for value in thresholds if value > count), default=None
-                )))
-        active_rows.sort(key=lambda row: (row[0].casefold()))
-        if not active_rows:
+            active_threshold = max(reached) if reached else 0
+            next_threshold = min(
+                (value for value in thresholds if value > count), default=None
+            )
+            rows.append((name, count, active_threshold, next_threshold))
+
+        rows.sort(key=lambda row: row[0].casefold())
+        if not rows:
             self.synergies_label.setText(
-                "Nenhuma sinergia ativada no tabuleiro. As unidades do banco não contam."
+                "Nenhuma característica no tabuleiro. As unidades do banco não contam."
             )
             return
+
         lines = []
-        for name, count, active_threshold, next_threshold in active_rows:
-            progress = f" · próxima: {next_threshold}" if next_threshold is not None else " · nível máximo"
-            lines.append(f"✓ {name}  {count}/{active_threshold}{progress}")
+        for name, count, active_threshold, next_threshold in rows:
+            if active_threshold:
+                progress = (
+                    f" · próximo marco {next_threshold}"
+                    if next_threshold is not None else " · marco máximo"
+                )
+                lines.append(f"✓ {name}  {count} (marco {active_threshold}){progress}")
+            else:
+                target = next_threshold if next_threshold is not None else 2
+                lines.append(f"○ {name}  {count}/{target} para ativar")
         self.synergies_label.setText("\n".join(lines))
 
     def _human_audit(self):
@@ -453,7 +465,7 @@ class HumanDemonstrationWindow(QMainWindow):
         return True
 
     def _perform(self, human_action, action_label=None):
-        """Queue a click; the shared preparation clock controls when it reaches the engine."""
+        """Submit a click immediately; queue only while the native worker is busy."""
         s = self.session
         if not s.started or s.finished or s.lobby is None:
             return
@@ -468,10 +480,37 @@ class HumanDemonstrationWindow(QMainWindow):
             if elapsed >= float(s.config.preparation_seconds) and self._deadline_action_flushed:
                 self.selection_label.setText("O tempo de preparação terminou; a ação ficará para a próxima rodada.")
                 return
-        self._action_queue.append((list(map(int, human_action)), str(action_label or ACTION_NAMES.get(int(human_action[0]), "UNKNOWN")), self.note.text().strip()))
-        self.selection_label.setText(
-            f"Ação enfileirada ({len(self._action_queue)}). Será executada durante a preparação, sem encerrar a rodada."
-        )
+        self._action_queue.append((
+            list(map(int, human_action)),
+            str(action_label or ACTION_NAMES.get(int(human_action[0]), "UNKNOWN")),
+            self.note.text().strip(),
+        ))
+        if self._step_thread is None:
+            self._dispatch_next_human_action()
+        else:
+            self.selection_label.setText(
+                f"Ação recebida ({len(self._action_queue)} aguardando a ação atual terminar)."
+            )
+
+    def _dispatch_next_human_action(self):
+        """Drain click actions as soon as the previous native step has completed."""
+        if self._step_thread is not None or self._paused or not self._action_queue:
+            return
+        s = self.session
+        if not s.started or s.finished or s.lobby is None:
+            self._action_queue.clear()
+            return
+        if self._round_started_at is not None:
+            elapsed = time.monotonic() - self._round_started_at
+            if elapsed >= float(s.config.preparation_seconds):
+                if self._deadline_action_flushed:
+                    self._action_queue.clear()
+                    return
+                # Permit exactly one click at the deadline before resolving prep.
+                self._deadline_action_flushed = True
+        queued = self._action_queue.pop(0)
+        self._next_step_at = time.monotonic() + self._step_interval_seconds
+        self._execute_step(queued, timer_expired=False)
 
     def _reset_round_clock(self):
         s = self.session
@@ -734,6 +773,11 @@ class HumanDemonstrationWindow(QMainWindow):
         if self._close_when_step_done:
             self._close_when_step_done = False
             QTimer.singleShot(0, self.close)
+            return
+        # Clicks received while the native worker was running execute immediately
+        # after it finishes, without waiting for another preparation tick.
+        if self._action_queue and not self._paused and not self.session.finished:
+            QTimer.singleShot(0, self._dispatch_next_human_action)
 
     def _cell_clicked(self, index, area):
         if not self.session.started or self.session.finished:
