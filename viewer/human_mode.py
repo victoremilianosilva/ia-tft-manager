@@ -8,10 +8,11 @@ from __future__ import annotations
 
 import json
 import time
+from collections import Counter
 from pathlib import Path
 
 import numpy as np
-from PySide6.QtCore import Qt, Signal, QTimer
+from PySide6.QtCore import Qt, Signal, QTimer, QObject, QThread
 from PySide6.QtWidgets import (
     QApplication, QComboBox, QFileDialog, QGridLayout, QGroupBox, QHBoxLayout,
     QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton, QScrollArea,
@@ -51,6 +52,23 @@ class InteractiveCell(ChampionCell):
         super().mousePressEvent(event)
 
 
+
+class HumanStepWorker(QObject):
+    completed = Signal(object)
+    failed = Signal(str)
+
+    def __init__(self, operation):
+        super().__init__()
+        self.operation = operation
+
+    def run(self):
+        try:
+            self.completed.emit(self.operation())
+        except Exception:
+            import traceback
+            self.failed.emit(traceback.format_exc())
+
+
 class HumanDemonstrationWindow(QMainWindow):
     """Human-controlled seat versus seven frozen-policy agents."""
 
@@ -72,6 +90,10 @@ class HumanDemonstrationWindow(QMainWindow):
         self._paused = False
         self._paused_at = None
         self._step_interval_seconds = 0.7
+        self._step_thread = None
+        self._step_worker = None
+        self._close_when_step_done = False
+        self._unit_traits, self._trait_milestones = self._load_synergy_catalog()
         self.icon_loader = ChampionIconLoader(ROOT / "data" / "units_gerado.json", self)
         self.icon_loader.loaded.connect(self._render)
         self._build_ui()
@@ -180,6 +202,13 @@ class HumanDemonstrationWindow(QMainWindow):
         items_layout.addLayout(self.item_buttons)
         items_layout.addLayout(self.component_buttons)
         side.addWidget(items_box)
+
+        synergies_box = QGroupBox("SINERGIAS ATIVAS — seu tabuleiro")
+        synergies_layout = QVBoxLayout(synergies_box)
+        self.synergies_label = QLabel("Aguardando unidades no tabuleiro.")
+        self.synergies_label.setWordWrap(True)
+        synergies_layout.addWidget(self.synergies_label)
+        side.addWidget(synergies_box)
         middle.addLayout(side, 3)
         outer.addLayout(middle, 1)
 
@@ -306,6 +335,74 @@ class HumanDemonstrationWindow(QMainWindow):
             "com as decisões dos sete agentes."
         )
 
+    @staticmethod
+    def _load_synergy_catalog():
+        unit_traits = {}
+        milestones = {}
+        try:
+            units = json.loads((ROOT / "data" / "units_gerado.json").read_text(encoding="utf-8"))
+            for unit in units if isinstance(units, list) else []:
+                if not isinstance(unit, dict):
+                    continue
+                traits = list(dict.fromkeys(str(value) for value in (unit.get("traits") or []) if value))
+                for alias in (unit.get("apiName"), unit.get("characterName"), unit.get("name")):
+                    if alias:
+                        unit_traits[str(alias).casefold()] = traits
+        except (OSError, json.JSONDecodeError):
+            pass
+        try:
+            document = json.loads((ROOT / "data" / "traits.json").read_text(encoding="utf-8"))
+            rows = document.get("traits", []) if isinstance(document, dict) else document
+            for trait in rows if isinstance(rows, list) else []:
+                if not isinstance(trait, dict):
+                    continue
+                name = str(trait.get("en_name") or trait.get("name") or "").strip()
+                thresholds = sorted({
+                    int(effect["minUnits"])
+                    for effect in (trait.get("effects") or [])
+                    if isinstance(effect, dict)
+                    and isinstance(effect.get("minUnits"), int)
+                    and int(effect["minUnits"]) > 0
+                })
+                if name and thresholds:
+                    milestones[name.casefold()] = (name, thresholds)
+        except (OSError, json.JSONDecodeError, TypeError, ValueError):
+            pass
+        return unit_traits, milestones
+
+    def _render_active_synergies(self, audit):
+        counts = Counter()
+        for unit in (audit.get("board", []) or []):
+            if not _occupied(unit):
+                continue
+            champion = str(
+                unit.get("champion_id") or unit.get("apiName") or unit.get("api_name") or ""
+            ).casefold()
+            counts.update(set(self._unit_traits.get(champion, [])))
+
+        active_rows = []
+        for key, count in counts.items():
+            record = self._trait_milestones.get(key)
+            if record is None:
+                continue
+            name, thresholds = record
+            reached = [value for value in thresholds if count >= value]
+            if reached:
+                active_rows.append((name, count, max(reached), min(
+                    (value for value in thresholds if value > count), default=None
+                )))
+        active_rows.sort(key=lambda row: (row[0].casefold()))
+        if not active_rows:
+            self.synergies_label.setText(
+                "Nenhuma sinergia ativada no tabuleiro. As unidades do banco não contam."
+            )
+            return
+        lines = []
+        for name, count, active_threshold, next_threshold in active_rows:
+            progress = f" · próxima: {next_threshold}" if next_threshold is not None else " · nível máximo"
+            lines.append(f"✓ {name}  {count}/{active_threshold}{progress}")
+        self.synergies_label.setText("\n".join(lines))
+
     def _human_audit(self):
         return _by_id(self.session.audit_snapshot.get("players", []), self.human_player)
 
@@ -328,11 +425,7 @@ class HumanDemonstrationWindow(QMainWindow):
         mask = self.session.masks[self.human_player]
         kind = int(action[0])
         types = mask.get("type_mask")
-        if (
-            kind != 7
-            and types is not None
-            and (kind >= len(types) or not bool(types[kind]))
-        ):
+        if types is not None and (kind >= len(types) or not bool(types[kind])):
             return False
         if kind == 0:
             return self._mask_ok(mask, "shop_mask", action[1])
@@ -347,9 +440,10 @@ class HumanDemonstrationWindow(QMainWindow):
         if kind == 5:
             return self._mask_ok(mask, "bench_source_mask", action[2])
         if kind == 7:
-            # The audit inventory can be newer than the Viewer mask snapshot.
-            # The native engine remains authoritative for inventory and target.
-            return True
+            return (
+                self._mask_ok(mask, "item_inventory_mask", action[1])
+                and self._mask_ok(mask, "item_target_mask", action[2])
+            )
         if kind == 8:
             return (
                 self._mask_ok(mask, "item_component_first_mask", action[1])
@@ -394,6 +488,9 @@ class HumanDemonstrationWindow(QMainWindow):
         s = self.session
         if not s.started or s.finished or s.lobby is None or self._round_started_at is None:
             self.preparation_timer.stop()
+            return
+
+        if self._step_thread is not None:
             return
 
         now = time.monotonic()
@@ -442,10 +539,29 @@ class HumanDemonstrationWindow(QMainWindow):
         self._execute_step(queued, timer_expired=timer_expired)
 
     def _execute_step(self, queued_action=None, *, timer_expired=False):
+        if self._step_thread is not None:
+            return
         s = self.session
         if not s.started or s.finished or s.lobby is None:
             return
 
+        thread = QThread(self)
+        worker = HumanStepWorker(
+            lambda: self._execute_step_engine(queued_action, timer_expired=timer_expired)
+        )
+        self._step_thread = thread
+        self._step_worker = worker
+        worker.moveToThread(thread)
+        thread.started.connect(worker.run)
+        worker.completed.connect(self._on_step_completed)
+        worker.failed.connect(self._on_step_failed)
+        worker.completed.connect(thread.quit, Qt.ConnectionType.DirectConnection)
+        worker.failed.connect(thread.quit, Qt.ConnectionType.DirectConnection)
+        thread.finished.connect(self._cleanup_step_worker)
+        thread.start()
+
+    def _execute_step_engine(self, queued_action=None, *, timer_expired=False):
+        s = self.session
         before = s._snapshot_for_event()
         masks_before = s.masks
         human_mask = masks_before[self.human_player]
@@ -453,6 +569,7 @@ class HumanDemonstrationWindow(QMainWindow):
         human_label = queued_action[1] if queued_action else "PASS"
         human_note = queued_action[2] if queued_action else ""
         human_is_action = queued_action is not None
+        rejection_message = ""
 
         if human_is_action and not self._legal(human_action):
             s._emit("human_action_rejected", {
@@ -462,10 +579,9 @@ class HumanDemonstrationWindow(QMainWindow):
                 "reason": "viewer_preflight_mask_rejected",
                 "masks": human_mask,
             })
-            QMessageBox.information(
-                self, "Ação indisponível",
-                f"{human_label}: a validação local do Viewer rejeitou a ação "
-                f"{human_action}. A seleção foi preservada; tente novamente.",
+            rejection_message = (
+                f"{human_label}: a máscara nativa não libera essa combinação "
+                f"(ação {human_action}). A seleção foi preservada."
             )
             human_action = [6, 0, 0, 0, 0, 0]
             human_label = "PASS"
@@ -479,8 +595,6 @@ class HumanDemonstrationWindow(QMainWindow):
                 action = [6, 0, 0, 0, 0, 0]
                 diagnostic = {"action_name": "PASS", "action": action, "status": "eliminated_seat"}
             elif timer_expired:
-                # Mirror the normal Viewer timeout: idle seats PASS. A mandatory
-                # pending anvil is the only exception and is resolved by frozen policy.
                 seat_mask = masks_before[seat]
                 type_mask = seat_mask.get("type_mask")
                 pending_choice = (
@@ -520,16 +634,11 @@ class HumanDemonstrationWindow(QMainWindow):
                 "available_actions_mask": human_mask.get("type_mask"),
             })
 
-        try:
-            obs, rewards, done, info = s.lobby.step(
-                actions,
-                timer_enabled=True,
-                timer_expired=bool(timer_expired),
-            )
-        except Exception as exc:
-            QMessageBox.critical(self, "Erro da engine", str(exc))
-            return
-
+        obs, rewards, done, info = s.lobby.step(
+            actions,
+            timer_enabled=True,
+            timer_expired=bool(timer_expired),
+        )
         s.obs = obs
         s.last_actions = actions
         s.last_policy = diagnostics
@@ -569,26 +678,62 @@ class HumanDemonstrationWindow(QMainWindow):
                 "final_snapshot": after,
             })
             s._flush_close_log()
+        return {
+            "step": s.step_count,
+            "human_is_action": human_is_action,
+            "human_label": human_label,
+            "info": info,
+            "finished": s.finished,
+            "round_resolved": any(
+                str(event).strip() == "ROUND_RESOLVED"
+                for event in info.get("events", [])
+            ),
+            "rejection_message": rejection_message,
+            "snapshot": after,
+        }
 
+    def _on_step_completed(self, result):
+        s = self.session
+        if result.get("rejection_message"):
+            QMessageBox.information(self, "Ação indisponível", result["rejection_message"])
+        info = result["info"]
         self.events.appendPlainText(
-            f"Passo {s.step_count} · {'ação humana: ' + human_label if human_is_action else 'agentes / espera'} · "
+            f"Passo {result['step']} · "
+            f"{'ação humana: ' + result['human_label'] if result['human_is_action'] else 'agentes / espera'} · "
             f"eventos: {', '.join(map(str, info.get('events', [])))}"
         )
-        if human_is_action:
+        if result["human_is_action"]:
             self.note.clear()
-            # Idle PASS ticks run every ~700 ms while the player is deciding.
-            # They must not cancel the first click of a two-click move.
             self.selected_source = None
             self.selected_item = None
             self.first_component = None
             self._second_component = None
 
-        if s.finished:
+        if result["finished"]:
             self.preparation_timer.stop()
             self.phase_clock.setText("PARTIDA FINALIZADA")
-        elif any(str(event).strip() == "ROUND_RESOLVED" for event in info.get("events", [])):
+        elif result["round_resolved"]:
             self._reset_round_clock()
-        self._render(after)
+        self._render(result["snapshot"])
+
+    def _on_step_failed(self, message):
+        self.preparation_timer.stop()
+        self.status.setText("Erro ao avançar a partida; consulte os detalhes.")
+        QMessageBox.critical(self, "Erro durante a partida", message)
+
+    def _cleanup_step_worker(self):
+        thread = self.sender()
+        if thread is None or thread is not self._step_thread:
+            return
+        worker = self._step_worker
+        self._step_worker = None
+        self._step_thread = None
+        if worker is not None:
+            worker.deleteLater()
+        thread.deleteLater()
+        if self._close_when_step_done:
+            self._close_when_step_done = False
+            QTimer.singleShot(0, self.close)
 
     def _cell_clicked(self, index, area):
         if not self.session.started or self.session.finished:
@@ -600,10 +745,24 @@ class HumanDemonstrationWindow(QMainWindow):
         if area in ("bench", "board"):
             if self.selected_item is not None:
                 target = index if area == "board" else 28 + index
+                mask = self.session.masks[self.human_player]
+                if not self._mask_ok(mask, "item_target_mask", target):
+                    self.selection_label.setText(
+                        f"Esse campeão não está liberado como alvo de item (slot {target}). "
+                        "A seleção do item foi mantida."
+                    )
+                    return
                 self._perform([7, self.selected_item, target, 0, 0, 0], "EQUIP_FROM_INVENTORY")
                 return
-            if self.first_component is not None:
+            if self.first_component is not None and self._second_component is not None:
                 target = index if area == "board" else 28 + index
+                mask = self.session.masks[self.human_player]
+                if not self._mask_ok(mask, "item_target_mask", target):
+                    self.selection_label.setText(
+                        f"Esse campeão não está liberado como alvo de item (slot {target}). "
+                        "A seleção dos componentes foi mantida."
+                    )
+                    return
                 self._perform([8, self.first_component, self._second_component, target, 0, 0], "CRAFT_AND_EQUIP")
                 return
             if self.selected_source is None:
@@ -650,9 +809,35 @@ class HumanDemonstrationWindow(QMainWindow):
             button = QPushButton(f"{index}: {item}")
             button.clicked.connect(lambda _=False, slot=index: self._select_item(slot))
             self.item_buttons.addWidget(button)
-        for index, item in enumerate(components):
-            button = QPushButton(f"{index}: {item}")
-            button.clicked.connect(lambda _=False, slot=index: self._select_component(slot))
+        component_catalog = list(audit.get("item_component_catalog", []) or [])
+        if audit.get("pending_anvil"):
+            self.items_label.setText(
+                "BIGORNA PENDENTE — escolha uma das opções abaixo para continuar."
+            )
+            options = list(audit.get("pending_anvil_options", []) or [])
+            for option_index, option in enumerate(options):
+                button = QPushButton(f"Escolher {option_index}: {option}")
+                button.clicked.connect(
+                    lambda _=False, slot=option_index: self._perform(
+                        [7, slot, 0, 0, 0, 0], "ANVIL_CHOICE"
+                    )
+                )
+                self.item_buttons.addWidget(button)
+            return
+
+        for item in components:
+            try:
+                catalog_index = component_catalog.index(str(item))
+            except ValueError:
+                # Never guess an action index from the compact inventory order.
+                continue
+            button = QPushButton(f"{item}")
+            button.setToolTip(
+                f"Índice nativo do componente: {catalog_index}"
+            )
+            button.clicked.connect(
+                lambda _=False, slot=catalog_index: self._select_component(slot)
+            )
             self.component_buttons.addWidget(button)
 
     def _select_item(self, slot):
@@ -661,6 +846,13 @@ class HumanDemonstrationWindow(QMainWindow):
             QMessageBox.information(
                 self, "Item indisponível",
                 "Esse item não está mais no inventário.",
+            )
+            return
+        mask = self.session.masks[self.human_player]
+        if not self._mask_ok(mask, "item_inventory_mask", slot):
+            QMessageBox.information(
+                self, "Item indisponível",
+                "A máscara nativa não libera esse slot do inventário no estado atual.",
             )
             return
         self.selected_item = slot
@@ -716,6 +908,7 @@ class HumanDemonstrationWindow(QMainWindow):
                 unit = units[index] if index < len(units) else None
                 cell.set_unit(unit if _occupied(unit) else None, self.icon_loader)
         self._render_items(audit)
+        self._render_active_synergies(audit)
         alive = bool(player.get("alive", True))
         masks = s.masks[self.human_player] if s.masks else {}
         type_mask = masks.get("type_mask", [])
@@ -799,6 +992,10 @@ class HumanDemonstrationWindow(QMainWindow):
 
     def closeEvent(self, event):
         self.preparation_timer.stop()
+        if self._step_thread is not None:
+            self._close_when_step_done = True
+            event.ignore()
+            return
         try:
             self.session.close()
         finally:
