@@ -126,36 +126,18 @@ class CppTFTLobbyWrapper:
         ]
         return np.asarray(result["observations"], dtype=np.float32)
 
-    def step(
-        self,
-        actions,
-        *,
-        timer_enabled: bool = False,
-        timer_expired: bool = False,
-        active_players=None,
-    ):
-        """Execute actions for selected seats; inactive seats are fully skipped."""
+    def step(self, actions, *, timer_enabled: bool = False, timer_expired: bool = False):
+        """Execute one lobby action batch, optionally gated by a wall-clock preparation timer."""
         if len(actions) != self.PLAYERS_PER_LOBBY:
             raise ValueError(
                 f"Esperava {self.PLAYERS_PER_LOBBY} ações; recebi {len(actions)}."
             )
 
         native_actions = [self._normalize_action(action) for action in actions]
-        if active_players is None:
-            active_players = [True] * self.PLAYERS_PER_LOBBY
-        else:
-            active_players = [bool(active) for active in active_players]
-        if len(active_players) != self.PLAYERS_PER_LOBBY:
-            raise ValueError(
-                f"Esperava {self.PLAYERS_PER_LOBBY} flags active_players; "
-                f"recebi {len(active_players)}."
-            )
-
         result = self._engine.step(
             native_actions,
             bool(timer_enabled),
             bool(timer_expired),
-            active_players,
         )
 
         observations = np.asarray(result["observations"], dtype=np.float32)
