@@ -4835,8 +4835,7 @@ ResetResult TFTEngine::reset(
 StepResult TFTEngine::step(
     const std::array<PlayerAction, kPlayersPerLobby>& actions,
     bool timer_enabled,
-    bool timer_expired,
-    const std::array<bool, kPlayersPerLobby>& active_players
+    bool timer_expired
 ) {
     if (!impl_) {
         throw std::runtime_error(
@@ -4857,13 +4856,6 @@ StepResult TFTEngine::step(
     // No viewer, o temporizador controla a fase e o limite de ações fica desativado.
     auto effective_actions = actions;
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
-        // An inactive seat is not a PASS decision: it must not be validated,
-        // applied, or counted toward that player's preparation decisions.
-        if (!active_players[i]) {
-            effective_actions[i].values = {6, 0, 0, 0, 0, 0};
-            continue;
-        }
-
         // A finished player normally idles with PASS, but a pending anvil is
         // a forced decision that must be resolved before preparation can end.
         // Do not overwrite that legal choice with PASS: the action mask has
@@ -4875,13 +4867,13 @@ StepResult TFTEngine::step(
         }
     }
 
-    // Preflight only active seats. This preserves atomic validation for the
-    // actions that will execute without letting frozen seats block the batch.
+    // Preflight em duas fases: valida limites e disponibilidade semântica
+    // de todas as ações antes de executar a primeira. Se qualquer ação for
+    // impossível, o lote falha sem alterar ouro, unidades ou posições.
+    for (const auto& action : effective_actions) {
+        impl_->validate_action(action);
+    }
     for (std::size_t i = 0; i < actions.size(); ++i) {
-        if (!active_players[i]) {
-            continue;
-        }
-        impl_->validate_action(effective_actions[i]);
         impl_->validate_action_against_masks(i, effective_actions[i]);
     }
 
@@ -4906,9 +4898,6 @@ StepResult TFTEngine::step(
     std::array<std::int32_t, kPlayersPerLobby> xp_after_actions{};
     std::vector<std::string> item_action_events;
     for (std::size_t i = 0; i < kPlayersPerLobby; ++i) {
-        if (!active_players[i]) {
-            continue;
-        }
         const auto transition = impl_->player_envs[i].step(*impl_, i, effective_actions[i]);
         if (!transition.acted) {
             continue;
