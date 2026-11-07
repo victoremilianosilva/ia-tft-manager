@@ -237,10 +237,10 @@ class HumanDemonstrationWindow(QMainWindow):
                 self.checkpoint.text().strip(), self.seed.value(), True,
                 ROOT / "viewer" / "human_sessions", record=True,
             )
-            # Human demonstration mode gives the player 30 seconds per preparation.
+            # Human demonstration mode gives the player 20 seconds per preparation.
             # This setting is local to this Viewer session and does not affect PPO training.
             self.session.config.use_wall_clock_preparation = True
-            self.session.config.preparation_seconds = 30.0
+            self.session.config.preparation_seconds = 20.0
             self._action_queue.clear()
             self._paused = False
             self._paused_at = None
