@@ -237,11 +237,10 @@ class HumanDemonstrationWindow(QMainWindow):
                 self.checkpoint.text().strip(), self.seed.value(), True,
                 ROOT / "viewer" / "human_sessions", record=True,
             )
-            # Human demonstration mode gives the player 15 seconds per preparation.
-            # Actions remain queued and are processed at the same 700 ms cadence as
-            # the Viewer, so clicks do not advance the round individually.
+            # Human demonstration mode gives the player 30 seconds per preparation.
+            # This setting is local to this Viewer session and does not affect PPO training.
             self.session.config.use_wall_clock_preparation = True
-            self.session.config.preparation_seconds = 15.0
+            self.session.config.preparation_seconds = 30.0
             self._action_queue.clear()
             self._paused = False
             self._paused_at = None
@@ -263,8 +262,8 @@ class HumanDemonstrationWindow(QMainWindow):
             self.events.appendPlainText(f"Logs: {self.session._session_dir}")
             self._render(snapshot)
             self.status.setText(
-                "Partida ativa: suas ações são processadas junto com as decisões dos outros 7 agentes vivos. "
-                "Use 'Pausar tempo' para congelar os agentes sem consumir decisões."
+                "Partida ativa: você joga contra os outros 7 agentes. "
+                "Pause para congelar toda a partida e retome com o tempo restante."
             )
         except Exception as exc:
             QMessageBox.critical(self, "Falha ao iniciar partida", str(exc))
@@ -286,12 +285,10 @@ class HumanDemonstrationWindow(QMainWindow):
                 f"RODADA {self._round_key[0]} · TEMPO PAUSADO"
             )
             self.selection_label.setText(
-                "Tempo pausado: somente suas ações serão executadas. "
-                "Os sete agentes estão congelados, sem consumir decisões."
+                "Partida pausada: nenhuma ação será processada até você retomar."
             )
             self.status.setText(
-                "PAUSADO: os sete agentes não executam policy nem ações. "
-                "Suas ações continuam sendo processadas normalmente."
+                "PAUSADO: relógio, jogador humano e os sete agentes estão congelados."
             )
             return
 
@@ -369,7 +366,10 @@ class HumanDemonstrationWindow(QMainWindow):
         if not _by_id(s.public_state.get("players", []), self.human_player).get("alive", True):
             QMessageBox.information(self, "Jogador eliminado", "Seu jogador já foi eliminado.")
             return
-        if self._round_started_at is not None and not self._paused:
+        if self._paused:
+            self.selection_label.setText("Partida pausada. Retome o jogo para enviar ações.")
+            return
+        if self._round_started_at is not None:
             elapsed = time.monotonic() - self._round_started_at
             if elapsed >= float(s.config.preparation_seconds) and self._deadline_action_flushed:
                 self.selection_label.setText("O tempo de preparação terminou; a ação ficará para a próxima rodada.")
@@ -396,23 +396,21 @@ class HumanDemonstrationWindow(QMainWindow):
             self.preparation_timer.stop()
             return
 
+        now = time.monotonic()
+        # Freeze the entire match: do not step the engine, run policies, flush
+        # queued clicks, or advance the round while paused.
+        if self._paused:
+            self.phase_clock.setText(
+                f"RODADA {self._round_key[0]} · JOGO PAUSADO"
+            )
+            return
+
         current_key = (
             int(s.public_state.get("round", 1) or 1),
             int(s.public_state.get("stage", 1) or 1),
         )
         if current_key != self._round_key:
             self._reset_round_clock()
-
-        now = time.monotonic()
-        if self._paused:
-            self.phase_clock.setText(
-                f"RODADA {current_key[0]} · TEMPO PAUSADO"
-            )
-            if self._action_queue and now >= (self._next_step_at or now):
-                queued = self._action_queue.pop(0)
-                self._next_step_at = now + self._step_interval_seconds
-                self._execute_step(queued, timer_expired=False)
-            return
 
         elapsed = now - self._round_started_at
         duration = float(s.config.preparation_seconds)
@@ -475,21 +473,9 @@ class HumanDemonstrationWindow(QMainWindow):
             human_is_action = False
 
         actions, diagnostics = [], []
-        active_players = [
-            bool(timer_expired or not self._paused or seat == self.human_player)
-            for seat in range(8)
-        ]
         for seat in range(8):
             player = _by_id(s.public_state.get("players", []), seat)
-            if self._paused and seat != self.human_player:
-                action = [6, 0, 0, 0, 0, 0]
-                diagnostic = {
-                    "action_name": "FROZEN",
-                    "action": action,
-                    "source": "human_pause",
-                    "status": "agent_frozen_without_consuming_action",
-                }
-            elif not player.get("alive", True):
+            if not player.get("alive", True):
                 action = [6, 0, 0, 0, 0, 0]
                 diagnostic = {"action_name": "PASS", "action": action, "status": "eliminated_seat"}
             elif timer_expired:
@@ -539,7 +525,6 @@ class HumanDemonstrationWindow(QMainWindow):
                 actions,
                 timer_enabled=True,
                 timer_expired=bool(timer_expired),
-                active_players=active_players,
             )
         except Exception as exc:
             QMessageBox.critical(self, "Erro da engine", str(exc))
@@ -568,7 +553,6 @@ class HumanDemonstrationWindow(QMainWindow):
             "players": after.get("players", []),
             "human_player_id": self.human_player,
             "human_action_was_submitted": human_is_action,
-            "active_players": active_players,
             "preparation_timer_expired": bool(timer_expired),
         })
         if s._player_log_writer is not None:
@@ -772,8 +756,7 @@ class HumanDemonstrationWindow(QMainWindow):
         else:
             self.status.setText(
                 "Clique na loja para comprar; Comprar XP/Atualizar loja para economia; selecione uma unidade e depois o destino; "
-                "selecione item/componente e depois o alvo. "
-                "Pausado, somente suas ações são executadas; os agentes ficam congelados."
+                "selecione item/componente e depois o alvo. Pause congela todos os jogadores e o relógio."
             )
         # Carousel support is shown only when the native public snapshot actually exposes it.
         carousel = s.public_state.get("carousel") or s.public_state.get("carousel_state")
