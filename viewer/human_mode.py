@@ -809,9 +809,35 @@ class HumanDemonstrationWindow(QMainWindow):
             button = QPushButton(f"{index}: {item}")
             button.clicked.connect(lambda _=False, slot=index: self._select_item(slot))
             self.item_buttons.addWidget(button)
-        for index, item in enumerate(components):
-            button = QPushButton(f"{index}: {item}")
-            button.clicked.connect(lambda _=False, slot=index: self._select_component(slot))
+        component_catalog = list(audit.get("item_component_catalog", []) or [])
+        if audit.get("pending_anvil"):
+            self.items_label.setText(
+                "BIGORNA PENDENTE — escolha uma das opções abaixo para continuar."
+            )
+            options = list(audit.get("pending_anvil_options", []) or [])
+            for option_index, option in enumerate(options):
+                button = QPushButton(f"Escolher {option_index}: {option}")
+                button.clicked.connect(
+                    lambda _=False, slot=option_index: self._perform(
+                        [7, slot, 0, 0, 0, 0], "ANVIL_CHOICE"
+                    )
+                )
+                self.item_buttons.addWidget(button)
+            return
+
+        for item in components:
+            try:
+                catalog_index = component_catalog.index(str(item))
+            except ValueError:
+                # Never guess an action index from the compact inventory order.
+                continue
+            button = QPushButton(f"{item}")
+            button.setToolTip(
+                f"Índice nativo do componente: {catalog_index}"
+            )
+            button.clicked.connect(
+                lambda _=False, slot=catalog_index: self._select_component(slot)
+            )
             self.component_buttons.addWidget(button)
 
     def _select_item(self, slot):
