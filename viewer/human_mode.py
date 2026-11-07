@@ -69,6 +69,8 @@ class HumanDemonstrationWindow(QMainWindow):
         self._round_started_at = None
         self._next_step_at = None
         self._deadline_action_flushed = False
+        self._paused = False
+        self._paused_at = None
         self._step_interval_seconds = 0.7
         self.icon_loader = ChampionIconLoader(ROOT / "data" / "units_gerado.json", self)
         self.icon_loader.loaded.connect(self._render)
@@ -192,6 +194,14 @@ class HumanDemonstrationWindow(QMainWindow):
         self.events.setMaximumHeight(105)
         outer.addWidget(self.events)
 
+        footer = QHBoxLayout()
+        footer.addStretch(1)
+        self.pause_button = QPushButton("Pausar tempo")
+        self.pause_button.setEnabled(False)
+        self.pause_button.clicked.connect(self._toggle_pause)
+        footer.addWidget(self.pause_button)
+        outer.addLayout(footer)
+
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setWidget(page)
@@ -227,12 +237,15 @@ class HumanDemonstrationWindow(QMainWindow):
                 self.checkpoint.text().strip(), self.seed.value(), True,
                 ROOT / "viewer" / "human_sessions", record=True,
             )
-            # Human demonstration mode gives the player 15 seconds per preparation.
-            # Actions remain queued and are processed at the same 700 ms cadence as
-            # the Viewer, so clicks do not advance the round individually.
+            # Human demonstration mode gives the player 30 seconds per preparation.
+            # This setting is local to this Viewer session and does not affect PPO training.
             self.session.config.use_wall_clock_preparation = True
-            self.session.config.preparation_seconds = 15.0
+            self.session.config.preparation_seconds = 30.0
             self._action_queue.clear()
+            self._paused = False
+            self._paused_at = None
+            self.pause_button.setText("Pausar tempo")
+            self.pause_button.setEnabled(True)
             self._round_key = (
                 int(self.session.public_state.get("round", 1) or 1),
                 int(self.session.public_state.get("stage", 1) or 1),
@@ -249,11 +262,49 @@ class HumanDemonstrationWindow(QMainWindow):
             self.events.appendPlainText(f"Logs: {self.session._session_dir}")
             self._render(snapshot)
             self.status.setText(
-                "Partida ativa: suas ações são enviadas à engine junto com uma ação de cada um dos outros 7 agentes vivos. "
-                "Os pesos do checkpoint permanecem congelados."
+                "Partida ativa: você joga contra os outros 7 agentes. "
+                "Pause para congelar toda a partida e retome com o tempo restante."
             )
         except Exception as exc:
             QMessageBox.critical(self, "Falha ao iniciar partida", str(exc))
+
+    def _toggle_pause(self):
+        if (
+            not self.session.started
+            or self.session.finished
+            or self._round_started_at is None
+        ):
+            return
+
+        now = time.monotonic()
+        if not self._paused:
+            self._paused = True
+            self._paused_at = now
+            self.pause_button.setText("Continuar jogo")
+            self.phase_clock.setText(
+                f"RODADA {self._round_key[0]} · TEMPO PAUSADO"
+            )
+            self.selection_label.setText(
+                "Partida pausada: nenhuma ação será processada até você retomar."
+            )
+            self.status.setText(
+                "PAUSADO: relógio, jogador humano e os sete agentes estão congelados."
+            )
+            return
+
+        paused_for = max(0.0, now - (self._paused_at or now))
+        self._round_started_at += paused_for
+        self._paused = False
+        self._paused_at = None
+        self.pause_button.setText("Pausar tempo")
+        self._next_step_at = now + self._step_interval_seconds
+        self.phase_clock.setText(
+            f"RODADA {self._round_key[0]} · Preparação retomada"
+        )
+        self.status.setText(
+            "Partida ativa: suas ações voltaram a ser executadas junto "
+            "com as decisões dos sete agentes."
+        )
 
     def _human_audit(self):
         return _by_id(self.session.audit_snapshot.get("players", []), self.human_player)
@@ -277,7 +328,11 @@ class HumanDemonstrationWindow(QMainWindow):
         mask = self.session.masks[self.human_player]
         kind = int(action[0])
         types = mask.get("type_mask")
-        if types is not None and (kind >= len(types) or not bool(types[kind])):
+        if (
+            kind != 7
+            and types is not None
+            and (kind >= len(types) or not bool(types[kind]))
+        ):
             return False
         if kind == 0:
             return self._mask_ok(mask, "shop_mask", action[1])
@@ -292,7 +347,9 @@ class HumanDemonstrationWindow(QMainWindow):
         if kind == 5:
             return self._mask_ok(mask, "bench_source_mask", action[2])
         if kind == 7:
-            return self._mask_ok(mask, "item_inventory_mask", action[1]) and self._mask_ok(mask, "item_target_mask", action[2])
+            # The audit inventory can be newer than the Viewer mask snapshot.
+            # The native engine remains authoritative for inventory and target.
+            return True
         if kind == 8:
             return (
                 self._mask_ok(mask, "item_component_first_mask", action[1])
@@ -308,6 +365,9 @@ class HumanDemonstrationWindow(QMainWindow):
             return
         if not _by_id(s.public_state.get("players", []), self.human_player).get("alive", True):
             QMessageBox.information(self, "Jogador eliminado", "Seu jogador já foi eliminado.")
+            return
+        if self._paused:
+            self.selection_label.setText("Partida pausada. Retome o jogo para enviar ações.")
             return
         if self._round_started_at is not None:
             elapsed = time.monotonic() - self._round_started_at
@@ -336,6 +396,15 @@ class HumanDemonstrationWindow(QMainWindow):
             self.preparation_timer.stop()
             return
 
+        now = time.monotonic()
+        # Freeze the entire match: do not step the engine, run policies, flush
+        # queued clicks, or advance the round while paused.
+        if self._paused:
+            self.phase_clock.setText(
+                f"RODADA {self._round_key[0]} · JOGO PAUSADO"
+            )
+            return
+
         current_key = (
             int(s.public_state.get("round", 1) or 1),
             int(s.public_state.get("stage", 1) or 1),
@@ -343,7 +412,6 @@ class HumanDemonstrationWindow(QMainWindow):
         if current_key != self._round_key:
             self._reset_round_clock()
 
-        now = time.monotonic()
         elapsed = now - self._round_started_at
         duration = float(s.config.preparation_seconds)
         remaining = max(0.0, duration - elapsed)
@@ -387,9 +455,17 @@ class HumanDemonstrationWindow(QMainWindow):
         human_is_action = queued_action is not None
 
         if human_is_action and not self._legal(human_action):
+            s._emit("human_action_rejected", {
+                "player_id": self.human_player,
+                "action": human_action,
+                "action_name": human_label,
+                "reason": "viewer_preflight_mask_rejected",
+                "masks": human_mask,
+            })
             QMessageBox.information(
                 self, "Ação indisponível",
-                "A ação deixou de ser válida antes de chegar à engine; ela foi descartada.",
+                f"{human_label}: a validação local do Viewer rejeitou a ação "
+                f"{human_action}. A seleção foi preservada; tente novamente.",
             )
             human_action = [6, 0, 0, 0, 0, 0]
             human_label = "PASS"
@@ -580,12 +656,16 @@ class HumanDemonstrationWindow(QMainWindow):
             self.component_buttons.addWidget(button)
 
     def _select_item(self, slot):
-        mask = self.session.masks[self.human_player]
-        if not self._mask_ok(mask, "item_inventory_mask", slot):
-            QMessageBox.information(self, "Item indisponível", "Esse item não está liberado pela máscara nativa.")
+        inventory = list(self._human_audit().get("item_inventory", []) or [])
+        if slot < 0 or slot >= len(inventory):
+            QMessageBox.information(
+                self, "Item indisponível",
+                "Esse item não está mais no inventário.",
+            )
             return
         self.selected_item = slot
         self.first_component = None
+        self._second_component = None
         self.selection_label.setText(f"Item {slot} selecionado. Clique em um campeão do banco ou tabuleiro para equipar.")
 
     def _select_component(self, slot):
@@ -594,7 +674,9 @@ class HumanDemonstrationWindow(QMainWindow):
             if not self._mask_ok(mask, "item_component_first_mask", slot):
                 QMessageBox.information(self, "Componente indisponível", "Esse componente não está liberado pela máscara nativa.")
                 return
+            self.selected_item = None
             self.first_component = slot
+            self._second_component = None
             self.selection_label.setText(f"Primeiro componente {slot} selecionado. Escolha o segundo componente.")
             return
         self._second_component = slot
@@ -640,6 +722,15 @@ class HumanDemonstrationWindow(QMainWindow):
         self.xp_button.setEnabled(not s.finished and alive and len(type_mask) > 2 and bool(type_mask[2]))
         self.roll_button.setEnabled(not s.finished and alive and len(type_mask) > 1 and bool(type_mask[1]))
         self.sell_button.setEnabled(not s.finished and alive)
+        self.pause_button.setEnabled(not s.finished and alive)
+        if s.finished:
+            self.pause_button.setText("Pausar tempo")
+            self._paused = False
+            self._paused_at = None
+        else:
+            self.pause_button.setText(
+                "Continuar jogo" if self._paused else "Pausar tempo"
+            )
         shop_mask = masks.get("shop_mask", [])
         shop_units = audit.get("shop", []) or []
         shop_has_offers = any(_occupied(unit) for unit in shop_units)
@@ -665,13 +756,27 @@ class HumanDemonstrationWindow(QMainWindow):
         else:
             self.status.setText(
                 "Clique na loja para comprar; Comprar XP/Atualizar loja para economia; selecione uma unidade e depois o destino; "
-                "selecione item/componente e depois o alvo. Cada ação sua executa também as decisões dos outros sete agentes."
+                "selecione item/componente e depois o alvo. Pause congela todos os jogadores e o relógio."
             )
         # Carousel support is shown only when the native public snapshot actually exposes it.
         carousel = s.public_state.get("carousel") or s.public_state.get("carousel_state")
         if carousel:
             self.selection_label.setText(
                 "A engine expôs estado de carrossel, mas ainda não há ação de escolha de carrossel no contrato de ações nativo."
+            )
+        elif self.selected_item is not None:
+            self.selection_label.setText(
+                f"Item {self.selected_item} selecionado. "
+                "Clique em um campeão do banco ou tabuleiro para equipar."
+            )
+        elif self.first_component is not None and self._second_component is not None:
+            self.selection_label.setText(
+                "Receita selecionada. Clique no campeão-alvo para criar e equipar."
+            )
+        elif self.first_component is not None:
+            self.selection_label.setText(
+                f"Primeiro componente {self.first_component} selecionado. "
+                "Escolha o segundo componente."
             )
         elif self.selected_source is not None:
             area, index = self.selected_source
