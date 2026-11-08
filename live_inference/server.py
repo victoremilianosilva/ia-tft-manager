@@ -101,16 +101,44 @@ class InferenceRuntime:
         if not np.isfinite(obs_array).all():
             raise ValueError("observation contém NaN ou infinito.")
 
+        # Exact native C++ mask contract exported by tft_engine_bindings.cpp.
+        expected_mask_shapes = {
+            "type_mask": (9,),
+            "shop_mask": (5,),
+            "bench_source_mask": (9,),
+            "board_target_mask": (28,),
+            "board_source_mask": (28,),
+            "board_move_target_masks": (28, 28),
+            "bench_move_source_mask": (9,),
+            "bench_to_board_target_masks": (9, 28),
+            "item_inventory_mask": (9,),
+            "item_component_first_mask": (10,),
+            "item_component_pair_masks": (10, 10),
+            "item_target_mask": (37,),
+        }
+        if set(masks) != set(expected_mask_shapes):
+            missing = sorted(set(expected_mask_shapes) - set(masks))
+            extra = sorted(set(masks) - set(expected_mask_shapes))
+            raise ValueError(f"Contrato de masks inválido; ausentes={missing}, extras={extra}.")
+
         tensor_masks: dict[str, torch.Tensor] = {}
         for key, value in masks.items():
             if not isinstance(key, str) or not isinstance(value, list):
                 raise ValueError("Formato inválido em masks.")
             array = np.asarray(value)
+            expected_shape = expected_mask_shapes[key]
+            if array.shape != expected_shape:
+                raise ValueError(
+                    f"Shape inválido para {key}: {array.shape}; esperado {expected_shape}."
+                )
             if array.dtype.kind not in {"b", "i", "u"}:
                 raise ValueError(f"Máscara {key} deve conter booleanos/inteiros.")
             if not np.isin(array, [0, 1]).all():
                 raise ValueError(f"Máscara {key} deve conter somente 0/1.")
             tensor_masks[key] = torch.as_tensor(array, dtype=torch.bool).unsqueeze(0)
+
+        if not bool(tensor_masks["type_mask"].any()):
+            raise ValueError("type_mask nativa não contém ação legal.")
 
         obs_tensor = torch.as_tensor(obs_array, dtype=torch.float32).unsqueeze(0)
         with torch.inference_mode():
