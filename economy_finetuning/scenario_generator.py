@@ -16,7 +16,7 @@ STRATEGY_NAMES = {
     3: "SLOWROLL",
     4: "ALL_IN",
     5: "WINSTREAK",
-    6: "LOSS_STREAK",
+    6: "LEGACY_UNUSED",
 }
 
 
@@ -40,6 +40,7 @@ class ScenarioSpec:
     reward_pass: float = 0.0
     reward_roll: float = 0.0
     player_ids: tuple[int, ...] = ()
+    win_streak_min: int = 0
     round_min: float = 1.0
     round_max: float = 42.0
     requires_candidate_semantics: bool = False
@@ -58,6 +59,7 @@ class ScenarioSpec:
             and self.level_min <= float(state["level"]) <= self.level_max
             and self.hp_min <= float(state["hp"]) <= self.hp_max
             and (not self.strategies or strategy in self.strategies)
+            and float(state.get("win_streak", 0.0)) >= self.win_streak_min
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -74,126 +76,64 @@ class ScenarioSpec:
 # are trainable. Monitor-only cases remain visible in the audit and are not
 # assigned invented rewards.
 SCENARIOS: tuple[ScenarioSpec, ...] = (
-    ScenarioSpec(
-        "s4_fast8_lvl6_gold60_hp_ok",
-        "Estágio 4 / FAST8 / nível 6 / 60+ ouro / HP preservado",
-        "Detecta jogador FAST8 abaixo do nível-alvo, com ouro suficiente e HP acima de 40.",
-        4, 4, 60, 250, 6, 6.99, 40.01, 100, (2,), True,
-        "aprender_progressao_com_reward_nativo", 0.0, 0.0, 0.0,
-        round_min=19, round_max=25, reward_mode="native",
-    ),
-    ScenarioSpec(
-        "s4_fast8_lvl6_gold80",
-        "Estágio 4 / FAST8 / nível 6 / 80+ ouro / HP preservado",
-        "Caso severo de acumulação: grande reserva de ouro e atraso de nível.",
-        4, 4, 80, 250, 6, 6.99, 40.01, 100, (2,), True,
-        "aprender_conversao_de_excedente_com_reward_nativo", 0.0, 0.0, 0.0,
-        round_min=19, round_max=25, reward_mode="native",
-    ),
-    ScenarioSpec(
-        "s4_fast8_lvl7_gold60",
-        "Estágio 4 / FAST8 / nível 7 / 60+ ouro",
-        "Avalia progressão adicional sem obrigar nível 9/10 ou gasto indiscriminado.",
-        4, 4, 60, 250, 7, 7.99, 30.01, 100, (2,), True,
-        "aprender_timing_de_nivel8_com_reward_nativo", 0.0, 0.0, 0.0,
-        round_min=19, round_max=25, reward_mode="native",
-    ),
-    ScenarioSpec(
-        "late_game_high_gold_underleveled",
-        "Estágio 4-5 a 5-5 / nível abaixo do alvo / 60+ ouro",
-        "Detecta acúmulo de ouro em meio/fim de jogo quando a estratégia não é SLOWROLL.",
-        4, 5, 60, 250, 1, 7.99, 30.01, 100, (0, 1, 2, 4, 5, 6), True,
-        "aprender_decisao_economica_tardia_com_reward_nativo", 0.0, 0.0, 0.0,
-        round_min=23, round_max=30, reward_mode="native",
-    ),
+    # Historical runs: keep their IDs and checkpoints in the approval chain.
     ScenarioSpec(
         "critical_hp_high_gold",
         "HP crítico / 50+ ouro",
-        "Treina a escolha entre compra útil, XP, roll e PASS usando somente o reward nativo; não presume que XP seja sempre a resposta.",
-        3, 7, 50, 250, 1, 10, 0, 30, (0, 1, 2, 3, 4, 5, 6), True,
-        "aprender_estabilizacao_com_reward_nativo",
-        reward_mode="native",
+        "Treino histórico preservado: escolher compra útil, XP, roll ou PASS sob pressão real de vida.",
+        3, 7, 50, 250, 1, 10, 0, 30, (0, 1, 2, 3, 4, 5), True,
+        "historico_estabilizacao_com_reward_nativo", reward_mode="native",
     ),
     ScenarioSpec(
-        "low_hp_fast8_high_gold",
-        "FAST8 / HP baixo / 50+ ouro",
-        "Verifica se a pressão econômica não faz o modelo ignorar a necessidade de estabilização.",
-        3, 7, 50, 250, 1, 8, 0, 40, (2,), False,
-        "monitorar_tradeoff_xp_estabilizacao",
+        "late_game_high_gold_underleveled",
+        "Late game / 60+ ouro / abaixo do nível-alvo",
+        "Treino histórico preservado: converter reserva em força sem gastar indiscriminadamente.",
+        4, 5, 60, 250, 1, 7.99, 30.01, 100, (0, 1, 2, 4, 5), True,
+        "historico_conversao_tardia_com_reward_nativo",
+        round_min=23, round_max=30, reward_mode="native",
     ),
     ScenarioSpec(
-        "slowroll_gold_reserve",
-        "SLOWROLL / nível 6 / 50+ ouro / HP preservado",
-        "Proteção explícita: não ensinar BUY_XP indiscriminadamente em SLOWROLL.",
-        2, 4, 50, 250, 6, 6.99, 50.01, 100, (3,), True,
-        "preservar_slowroll", -0.055, 0.0, 0.0,
-        round_min=12, round_max=25,
+        "econ_gold_reserve",
+        "ECON / acumular até 50 comprando peças úteis",
+        "Proteger breakpoints de juros até 50, mas comprar pares, upgrades e peças de composição com valor real.",
+        1, 7, 0, 49.99, 1, 10, 1, 100, (0,), True,
+        "preservar_juros_e_comprar_unidades_uteis", reward_mode="native",
     ),
     ScenarioSpec(
-        "all_in_gold_hoarding",
-        "ALL_IN / 50+ ouro",
-        "Investiga estados ALL_IN que ainda preservam reservas elevadas.",
-        3, 7, 50, 250, 1, 10, 0, 100, (4,), False,
-        "investigar_all_in_sem_recompensa_artificial",
+        "econ_surplus_strong_board",
+        "ECON / excedente acima de 50 / tabuleiro forte",
+        "Com board forte, converter apenas o excedente acima de 50 em XP; manter compra útil como prioridade quando houver oportunidade.",
+        3, 7, 50.01, 250, 1, 10, 1, 100, (0,), True,
+        "upar_com_excedente_sem_quebrar_reserva", reward_mode="native",
     ),
     ScenarioSpec(
-        "player8_all_in_gold_hoarding",
-        "Jogador 8 / ALL_IN / 50+ ouro",
-        "Cohort específico para investigar o comportamento ALL_IN observado no oitavo jogador.",
-        3, 7, 50, 250, 1, 10, 0, 100, (4,), False,
-        "auditar_player8_all_in", player_ids=(7,),
+        "stabilize_weak_board",
+        "STABILIZE / tabuleiro fraco sob pressão",
+        "Com board fraco e sob pressão, gastar seletivamente em XP, roll melhorado e peças que fortaleçam o board.",
+        2, 7, 0, 250, 1, 10, 1, 65, (1,), True,
+        "estabilizar_board_com_gasto_seletivo", reward_mode="native",
     ),
     ScenarioSpec(
-        "gold_above_50_any_strategy",
-        "Qualquer estratégia / ouro acima de 50",
-        "Cohort geral para medir compras úteis, XP, roll e PASS sem presumir que gastar sempre é correto.",
-        1, 7, 50.01, 250, 1, 10, 0, 100, (), False,
-        "auditoria_geral_do_excedente",
-    ),
-    # Strategic scenarios use only native rewards and train the conditional
-    # heads that already consume candidate/board semantics from the engine.
-    ScenarioSpec(
-        "core_sale_retention",
-        "Proteção de unidades core e pares",
-        "Cohort de meio/fim de jogo; o sell_head aprende com o reward nativo e os sinais de fit/cópias já presentes nos candidatos.",
-        3, 7, 20, 250, 1, 10, 1, 100, (), True,
-        "reduzir_vendas_danificantes_sem_bloquear_substituicoes",
-        round_min=12, round_max=42, reward_mode="native",
-        trainable_heads=("type_head", "sell_head", "value_head"),
+        "fast8_strong_board",
+        "FAST8 / tabuleiro forte / caminho ao nível 8",
+        "Combinar economia, board forte e XP; não ativar FAST8 com tabuleiro fraco.",
+        3, 7, 0, 250, 6, 7.99, 38.01, 100, (2,), True,
+        "fast8_com_board_forte", reward_mode="native",
     ),
     ScenarioSpec(
-        "bench_deployment_quality",
-        "Qualidade de implantação do banco",
-        "Treina escolha de unidade do banco e casa de destino usando reward nativo de força/estrutura.",
-        2, 7, 10, 250, 1, 10, 20, 100, (), True,
-        "implantar_unidades_uteis_sem_movimentacao_forcada",
-        round_min=8, round_max=42, reward_mode="native",
-        trainable_heads=("type_head", "bench_head", "bench_to_board_head", "value_head"),
+        "all_in_emergency",
+        "ALL_IN / converter recursos para sobreviver",
+        "Em HP crítico, gastar o ouro restante em compras, roll melhorado, XP e implantação para tentar estabilizar imediatamente.",
+        3, 7, 0, 250, 1, 10, 0, 25, (4,), True,
+        "all_in_para_sobreviver", reward_mode="native",
     ),
     ScenarioSpec(
-        "carry_protection_positioning",
-        "Proteção e posicionamento do carry",
-        "Treina origem/destino de movimentos no tabuleiro usando BoardEvaluation e reward nativo após mudanças reais.",
-        3, 7, 0, 250, 1, 10, 1, 100, (), True,
-        "melhorar_posicionamento_sem_regra_dura",
-        round_min=15, round_max=42, reward_mode="native",
-        trainable_heads=("type_head", "board_source_head", "board_move_target_head", "value_head"),
-    ),
-    ScenarioSpec(
-        "movement_no_progress",
-        "Movimento sem progresso",
-        "Aprende a evitar movimentos sem ganho estrutural/posicional a partir do reward nativo; não penaliza todo movimento.",
-        2, 7, 0, 250, 1, 10, 1, 100, (), True,
-        "reduzir_movimentos_sem_melhoria",
-        round_min=8, round_max=42, reward_mode="native",
-        trainable_heads=("type_head", "board_source_head", "board_move_target_head", "bench_head", "bench_to_board_head", "value_head"),
-    ),
-    ScenarioSpec(
-        "useful_shop_opportunity",
-        "Oportunidade de compra útil com ouro acima de 50",
-        "Monitor-only: requer semântica confiável dos candidatos da loja para definir utilidade.",
-        1, 7, 50.01, 250, 1, 10, 0, 100, (), False,
-        "monitorar_compra_util", requires_candidate_semantics=True,
+        "slowroll_winstreak",
+        "SLOWROLL / alvo de 3 estrelas / winstreak",
+        "Padrão do exemplo Kha'Zix: buscar cópias úteis e gastar controladamente em nível, peças e implantação para prolongar a winstreak.",
+        3, 4, 30, 250, 5, 6.99, 38.01, 100, (3,), True,
+        "slowroll_com_winstreak_e_gasto_controlado",
+        win_streak_min=2, reward_mode="native",
     ),
 )
 
@@ -221,6 +161,8 @@ def decode_observation(observation, player_id: int | None = None) -> dict[str, A
         "round_number": round_number,
         "strategy": strategy,
         "strategy_name": STRATEGY_NAMES.get(strategy, "UNKNOWN"),
+        "win_streak": max(0.0, float(obs[4]) * 10.0),
+        "loss_streak": max(0.0, float(obs[5]) * 10.0),
         "player_id": int(player_id) if player_id is not None else -1,
     }
 

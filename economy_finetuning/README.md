@@ -44,8 +44,7 @@ de XP. O limite de drift pode ser ajustado com `--max-type-head-drift`.
 
 ## Cadeia obrigatória e aprovação manual
 
-A ordem dos dez cenários é fixa. O cenário 1 parte do checkpoint original;
-cada cenário seguinte parte exclusivamente do checkpoint aprovado do anterior.
+A ordem dos oito cenários é fixa. Os dois primeiros preservam os fine-tunings já executados; cada novo cenário parte exclusivamente do checkpoint aprovado do anterior.
 O runner bloqueia qualquer etapa cujo predecessor não esteja aprovado. Um
 treino concluído é registrado como `trained`, nunca como aprovado.
 
