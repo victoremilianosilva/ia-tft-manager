@@ -98,8 +98,9 @@ public:
             case EconomicPosture::AccumulateResources:
                 out.reason = StrategicReason::EconomyConstraint; break;
             case EconomicPosture::PreserveWinStreak:
-            case EconomicPosture::PreserveLossStreak:
                 out.reason = StrategicReason::BoardAdvantage; break;
+            case EconomicPosture::PreserveLossStreak:
+                out.reason = StrategicReason::BoardDeficit; break;
             case EconomicPosture::InvestExperience:
                 out.reason = StrategicReason::ProgressionTiming; break;
             case EconomicPosture::RollForUpgrades:
