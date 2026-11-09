@@ -376,13 +376,15 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
         actions += ["", "**Dados do Action Evaluator indisponíveis** nesta sessão."]
     actions += ["", f"Recomendações disponíveis: **{len(action_rows)} / {len(decisions)}**.",
                 "", "### Scores dos candidatos (proxies heurísticos)", "",
-                "| Jogador | Round | Step | Ação | Campeão | Board | Sobrevivência | Streak | Composição | Upgrade | Postura | Custo direto | Juros | Oportunidade | Total | Selecionado |",
-                "|---|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|"]
+                "| Jogador | Round | Step | Ação | Campeão | Δ ouro direto | Juros perdidos | Oportunidade | Board | Sobrevivência | Streak | Composição | Upgrade | Postura | Score custo direto | Score juros | Score oportunidade | Total | Selecionado |",
+                "|---|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|"]
     for d, shadow in action_rows:
         for candidate in shadow.get("action_candidate_scores") or []:
             actions.append("| " + " | ".join(_cell(x) for x in (
                 d.get("player"), d.get("round"), d.get("step"),
                 candidate.get("action"), candidate.get("champion_id"),
+                candidate.get("direct_gold_cost"), candidate.get("lost_interest_cost"),
+                candidate.get("opportunity_cost"),
                 candidate.get("board_component"), candidate.get("survival_component"),
                 candidate.get("streak_component"), candidate.get("composition_component"),
                 candidate.get("upgrade_component"), candidate.get("posture_component"),
