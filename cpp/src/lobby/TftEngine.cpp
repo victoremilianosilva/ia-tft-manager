@@ -2968,7 +2968,15 @@ struct TFTEngine::Impl {
                 info.planned_composition_score > 0.0
                     ? info.planned_composition_score : info.composition_strength;
             strategic_context.alive = player.alive;
-            strategic_context.legacy_strategy = info.strategy;
+            if (info.strategy == static_cast<std::int32_t>(
+                    strategy::EconomicStrategy::Fast8)) {
+                strategic_context.progression_plan =
+                    strategy::ProgressionPlan::LevelToEight;
+            } else if (info.strategy == static_cast<std::int32_t>(
+                           strategy::EconomicStrategy::Slowroll)) {
+                strategic_context.progression_plan =
+                    strategy::ProgressionPlan::RerollForThreeStar;
+            }
 
             double lobby_power_sum = 0.0;
             std::int32_t lobby_alive_count = 0;
