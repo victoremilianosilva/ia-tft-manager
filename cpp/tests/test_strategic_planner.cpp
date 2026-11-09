@@ -23,7 +23,9 @@ StrategicSharedContext base_context() {
         StrategicUnitCandidate{11, "FlexibleTank", 3, 2, 3, true, false,
             false, 0.8, 0.6, 0.1, {"Warden"}},
         StrategicUnitCandidate{12, "LowValueUnit", 1, 1, 1, false, true,
-            false, 0.1, 0.1, 0.0, {"Duelist"}}
+            false, 0.1, 0.1, 0.0, {"Duelist"}},
+        StrategicUnitCandidate{13, "WeakOldCore", 1, 1, 1, true, false,
+            true, 0.1, 0.0, 0.0, {"Bruiser"}}
     };
     return c;
 }
@@ -91,6 +93,9 @@ int main() {
     decision = planner.evaluate(context, commitment);
     assert(decision.composition_decision == CompositionDecision::Pivot);
     assert(decision.target_composition_direction == "Invoker");
+    assert(std::find(decision.replaceable_unit_ids.begin(),
+                     decision.replaceable_unit_ids.end(), 13) !=
+           decision.replaceable_unit_ids.end());
     assert(decision.shadow_only);
     assert(commitment.composition_direction == "Invoker");
     assert(commitment.consecutive_reviews == 0);
