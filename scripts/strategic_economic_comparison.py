@@ -53,6 +53,53 @@ def _delta(before: dict, after: dict, key: str):
     return None
 
 
+class OutcomeEvaluator:
+    """Offline evaluator for observed post-action deltas and final logged state."""
+
+    def evaluate(self, decisions: list[dict]) -> dict:
+        by_player = defaultdict(list)
+        decision_outcomes = []
+        for decision in decisions:
+            before = decision.get("state_before") or {}
+            after = decision.get("state_after") or {}
+            economic = decision.get("economic_diagnostics") or {}
+            snap_before = economic.get("strategic_snapshot_before") or {}
+            snap_after = economic.get("strategic_snapshot_after") or {}
+            decision_outcomes.append({
+                "player": decision.get("player"),
+                "round": decision.get("round"),
+                "step": decision.get("step"),
+                "action": decision.get("action_name"),
+                "gold_delta": _delta(before, after, "gold"),
+                "hp_delta": _delta(before, after, "hp"),
+                "board_power_delta": _delta(before, after, "board_power"),
+                "level_delta": _delta(before, after, "level"),
+                "xp_delta": _delta(before, after, "xp"),
+                "pair_delta": _delta(snap_before, snap_after, "combined_pair_count"),
+                "two_star_delta": _delta(snap_before, snap_after, "board_two_star_or_higher"),
+                "three_star_delta": _delta(snap_before, snap_after, "board_three_star"),
+            })
+            by_player[str(decision.get("player", "?"))].append(decision)
+
+        final_states = []
+        for player, values in sorted(
+            by_player.items(),
+            key=lambda item: int(item[0]) if item[0].isdigit() else 999,
+        ):
+            final = next((d.get("state_after") or {} for d in reversed(values)
+                          if d.get("state_after")), {})
+            final_states.append({
+                "player": player,
+                "hp": final.get("hp"),
+                "gold": final.get("gold"),
+                "level": final.get("level"),
+                "board_power": final.get("board_power"),
+                "composition_direction": final.get("comp_direction"),
+                "placement": final.get("placement"),
+            })
+        return {"decisions": decision_outcomes, "final_states": final_states}
+
+
 def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
     """Return Markdown documents; no JSON artifacts are written by this module."""
     decisions = [
@@ -65,6 +112,7 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
     for values in by_player.values():
         values.sort(key=lambda item: (item.get("sequence_id") or 0, item.get("step") or 0))
 
+    outcome_summary = OutcomeEvaluator().evaluate(decisions)
     shadow_rows = [(d, _shadow(d)) for d in decisions]
     available = [(d, s) for d, s in shadow_rows if s]
     strategy_rows = [(d, s) for d, s in available if s.get("strategic_decision_name") is not None]
@@ -211,19 +259,12 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
         "| Jogador | Round | Step | Ação PPO | Δ Ouro | Δ HP | Δ Board | Δ Nível | Δ XP | Δ pares | Δ 2★+ | Δ 3★ |",
         "|---|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
-    for d in decisions:
-        before, after = d.get("state_before") or {}, d.get("state_after") or {}
-        econ = d.get("economic_diagnostics") or {}
-        snap_before = econ.get("strategic_snapshot_before") or {}
-        snap_after = econ.get("strategic_snapshot_after") or {}
+    for item in outcome_summary["decisions"]:
         values = (
-            d.get("player"), d.get("round"), d.get("step"), d.get("action_name"),
-            _delta(before, after, "gold"), _delta(before, after, "hp"),
-            _delta(before, after, "board_power"), _delta(before, after, "level"),
-            _delta(before, after, "xp"),
-            _delta(snap_before, snap_after, "combined_pair_count"),
-            _delta(snap_before, snap_after, "board_two_star_or_higher"),
-            _delta(snap_before, snap_after, "board_three_star"),
+            item.get("player"), item.get("round"), item.get("step"), item.get("action"),
+            item.get("gold_delta"), item.get("hp_delta"), item.get("board_power_delta"),
+            item.get("level_delta"), item.get("xp_delta"), item.get("pair_delta"),
+            item.get("two_star_delta"), item.get("three_star_delta"),
         )
         outcomes.append("| " + " | ".join(_cell(x) for x in values) + " |")
     if not decisions:
@@ -231,12 +272,10 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
     outcomes += ["", "## Estado final observado por jogador", "",
                  "| Jogador | HP final | Ouro final | Nível | Board power | Direção | Colocação |",
                  "|---|---:|---:|---:|---:|---|---:|"]
-    for player, values in sorted(by_player.items(), key=lambda item: (int(item[0]) if item[0].isdigit() else 999)):
-        final = next((d.get("state_after") or {} for d in reversed(values)
-                      if d.get("state_after")), {})
+    for final in outcome_summary["final_states"]:
         outcomes.append("| " + " | ".join(_cell(x) for x in (
-            player, final.get("hp"), final.get("gold"), final.get("level"),
-            final.get("board_power"), final.get("comp_direction"), final.get("placement"),
+            final.get("player"), final.get("hp"), final.get("gold"), final.get("level"),
+            final.get("board_power"), final.get("composition_direction"), final.get("placement"),
         )) + " |")
     if not by_player:
         outcomes += ["| — | — | — | — | — | — | — |"]
