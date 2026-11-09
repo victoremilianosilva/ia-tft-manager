@@ -13,6 +13,14 @@ def _decision(action="BUY", recommendation="BUY_UNIT", with_shadow=True):
         "economic_board_pressure": 0.8,
         "economic_resource_pressure": 0.2,
         "action_recommendation_name": recommendation,
+        "action_recommended_champion_id": 90,
+        "action_expected_direct_gold_cost": 3.0,
+        "action_expected_lost_interest_cost": 0.5,
+        "action_expected_opportunity_cost": 0.25,
+        "action_candidate_scores": [
+            {"action": "BUY_UNIT", "champion_id": 90, "board_component": 0.5,
+             "total_score": 0.8, "selected": True}
+        ],
         "action_reason": "high marginal value",
         "action_expected_board_delta": 2.5,
         "action_expected_hp_preservation": 1.0,
@@ -80,7 +88,7 @@ def test_outcome_evaluator_correlates_round_end_without_action_attribution():
     result = OutcomeEvaluator().evaluate(
         [decision],
         [{
-            "player": "1", "round": "2-3",
+            "player": "1", "round": "2-3", "sequence_id": 8, "step": 8,
             "state_after": {"gold": 22, "hp": 60, "board_power": 25, "placement": 5},
             "combat_reward": -0.3, "placement": 5,
         }],
@@ -89,6 +97,14 @@ def test_outcome_evaluator_correlates_round_end_without_action_attribution():
     assert outcome["hp_delta"] == 0.0
     assert len(result["round_summaries"]) == 1
     assert result["round_summaries"][0]["combat_reward"] == -0.3
+    assert "Resultado de combate (uma linha por jogador e round)" in build_shadow_markdown_reports({
+        "players_seen": ["1"], "decision_timeline": [decision],
+        "round_outcome_timeline": [{
+            "player": "1", "round": "2-3", "sequence_id": 8, "step": 8,
+            "state_after": {"gold": 22, "hp": 60, "board_power": 25, "placement": 5},
+            "combat_reward": -0.3, "placement": 5,
+        }]
+    })["audit_resultados.md"]
     assert result["final_states"][0]["hp"] == 60
     assert result["final_states"][0]["placement"] == 5
 
