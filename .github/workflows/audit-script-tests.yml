@@ -20,6 +20,10 @@ on:
   pull_request:
     paths:
       - 'scripts/audit_viewer_match.py'
+      - 'scripts/strategic_economic_comparison.py'
+      - 'tests/test_strategic_economic_comparison.py'
+      - 'tests/test_viewer_shadow_planning_logs.py'
+      - 'viewer/player_logs.py'
       - 'tests/test_audit_metric_reconciliation.py'
       - 'tests/test_purchase_sequence_audit.py'
       - 'tests/test_board_quality_audit.py'
