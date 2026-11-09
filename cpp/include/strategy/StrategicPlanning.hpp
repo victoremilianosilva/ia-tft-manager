@@ -90,6 +90,7 @@ struct StrategicSharedContext {
     std::int32_t level{1};
     std::int32_t xp{0};
     std::int32_t xp_to_next{0};
+    ProgressionPlan progression_plan{ProgressionPlan::Flexible};
     std::int32_t interest_if_resolved_now{0};
     std::int32_t projected_next_round_income{0};
     std::int32_t win_streak{0};
@@ -110,7 +111,6 @@ struct StrategicSharedContext {
     bool alive{true};
     // Candidate actions are diagnostic estimates assembled from native state.
     std::vector<StrategicActionCandidate> action_candidates;
-    std::int32_t legacy_strategy{0};
 };
 
 struct StrategicCommitment {
