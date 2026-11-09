@@ -19,6 +19,11 @@ from collections import Counter, defaultdict, deque
 from pathlib import Path
 from typing import Any
 
+try:
+    from scripts.strategic_economic_comparison import build_shadow_markdown_reports
+except ImportError:  # Executed directly as scripts/audit_viewer_match.py
+    from strategic_economic_comparison import build_shadow_markdown_reports
+
 ACTION_NAMES = {0: "BUY", 1: "REROLL", 2: "BUY_XP", 3: "MOVE_BENCH",
                 4: "MOVE_BOARD", 5: "SELL", 6: "PASS"}
 MOVE_RE = re.compile(
@@ -2569,7 +2574,8 @@ def audit_session_inputs(tft_files: list[Path], json_files: list[Path], report: 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("input", type=Path, help="pasta da sessão ou arquivo player log")
-    parser.add_argument("--out-dir", type=Path, help="diretório dos relatórios; padrão: <entrada>/audit")
+    parser.add_argument("--out-dir", type=Path, help="diretório temporário dos dados estruturados e relatórios internos; padrão: <entrada>/audit")
+    parser.add_argument("--markdown-dir", type=Path, help="diretório dos artefatos Markdown; útil para manter JSON intermediário fora da sessão")
     parser.add_argument("--loop-window", type=int, default=8, help="janela para repetição de posição (mínimo 4)")
     parser.add_argument("--comp-window", type=int, default=8, help="janela para instabilidade de composição (mínimo 3)")
     parser.add_argument("--strict", action="store_true", help="retorna código 1 se houver CRITICAL/HIGH")
@@ -2623,14 +2629,35 @@ def main() -> int:
     report["players_seen"] = sorted(report["players_seen"], key=lambda x: int(x) if x.isdigit() else 9999)
     report["summary"] = dict(Counter(x["severity"] for x in unique))
     out_dir = args.out_dir or default_out
+    markdown_dir = args.markdown_dir or out_dir
     out_dir.mkdir(parents=True, exist_ok=True)
-    json_path, md_path = out_dir / "audit_report.json", out_dir / "audit_report.md"
-    full_md_path = out_dir / "audit_report_completo.md"
-    json_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-    md_path.write_text(markdown_report(report), encoding="utf-8")
-    full_md_path.write_text(markdown_full_report(report), encoding="utf-8")
-    print(markdown_report(report))
-    print(f"\nRelatórios salvos em:\n- {json_path}\n- {md_path}\n- {full_md_path}")
+    markdown_dir.mkdir(parents=True, exist_ok=True)
+    json_path = out_dir / "audit_report.json"
+
+    # Structured data is an internal processing artifact. The Viewer passes a
+    # temporary out-dir, so no JSON file is left in the user's session/audit folder.
+    general_md = markdown_report(report)
+    full_md = markdown_full_report(report)
+    evidence_marker = "\\n---\\n\\n## Evidências resumidas dos achados"
+    if evidence_marker in full_md:
+        evidence_md = "# Evidências detalhadas dos achados" + full_md.split(evidence_marker, 1)[1]
+    else:
+        evidence_md = "# Evidências detalhadas dos achados\\n\\nSem evidências adicionais."
+    report_for_json = dict(report)
+    json_path.write_text(json.dumps(report_for_json, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    markdown_inputs = dict(report)
+    markdown_inputs["_markdown_general"] = general_md
+    markdown_inputs["_markdown_evidence"] = evidence_md
+    markdown_documents = build_shadow_markdown_reports(markdown_inputs)
+    for filename, content in markdown_documents.items():
+        (markdown_dir / filename).write_text(content, encoding="utf-8")
+
+    print(general_md)
+    print("\\nRelatórios Markdown salvos em:")
+    for filename in sorted(markdown_documents):
+        print(f"- {markdown_dir / filename}")
+    print(f"\\nDados estruturados temporários: {json_path}")
     if args.strict and any(x["severity"] in ("CRITICAL", "HIGH") for x in unique):
         return 1
     return 0
