@@ -86,7 +86,55 @@ def test_outcome_evaluator_correlates_round_end_without_action_attribution():
         }],
     )
     outcome = result["decisions"][0]
-    assert outcome["round_end_hp_delta"] == -10.0
-    assert outcome["round_end_gold_delta"] == -8.0
-    assert outcome["round_combat_reward"] == -0.3
+    assert outcome["hp_delta"] == 0.0
+    assert len(result["round_summaries"]) == 1
+    assert result["round_summaries"][0]["combat_reward"] == -0.3
+    assert result["final_states"][0]["hp"] == 60
     assert result["final_states"][0]["placement"] == 5
+
+
+
+def test_outcome_evaluator_deduplicates_round_combat_and_preserves_last_alive_state():
+    decisions = [_decision()]
+    decisions[0]["round"] = "2-3"
+    decisions[0]["state_after"].update({"hp": 54, "round": "2-3", "step": 7})
+    outcomes = [
+        {"player": "1", "round": "2-3",
+         "state_after": {"hp": 50, "gold": 24, "board_power": 24, "round": "2-3"},
+         "combat_reward": -0.2, "placement": None, "sequence_id": 10},
+        {"player": "1", "round": "2-3",
+         "state_after": {"hp": 50, "gold": 24, "board_power": 24, "round": "2-3"},
+         "combat_reward": -0.2, "placement": None, "sequence_id": 11},
+        {"player": "1", "round": "2-4",
+         "state_after": {"hp": 0, "gold": 18, "board_power": 0, "round": "2-4"},
+         "combat_reward": -1.0, "placement": 5, "sequence_id": 12},
+    ]
+    result = OutcomeEvaluator().evaluate(decisions, outcomes)
+    assert len(result["round_summaries"]) == 2
+    assert result["round_summaries"][0]["combat_reward"] == -0.2
+    assert result["final_states"][0]["hp"] == 50
+    assert result["final_states"][0]["terminal_hp"] == 0
+    assert result["final_states"][0]["placement"] == 5
+
+
+def test_outcome_evaluator_correlates_recommendations_with_next_one_and_two_rounds():
+    first = _decision(recommendation="BUY_UNIT")
+    first["round"] = "2-3"
+    second = _decision(recommendation="REROLL")
+    second["round"] = "2-3"
+    outcomes = [
+        {"player": "1", "round": "2-3",
+         "state_after": {"hp": 70, "gold": 30, "board_power": 20}},
+        {"player": "1", "round": "2-4",
+         "state_after": {"hp": 62, "gold": 26, "board_power": 23}},
+        {"player": "1", "round": "3-1",
+         "state_after": {"hp": 58, "gold": 20, "board_power": 25}},
+    ]
+    result = OutcomeEvaluator().evaluate([first, second], outcomes)
+    row = result["recommendation_rounds"][0]
+    assert row["recommendations"] == {"BUY_UNIT": 1, "REROLL": 1}
+    assert row["next_round_hp_delta"] == -8.0
+    assert row["next_round_board_delta"] == 3.0
+    assert row["next_two_rounds_hp_delta"] == -12.0
+    assert row["next_two_rounds_gold_delta"] == -10.0
+    assert len(result["round_summaries"]) == 3
