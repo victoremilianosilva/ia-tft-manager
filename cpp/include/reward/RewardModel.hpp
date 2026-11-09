@@ -123,7 +123,7 @@ inline double strategy_action_reward(
     if (action_type == 1 && strategy_id != 3) {
         // STABILIZE may roll when a pressured board finds a materially better
         // shop. ALL_IN may do the same at critical HP; neither action is masked.
-        if (strategy_id == 1 && hp > 25.0 && hp <= 65.0 && reroll_improved) return 0.04;
+        if (strategy_id == 1 && board_power < 35.0 && hp > 25.0 && hp <= 65.0 && reroll_improved) return 0.04;
         if (strategy_id == 4 && hp <= 25.0 && reroll_improved) return 0.04;
         double penalty = stage >= 4 && old_gold >= 50 ? 0.15
             : (stage >= 3 || old_gold >= 40 ? 0.12 : 0.09);
@@ -141,7 +141,7 @@ inline double strategy_action_reward(
                 reward += 0.025;
             // ECON keeps the interest reserve, then converts true surplus into
             // XP while its strong-board eligibility is active.
-            if (old_gold > 50 && action_type == 2 && new_gold >= 50)
+            if (board_power >= 35.0 && old_gold > 50 && action_type == 2 && new_gold >= 50)
                 reward += leveled ? 0.07 : 0.025;
             if (new_gold < 50 && new_gold < old_gold && hp > 40.0) {
                 // A comp target can justify buying units, not routine XP that
