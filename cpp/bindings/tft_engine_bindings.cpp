@@ -325,6 +325,7 @@ py::list strategies_to_list(
             item["strategic_candidate_anchor_id"] = -1;
             item["strategic_candidate_score"] = 0.0;
             item["strategic_candidate_streak"] = 0;
+            item["strategic_candidate_last_review_round"] = 0;
             item["strategic_committed_direction"] = "";
             item["strategic_selected_round"] = 0;
             item["strategic_shadow_only"] = true;
@@ -406,6 +407,7 @@ py::list strategies_to_list(
             item["strategic_candidate_anchor_id"] = strategy.strategic_candidate_anchor_id;
             item["strategic_candidate_score"] = strategy.strategic_candidate_score;
             item["strategic_candidate_streak"] = strategy.strategic_candidate_streak;
+            item["strategic_candidate_last_review_round"] = strategy.strategic_candidate_last_review_round;
             item["strategic_committed_direction"] = strategy.strategic_committed_direction;
             item["strategic_selected_round"] = strategy.strategic_selected_round;
             item["strategic_shadow_only"] = strategy.strategic_shadow_only;
