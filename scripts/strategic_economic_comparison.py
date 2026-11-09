@@ -183,8 +183,8 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
         "Ações executadas pelo PPO",
         "Esta seção registra a ação observada no log. A recomendação das novas camadas aparece nos documentos próprios."
     )
-    ppo += ["| Jogador | Round | Step | Ação executada | Ouro antes → depois | HP antes → depois | Board antes → depois | Estratégia ativa |",
-            "|---|---|---:|---|---:|---:|---:|---|"]
+    ppo += ["| Jogador | Round | Step | Ação executada | Origem | Ouro antes → depois | HP antes → depois | Board antes → depois | Estratégia ativa |",
+            "|---|---|---:|---|---|---:|---:|---:|---|"]
     for d in decisions:
         before, after = d.get("state_before") or {}, d.get("state_after") or {}
         ppo.append("| " + " | ".join(_cell(x) for x in (
@@ -196,7 +196,7 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
             before.get("strategy_name"),
         )) + " |")
     if not decisions:
-        ppo += ["| — | — | — | Dados de decisão indisponíveis | — | — | — | — |"]
+        ppo += ["| — | — | — | Dados de decisão indisponíveis | — | — | — | — | — |"]
     ppo += ["", f"Decisões PPO encontradas: **{len(decisions)}**.", ""]
 
     strategy = header(
