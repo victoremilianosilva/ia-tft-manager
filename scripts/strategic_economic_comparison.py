@@ -56,15 +56,22 @@ def _delta(before: dict, after: dict, key: str):
 class OutcomeEvaluator:
     """Offline evaluator for observed post-action deltas and final logged state."""
 
-    def evaluate(self, decisions: list[dict]) -> dict:
+    def evaluate(self, decisions: list[dict], round_outcomes: list[dict] | None = None) -> dict:
         by_player = defaultdict(list)
         decision_outcomes = []
+        outcomes_by_round = {}
+        for outcome in round_outcomes or []:
+            outcomes_by_round[(str(outcome.get("player", "?")), str(outcome.get("round", "?")))] = outcome
         for decision in decisions:
             before = decision.get("state_before") or {}
             after = decision.get("state_after") or {}
             economic = decision.get("economic_diagnostics") or {}
             snap_before = economic.get("strategic_snapshot_before") or {}
             snap_after = economic.get("strategic_snapshot_after") or {}
+            round_outcome = outcomes_by_round.get((
+                str(decision.get("player", "?")), str(decision.get("round", "?"))
+            ), {})
+            round_state = round_outcome.get("state_after") or {}
             decision_outcomes.append({
                 "player": decision.get("player"),
                 "round": decision.get("round"),
@@ -78,6 +85,13 @@ class OutcomeEvaluator:
                 "pair_delta": _delta(snap_before, snap_after, "combined_pair_count"),
                 "two_star_delta": _delta(snap_before, snap_after, "board_two_star_or_higher"),
                 "three_star_delta": _delta(snap_before, snap_after, "board_three_star"),
+                # These round-end deltas include all remaining preparation actions
+                # and combat; they are contextual outcomes, not attribution to this action.
+                "round_end_hp_delta": _delta(before, round_state, "hp"),
+                "round_end_gold_delta": _delta(before, round_state, "gold"),
+                "round_end_board_delta": _delta(before, round_state, "board_power"),
+                "round_combat_reward": round_outcome.get("combat_reward"),
+                "round_placement": round_outcome.get("placement", round_state.get("placement")),
             })
             by_player[str(decision.get("player", "?"))].append(decision)
 
@@ -112,7 +126,7 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
     for values in by_player.values():
         values.sort(key=lambda item: (item.get("sequence_id") or 0, item.get("step") or 0))
 
-    outcome_summary = OutcomeEvaluator().evaluate(decisions)
+    outcome_summary = OutcomeEvaluator().evaluate(decisions, report.get("round_outcome_timeline", []))
     shadow_rows = [(d, _shadow(d)) for d in decisions]
     available = [(d, s) for d, s in shadow_rows if s]
     strategy_rows = [(d, s) for d, s in available if s.get("strategic_decision_name") is not None]
@@ -256,8 +270,8 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
     outcomes += [
         "## Efeito imediato por decisão",
         "",
-        "| Jogador | Round | Step | Ação PPO | Δ Ouro | Δ HP | Δ Board | Δ Nível | Δ XP | Δ pares | Δ 2★+ | Δ 3★ |",
-        "|---|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Jogador | Round | Step | Ação PPO | Δ Ouro | Δ HP | Δ Board | Δ Nível | Δ XP | Δ pares | Δ 2★+ | Δ 3★ | Δ HP até fim round | Δ Ouro até fim round | Δ Board até fim round | Rew combate | Colocação |",
+        "|---|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for item in outcome_summary["decisions"]:
         values = (
@@ -265,10 +279,13 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
             item.get("gold_delta"), item.get("hp_delta"), item.get("board_power_delta"),
             item.get("level_delta"), item.get("xp_delta"), item.get("pair_delta"),
             item.get("two_star_delta"), item.get("three_star_delta"),
+            item.get("round_end_hp_delta"), item.get("round_end_gold_delta"),
+            item.get("round_end_board_delta"), item.get("round_combat_reward"),
+            item.get("round_placement"),
         )
         outcomes.append("| " + " | ".join(_cell(x) for x in values) + " |")
     if not decisions:
-        outcomes += ["| — | — | — | Sem decisões estruturadas | — | — | — | — | — | — | — | — |"]
+        outcomes += ["| — | — | — | Sem decisões estruturadas | — | — | — | — | — | — | — | — | — | — | — | — | — |"]
     outcomes += ["", "## Estado final observado por jogador", "",
                  "| Jogador | HP final | Ouro final | Nível | Board power | Direção | Colocação |",
                  "|---|---:|---:|---:|---:|---|---:|"]
@@ -281,7 +298,7 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
         outcomes += ["| — | — | — | — | — | — | — |"]
     outcomes += [
         "",
-        "HP, ouro, nível e board power são deltas imediatos entre snapshots quando ambos existem. Resultado final é o último estado observado no log, não uma previsão. Dados ausentes permanecem como —.",
+        "Os deltas imediatos medem a transição da ação. Os deltas até o fim do round incluem as ações restantes da preparação e o combate; são contexto posterior e não podem ser atribuídos isoladamente à ação da linha. Resultado final é o último estado observado no log, não uma previsão. Dados ausentes permanecem como —.",
         "",
     ]
 
