@@ -2,11 +2,6 @@
 param(
     [Parameter(Mandatory = $true)]
     [ValidateSet(
-        "s4_fast8_lvl6_gold60_hp_ok",
-        "s4_fast8_lvl6_gold80",
-        "s4_fast8_lvl7_gold60",
-        "late_game_high_gold_underleveled",
-        "slowroll_gold_reserve",
         "critical_hp_high_gold",
         "late_game_high_gold_underleveled",
         "econ_gold_reserve",
