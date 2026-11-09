@@ -156,6 +156,11 @@ class AuditWindow(QMainWindow):
                     raise RuntimeError(detail)
                 self.report = json.loads(report_path.read_text(encoding="utf-8"))
                 self.report_md = md_path.read_text(encoding="utf-8") if md_path.is_file() else completed.stdout
+            # Remove only the legacy generated report file from older Viewer
+            # versions; source session JSON logs are never touched.
+            legacy_report_json = out_dir / "audit_report.json"
+            if legacy_report_json.is_file():
+                legacy_report_json.unlink()
             self.session_dir = folder
             self._render_report()
             issues = self.report.get("issues", [])
