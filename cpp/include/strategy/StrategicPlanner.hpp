@@ -108,8 +108,9 @@ public:
             out.composition_decision = CompositionDecision::Pivot;
             out.reason = StrategicReason::BoardDeficit;
             out.target_composition_direction = best.direction;
-            commitment.composition_direction = best.direction;
-            commitment.selected_round = context.round;
+            // Keep the committed direction as the live direction in shadow
+            // mode. The recommendation is not an activation; retain the old
+            // commitment until the engine actually adopts the new direction.
             commitment.selection_reason = out.reason;
             commitment.confidence = best.confidence;
             clear_candidate(commitment);
@@ -152,11 +153,11 @@ public:
         out.composition_decision = CompositionDecision::Pivot;
         out.reason = StrategicReason::AnchorOpportunity;
         out.target_composition_direction = best.direction;
-        commitment.composition_direction = best.direction;
-        commitment.selected_round = context.round;
+        // Do not mutate the active strategic commitment in shadow mode.
+        // Keep the candidate and review count so the recommendation remains
+        // stable until the active composition actually changes.
         commitment.selection_reason = out.reason;
         commitment.confidence = best.confidence;
-        clear_candidate(commitment);
         classify_owned_units(context, out, out.target_composition_direction);
         return out;
     }
