@@ -331,7 +331,21 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
         )) + " |")
     if not strategy_rows:
         strategy += ["", "**Dados do Strategic Planner indisponíveis** nesta sessão. Logs anteriores à captura shadow continuam válidos para as demais auditorias."]
-    strategy += ["", f"Decisões com diagnóstico estratégico: **{len(strategy_rows)} / {len(decisions)}**.", ""]
+    decision_counts = Counter(str(shadow.get("strategic_decision_name"))
+                               for _, shadow in strategy_rows)
+    if decision_counts:
+        strategy += ["", "### Frequência das decisões", ""]
+        strategy += [f"- {name}: {count}" for name, count in sorted(decision_counts.items())]
+    candidate_rows = sum(
+        len(shadow.get("strategic_candidate_diagnostics") or [])
+        for _, shadow in strategy_rows
+    )
+    strategy += [
+        "",
+        f"Decisões com diagnóstico estratégico: **{len(strategy_rows)} / {len(decisions)}**.",
+        f"Candidatos de âncora avaliados: **{candidate_rows}**.",
+        "",
+    ]
 
     economy = header(
         "Economic Controller — posturas recomendadas",
