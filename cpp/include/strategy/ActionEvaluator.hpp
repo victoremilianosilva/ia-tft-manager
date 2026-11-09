@@ -24,7 +24,7 @@ public:
         double best_score = -1.0e9;
         double second_score = -1.0e9;
         for (const auto& candidate : c.action_candidates) {
-            if (!candidate.available) continue;
+            if (!candidate.available || candidate.gold_cost > c.gold) continue;
             const double board_gain = std::max(0.0, candidate.expected_board_delta);
             const double survival_multiplier = 0.75 + posture.survival_pressure * 0.90;
             const double streak_multiplier =
@@ -69,7 +69,7 @@ public:
                 second_score = best_score;
                 best_score = score;
                 out.recommended_action = candidate.kind;
-                out.reason = reason_for(candidate);
+                out.reason = reason_for(candidate, c);
                 out.expected_board_delta = candidate.expected_board_delta;
                 out.expected_hp_preservation = board_gain *
                     (0.10 + posture.survival_pressure * 0.35);
@@ -93,13 +93,30 @@ public:
 
 private:
     static StrategicReason reason_for(
-        const StrategicActionCandidate& candidate) noexcept {
-        if (candidate.upgrade_value > 0.5)
-            return StrategicReason::UpgradeOpportunity;
-        if (candidate.composition_fit > 0.6)
-            return StrategicReason::AnchorOpportunity;
-        if (candidate.gold_cost > 0)
-            return StrategicReason::EconomyConstraint;
+        const StrategicActionCandidate& candidate,
+        const StrategicSharedContext& context) noexcept {
+        switch (candidate.kind) {
+            case StrategicActionKind::BuyExperience:
+                return StrategicReason::ProgressionTiming;
+            case StrategicActionKind::RerollShop:
+                return StrategicReason::UpgradeOpportunity;
+            case StrategicActionKind::BuyUnit:
+                if (candidate.upgrade_value > 0.5)
+                    return StrategicReason::UpgradeOpportunity;
+                if (candidate.composition_fit > 0.6)
+                    return StrategicReason::AnchorOpportunity;
+                return StrategicReason::EconomyConstraint;
+            case StrategicActionKind::Hold:
+                return (context.win_streak > 0 || context.loss_streak > 0)
+                    ? StrategicReason::BoardAdvantage
+                    : StrategicReason::EconomyConstraint;
+            case StrategicActionKind::DeployOrMove:
+                return StrategicReason::BoardDeficit;
+            case StrategicActionKind::SellUnit:
+                return StrategicReason::EconomyConstraint;
+            case StrategicActionKind::None:
+                break;
+        }
         return StrategicReason::InsufficientEvidence;
     }
 };
