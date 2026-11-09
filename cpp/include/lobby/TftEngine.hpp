@@ -255,6 +255,9 @@ struct StrategicCandidateDiagnosticInfo {
 struct ActionCandidateScoreInfo {
     std::string action;
     std::int32_t champion_id{-1};
+    double direct_gold_cost{0.0};
+    double lost_interest_cost{0.0};
+    double opportunity_cost{0.0};
     double board_component{0.0};
     double survival_component{0.0};
     double streak_component{0.0};
