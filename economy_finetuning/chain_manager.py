@@ -59,15 +59,17 @@ def check_scenario(
     scenario: str, requested_checkpoint: Path, *, custom_source: bool = False
 ) -> Path:
     requested_checkpoint = requested_checkpoint.expanduser().resolve()
-    if not requested_checkpoint.is_file():
-        raise FileNotFoundError(f"Checkpoint de origem não encontrado: {requested_checkpoint}")
     # Explicit custom source is an opt-in branch for this run only.
     if custom_source:
+        if not requested_checkpoint.is_file():
+            raise FileNotFoundError(f"Checkpoint de origem não encontrado: {requested_checkpoint}")
         return requested_checkpoint
     data = _load()
     previous = predecessor(scenario)
     if previous is None:
-        return requested_checkpoint.resolve()
+        if not requested_checkpoint.is_file():
+            raise FileNotFoundError(f"Checkpoint de origem não encontrado: {requested_checkpoint}")
+        return requested_checkpoint
     previous_entry = data["scenarios"].get(previous)
     if not previous_entry or previous_entry.get("status") != "approved":
         raise RuntimeError(
