@@ -237,9 +237,18 @@ int main() {
     reroll_candidate.gold_cost = 2;
     reroll_candidate.direct_gold_cost = 2.0;
     reroll_candidate.opportunity_cost = 2.50;
+    reroll_candidate.opportunity_cost =
+        action_opportunity_cost::kRerollWithUpgradeTarget;
+    xp_candidate.opportunity_cost = action_opportunity_cost::kBuyExperience;
     assert(reroll_candidate.opportunity_cost > xp_candidate.opportunity_cost);
-    assert(reroll_candidate.direct_gold_cost + reroll_candidate.opportunity_cost >
-           xp_candidate.direct_gold_cost + xp_candidate.opportunity_cost);
+    // Even if XP crosses one extra interest threshold, reroll remains the
+    // more expensive opportunity once its search premium is included.
+    reroll_candidate.lost_interest_cost = 0.0;
+    xp_candidate.lost_interest_cost = 1.0;
+    assert(reroll_candidate.direct_gold_cost + reroll_candidate.lost_interest_cost +
+               reroll_candidate.opportunity_cost >
+           xp_candidate.direct_gold_cost + xp_candidate.lost_interest_cost +
+               xp_candidate.opportunity_cost);
 
     economy_context.action_candidates.clear();
     const auto no_candidate = action_evaluator.evaluate(economy_context, posture);
