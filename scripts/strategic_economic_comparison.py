@@ -60,8 +60,12 @@ class OutcomeEvaluator:
         by_player = defaultdict(list)
         decision_outcomes = []
         outcomes_by_round = {}
+        final_round_state_by_player = {}
         for outcome in round_outcomes or []:
-            outcomes_by_round[(str(outcome.get("player", "?")), str(outcome.get("round", "?")))] = outcome
+            player_key = str(outcome.get("player", "?"))
+            outcomes_by_round[(player_key, str(outcome.get("round", "?")))] = outcome
+            if outcome.get("state_after"):
+                final_round_state_by_player[player_key] = outcome.get("state_after")
         for decision in decisions:
             before = decision.get("state_before") or {}
             after = decision.get("state_after") or {}
@@ -100,8 +104,9 @@ class OutcomeEvaluator:
             by_player.items(),
             key=lambda item: int(item[0]) if item[0].isdigit() else 999,
         ):
-            final = next((d.get("state_after") or {} for d in reversed(values)
-                          if d.get("state_after")), {})
+            final = final_round_state_by_player.get(player) or next(
+                (d.get("state_after") or {} for d in reversed(values) if d.get("state_after")), {}
+            )
             final_states.append({
                 "player": player,
                 "hp": final.get("hp"),
