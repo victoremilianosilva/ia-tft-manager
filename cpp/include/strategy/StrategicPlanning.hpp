@@ -56,10 +56,12 @@ struct StrategicUnitCandidate {
     double board_contribution{0.0};
     double composition_fit{0.0};
     double item_fit{0.0};
+    std::vector<std::string> traits;
 };
 
 struct StrategicAnchorCandidate {
     StrategicUnitCandidate unit;
+    std::string target_composition_direction;
     double anchor_value{0.0};
     double transition_cost{0.0};
     double contestation{0.0};
@@ -86,6 +88,8 @@ struct StrategicSharedContext {
     double relative_board_power{0.0};
     double estimated_incoming_damage{0.0};
     double elimination_risk{0.0};
+    double current_direction_score{0.0};
+    bool current_direction_viable{true};
     std::string current_composition_direction;
     std::string current_composition_focus;
     std::vector<std::string> current_core_traits;
@@ -106,6 +110,9 @@ struct StrategicCommitment {
     StrategicReason revision_condition{StrategicReason::None};
     double confidence{0.0};
     std::uint32_t consecutive_reviews{0};
+    std::string candidate_composition_direction;
+    std::int32_t candidate_anchor_id{-1};
+    double candidate_score{0.0};
 };
 
 struct StrategicPlanDecision {
