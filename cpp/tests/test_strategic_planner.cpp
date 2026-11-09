@@ -61,6 +61,8 @@ int main() {
     context.anchor_candidates.push_back(anchor(90, "Invoker", 1.0, 4.0, 0));
     auto decision = planner.evaluate(context, commitment);
     assert(decision.composition_decision == CompositionDecision::InsufficientEvidence);
+    assert(!decision.candidate_diagnostics.empty());
+    assert(!decision.candidate_diagnostics.front().accepted);
     assert(decision.target_composition_direction == "Bruiser");
     assert(std::find(decision.preserve_unit_ids.begin(),
                      decision.preserve_unit_ids.end(), 10) != decision.preserve_unit_ids.end());
@@ -70,7 +72,7 @@ int main() {
     context.anchor_candidates.clear();
     context.anchor_candidates.push_back(anchor(89, "Bruiser", 4.0, 0.2, 2));
     decision = planner.evaluate(context, commitment);
-    assert(decision.composition_decision == CompositionDecision::Adapt);
+    assert(decision.composition_decision == CompositionDecision::Keep);
     assert(decision.target_composition_direction == "Bruiser");
 
     // A strong anchor cannot trigger a pivot on a single review while locked.
