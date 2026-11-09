@@ -1,5 +1,8 @@
 #include "strategy/StrategicPlanner.hpp"
+#include "strategy/EconomicController.hpp"
+#include "strategy/ActionEvaluator.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <iostream>
@@ -145,6 +148,62 @@ int main() {
     assert(decision.composition_decision == CompositionDecision::Keep ||
            decision.composition_decision == CompositionDecision::Adapt);
     assert(decision.anchor_champion_id == -1);
+
+    // Economic posture is contextual: a strong win streak can outweigh
+    // passive accumulation, while survival pressure can justify investment.
+    EconomicController economic_controller;
+    StrategicSharedContext economy_context;
+    economy_context.alive = true;
+    economy_context.hp = 90.0;
+    economy_context.gold = 40;
+    economy_context.level = 7;
+    economy_context.stage = 4;
+    economy_context.relative_board_power = 1.20;
+    economy_context.win_streak = 5;
+    auto posture = economic_controller.evaluate(economy_context);
+    assert(posture.posture == EconomicPosture::PreserveWinStreak);
+    assert(posture.shadow_only);
+    assert(posture.confidence >= 0.50);
+
+    economy_context.hp = 20.0;
+    economy_context.relative_board_power = 0.65;
+    economy_context.win_streak = 0;
+    posture = economic_controller.evaluate(economy_context);
+    assert(posture.posture == EconomicPosture::EmergencyInvestment);
+    assert(posture.survival_pressure > 0.0);
+    assert(posture.board_pressure > 0.0);
+
+    // Marginal action evaluation compares candidates against expected benefit
+    // and opportunity cost; it does not mutate the context.
+    ActionEvaluator action_evaluator;
+    economy_context.hp = 48.0;
+    economy_context.gold = 35;
+    economy_context.relative_board_power = 0.75;
+    economy_context.action_candidates.clear();
+    StrategicActionCandidate hold;
+    hold.kind = StrategicActionKind::Hold;
+    economy_context.action_candidates.push_back(hold);
+    StrategicActionCandidate purchase;
+    purchase.kind = StrategicActionKind::BuyUnit;
+    purchase.champion_id = 123;
+    purchase.gold_cost = 3;
+    purchase.expected_economy_cost = 3.0;
+    purchase.expected_board_delta = 0.62;
+    purchase.composition_fit = 0.80;
+    purchase.upgrade_value = 0.50;
+    economy_context.action_candidates.push_back(purchase);
+    posture = economic_controller.evaluate(economy_context);
+    const auto action = action_evaluator.evaluate(economy_context, posture);
+    assert(action.recommended_action == StrategicActionKind::BuyUnit);
+    assert(action.expected_economy_cost == 3.0);
+    assert(action.expected_board_delta == 0.62);
+    assert(action.confidence >= 0.50);
+    assert(economy_context.action_candidates.size() == 2);
+
+    economy_context.action_candidates.clear();
+    const auto no_candidate = action_evaluator.evaluate(economy_context, posture);
+    assert(no_candidate.recommended_action == StrategicActionKind::Hold);
+    assert(no_candidate.confidence == 0.0);
 
     std::cout << "strategic planner shadow tests passed\n";
     return 0;
