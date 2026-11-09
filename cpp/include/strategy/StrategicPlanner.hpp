@@ -233,8 +233,7 @@ private:
             const bool preserve = unit.is_core ||
                 unit.board_contribution >= config_.preserve_board_contribution ||
                 unit.item_fit >= config_.preserve_item_fit ||
-                (target_trait_fit &&
-                 unit.composition_fit >= config_.preserve_target_trait_fit);
+                target_trait_fit;
             (preserve ? out.preserve_unit_ids : out.replaceable_unit_ids)
                 .push_back(unit.champion_id);
         }
