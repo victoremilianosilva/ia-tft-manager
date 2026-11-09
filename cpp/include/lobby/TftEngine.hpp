@@ -314,6 +314,7 @@ struct StrategyInfo {
     std::int32_t strategic_candidate_anchor_id{-1};
     double strategic_candidate_score{0.0};
     std::uint32_t strategic_candidate_streak{0};
+    std::uint32_t strategic_candidate_last_review_round{0};
     std::string strategic_committed_direction;
     std::uint32_t strategic_selected_round{0};
     bool strategic_shadow_only{true};
