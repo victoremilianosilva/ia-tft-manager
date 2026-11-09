@@ -3369,7 +3369,7 @@ struct TFTEngine::Impl {
                 action_decision.expected_streak_value;
             info.strategic_action_confidence = action_decision.confidence;
             info.economic_shadow_only =
-                economic_decision.shadow_only && action_decision.confidence >= 0.0;
+                economic_decision.shadow_only && action_decision.shadow_only;
             static const std::array<const char*, 4> composition_decision_names{
                 "KEEP", "ADAPT", "PIVOT", "ABANDON"
             };
