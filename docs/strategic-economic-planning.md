@@ -108,12 +108,29 @@ every recommendation includes reason and confidence; no changes to PPO,
 rewards, masks, action legality, execution or training.
 
 ### PR 4 — Outcome evaluation and comparison reports
-Correlate recommendations, actual PPO actions and subsequent outcomes. Report
-agreement/deviation, board/HP/streak/economy changes, transition success and
-plan churn.
+Correlate recommendations, actual PPO actions and subsequent outcomes. The
+Viewer's existing **Auditoria completa…** flow captures the shadow diagnostics
+in each action snapshot and generates a linked set of Markdown reports in one
+run: PPO actions, Strategic Planner, Economic Controller, Action Evaluator,
+divergences, immediate outcomes and final observed state.
+
+The offline Outcome Evaluator measures before/after deltas for gold, HP, board
+power, level, XP, pairs and star upgrades, plus the state observed at the end
+of the round (after remaining preparation actions and combat) and the last
+round-end state for each player. Round-end deltas are contextual outcomes, not
+attribution to an individual action. These are descriptive correlations, not
+causal attribution. Agreement between PPO and Action Evaluator is calculated
+only when both action labels are present and normalized to equivalent categories.
+
+The Viewer keeps the structured JSON report in a temporary directory for its
+internal hand-off; the session audit folder receives Markdown files only.
+Older sessions without shadow fields remain auditable and show those sections
+as unavailable rather than failing or fabricating defaults.
 
 Acceptance: shadow decisions never enter PPO rewards or targets; reports
-distinguish correlation from causation; unavailable data is explicit.
+distinguish correlation from causation; unavailable data is explicit; one
+existing Viewer action generates the Markdown index and split reports; no JSON
+artifact is left in the session audit directory.
 
 ### PR 5 — Gated, opt-in activation
 Add explicit feature flags and staged activation. Shadow remains default.
