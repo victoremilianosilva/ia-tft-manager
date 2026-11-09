@@ -278,7 +278,7 @@ def run(args):
             "chain_manager_source_sha256": ROOT / "economy_finetuning" / "chain_manager.py",
         }
         metadata = {
-            "checkpoint": _display_path(checkpoint_path),
+            "checkpoint": str(checkpoint_path),
             "checkpoint_sha256": _sha256(checkpoint_path),
             "source_mode": "custom" if args.custom_source else "chain",
             "repository_commit": repository_commit,
@@ -481,7 +481,7 @@ def run(args):
             encoding="utf-8",
         )
         summary = {
-            "checkpoint_original": _display_path(checkpoint_path),
+            "checkpoint_original": str(checkpoint_path),
             "source_checkpoint_path": str(checkpoint_path),
             "source_mode": metadata["source_mode"],
             "checkpoint_finetuned": _display_path(output),
