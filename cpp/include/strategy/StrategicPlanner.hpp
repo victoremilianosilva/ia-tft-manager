@@ -229,10 +229,14 @@ private:
             const bool target_trait_fit = !target_direction.empty() &&
                 std::find(unit.traits.begin(), unit.traits.end(), target_direction)
                     != unit.traits.end();
-            const bool preserve = unit.is_core ||
+            const bool transitioning =
+                out.composition_decision == CompositionDecision::Pivot ||
+                out.composition_decision == CompositionDecision::Abandon;
+            const bool preserve =
                 unit.board_contribution >= config_.preserve_board_contribution ||
                 unit.item_fit >= config_.preserve_item_fit ||
-                target_trait_fit;
+                target_trait_fit ||
+                (unit.is_core && !transitioning);
             (preserve ? out.preserve_unit_ids : out.replaceable_unit_ids)
                 .push_back(unit.champion_id);
         }
