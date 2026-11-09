@@ -71,6 +71,7 @@ public:
                 out.reason = StrategicReason::BoardDeficit;
                 out.confidence = 0.65;
                 commitment.composition_direction.clear();
+                out.target_composition_direction.clear();
                 commitment.selection_reason = out.reason;
                 clear_candidate(commitment);
             } else {
@@ -124,9 +125,12 @@ public:
             return out;
         }
 
-        if (commitment.candidate_composition_direction == best.direction &&
-            commitment.candidate_anchor_id == best.champion_id) {
-            ++commitment.consecutive_reviews;
+        if (commitment.candidate_composition_direction == best.direction) {
+            // Multiple actions/shops in the same round are not independent
+            // strategic evidence. Advance hysteresis at most once per round.
+            if (context.round > commitment.last_review_round)
+                ++commitment.consecutive_reviews;
+            commitment.candidate_anchor_id = best.champion_id;
         } else {
             commitment.candidate_composition_direction = best.direction;
             commitment.candidate_anchor_id = best.champion_id;
