@@ -43,7 +43,7 @@ def _canonical_action(value: Any) -> str | None:
     if value is None:
         return None
     key = str(value).strip().upper()
-    return ACTION_ALIASES.get(key, key or None)
+    return ACTION_ALIASES.get(key)
 
 
 def _delta(before: dict, after: dict, key: str):
@@ -88,12 +88,26 @@ class OutcomeEvaluator:
                 "xp_delta": _delta(before, after, "xp"),
                 "pair_delta": _delta(snap_before, snap_after, "combined_pair_count"),
                 "two_star_delta": _delta(snap_before, snap_after, "board_two_star_or_higher"),
+                "bench_two_star_delta": _delta(snap_before, snap_after, "bench_two_star_or_higher"),
                 "three_star_delta": _delta(snap_before, snap_after, "board_three_star"),
+                "bench_three_star_delta": _delta(snap_before, snap_after, "bench_three_star"),
+                "win_streak_delta": _delta(before, after, "win_streak"),
+                "loss_streak_delta": _delta(before, after, "loss_streak"),
+                "composition_before": before.get("comp_direction"),
+                "composition_after": after.get("comp_direction"),
+                "composition_changed": (
+                    before.get("comp_direction") != after.get("comp_direction")
+                    if before.get("comp_direction") is not None and after.get("comp_direction") is not None
+                    else None
+                ),
                 # These round-end deltas include all remaining preparation actions
                 # and combat; they are contextual outcomes, not attribution to this action.
                 "round_end_hp_delta": _delta(before, round_state, "hp"),
                 "round_end_gold_delta": _delta(before, round_state, "gold"),
                 "round_end_board_delta": _delta(before, round_state, "board_power"),
+                "round_end_win_streak_delta": _delta(before, round_state, "win_streak"),
+                "round_end_loss_streak_delta": _delta(before, round_state, "loss_streak"),
+                "round_end_composition": round_state.get("comp_direction"),
                 "round_combat_reward": round_outcome.get("combat_reward"),
                 "round_placement": round_outcome.get("placement", round_state.get("placement")),
             })
@@ -115,6 +129,8 @@ class OutcomeEvaluator:
                 "board_power": final.get("board_power"),
                 "composition_direction": final.get("comp_direction"),
                 "placement": final.get("placement"),
+                "win_streak": final.get("win_streak"),
+                "loss_streak": final.get("loss_streak"),
             })
         return {"decisions": decision_outcomes, "final_states": final_states}
 
@@ -141,11 +157,13 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
     actual = Counter()
     recommended = Counter()
     agreements = divergences = compared = 0
+    not_comparable = 0
     divergence_rows = []
     for decision, shadow in action_rows:
         actual_name = _canonical_action(decision.get("action_name"))
         recommendation = _canonical_action(shadow.get("action_recommendation_name"))
         if not actual_name or not recommendation:
+            not_comparable += 1
             continue
         compared += 1
         actual[actual_name] += 1
@@ -171,6 +189,7 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
         before, after = d.get("state_before") or {}, d.get("state_after") or {}
         ppo.append("| " + " | ".join(_cell(x) for x in (
             d.get("player"), d.get("round"), d.get("step"), d.get("action_name"),
+            (d.get("legal_action_audit") or {}).get("action_source"),
             f"{before.get('gold', '—')} → {after.get('gold', '—')}",
             f"{before.get('hp', '—')} → {after.get('hp', '—')}",
             f"{before.get('board_power', '—')} → {after.get('board_power', '—')}",
@@ -184,15 +203,17 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
         "Strategic Planner — recomendações",
         "Direção atual e recomendação do planner são mantidas separadas. O planner não altera o compromisso ativo nesta fase."
     )
-    strategy += ["| Jogador | Round | Step | Direção ativa | Decisão | Direção alvo | Âncora | Confiança | Custo de transição | Motivo |",
-                 "|---|---|---:|---|---|---|---:|---:|---:|---|"]
+    strategy += ["| Jogador | Round | Step | Direção ativa | Decisão | Direção alvo | Âncora | Confiança | Custo de transição | Unidades preservadas/substituíveis | Motivo |",
+                 "|---|---|---:|---|---|---|---:|---:|---:|---|---|"]
     for d, s in strategy_rows:
         before = d.get("state_before") or {}
         strategy.append("| " + " | ".join(_cell(x) for x in (
             d.get("player"), d.get("round"), d.get("step"), before.get("comp_direction"),
             s.get("strategic_decision_name"), s.get("strategic_target_direction"),
             s.get("strategic_anchor_champion_id"), s.get("strategic_confidence"),
-            s.get("strategic_transition_cost"), s.get("strategic_reason"),
+            s.get("strategic_transition_cost"),
+            f"preservar={s.get('strategic_preserve_unit_ids') or '—'}; substituir={s.get('strategic_replaceable_unit_ids') or '—'}",
+            s.get("strategic_reason"),
         )) + " |")
     if not strategy_rows:
         strategy += ["", "**Dados do Strategic Planner indisponíveis** nesta sessão. Logs anteriores à captura shadow continuam válidos para as demais auditorias."]
@@ -248,6 +269,7 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
         f"- Decisões comparáveis: **{compared}**",
         f"- Concordâncias: **{agreements}**",
         f"- Divergências: **{divergences}**",
+        f"- Não comparáveis (ação sem categoria equivalente): **{not_comparable}**",
         f"- Concordância observada: **{(agreements / compared * 100):.1f}%**" if compared else "- Concordância observada: **indisponível**",
         "",
         "| Jogador | Round | Step | PPO executou | Action Evaluator recomendou | Motivo da recomendação |",
@@ -275,32 +297,38 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
     outcomes += [
         "## Efeito imediato por decisão",
         "",
-        "| Jogador | Round | Step | Ação PPO | Δ Ouro | Δ HP | Δ Board | Δ Nível | Δ XP | Δ pares | Δ 2★+ | Δ 3★ | Δ HP até fim round | Δ Ouro até fim round | Δ Board até fim round | Rew combate | Colocação |",
-        "|---|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Jogador | Round | Step | Ação PPO | Δ Ouro | Δ HP | Δ Board | Δ Nível | Δ XP | Δ pares | Δ 2★+ board/bench | Δ 3★ board/bench | Δ win streak | Δ loss streak | Comp antes → depois | Δ HP fim round | Δ Ouro fim round | Δ Board fim round | Δ win/loss streak fim round | Comp fim round | Rew combate | Colocação |",
+        "|---|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|---:|---|---|---:|---:|",
     ]
     for item in outcome_summary["decisions"]:
         values = (
             item.get("player"), item.get("round"), item.get("step"), item.get("action"),
             item.get("gold_delta"), item.get("hp_delta"), item.get("board_power_delta"),
             item.get("level_delta"), item.get("xp_delta"), item.get("pair_delta"),
-            item.get("two_star_delta"), item.get("three_star_delta"),
+            f"{item.get('two_star_delta')} / {item.get('bench_two_star_delta')}",
+            f"{item.get('three_star_delta')} / {item.get('bench_three_star_delta')}",
+            item.get("win_streak_delta"), item.get("loss_streak_delta"),
+            f"{item.get('composition_before') or '—'} → {item.get('composition_after') or '—'}",
             item.get("round_end_hp_delta"), item.get("round_end_gold_delta"),
-            item.get("round_end_board_delta"), item.get("round_combat_reward"),
+            item.get("round_end_board_delta"),
+            f"{item.get('round_end_win_streak_delta')} / {item.get('round_end_loss_streak_delta')}",
+            item.get("round_end_composition"), item.get("round_combat_reward"),
             item.get("round_placement"),
         )
         outcomes.append("| " + " | ".join(_cell(x) for x in values) + " |")
     if not decisions:
-        outcomes += ["| — | — | — | Sem decisões estruturadas | — | — | — | — | — | — | — | — | — | — | — | — | — |"]
+        outcomes += ["| — | — | — | Sem decisões estruturadas | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — |"]
     outcomes += ["", "## Estado final observado por jogador", "",
-                 "| Jogador | HP final | Ouro final | Nível | Board power | Direção | Colocação |",
-                 "|---|---:|---:|---:|---:|---|---:|"]
+                 "| Jogador | HP final | Ouro final | Nível | Board power | Direção | Win streak | Loss streak | Colocação |",
+                 "|---|---:|---:|---:|---:|---|---:|---:|---:|"]
     for final in outcome_summary["final_states"]:
         outcomes.append("| " + " | ".join(_cell(x) for x in (
             final.get("player"), final.get("hp"), final.get("gold"), final.get("level"),
-            final.get("board_power"), final.get("composition_direction"), final.get("placement"),
+            final.get("board_power"), final.get("composition_direction"),
+            final.get("win_streak"), final.get("loss_streak"), final.get("placement"),
         )) + " |")
     if not by_player:
-        outcomes += ["| — | — | — | — | — | — | — |"]
+        outcomes += ["| — | — | — | — | — | — | — | — | — |"]
     outcomes += [
         "",
         "Os deltas imediatos medem a transição da ação. Os deltas até o fim do round incluem as ações restantes da preparação e o combate; são contexto posterior e não podem ser atribuídos isoladamente à ação da linha. Resultado final é o último estado observado no log, não uma previsão. Dados ausentes permanecem como —.",
