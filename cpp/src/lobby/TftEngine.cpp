@@ -2998,10 +2998,12 @@ struct TFTEngine::Impl {
                 candidate.is_core = std::find(
                     info.core_unit_ids.begin(), info.core_unit_ids.end(),
                     definition->internal_id) != info.core_unit_ids.end();
-                candidate.board_contribution = std::clamp(
-                    definition->cost / 5.0 * 0.5 +
-                    std::clamp(unit.star, 1, 3) / 3.0 * 0.5,
-                    0.0, 1.0);
+                candidate.board_contribution = on_board
+                    ? std::clamp(
+                        definition->cost / 5.0 * 0.5 +
+                        std::clamp(unit.star, 1, 3) / 3.0 * 0.5,
+                        0.0, 1.0)
+                    : 0.0;
                 candidate.composition_fit =
                     std::find(definition->traits.begin(), definition->traits.end(),
                               info.composition_direction) != definition->traits.end()
@@ -3122,10 +3124,12 @@ struct TFTEngine::Impl {
                     anchor.unit.on_board = on_board;
                     anchor.unit.on_bench = !on_board && !shop_available;
                     anchor.unit.composition_fit = 1.0;
-                    anchor.unit.board_contribution = std::clamp(
-                        definition.cost / 5.0 * 0.5 +
-                        std::clamp(star, 1, 3) / 3.0 * 0.5,
-                        0.0, 1.0);
+                    anchor.unit.board_contribution = on_board
+                        ? std::clamp(
+                            definition.cost / 5.0 * 0.5 +
+                            std::clamp(star, 1, 3) / 3.0 * 0.5,
+                            0.0, 1.0)
+                        : 0.0;
                     anchor.unit.item_fit = item_fit;
                     const auto owned_anchor = strategic_owned_copies.find(
                         definition.internal_id);
