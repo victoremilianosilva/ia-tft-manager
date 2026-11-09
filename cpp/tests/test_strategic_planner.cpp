@@ -60,6 +60,14 @@ int main() {
     assert(std::find(decision.preserve_unit_ids.begin(),
                      decision.preserve_unit_ids.end(), 10) != decision.preserve_unit_ids.end());
 
+    // A candidate direction can be refined without pivoting away from the
+    // current composition.
+    context.anchor_candidates.clear();
+    context.anchor_candidates.push_back(anchor(89, "Bruiser", 4.0, 0.2, 2));
+    decision = planner.evaluate(context, commitment);
+    assert(decision.composition_decision == CompositionDecision::Adapt);
+    assert(decision.target_composition_direction == "Bruiser");
+
     // A strong anchor cannot trigger a pivot on a single review while locked.
     context.anchor_candidates.clear();
     context.current_direction_score = 1.0;
@@ -68,6 +76,11 @@ int main() {
     assert(decision.composition_decision == CompositionDecision::Keep);
     assert(commitment.consecutive_reviews == 1);
     assert(commitment.candidate_composition_direction == "Invoker");
+
+    // Repeated actions in the same round do not count as independent evidence.
+    decision = planner.evaluate(context, commitment);
+    assert(decision.composition_decision == CompositionDecision::Keep);
+    assert(commitment.consecutive_reviews == 1);
 
     context.round++;
     decision = planner.evaluate(context, commitment);
