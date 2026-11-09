@@ -15,7 +15,7 @@ struct StrategicPlannerConfig {
     double minimum_relative_advantage{0.20};
     double minimum_anchor_score{0.01};
     double preserve_board_contribution{0.50};
-    double preserve_item_fit{0.70};
+    double preserve_item_fit{0.60};
     std::uint32_t required_reviews_unlocked{2};
     std::uint32_t required_reviews_locked{3};
 };
@@ -194,7 +194,7 @@ private:
                 0.25 * unit.composition_fit +
                 0.20 * unit.item_fit +
                 0.35 * reusable -
-                0.50 * std::max(0.0, candidate.transition_cost) -
+                1.50 * std::max(0.0, candidate.transition_cost) -
                 0.30 * std::max(0.0, candidate.contestation) +
                 (candidate.shop_available ? 0.20 : 0.0);
             if (score < config_.minimum_anchor_score || score <= best.score)
