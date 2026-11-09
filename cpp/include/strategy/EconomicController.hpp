@@ -42,9 +42,9 @@ public:
 
         scores[static_cast<int>(EconomicPosture::PreserveWinStreak)] =
             c.win_streak > 0
-                ? 0.30 + 0.35 * clamp01(c.win_streak / 6.0) +
-                  0.25 * clamp01((c.relative_board_power - 0.90) / 0.60) -
-                  0.20 * out.survival_pressure
+                ? 0.35 + 0.45 * clamp01(c.win_streak / 6.0) +
+                  0.35 * clamp01((c.relative_board_power - 0.90) / 0.60) +
+                  0.15 * (1.0 - out.survival_pressure)
                 : 0.0;
 
         scores[static_cast<int>(EconomicPosture::PreserveLossStreak)] =
@@ -72,8 +72,8 @@ public:
             0.10 * clamp01(c.estimated_incoming_damage / 12.0);
 
         scores[static_cast<int>(EconomicPosture::EmergencyInvestment)] =
-            0.62 * out.survival_pressure + 0.28 * board_pressure +
-            0.10 * elimination_pressure;
+            0.80 * out.survival_pressure + 0.20 * board_pressure +
+            0.15 * elimination_pressure + 0.20 * hp_pressure;
 
         int best = 0;
         double second = -1.0;
