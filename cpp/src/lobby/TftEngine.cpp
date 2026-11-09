@@ -3062,8 +3062,13 @@ struct TFTEngine::Impl {
                             strategic_owned_copies,
                             strategy::CompositionPlanner::target_slots_for_level(
                                 economy.level),
-                            economy.level, strategic_available, strategic_offered);
-                        if (alternative.unit_ids.empty()) continue;
+                            economy.level, strategic_available, strategic_offered,
+                            nullptr, definition->internal_id);
+                        if (alternative.unit_ids.empty() ||
+                            std::find(alternative.unit_ids.begin(),
+                                      alternative.unit_ids.end(),
+                                      definition->internal_id) ==
+                                alternative.unit_ids.end()) continue;
 
                         std::unordered_set<std::int32_t> current_ids(
                             info.planned_unit_ids.begin(), info.planned_unit_ids.end());
@@ -3086,12 +3091,30 @@ struct TFTEngine::Impl {
                         anchor.unit.cost = definition->cost;
                         anchor.unit.star = 1;
                         anchor.unit.composition_fit = 1.0;
+                        const auto owned_anchor = strategic_owned_copies.find(
+                            definition->internal_id);
+                        anchor.unit.copies_owned = owned_anchor ==
+                            strategic_owned_copies.end() ? 0 : owned_anchor->second;
                         anchor.unit.traits = definition->traits;
                         anchor.target_composition_direction = trait;
                         anchor.anchor_value = alternative.score;
                         anchor.transition_cost = 1.0 - overlap;
                         anchor.reusable_owned_units = static_cast<std::int32_t>(
                             std::min<std::size_t>(reusable, 5));
+                        for (std::size_t opponent = 0;
+                             opponent < kPlayersPerLobby; ++opponent) {
+                            if (opponent == i ||
+                                !player_envs[opponent].info.alive) continue;
+                            const auto count_contested = [&](const UnitInstance& unit) {
+                                if (unit.champion_internal_id ==
+                                    definition->internal_id)
+                                    anchor.contestation += star_copies(unit.star);
+                            };
+                            for (const auto& unit : player_envs[opponent].board)
+                                if (unit) count_contested(*unit);
+                            for (const auto& unit : player_envs[opponent].bench)
+                                if (unit) count_contested(*unit);
+                        }
                         anchor.shop_available = true;
                         strategic_context.anchor_candidates.push_back(
                             std::move(anchor));
