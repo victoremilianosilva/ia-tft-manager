@@ -1,4 +1,4 @@
-from scripts.strategic_economic_comparison import build_shadow_markdown_reports
+from scripts.strategic_economic_comparison import OutcomeEvaluator, build_shadow_markdown_reports
 
 
 def _decision(action="BUY", recommendation="BUY_UNIT", with_shadow=True):
@@ -73,3 +73,20 @@ def test_missing_shadow_values_are_not_treated_as_available():
         "players_seen": ["1"], "decision_timeline": [legacy]
     })
     assert "Comparação indisponível" in reports["audit_divergencias.md"]
+
+
+def test_outcome_evaluator_correlates_round_end_without_action_attribution():
+    decision = _decision()
+    result = OutcomeEvaluator().evaluate(
+        [decision],
+        [{
+            "player": "1", "round": "2-3",
+            "state_after": {"gold": 22, "hp": 60, "board_power": 25, "placement": 5},
+            "combat_reward": -0.3, "placement": 5,
+        }],
+    )
+    outcome = result["decisions"][0]
+    assert outcome["round_end_hp_delta"] == -10.0
+    assert outcome["round_end_gold_delta"] == -8.0
+    assert outcome["round_combat_reward"] == -0.3
+    assert result["final_states"][0]["placement"] == 5
