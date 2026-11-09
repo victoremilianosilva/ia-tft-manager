@@ -1539,9 +1539,22 @@ def audit_decision_context(entries: list[dict], player: str, report: dict) -> No
         "reward_channels_partial": 0, "by_strategy_action": {}, "by_action": {},
         "by_strategy": {}, "unit_identity_observations": 0, "unit_additions": 0, "unit_removals": 0})
     for entry in sorted(entries, key=lambda e: (e.get("sequence_id", 0), e.get("step", 0))):
-        if not isinstance(entry, dict) or entry.get("event_type") != "action":
+        if not isinstance(entry, dict):
             continue
         p = entry.get("payload") or {}
+        if entry.get("event_type") == "round_finished":
+            report.setdefault("round_outcome_timeline", []).append({
+                "player": player,
+                "round": get_round(entry),
+                "step": entry.get("step"),
+                "state_after": p.get("state_after") or {},
+                "combat_reward": p.get("combat_reward"),
+                "reward": p.get("reward"),
+                "placement": (p.get("state_after") or {}).get("placement"),
+            })
+            continue
+        if entry.get("event_type") != "action":
+            continue
         before, after = p.get("state_before") or {}, p.get("state_after") or {}
         ctx, mask, rewards = p.get("decision_context") or {}, p.get("legal_action_audit") or {}, p.get("reward_components") or {}
         action_name = str(p.get("action_name") or mask.get("chosen_action_name") or "UNKNOWN")
@@ -2595,7 +2608,7 @@ def main() -> int:
               "composition_direction_metrics": {},
               "board_quality_metrics": {},
               "team_progression_metrics": {},
-              "decision_audit_metrics": {}, "decision_timeline": [],
+              "decision_audit_metrics": {}, "decision_timeline": [], "round_outcome_timeline": [],
               "entries_read": 0, "diagnostics_missing": 0, "issues": [], "notes": [],
               "mask_note_added": False,
               "input_inventory": {
