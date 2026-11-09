@@ -103,7 +103,7 @@ int main() {
     context.anchor_candidates.clear();
     decision = planner.evaluate(context, commitment);
     assert(decision.composition_decision == CompositionDecision::Abandon);
-    assert(decision.target_composition_direction == "Bruiser");
+    assert(decision.target_composition_direction.empty());
 
     // An empty initial direction can be initialized from a viable anchor.
     context.current_composition_direction.clear();
