@@ -120,7 +120,8 @@ public:
         for (auto& candidate : out.candidate_scores) {
             candidate.selected = candidate.kind == out.recommended_action &&
                 candidate.champion_id == out.recommended_champion_id &&
-                candidate.total_score == best_score && best_score > 0.0;
+                ((best_score > 0.0 && candidate.total_score == best_score) ||
+                 (best_score <= 0.0 && candidate.kind == StrategicActionKind::Hold));
         }
         if (best_score <= 0.0) {
             out.recommended_action = StrategicActionKind::Hold;
