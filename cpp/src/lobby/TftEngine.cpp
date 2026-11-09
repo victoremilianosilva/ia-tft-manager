@@ -3053,6 +3053,7 @@ struct TFTEngine::Impl {
                         offer->champion_internal_id);
                     if (!definition || definition->cost < 4) continue;
                     for (const auto& trait : definition->traits) {
+                        if (evaluated_anchor_directions.size() >= 4) break;
                         if (trait.empty() ||
                             !evaluated_anchor_directions.insert(trait).second)
                             continue;
@@ -3095,6 +3096,7 @@ struct TFTEngine::Impl {
                         strategic_context.anchor_candidates.push_back(
                             std::move(anchor));
                     }
+                    if (evaluated_anchor_directions.size() >= 4) break;
                 }
             }
 
