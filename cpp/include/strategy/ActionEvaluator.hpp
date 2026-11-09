@@ -28,6 +28,9 @@ public:
             breakdown.champion_id = candidate.champion_id;
             breakdown.available = candidate.available &&
                 candidate.gold_cost <= c.gold;
+            breakdown.direct_gold_cost = candidate.direct_gold_cost;
+            breakdown.lost_interest_cost = candidate.lost_interest_cost;
+            breakdown.opportunity_cost = candidate.opportunity_cost;
             if (!breakdown.available) {
                 breakdown.total_score = -1.0e9;
                 breakdown.available = false;
