@@ -28,13 +28,16 @@ class ScenarioChainTests(unittest.TestCase):
             root = Path(directory)
             state = root / "chain_state.json"
             checkpoint = root / "scenario1.pt"
+            source = root / "source.pt"
             summary = root / "summary.json"
             evaluation = root / "evaluation.json"
             checkpoint.write_bytes(b"checkpoint")
+            source.write_bytes(b"source-model")
             summary.write_text(json.dumps({
                 "selected_scenario": "critical_hp_high_gold",
                 "selected_scenario_transitions": 100,
-                "source_checkpoint_sha256": "source-hash",
+                "source_checkpoint_path": str(source),
+                "source_checkpoint_sha256": chain.sha256_file(source),
             }), encoding="utf-8")
             with patch.object(chain, "STATE_PATH", state):
                 chain.record_training("critical_hp_high_gold", checkpoint, summary)
@@ -59,13 +62,16 @@ class ScenarioChainTests(unittest.TestCase):
             root = Path(directory)
             state = root / "chain_state.json"
             checkpoint = root / "scenario1.pt"
+            source = root / "source.pt"
             summary = root / "summary.json"
             evaluation = root / "evaluation.json"
             checkpoint.write_bytes(b"checkpoint")
+            source.write_bytes(b"source-model")
             summary.write_text(json.dumps({
                 "selected_scenario": "critical_hp_high_gold",
                 "selected_scenario_transitions": 10,
-                "source_checkpoint_sha256": "original",
+                "source_checkpoint_path": str(source),
+                "source_checkpoint_sha256": chain.sha256_file(source),
             }), encoding="utf-8")
             with patch.object(chain, "STATE_PATH", state):
                 chain.record_training("critical_hp_high_gold", checkpoint, summary)
