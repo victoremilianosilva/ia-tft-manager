@@ -356,7 +356,7 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
         "Action Evaluator — recomendações e scores",
         "O Action Evaluator classifica candidatos disponíveis; a coluna PPO mostra o que realmente foi executado."
     )
-    actions += ["| Jogador | Round | Step | PPO executou | Recomendação | Campeão recomendado | Δ board (proxy) | Custo direto | Juros perdidos | Custo oportunidade | Custo total estimado | HP (proxy) | Streak (proxy) | Confiança | Motivo |",
+    actions += ["| Jogador | Round | Step | PPO executou | Recomendação | Campeão recomendado | Δ board (proxy) | Δ ouro direto | Juros perdidos | Custo oportunidade | Custo total estimado | HP (proxy) | Streak (proxy) | Confiança | Motivo |",
                 "|---|---|---:|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|"]
     for d, s in action_rows:
         actions.append("| " + " | ".join(_cell(x) for x in (
