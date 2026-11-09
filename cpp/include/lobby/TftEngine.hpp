@@ -318,6 +318,25 @@ struct StrategyInfo {
     std::string strategic_committed_direction;
     std::uint32_t strategic_selected_round{0};
     bool strategic_shadow_only{true};
+
+    // Economic Controller and Action Evaluator diagnostics. Shadow-only:
+    // these fields never feed PPO observations, rewards, masks or execution.
+    std::int32_t economic_posture{0};
+    std::string economic_posture_name{"ACCUMULATE_RESOURCES"};
+    std::string economic_posture_reason;
+    double economic_posture_confidence{0.0};
+    double economic_survival_pressure{0.0};
+    double economic_board_pressure{0.0};
+    double economic_resource_pressure{0.0};
+    std::int32_t strategic_action_recommendation{6};
+    std::string strategic_action_recommendation_name{"HOLD"};
+    std::string strategic_action_reason;
+    double strategic_action_expected_board_delta{0.0};
+    double strategic_action_expected_hp_preservation{0.0};
+    double strategic_action_expected_economy_cost{0.0};
+    double strategic_action_expected_streak_value{0.0};
+    double strategic_action_confidence{0.0};
+    bool economic_shadow_only{true};
 };
 
 struct AntiLoopMetrics {
