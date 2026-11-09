@@ -3097,7 +3097,8 @@ struct TFTEngine::Impl {
                     strategy::StrategicActionKind::BuyExperience,
                     EconomyEngine::BUY_XP_COST,
                     likely_level_up ? 0.48 : 0.16, 0.0,
-                    likely_level_up ? 0.25 : 0.05, 0.25);
+                    likely_level_up ? 0.25 : 0.05,
+                    strategy::action_opportunity_cost::kBuyExperience);
             }
 
             bool has_upgrade_targets = false;
@@ -3113,7 +3114,9 @@ struct TFTEngine::Impl {
                 has_upgrade_targets ? 0.12 : 0.015,
                 has_upgrade_targets ? 0.25 : 0.02,
                 has_upgrade_targets ? 0.25 : 0.0,
-                has_upgrade_targets ? 2.50 : 3.25);
+                has_upgrade_targets
+                    ? strategy::action_opportunity_cost::kRerollWithUpgradeTarget
+                    : strategy::action_opportunity_cost::kRerollWithoutUpgradeTarget);
 
             if (strategic_shop) {
                 for (const auto& offer : strategic_shop->offers()) {
@@ -3141,7 +3144,8 @@ struct TFTEngine::Impl {
                         fit * 0.22 + upgrade * 0.30, 0.0, 0.85);
                     add_economic_candidate(
                         strategy::StrategicActionKind::BuyUnit,
-                        definition->cost, board_delta, fit, upgrade, 0.35);
+                        definition->cost, board_delta, fit, upgrade,
+                        strategy::action_opportunity_cost::kBuyUnit);
                     if (!strategic_context.action_candidates.empty())
                         strategic_context.action_candidates.back().champion_id =
                             definition->internal_id;
