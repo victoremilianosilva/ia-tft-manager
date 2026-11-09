@@ -97,8 +97,8 @@ int main() {
                      decision.replaceable_unit_ids.end(), 13) !=
            decision.replaceable_unit_ids.end());
     assert(decision.shadow_only);
-    assert(commitment.composition_direction == "Invoker");
-    assert(commitment.consecutive_reviews == 0);
+    assert(commitment.composition_direction == "Bruiser");
+    assert(commitment.consecutive_reviews == 3);
 
     // A high-cost unit with poor fit and excessive transition cost is rejected.
     context = base_context();
