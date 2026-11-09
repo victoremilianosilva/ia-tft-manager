@@ -14,6 +14,7 @@ param(
     [string]$Scenario,
 
     [string]$Checkpoint = "tft_checkpoint.pt",
+    [string]$CustomCheckpoint = "",
     [int]$Updates = 100,
     [int]$RolloutSteps = 512,
     [int]$BatchSize = 64,
@@ -38,10 +39,17 @@ $checkpointPath = if ([System.IO.Path]::IsPathRooted($Checkpoint)) {
 } else {
     Join-Path $repoRoot $Checkpoint
 }
+if (-not [string]::IsNullOrWhiteSpace($CustomCheckpoint)) {
+    $checkpointPath = if ([System.IO.Path]::IsPathRooted($CustomCheckpoint)) {
+        $CustomCheckpoint
+    } else {
+        Join-Path $repoRoot $CustomCheckpoint
+    }
+}
 if (-not (Test-Path -LiteralPath $checkpointPath -PathType Leaf)) {
     throw "Checkpoint original não encontrado: $checkpointPath"
 }
-
+$useCustomSource = -not [string]::IsNullOrWhiteSpace($CustomCheckpoint)
 
 $venvPython = Join-Path $repoRoot ".venv\Scripts\python.exe"
 if (Test-Path -LiteralPath $venvPython -PathType Leaf) {
@@ -55,7 +63,9 @@ if (Test-Path -LiteralPath $venvPython -PathType Leaf) {
 }
 
 # A cadeia valida a aprovação anterior e devolve o checkpoint correto de origem.
-$approvedInput = & $python -m economy_finetuning.chain_manager check --scenario $Scenario --checkpoint $checkpointPath
+$chainCheckArguments = @("-m", "economy_finetuning.chain_manager", "check", "--scenario", $Scenario, "--checkpoint", $checkpointPath)
+if ($useCustomSource) { $chainCheckArguments += "--custom-source" }
+$approvedInput = & $python @chainCheckArguments
 if ($LASTEXITCODE -ne 0) {
     throw "Cadeia de fine-tuning bloqueou o cenário $Scenario."
 }
@@ -100,6 +110,7 @@ $arguments = @(
     "--seed", "$Seed",
     "--device", "$Device"
 )
+if ($useCustomSource) { $arguments += "--custom-source" }
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Cyan
@@ -107,6 +118,7 @@ Write-Host "       TFT AI - FINE-TUNING FOCADO PPO" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host "Cenário:          $Scenario"
 Write-Host "Checkpoint base:  $checkpointPath"
+Write-Host "Origem:           $(if ($useCustomSource) { 'PERSONALIZADA (opcional)' } else { 'CADEIA APROVADA' })"
 Write-Host "Checkpoint novo:  $outputCheckpoint"
 Write-Host "Updates:          $Updates"
 Write-Host "Lobbies:          1 (8 agentes self-play)"
