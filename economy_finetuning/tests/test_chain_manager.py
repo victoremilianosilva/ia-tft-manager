@@ -81,5 +81,44 @@ class ScenarioChainTests(unittest.TestCase):
                 )
 
 
+    def test_custom_source_can_start_any_stage_without_predecessor_approval(self):
+        with tempfile.TemporaryDirectory() as directory:
+            custom = Path(directory) / "custom.pt"
+            custom.write_bytes(b"custom-model")
+            with patch.object(chain, "STATE_PATH", Path(directory) / "chain_state.json"):
+                self.assertEqual(chain.check_scenario("econ_gold_reserve", custom, custom_source=True), custom.resolve())
+                with self.assertRaisesRegex(RuntimeError, "depende de late_game_high_gold_underleveled"):
+                    chain.check_scenario("econ_gold_reserve", custom)
+
+    def test_custom_source_training_can_be_approved_and_unlock_next_stage(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source, checkpoint = root / "external.pt", root / "econ.pt"
+            summary, evaluation = root / "summary.json", root / "evaluation.json"
+            source.write_bytes(b"external-model")
+            checkpoint.write_bytes(b"fine-tuned-model")
+            source_hash = chain.sha256_file(source)
+            summary.write_text(json.dumps({"selected_scenario": "econ_gold_reserve", "selected_scenario_transitions": 50, "source_mode": "custom", "source_checkpoint_path": str(source), "source_checkpoint_sha256": source_hash}), encoding="utf-8")
+            with patch.object(chain, "STATE_PATH", root / "chain_state.json"):
+                chain.record_training("econ_gold_reserve", checkpoint, summary)
+                entry = chain._load()["scenarios"]["econ_gold_reserve"]
+                self.assertEqual(entry["source_mode"], "custom")
+                self.assertEqual(entry["source_checkpoint_sha256"], source_hash)
+                evaluation.write_text(json.dumps({"approved": True, "checkpoint_sha256": chain.sha256_file(checkpoint)}), encoding="utf-8")
+                chain.approve_scenario("econ_gold_reserve", evaluation)
+                self.assertEqual(chain.check_scenario("econ_surplus_strong_board", source), checkpoint.resolve())
+
+    def test_custom_source_rejects_mismatched_source_hash(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source, checkpoint = root / "external.pt", root / "result.pt"
+            summary = root / "summary.json"
+            source.write_bytes(b"external")
+            checkpoint.write_bytes(b"result")
+            summary.write_text(json.dumps({"selected_scenario": "econ_gold_reserve", "selected_scenario_transitions": 1, "source_mode": "custom", "source_checkpoint_path": str(source), "source_checkpoint_sha256": "incorrect"}), encoding="utf-8")
+            with patch.object(chain, "STATE_PATH", root / "chain_state.json"):
+                with self.assertRaisesRegex(RuntimeError, "Hash do checkpoint de origem"):
+                    chain.record_training("econ_gold_reserve", checkpoint, summary)
+
 if __name__ == "__main__":
     unittest.main()
