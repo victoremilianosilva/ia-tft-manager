@@ -6,7 +6,6 @@
 #include <cmath>
 #include <cstdint>
 #include <string>
-#include <unordered_set>
 
 namespace tft::strategy {
 
@@ -14,6 +13,7 @@ struct StrategicPlannerConfig {
     double minimum_absolute_advantage{0.75};
     double minimum_relative_advantage{0.20};
     double minimum_anchor_score{0.01};
+    double minimum_adapt_advantage{0.10};
     double preserve_board_contribution{0.50};
     double preserve_item_fit{0.60};
     std::uint32_t required_reviews_unlocked{2};
@@ -30,21 +30,17 @@ public:
         StrategicCommitment& commitment) const {
         StrategicPlanDecision out;
         out.shadow_only = true;
+        out.composition_decision = CompositionDecision::InsufficientEvidence;
+        out.reason = StrategicReason::InsufficientEvidence;
         out.target_composition_direction = context.current_composition_direction;
 
-        if (!context.alive) {
-            out.reason = StrategicReason::InsufficientEvidence;
-            return out;
-        }
+        if (!context.alive) return out;
 
-        const auto best = best_anchor(context);
+        const auto best = best_anchor(context, out.candidate_diagnostics);
         const bool has_current = !context.current_composition_direction.empty();
 
         if (has_current &&
             commitment.composition_direction != context.current_composition_direction) {
-            // The live composition changed outside this shadow planner (for
-            // example, the existing direction policy or a later gated rollout).
-            // Rebase the commitment and discard evidence for the old direction.
             commitment.composition_direction = context.current_composition_direction;
             commitment.selected_round = context.round;
             clear_candidate(commitment);
@@ -52,7 +48,7 @@ public:
 
         if (!has_current) {
             if (best.valid) {
-                out.composition_decision = CompositionDecision::Adapt;
+                out.composition_decision = CompositionDecision::InitialSelection;
                 out.reason = StrategicReason::AnchorOpportunity;
                 out.target_composition_direction = best.direction;
                 out.anchor_champion_id = best.champion_id;
@@ -62,8 +58,6 @@ public:
                 commitment.selected_round = context.round;
                 commitment.selection_reason = out.reason;
                 clear_candidate(commitment);
-            } else {
-                out.reason = StrategicReason::InsufficientEvidence;
             }
             classify_owned_units(context, out, out.target_composition_direction);
             return out;
@@ -79,7 +73,6 @@ public:
                 commitment.selection_reason = out.reason;
                 clear_candidate(commitment);
             } else {
-                out.reason = StrategicReason::InsufficientEvidence;
                 clear_candidate(commitment);
             }
             classify_owned_units(context, out, out.target_composition_direction);
@@ -91,18 +84,14 @@ public:
         out.estimated_transition_cost = best.transition_cost;
 
         if (best.direction == context.current_composition_direction) {
-            out.composition_decision = best.shop_available
-                ? CompositionDecision::Adapt : CompositionDecision::Keep;
-            out.reason = best.shop_available
-                ? StrategicReason::AnchorOpportunity
-                : StrategicReason::InsufficientEvidence;
+            out.composition_decision = CompositionDecision::Keep;
+            out.reason = StrategicReason::BoardAdvantage;
             out.target_composition_direction = context.current_composition_direction;
             clear_candidate(commitment);
             classify_owned_units(context, out, out.target_composition_direction);
             return out;
         }
 
-        out.target_composition_direction = context.current_composition_direction;
         const double required_advantage = std::max(
             config_.minimum_absolute_advantage,
             std::abs(context.current_direction_score) *
@@ -113,9 +102,6 @@ public:
             out.composition_decision = CompositionDecision::Pivot;
             out.reason = StrategicReason::BoardDeficit;
             out.target_composition_direction = best.direction;
-            // Keep the committed direction as the live direction in shadow
-            // mode. The recommendation is not an activation; retain the old
-            // commitment until the engine actually adopts the new direction.
             commitment.selection_reason = out.reason;
             commitment.confidence = best.confidence;
             clear_candidate(commitment);
@@ -123,7 +109,7 @@ public:
             return out;
         }
 
-        if (advantage < required_advantage) {
+        if (advantage < config_.minimum_adapt_advantage) {
             out.reason = StrategicReason::InsufficientEvidence;
             clear_candidate(commitment);
             classify_owned_units(context, out, out.target_composition_direction);
@@ -131,8 +117,6 @@ public:
         }
 
         if (commitment.candidate_composition_direction == best.direction) {
-            // Multiple actions/shops in the same round are not independent
-            // strategic evidence. Advance hysteresis at most once per round.
             if (context.round > commitment.last_review_round)
                 ++commitment.consecutive_reviews;
             commitment.candidate_anchor_id = best.champion_id;
@@ -148,9 +132,14 @@ public:
         const auto required_reviews = context.composition_locked
             ? config_.required_reviews_locked
             : config_.required_reviews_unlocked;
-        if (commitment.consecutive_reviews < required_reviews) {
-            out.reason = StrategicReason::AnchorOpportunity;
-            out.confidence = std::min(best.confidence, 0.55);
+        if (advantage < required_advantage ||
+            commitment.consecutive_reviews < required_reviews) {
+            out.composition_decision = CompositionDecision::Adapt;
+            out.reason = best.transition_cost > 0.65
+                ? StrategicReason::TransitionCost
+                : StrategicReason::AnchorOpportunity;
+            out.target_composition_direction = best.direction;
+            out.confidence = std::min(best.confidence, 0.65);
             classify_owned_units(context, out, out.target_composition_direction);
             return out;
         }
@@ -158,9 +147,6 @@ public:
         out.composition_decision = CompositionDecision::Pivot;
         out.reason = StrategicReason::AnchorOpportunity;
         out.target_composition_direction = best.direction;
-        // Do not mutate the active strategic commitment in shadow mode.
-        // Keep the candidate and review count so the recommendation remains
-        // stable until the active composition actually changes.
         commitment.selection_reason = out.reason;
         commitment.confidence = best.confidence;
         classify_owned_units(context, out, out.target_composition_direction);
@@ -180,17 +166,31 @@ private:
 
     StrategicPlannerConfig config_;
 
-    AnchorScore best_anchor(const StrategicSharedContext& context) const {
+    AnchorScore best_anchor(
+        const StrategicSharedContext& context,
+        std::vector<StrategicCandidateDiagnostic>& diagnostics) const {
         AnchorScore best;
+        std::size_t best_index = static_cast<std::size_t>(-1);
+        diagnostics.reserve(context.anchor_candidates.size());
         for (const auto& candidate : context.anchor_candidates) {
             const auto& unit = candidate.unit;
-            if (candidate.target_composition_direction.empty() ||
-                unit.champion_id < 0 || !std::isfinite(candidate.anchor_value) ||
-                !std::isfinite(candidate.transition_cost) ||
-                !std::isfinite(candidate.contestation) ||
-                !std::isfinite(unit.board_contribution) ||
-                !std::isfinite(unit.composition_fit) ||
-                !std::isfinite(unit.item_fit)) continue;
+            StrategicCandidateDiagnostic diagnostic;
+            diagnostic.champion_id = unit.champion_id;
+            diagnostic.target_composition_direction =
+                candidate.target_composition_direction;
+            const bool finite = unit.champion_id >= 0 &&
+                !candidate.target_composition_direction.empty() &&
+                std::isfinite(candidate.anchor_value) &&
+                std::isfinite(candidate.transition_cost) &&
+                std::isfinite(candidate.contestation) &&
+                std::isfinite(unit.board_contribution) &&
+                std::isfinite(unit.composition_fit) &&
+                std::isfinite(unit.item_fit);
+            if (!finite) {
+                diagnostic.evaluation_reason = "invalid_candidate_data";
+                diagnostics.push_back(std::move(diagnostic));
+                continue;
+            }
 
             const double reusable = static_cast<double>(
                 std::clamp(candidate.reusable_owned_units, 0, 5));
@@ -203,9 +203,22 @@ private:
                 1.50 * std::max(0.0, candidate.transition_cost) -
                 0.30 * std::max(0.0, candidate.contestation) +
                 (candidate.shop_available ? 0.20 : 0.0);
-            if (score < config_.minimum_anchor_score || score <= best.score)
+            diagnostic.score = score;
+            if (score < config_.minimum_anchor_score) {
+                diagnostic.evaluation_reason = "below_minimum_anchor_score";
+                diagnostics.push_back(std::move(diagnostic));
                 continue;
+            }
+            if (score <= best.score) {
+                diagnostic.evaluation_reason = "not_best_scoring_candidate";
+                diagnostics.push_back(std::move(diagnostic));
+                continue;
+            }
 
+            if (best_index != static_cast<std::size_t>(-1)) {
+                diagnostics[best_index].evaluation_reason =
+                    "valid_but_not_selected";
+            }
             best.valid = true;
             best.direction = candidate.target_composition_direction;
             best.champion_id = unit.champion_id;
@@ -215,6 +228,10 @@ private:
             best.confidence = std::clamp(
                 0.5 + score / (2.0 * (1.0 + std::abs(score))),
                 0.5, 0.95);
+            diagnostic.accepted = true;
+            diagnostic.evaluation_reason = "selected_best_candidate";
+            diagnostics.push_back(std::move(diagnostic));
+            best_index = diagnostics.size() - 1;
         }
         return best;
     }
