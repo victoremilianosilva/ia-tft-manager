@@ -3176,10 +3176,13 @@ struct TFTEngine::Impl {
                 candidate.expected_board_delta = on_board
                     ? -std::clamp(0.10 + definition->cost * 0.035, 0.10, 0.35)
                     : 0.0;
+                // For a sale, composition_fit means how expendable the
+                // unit is: off-direction pieces score higher, active-direction
+                // pieces receive no sale-fit bonus.
                 candidate.composition_fit = std::find(
                     definition->traits.begin(), definition->traits.end(),
                     info.composition_direction) != definition->traits.end()
-                    ? 1.0 : 0.0;
+                    ? 0.0 : 1.0;
                 candidate.opportunity_cost = on_board ? 0.75 : 0.10;
                 strategic_context.action_candidates.push_back(candidate);
             };
