@@ -468,6 +468,9 @@ py::list strategies_to_list(
                 py::dict row;
                 row["action"] = score.action;
                 row["champion_id"] = score.champion_id;
+                row["direct_gold_cost"] = score.direct_gold_cost;
+                row["lost_interest_cost"] = score.lost_interest_cost;
+                row["opportunity_cost"] = score.opportunity_cost;
                 row["board_component"] = score.board_component;
                 row["survival_component"] = score.survival_component;
                 row["streak_component"] = score.streak_component;
