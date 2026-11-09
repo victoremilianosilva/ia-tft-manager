@@ -40,9 +40,14 @@ public:
         const auto best = best_anchor(context);
         const bool has_current = !context.current_composition_direction.empty();
 
-        if (commitment.composition_direction.empty() && has_current) {
+        if (has_current &&
+            commitment.composition_direction != context.current_composition_direction) {
+            // The live composition changed outside this shadow planner (for
+            // example, the existing direction policy or a later gated rollout).
+            // Rebase the commitment and discard evidence for the old direction.
             commitment.composition_direction = context.current_composition_direction;
             commitment.selected_round = context.round;
+            clear_candidate(commitment);
         }
 
         if (!has_current) {
