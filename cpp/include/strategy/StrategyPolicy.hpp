@@ -106,7 +106,7 @@ inline EconomicStrategyDecision select_economic_strategy(
     // ECON means protecting the interest threshold, not hoarding forever.
     // At/above 50 gold it remains eligible as a reserve policy, but reward
     // shaping must permit useful spending from the surplus.
-    if (s.hp >= 40.0 && s.board_power >= 35.0 &&
+    if (s.hp >= 40.0 && s.board_power >= 25.0 &&
         !s.composition_requests_fast8 &&
         !s.composition_requests_three_star &&
         s.hp > 15.0) {
