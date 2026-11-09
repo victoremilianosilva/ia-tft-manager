@@ -54,15 +54,18 @@ public:
                   0.20 * clamp01(c.relative_board_power)
                 : 0.0;
 
+        const double experience_plan_weight =
+            c.progression_plan == ProgressionPlan::LevelToEight ? 0.48 :
+            (c.progression_plan == ProgressionPlan::LevelToNine ? 0.56 : 0.0);
         scores[static_cast<int>(EconomicPosture::InvestExperience)] =
-            (c.legacy_strategy == 2 ? 0.48 : 0.0) +
+            experience_plan_weight +
             0.20 * clamp01((c.stage - 3.0) / 3.0) +
             0.18 * clamp01((8.0 - c.level) / 4.0) +
             0.14 * economy_pressure -
             0.28 * out.survival_pressure;
 
         scores[static_cast<int>(EconomicPosture::RollForUpgrades)] =
-            (c.legacy_strategy == 3 ? 0.52 : 0.0) +
+            (c.progression_plan == ProgressionPlan::RerollForThreeStar ? 0.52 : 0.0) +
             0.18 * clamp01((c.gold - 20.0) / 40.0) +
             0.16 * clamp01((c.level - 4.0) / 3.0) -
             0.22 * out.survival_pressure;
