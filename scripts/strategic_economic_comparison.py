@@ -190,20 +190,29 @@ class OutcomeEvaluator:
         final_states = []
         for player in sorted(players, key=lambda x: int(x) if x.isdigit() else 999):
             alive_candidates = []
-            for _round_id, outcome in rounds_by_player.get(player, []):
+            for round_id, outcome in rounds_by_player.get(player, []):
                 state = outcome.get("state_after") or {}
                 if self._is_alive_state(state):
-                    alive_candidates.append(state)
+                    alive_candidates.append((
+                        self._round_order(round_id),
+                        outcome.get("sequence_id") or 0,
+                        outcome.get("step") or 0,
+                        state,
+                    ))
             for decision in decisions:
                 if str(decision.get("player", "?")) != player:
                     continue
-                for state in (decision.get("state_before") or {}, decision.get("state_after") or {}):
-                    if self._is_alive_state(state):
-                        alive_candidates.append(state)
-            alive_candidates.sort(key=lambda state: (
-                self._round_order(state.get("round")), state.get("step") or 0
-            ))
-            last_alive = alive_candidates[-1] if alive_candidates else {}
+                round_order = self._round_order(decision.get("round"))
+                sequence_id = decision.get("sequence_id") or 0
+                step = decision.get("step") or 0
+                before = decision.get("state_before") or {}
+                after = decision.get("state_after") or {}
+                if self._is_alive_state(before):
+                    alive_candidates.append((round_order, sequence_id, step * 2, before))
+                if self._is_alive_state(after):
+                    alive_candidates.append((round_order, sequence_id, step * 2 + 1, after))
+            alive_candidates.sort(key=lambda item: item[:3])
+            last_alive = alive_candidates[-1][3] if alive_candidates else {}
             terminal = (
                 rounds_by_player[player][-1][1].get("state_after") or {}
                 if rounds_by_player.get(player) else {}
@@ -435,7 +444,7 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
         )
         outcomes.append("| " + " | ".join(_cell(x) for x in values) + " |")
     if not decisions:
-        outcomes += ["| — | — | — | Sem decisões estruturadas | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — |"]
+        outcomes += ["| — | — | — | Sem decisões estruturadas | — | — | — | — | — | — | — | — | — | — | — | — |"]
     outcomes += ["", "## Resultado de combate (uma linha por jogador e round)", "",
                  "| Jogador | Round | HP fim round | Ouro | Board power | Nível | Win streak | Loss streak | Recompensa combate | Colocação | Vivo no snapshot |",
                  "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|"]
@@ -470,7 +479,7 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
             final.get("terminal_hp"),
         )) + " |")
     if not by_player:
-        outcomes += ["| — | — | — | — | — | — | — | — | — |"]
+        outcomes += ["| — | — | — | — | — | — | — | — | — | — |"]
     outcomes += [
         "",
         "Os deltas imediatos medem apenas a transição registrada após a ação. O resultado de combate aparece uma única vez por jogador/round. A tabela de evolução liga o conjunto de recomendações daquele round aos próximos um e dois rounds; é associação temporal, não causalidade. O estado vivo é preservado separadamente do estado terminal de eliminação. Dados ausentes permanecem como —.",
