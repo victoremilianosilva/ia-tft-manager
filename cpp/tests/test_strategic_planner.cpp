@@ -1,5 +1,8 @@
 #include "strategy/StrategicPlanner.hpp"
+#include "strategy/EconomicController.hpp"
+#include "strategy/ActionEvaluator.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <iostream>
@@ -145,6 +148,109 @@ int main() {
     assert(decision.composition_decision == CompositionDecision::Keep ||
            decision.composition_decision == CompositionDecision::Adapt);
     assert(decision.anchor_champion_id == -1);
+
+    // Economic posture is contextual: a strong win streak can outweigh
+    // passive accumulation, while survival pressure can justify investment.
+    EconomicController economic_controller;
+    StrategicSharedContext economy_context;
+    economy_context.alive = true;
+    economy_context.hp = 90.0;
+    economy_context.gold = 40;
+    economy_context.level = 7;
+    economy_context.stage = 4;
+    economy_context.relative_board_power = 1.20;
+    economy_context.win_streak = 5;
+    auto posture = economic_controller.evaluate(economy_context);
+    assert(posture.posture == EconomicPosture::PreserveWinStreak);
+    assert(posture.shadow_only);
+    assert(posture.confidence >= 0.50);
+
+    economy_context.hp = 20.0;
+    economy_context.relative_board_power = 0.65;
+    economy_context.win_streak = 0;
+    posture = economic_controller.evaluate(economy_context);
+    assert(posture.posture == EconomicPosture::EmergencyInvestment);
+    assert(posture.survival_pressure > 0.0);
+    assert(posture.board_pressure > 0.0);
+
+    StrategicSharedContext progression_context;
+    progression_context.hp = 90.0;
+    progression_context.gold = 50;
+    progression_context.level = 6;
+    progression_context.stage = 4;
+    progression_context.relative_board_power = 1.0;
+    progression_context.progression_plan = ProgressionPlan::LevelToEight;
+    const auto xp_posture = economic_controller.evaluate(progression_context);
+    assert(xp_posture.posture == EconomicPosture::InvestExperience);
+    progression_context.progression_plan = ProgressionPlan::RerollForThreeStar;
+    const auto roll_posture = economic_controller.evaluate(progression_context);
+    assert(roll_posture.posture == EconomicPosture::RollForUpgrades);
+
+    // A surplus player with a materially weak board should consider
+    // converting resources into strength instead of accumulating indefinitely.
+    StrategicSharedContext surplus_context;
+    surplus_context.hp = 82.0;
+    surplus_context.gold = 80;
+    surplus_context.level = 6;
+    surplus_context.stage = 4;
+    surplus_context.relative_board_power = 0.70;
+    const auto surplus_posture = economic_controller.evaluate(surplus_context);
+    assert(surplus_posture.posture == EconomicPosture::StabilizeBoard);
+
+    // Marginal action evaluation compares candidates against expected benefit
+    // and opportunity cost; it does not mutate the context.
+    ActionEvaluator action_evaluator;
+    economy_context.hp = 48.0;
+    economy_context.gold = 35;
+    economy_context.relative_board_power = 0.75;
+    economy_context.action_candidates.clear();
+    StrategicActionCandidate hold;
+    hold.kind = StrategicActionKind::Hold;
+    economy_context.action_candidates.push_back(hold);
+    StrategicActionCandidate purchase;
+    purchase.kind = StrategicActionKind::BuyUnit;
+    purchase.champion_id = 123;
+    purchase.gold_cost = 3;
+    purchase.expected_economy_cost = 3.0;
+    purchase.expected_board_delta = 0.62;
+    purchase.composition_fit = 0.80;
+    purchase.upgrade_value = 0.50;
+    economy_context.action_candidates.push_back(purchase);
+    posture = economic_controller.evaluate(economy_context);
+    const auto action = action_evaluator.evaluate(economy_context, posture);
+    assert(action.recommended_action == StrategicActionKind::BuyUnit);
+    assert(action.expected_economy_cost == 3.0);
+    assert(action.expected_board_delta == 0.62);
+    assert(action.confidence >= 0.50);
+    assert(economy_context.action_candidates.size() == 2);
+
+    economy_context.action_candidates.clear();
+    const auto no_candidate = action_evaluator.evaluate(economy_context, posture);
+    assert(no_candidate.recommended_action == StrategicActionKind::Hold);
+    assert(no_candidate.confidence == 0.0);
+
+    // With a strong win streak, a marginal low-value purchase should not
+    // beat holding resources merely because spending is possible.
+    StrategicSharedContext streak_context;
+    streak_context.hp = 90.0;
+    streak_context.gold = 45;
+    streak_context.relative_board_power = 1.15;
+    streak_context.win_streak = 5;
+    StrategicActionCandidate streak_hold;
+    streak_hold.kind = StrategicActionKind::Hold;
+    streak_context.action_candidates.push_back(streak_hold);
+    StrategicActionCandidate weak_purchase;
+    weak_purchase.kind = StrategicActionKind::BuyUnit;
+    weak_purchase.gold_cost = 3;
+    weak_purchase.expected_economy_cost = 3.0;
+    weak_purchase.expected_board_delta = 0.10;
+    weak_purchase.composition_fit = 0.10;
+    streak_context.action_candidates.push_back(weak_purchase);
+    const auto streak_posture = economic_controller.evaluate(streak_context);
+    const auto streak_action = action_evaluator.evaluate(
+        streak_context, streak_posture);
+    assert(streak_posture.posture == EconomicPosture::PreserveWinStreak);
+    assert(streak_action.recommended_action == StrategicActionKind::Hold);
 
     std::cout << "strategic planner shadow tests passed\n";
     return 0;

@@ -69,6 +69,17 @@ struct StrategicAnchorCandidate {
     bool shop_available{false};
 };
 
+struct StrategicActionCandidate {
+    StrategicActionKind kind{StrategicActionKind::None};
+    std::int32_t champion_id{-1};
+    std::int32_t gold_cost{0};
+    double expected_economy_cost{0.0};
+    double expected_board_delta{0.0};
+    double composition_fit{0.0};
+    double upgrade_value{0.0};
+    bool available{true};
+};
+
 struct StrategicSharedContext {
     std::uint32_t schema_version{1};
     std::int32_t player_id{-1};
@@ -79,6 +90,7 @@ struct StrategicSharedContext {
     std::int32_t level{1};
     std::int32_t xp{0};
     std::int32_t xp_to_next{0};
+    ProgressionPlan progression_plan{ProgressionPlan::Flexible};
     std::int32_t interest_if_resolved_now{0};
     std::int32_t projected_next_round_income{0};
     std::int32_t win_streak{0};
@@ -97,6 +109,8 @@ struct StrategicSharedContext {
     std::vector<StrategicAnchorCandidate> anchor_candidates;
     bool composition_locked{false};
     bool alive{true};
+    // Candidate actions are diagnostic estimates assembled from native state.
+    std::vector<StrategicActionCandidate> action_candidates;
 };
 
 struct StrategicCommitment {
@@ -129,6 +143,16 @@ struct StrategicPlanDecision {
     bool shadow_only{true};
 };
 
+struct EconomicControlDecision {
+    EconomicPosture posture{EconomicPosture::AccumulateResources};
+    StrategicReason reason{StrategicReason::InsufficientEvidence};
+    double confidence{0.0};
+    double survival_pressure{0.0};
+    double board_pressure{0.0};
+    double economy_pressure{0.0};
+    bool shadow_only{true};
+};
+
 struct ActionEvaluation {
     StrategicActionKind recommended_action{StrategicActionKind::None};
     StrategicReason reason{StrategicReason::None};
@@ -138,6 +162,7 @@ struct ActionEvaluation {
     double expected_streak_value{0.0};
     double confidence{0.0};
     bool differs_from_policy_action{false};
+    bool shadow_only{true};
 };
 
 struct StrategicOutcome {
