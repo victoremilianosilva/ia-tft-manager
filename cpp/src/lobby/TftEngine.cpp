@@ -3177,7 +3177,7 @@ struct TFTEngine::Impl {
             // the planner adapt around strong pieces instead of treating a
             // shop purchase as the only way to discover a viable direction.
             for (const auto& unit : player_envs[i].board) {
-                if (!unit || evaluated_anchor_directions.size() >= 4) continue;
+                if (!unit || evaluated_anchor_directions.size() >= 2) continue;
                 const auto* definition = catalog->find_by_id(
                     unit->champion_internal_id);
                 if (definition)
@@ -3186,7 +3186,7 @@ struct TFTEngine::Impl {
                                    0.0, 1.0));
             }
             for (const auto& unit : player_envs[i].bench) {
-                if (!unit || evaluated_anchor_directions.size() >= 4) continue;
+                if (!unit || evaluated_anchor_directions.size() >= 2) continue;
                 const auto* definition = catalog->find_by_id(
                     unit->champion_internal_id);
                 if (definition)
