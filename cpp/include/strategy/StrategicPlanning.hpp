@@ -162,6 +162,7 @@ struct ActionEvaluation {
     double expected_streak_value{0.0};
     double confidence{0.0};
     bool differs_from_policy_action{false};
+    bool shadow_only{true};
 };
 
 struct StrategicOutcome {
