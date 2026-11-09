@@ -3082,7 +3082,7 @@ struct TFTEngine::Impl {
                                              double item_fit) {
                 if (definition.cost < 4) return;
                 for (const auto& trait : definition.traits) {
-                    if (evaluated_anchor_directions.size() >= 4) break;
+                    if (evaluated_anchor_directions.size() >= 2) break;
                     if (trait.empty() ||
                         !evaluated_anchor_directions.insert(trait).second)
                         continue;
@@ -3169,7 +3169,7 @@ struct TFTEngine::Impl {
                         offer->champion_internal_id);
                     if (!definition) continue;
                     evaluate_anchor(*definition, 1, false, true, 0.0);
-                    if (evaluated_anchor_directions.size() >= 4) break;
+                    if (evaluated_anchor_directions.size() >= 2) break;
                 }
             }
 
