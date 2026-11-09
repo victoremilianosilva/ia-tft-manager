@@ -75,6 +75,26 @@ O estado local fica em `economy_finetuning/chain_state.json` (ignorado pelo
 Git). A cadeia guarda o hash do checkpoint e da origem, e invalida etapas
 posteriores se uma etapa anterior for refeita.
 
+### Origem personalizada (opcional)
+
+É possível iniciar uma execução específica a partir de outro checkpoint,
+sem renomear arquivos nem alterar `chain_state.json`:
+
+```powershell
+.\economy_finetuning\run_finetune.ps1 `
+  -Scenario econ_gold_reserve `
+  -CustomCheckpoint "D:\Modelos\meu_modelo.pt"
+```
+
+Quando `-CustomCheckpoint` é omitido, o comportamento padrão não muda:
+a cadeia exige o predecessor aprovado e seleciona o checkpoint dele.
+Quando informado, o arquivo personalizado é usado como origem apenas nessa
+execução e a cadeia registra caminho, modo e SHA-256 reais da origem. O treino
+ainda precisa gerar transições, passar pela avaliação pareada e receber
+aprovação humana com o hash do checkpoint resultante. Depois dessa aprovação,
+o próximo cenário usa normalmente o checkpoint recém-aprovado como predecessor.
+Uma nova execução invalida as aprovações posteriores, como no fluxo padrão.
+
 ## Avaliação comparativa
 
 O trace gerado durante o treino compara os dois modelos deterministicamente no
