@@ -312,6 +312,22 @@ py::list strategies_to_list(
             item["active_traits"] = py::dict();
             item["unit_counts"] = py::dict();
             item["unit_counts_by_id"] = py::dict();
+            item["strategic_composition_decision"] = 0;
+            item["strategic_composition_decision_name"] = "KEEP";
+            item["strategic_target_direction"] = "";
+            item["strategic_reason"] = "";
+            item["strategic_anchor_champion_id"] = -1;
+            item["strategic_confidence"] = 0.0;
+            item["strategic_transition_cost"] = 0.0;
+            item["strategic_preserve_unit_ids"] = py::list();
+            item["strategic_replaceable_unit_ids"] = py::list();
+            item["strategic_candidate_direction"] = "";
+            item["strategic_candidate_anchor_id"] = -1;
+            item["strategic_candidate_score"] = 0.0;
+            item["strategic_candidate_streak"] = 0;
+            item["strategic_committed_direction"] = "";
+            item["strategic_selected_round"] = 0;
+            item["strategic_shadow_only"] = true;
         } else {
             const auto& strategy = player_strategies.back();
 
@@ -377,6 +393,22 @@ py::list strategies_to_list(
             py::dict unit_counts_by_id;
             for (const auto& [unit_id, count] : strategy.unit_counts_by_id) unit_counts_by_id[py::int_(unit_id)] = count;
             item["unit_counts_by_id"] = std::move(unit_counts_by_id);
+            item["strategic_composition_decision"] = strategy.strategic_composition_decision;
+            item["strategic_composition_decision_name"] = strategy.strategic_composition_decision_name;
+            item["strategic_target_direction"] = strategy.strategic_target_direction;
+            item["strategic_reason"] = strategy.strategic_reason;
+            item["strategic_anchor_champion_id"] = strategy.strategic_anchor_champion_id;
+            item["strategic_confidence"] = strategy.strategic_confidence;
+            item["strategic_transition_cost"] = strategy.strategic_transition_cost;
+            item["strategic_preserve_unit_ids"] = strategy.strategic_preserve_unit_ids;
+            item["strategic_replaceable_unit_ids"] = strategy.strategic_replaceable_unit_ids;
+            item["strategic_candidate_direction"] = strategy.strategic_candidate_direction;
+            item["strategic_candidate_anchor_id"] = strategy.strategic_candidate_anchor_id;
+            item["strategic_candidate_score"] = strategy.strategic_candidate_score;
+            item["strategic_candidate_streak"] = strategy.strategic_candidate_streak;
+            item["strategic_committed_direction"] = strategy.strategic_committed_direction;
+            item["strategic_selected_round"] = strategy.strategic_selected_round;
+            item["strategic_shadow_only"] = strategy.strategic_shadow_only;
         }
 
         result.append(std::move(item));
