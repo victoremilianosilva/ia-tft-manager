@@ -8,10 +8,13 @@ param(
         "late_game_high_gold_underleveled",
         "slowroll_gold_reserve",
         "critical_hp_high_gold",
-        "core_sale_retention",
-        "bench_deployment_quality",
-        "carry_protection_positioning",
-        "movement_no_progress"
+        "late_game_high_gold_underleveled",
+        "econ_gold_reserve",
+        "econ_surplus_strong_board",
+        "stabilize_weak_board",
+        "fast8_strong_board",
+        "all_in_emergency",
+        "slowroll_winstreak"
     )]
     [string]$Scenario,
 
