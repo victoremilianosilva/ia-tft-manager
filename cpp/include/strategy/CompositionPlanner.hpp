@@ -107,7 +107,8 @@ public:
         int current_level = 1,
         const AvailableCopies& available_copies = {},
         const std::unordered_set<std::int32_t>& currently_offered = {},
-        const LiveUnitContext* live_context = nullptr) {
+        const LiveUnitContext* live_context = nullptr,
+        std::int32_t required_unit_id = -1) {
         CompositionPlan plan;
         if (pool.empty() || requested_slots == 0) return plan;
         const LiveUnitContext empty_live_context{};
@@ -252,6 +253,28 @@ public:
             for (const auto& trait : champion.traits) ++selected_trait_counts[trait];
         };
         if (selected_carry) add_champion_traits(*selected_carry);
+
+        // Shadow pivot evaluation may request that a shop anchor be part of
+        // the candidate lineup. Existing callers keep the old behavior through
+        // the default -1 argument; this does not change the live composition.
+        if (required_unit_id >= 0 &&
+            plan.unit_ids.size() < slots &&
+            std::find(plan.unit_ids.begin(), plan.unit_ids.end(), required_unit_id)
+                == plan.unit_ids.end()) {
+            const auto required = std::find_if(pool.begin(), pool.end(),
+                [&](const ChampionDefinition& champion) {
+                    return champion.internal_id == required_unit_id;
+                });
+            if (required != pool.end() &&
+                acquisition(*required).first > 0.0) {
+                plan.unit_ids.push_back(required->internal_id);
+                plan.unit_names.push_back(required->api_name.empty()
+                    ? required->name : required->api_name);
+                plan.score += 2.0 + required->cost * 0.20;
+                ++selected_role_counts[role_of(*required)];
+                add_champion_traits(*required);
+            }
+        }
 
         // Score the marginal value of a trait count using the actual set-specific
         // breakpoints. Crossing 2/4/6 is worth substantially more than spreading

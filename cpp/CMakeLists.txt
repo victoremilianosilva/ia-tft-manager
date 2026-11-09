@@ -294,6 +294,17 @@ if(BUILD_TESTING)
     add_test(NAME test_combat_engine COMMAND test_combat_engine)
 
     add_executable(
+        test_strategic_planner
+        tests/test_strategic_planner.cpp
+    )
+    configure_tft_module(test_strategic_planner)
+    enable_tft_test_assertions(test_strategic_planner)
+    add_test(
+        NAME strategic_planner_shadow
+        COMMAND test_strategic_planner
+    )
+
+    add_executable(
         test_composition_direction_policy
         tests/test_composition_direction_policy.cpp
     )

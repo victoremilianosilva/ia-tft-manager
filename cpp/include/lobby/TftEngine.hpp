@@ -298,6 +298,26 @@ struct StrategyInfo {
     std::vector<std::pair<std::string, std::int32_t>> active_traits;
     std::vector<std::pair<std::string, std::int32_t>> unit_counts;
     std::vector<std::pair<std::int32_t, std::int32_t>> unit_counts_by_id;
+
+    // Strategic Planner shadow diagnostics. These fields are observational
+    // only and never feed PPO observations, rewards, masks, or action execution.
+    std::int32_t strategic_composition_decision{0};
+    std::string strategic_composition_decision_name{"KEEP"};
+    std::string strategic_target_direction;
+    std::string strategic_reason;
+    std::int32_t strategic_anchor_champion_id{-1};
+    double strategic_confidence{0.0};
+    double strategic_transition_cost{0.0};
+    std::vector<std::int32_t> strategic_preserve_unit_ids;
+    std::vector<std::int32_t> strategic_replaceable_unit_ids;
+    std::string strategic_candidate_direction;
+    std::int32_t strategic_candidate_anchor_id{-1};
+    double strategic_candidate_score{0.0};
+    std::uint32_t strategic_candidate_streak{0};
+    std::uint32_t strategic_candidate_last_review_round{0};
+    std::string strategic_committed_direction;
+    std::uint32_t strategic_selected_round{0};
+    bool strategic_shadow_only{true};
 };
 
 struct AntiLoopMetrics {

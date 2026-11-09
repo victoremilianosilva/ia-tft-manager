@@ -69,6 +69,18 @@ int main() {
     assert(std::find(plan.core_traits.begin(), plan.core_traits.end(), "Vanguard")
            != plan.core_traits.end());
 
+    // Shadow pivot evaluation can force the candidate shop anchor into
+    // an alternative lineup even when the anchor is not the carry role.
+    std::vector<ChampionDefinition> anchor_pool{
+        champion(71, "ExistingCarry", 1, {"CurrentTrait"}, 3),
+        champion(72, "PivotAnchorTank", 0, {"PivotTrait"}, 5),
+        champion(73, "Filler", 2, {"OtherTrait"}, 1)
+    };
+    const auto anchor_plan = CompositionPlanner::build(
+        anchor_pool, {}, "PivotTrait", {}, {}, 2, 8, {}, {}, nullptr, 72);
+    assert(std::find(anchor_plan.unit_ids.begin(), anchor_plan.unit_ids.end(), 72)
+           != anchor_plan.unit_ids.end());
+
     // The planned lineup is flexible: it includes units outside the direction
     // to supply damage/support rather than spending every slot on one trait.
     assert(std::any_of(plan.unit_ids.begin(), plan.unit_ids.end(), [&](int id) {

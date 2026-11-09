@@ -25,10 +25,19 @@ The architecture has four responsibilities:
 - `ABANDON`: retire a direction that is no longer viable.
 
 A pivot accounts for transition cost and preserves valuable board pieces where
-possible. A high-cost shop unit may become an anchor, but cost alone is
-insufficient: item fit, current board contribution, reusable owned units,
-contestation, level/shop odds and completion cost also matter. Buying an anchor
-does not force an immediate full pivot; transition may be staged.
+possible. Cost-4/5 shop units and already-owned high-value units may become
+anchors, but cost alone is insufficient: the alternative lineup must actually
+include the anchor, reuse owned units where possible, and account for item fit,
+opponent-owned copies, shop odds and lineup overlap. The runtime currently
+evaluates at most two anchor directions per strategy refresh to bound the
+additional planner work.
+
+The reported transition cost is a normalized lineup-replacement estimate
+(1 minus Jaccard overlap), not a gold cost. Confidence is a heuristic ranking
+signal, not a calibrated probability. Pivot hysteresis advances at most once
+per round; repeated actions in one round do not count as independent evidence.
+A shadow pivot recommendation does not change the active commitment or live
+composition direction.
 
 ## Compatibility
 
@@ -54,14 +63,23 @@ Acceptance: standalone header compiles under the repository C++ standard;
 enum values are explicit and stable; old strategy/action/checkpoint contracts
 remain unchanged; no reward, observation, mask or execution changes.
 
-### PR 2 — Strategic Planner in shadow mode
-Implement persistent plan selection and `KEEP/ADAPT/PIVOT/ABANDON`
-recommendations, owned-unit reuse and anchor-opportunity scoring. Log only;
-PPO actions remain authoritative.
+### PR 2 — Strategic Planner in shadow mode (implementation in review)
+The native engine now evaluates high-cost (4/5) shop units as possible
+composition anchors. For each candidate trait it builds an alternative lineup
+with the existing CompositionPlanner, measures overlap/reusable owned pieces,
+and feeds the result to the new StrategicPlanner. The recommendation and
+commitment/hysteresis state are exposed through strategy diagnostics only.
+
+The planner can recommend `KEEP/ADAPT/PIVOT/ABANDON`; a pivot from a viable
+locked direction requires repeated evidence. A direction that is no longer
+viable can pivot immediately when a supported alternative exists. Valuable
+owned/core units and item-bearing units are reported as preserve candidates.
 
 Acceptance: deterministic tests for commitment persistence/hysteresis,
 preservation of valuable owned units, rejection of poor anchors, and gradual
-pivot when an anchor plus existing board makes transition viable.
+pivot when an anchor plus existing board makes transition viable. Runtime
+shadow output must remain observational and never mutate the active direction
+or PPO action path.
 
 ### PR 3 — Economic Controller and Action Evaluator in shadow mode
 Generate posture and marginal action recommendations from the shared context.
