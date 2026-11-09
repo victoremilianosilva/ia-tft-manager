@@ -2949,7 +2949,7 @@ struct TFTEngine::Impl {
             strategic_context.level = economy.level;
             strategic_context.xp = economy.xp;
             strategic_context.xp_to_next = std::max(0,
-                economy.xp_needed - economy.xp);
+                economy_engine.get_xp_to_next(economy));
             strategic_context.interest_if_resolved_now =
                 economy_engine.get_interest(economy.gold);
             strategic_context.win_streak = economy.win_streak;
