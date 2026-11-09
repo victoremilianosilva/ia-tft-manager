@@ -3046,84 +3046,124 @@ struct TFTEngine::Impl {
             const strategy::CompositionPlanner::FocusWeights strategic_focus(
                 focus.begin(), focus.end());
             std::unordered_set<std::string> evaluated_anchor_directions;
+            const auto evaluate_anchor = [&](const ChampionDefinition& definition,
+                                             std::int32_t star,
+                                             bool on_board,
+                                             bool shop_available,
+                                             double item_fit) {
+                if (definition.cost < 4) return;
+                for (const auto& trait : definition.traits) {
+                    if (evaluated_anchor_directions.size() >= 4) break;
+                    if (trait.empty() ||
+                        !evaluated_anchor_directions.insert(trait).second)
+                        continue;
+                    const auto alternative = strategy::CompositionPlanner::build(
+                        catalog->all(), trait_milestones, trait, strategic_focus,
+                        strategic_owned_copies,
+                        strategy::CompositionPlanner::target_slots_for_level(
+                            economy.level),
+                        economy.level, strategic_available, strategic_offered,
+                        nullptr, definition.internal_id);
+                    if (alternative.unit_ids.empty() ||
+                        std::find(alternative.unit_ids.begin(),
+                                  alternative.unit_ids.end(),
+                                  definition.internal_id) ==
+                            alternative.unit_ids.end()) continue;
+
+                    std::unordered_set<std::int32_t> current_ids(
+                        info.planned_unit_ids.begin(), info.planned_unit_ids.end());
+                    std::size_t reusable = 0;
+                    std::size_t intersection = 0;
+                    for (const auto id : alternative.unit_ids) {
+                        if (strategic_owned_copies.count(id) != 0) ++reusable;
+                        if (current_ids.count(id) != 0) ++intersection;
+                    }
+                    const std::size_t union_size =
+                        current_ids.size() + alternative.unit_ids.size() -
+                        intersection;
+                    const double overlap = union_size == 0 ? 0.0 :
+                        static_cast<double>(intersection) /
+                        static_cast<double>(union_size);
+
+                    strategy::StrategicAnchorCandidate anchor;
+                    anchor.unit.champion_id = definition.internal_id;
+                    anchor.unit.champion_key = definition.api_name;
+                    anchor.unit.cost = definition.cost;
+                    anchor.unit.star = star;
+                    anchor.unit.on_board = on_board;
+                    anchor.unit.on_bench = !on_board && !shop_available;
+                    anchor.unit.composition_fit = 1.0;
+                    anchor.unit.board_contribution = std::clamp(
+                        definition.cost / 5.0 * 0.5 +
+                        std::clamp(star, 1, 3) / 3.0 * 0.5,
+                        0.0, 1.0);
+                    anchor.unit.item_fit = item_fit;
+                    const auto owned_anchor = strategic_owned_copies.find(
+                        definition.internal_id);
+                    anchor.unit.copies_owned = owned_anchor ==
+                        strategic_owned_copies.end() ? 0 : owned_anchor->second;
+                    anchor.unit.traits = definition.traits;
+                    anchor.target_composition_direction = trait;
+                    anchor.anchor_value = alternative.score;
+                    anchor.transition_cost = 1.0 - overlap;
+                    anchor.reusable_owned_units = static_cast<std::int32_t>(
+                        std::min<std::size_t>(reusable, 5));
+                    // Count exact opponent-owned copies from live board/bench
+                    // state. Shop reservations are excluded because they are
+                    // not confirmed composition investment.
+                    for (std::size_t opponent = 0;
+                         opponent < kPlayersPerLobby; ++opponent) {
+                        if (opponent == i ||
+                            !player_envs[opponent].info.alive) continue;
+                        const auto count_contested = [&](const UnitInstance& unit) {
+                            if (unit.champion_internal_id == definition.internal_id)
+                                anchor.contestation += star_copies(unit.star);
+                        };
+                        for (const auto& unit : player_envs[opponent].board)
+                            if (unit) count_contested(*unit);
+                        for (const auto& unit : player_envs[opponent].bench)
+                            if (unit) count_contested(*unit);
+                    }
+                    anchor.shop_available = shop_available;
+                    strategic_context.anchor_candidates.push_back(
+                        std::move(anchor));
+                }
+            };
+
+            // Shop opportunities are evaluated first so an actually available
+            // anchor is not hidden by an already-owned copy of the same trait.
+            const auto& strategic_shop = player_envs[i].shop;
             if (strategic_shop) {
                 for (const auto& offer : strategic_shop->offers()) {
                     if (!offer) continue;
                     const auto* definition = catalog->find_by_id(
                         offer->champion_internal_id);
-                    if (!definition || definition->cost < 4) continue;
-                    for (const auto& trait : definition->traits) {
-                        if (evaluated_anchor_directions.size() >= 4) break;
-                        if (trait.empty() ||
-                            !evaluated_anchor_directions.insert(trait).second)
-                            continue;
-                        const auto alternative = strategy::CompositionPlanner::build(
-                            catalog->all(), trait_milestones, trait, strategic_focus,
-                            strategic_owned_copies,
-                            strategy::CompositionPlanner::target_slots_for_level(
-                                economy.level),
-                            economy.level, strategic_available, strategic_offered,
-                            nullptr, definition->internal_id);
-                        if (alternative.unit_ids.empty() ||
-                            std::find(alternative.unit_ids.begin(),
-                                      alternative.unit_ids.end(),
-                                      definition->internal_id) ==
-                                alternative.unit_ids.end()) continue;
-
-                        std::unordered_set<std::int32_t> current_ids(
-                            info.planned_unit_ids.begin(), info.planned_unit_ids.end());
-                        std::size_t reusable = 0;
-                        std::size_t intersection = 0;
-                        for (const auto id : alternative.unit_ids) {
-                            if (strategic_owned_copies.count(id) != 0) ++reusable;
-                            if (current_ids.count(id) != 0) ++intersection;
-                        }
-                        const std::size_t union_size =
-                            current_ids.size() + alternative.unit_ids.size() -
-                            intersection;
-                        const double overlap = union_size == 0 ? 0.0 :
-                            static_cast<double>(intersection) /
-                            static_cast<double>(union_size);
-
-                        strategy::StrategicAnchorCandidate anchor;
-                        anchor.unit.champion_id = definition->internal_id;
-                        anchor.unit.champion_key = definition->api_name;
-                        anchor.unit.cost = definition->cost;
-                        anchor.unit.star = 1;
-                        anchor.unit.composition_fit = 1.0;
-                        const auto owned_anchor = strategic_owned_copies.find(
-                            definition->internal_id);
-                        anchor.unit.copies_owned = owned_anchor ==
-                            strategic_owned_copies.end() ? 0 : owned_anchor->second;
-                        anchor.unit.traits = definition->traits;
-                        anchor.target_composition_direction = trait;
-                        anchor.anchor_value = alternative.score;
-                        anchor.transition_cost = 1.0 - overlap;
-                        anchor.reusable_owned_units = static_cast<std::int32_t>(
-                            std::min<std::size_t>(reusable, 5));
-                        // Count exact opponent-owned copies from live board/bench
-                        // state. Shop reservations are intentionally excluded
-                        // because they are not confirmed composition investment.
-                        for (std::size_t opponent = 0;
-                             opponent < kPlayersPerLobby; ++opponent) {
-                            if (opponent == i ||
-                                !player_envs[opponent].info.alive) continue;
-                            const auto count_contested = [&](const UnitInstance& unit) {
-                                if (unit.champion_internal_id ==
-                                    definition->internal_id)
-                                    anchor.contestation += star_copies(unit.star);
-                            };
-                            for (const auto& unit : player_envs[opponent].board)
-                                if (unit) count_contested(*unit);
-                            for (const auto& unit : player_envs[opponent].bench)
-                                if (unit) count_contested(*unit);
-                        }
-                        anchor.shop_available = true;
-                        strategic_context.anchor_candidates.push_back(
-                            std::move(anchor));
-                    }
+                    if (!definition) continue;
+                    evaluate_anchor(*definition, 1, false, true, 0.0);
                     if (evaluated_anchor_directions.size() >= 4) break;
                 }
+            }
+
+            // High-cost units already owned are also valid anchors. This lets
+            // the planner adapt around strong pieces instead of treating a
+            // shop purchase as the only way to discover a viable direction.
+            for (const auto& unit : player_envs[i].board) {
+                if (!unit || evaluated_anchor_directions.size() >= 4) continue;
+                const auto* definition = catalog->find_by_id(
+                    unit->champion_internal_id);
+                if (definition)
+                    evaluate_anchor(*definition, unit->star, true, false,
+                        std::clamp(static_cast<double>(unit->items.size()) / 3.0,
+                                   0.0, 1.0));
+            }
+            for (const auto& unit : player_envs[i].bench) {
+                if (!unit || evaluated_anchor_directions.size() >= 4) continue;
+                const auto* definition = catalog->find_by_id(
+                    unit->champion_internal_id);
+                if (definition)
+                    evaluate_anchor(*definition, unit->star, false, false,
+                        std::clamp(static_cast<double>(unit->items.size()) / 3.0,
+                                   0.0, 1.0));
             }
 
             strategy::StrategicCommitment strategic_commitment;
