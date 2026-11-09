@@ -85,9 +85,24 @@ or PPO action path.
 Generate posture and marginal action recommendations from the shared context.
 Allow exceptions; do not hard-mask actions or override PPO.
 
+The Economic Controller ranks contextual postures (accumulate, preserve a
+streak, invest XP, roll for upgrades, stabilize, emergency investment) using
+continuous pressure signals rather than a single universal gold/HP cutoff.
+The Action Evaluator ranks only available candidates supplied from native
+state, balancing estimated board gain, composition fit, upgrade opportunity,
+survival/streak value and opportunity cost (including engine-computed lost
+interest at the current balance). A recommendation is not an instruction.
+
+Current shop-unit board gains and future HP/streak effects are heuristic
+estimates, not calibrated probabilities. Incoming damage is not yet a reliable
+shared-context signal and remains unavailable rather than being fabricated.
+The active PPO action is not overridden or compared here; exact action
+agreement/deviation belongs to PR 4's event-level correlation.
+
 Acceptance: no universal fixed gold/HP threshold; preserve a strong streak
 without needless spending; convert surplus into strength when justified;
-every recommendation includes reason and confidence.
+every recommendation includes reason and confidence; no changes to PPO,
+rewards, masks, action legality, execution or training.
 
 ### PR 4 — Outcome evaluation and comparison reports
 Correlate recommendations, actual PPO actions and subsequent outcomes. Report
