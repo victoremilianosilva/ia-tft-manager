@@ -201,7 +201,7 @@ class OutcomeEvaluator:
                     alive_candidates.append((
                         self._round_order(round_id),
                         int(outcome.get("sequence_id") or outcome.get("step") or 0),
-                        int(outcome.get("step") or 0) * 2 + 1,
+                        int(outcome.get("step") or 0) * 2 + 2,
                         state,
                     ))
             for decision in decisions:
