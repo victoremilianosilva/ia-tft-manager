@@ -3161,7 +3161,7 @@ struct TFTEngine::Impl {
 
             // Shop opportunities are evaluated first so an actually available
             // anchor is not hidden by an already-owned copy of the same trait.
-            const auto& strategic_shop = player_envs[i].shop;
+
             if (strategic_shop) {
                 for (const auto& offer : strategic_shop->offers()) {
                     if (!offer) continue;
