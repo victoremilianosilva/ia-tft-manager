@@ -206,7 +206,7 @@ def run(args):
     checkpoint_path = Path(args.checkpoint).expanduser().resolve()
     checkpoint_path = check_scenario(
         args.scenario, checkpoint_path,
-        custom_source=(args.custom_source or os.environ.get("TFT_FINETUNE_CUSTOM_SOURCE") == "1"),
+        custom_source=args.custom_source,
     )
     if not checkpoint_path.is_file():
         raise FileNotFoundError(f"Checkpoint original não encontrado: {checkpoint_path}")
