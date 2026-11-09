@@ -216,6 +216,7 @@ private:
             }
 
             if (best_index != static_cast<std::size_t>(-1)) {
+                diagnostics[best_index].accepted = false;
                 diagnostics[best_index].evaluation_reason =
                     "valid_but_not_selected";
             }
