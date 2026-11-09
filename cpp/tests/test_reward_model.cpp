@@ -104,11 +104,11 @@ int main() {
                   0.0,
                   "ECON XP that secures a level-up is not penalized");
     require_close(strategy_action_reward(0, 2, 60, 56, 80.0, 4,
-                                         false, false, true, false),
+                                         false, false, true, false, 40.0),
                   0.095,
                   "strong-board ECON converts surplus above 50 into a level-up");
     require_close(strategy_action_reward(1, 1, 60, 58, 60.0, 4,
-                                         false, true, false, false),
+                                         false, true, false, false, 20.0),
                   0.04,
                   "STABILIZE may reroll when a pressured board finds a better shop");
     require_close(strategy_action_reward(4, 1, 20, 18, 20.0, 4,
