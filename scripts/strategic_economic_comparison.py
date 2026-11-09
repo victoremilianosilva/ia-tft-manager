@@ -92,8 +92,9 @@ class OutcomeEvaluator:
                 int((previous or {}).get("sequence_id") or (previous or {}).get("step") or 0),
                 int((previous or {}).get("step") or 0),
             )
-            selected = dict(outcome if previous is None or order >= previous_order else previous)
-            fallback = previous if selected is outcome else outcome
+            use_incoming = previous is None or order >= previous_order
+            selected = dict(outcome if use_incoming else previous)
+            fallback = previous if use_incoming else outcome
             for field in ("combat_reward", "reward", "placement", "state_after"):
                 if selected.get(field) in (None, {}):
                     selected[field] = (fallback or {}).get(field)
