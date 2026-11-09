@@ -41,10 +41,10 @@ public:
                 std::clamp(posture.survival_pressure, 0.0, 1.0) * 0.90;
             const double streak_multiplier =
                 (c.win_streak >= 2 || c.loss_streak >= 2) ? 1.12 : 1.0;
-            breakdown.board_component = board_gain;
-            breakdown.survival_component = positive_board_gain *
+            breakdown.board_component = board_gain * 0.75;
+            breakdown.survival_component = board_gain *
                 (survival_multiplier - 0.75);
-            breakdown.streak_component = positive_board_gain *
+            breakdown.streak_component = board_gain * survival_multiplier *
                 (streak_multiplier - 1.0);
             breakdown.composition_component =
                 std::clamp(candidate.composition_fit, 0.0, 1.0) * 0.18;
@@ -90,8 +90,9 @@ public:
             breakdown.lost_interest_component = -lost_interest * 0.10;
             breakdown.opportunity_cost_component = -opportunity_cost * 0.10;
             breakdown.total_score =
-                breakdown.board_component * survival_multiplier * streak_multiplier +
-                breakdown.composition_component + breakdown.upgrade_component +
+                breakdown.board_component + breakdown.survival_component +
+                breakdown.streak_component + breakdown.composition_component +
+                breakdown.upgrade_component +
                 breakdown.posture_component + breakdown.direct_cost_component +
                 breakdown.lost_interest_component +
                 breakdown.opportunity_cost_component;
