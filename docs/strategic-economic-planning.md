@@ -54,14 +54,23 @@ Acceptance: standalone header compiles under the repository C++ standard;
 enum values are explicit and stable; old strategy/action/checkpoint contracts
 remain unchanged; no reward, observation, mask or execution changes.
 
-### PR 2 — Strategic Planner in shadow mode
-Implement persistent plan selection and `KEEP/ADAPT/PIVOT/ABANDON`
-recommendations, owned-unit reuse and anchor-opportunity scoring. Log only;
-PPO actions remain authoritative.
+### PR 2 — Strategic Planner in shadow mode (implementation in review)
+The native engine now evaluates high-cost (4/5) shop units as possible
+composition anchors. For each candidate trait it builds an alternative lineup
+with the existing CompositionPlanner, measures overlap/reusable owned pieces,
+and feeds the result to the new StrategicPlanner. The recommendation and
+commitment/hysteresis state are exposed through strategy diagnostics only.
+
+The planner can recommend `KEEP/ADAPT/PIVOT/ABANDON`; a pivot from a viable
+locked direction requires repeated evidence. A direction that is no longer
+viable can pivot immediately when a supported alternative exists. Valuable
+owned/core units and item-bearing units are reported as preserve candidates.
 
 Acceptance: deterministic tests for commitment persistence/hysteresis,
 preservation of valuable owned units, rejection of poor anchors, and gradual
-pivot when an anchor plus existing board makes transition viable.
+pivot when an anchor plus existing board makes transition viable. Runtime
+shadow output must remain observational and never mutate the active direction
+or PPO action path.
 
 ### PR 3 — Economic Controller and Action Evaluator in shadow mode
 Generate posture and marginal action recommendations from the shared context.
