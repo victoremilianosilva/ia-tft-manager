@@ -45,6 +45,16 @@ enum class StrategicReason : std::uint8_t {
     EconomyConstraint = 10, InsufficientEvidence = 11
 };
 
+// Explicit heuristic opportunity premiums. Reroll is intentionally more
+// expensive than XP because it consumes a shop search without guaranteeing
+// a unit or advancing level progression.
+namespace action_opportunity_cost {
+inline constexpr double kBuyExperience = 0.25;
+inline constexpr double kRerollWithUpgradeTarget = 3.50;
+inline constexpr double kRerollWithoutUpgradeTarget = 4.00;
+inline constexpr double kBuyUnit = 0.35;
+} // namespace action_opportunity_cost
+
 struct StrategicUnitCandidate {
     std::int32_t champion_id{-1};
     std::string champion_key;
