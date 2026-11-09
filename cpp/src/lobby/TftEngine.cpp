@@ -3466,6 +3466,9 @@ struct TFTEngine::Impl {
                 item.action = kind < candidate_action_names.size()
                     ? candidate_action_names[kind] : "UNKNOWN";
                 item.champion_id = score.champion_id;
+                item.direct_gold_cost = score.direct_gold_cost;
+                item.lost_interest_cost = score.lost_interest_cost;
+                item.opportunity_cost = score.opportunity_cost;
                 item.board_component = score.board_component;
                 item.survival_component = score.survival_component;
                 item.streak_component = score.streak_component;
