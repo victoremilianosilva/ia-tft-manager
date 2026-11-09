@@ -80,7 +80,9 @@ public:
                     break;
             }
 
-            const double direct_cost = std::max(0.0, candidate.direct_gold_cost);
+            const double direct_cost = candidate.direct_gold_cost != 0.0
+                ? std::max(0.0, candidate.direct_gold_cost)
+                : std::max(0.0, candidate.expected_economy_cost);
             const double gold_gain = std::max(0.0, -candidate.direct_gold_cost);
             const double lost_interest = std::max(0.0, candidate.lost_interest_cost);
             const double opportunity_cost = std::max(0.0, candidate.opportunity_cost);
