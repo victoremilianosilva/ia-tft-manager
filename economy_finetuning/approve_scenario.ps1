@@ -4,14 +4,12 @@ param(
     [ValidateSet(
         "critical_hp_high_gold",
         "late_game_high_gold_underleveled",
-        "s4_fast8_lvl6_gold60_hp_ok",
-        "s4_fast8_lvl6_gold80",
-        "s4_fast8_lvl7_gold60",
-        "slowroll_gold_reserve",
-        "core_sale_retention",
-        "bench_deployment_quality",
-        "carry_protection_positioning",
-        "movement_no_progress"
+        "econ_gold_reserve",
+        "econ_surplus_strong_board",
+        "stabilize_weak_board",
+        "fast8_strong_board",
+        "all_in_emergency",
+        "slowroll_winstreak"
     )]
     [string]$Scenario,
     [Parameter(Mandatory = $true)]
