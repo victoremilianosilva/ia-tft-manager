@@ -245,6 +245,7 @@ int main() {
     const auto no_candidate = action_evaluator.evaluate(economy_context, posture);
     assert(no_candidate.recommended_action == StrategicActionKind::Hold);
     assert(no_candidate.confidence == 0.0);
+    assert(no_candidate.candidate_scores.empty());
 
     // With a strong win streak, a marginal low-value purchase should not
     // beat holding resources merely because spending is possible.
@@ -268,6 +269,12 @@ int main() {
         streak_context, streak_posture);
     assert(streak_posture.posture == EconomicPosture::PreserveWinStreak);
     assert(streak_action.recommended_action == StrategicActionKind::Hold);
+    assert(std::any_of(streak_action.candidate_scores.begin(),
+                       streak_action.candidate_scores.end(),
+                       [](const ActionCandidateScore& score) {
+                           return score.kind == StrategicActionKind::Hold &&
+                                  score.selected;
+                       }));
 
     std::cout << "strategic planner shadow tests passed\n";
     return 0;
