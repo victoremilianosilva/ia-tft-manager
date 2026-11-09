@@ -204,7 +204,10 @@ def run(args):
     device_name = "cuda" if args.device == "cuda" or (args.device == "auto" and torch.cuda.is_available()) else "cpu"
     device = torch.device(device_name)
     checkpoint_path = Path(args.checkpoint).expanduser().resolve()
-    checkpoint_path = check_scenario(args.scenario, checkpoint_path)
+    checkpoint_path = check_scenario(
+        args.scenario, checkpoint_path,
+        custom_source=(args.custom_source or os.environ.get("TFT_FINETUNE_CUSTOM_SOURCE") == "1"),
+    )
     if not checkpoint_path.is_file():
         raise FileNotFoundError(f"Checkpoint original não encontrado: {checkpoint_path}")
 
@@ -277,6 +280,7 @@ def run(args):
         metadata = {
             "checkpoint": _display_path(checkpoint_path),
             "checkpoint_sha256": _sha256(checkpoint_path),
+            "source_mode": "custom" if args.custom_source else "chain",
             "repository_commit": repository_commit,
             "engine_commit": repository_commit,
             "training_script_sha256": _sha256(Path(__file__)),
@@ -478,6 +482,8 @@ def run(args):
         )
         summary = {
             "checkpoint_original": _display_path(checkpoint_path),
+            "source_checkpoint_path": str(checkpoint_path),
+            "source_mode": metadata["source_mode"],
             "checkpoint_finetuned": _display_path(output),
             "repository_commit": repository_commit,
             "source_checkpoint_sha256": metadata["checkpoint_sha256"],
@@ -520,6 +526,7 @@ def parse_args():
         help="Treina exclusivamente este cenário; os demais ficam em monitoramento.",
     )
     parser.add_argument("--checkpoint", required=True, help="Checkpoint original .pt")
+    parser.add_argument("--custom-source", action="store_true", help="Use --checkpoint as an explicit custom origin.")
     parser.add_argument("--output", default=None, help="Checkpoint de saída; por padrão usa nome único")
     parser.add_argument("--run-dir", default=None, help="Diretório da execução; por padrão usa nome único")
     parser.add_argument("--updates", type=int, default=100)
