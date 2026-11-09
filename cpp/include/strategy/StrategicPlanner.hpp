@@ -16,7 +16,6 @@ struct StrategicPlannerConfig {
     double minimum_anchor_score{0.01};
     double preserve_board_contribution{0.50};
     double preserve_item_fit{0.70};
-    double preserve_target_trait_fit{0.50};
     std::uint32_t required_reviews_unlocked{2};
     std::uint32_t required_reviews_locked{3};
 };
