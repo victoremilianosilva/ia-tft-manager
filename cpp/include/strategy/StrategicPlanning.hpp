@@ -136,6 +136,7 @@ struct StrategicActionCandidate {
     StrategicActionKind kind{StrategicActionKind::None};
     std::int32_t champion_id{-1};
     std::int32_t gold_cost{0};
+    double expected_economy_cost{0.0};
     double expected_board_delta{0.0};
     double composition_fit{0.0};
     double upgrade_value{0.0};
