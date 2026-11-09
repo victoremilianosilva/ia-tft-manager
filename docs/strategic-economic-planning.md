@@ -115,10 +115,12 @@ run: PPO actions, Strategic Planner, Economic Controller, Action Evaluator,
 divergences, immediate outcomes and final observed state.
 
 The offline Outcome Evaluator measures before/after deltas for gold, HP, board
-power, level, XP, pairs and star upgrades, plus the last state observed for each
-player. These are descriptive correlations, not causal attribution. Agreement
-between PPO and Action Evaluator is calculated only when both action labels are
-present and normalized to equivalent categories.
+power, level, XP, pairs and star upgrades, plus the state observed at the end
+of the round (after remaining preparation actions and combat) and the last
+round-end state for each player. Round-end deltas are contextual outcomes, not
+attribution to an individual action. These are descriptive correlations, not
+causal attribution. Agreement between PPO and Action Evaluator is calculated
+only when both action labels are present and normalized to equivalent categories.
 
 The Viewer keeps the structured JSON report in a temporary directory for its
 internal hand-off; the session audit folder receives Markdown files only.
