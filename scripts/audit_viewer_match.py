@@ -2638,11 +2638,11 @@ def main() -> int:
     # temporary out-dir, so no JSON file is left in the user's session/audit folder.
     general_md = markdown_report(report)
     full_md = markdown_full_report(report)
-    evidence_marker = "\\n---\\n\\n## Evidências resumidas dos achados"
+    evidence_marker = "\n---\n\n## Evidências resumidas dos achados"
     if evidence_marker in full_md:
         evidence_md = "# Evidências detalhadas dos achados" + full_md.split(evidence_marker, 1)[1]
     else:
-        evidence_md = "# Evidências detalhadas dos achados\\n\\nSem evidências adicionais."
+        evidence_md = "# Evidências detalhadas dos achados\n\nSem evidências adicionais."
     report_for_json = dict(report)
     json_path.write_text(json.dumps(report_for_json, ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -2654,10 +2654,10 @@ def main() -> int:
         (markdown_dir / filename).write_text(content, encoding="utf-8")
 
     print(general_md)
-    print("\\nRelatórios Markdown salvos em:")
+    print("\nRelatórios Markdown salvos em:")
     for filename in sorted(markdown_documents):
         print(f"- {markdown_dir / filename}")
-    print(f"\\nDados estruturados temporários: {json_path}")
+    print(f"\nDados estruturados temporários: {json_path}")
     if args.strict and any(x["severity"] in ("CRITICAL", "HIGH") for x in unique):
         return 1
     return 0
