@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+import tempfile
 from collections import Counter
 from pathlib import Path
 
@@ -139,19 +140,22 @@ class AuditWindow(QMainWindow):
         self.status.setText(f"Analisando {len(logs)} arquivos em {folder}…")
         QApplication.processEvents()
         out_dir = folder / "audit"
-        command = [
-            sys.executable, str(ROOT / "scripts" / "audit_viewer_match.py"),
-            str(folder), "--out-dir", str(out_dir),
-        ]
         try:
-            completed = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
-            report_path = out_dir / "audit_report.json"
-            md_path = out_dir / "audit_report.md"
-            if not report_path.is_file():
-                detail = (completed.stderr or completed.stdout or "O auditor não gerou o relatório.")[-6000:]
-                raise RuntimeError(detail)
-            self.report = json.loads(report_path.read_text(encoding="utf-8"))
-            self.report_md = md_path.read_text(encoding="utf-8") if md_path.is_file() else completed.stdout
+            # JSON is only an internal hand-off to this window and lives in a
+            # temporary directory. The session audit folder receives Markdown only.
+            with tempfile.TemporaryDirectory(prefix="tft-viewer-audit-") as internal_dir:
+                command = [
+                    sys.executable, str(ROOT / "scripts" / "audit_viewer_match.py"),
+                    str(folder), "--out-dir", internal_dir, "--markdown-dir", str(out_dir),
+                ]
+                completed = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+                report_path = Path(internal_dir) / "audit_report.json"
+                md_path = out_dir / "audit_report.md"
+                if not report_path.is_file():
+                    detail = (completed.stderr or completed.stdout or "O auditor não gerou o relatório.")[-6000:]
+                    raise RuntimeError(detail)
+                self.report = json.loads(report_path.read_text(encoding="utf-8"))
+                self.report_md = md_path.read_text(encoding="utf-8") if md_path.is_file() else completed.stdout
             self.session_dir = folder
             self._render_report()
             issues = self.report.get("issues", [])
@@ -162,7 +166,7 @@ class AuditWindow(QMainWindow):
                 f"{self.report.get('entries_read', 0)} entradas estruturadas · "
                 f"{len(issues)} achados (CRITICAL {counts['CRITICAL']}, HIGH {counts['HIGH']}, "
                 f"MEDIUM {counts['MEDIUM']}, LOW {counts['LOW']}). "
-                f"Relatórios completos salvos em {out_dir}"
+                f"Relatórios Markdown salvos em {out_dir}"
             )
             if completed.returncode not in (0, 1):
                 self.status.setText(self.status.text() + f" · auditor retornou código {completed.returncode}")
