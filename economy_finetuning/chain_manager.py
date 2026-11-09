@@ -11,16 +11,16 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 STATE_PATH = ROOT / "economy_finetuning" / "chain_state.json"
 SCENARIO_ORDER = (
+    # Preserve the two already executed fine-tunings and their lineage.
     "critical_hp_high_gold",
     "late_game_high_gold_underleveled",
-    "s4_fast8_lvl6_gold60_hp_ok",
-    "s4_fast8_lvl6_gold80",
-    "s4_fast8_lvl7_gold60",
-    "slowroll_gold_reserve",
-    "core_sale_retention",
-    "bench_deployment_quality",
-    "carry_protection_positioning",
-    "movement_no_progress",
+    # New focused strategy curriculum.
+    "econ_gold_reserve",
+    "econ_surplus_strong_board",
+    "stabilize_weak_board",
+    "fast8_strong_board",
+    "all_in_emergency",
+    "slowroll_winstreak",
 )
 
 
