@@ -92,8 +92,12 @@ class OutcomeEvaluator:
                 int((previous or {}).get("sequence_id") or (previous or {}).get("step") or 0),
                 int((previous or {}).get("step") or 0),
             )
-            if previous is None or order >= previous_order:
-                unique_rounds[key] = outcome
+            selected = dict(outcome if previous is None or order >= previous_order else previous)
+            fallback = previous if selected is outcome else outcome
+            for field in ("combat_reward", "reward", "placement", "state_after"):
+                if selected.get(field) in (None, {}):
+                    selected[field] = (fallback or {}).get(field)
+            unique_rounds[key] = selected
 
         rounds_by_player = defaultdict(list)
         for (player, round_id), outcome in unique_rounds.items():
@@ -375,7 +379,7 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
         "Action Evaluator — recomendações e scores",
         "O Action Evaluator classifica candidatos disponíveis; a coluna PPO mostra o que realmente foi executado."
     )
-    actions += ["| Jogador | Round | Step | PPO executou | Recomendação | Campeão recomendado | Δ board (proxy) | Δ ouro direto | Juros perdidos | Custo oportunidade | Custo total estimado | HP (proxy) | Streak (proxy) | Confiança | Motivo |",
+    actions += ["| Jogador | Round | Step | PPO executou | Recomendação | Campeão recomendado | Δ board (proxy) | Δ ouro direto | Juros perdidos | Custo oportunidade | Custo econômico líquido | HP (proxy) | Streak (proxy) | Confiança | Motivo |",
                 "|---|---|---:|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|"]
     for d, s in action_rows:
         actions.append("| " + " | ".join(_cell(x) for x in (
