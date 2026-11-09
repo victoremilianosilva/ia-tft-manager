@@ -55,7 +55,15 @@ def predecessor(scenario: str) -> str | None:
     return SCENARIO_ORDER[index - 1] if index else None
 
 
-def check_scenario(scenario: str, requested_checkpoint: Path) -> Path:
+def check_scenario(
+    scenario: str, requested_checkpoint: Path, *, custom_source: bool = False
+) -> Path:
+    requested_checkpoint = requested_checkpoint.expanduser().resolve()
+    if not requested_checkpoint.is_file():
+        raise FileNotFoundError(f"Checkpoint de origem não encontrado: {requested_checkpoint}")
+    # Explicit custom source is an opt-in branch for this run only.
+    if custom_source:
+        return requested_checkpoint
     data = _load()
     previous = predecessor(scenario)
     if previous is None:
@@ -88,18 +96,32 @@ def record_training(scenario: str, checkpoint: Path, summary: Path) -> None:
     if int(report.get("selected_scenario_transitions", 0)) <= 0:
         raise RuntimeError("Não há transições elegíveis; cenário não pode entrar na cadeia.")
     data = _load()
+    source_mode = report.get("source_mode", "chain")
+    if source_mode not in {"chain", "custom"}:
+        raise RuntimeError(f"Modo de origem inválido no resumo: {source_mode}")
+    source_path_value = report.get("source_checkpoint_path") or report.get("checkpoint_original")
+    if not source_path_value:
+        raise RuntimeError("O resumo não registra o caminho do checkpoint de origem.")
+    source_path = Path(source_path_value).expanduser().resolve()
+    if not source_path.is_file():
+        raise FileNotFoundError(f"Checkpoint de origem do treino não existe: {source_path}")
+    source_hash = sha256_file(source_path)
+    if report.get("source_checkpoint_sha256") != source_hash:
+        raise RuntimeError("Hash do checkpoint de origem diverge do training_summary.json.")
     previous = predecessor(scenario)
-    if previous:
+    if source_mode == "chain" and previous:
         entry = data["scenarios"].get(previous)
         if not entry or entry.get("status") != "approved":
             raise RuntimeError(f"Não é possível registrar {scenario}: {previous} não aprovado.")
-        if report.get("source_checkpoint_sha256") != entry.get("checkpoint_sha256"):
+        if source_hash != entry.get("checkpoint_sha256"):
             raise RuntimeError("O checkpoint de origem não corresponde ao predecessor aprovado.")
     data["scenarios"][scenario] = {
         "status": "trained",
         "checkpoint_path": str(checkpoint.resolve()),
         "checkpoint_sha256": sha256_file(checkpoint),
-        "source_checkpoint_sha256": report.get("source_checkpoint_sha256"),
+        "source_mode": source_mode,
+        "source_checkpoint_path": str(source_path),
+        "source_checkpoint_sha256": source_hash,
         "summary_path": str(summary.resolve()),
         "evaluation_path": None,
         "approved": False,
@@ -138,6 +160,7 @@ def main() -> None:
     check = sub.add_parser("check")
     check.add_argument("--scenario", choices=SCENARIO_ORDER, required=True)
     check.add_argument("--checkpoint", required=True)
+    check.add_argument("--custom-source", action="store_true", help="Use an explicit custom checkpoint for this run.")
     record = sub.add_parser("record")
     record.add_argument("--scenario", choices=SCENARIO_ORDER, required=True)
     record.add_argument("--checkpoint", required=True)
@@ -149,7 +172,7 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.command == "check":
-        print(check_scenario(args.scenario, Path(args.checkpoint)))
+        print(check_scenario(args.scenario, Path(args.checkpoint), custom_source=args.custom_source))
     elif args.command == "record":
         record_training(args.scenario, Path(args.checkpoint), Path(args.summary))
         print(f"Treino registrado: {args.scenario} (aguardando aprovação)")
