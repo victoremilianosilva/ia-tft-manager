@@ -99,6 +99,10 @@ int main() {
     assert(decision.shadow_only);
     assert(commitment.composition_direction == "Bruiser");
     assert(commitment.consecutive_reviews == 3);
+    decision = planner.evaluate(context, commitment);
+    assert(decision.composition_decision == CompositionDecision::Pivot);
+    assert(decision.target_composition_direction == "Invoker");
+    assert(commitment.composition_direction == "Bruiser");
 
     // A high-cost unit with poor fit and excessive transition cost is rejected.
     context = base_context();
