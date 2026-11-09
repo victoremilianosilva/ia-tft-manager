@@ -3043,6 +3043,35 @@ struct TFTEngine::Impl {
                         std::max(1, strategic_available[offer->champion_internal_id]);
                 }
             }
+            strategy::CompositionPlanner::LiveUnitContext strategic_live_context;
+            const auto collect_strategic_live_unit = [&](const UnitInstance& unit,
+                                                         int board_slot) {
+                auto& equipped =
+                    strategic_live_context.equipped_items_by_champion[
+                        unit.champion_internal_id];
+                if (player_envs[i].item_engine) {
+                    for (const auto& item_id :
+                         player_envs[i].item_engine->equipped(unit.uuid))
+                        equipped.push_back(item_id);
+                }
+                for (const auto& item : unit.items)
+                    if (!item.api_name.empty()) equipped.push_back(item.api_name);
+                if (board_slot >= 0)
+                    strategic_live_context.board_slot_by_champion[
+                        unit.champion_internal_id] = board_slot;
+            };
+            for (std::size_t slot = 0; slot < player_envs[i].board.size(); ++slot)
+                if (player_envs[i].board[slot])
+                    collect_strategic_live_unit(*player_envs[i].board[slot],
+                                                static_cast<int>(slot));
+            for (const auto& unit : player_envs[i].bench)
+                if (unit) collect_strategic_live_unit(*unit, -1);
+            if (player_envs[i].item_engine) {
+                for (const auto& item_id :
+                     player_envs[i].item_engine->inventory())
+                    strategic_live_context.inventory_item_ids.insert(item_id);
+            }
+
             const strategy::CompositionPlanner::FocusWeights strategic_focus(
                 focus.begin(), focus.end());
             std::unordered_set<std::string> evaluated_anchor_directions;
@@ -3063,7 +3092,7 @@ struct TFTEngine::Impl {
                         strategy::CompositionPlanner::target_slots_for_level(
                             economy.level),
                         economy.level, strategic_available, strategic_offered,
-                        nullptr, definition.internal_id);
+                        &strategic_live_context, definition.internal_id);
                     if (alternative.unit_ids.empty() ||
                         std::find(alternative.unit_ids.begin(),
                                   alternative.unit_ids.end(),
