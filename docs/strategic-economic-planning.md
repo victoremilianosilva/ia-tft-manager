@@ -88,6 +88,9 @@ Allow exceptions; do not hard-mask actions or override PPO.
 The Economic Controller ranks contextual postures (accumulate, preserve a
 streak, invest XP, roll for upgrades, stabilize, emergency investment) using
 continuous pressure signals rather than a single universal gold/HP cutoff.
+The current progression intent is carried into the shared context explicitly:
+FAST8 maps to a level-eight plan and SLOWROLL maps to a three-star reroll plan;
+these legacy labels are compatibility inputs, not the new controller's output.
 The Action Evaluator ranks only available candidates supplied from native
 state, balancing estimated board gain, composition fit, upgrade opportunity,
 survival/streak value and opportunity cost (including engine-computed lost
