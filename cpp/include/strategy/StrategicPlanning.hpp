@@ -69,6 +69,17 @@ struct StrategicAnchorCandidate {
     bool shop_available{false};
 };
 
+struct StrategicActionCandidate {
+    StrategicActionKind kind{StrategicActionKind::None};
+    std::int32_t champion_id{-1};
+    std::int32_t gold_cost{0};
+    double expected_economy_cost{0.0};
+    double expected_board_delta{0.0};
+    double composition_fit{0.0};
+    double upgrade_value{0.0};
+    bool available{true};
+};
+
 struct StrategicSharedContext {
     std::uint32_t schema_version{1};
     std::int32_t player_id{-1};
@@ -98,7 +109,7 @@ struct StrategicSharedContext {
     bool composition_locked{false};
     bool alive{true};
     // Candidate actions are diagnostic estimates assembled from native state.
-    std::vector<struct StrategicActionCandidate> action_candidates;
+    std::vector<StrategicActionCandidate> action_candidates;
     std::int32_t legacy_strategy{0};
 };
 
@@ -130,17 +141,6 @@ struct StrategicPlanDecision {
     double confidence{0.0};
     double estimated_transition_cost{0.0};
     bool shadow_only{true};
-};
-
-struct StrategicActionCandidate {
-    StrategicActionKind kind{StrategicActionKind::None};
-    std::int32_t champion_id{-1};
-    std::int32_t gold_cost{0};
-    double expected_economy_cost{0.0};
-    double expected_board_delta{0.0};
-    double composition_fit{0.0};
-    double upgrade_value{0.0};
-    bool available{true};
 };
 
 struct EconomicControlDecision {
