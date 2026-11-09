@@ -173,6 +173,19 @@ int main() {
     assert(posture.survival_pressure > 0.0);
     assert(posture.board_pressure > 0.0);
 
+    StrategicSharedContext progression_context;
+    progression_context.hp = 90.0;
+    progression_context.gold = 50;
+    progression_context.level = 6;
+    progression_context.stage = 4;
+    progression_context.relative_board_power = 1.0;
+    progression_context.progression_plan = ProgressionPlan::LevelToEight;
+    const auto xp_posture = economic_controller.evaluate(progression_context);
+    assert(xp_posture.posture == EconomicPosture::InvestExperience);
+    progression_context.progression_plan = ProgressionPlan::RerollForThreeStar;
+    const auto roll_posture = economic_controller.evaluate(progression_context);
+    assert(roll_posture.posture == EconomicPosture::RollForUpgrades);
+
     // A surplus player with a materially weak board should consider
     // converting resources into strength instead of accumulating indefinitely.
     StrategicSharedContext surplus_context;
