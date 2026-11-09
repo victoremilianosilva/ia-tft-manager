@@ -329,6 +329,22 @@ py::list strategies_to_list(
             item["strategic_committed_direction"] = "";
             item["strategic_selected_round"] = 0;
             item["strategic_shadow_only"] = true;
+            item["economic_posture"] = 0;
+            item["economic_posture_name"] = "ACCUMULATE_RESOURCES";
+            item["economic_posture_reason"] = "";
+            item["economic_posture_confidence"] = 0.0;
+            item["economic_survival_pressure"] = 0.0;
+            item["economic_board_pressure"] = 0.0;
+            item["economic_resource_pressure"] = 0.0;
+            item["strategic_action_recommendation"] = 6;
+            item["strategic_action_recommendation_name"] = "HOLD";
+            item["strategic_action_reason"] = "";
+            item["strategic_action_expected_board_delta"] = 0.0;
+            item["strategic_action_expected_hp_preservation"] = 0.0;
+            item["strategic_action_expected_economy_cost"] = 0.0;
+            item["strategic_action_expected_streak_value"] = 0.0;
+            item["strategic_action_confidence"] = 0.0;
+            item["economic_shadow_only"] = true;
         } else {
             const auto& strategy = player_strategies.back();
 
@@ -411,6 +427,22 @@ py::list strategies_to_list(
             item["strategic_committed_direction"] = strategy.strategic_committed_direction;
             item["strategic_selected_round"] = strategy.strategic_selected_round;
             item["strategic_shadow_only"] = strategy.strategic_shadow_only;
+            item["economic_posture"] = strategy.economic_posture;
+            item["economic_posture_name"] = strategy.economic_posture_name;
+            item["economic_posture_reason"] = strategy.economic_posture_reason;
+            item["economic_posture_confidence"] = strategy.economic_posture_confidence;
+            item["economic_survival_pressure"] = strategy.economic_survival_pressure;
+            item["economic_board_pressure"] = strategy.economic_board_pressure;
+            item["economic_resource_pressure"] = strategy.economic_resource_pressure;
+            item["strategic_action_recommendation"] = strategy.strategic_action_recommendation;
+            item["strategic_action_recommendation_name"] = strategy.strategic_action_recommendation_name;
+            item["strategic_action_reason"] = strategy.strategic_action_reason;
+            item["strategic_action_expected_board_delta"] = strategy.strategic_action_expected_board_delta;
+            item["strategic_action_expected_hp_preservation"] = strategy.strategic_action_expected_hp_preservation;
+            item["strategic_action_expected_economy_cost"] = strategy.strategic_action_expected_economy_cost;
+            item["strategic_action_expected_streak_value"] = strategy.strategic_action_expected_streak_value;
+            item["strategic_action_confidence"] = strategy.strategic_action_confidence;
+            item["economic_shadow_only"] = strategy.economic_shadow_only;
         }
 
         result.append(std::move(item));
