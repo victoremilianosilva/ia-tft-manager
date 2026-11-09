@@ -84,9 +84,14 @@ class OutcomeEvaluator:
         for outcome in round_outcomes or []:
             key = (str(outcome.get("player", "?")), str(outcome.get("round", "?")))
             previous = unique_rounds.get(key)
-            order = (outcome.get("sequence_id") or 0, outcome.get("step") or 0)
-            previous_order = ((previous or {}).get("sequence_id") or 0,
-                              (previous or {}).get("step") or 0)
+            order = (
+                int(outcome.get("sequence_id") or outcome.get("step") or 0),
+                int(outcome.get("step") or 0),
+            )
+            previous_order = (
+                int((previous or {}).get("sequence_id") or (previous or {}).get("step") or 0),
+                int((previous or {}).get("step") or 0),
+            )
             if previous is None or order >= previous_order:
                 unique_rounds[key] = outcome
 
@@ -195,16 +200,16 @@ class OutcomeEvaluator:
                 if self._is_alive_state(state):
                     alive_candidates.append((
                         self._round_order(round_id),
-                        outcome.get("sequence_id") or 0,
-                        outcome.get("step") or 0,
+                        int(outcome.get("sequence_id") or outcome.get("step") or 0),
+                        int(outcome.get("step") or 0) * 2 + 1,
                         state,
                     ))
             for decision in decisions:
                 if str(decision.get("player", "?")) != player:
                     continue
                 round_order = self._round_order(decision.get("round"))
-                sequence_id = decision.get("sequence_id") or 0
-                step = decision.get("step") or 0
+                sequence_id = int(decision.get("sequence_id") or decision.get("step") or 0)
+                step = int(decision.get("step") or 0)
                 before = decision.get("state_before") or {}
                 after = decision.get("state_after") or {}
                 if self._is_alive_state(before):
