@@ -173,6 +173,17 @@ int main() {
     assert(posture.survival_pressure > 0.0);
     assert(posture.board_pressure > 0.0);
 
+    // A surplus player with a materially weak board should consider
+    // converting resources into strength instead of accumulating indefinitely.
+    StrategicSharedContext surplus_context;
+    surplus_context.hp = 82.0;
+    surplus_context.gold = 80;
+    surplus_context.level = 6;
+    surplus_context.stage = 4;
+    surplus_context.relative_board_power = 0.70;
+    const auto surplus_posture = economic_controller.evaluate(surplus_context);
+    assert(surplus_posture.posture == EconomicPosture::StabilizeBoard);
+
     // Marginal action evaluation compares candidates against expected benefit
     // and opportunity cost; it does not mutate the context.
     ActionEvaluator action_evaluator;
