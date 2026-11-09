@@ -97,6 +97,9 @@ struct StrategicSharedContext {
     std::vector<StrategicAnchorCandidate> anchor_candidates;
     bool composition_locked{false};
     bool alive{true};
+    // Candidate actions are diagnostic estimates assembled from native state.
+    std::vector<struct StrategicActionCandidate> action_candidates;
+    std::int32_t legacy_strategy{0};
 };
 
 struct StrategicCommitment {
@@ -126,6 +129,26 @@ struct StrategicPlanDecision {
     std::int32_t anchor_champion_id{-1};
     double confidence{0.0};
     double estimated_transition_cost{0.0};
+    bool shadow_only{true};
+};
+
+struct StrategicActionCandidate {
+    StrategicActionKind kind{StrategicActionKind::None};
+    std::int32_t champion_id{-1};
+    std::int32_t gold_cost{0};
+    double expected_board_delta{0.0};
+    double composition_fit{0.0};
+    double upgrade_value{0.0};
+    bool available{true};
+};
+
+struct EconomicControlDecision {
+    EconomicPosture posture{EconomicPosture::AccumulateResources};
+    StrategicReason reason{StrategicReason::InsufficientEvidence};
+    double confidence{0.0};
+    double survival_pressure{0.0};
+    double board_pressure{0.0};
+    double economy_pressure{0.0};
     bool shadow_only{true};
 };
 
