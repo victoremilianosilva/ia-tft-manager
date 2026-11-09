@@ -19,6 +19,7 @@ public:
         out.recommended_action = StrategicActionKind::Hold;
         out.reason = StrategicReason::InsufficientEvidence;
         out.confidence = 0.0;
+        if (!c.alive) return out;
 
         double best_score = -1.0e9;
         double second_score = -1.0e9;
