@@ -3208,6 +3208,8 @@ struct TFTEngine::Impl {
             strategic_commitment.candidate_score = info.strategic_candidate_score;
             strategic_commitment.consecutive_reviews =
                 info.strategic_candidate_streak;
+            strategic_commitment.last_review_round =
+                info.strategic_candidate_last_review_round;
 
             static const strategy::StrategicPlanner strategic_planner{};
             const auto shadow_decision = strategic_planner.evaluate(
@@ -3253,6 +3255,8 @@ struct TFTEngine::Impl {
                 strategic_commitment.candidate_score;
             info.strategic_candidate_streak =
                 strategic_commitment.consecutive_reviews;
+            info.strategic_candidate_last_review_round =
+                strategic_commitment.last_review_round;
             info.strategic_committed_direction =
                 strategic_commitment.composition_direction;
             info.strategic_selected_round =
