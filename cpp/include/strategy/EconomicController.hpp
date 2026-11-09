@@ -36,9 +36,9 @@ public:
 
         double scores[7] = {};
         scores[static_cast<int>(EconomicPosture::AccumulateResources)] =
-            0.42 * (1.0 - out.survival_pressure) +
-            0.28 * (1.0 - board_pressure) +
-            0.30 * (1.0 - economy_pressure);
+            0.20 * (1.0 - out.survival_pressure) +
+            0.25 * (1.0 - board_pressure) +
+            0.10 * (1.0 - economy_pressure);
 
         scores[static_cast<int>(EconomicPosture::PreserveWinStreak)] =
             c.win_streak > 0
@@ -68,7 +68,8 @@ public:
             0.22 * out.survival_pressure;
 
         scores[static_cast<int>(EconomicPosture::StabilizeBoard)] =
-            0.42 * out.survival_pressure + 0.48 * board_pressure +
+            0.45 * out.survival_pressure + 0.55 * board_pressure +
+            0.25 * economy_pressure * board_pressure +
             0.10 * clamp01(c.estimated_incoming_damage / 12.0);
 
         scores[static_cast<int>(EconomicPosture::EmergencyInvestment)] =
