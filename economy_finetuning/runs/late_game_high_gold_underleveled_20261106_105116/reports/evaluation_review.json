@@ -1,5 +1,5 @@
 {
-    "approved":  false,
+    "approved":  true,
     "review_status":  "READY_FOR_HUMAN_REVIEW",
     "checkpoint_sha256":  "c0fbe67a0cbee8c36b5873d29663eefb1207758a056ba825ea0eeb81e2fbba56",
     "summary":  {
