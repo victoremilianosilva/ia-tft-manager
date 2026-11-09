@@ -36,6 +36,8 @@
 #include "strategy/StrategyPolicy.hpp"
 #include "strategy/CompositionPlanner.hpp"
 #include "strategy/StrategicPlanner.hpp"
+#include "strategy/EconomicController.hpp"
+#include "strategy/ActionEvaluator.hpp"
 
 #include "decision/ActionMaskEngine.hpp"
 #include "decision/DecisionState.hpp"
@@ -2966,6 +2968,7 @@ struct TFTEngine::Impl {
                 info.planned_composition_score > 0.0
                     ? info.planned_composition_score : info.composition_strength;
             strategic_context.alive = player.alive;
+            strategic_context.legacy_strategy = info.strategy;
 
             double lobby_power_sum = 0.0;
             std::int32_t lobby_alive_count = 0;
@@ -3043,6 +3046,93 @@ struct TFTEngine::Impl {
                     strategic_offered.insert(offer->champion_internal_id);
                     strategic_available[offer->champion_internal_id] =
                         std::max(1, strategic_available[offer->champion_internal_id]);
+                }
+            }
+
+            // Candidate actions are estimates only. The engine remains the
+            // source of truth for affordability and interest opportunity cost.
+            strategy::StrategicActionCandidate hold_candidate;
+            hold_candidate.kind = strategy::StrategicActionKind::Hold;
+            hold_candidate.expected_board_delta = 0.0;
+            strategic_context.action_candidates.push_back(hold_candidate);
+
+            const auto add_economic_candidate = [&](strategy::StrategicActionKind kind,
+                                                    int cost, double board_delta,
+                                                    double fit, double upgrade) {
+                if (cost < 0 || economy.gold < cost) return;
+                strategy::StrategicActionCandidate candidate;
+                candidate.kind = kind;
+                candidate.gold_cost = cost;
+                candidate.expected_economy_cost =
+                    static_cast<double>(cost) +
+                    std::max(0, economy_engine.get_interest(economy.gold) -
+                        economy_engine.get_interest(economy.gold - cost)) * 0.45;
+                candidate.expected_board_delta = board_delta;
+                candidate.composition_fit = fit;
+                candidate.upgrade_value = upgrade;
+                strategic_context.action_candidates.push_back(candidate);
+            };
+
+            if (economy.level < EconomyEngine::MAX_LEVEL) {
+                const bool likely_level_up =
+                    strategic_context.xp_to_next > 0 &&
+                    economy.xp + EconomyEngine::XP_PER_BUY >=
+                        strategic_context.xp_to_next;
+                add_economic_candidate(
+                    strategy::StrategicActionKind::BuyExperience,
+                    EconomyEngine::BUY_XP_COST,
+                    likely_level_up ? 0.48 : 0.16, 0.0, 0.0);
+            }
+
+            bool has_upgrade_targets = false;
+            for (const auto& [unit_id, copies] : copies_by_unit) {
+                (void)unit_id;
+                if (copies >= 2) { has_upgrade_targets = true; break; }
+            }
+            add_economic_candidate(
+                strategy::StrategicActionKind::RerollShop,
+                EconomyEngine::REROLL_COST,
+                has_upgrade_targets ? 0.20 : 0.035,
+                has_upgrade_targets ? 0.35 : 0.05,
+                has_upgrade_targets ? 0.45 : 0.0);
+
+            if (strategic_shop) {
+                for (const auto& offer : strategic_shop->offers()) {
+                    if (!offer) continue;
+                    const auto* definition = catalog->find_by_id(
+                        offer->champion_internal_id);
+                    if (!definition || economy.gold < definition->cost) continue;
+                    double fit = 0.0;
+                    for (const auto& trait : definition->traits) {
+                        if (std::find(info.core_traits.begin(), info.core_traits.end(),
+                                      trait) != info.core_traits.end())
+                            fit += 1.0;
+                        else if (!info.composition_direction.empty() &&
+                                 trait == info.composition_direction)
+                            fit += 0.75;
+                    }
+                    fit = std::clamp(fit / 2.0, 0.0, 1.0);
+                    const auto copies = copies_by_unit.find(definition->internal_id);
+                    const int owned_copies = copies == copies_by_unit.end()
+                        ? 0 : copies->second;
+                    const double upgrade = owned_copies >= 2 ? 1.0
+                        : (owned_copies == 1 ? 0.30 : 0.0);
+                    const double board_delta = std::clamp(
+                        0.08 + definition->cost * 0.045 +
+                        fit * 0.22 + upgrade * 0.30, 0.0, 0.85);
+                    auto candidate = strategy::StrategicActionCandidate{};
+                    candidate.kind = strategy::StrategicActionKind::BuyUnit;
+                    candidate.champion_id = definition->internal_id;
+                    candidate.gold_cost = definition->cost;
+                    candidate.expected_economy_cost =
+                        static_cast<double>(definition->cost) +
+                        std::max(0, economy_engine.get_interest(economy.gold) -
+                            economy_engine.get_interest(economy.gold -
+                                definition->cost)) * 0.45;
+                    candidate.expected_board_delta = board_delta;
+                    candidate.composition_fit = fit;
+                    candidate.upgrade_value = upgrade;
+                    strategic_context.action_candidates.push_back(candidate);
                 }
             }
             strategy::CompositionPlanner::LiveUnitContext strategic_live_context;
@@ -3218,6 +3308,68 @@ struct TFTEngine::Impl {
             static const strategy::StrategicPlanner strategic_planner{};
             const auto shadow_decision = strategic_planner.evaluate(
                 strategic_context, strategic_commitment);
+
+            // Economic posture and marginal action are independent shadow
+            // evaluations. Neither is allowed to alter the policy action path.
+            static const strategy::EconomicController economic_controller{};
+            static const strategy::ActionEvaluator action_evaluator{};
+            const auto economic_decision =
+                economic_controller.evaluate(strategic_context);
+            const auto action_decision = action_evaluator.evaluate(
+                strategic_context, economic_decision);
+
+            static const std::array<const char*, 7> economic_posture_names{
+                "ACCUMULATE_RESOURCES", "PRESERVE_WIN_STREAK",
+                "PRESERVE_LOSS_STREAK", "INVEST_EXPERIENCE",
+                "ROLL_FOR_UPGRADES", "STABILIZE_BOARD", "EMERGENCY_INVESTMENT"
+            };
+            static const std::array<const char*, 7> action_names{
+                "NONE", "BUY_UNIT", "BUY_XP", "REROLL", "SELL_UNIT",
+                "DEPLOY_OR_MOVE", "HOLD"
+            };
+            const auto posture_index = static_cast<std::size_t>(
+                economic_decision.posture);
+            const auto action_index = static_cast<std::size_t>(
+                action_decision.recommended_action);
+            const auto economic_reason_index = static_cast<std::size_t>(
+                economic_decision.reason);
+            const auto action_reason_index = static_cast<std::size_t>(
+                action_decision.reason);
+            static const std::array<const char*, 12> reason_names{
+                "none", "board_advantage", "board_deficit",
+                "survival_pressure", "progression_timing",
+                "upgrade_opportunity", "anchor_opportunity", "contestation",
+                "item_alignment", "transition_cost", "economy_constraint",
+                "insufficient_evidence"
+            };
+            info.economic_posture = static_cast<std::int32_t>(posture_index);
+            info.economic_posture_name = posture_index < economic_posture_names.size()
+                ? economic_posture_names[posture_index] : "ACCUMULATE_RESOURCES";
+            info.economic_posture_reason =
+                economic_reason_index < reason_names.size()
+                    ? reason_names[economic_reason_index] : "unknown";
+            info.economic_posture_confidence = economic_decision.confidence;
+            info.economic_survival_pressure = economic_decision.survival_pressure;
+            info.economic_board_pressure = economic_decision.board_pressure;
+            info.economic_resource_pressure = economic_decision.economy_pressure;
+            info.strategic_action_recommendation =
+                static_cast<std::int32_t>(action_index);
+            info.strategic_action_recommendation_name =
+                action_index < action_names.size() ? action_names[action_index] : "HOLD";
+            info.strategic_action_reason =
+                action_reason_index < reason_names.size()
+                    ? reason_names[action_reason_index] : "unknown";
+            info.strategic_action_expected_board_delta =
+                action_decision.expected_board_delta;
+            info.strategic_action_expected_hp_preservation =
+                action_decision.expected_hp_preservation;
+            info.strategic_action_expected_economy_cost =
+                action_decision.expected_economy_cost;
+            info.strategic_action_expected_streak_value =
+                action_decision.expected_streak_value;
+            info.strategic_action_confidence = action_decision.confidence;
+            info.economic_shadow_only =
+                economic_decision.shadow_only && action_decision.confidence >= 0.0;
             static const std::array<const char*, 4> composition_decision_names{
                 "KEEP", "ADAPT", "PIVOT", "ABANDON"
             };
