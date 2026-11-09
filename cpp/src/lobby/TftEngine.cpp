@@ -3101,6 +3101,9 @@ struct TFTEngine::Impl {
                         anchor.transition_cost = 1.0 - overlap;
                         anchor.reusable_owned_units = static_cast<std::int32_t>(
                             std::min<std::size_t>(reusable, 5));
+                        // Count exact opponent-owned copies from live board/bench
+                        // state. Shop reservations are intentionally excluded
+                        // because they are not confirmed composition investment.
                         for (std::size_t opponent = 0;
                              opponent < kPlayersPerLobby; ++opponent) {
                             if (opponent == i ||
