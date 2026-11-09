@@ -125,7 +125,7 @@ def test_outcome_evaluator_deduplicates_round_combat_and_preserves_last_alive_st
          "combat_reward": -0.2, "placement": None, "sequence_id": 10},
         {"player": "1", "round": "2-3",
          "state_after": {"hp": 50, "gold": 24, "board_power": 24, "round": "2-3"},
-         "combat_reward": -0.2, "placement": None, "sequence_id": 11},
+         "combat_reward": None, "placement": None, "sequence_id": 11},
         {"player": "1", "round": "2-4",
          "state_after": {"hp": 0, "gold": 18, "board_power": 0, "round": "2-4"},
          "combat_reward": -1.0, "placement": 5, "sequence_id": 12},
