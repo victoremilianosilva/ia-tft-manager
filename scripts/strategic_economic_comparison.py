@@ -34,7 +34,9 @@ def _cell(value: Any) -> str:
 def _shadow(decision: dict) -> dict:
     before = decision.get("state_before") or {}
     value = before.get("shadow_planning")
-    return value if isinstance(value, dict) else {}
+    if not isinstance(value, dict):
+        return {}
+    return value if any(item is not None for item in value.values()) else {}
 
 
 def _canonical_action(value: Any) -> str | None:
@@ -270,7 +272,8 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
     return {
         "audit_report.md": "\n".join(overview),
         "audit_report_geral.md": report.get("_markdown_general", ""),
-        "audit_report_completo.md": report.get("_markdown_full", ""),
+        "audit_report_achados.md": report.get("_markdown_evidence", ""),
+        "audit_report_completo.md": "\\n".join(overview),
         "audit_ppo.md": "\n".join(ppo),
         "audit_estrategia.md": "\n".join(strategy),
         "audit_economia.md": "\n".join(economy),
