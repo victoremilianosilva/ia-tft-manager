@@ -18,8 +18,9 @@ def _decision(action="BUY", recommendation="BUY_UNIT", with_shadow=True):
         "action_expected_lost_interest_cost": 0.5,
         "action_expected_opportunity_cost": 0.25,
         "action_candidate_scores": [
-            {"action": "BUY_UNIT", "champion_id": 90, "board_component": 0.5,
-             "total_score": 0.8, "selected": True}
+            {"action": "BUY_UNIT", "champion_id": 90, "direct_gold_cost": 3.0,
+             "lost_interest_cost": 0.5, "opportunity_cost": 0.35,
+             "board_component": 0.5, "total_score": 0.8, "selected": True}
         ],
         "action_reason": "high marginal value",
         "action_expected_board_delta": 2.5,
@@ -55,6 +56,10 @@ def test_shadow_reports_compare_ppo_action_with_recommendation():
     assert "Strategic Planner" in reports["audit_estrategia.md"]
     assert "STABILIZE_BOARD" in reports["audit_economia.md"]
     assert "2.000" in reports["audit_resultados.md"]
+    assert "Campeão recomendado" in reports["audit_acoes.md"]
+    assert "Scores dos candidatos" in reports["audit_acoes.md"]
+    assert "3.000" in reports["audit_acoes.md"]
+    assert "0.350" in reports["audit_acoes.md"]
 
 
 def test_divergence_is_reported_without_claiming_bad_decision():
@@ -154,3 +159,10 @@ def test_outcome_evaluator_correlates_recommendations_with_next_one_and_two_roun
     assert row["next_two_rounds_hp_delta"] == -12.0
     assert row["next_two_rounds_gold_delta"] == -10.0
     assert len(result["round_summaries"]) == 3
+    reports = build_shadow_markdown_reports({
+        "players_seen": ["1"],
+        "decision_timeline": [first, second],
+        "round_outcome_timeline": outcomes,
+    })
+    assert "Evolução posterior das recomendações" in reports["audit_resultados.md"]
+    assert reports["audit_resultados.md"].count("-0.200") <= 1
