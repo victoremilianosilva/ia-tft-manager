@@ -205,6 +205,29 @@ int main() {
     assert(no_candidate.recommended_action == StrategicActionKind::Hold);
     assert(no_candidate.confidence == 0.0);
 
+    // With a strong win streak, a marginal low-value purchase should not
+    // beat holding resources merely because spending is possible.
+    StrategicSharedContext streak_context;
+    streak_context.hp = 90.0;
+    streak_context.gold = 45;
+    streak_context.relative_board_power = 1.15;
+    streak_context.win_streak = 5;
+    StrategicActionCandidate streak_hold;
+    streak_hold.kind = StrategicActionKind::Hold;
+    streak_context.action_candidates.push_back(streak_hold);
+    StrategicActionCandidate weak_purchase;
+    weak_purchase.kind = StrategicActionKind::BuyUnit;
+    weak_purchase.gold_cost = 3;
+    weak_purchase.expected_economy_cost = 3.0;
+    weak_purchase.expected_board_delta = 0.10;
+    weak_purchase.composition_fit = 0.10;
+    streak_context.action_candidates.push_back(weak_purchase);
+    const auto streak_posture = economic_controller.evaluate(streak_context);
+    const auto streak_action = action_evaluator.evaluate(
+        streak_context, streak_posture);
+    assert(streak_posture.posture == EconomicPosture::PreserveWinStreak);
+    assert(streak_action.recommended_action == StrategicActionKind::Hold);
+
     std::cout << "strategic planner shadow tests passed\n";
     return 0;
 }
