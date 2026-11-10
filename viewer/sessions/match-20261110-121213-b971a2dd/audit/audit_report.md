@@ -1,0 +1,20 @@
+# Auditoria completa — índice
+
+- Jogadores: **8**
+- Decisões registradas: **1819**
+- Diagnósticos shadow disponíveis: **1819**
+- Comparações PPO × Action Evaluator: **1740**
+- Concordâncias: **633** | Divergências: **1107**
+
+## Relatórios
+
+- [Resumo geral](audit_report_geral.md)
+- [Ações efetivamente executadas pelo PPO](audit_ppo.md)
+- [Strategic Planner](audit_estrategia.md)
+- [Economic Controller](audit_economia.md)
+- [Action Evaluator](audit_acoes.md)
+- [Divergências PPO × Action Evaluator](audit_divergencias.md)
+- [Resultados observados / Outcome Evaluator](audit_resultados.md)
+- [Evidências detalhadas dos achados](audit_report_achados.md)
+
+Os documentos são gerados pela mesma ação do Viewer. Os dados estruturados usados durante o processamento são temporários; os artefatos da auditoria são Markdown.

@@ -1,0 +1,487 @@
+{
+  "name": "deterministic_rounds_and_level_reward",
+  "seed": 123,
+  "description": "Deterministic replay across round barriers and BUY_XP, comparing state, rewards and stable observation features. Board-move reward parity is tested separately because starting-unit RNG is not shared yet.",
+  "steps": [
+    {
+      "name": "pass_round_1",
+      "expected_round_resolved": true,
+      "python_actions": [
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        }
+      ],
+      "cpp_actions": [
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "pass_round_2",
+      "expected_round_resolved": true,
+      "python_actions": [
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        }
+      ],
+      "cpp_actions": [
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "pass_round_3",
+      "expected_round_resolved": true,
+      "python_actions": [
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        }
+      ],
+      "cpp_actions": [
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "buy_xp_before_round_4",
+      "expected_round_resolved": false,
+      "python_actions": [
+        {
+          "type": 2
+        },
+        {
+          "type": 2
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        }
+      ],
+      "cpp_actions": [
+        [
+          2,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "pass_round_4",
+      "expected_round_resolved": true,
+      "python_actions": [
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        },
+        {
+          "type": 6
+        }
+      ],
+      "cpp_actions": [
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ]
+    }
+  ]
+}
