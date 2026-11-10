@@ -35,7 +35,6 @@ public:
         out.target_composition_direction = context.current_composition_direction;
         out.current_direction_score = context.current_direction_score;
         out.current_direction_viable = context.current_direction_viable;
-        out.has_anchor_candidate = !context.anchor_candidates.empty();
         out.candidate_generation = context.candidate_generation;
         out.minimum_adapt_advantage = config_.minimum_adapt_advantage;
         out.required_pivot_advantage = std::max(
@@ -55,6 +54,7 @@ public:
 
         const auto best = best_anchor(context, out.candidate_diagnostics);
         const bool has_current = !context.current_composition_direction.empty();
+        out.has_anchor_candidate = best.valid;
         out.best_anchor_score = best.valid ? best.score : 0.0;
         out.anchor_confidence = best.valid ? best.confidence : 0.0;
 
