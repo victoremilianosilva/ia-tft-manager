@@ -1,0 +1,101 @@
+{
+  "checkpoint_original": "economy_finetuning\\checkpoints\\tft_late_game_high_gold_underleveled_20261106_105116.pt",
+  "checkpoint_finetuned": "economy_finetuning\\checkpoints\\tft_econ_gold_reserve_20261109_091337.pt",
+  "repository_commit": "a58945f32a35edfb86e033afb2b085289dc49364",
+  "source_checkpoint_sha256": "c0fbe67a0cbee8c36b5873d29663eefb1207758a056ba825ea0eeb81e2fbba56",
+  "finetuned_checkpoint_sha256": "2ee2c22bb7cace9a24d0c10705ed497e900597b5bb333da3a66ad0053b5d4ba6",
+  "selected_scenario": "econ_gold_reserve",
+  "selected_scenario_transitions": 16661,
+  "optimizer_steps_total": 618,
+  "scenario_matches": {
+    "critical_hp_high_gold": 5615,
+    "late_game_high_gold_underleveled": 1245,
+    "econ_gold_reserve": 16661,
+    "econ_surplus_strong_board": 1198,
+    "stabilize_weak_board": 38379,
+    "fast8_strong_board": 84406,
+    "all_in_emergency": 41375,
+    "slowroll_winstreak": 0
+  },
+  "scenario_action_counts": {
+    "critical_hp_high_gold": {
+      "BUY": 1270,
+      "MOVE_BENCH": 1020,
+      "BUY_XP": 354,
+      "MOVE_BOARD": 1613,
+      "REROLL": 478,
+      "SELL": 654,
+      "EQUIP_FROM_INVENTORY": 163,
+      "PASS": 21,
+      "CRAFT_AND_EQUIP": 42
+    },
+    "late_game_high_gold_underleveled": {
+      "CRAFT_AND_EQUIP": 24,
+      "SELL": 85,
+      "BUY": 189,
+      "EQUIP_FROM_INVENTORY": 15,
+      "MOVE_BOARD": 685,
+      "BUY_XP": 95,
+      "MOVE_BENCH": 98,
+      "REROLL": 53,
+      "PASS": 1
+    },
+    "econ_gold_reserve": {
+      "MOVE_BENCH": 1974,
+      "PASS": 514,
+      "BUY": 1736,
+      "CRAFT_AND_EQUIP": 181,
+      "BUY_XP": 1244,
+      "SELL": 850,
+      "MOVE_BOARD": 9821,
+      "EQUIP_FROM_INVENTORY": 233,
+      "REROLL": 108
+    },
+    "econ_surplus_strong_board": {
+      "MOVE_BENCH": 158,
+      "BUY": 197,
+      "MOVE_BOARD": 518,
+      "BUY_XP": 145,
+      "REROLL": 36,
+      "SELL": 102,
+      "PASS": 15,
+      "EQUIP_FROM_INVENTORY": 27
+    },
+    "stabilize_weak_board": {
+      "MOVE_BENCH": 4334,
+      "BUY": 5661,
+      "SELL": 3169,
+      "BUY_XP": 2424,
+      "MOVE_BOARD": 20904,
+      "CRAFT_AND_EQUIP": 484,
+      "REROLL": 653,
+      "PASS": 257,
+      "EQUIP_FROM_INVENTORY": 493
+    },
+    "fast8_strong_board": {
+      "BUY": 10144,
+      "BUY_XP": 5341,
+      "CRAFT_AND_EQUIP": 1348,
+      "MOVE_BENCH": 4813,
+      "MOVE_BOARD": 56301,
+      "SELL": 4859,
+      "REROLL": 391,
+      "EQUIP_FROM_INVENTORY": 588,
+      "PASS": 621
+    },
+    "all_in_emergency": {
+      "BUY": 7031,
+      "MOVE_BOARD": 18107,
+      "REROLL": 2639,
+      "SELL": 3917,
+      "MOVE_BENCH": 6048,
+      "BUY_XP": 2074,
+      "PASS": 281,
+      "CRAFT_AND_EQUIP": 307,
+      "EQUIP_FROM_INVENTORY": 971
+    },
+    "slowroll_winstreak": {}
+  },
+  "matched_transitions_total": 188879,
+  "warning": "Scenarios are matched on naturally reached native states. The current C++ API exposes no arbitrary state injection."
+}

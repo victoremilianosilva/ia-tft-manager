@@ -1,0 +1,38 @@
+name: Strategic and economic native tests
+
+on:
+  push:
+    paths:
+      - 'cpp/CMakeLists.txt'
+      - 'cpp/include/strategy/**'
+      - 'cpp/include/lobby/TftEngine.hpp'
+      - 'cpp/src/lobby/TftEngine.cpp'
+      - 'cpp/bindings/tft_engine_bindings.cpp'
+      - 'cpp/tests/test_strategic_planner.cpp'
+      - '.github/workflows/strategic-economic-native-tests.yml'
+  pull_request:
+    paths:
+      - 'cpp/CMakeLists.txt'
+      - 'cpp/include/strategy/**'
+      - 'cpp/include/lobby/TftEngine.hpp'
+      - 'cpp/src/lobby/TftEngine.cpp'
+      - 'cpp/bindings/tft_engine_bindings.cpp'
+      - 'cpp/tests/test_strategic_planner.cpp'
+      - '.github/workflows/strategic-economic-native-tests.yml'
+
+jobs:
+  native-shadow-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pybind11
+        run: python -m pip install pybind11
+      - name: Configure CMake
+        run: cmake -S cpp -B build -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Release
+      - name: Build native engine and strategic planner tests
+        run: cmake --build build --target tft_engine test_strategic_planner --config Release --parallel 2
+      - name: Run strategic planner regression tests
+        run: ctest --test-dir build -R strategic_planner_shadow --output-on-failure

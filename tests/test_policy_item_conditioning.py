@@ -1,0 +1,359 @@
+import torch
+
+from policy import TFTPolicy
+
+
+ACTION_DIMS = [9, 5, 9, 28, 28, 28]
+
+
+def _policy_with_native_item_block():
+    hidden = 64
+    candidate_dim = (ACTION_DIMS[2] + ACTION_DIMS[1]) * 8
+    item_dim = 10 + 9 * 17 + 100 * 17 + 37 * 18 + (9 + 100) * 37
+    anvil_dim = 3 + 9 * 11
+    obs_dim = 22 + 4 * 7 * 5 + anvil_dim + item_dim + candidate_dim
+    policy = TFTPolicy(obs_dim=obs_dim, action_dims=ACTION_DIMS, hidden_size=hidden)
+    return policy, torch.zeros(1, obs_dim)
+
+
+def test_item_observation_exposes_components_inventory_recipes_and_all_targets():
+    policy, obs = _policy_with_native_item_block()
+    candidate_dim = policy.candidate_observation_dim
+    item_dim = policy.item_state_observation_dim
+    start = obs.shape[-1] - candidate_dim - item_dim
+    obs[0, start] = 0.5  # component count feature
+    anvil_start = start - policy.item_anvil_observation_dim
+    obs[0, anvil_start + 3] = 0.3  # first anvil option semantic feature
+    obs[0, start + 10] = 0.75  # first bag item semantic feature
+    recipe_start = start + 10 + 9 * 17
+    obs[0, recipe_start + 4 * 17 + 2] = 0.6  # recipe [0,4], AP feature
+    target_start = recipe_start + 100 * 17
+    obs[0, target_start + 28 * 18 + 4 + 1] = 1.0  # first bench target role
+    inventory_fit_start = target_start + 37 * 18
+    recipe_fit_start = inventory_fit_start + 9 * 37
+    obs[0, inventory_fit_start + 2 * 37 + 4] = 0.7
+    obs[0, recipe_fit_start + 5 * 37 + 6] = 0.8
+
+    (
+        components, inventory, recipes, targets,
+        inventory_target_fit, recipe_target_fit, anvil_options, pending_anvil,
+    ) = policy._item_state_features(obs)
+
+    assert components.shape == (1, 10)
+    assert inventory.shape == (1, 9, 17)
+    assert recipes.shape == (1, 100, 17)
+    assert targets.shape == (1, 37, 18)
+    assert inventory_target_fit.shape == (1, 9, 37)
+    assert recipe_target_fit.shape == (1, 100, 37)
+    assert anvil_options.shape == (1, 9, 11)
+    assert components[0, 0].item() == 0.5
+    assert inventory[0, 0, 0].item() == 0.75
+    assert torch.isclose(recipes[0, 4, 2], torch.tensor(0.6), atol=1e-6)
+    assert targets[0, 28, 5].item() == 1.0
+    assert torch.isclose(inventory_target_fit[0, 2, 4], torch.tensor(0.7), atol=1e-6)
+    assert torch.isclose(recipe_target_fit[0, 5, 6], torch.tensor(0.8), atol=1e-6)
+    assert torch.isclose(anvil_options[0, 0, 0], torch.tensor(0.3), atol=1e-6)
+    assert pending_anvil.tolist() == [False]
+    assert policy.encode(obs).shape == (1, 64)
+
+
+def test_item_target_scorer_uses_each_candidates_role_and_position_features():
+    policy, _ = _policy_with_native_item_block()
+    conditioned = torch.zeros(1, 64 + ACTION_DIMS[0] * 0 + 9)
+    target_context = torch.zeros(1, 20)
+    item_features = torch.zeros(1, 17)
+    target_features = torch.zeros(1, 37, 18)
+
+    first = policy.item_target_candidate_head[0]
+    last = policy.item_target_candidate_head[-1]
+    with torch.no_grad():
+        policy.item_target_head.weight.zero_()
+        policy.item_target_head.bias.zero_()
+        first.weight.zero_()
+        first.bias.zero_()
+        target_feature_start = conditioned.shape[-1] + target_context.shape[-1] + item_features.shape[-1]
+        first.weight[0, target_feature_start + 1] = 0.2  # board/bench location
+        first.weight[0, target_feature_start + 5] = 1.0  # role one-hot
+        last.weight.zero_()
+        last.bias.zero_()
+        last.weight[0, 0] = 1.0
+        target_features[0, 0, 1] = 1.0  # board
+        target_features[0, 0, 5] = 0.1  # role score
+        target_features[0, 1, 2] = 1.0  # bench
+        target_features[0, 1, 5] = 0.9  # role score
+
+    logits = policy._item_target_logits(
+        conditioned, target_context, item_features, target_features,
+        torch.zeros(1, 37), torch.tensor([False]),
+    )
+    assert logits[0, 1] > logits[0, 0]
+
+
+def test_target_scorer_uses_exact_item_to_unit_compatibility():
+    policy, _ = _policy_with_native_item_block()
+    conditioned = torch.zeros(1, 64 + ACTION_DIMS[0])
+    target_context = torch.zeros(1, 20)
+    item_features = torch.zeros(1, 17)
+    target_features = torch.zeros(1, 37, 18)
+    compatibility = torch.zeros(1, 37)
+    compatibility[0, 3] = 0.2
+    compatibility[0, 4] = 0.9
+    first = policy.item_target_candidate_head[0]
+    last = policy.item_target_candidate_head[-1]
+    with torch.no_grad():
+        policy.item_target_head.weight.zero_()
+        policy.item_target_head.bias.zero_()
+        first.weight.zero_()
+        first.bias.zero_()
+        first.weight[0, -1] = 1.0  # exact item-to-target fit scalar
+        last.weight.zero_()
+        last.bias.zero_()
+        last.weight[0, 0] = 1.0
+
+    logits = policy._item_target_logits(
+        conditioned, target_context, item_features, target_features,
+        compatibility, torch.tensor([False]),
+    )
+    assert logits[0, 4] > logits[0, 3]
+
+
+def test_inventory_candidate_scorer_uses_item_semantics():
+    policy, _ = _policy_with_native_item_block()
+    conditioned = torch.zeros(1, 64 + ACTION_DIMS[0])
+    inventory_features = torch.zeros(1, 9, 17)
+    inventory_features[0, 0, 0] = 0.1
+    inventory_features[0, 1, 0] = 0.9
+    first = policy.item_inventory_candidate_head[0]
+    last = policy.item_inventory_candidate_head[-1]
+    with torch.no_grad():
+        policy.item_inventory_head.weight.zero_()
+        policy.item_inventory_head.bias.zero_()
+        first.weight.zero_()
+        first.bias.zero_()
+        first.weight[0, -19] = 1.0
+        last.weight.zero_()
+        last.bias.zero_()
+        last.weight[0, 0] = 1.0
+
+    logits = policy._item_inventory_logits(
+        conditioned, inventory_features, torch.zeros(1, 9, 37),
+        torch.zeros(1, 9, 11), torch.tensor([False])
+    )
+    assert logits[0, 1] > logits[0, 0]
+
+
+def test_inventory_choice_uses_best_available_item_target_fit():
+    policy, _ = _policy_with_native_item_block()
+    conditioned = torch.zeros(1, 64 + ACTION_DIMS[0])
+    inventory_features = torch.zeros(1, 9, 17)
+    target_fit = torch.zeros(1, 9, 37)
+    target_fit[0, 0, 0] = 0.1
+    target_fit[0, 1, 0] = 0.9
+    first = policy.item_inventory_candidate_head[0]
+    last = policy.item_inventory_candidate_head[-1]
+    with torch.no_grad():
+        policy.item_inventory_head.weight.zero_()
+        policy.item_inventory_head.bias.zero_()
+        first.weight.zero_()
+        first.bias.zero_()
+        first.weight[0, -2] = 1.0  # maximum compatibility with any target
+        last.weight.zero_()
+        last.bias.zero_()
+        last.weight[0, 0] = 1.0
+
+    logits = policy._item_inventory_logits(
+        conditioned, inventory_features, target_fit,
+        torch.zeros(1, 9, 11), torch.tensor([False])
+    )
+    assert logits[0, 1] > logits[0, 0]
+
+
+def test_anvil_candidate_scorer_uses_anvil_option_features():
+    policy, _ = _policy_with_native_item_block()
+    conditioned = torch.zeros(1, 64 + ACTION_DIMS[0])
+    inventory_features = torch.zeros(1, 9, 17)
+    inventory_features[0, 0, 0] = 1.0  # deliberately attractive bag feature
+    anvil_features = torch.zeros(1, 9, 11)
+    anvil_features[0, 1, 0] = 0.2
+    anvil_features[0, 2, 0] = 0.9
+    first = policy.item_anvil_candidate_head[0]
+    last = policy.item_anvil_candidate_head[-1]
+    with torch.no_grad():
+        policy.item_inventory_head.weight.zero_()
+        policy.item_inventory_head.bias.zero_()
+        policy.item_inventory_candidate_head[-1].weight.zero_()
+        policy.item_inventory_candidate_head[-1].bias.zero_()
+        first.weight.zero_()
+        first.bias.zero_()
+        first.weight[0, -11] = 1.0
+        last.weight.zero_()
+        last.bias.zero_()
+        last.weight[0, 0] = 1.0
+
+    logits = policy._item_inventory_logits(
+        conditioned, inventory_features, torch.zeros(1, 9, 37),
+        anvil_features, torch.tensor([True])
+    )
+    assert logits[0, 2] > logits[0, 1]
+    assert logits[0, 2] > logits[0, 0]
+
+
+def test_old_checkpoint_migrates_item_observation_and_neutral_candidate_heads():
+    new_policy, _ = _policy_with_native_item_block()
+    old_obs_dim = new_policy.obs_dim - new_policy.item_state_observation_dim
+    old_policy = TFTPolicy(
+        obs_dim=old_obs_dim, action_dims=ACTION_DIMS, hidden_size=64
+    )
+    legacy_state = {
+        key: value.detach().clone()
+        for key, value in old_policy.state_dict().items()
+        if not key.startswith((
+            "item_inventory_candidate_head.",
+            "item_component_candidate_head.",
+            "item_target_candidate_head.",
+            "item_anvil_candidate_head.",
+        ))
+    }
+
+    restored, _ = _policy_with_native_item_block()
+    assert restored.load_compatible_state_dict(legacy_state)
+    old_global = old_policy.state_dict()["global_mlp.0.weight"]
+    old_global_input = old_global.shape[1]
+    insertion = (
+        old_global_input - restored.candidate_observation_dim
+        - restored.economic_context_dim
+    )
+    added_columns = restored.item_global_observation_dim
+    migrated_global = restored.state_dict()["global_mlp.0.weight"]
+    assert torch.count_nonzero(
+        migrated_global[:, insertion:insertion + added_columns]
+    ) == 0
+    assert torch.equal(migrated_global[:, :insertion], old_global[:, :insertion])
+    assert torch.equal(
+        migrated_global[:, insertion + added_columns:
+                        insertion + added_columns + restored.economic_context_dim],
+        old_global[:, insertion:insertion + restored.economic_context_dim],
+    )
+    assert torch.equal(
+        migrated_global[:, insertion + added_columns + restored.economic_context_dim:],
+        old_global[:, insertion + restored.economic_context_dim:],
+    )
+    for head in (
+        restored.item_inventory_candidate_head,
+        restored.item_anvil_candidate_head,
+        restored.item_component_candidate_head,
+        restored.item_target_candidate_head,
+    ):
+        assert torch.count_nonzero(head[-1].weight) == 0
+        assert torch.count_nonzero(head[-1].bias) == 0
+
+def test_checkpoint_without_derived_economic_context_migrates_both_insertions():
+    new_policy, _ = _policy_with_native_item_block()
+    old_obs_dim = new_policy.obs_dim - new_policy.item_state_observation_dim
+    old_policy = TFTPolicy(
+        obs_dim=old_obs_dim, action_dims=ACTION_DIMS, hidden_size=64
+    )
+    legacy_state = {
+        key: value.detach().clone()
+        for key, value in old_policy.state_dict().items()
+        if not key.startswith((
+            "item_inventory_candidate_head.",
+            "item_anvil_candidate_head.",
+            "item_component_candidate_head.",
+            "item_target_candidate_head.",
+        ))
+    }
+    old_global = legacy_state["global_mlp.0.weight"]
+    legacy_state["global_mlp.0.weight"] = torch.cat([
+        old_global[:, :-new_policy.candidate_observation_dim
+                   - new_policy.economic_context_dim],
+        old_global[:, -new_policy.candidate_observation_dim:],
+    ], dim=1)
+
+    restored, _ = _policy_with_native_item_block()
+    assert restored.load_compatible_state_dict(legacy_state)
+    source = legacy_state["global_mlp.0.weight"]
+    insertion = source.shape[1] - restored.candidate_observation_dim
+    added = restored.item_global_observation_dim + restored.economic_context_dim
+    migrated = restored.state_dict()["global_mlp.0.weight"]
+    assert torch.count_nonzero(migrated[:, insertion:insertion + added]) == 0
+    assert torch.equal(migrated[:, :insertion], source[:, :insertion])
+    assert torch.equal(
+        migrated[:, insertion + added:],
+        source[:, insertion:],
+    )
+
+
+def test_item_sampling_and_ppo_replay_use_identical_conditioned_distributions():
+    policy, obs = _policy_with_native_item_block()
+    type_mask = torch.zeros(1, 9, dtype=torch.bool)
+    type_mask[0, 7] = True
+    inventory_mask = torch.zeros(1, 9, dtype=torch.bool)
+    inventory_mask[0, 0] = True
+    target_mask = torch.zeros(1, 37, dtype=torch.bool)
+    target_mask[0, 0] = True
+    masks = {
+        "type_mask": type_mask,
+        "item_inventory_mask": inventory_mask,
+        "item_target_mask": target_mask,
+    }
+    actions, sampled_logprob, _, _ = policy.get_action_and_value(
+        obs, masks=masks, deterministic=True
+    )
+    replay_logprob, _, _ = policy.evaluate_actions(obs, actions, masks)
+    assert actions[0, 0].item() == 7
+    assert torch.allclose(sampled_logprob, replay_logprob, atol=1e-6, rtol=1e-6)
+
+
+def test_anvil_option_sampling_and_ppo_replay_use_anvil_context():
+    policy, obs = _policy_with_native_item_block()
+    anvil_index = (
+        obs.shape[-1] - policy.candidate_observation_dim
+        - policy.item_state_observation_dim - policy.item_anvil_observation_dim
+    )
+    obs[0, anvil_index] = 1.0
+    obs[0, anvil_index + 3 + 11] = 0.8
+    type_mask = torch.zeros(1, 9, dtype=torch.bool)
+    type_mask[0, 7] = True
+    inventory_mask = torch.zeros(1, 9, dtype=torch.bool)
+    inventory_mask[0, 1] = True
+    target_mask = torch.zeros(1, 37, dtype=torch.bool)
+    target_mask[0, 0] = True  # forced target-head sentinel for anvil choice
+    masks = {
+        "type_mask": type_mask,
+        "item_inventory_mask": inventory_mask,
+        "item_target_mask": target_mask,
+    }
+    actions, sampled_logprob, _, _ = policy.get_action_and_value(
+        obs, masks=masks, deterministic=True
+    )
+    replay_logprob, _, _ = policy.evaluate_actions(obs, actions, masks)
+    assert actions[0, 0].item() == 7
+    assert actions[0, 1].item() == 1
+    assert torch.allclose(sampled_logprob, replay_logprob, atol=1e-6, rtol=1e-6)
+
+
+def test_craft_sampling_and_ppo_replay_use_same_recipe_target_context():
+    policy, obs = _policy_with_native_item_block()
+    type_mask = torch.zeros(1, 9, dtype=torch.bool)
+    type_mask[0, 8] = True
+    first_mask = torch.zeros(1, 10, dtype=torch.bool)
+    first_mask[0, 0] = True
+    pair_mask = torch.zeros(1, 10, 10, dtype=torch.bool)
+    pair_mask[0, 0, 1] = True
+    target_mask = torch.zeros(1, 37, dtype=torch.bool)
+    target_mask[0, 0] = True
+    masks = {
+        "type_mask": type_mask,
+        "item_component_first_mask": first_mask,
+        "item_component_pair_masks": pair_mask,
+        "item_target_mask": target_mask,
+    }
+    actions, sampled_logprob, _, _ = policy.get_action_and_value(
+        obs, masks=masks, deterministic=True
+    )
+    replay_logprob, _, _ = policy.evaluate_actions(obs, actions, masks)
+    assert actions[0, 0].item() == 8
+    assert actions[0, 1].item() == 0
+    assert actions[0, 2].item() == 1
+    assert torch.allclose(sampled_logprob, replay_logprob, atol=1e-6, rtol=1e-6)
