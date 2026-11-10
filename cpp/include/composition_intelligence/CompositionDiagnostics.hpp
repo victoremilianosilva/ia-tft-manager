@@ -5,6 +5,7 @@
 #include <nlohmann/json.hpp>
 #include <cstdint>
 #include <ostream>
+#include <optional>
 #include <string>
 #include <vector>
 
