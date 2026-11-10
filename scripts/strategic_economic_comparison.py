@@ -6,6 +6,9 @@ explicitly unavailable; heuristic recommendations are never treated as PPO actio
 from __future__ import annotations
 
 from collections import Counter, defaultdict
+from functools import lru_cache
+import json
+from pathlib import Path
 from typing import Any
 
 ACTION_ALIASES = {
@@ -40,29 +43,83 @@ def _shadow(decision: dict) -> dict:
 
 
 
+@lru_cache(maxsize=1)
+def _champion_catalog_aliases() -> dict[str, set[str]]:
+    """Map native ChampionCatalog indices to the textual keys in Viewer snapshots."""
+    catalog_path = Path(__file__).resolve().parents[1] / "data" / "units_gerado.json"
+    try:
+        definitions = json.loads(catalog_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    if not isinstance(definitions, list):
+        return {}
+    aliases = {}
+    for internal_id, definition in enumerate(definitions):
+        if not isinstance(definition, dict):
+            continue
+        values = {
+            str(definition.get(key)).strip()
+            for key in ("apiName", "characterName")
+            if definition.get(key) not in (None, "")
+        }
+        if values:
+            aliases[str(internal_id)] = values
+    return aliases
+
+
 def _strategic_unit_evidence(state: dict, shadow: dict) -> list[dict]:
-    """Audit observable alignment separately from prior-investment proxies."""
+    """Audit alignment and investment using native IDs and Viewer catalog keys."""
     state = state if isinstance(state, dict) else {}
     shadow = shadow if isinstance(shadow, dict) else {}
-    preserved = {str(value) for value in (shadow.get("strategic_preserve_unit_ids") or [])}
-    replaceable = {str(value) for value in (shadow.get("strategic_replaceable_unit_ids") or [])}
-    core_ids = {str(value) for value in (state.get("core_units") or [])}
+    catalog_aliases = _champion_catalog_aliases()
+
+    def expand_ids(values) -> set[str]:
+        expanded = set()
+        for value in values or []:
+            token = str(value).strip()
+            if token:
+                expanded.add(token)
+                expanded.update(catalog_aliases.get(token, set()))
+        return expanded
+
+    preserved = expand_ids(shadow.get("strategic_preserve_unit_ids"))
+    replaceable = expand_ids(shadow.get("strategic_replaceable_unit_ids"))
+    core_ids = expand_ids(state.get("core_units"))
     core_traits = {str(value).casefold() for value in (state.get("core_traits") or [])}
     direction = str(state.get("comp_direction") or "").casefold()
-    owned = [u for area in ("board", "bench") for u in (state.get(area) or [])
-             if isinstance(u, dict) and u.get("occupied", True)]
-    counts = Counter(str(u.get("champion_id", "")) for u in owned)
+
+    def unit_aliases(unit: dict) -> set[str]:
+        values = {
+            str(unit.get(key)).strip()
+            for key in ("champion_id", "apiName", "api_name", "characterName")
+            if unit.get(key) not in (None, "")
+        }
+        expanded = set(values)
+        for value in values:
+            expanded.update(catalog_aliases.get(value, set()))
+        return expanded
+
+    owned = [unit for area in ("board", "bench") for unit in (state.get(area) or [])
+             if isinstance(unit, dict) and unit.get("occupied", True)]
+    counts = Counter(
+        next(iter(sorted(unit_aliases(unit))), "")
+        for unit in owned
+    )
     result = []
     for area in ("board", "bench"):
         for unit in state.get(area) or []:
             if not isinstance(unit, dict) or not unit.get("occupied", True):
                 continue
-            champion = str(unit.get("champion_id", ""))
-            if champion not in preserved and champion not in replaceable:
+            aliases = unit_aliases(unit)
+            is_preserved = bool(aliases & preserved)
+            is_replaceable = bool(aliases & replaceable)
+            if not is_preserved and not is_replaceable:
                 continue
-            traits = {str(v).casefold() for v in (unit.get("traits") or [])}
+            champion = str(unit.get("champion_id") or unit.get("apiName")
+                           or unit.get("api_name") or unit.get("name") or "")
+            traits = {str(value).casefold() for value in (unit.get("traits") or [])}
             alignment, investment = [], []
-            if champion in core_ids:
+            if aliases & core_ids:
                 alignment.append("core_unit")
             if (direction and direction in traits) or traits & core_traits:
                 alignment.append("current_direction_or_core_trait")
@@ -74,7 +131,8 @@ def _strategic_unit_evidence(state: dict, shadow: dict) -> list[dict]:
                 investment.append("upgraded_unit")
             if items:
                 investment.append("equipped_items")
-            if counts[champion] > 1:
+            identity = next(iter(sorted(aliases)), champion)
+            if counts[identity] > 1:
                 investment.append("multiple_owned_copies")
             classification = (
                 "strategic_and_investment_signals" if alignment and investment
@@ -86,7 +144,7 @@ def _strategic_unit_evidence(state: dict, shadow: dict) -> list[dict]:
                 "name": unit.get("name", champion), "area": area, "star": star,
                 "classification": classification, "strategic_signals": alignment,
                 "investment_indicators": investment,
-                "planner_classification": "preserve" if champion in preserved else "replaceable",
+                "planner_classification": "preserve" if is_preserved else "replaceable",
             })
     return result
 

@@ -270,6 +270,38 @@ def test_keep_unit_audit_separates_alignment_from_investment_proxies():
     assert "core_unit" in strategy and "equipped_items" in strategy
 
 
+
+def test_keep_unit_audit_resolves_native_catalog_id_to_viewer_api_name():
+    decision = _decision()
+    shadow = decision["state_before"]["shadow_planning"]
+    shadow.update({
+        "strategic_decision_name": "KEEP",
+        # ChampionCatalog assigns internal IDs by units_gerado.json array index.
+        "strategic_preserve_unit_ids": [6],
+        "strategic_replaceable_unit_ids": [],
+        "current_direction_confidence": 0.7,
+    })
+    decision["state_before"].update({
+        "comp_direction": "Defendente",
+        "core_units": [6],
+        "core_traits": [],
+        "board": [{
+            "occupied": True, "champion_id": "DA_18_Ornn", "name": "Ornn",
+            "star": 1, "traits": ["Defendente"], "items": [], "impact": 8.0,
+        }],
+        "bench": [],
+    })
+
+    report = build_shadow_markdown_reports({
+        "players_seen": ["1"], "decision_timeline": [decision],
+    })
+    strategy = report["audit_estrategia.md"]
+    assert "Unidades preservadas — sinais estratégicos versus investimento" in strategy
+    assert "Ornn" in strategy
+    assert "observable_strategic_signals" in strategy
+    assert "core_unit" in strategy
+    assert "Unidades preservadas com evidência observável: **1**." in strategy
+
 def test_keep_audit_includes_thresholds_and_temporal_followup():
     decision = _decision()
     decision["round"] = "2-3"
