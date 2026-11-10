@@ -222,3 +222,71 @@ def test_action_audit_exports_every_candidate_and_selection_integrity():
     assert "0.350" in actions
     assert "0.250" in actions
     assert len(actions.strip()) > 500
+
+
+def test_keep_audit_separates_confidence_and_persistence():
+    decision = _decision()
+    shadow = decision["state_before"]["shadow_planning"]
+    shadow.update({
+        "strategic_decision_name": "KEEP", "current_direction_confidence": 0.73,
+        "anchor_confidence": 0.61, "current_direction_score": 0.82,
+        "best_anchor_score": 0.91, "alternative_advantage": 0.09,
+        "required_pivot_advantage": 0.75, "current_direction_viable": True,
+        "decision_path_reason": "alternative_below_minimum_adapt_advantage",
+    })
+    decision["state_before"].update({
+        "composition_locked": True, "composition_candidate_direction": "Duelist",
+        "composition_candidate_streak": 2,
+    })
+    report = build_shadow_markdown_reports({"players_seen": ["1"], "decision_timeline": [decision]})
+    strategy = report["audit_estrategia.md"]
+    assert "Auditoria de KEEP" in strategy
+    assert "0.730" in strategy and "0.610" in strategy
+    assert "alternative_below_minimum_adapt_advantage" in strategy
+    assert "Duelist" in strategy and "0.750" in strategy
+
+
+def test_keep_unit_audit_separates_alignment_from_investment_proxies():
+    decision = _decision()
+    shadow = decision["state_before"]["shadow_planning"]
+    shadow.update({
+        "strategic_decision_name": "KEEP", "strategic_preserve_unit_ids": [90, 91],
+        "strategic_replaceable_unit_ids": [], "current_direction_confidence": 0.7,
+    })
+    decision["state_before"].update({
+        "comp_direction": "Invoker", "core_units": [90], "core_traits": ["Invoker"],
+        "board": [
+            {"occupied": True, "champion_id": "90", "name": "Core Mage", "star": 1,
+             "traits": ["Invoker"], "items": [], "impact": 8.0},
+        ], "bench": [
+            {"occupied": True, "champion_id": "91", "name": "Item Holder", "star": 1,
+             "traits": ["Bruiser"], "items": ["item_a"], "impact": 4.0},
+        ],
+    })
+    report = build_shadow_markdown_reports({"players_seen": ["1"], "decision_timeline": [decision]})
+    strategy = report["audit_estrategia.md"]
+    assert "observable_strategic_signals" in strategy
+    assert "investment_proxy_without_alignment" in strategy
+    assert "core_unit" in strategy and "equipped_items" in strategy
+
+
+def test_keep_audit_includes_thresholds_and_temporal_followup():
+    decision = _decision()
+    decision["round"] = "2-3"
+    decision["state_before"]["shadow_planning"].update({
+        "strategic_decision_name": "KEEP", "current_direction_confidence": 0.8,
+        "decision_path_reason": "current_direction_viable_without_alternative",
+    })
+    outcomes = [
+        {"player": "1", "round": "2-3", "state_after": {"hp": 70, "gold": 27, "board_power": 22}},
+        {"player": "1", "round": "2-4", "state_after": {"hp": 64, "gold": 30, "board_power": 25}},
+        {"player": "1", "round": "3-1", "state_after": {"hp": 60, "gold": 35, "board_power": 27}},
+    ]
+    report = build_shadow_markdown_reports({
+        "players_seen": ["1"], "decision_timeline": [decision], "round_outcome_timeline": outcomes,
+    })
+    strategy = report["audit_estrategia.md"]
+    assert "Vantagem absoluta para mudança | 0.75" in strategy
+    assert "Revisões consecutivas bloqueado | 3" in strategy
+    assert "Evolução posterior dos KEEP" in strategy
+    assert "2-4" in strategy

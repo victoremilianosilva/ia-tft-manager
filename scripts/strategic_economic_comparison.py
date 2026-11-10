@@ -39,6 +39,75 @@ def _shadow(decision: dict) -> dict:
     return value if any(item is not None for item in value.values()) else {}
 
 
+
+def _strategic_unit_evidence(state: dict, shadow: dict) -> list[dict]:
+    """Audit observable alignment separately from prior-investment proxies."""
+    state = state if isinstance(state, dict) else {}
+    shadow = shadow if isinstance(shadow, dict) else {}
+    preserved = {str(value) for value in (shadow.get("strategic_preserve_unit_ids") or [])}
+    replaceable = {str(value) for value in (shadow.get("strategic_replaceable_unit_ids") or [])}
+    core_ids = {str(value) for value in (state.get("core_units") or [])}
+    core_traits = {str(value).casefold() for value in (state.get("core_traits") or [])}
+    direction = str(state.get("comp_direction") or "").casefold()
+    owned = [u for area in ("board", "bench") for u in (state.get(area) or [])
+             if isinstance(u, dict) and u.get("occupied", True)]
+    counts = Counter(str(u.get("champion_id", "")) for u in owned)
+    result = []
+    for area in ("board", "bench"):
+        for unit in state.get(area) or []:
+            if not isinstance(unit, dict) or not unit.get("occupied", True):
+                continue
+            champion = str(unit.get("champion_id", ""))
+            if champion not in preserved and champion not in replaceable:
+                continue
+            traits = {str(v).casefold() for v in (unit.get("traits") or [])}
+            alignment, investment = [], []
+            if champion in core_ids:
+                alignment.append("core_unit")
+            if (direction and direction in traits) or traits & core_traits:
+                alignment.append("current_direction_or_core_trait")
+            if area == "board":
+                alignment.append("currently_contributes_to_board")
+            star = int(unit.get("star", 1) or 1)
+            items = list(unit.get("items") or [])
+            if star >= 2:
+                investment.append("upgraded_unit")
+            if items:
+                investment.append("equipped_items")
+            if counts[champion] > 1:
+                investment.append("multiple_owned_copies")
+            classification = (
+                "strategic_and_investment_signals" if alignment and investment
+                else "observable_strategic_signals" if alignment
+                else "investment_proxy_without_alignment" if investment
+                else "insufficient_unit_evidence"
+            )
+            result.append({
+                "name": unit.get("name", champion), "area": area, "star": star,
+                "classification": classification, "strategic_signals": alignment,
+                "investment_indicators": investment,
+                "planner_classification": "preserve" if champion in preserved else "replaceable",
+            })
+    return result
+
+
+def _strategic_persistence_snapshot(state: dict, shadow: dict) -> dict:
+    state = state if isinstance(state, dict) else {}
+    shadow = shadow if isinstance(shadow, dict) else {}
+    return {
+        "locked": state.get("composition_locked"),
+        "candidate_direction": state.get("composition_candidate_direction"),
+        "candidate_streak": state.get("composition_candidate_streak"),
+        "last_change_reason": state.get("composition_direction_change_reason"),
+        "last_change_round": state.get("composition_direction_change_round"),
+        "change_count": state.get("composition_direction_change_count"),
+        "planner_candidate_direction": shadow.get("strategic_candidate_direction"),
+        "planner_candidate_streak": shadow.get("strategic_candidate_streak"),
+        "planner_candidate_last_review_round": shadow.get("strategic_candidate_last_review_round"),
+        "planner_committed_direction": shadow.get("strategic_committed_direction"),
+        "planner_selected_round": shadow.get("strategic_selected_round"),
+    }
+
 def _canonical_action(value: Any) -> str | None:
     if value is None:
         return None
@@ -376,6 +445,91 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
         else "unavailable"
         for _, shadow in insufficient_rows
     )
+    # KEEP must be evaluated independently: absence of a better alternative
+    # is not, by itself, evidence that the current composition is strong.
+    keep_rows = [(d, s) for d, s in strategy_rows
+                 if s.get("strategic_decision_name") == "KEEP"]
+    keep_reasons = Counter(str(s.get("decision_path_reason") or s.get("strategic_reason") or "unavailable")
+                           for _, s in keep_rows)
+    confidence_buckets = Counter()
+    keep_evidence = []
+    outcomes_by_round = {(str(x.get("player")), str(x.get("round"))): x
+                         for x in outcome_summary["recommendation_rounds"]}
+    for d, s in keep_rows:
+        confidence = s.get("current_direction_confidence")
+        confidence_buckets["unavailable" if confidence is None else
+                           "zero" if float(confidence or 0.0) == 0.0 else "positive"] += 1
+        keep_evidence.append((d, s, _strategic_unit_evidence(d.get("state_before") or {}, s),
+                              outcomes_by_round.get((str(d.get("player")), str(d.get("round"))), {})))
+    strategy += [
+        "", "### Auditoria de KEEP — continuidade fundamentada versus persistência", "",
+        f"- KEEP auditados: **{len(keep_rows)}**",
+        "- Confiança da direção atual: " + _cell(dict(confidence_buckets)),
+        "- Motivos/path: " + _cell(dict(keep_reasons)), "",
+        "| Jogador | Round | Step | Direção | Score atual | Conf. direção atual | Conf. alternativa | Score alternativa | Vantagem | Viável | Motivo | Lock | Candidato pendente | Streak | Limite PIVOT |",
+        "|---|---|---:|---|---:|---:|---:|---:|---:|---|---|---|---|---:|---:|",
+    ]
+    for d, s, _, _ in keep_evidence:
+        before = d.get("state_before") or {}
+        persistence = _strategic_persistence_snapshot(before, s)
+        strategy.append("| " + " | ".join(_cell(v) for v in (
+            d.get("player"), d.get("round"), d.get("step"), before.get("comp_direction"),
+            s.get("current_direction_score"), s.get("current_direction_confidence"),
+            s.get("anchor_confidence"), s.get("best_anchor_score"), s.get("alternative_advantage"),
+            s.get("current_direction_viable"), s.get("decision_path_reason"),
+            persistence["locked"], persistence["candidate_direction"] or persistence["planner_candidate_direction"],
+            persistence["candidate_streak"] if persistence["candidate_streak"] is not None else persistence["planner_candidate_streak"],
+            s.get("required_pivot_advantage"),
+        )) + " |")
+    strategy += [
+        "", "### Unidades preservadas — sinais estratégicos versus investimento", "",
+        "| Jogador | Round | Unidade | Área | Estrelas | Classificação | Sinais estratégicos | Indicadores de investimento |",
+        "|---|---|---|---|---:|---|---|---|",
+    ]
+    unit_count = 0
+    for d, _, units, _ in keep_evidence:
+        for unit in units:
+            if unit["planner_classification"] != "preserve":
+                continue
+            unit_count += 1
+            strategy.append("| " + " | ".join(_cell(v) for v in (
+                d.get("player"), d.get("round"), unit["name"], unit["area"], unit["star"],
+                unit["classification"], unit["strategic_signals"], unit["investment_indicators"],
+            )) + " |")
+    if not unit_count:
+        strategy.append("| — | — | Sem unidades preservadas identificáveis no snapshot | — | — | — | — | — |")
+    strategy += [
+        "", f"Unidades preservadas com evidência observável: **{unit_count}**.",
+        "Classificações são proxies do snapshot (core, traits, presença no board, estrelas, itens e cópias). "
+        "Não provam que o Planner preservou por investimento anterior; custo passado não é valor estratégico por si só.",
+        "", "### Thresholds e histerese configurados", "",
+        "| Parâmetro | Valor padrão no StrategicPlannerConfig |",
+        "|---|---:|",
+        "| Score mínimo de âncora | 0.01 |",
+        "| Vantagem mínima para ADAPT | 0.10 |",
+        "| Vantagem absoluta para mudança | 0.75 |",
+        "| Vantagem relativa para mudança | 20% |",
+        "| Revisões consecutivas desbloqueado | 2 |",
+        "| Revisões consecutivas bloqueado | 3 |",
+        "",
+        "CompositionDirectionPolicy possui política separada: vantagem absoluta 0.75, relativa 20% e 3 atualizações consecutivas quando bloqueada. "
+        "Os valores são defaults do código; a auditoria não presume configuração customizada em runtime.",
+        "", "### Evolução posterior dos KEEP", "",
+        "| Jogador | Round | Step | Próximo round | Δ HP | Δ Ouro | Δ Board | Próximos 2 rounds Δ HP / Ouro / Board | Colocação final |",
+        "|---|---|---:|---|---:|---:|---:|---|---:|",
+    ]
+    for d, _, _, followup in keep_evidence:
+        strategy.append("| " + " | ".join(_cell(v) for v in (
+            d.get("player"), d.get("round"), d.get("step"), followup.get("next_round"),
+            followup.get("next_round_hp_delta"), followup.get("next_round_gold_delta"),
+            followup.get("next_round_board_delta"),
+            f"{followup.get('next_two_rounds_hp_delta')} / {followup.get('next_two_rounds_gold_delta')} / {followup.get('next_two_rounds_board_delta')}",
+            followup.get("placement"),
+        )) + " |")
+    if not keep_evidence:
+        strategy.append("| — | — | — | — | — | — | — | — | — |")
+    strategy += ["", "A evolução posterior é associação temporal, não atribuição causal à recomendação shadow.", ""]
+
     strategy += [
         "", "### Auditoria de INSUFFICIENT_EVIDENCE", "",
         "| Jogador | Round | Step | Motivo específico | Geração de candidatos | Direção atual | Viável atual | Score atual | Score âncora | Vantagem | Mín. ADAPT | Limite PIVOT | Conf. âncora | Conf. direção atual | Âncora disponível | Filtros (considerados/gerados/catálogo ausente/planos vazios/âncora ausente) |",
