@@ -3367,9 +3367,11 @@ struct TFTEngine::Impl {
                     if (!offer) continue;
                     const auto* definition = catalog->find_by_id(
                         offer->champion_internal_id);
-                    if (!definition) continue;
+                    if (!definition) {
+                        ++strategic_context.candidate_generation.rejected_missing_champion_definition;
+                        continue;
+                    }
                     evaluate_anchor(*definition, 1, false, true, 0.0);
-                    if (evaluated_anchor_directions.size() >= 2) break;
                 }
             }
 
@@ -3384,10 +3386,13 @@ struct TFTEngine::Impl {
                 }
                 const auto* definition = catalog->find_by_id(
                     unit->champion_internal_id);
-                if (definition)
+                if (definition) {
                     evaluate_anchor(*definition, unit->star, true, false,
                         std::clamp(static_cast<double>(unit->items.size()) / 3.0,
                                    0.0, 1.0));
+                } else {
+                    ++strategic_context.candidate_generation.rejected_missing_champion_definition;
+                }
             }
             for (const auto& unit : player_envs[i].bench) {
                 if (!unit) continue;
@@ -3397,10 +3402,13 @@ struct TFTEngine::Impl {
                 }
                 const auto* definition = catalog->find_by_id(
                     unit->champion_internal_id);
-                if (definition)
+                if (definition) {
                     evaluate_anchor(*definition, unit->star, false, false,
                         std::clamp(static_cast<double>(unit->items.size()) / 3.0,
                                    0.0, 1.0));
+                } else {
+                    ++strategic_context.candidate_generation.rejected_missing_champion_definition;
+                }
             }
 
             auto& generation = strategic_context.candidate_generation;
@@ -3408,6 +3416,8 @@ struct TFTEngine::Impl {
                 generation.no_candidate_reason = "candidate_generated";
             } else if (generation.anchors_considered == 0) {
                 generation.no_candidate_reason = "no_high_cost_anchor_units_seen";
+            } else if (generation.rejected_missing_champion_definition > 0) {
+                generation.no_candidate_reason = "anchor_missing_from_champion_catalog";
             } else if (generation.rejected_empty_plan > 0) {
                 generation.no_candidate_reason = "composition_planner_returned_empty_plan";
             } else if (generation.rejected_anchor_not_in_plan > 0) {
@@ -3467,6 +3477,8 @@ struct TFTEngine::Impl {
                 shadow_decision.candidate_generation.anchors_considered;
             info.strategic_rejected_cost_below_four =
                 shadow_decision.candidate_generation.rejected_cost_below_four;
+            info.strategic_rejected_missing_champion_definition =
+                shadow_decision.candidate_generation.rejected_missing_champion_definition;
             info.strategic_rejected_empty_trait =
                 shadow_decision.candidate_generation.rejected_empty_trait;
             info.strategic_rejected_duplicate_direction =
