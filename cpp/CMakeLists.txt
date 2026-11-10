@@ -333,6 +333,17 @@ if(BUILD_TESTING)
         COMMAND test_unit_priority_planner
     )
 
+    add_executable(
+        test_lineup_planner
+        tests/test_lineup_planner.cpp
+    )
+    configure_tft_module(test_lineup_planner)
+    enable_tft_test_assertions(test_lineup_planner)
+    add_test(
+        NAME lineup_planner
+        COMMAND test_lineup_planner
+    )
+
     add_executable(test_combat_engine
         tests/test_combat_engine.cpp
         src/combat/CombatEngine.cpp
