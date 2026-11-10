@@ -98,6 +98,7 @@ int main() {
     context.anchor_candidates.push_back(anchor(91, "Invoker", 6.0, 0.2, 2));
     decision = planner.evaluate(context, commitment);
     assert(decision.composition_decision == CompositionDecision::Adapt);
+    assert(decision.decision_path_reason == "alternative_waiting_for_persistence");
     assert(commitment.consecutive_reviews == 1);
     assert(commitment.candidate_composition_direction == "Invoker");
 
