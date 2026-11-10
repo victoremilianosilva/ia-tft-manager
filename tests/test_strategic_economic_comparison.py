@@ -256,7 +256,7 @@ def test_keep_unit_audit_separates_alignment_from_investment_proxies():
     decision["state_before"].update({
         "comp_direction": "Invoker", "core_units": [90], "core_traits": ["Invoker"],
         "board": [
-            {"occupied": True, "champion_id": "90", "name": "Core Mage", "star": 2,
+            {"occupied": True, "champion_id": "90", "name": "Core Mage", "star": 1,
              "traits": ["Invoker"], "items": [], "impact": 8.0},
         ], "bench": [
             {"occupied": True, "champion_id": "91", "name": "Item Holder", "star": 1,
