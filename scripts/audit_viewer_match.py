@@ -751,6 +751,7 @@ def audit_strategic_planner_diagnostics(entries: list[dict], player: str, report
         "candidate_generation_rejections": {},
         "insufficient_with_anchor": 0,
         "insufficient_without_anchor": 0,
+        "insufficient_current_viability_counts": {},
         "samples": [],
         "interpretation": (
             "Anchor/current confidence are score-derived, uncalibrated diagnostics; "
@@ -793,12 +794,19 @@ def audit_strategic_planner_diagnostics(entries: list[dict], player: str, report
         reason_counts[path_reason] += 1
         has_anchor = bool(shadow.get("has_anchor_candidate"))
         metrics["insufficient_with_anchor" if has_anchor else "insufficient_without_anchor"] += 1
+        current_viable = shadow.get("current_direction_viable")
+        if current_viable is not None:
+            key = "viable" if bool(current_viable) else "not_viable"
+            metrics["insufficient_current_viability_counts"][key] = (
+                metrics["insufficient_current_viability_counts"].get(key, 0) + 1
+            )
         if len(metrics["samples"]) < 30:
             metrics["samples"].append({
                 "round": get_round(entry), "step": entry.get("step"),
                 "decision_path_reason": path_reason,
                 "candidate_generation_reason": generation_reason,
                 "current_direction": state.get("comp_direction"),
+                "current_direction_viable": shadow.get("current_direction_viable"),
                 "current_direction_score": shadow.get("current_direction_score"),
                 "best_anchor_score": shadow.get("best_anchor_score"),
                 "alternative_advantage": shadow.get("alternative_advantage"),
