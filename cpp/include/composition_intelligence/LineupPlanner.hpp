@@ -115,10 +115,17 @@ public:
             if (!slot.currently_on_board) out.entries.push_back(slot.champion_id);
             if (slot.kind == LineupSlotKind::Bridge) out.bridge_ids.push_back(slot.champion_id);
         }
+        // A target can be owned yet still deferred when the current capacity
+        // cannot fit it. Keep that distinct from the complete endgame target.
+        for (const auto id : out.endgame_target_ids)
+            if (!selected.count(id)) out.deferred_target_ids.push_back(id);
+        std::sort(out.deferred_target_ids.begin(), out.deferred_target_ids.end());
+        out.deferred_target_ids.erase(
+            std::unique(out.deferred_target_ids.begin(), out.deferred_target_ids.end()),
+            out.deferred_target_ids.end());
         for (auto id : current) if (!selected.count(id)) out.exits.push_back(id);
         std::sort(out.entries.begin(), out.entries.end());
         std::sort(out.exits.begin(), out.exits.end());
-        std::sort(out.deferred_target_ids.begin(), out.deferred_target_ids.end());
         std::sort(out.bridge_ids.begin(), out.bridge_ids.end());
         out.status = out.deferred_target_ids.empty() ? "deployable_target" : "partial_target_waiting_for_units_or_capacity";
         return out;

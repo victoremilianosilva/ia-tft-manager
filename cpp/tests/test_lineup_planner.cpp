@@ -22,6 +22,19 @@ void capacity_and_missing_units_are_separated_from_endgame() {
     assert(r.deferred_target_ids.size()==1 && r.deferred_target_ids[0]==3);
     assert(r.entries.size()==1 && r.entries[0]==4 && r.exits.empty());
 }
+void owned_target_can_be_deferred_by_capacity() {
+    ActiveCompositionManager manager; manager.publish(comp()); const auto active=*manager.current();
+    UnitPrioritySnapshot p; p.composition_id=active.candidate.composition_id; p.composition_version=active.version;
+    p.units={{1,UnitIntent::Keep,UnitStrategicRelation::ActiveCore,1,2,3,true,false,120,.9},
+             {2,UnitIntent::Keep,UnitStrategicRelation::ActiveCore,1,1,2,true,false,110,.8},
+             {3,UnitIntent::Keep,UnitStrategicRelation::ActiveFlex,1,1,0,false,false,60,.8},
+             {4,UnitIntent::Keep,UnitStrategicRelation::ActiveFlex,1,1,0,false,false,40,.7}};
+    LineupPlannerContext c; c.level=2; c.board_capacity=2; c.current_board_ids={1,2};
+    const auto r=LineupPlanner{}.plan(active,p,c);
+    assert(!r.stale && r.selected_board.size()==2);
+    assert(r.endgame_target_ids.size()==4 && r.deferred_target_ids.size()==2);
+    assert(r.status=="partial_target_waiting_for_units_or_capacity");
+}
 void pivot_keeps_bridge_only_as_temporary_capacity_fill() {
     ActiveCompositionManager manager; manager.publish(comp()); auto next=comp();
     next.composition_id="comp-B"; next.main_carry_id=5;
@@ -48,6 +61,7 @@ void stale_snapshot_is_rejected() {
 }
 int main() {
     capacity_and_missing_units_are_separated_from_endgame();
+    owned_target_can_be_deferred_by_capacity();
     pivot_keeps_bridge_only_as_temporary_capacity_fill();
     stale_snapshot_is_rejected();
     std::cout << "Lineup planner tests passed\n";
