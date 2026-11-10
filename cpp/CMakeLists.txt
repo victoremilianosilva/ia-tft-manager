@@ -344,6 +344,11 @@ if(BUILD_TESTING)
         COMMAND test_lineup_planner
     )
 
+    add_executable(test_planner_evidence_adapters tests/test_planner_evidence_adapters.cpp)
+    configure_tft_module(test_planner_evidence_adapters)
+    enable_tft_test_assertions(test_planner_evidence_adapters)
+    add_test(NAME planner_evidence_adapters COMMAND test_planner_evidence_adapters)
+
     add_executable(test_combat_engine
         tests/test_combat_engine.cpp
         src/combat/CombatEngine.cpp
