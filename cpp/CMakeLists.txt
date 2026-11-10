@@ -354,6 +354,12 @@ if(BUILD_TESTING)
     enable_tft_test_assertions(test_composition_action_evaluator)
     add_test(NAME composition_action_evaluator COMMAND test_composition_action_evaluator)
 
+    add_executable(test_composition_diagnostics tests/test_composition_diagnostics.cpp)
+    configure_tft_module(test_composition_diagnostics)
+    target_link_libraries(test_composition_diagnostics PRIVATE nlohmann_json::nlohmann_json)
+    enable_tft_test_assertions(test_composition_diagnostics)
+    add_test(NAME composition_diagnostics COMMAND test_composition_diagnostics)
+
     add_executable(test_combat_engine
         tests/test_combat_engine.cpp
         src/combat/CombatEngine.cpp
