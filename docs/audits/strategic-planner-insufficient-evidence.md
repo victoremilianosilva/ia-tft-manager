@@ -66,7 +66,7 @@ Os caminhos instrumentados incluem:
 - `all_anchor_candidates_rejected`;
 - `best_anchor_matches_current_direction`;
 - `alternative_below_minimum_adapt_advantage`;
-- `alternative_requires_more_advantage_or_reviews`;
+- `alternative_below_required_advantage` e `alternative_waiting_for_persistence` (ADAPT);
 - `current_direction_not_viable`;
 - `pivot_thresholds_and_persistence_satisfied`.
 
