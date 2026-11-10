@@ -57,6 +57,7 @@ void shared_and_bridge_units_survive_pivot() {
     const auto active = *manager.current();
     auto ctx = context(active);
     CompositionTransitionPlan transition;
+    transition.shared_unit_ids = {1};
     transition.bridge_unit_ids = {2};
     transition.sell_candidate_unit_ids = {3};
     ctx.transition = transition;
