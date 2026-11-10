@@ -4,6 +4,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
+#include <limits>
 
 namespace tft::strategy {
 
@@ -22,6 +24,8 @@ public:
 
         double best_score = 0.0; // HOLD is the explicit zero-cost baseline.
         double second_score = -1.0e9;
+        std::size_t selected_candidate_index =
+            std::numeric_limits<std::size_t>::max();
         for (const auto& candidate : c.action_candidates) {
             ActionCandidateScore breakdown;
             breakdown.kind = candidate.kind;
@@ -103,6 +107,7 @@ public:
             if (breakdown.total_score > best_score) {
                 second_score = best_score;
                 best_score = breakdown.total_score;
+                selected_candidate_index = out.candidate_scores.size();
                 out.recommended_action = candidate.kind;
                 out.recommended_champion_id = candidate.champion_id;
                 out.reason = reason_for(candidate, c);
@@ -117,15 +122,22 @@ public:
                     opportunity_cost - gold_gain;
             } else {
                 second_score = std::max(second_score, breakdown.total_score);
+                // If no positive action beats the zero-cost baseline, retain
+                // the first available HOLD candidate as the single selection.
+                if (selected_candidate_index == std::numeric_limits<std::size_t>::max() &&
+                    best_score <= 0.0 &&
+                    candidate.kind == StrategicActionKind::Hold) {
+                    selected_candidate_index = out.candidate_scores.size();
+                }
             }
             out.candidate_scores.push_back(breakdown);
         }
 
-        for (auto& candidate : out.candidate_scores) {
-            candidate.selected = candidate.kind == out.recommended_action &&
-                candidate.champion_id == out.recommended_champion_id &&
-                ((best_score > 0.0 && candidate.total_score == best_score) ||
-                 (best_score <= 0.0 && candidate.kind == StrategicActionKind::Hold));
+        // Selection is tied to one concrete candidate occurrence, not to
+        // its (kind, champion_id, score) values. Multiple physical copies of
+        // the same champion can produce equivalent diagnostic candidates.
+        for (std::size_t i = 0; i < out.candidate_scores.size(); ++i) {
+            out.candidate_scores[i].selected = (i == selected_candidate_index);
         }
         if (best_score <= 0.0) {
             out.recommended_action = StrategicActionKind::Hold;
