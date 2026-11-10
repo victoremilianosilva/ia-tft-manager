@@ -379,12 +379,10 @@ private:
         std::unordered_set<std::int32_t> active_ids;
         if (active) active_ids = ids(active->candidate);
 
-        std::size_t owned_target = 0;
         std::size_t missing_target = 0;
         for (const auto id : target_ids) {
             if (active_ids.count(id)) plan.shared_unit_ids.push_back(id);
             if (owned(id, context)) {
-                ++owned_target;
                 if (!active_ids.count(id)) plan.bridge_unit_ids.push_back(id);
             } else {
                 ++missing_target;
