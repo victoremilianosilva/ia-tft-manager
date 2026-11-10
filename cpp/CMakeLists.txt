@@ -299,6 +299,18 @@ if(BUILD_TESTING)
         COMMAND test_active_composition_manager
     )
 
+    add_executable(
+        test_composition_source_adapters
+        tests/test_composition_source_adapters.cpp
+    )
+    configure_tft_module(test_composition_source_adapters)
+    target_link_libraries(test_composition_source_adapters PRIVATE nlohmann_json::nlohmann_json)
+    enable_tft_test_assertions(test_composition_source_adapters)
+    add_test(
+        NAME composition_source_adapters
+        COMMAND test_composition_source_adapters
+    )
+
     add_executable(test_combat_engine
         tests/test_combat_engine.cpp
         src/combat/CombatEngine.cpp
