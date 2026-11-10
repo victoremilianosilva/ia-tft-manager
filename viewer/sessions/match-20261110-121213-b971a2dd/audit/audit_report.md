@@ -1,10 +1,10 @@
 # Auditoria completa — índice
 
 - Jogadores: **8**
-- Decisões registradas: **1818**
-- Diagnósticos shadow disponíveis: **1818**
-- Comparações PPO × Action Evaluator: **1739**
-- Concordâncias: **632** | Divergências: **1107**
+- Decisões registradas: **1819**
+- Diagnósticos shadow disponíveis: **1819**
+- Comparações PPO × Action Evaluator: **1740**
+- Concordâncias: **633** | Divergências: **1107**
 
 ## Relatórios
 
