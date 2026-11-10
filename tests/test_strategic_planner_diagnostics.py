@@ -52,6 +52,7 @@ def test_strategic_planner_audit_groups_insufficient_evidence_reasons():
         "alternative_below_minimum_adapt_advantage": 1,
         "no_high_cost_anchor_units_seen": 1,
     }
+    assert metrics["candidate_generation_rejections"]["rejected_missing_champion_definition"] == 1
 
 
 def test_strategic_markdown_explains_insufficient_evidence():
