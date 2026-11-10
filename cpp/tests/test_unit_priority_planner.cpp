@@ -68,7 +68,8 @@ void shared_and_bridge_units_survive_pivot() {
         bridge |= unit.champion_id == 2 && unit.intent == UnitIntent::Hold && unit.relation == UnitStrategicRelation::Bridge;
         sell |= unit.champion_id == 3 && unit.intent == UnitIntent::SellCandidate;
         replace |= unit.champion_id == 9 && unit.intent == UnitIntent::Replace;
-        shared |= unit.champion_id == 1 && unit.intent == UnitIntent::Keep;
+        shared |= unit.champion_id == 1 && unit.intent == UnitIntent::Keep &&
+            unit.relation == UnitStrategicRelation::SharedCore;
         seek |= unit.champion_id == 4 && unit.intent == UnitIntent::Seek;
     }
     assert(bridge && sell && replace && shared && seek);

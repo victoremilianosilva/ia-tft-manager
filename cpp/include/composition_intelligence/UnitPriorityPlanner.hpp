@@ -158,9 +158,13 @@ private:
     static bool contains(const std::vector<std::int32_t>& ids, std::int32_t id) {
         return std::find(ids.begin(), ids.end(), id) != ids.end();
     }
-    static UnitStrategicRelation relation(const CompositionUnit& unit) {
-        if (unit.core) return UnitStrategicRelation::ActiveCore;
-        return UnitStrategicRelation::ActiveFlex;
+    static UnitStrategicRelation relation(
+        const CompositionUnit& unit, const UnitPriorityContext& context) {
+        const bool shared = context.transition &&
+            contains(context.transition->shared_unit_ids, unit.champion_id);
+        if (shared)
+            return unit.core ? UnitStrategicRelation::SharedCore : UnitStrategicRelation::SharedFlex;
+        return unit.core ? UnitStrategicRelation::ActiveCore : UnitStrategicRelation::ActiveFlex;
     }
     static UnitPriority missing_target(const CompositionUnit& target) {
         UnitPriority out;
@@ -176,7 +180,7 @@ private:
         const UnitPriorityEvidence* ev, const UnitPriorityContext& context) const {
         UnitPriority out;
         out.champion_id = target.champion_id;
-        out.relation = relation(target);
+        out.relation = relation(target, context);
         out.copies_owned = owned.copies;
         out.highest_star = std::clamp(owned.highest_star, 1, 3);
         out.on_board = owned.on_board;
