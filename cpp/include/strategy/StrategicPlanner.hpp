@@ -166,6 +166,9 @@ public:
                 : StrategicReason::AnchorOpportunity;
             out.target_composition_direction = best.direction;
             out.confidence = std::min(best.confidence, 0.65);
+            out.decision_path_reason = advantage < required_advantage
+                ? "alternative_below_required_advantage"
+                : "alternative_waiting_for_persistence";
             classify_owned_units(context, out, out.target_composition_direction);
             return out;
         }
