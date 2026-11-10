@@ -301,8 +301,38 @@ class AuditWindow(QMainWindow):
             strategy_lines.append(f"{player}: nível final={data.get('final_level')} | HP final={data.get('final_hp')} | ouro final={data.get('final_gold')} | colocação={data.get('final_placement')} | mudanças de comp={data.get('composition_direction_changes')} | ganhos de qualidade={data.get('positioning_improved_actions')} | pioras={data.get('positioning_worsened_actions')}")
         for player, data in sorted(comp_metrics.items()):
             strategy_lines.append(f"{player}: mudanças de direção={data.get('direction_changes')} | com ganho mensurável={data.get('changes_with_measurable_gain')} | sem ganho mensurável={data.get('changes_without_measurable_gain')} | taxa sem ganho={data.get('rate_without_measurable_gain')}")
+        planner_metrics = report.get("strategic_planner_metrics", {})
+        planner_details = []
+        for player, data in sorted(planner_metrics.items()):
+            decisions = data.get("decision_counts", {})
+            reasons = data.get("insufficient_reason_counts", {})
+            generation = data.get("candidate_generation_reason_counts", {})
+            rejections = data.get("candidate_generation_rejections", {})
+            strategy_lines.append(
+                f"{player}: Strategic Planner registros={data.get('records', 0)} | "
+                f"INSUFFICIENT_EVIDENCE com âncora={data.get('insufficient_with_anchor', 0)} / "
+                f"sem âncora={data.get('insufficient_without_anchor', 0)} | "
+                f"decisões={decisions} | motivos INSUFFICIENT_EVIDENCE={reasons} | "
+                f"geração de candidatos={generation} | filtros={rejections}"
+            )
+            for sample in data.get("samples", [])[:30]:
+                planner_details.append(
+                    f"{player} · round {sample.get('round')} · step {sample.get('step')} | "
+                    f"{sample.get('decision_path_reason')} | geração={sample.get('candidate_generation_reason')} | "
+                    f"direção={sample.get('current_direction')} | score atual={_fmt(sample.get('current_direction_score'))} | "
+                    f"score âncora={_fmt(sample.get('best_anchor_score'))} | vantagem={_fmt(sample.get('alternative_advantage'))} | "
+                    f"mín. ADAPT={_fmt(sample.get('minimum_adapt_advantage'))} | "
+                    f"limite PIVOT={_fmt(sample.get('required_pivot_advantage'))} | "
+                    f"conf. âncora={_fmt(sample.get('anchor_confidence'))} | "
+                    f"conf. direção atual={_fmt(sample.get('current_direction_confidence'))}"
+                )
+        if planner_metrics:
+            strategy_lines.append(
+                "Confianças são métricas derivadas de score, não probabilidades calibradas. "
+                "Snapshots repetidos por ação não representam revisões independentes."
+            )
         self._add_chart(layout, "Mudanças de composição por jogador", [(p, d.get("direction_changes", 0)) for p, d in sorted(comp_metrics.items())])
-        self._add_text(layout, "\n".join(strategy_lines) or "Sem métricas estratégicas estruturadas.")
+        self._add_text(layout, "\n".join(strategy_lines + (["", "Amostras INSUFFICIENT_EVIDENCE:"] + planner_details if planner_details else [])) or "Sem métricas estratégicas estruturadas.")
 
         layout = self._page("Composição")
         purchase = report.get("purchase_sequence_metrics", {})
