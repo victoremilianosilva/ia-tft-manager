@@ -3414,10 +3414,10 @@ struct TFTEngine::Impl {
             auto& generation = strategic_context.candidate_generation;
             if (generation.candidates_generated > 0) {
                 generation.no_candidate_reason = "candidate_generated";
-            } else if (generation.anchors_considered == 0) {
-                generation.no_candidate_reason = "no_high_cost_anchor_units_seen";
             } else if (generation.rejected_missing_champion_definition > 0) {
                 generation.no_candidate_reason = "anchor_missing_from_champion_catalog";
+            } else if (generation.anchors_considered == 0) {
+                generation.no_candidate_reason = "no_high_cost_anchor_units_seen";
             } else if (generation.rejected_empty_plan > 0) {
                 generation.no_candidate_reason = "composition_planner_returned_empty_plan";
             } else if (generation.rejected_anchor_not_in_plan > 0) {
