@@ -143,3 +143,15 @@ strategy compatibility remains until consumers migrate.
 
 Fine-tuning and reward changes are separate follow-ups, based on outcome
 reports rather than assumptions.
+
+
+## Diagnóstico e calibração — PR 4.1
+
+A camada shadow registra explicitamente `INITIAL_SELECTION` e `INSUFFICIENT_EVIDENCE`, separados de `KEEP`. Cada âncora avaliada registra campeão, direção, score, aceitação e motivo de seleção/rejeição. A captura do Viewer inclui as listas de unidades preservadas e substituíveis.
+
+O Action Evaluator registra SELL_UNIT e DEPLOY_OR_MOVE quando candidatos elegíveis existem. A recomendação inclui o ID do campeão e a pontuação de cada candidato, com decomposição por tabuleiro, sobrevivência, streak, composição, upgrade, postura, custo direto, juros perdidos e custo de oportunidade. Ganho de tabuleiro, preservação de HP e valor de streak são proxies heurísticos, não previsões calibradas.
+
+O custo de oportunidade do reroll recebe um prêmio explícito de busca/aleatoriedade superior ao custo de oportunidade de BUY_XP. O custo direto, juros perdidos e prêmio de oportunidade permanecem separados para permitir auditoria e futura calibração; isso não torna o reroll proibido nem altera a política PPO.
+
+O Outcome Evaluator preserva o último snapshot vivo, mantém uma única linha de resultado de combate por jogador/round e correlaciona o conjunto de recomendações de cada round com a evolução nos próximos um e dois rounds. Essa correlação é temporal e observacional, não uma atribuição causal individual.
+

@@ -10,7 +10,8 @@
 namespace tft::strategy {
 
 enum class CompositionDecision : std::uint8_t {
-    Keep = 0, Adapt = 1, Pivot = 2, Abandon = 3
+    Keep = 0, Adapt = 1, Pivot = 2, Abandon = 3,
+    InitialSelection = 4, InsufficientEvidence = 5
 };
 
 enum class ProgressionPlan : std::uint8_t {
@@ -44,6 +45,16 @@ enum class StrategicReason : std::uint8_t {
     EconomyConstraint = 10, InsufficientEvidence = 11
 };
 
+// Explicit heuristic opportunity premiums. Reroll is intentionally more
+// expensive than XP because it consumes a shop search without guaranteeing
+// a unit or advancing level progression.
+namespace action_opportunity_cost {
+inline constexpr double kBuyExperience = 0.25;
+inline constexpr double kRerollWithUpgradeTarget = 3.50;
+inline constexpr double kRerollWithoutUpgradeTarget = 4.00;
+inline constexpr double kBuyUnit = 0.35;
+} // namespace action_opportunity_cost
+
 struct StrategicUnitCandidate {
     std::int32_t champion_id{-1};
     std::string champion_key;
@@ -73,11 +84,34 @@ struct StrategicActionCandidate {
     StrategicActionKind kind{StrategicActionKind::None};
     std::int32_t champion_id{-1};
     std::int32_t gold_cost{0};
+    double direct_gold_cost{0.0};
+    double lost_interest_cost{0.0};
+    double opportunity_cost{0.0};
     double expected_economy_cost{0.0};
     double expected_board_delta{0.0};
     double composition_fit{0.0};
     double upgrade_value{0.0};
     bool available{true};
+};
+
+struct ActionCandidateScore {
+    StrategicActionKind kind{StrategicActionKind::None};
+    std::int32_t champion_id{-1};
+    double direct_gold_cost{0.0};
+    double lost_interest_cost{0.0};
+    double opportunity_cost{0.0};
+    double board_component{0.0};
+    double survival_component{0.0};
+    double streak_component{0.0};
+    double composition_component{0.0};
+    double upgrade_component{0.0};
+    double posture_component{0.0};
+    double direct_cost_component{0.0};
+    double lost_interest_component{0.0};
+    double opportunity_cost_component{0.0};
+    double total_score{0.0};
+    bool available{true};
+    bool selected{false};
 };
 
 struct StrategicSharedContext {
@@ -129,8 +163,16 @@ struct StrategicCommitment {
     double candidate_score{0.0};
 };
 
+struct StrategicCandidateDiagnostic {
+    std::int32_t champion_id{-1};
+    std::string target_composition_direction;
+    double score{0.0};
+    bool accepted{false};
+    std::string evaluation_reason;
+};
+
 struct StrategicPlanDecision {
-    CompositionDecision composition_decision{CompositionDecision::Keep};
+    CompositionDecision composition_decision{CompositionDecision::InsufficientEvidence};
     ProgressionPlan progression{ProgressionPlan::Flexible};
     EconomicPosture economic_posture{EconomicPosture::AccumulateResources};
     StrategicReason reason{StrategicReason::None};
@@ -140,6 +182,7 @@ struct StrategicPlanDecision {
     std::int32_t anchor_champion_id{-1};
     double confidence{0.0};
     double estimated_transition_cost{0.0};
+    std::vector<StrategicCandidateDiagnostic> candidate_diagnostics;
     bool shadow_only{true};
 };
 
@@ -155,12 +198,17 @@ struct EconomicControlDecision {
 
 struct ActionEvaluation {
     StrategicActionKind recommended_action{StrategicActionKind::None};
+    std::int32_t recommended_champion_id{-1};
     StrategicReason reason{StrategicReason::None};
     double expected_board_delta{0.0};
     double expected_hp_preservation{0.0};
     double expected_economy_cost{0.0};
+    double expected_direct_gold_cost{0.0};
+    double expected_lost_interest_cost{0.0};
+    double expected_opportunity_cost{0.0};
     double expected_streak_value{0.0};
     double confidence{0.0};
+    std::vector<ActionCandidateScore> candidate_scores;
     bool differs_from_policy_action{false};
     bool shadow_only{true};
 };

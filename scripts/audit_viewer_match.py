@@ -1547,6 +1547,7 @@ def audit_decision_context(entries: list[dict], player: str, report: dict) -> No
                 "player": player,
                 "round": get_round(entry),
                 "step": entry.get("step"),
+                "sequence_id": entry.get("sequence_id"),
                 "state_after": p.get("state_after") or {},
                 "combat_reward": p.get("combat_reward"),
                 "reward": p.get("reward"),

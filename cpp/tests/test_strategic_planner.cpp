@@ -60,7 +60,9 @@ int main() {
     // Existing pieces are preserved; a poor pivot candidate is ignored.
     context.anchor_candidates.push_back(anchor(90, "Invoker", 1.0, 4.0, 0));
     auto decision = planner.evaluate(context, commitment);
-    assert(decision.composition_decision == CompositionDecision::Keep);
+    assert(decision.composition_decision == CompositionDecision::InsufficientEvidence);
+    assert(!decision.candidate_diagnostics.empty());
+    assert(!decision.candidate_diagnostics.front().accepted);
     assert(decision.target_composition_direction == "Bruiser");
     assert(std::find(decision.preserve_unit_ids.begin(),
                      decision.preserve_unit_ids.end(), 10) != decision.preserve_unit_ids.end());
@@ -70,7 +72,7 @@ int main() {
     context.anchor_candidates.clear();
     context.anchor_candidates.push_back(anchor(89, "Bruiser", 4.0, 0.2, 2));
     decision = planner.evaluate(context, commitment);
-    assert(decision.composition_decision == CompositionDecision::Adapt);
+    assert(decision.composition_decision == CompositionDecision::Keep);
     assert(decision.target_composition_direction == "Bruiser");
 
     // A strong anchor cannot trigger a pivot on a single review while locked.
@@ -78,18 +80,18 @@ int main() {
     context.current_direction_score = 1.0;
     context.anchor_candidates.push_back(anchor(91, "Invoker", 6.0, 0.2, 2));
     decision = planner.evaluate(context, commitment);
-    assert(decision.composition_decision == CompositionDecision::Keep);
+    assert(decision.composition_decision == CompositionDecision::Adapt);
     assert(commitment.consecutive_reviews == 1);
     assert(commitment.candidate_composition_direction == "Invoker");
 
     // Repeated actions in the same round do not count as independent evidence.
     decision = planner.evaluate(context, commitment);
-    assert(decision.composition_decision == CompositionDecision::Keep);
+    assert(decision.composition_decision == CompositionDecision::Adapt);
     assert(commitment.consecutive_reviews == 1);
 
     context.round++;
     decision = planner.evaluate(context, commitment);
-    assert(decision.composition_decision == CompositionDecision::Keep);
+    assert(decision.composition_decision == CompositionDecision::Adapt);
     assert(commitment.consecutive_reviews == 2);
 
     context.round++;
@@ -112,7 +114,7 @@ int main() {
     commitment = {};
     context.anchor_candidates.push_back(anchor(92, "Mage", 0.5, 10.0, 0));
     decision = planner.evaluate(context, commitment);
-    assert(decision.composition_decision == CompositionDecision::Keep);
+    assert(decision.composition_decision == CompositionDecision::InsufficientEvidence);
 
     // If the old direction is no longer viable, a supported alternative can
     // be selected immediately; it does not wait for the locked-plan timer.
@@ -135,7 +137,7 @@ int main() {
     context.current_direction_viable = false;
     context.anchor_candidates.push_back(anchor(94, "Warden", 3.0, 1.0, 1));
     decision = planner.evaluate(context, commitment);
-    assert(decision.composition_decision == CompositionDecision::Adapt);
+    assert(decision.composition_decision == CompositionDecision::InitialSelection);
     assert(decision.target_composition_direction == "Warden");
 
     // Invalid numeric candidates never become anchors.
@@ -145,8 +147,7 @@ int main() {
     context.anchor_candidates.push_back(invalid);
     context.current_composition_direction.clear();
     decision = planner.evaluate(context, commitment);
-    assert(decision.composition_decision == CompositionDecision::Keep ||
-           decision.composition_decision == CompositionDecision::Adapt);
+    assert(decision.composition_decision == CompositionDecision::InsufficientEvidence);
     assert(decision.anchor_champion_id == -1);
 
     // Economic posture is contextual: a strong win streak can outweigh
@@ -223,11 +224,37 @@ int main() {
     assert(action.expected_board_delta == 0.62);
     assert(action.confidence >= 0.50);
     assert(economy_context.action_candidates.size() == 2);
+    assert(!action.candidate_scores.empty());
+
+    // Reroll's search opportunity cost is intentionally higher than buying XP.
+    StrategicActionCandidate xp_candidate;
+    xp_candidate.kind = StrategicActionKind::BuyExperience;
+    xp_candidate.gold_cost = 4;
+    xp_candidate.direct_gold_cost = 4.0;
+    xp_candidate.opportunity_cost = 0.25;
+    StrategicActionCandidate reroll_candidate;
+    reroll_candidate.kind = StrategicActionKind::RerollShop;
+    reroll_candidate.gold_cost = 2;
+    reroll_candidate.direct_gold_cost = 2.0;
+    reroll_candidate.opportunity_cost = 2.50;
+    reroll_candidate.opportunity_cost =
+        action_opportunity_cost::kRerollWithUpgradeTarget;
+    xp_candidate.opportunity_cost = action_opportunity_cost::kBuyExperience;
+    assert(reroll_candidate.opportunity_cost > xp_candidate.opportunity_cost);
+    // Even if XP crosses one extra interest threshold, reroll remains the
+    // more expensive opportunity once its search premium is included.
+    reroll_candidate.lost_interest_cost = 0.0;
+    xp_candidate.lost_interest_cost = 1.0;
+    assert(reroll_candidate.direct_gold_cost + reroll_candidate.lost_interest_cost +
+               reroll_candidate.opportunity_cost >
+           xp_candidate.direct_gold_cost + xp_candidate.lost_interest_cost +
+               xp_candidate.opportunity_cost);
 
     economy_context.action_candidates.clear();
     const auto no_candidate = action_evaluator.evaluate(economy_context, posture);
     assert(no_candidate.recommended_action == StrategicActionKind::Hold);
     assert(no_candidate.confidence == 0.0);
+    assert(no_candidate.candidate_scores.empty());
 
     // With a strong win streak, a marginal low-value purchase should not
     // beat holding resources merely because spending is possible.
@@ -251,6 +278,12 @@ int main() {
         streak_context, streak_posture);
     assert(streak_posture.posture == EconomicPosture::PreserveWinStreak);
     assert(streak_action.recommended_action == StrategicActionKind::Hold);
+    assert(std::any_of(streak_action.candidate_scores.begin(),
+                       streak_action.candidate_scores.end(),
+                       [](const ActionCandidateScore& score) {
+                           return score.kind == StrategicActionKind::Hold &&
+                                  score.selected;
+                       }));
 
     std::cout << "strategic planner shadow tests passed\n";
     return 0;

@@ -244,6 +244,34 @@ struct PlayerInfo {
     std::int32_t board_important_bench_units_unplayed{0};
 };
 
+struct StrategicCandidateDiagnosticInfo {
+    std::int32_t champion_id{-1};
+    std::string target_direction;
+    double score{0.0};
+    bool accepted{false};
+    std::string evaluation_reason;
+};
+
+struct ActionCandidateScoreInfo {
+    std::string action;
+    std::int32_t champion_id{-1};
+    double direct_gold_cost{0.0};
+    double lost_interest_cost{0.0};
+    double opportunity_cost{0.0};
+    double board_component{0.0};
+    double survival_component{0.0};
+    double streak_component{0.0};
+    double composition_component{0.0};
+    double upgrade_component{0.0};
+    double posture_component{0.0};
+    double direct_cost_component{0.0};
+    double lost_interest_component{0.0};
+    double opportunity_cost_component{0.0};
+    double total_score{0.0};
+    bool available{true};
+    bool selected{false};
+};
+
 struct StrategyInfo {
     // Valores compatíveis com StrategyManager.py.
     std::int32_t strategy{0};
@@ -301,8 +329,8 @@ struct StrategyInfo {
 
     // Strategic Planner shadow diagnostics. These fields are observational
     // only and never feed PPO observations, rewards, masks, or action execution.
-    std::int32_t strategic_composition_decision{0};
-    std::string strategic_composition_decision_name{"KEEP"};
+    std::int32_t strategic_composition_decision{5};
+    std::string strategic_composition_decision_name{"INSUFFICIENT_EVIDENCE"};
     std::string strategic_target_direction;
     std::string strategic_reason;
     std::int32_t strategic_anchor_champion_id{-1};
@@ -310,6 +338,7 @@ struct StrategyInfo {
     double strategic_transition_cost{0.0};
     std::vector<std::int32_t> strategic_preserve_unit_ids;
     std::vector<std::int32_t> strategic_replaceable_unit_ids;
+    std::vector<StrategicCandidateDiagnosticInfo> strategic_candidate_diagnostics;
     std::string strategic_candidate_direction;
     std::int32_t strategic_candidate_anchor_id{-1};
     double strategic_candidate_score{0.0};
@@ -334,7 +363,12 @@ struct StrategyInfo {
     double strategic_action_expected_board_delta{0.0};
     double strategic_action_expected_hp_preservation{0.0};
     double strategic_action_expected_economy_cost{0.0};
+    double strategic_action_expected_direct_gold_cost{0.0};
+    double strategic_action_expected_lost_interest_cost{0.0};
+    double strategic_action_expected_opportunity_cost{0.0};
     double strategic_action_expected_streak_value{0.0};
+    std::int32_t strategic_action_recommended_champion_id{-1};
+    std::vector<ActionCandidateScoreInfo> strategic_action_candidate_scores;
     double strategic_action_confidence{0.0};
     bool economic_shadow_only{true};
 };

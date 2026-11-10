@@ -312,8 +312,8 @@ py::list strategies_to_list(
             item["active_traits"] = py::dict();
             item["unit_counts"] = py::dict();
             item["unit_counts_by_id"] = py::dict();
-            item["strategic_composition_decision"] = 0;
-            item["strategic_composition_decision_name"] = "KEEP";
+            item["strategic_composition_decision"] = 5;
+            item["strategic_composition_decision_name"] = "INSUFFICIENT_EVIDENCE";
             item["strategic_target_direction"] = "";
             item["strategic_reason"] = "";
             item["strategic_anchor_champion_id"] = -1;
@@ -321,6 +321,7 @@ py::list strategies_to_list(
             item["strategic_transition_cost"] = 0.0;
             item["strategic_preserve_unit_ids"] = py::list();
             item["strategic_replaceable_unit_ids"] = py::list();
+            item["strategic_candidate_diagnostics"] = py::list();
             item["strategic_candidate_direction"] = "";
             item["strategic_candidate_anchor_id"] = -1;
             item["strategic_candidate_score"] = 0.0;
@@ -342,7 +343,12 @@ py::list strategies_to_list(
             item["strategic_action_expected_board_delta"] = 0.0;
             item["strategic_action_expected_hp_preservation"] = 0.0;
             item["strategic_action_expected_economy_cost"] = 0.0;
+            item["strategic_action_expected_direct_gold_cost"] = 0.0;
+            item["strategic_action_expected_lost_interest_cost"] = 0.0;
+            item["strategic_action_expected_opportunity_cost"] = 0.0;
             item["strategic_action_expected_streak_value"] = 0.0;
+            item["strategic_action_recommended_champion_id"] = -1;
+            item["strategic_action_candidate_scores"] = py::list();
             item["strategic_action_confidence"] = 0.0;
             item["economic_shadow_only"] = true;
         } else {
@@ -419,6 +425,18 @@ py::list strategies_to_list(
             item["strategic_transition_cost"] = strategy.strategic_transition_cost;
             item["strategic_preserve_unit_ids"] = strategy.strategic_preserve_unit_ids;
             item["strategic_replaceable_unit_ids"] = strategy.strategic_replaceable_unit_ids;
+            py::list strategic_candidate_diagnostics;
+            for (const auto& candidate : strategy.strategic_candidate_diagnostics) {
+                py::dict row;
+                row["champion_id"] = candidate.champion_id;
+                row["target_direction"] = candidate.target_direction;
+                row["score"] = candidate.score;
+                row["accepted"] = candidate.accepted;
+                row["evaluation_reason"] = candidate.evaluation_reason;
+                strategic_candidate_diagnostics.append(std::move(row));
+            }
+            item["strategic_candidate_diagnostics"] =
+                std::move(strategic_candidate_diagnostics);
             item["strategic_candidate_direction"] = strategy.strategic_candidate_direction;
             item["strategic_candidate_anchor_id"] = strategy.strategic_candidate_anchor_id;
             item["strategic_candidate_score"] = strategy.strategic_candidate_score;
@@ -440,7 +458,35 @@ py::list strategies_to_list(
             item["strategic_action_expected_board_delta"] = strategy.strategic_action_expected_board_delta;
             item["strategic_action_expected_hp_preservation"] = strategy.strategic_action_expected_hp_preservation;
             item["strategic_action_expected_economy_cost"] = strategy.strategic_action_expected_economy_cost;
+            item["strategic_action_expected_direct_gold_cost"] = strategy.strategic_action_expected_direct_gold_cost;
+            item["strategic_action_expected_lost_interest_cost"] = strategy.strategic_action_expected_lost_interest_cost;
+            item["strategic_action_expected_opportunity_cost"] = strategy.strategic_action_expected_opportunity_cost;
             item["strategic_action_expected_streak_value"] = strategy.strategic_action_expected_streak_value;
+            item["strategic_action_recommended_champion_id"] = strategy.strategic_action_recommended_champion_id;
+            py::list strategic_action_candidate_scores;
+            for (const auto& score : strategy.strategic_action_candidate_scores) {
+                py::dict row;
+                row["action"] = score.action;
+                row["champion_id"] = score.champion_id;
+                row["direct_gold_cost"] = score.direct_gold_cost;
+                row["lost_interest_cost"] = score.lost_interest_cost;
+                row["opportunity_cost"] = score.opportunity_cost;
+                row["board_component"] = score.board_component;
+                row["survival_component"] = score.survival_component;
+                row["streak_component"] = score.streak_component;
+                row["composition_component"] = score.composition_component;
+                row["upgrade_component"] = score.upgrade_component;
+                row["posture_component"] = score.posture_component;
+                row["direct_cost_component"] = score.direct_cost_component;
+                row["lost_interest_component"] = score.lost_interest_component;
+                row["opportunity_cost_component"] = score.opportunity_cost_component;
+                row["total_score"] = score.total_score;
+                row["available"] = score.available;
+                row["selected"] = score.selected;
+                strategic_action_candidate_scores.append(std::move(row));
+            }
+            item["strategic_action_candidate_scores"] =
+                std::move(strategic_action_candidate_scores);
             item["strategic_action_confidence"] = strategy.strategic_action_confidence;
             item["economic_shadow_only"] = strategy.economic_shadow_only;
         }
