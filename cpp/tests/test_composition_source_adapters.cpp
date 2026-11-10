@@ -34,10 +34,16 @@ void native_adapter_uses_neutral_snapshot(){
  auto result=NativeCompositionAdapter::adapt(input,pool());assert(result.candidates.size()==1);
  const auto& c=result.candidates.front();assert(c.source==CompositionSource::Native);assert(c.main_carry_id==11);assert(c.units.size()==3);assert(c.target_board_size==8);
 }
+void native_adapter_rejects_unknown_or_wrong_set_units(){
+ NativeCompositionSnapshot unknown;unknown.composition_id="native-unknown";unknown.set_id="18";unknown.units={{10,true,80},{999,true,100}};
+ auto unknown_result=NativeCompositionAdapter::adapt(unknown,pool());assert(unknown_result.candidates.empty());
+ NativeCompositionSnapshot wrong_set;wrong_set.composition_id="native-wrong-set";wrong_set.set_id="17";wrong_set.units={{10,true,80},{11,true,100}};
+ auto set_result=NativeCompositionAdapter::adapt(wrong_set,pool());assert(set_result.candidates.empty());
+}
 void opgg_failure_does_not_block_native(){
  auto opgg=OppgCompositionAdapter::adapt(nlohmann::json::object(),pool());
  NativeCompositionSnapshot input;input.composition_id="native-fallback";input.set_id="18";input.units={{10,true,80},{11,true,100}};
  auto native=NativeCompositionAdapter::adapt(input,pool());assert(opgg.candidates.empty());assert(native.candidates.size()==1);
 }
 }
-int main(){opgg_maps_to_common_contract();opgg_rejects_wrong_set_and_low_coverage();native_adapter_uses_neutral_snapshot();opgg_failure_does_not_block_native();std::cout<<"Composition source adapter tests passed\n";return 0;}
+int main(){opgg_maps_to_common_contract();opgg_rejects_wrong_set_and_low_coverage();native_adapter_uses_neutral_snapshot();native_adapter_rejects_unknown_or_wrong_set_units();opgg_failure_does_not_block_native();std::cout<<"Composition source adapter tests passed\n";return 0;}

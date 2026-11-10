@@ -120,11 +120,16 @@ public:
     c.source_score=input.source_score;c.source_reference=input.source_reference;
     for(const auto& selected:input.units){
       auto it=std::find_if(pool.begin(),pool.end(),[&](const auto& d){return d.internal_id==selected.champion_id;});
-      if(it==pool.end()){out.diagnostics.emplace_back("Unknown native champion id "+std::to_string(selected.champion_id));continue;}
-      if(std::any_of(c.units.begin(),c.units.end(),[&](const auto& u){return u.champion_id==selected.champion_id;})){out.diagnostics.emplace_back("Duplicate native champion id "+std::to_string(selected.champion_id));continue;}
+      if(it==pool.end()){out.diagnostics.emplace_back("Native composition rejected: unknown champion id "+std::to_string(selected.champion_id));return out;}
+      if(std::any_of(c.units.begin(),c.units.end(),[&](const auto& u){return u.champion_id==selected.champion_id;})){
+        out.diagnostics.emplace_back("Native composition rejected: duplicate champion id "+std::to_string(selected.champion_id));return out;
+      }
+      const auto champion_set=adapter_detail::champion_set(*it);
+      if(!champion_set.empty()&&champion_set!=input.set_id){
+        out.diagnostics.emplace_back("Native composition rejected: champion "+std::to_string(selected.champion_id)+" belongs to Set "+champion_set+", not "+input.set_id);return out;
+      }
       c.units.push_back({selected.champion_id,adapter_detail::role(*it),selected.core,std::max(0,selected.priority)});
     }
-    if(c.units.empty()){out.diagnostics.emplace_back("Native composition has no mapped units");return out;}
     if(c.main_carry_id<0)c.main_carry_id=adapter_detail::main_carry(c.units);
     const auto error=ActiveCompositionManager::validate(c);
     if(!error.empty()){out.diagnostics.emplace_back("Native composition rejected: "+error);return out;}
