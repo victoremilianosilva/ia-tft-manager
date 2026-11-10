@@ -312,6 +312,7 @@ class AuditWindow(QMainWindow):
                 f"{player}: Strategic Planner registros={data.get('records', 0)} | "
                 f"INSUFFICIENT_EVIDENCE com âncora={data.get('insufficient_with_anchor', 0)} / "
                 f"sem âncora={data.get('insufficient_without_anchor', 0)} | "
+                f"viabilidade da direção atual={data.get('insufficient_current_viability_counts', {})} | "
                 f"decisões={decisions} | motivos INSUFFICIENT_EVIDENCE={reasons} | "
                 f"geração de candidatos={generation} | filtros={rejections}"
             )
@@ -319,7 +320,8 @@ class AuditWindow(QMainWindow):
                 planner_details.append(
                     f"{player} · round {sample.get('round')} · step {sample.get('step')} | "
                     f"{sample.get('decision_path_reason')} | geração={sample.get('candidate_generation_reason')} | "
-                    f"direção={sample.get('current_direction')} | score atual={_fmt(sample.get('current_direction_score'))} | "
+                    f"direção={sample.get('current_direction')} | viável={_fmt(sample.get('current_direction_viable'))} | "
+                    f"score atual={_fmt(sample.get('current_direction_score'))} | "
                     f"score âncora={_fmt(sample.get('best_anchor_score'))} | vantagem={_fmt(sample.get('alternative_advantage'))} | "
                     f"mín. ADAPT={_fmt(sample.get('minimum_adapt_advantage'))} | "
                     f"limite PIVOT={_fmt(sample.get('required_pivot_advantage'))} | "
