@@ -404,6 +404,7 @@ class PlayerJsonLogWriter:
                 "candidate_generation_reason": (audit.get("strategy_info") or {}).get("strategic_candidate_generation_reason"),
                 "anchors_considered": (audit.get("strategy_info") or {}).get("strategic_anchors_considered"),
                 "rejected_cost_below_four": (audit.get("strategy_info") or {}).get("strategic_rejected_cost_below_four"),
+                "rejected_missing_champion_definition": (audit.get("strategy_info") or {}).get("strategic_rejected_missing_champion_definition"),
                 "rejected_empty_trait": (audit.get("strategy_info") or {}).get("strategic_rejected_empty_trait"),
                 "rejected_duplicate_direction": (audit.get("strategy_info") or {}).get("strategic_rejected_duplicate_direction"),
                 "rejected_direction_limit": (audit.get("strategy_info") or {}).get("strategic_rejected_direction_limit"),
