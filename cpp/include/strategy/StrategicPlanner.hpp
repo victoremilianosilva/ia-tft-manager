@@ -95,10 +95,11 @@ public:
                 clear_candidate(commitment);
                 out.decision_path_reason = "current_direction_unviable_without_alternative";
             } else {
+                out.composition_decision = CompositionDecision::Keep;
+                out.reason = StrategicReason::BoardAdvantage;
+                out.target_composition_direction = context.current_composition_direction;
+                out.decision_path_reason = "current_direction_viable_without_alternative";
                 clear_candidate(commitment);
-                out.decision_path_reason = context.anchor_candidates.empty()
-                    ? context.candidate_generation.no_candidate_reason
-                    : "all_anchor_candidates_rejected";
             }
             classify_owned_units(context, out, out.target_composition_direction);
             return out;
@@ -135,7 +136,9 @@ public:
         }
 
         if (advantage < config_.minimum_adapt_advantage) {
-            out.reason = StrategicReason::InsufficientEvidence;
+            out.composition_decision = CompositionDecision::Keep;
+            out.reason = StrategicReason::BoardAdvantage;
+            out.target_composition_direction = context.current_composition_direction;
             out.decision_path_reason = "alternative_below_minimum_adapt_advantage";
             clear_candidate(commitment);
             classify_owned_units(context, out, out.target_composition_direction);
