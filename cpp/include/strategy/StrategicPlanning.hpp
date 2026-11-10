@@ -114,6 +114,18 @@ struct ActionCandidateScore {
     bool selected{false};
 };
 
+struct StrategicCandidateGenerationDiagnostics {
+    std::uint32_t anchors_considered{0};
+    std::uint32_t rejected_cost_below_four{0};
+    std::uint32_t rejected_empty_trait{0};
+    std::uint32_t rejected_duplicate_direction{0};
+    std::uint32_t rejected_direction_limit{0};
+    std::uint32_t rejected_empty_plan{0};
+    std::uint32_t rejected_anchor_not_in_plan{0};
+    std::uint32_t candidates_generated{0};
+    std::string no_candidate_reason{"not_evaluated"};
+};
+
 struct StrategicSharedContext {
     std::uint32_t schema_version{1};
     std::int32_t player_id{-1};
@@ -140,7 +152,7 @@ struct StrategicSharedContext {
     std::string current_composition_focus;
     std::vector<std::string> current_core_traits;
     std::vector<StrategicUnitCandidate> owned_units;
-    std::vector<StrategicAnchorCandidate> anchor_candidates;
+    std::vector<StrategicAnchorCandidate> anchor_candidates;\n    StrategicCandidateGenerationDiagnostics candidate_generation;
     bool composition_locked{false};
     bool alive{true};
     // Candidate actions are diagnostic estimates assembled from native state.
