@@ -322,6 +322,17 @@ if(BUILD_TESTING)
         COMMAND test_composition_evaluation
     )
 
+    add_executable(
+        test_unit_priority_planner
+        tests/test_unit_priority_planner.cpp
+    )
+    configure_tft_module(test_unit_priority_planner)
+    enable_tft_test_assertions(test_unit_priority_planner)
+    add_test(
+        NAME unit_priority_planner
+        COMMAND test_unit_priority_planner
+    )
+
     add_executable(test_combat_engine
         tests/test_combat_engine.cpp
         src/combat/CombatEngine.cpp
