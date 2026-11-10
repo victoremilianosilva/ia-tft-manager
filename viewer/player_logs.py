@@ -330,6 +330,12 @@ class PlayerJsonLogWriter:
 
     def _player_snapshot(self, audit: dict, public: dict) -> dict:
         audit, public = audit or {}, public or {}
+        # Native get_audit_snapshot() flattens StrategyInfo fields onto each
+        # audit-player record. Older adapters wrapped them in strategy_info.
+        # Normalize both contracts here so the persisted shadow snapshot is complete.
+        strategy_info = audit.get("strategy_info")
+        if not isinstance(strategy_info, dict):
+            strategy_info = audit
         return {
             "player_id": int(public.get("player_id", audit.get("player_id", -1))),
             "hp": public.get("hp"), "gold": public.get("gold", audit.get("gold")),
@@ -360,100 +366,100 @@ class PlayerJsonLogWriter:
                 int(audit.get("round_gold", 0) or 0)
                 + int(audit.get("round_win_gold", 0) or 0)
             ),
-            "strategy_name": (audit.get("strategy_info") or {}).get("strategy_name", "ECON"),
-            "strategy_id": (audit.get("strategy_info") or {}).get("strategy", 0),
-            "comp_direction": (audit.get("strategy_info") or {}).get("composition_direction", ""),
-            "comp_focus": (audit.get("strategy_info") or {}).get("composition_focus", ""),
-            "composition_locked": bool((audit.get("strategy_info") or {}).get("composition_locked", False)),
-            "composition_strength": float((audit.get("strategy_info") or {}).get("composition_strength", 0.0) or 0.0),
-            "composition_candidate_direction": (audit.get("strategy_info") or {}).get("composition_candidate_direction", ""),
-            "composition_candidate_strength": float((audit.get("strategy_info") or {}).get("composition_candidate_strength", 0.0) or 0.0),
-            "composition_candidate_streak": int((audit.get("strategy_info") or {}).get("composition_candidate_streak", 0) or 0),
-            "previous_composition_direction": (audit.get("strategy_info") or {}).get("previous_composition_direction", ""),
-            "previous_composition_strength": float((audit.get("strategy_info") or {}).get("previous_composition_strength", 0.0) or 0.0),
-            "composition_direction_change_was_locked": bool((audit.get("strategy_info") or {}).get("composition_direction_change_was_locked", False)),
-            "composition_direction_change_round": int((audit.get("strategy_info") or {}).get("composition_direction_change_round", 0) or 0),
-            "composition_direction_change_focus_weight": float((audit.get("strategy_info") or {}).get("composition_direction_change_focus_weight", 0.0) or 0.0),
-            "composition_direction_change_reason": (audit.get("strategy_info") or {}).get("composition_direction_change_reason", ""),
-            "composition_direction_change_count": int((audit.get("strategy_info") or {}).get("composition_direction_change_count", 0) or 0),
-            "composition_focus_weights": dict((audit.get("strategy_info") or {}).get("composition_focus_weights", {}) or {}),
-            "strategy_confidence": (audit.get("strategy_info") or {}).get("confidence", 0.0),
-            "strategy_reason": (audit.get("strategy_info") or {}).get("reason", ""),
+            "strategy_name": strategy_info.get("strategy_name", "ECON"),
+            "strategy_id": strategy_info.get("strategy", 0),
+            "comp_direction": strategy_info.get("composition_direction", ""),
+            "comp_focus": strategy_info.get("composition_focus", ""),
+            "composition_locked": bool(strategy_info.get("composition_locked", False)),
+            "composition_strength": float(strategy_info.get("composition_strength", 0.0) or 0.0),
+            "composition_candidate_direction": strategy_info.get("composition_candidate_direction", ""),
+            "composition_candidate_strength": float(strategy_info.get("composition_candidate_strength", 0.0) or 0.0),
+            "composition_candidate_streak": int(strategy_info.get("composition_candidate_streak", 0) or 0),
+            "previous_composition_direction": strategy_info.get("previous_composition_direction", ""),
+            "previous_composition_strength": float(strategy_info.get("previous_composition_strength", 0.0) or 0.0),
+            "composition_direction_change_was_locked": bool(strategy_info.get("composition_direction_change_was_locked", False)),
+            "composition_direction_change_round": int(strategy_info.get("composition_direction_change_round", 0) or 0),
+            "composition_direction_change_focus_weight": float(strategy_info.get("composition_direction_change_focus_weight", 0.0) or 0.0),
+            "composition_direction_change_reason": strategy_info.get("composition_direction_change_reason", ""),
+            "composition_direction_change_count": int(strategy_info.get("composition_direction_change_count", 0) or 0),
+            "composition_focus_weights": dict(strategy_info.get("composition_focus_weights", {}) or {}),
+            "strategy_confidence": strategy_info.get("confidence", 0.0),
+            "strategy_reason": strategy_info.get("reason", ""),
             # Keep new shadow recommendations beside the state at decision time.
             # Older native bindings may not expose these fields; omit unavailable values.
             "shadow_planning": {
-                "strategic_decision_name": (audit.get("strategy_info") or {}).get("strategic_composition_decision_name"),
-                "strategic_target_direction": (audit.get("strategy_info") or {}).get("strategic_target_direction"),
-                "strategic_reason": (audit.get("strategy_info") or {}).get("strategic_reason"),
-                "strategic_anchor_champion_id": (audit.get("strategy_info") or {}).get("strategic_anchor_champion_id"),
-                "strategic_confidence": (audit.get("strategy_info") or {}).get("strategic_confidence"),
-                "strategic_transition_cost": (audit.get("strategy_info") or {}).get("strategic_transition_cost"),
-                "strategic_preserve_unit_ids": (audit.get("strategy_info") or {}).get("strategic_preserve_unit_ids"),
-                "strategic_replaceable_unit_ids": (audit.get("strategy_info") or {}).get("strategic_replaceable_unit_ids"),
-                "strategic_candidate_diagnostics": (audit.get("strategy_info") or {}).get("strategic_candidate_diagnostics"),
-                "decision_path_reason": (audit.get("strategy_info") or {}).get("strategic_decision_path_reason"),
-                "current_direction_score": (audit.get("strategy_info") or {}).get("strategic_current_direction_score"),
-                "best_anchor_score": (audit.get("strategy_info") or {}).get("strategic_best_anchor_score"),
-                "alternative_advantage": (audit.get("strategy_info") or {}).get("strategic_alternative_advantage"),
-                "minimum_adapt_advantage": (audit.get("strategy_info") or {}).get("strategic_minimum_adapt_advantage"),
-                "required_pivot_advantage": (audit.get("strategy_info") or {}).get("strategic_required_pivot_advantage"),
-                "anchor_confidence": (audit.get("strategy_info") or {}).get("strategic_anchor_confidence"),
-                "current_direction_confidence": (audit.get("strategy_info") or {}).get("strategic_current_direction_confidence"),
-                "current_direction_viable": (audit.get("strategy_info") or {}).get("strategic_current_direction_viable"),
-                "has_anchor_candidate": (audit.get("strategy_info") or {}).get("strategic_has_anchor_candidate"),
-                "candidate_generation_reason": (audit.get("strategy_info") or {}).get("strategic_candidate_generation_reason"),
-                "anchors_considered": (audit.get("strategy_info") or {}).get("strategic_anchors_considered"),
-                "rejected_cost_below_four": (audit.get("strategy_info") or {}).get("strategic_rejected_cost_below_four"),
-                "rejected_missing_champion_definition": (audit.get("strategy_info") or {}).get("strategic_rejected_missing_champion_definition"),
-                "rejected_empty_trait": (audit.get("strategy_info") or {}).get("strategic_rejected_empty_trait"),
-                "rejected_duplicate_direction": (audit.get("strategy_info") or {}).get("strategic_rejected_duplicate_direction"),
-                "rejected_direction_limit": (audit.get("strategy_info") or {}).get("strategic_rejected_direction_limit"),
-                "rejected_empty_plan": (audit.get("strategy_info") or {}).get("strategic_rejected_empty_plan"),
-                "rejected_anchor_not_in_plan": (audit.get("strategy_info") or {}).get("strategic_rejected_anchor_not_in_plan"),
-                "candidates_generated": (audit.get("strategy_info") or {}).get("strategic_candidates_generated"),
-                "strategic_shadow_only": (audit.get("strategy_info") or {}).get("strategic_shadow_only"),
-                "economic_posture_name": (audit.get("strategy_info") or {}).get("economic_posture_name"),
-                "economic_posture_reason": (audit.get("strategy_info") or {}).get("economic_posture_reason"),
-                "economic_posture_confidence": (audit.get("strategy_info") or {}).get("economic_posture_confidence"),
-                "economic_survival_pressure": (audit.get("strategy_info") or {}).get("economic_survival_pressure"),
-                "economic_board_pressure": (audit.get("strategy_info") or {}).get("economic_board_pressure"),
-                "economic_resource_pressure": (audit.get("strategy_info") or {}).get("economic_resource_pressure"),
-                "economic_shadow_only": (audit.get("strategy_info") or {}).get("economic_shadow_only"),
-                "action_recommendation_name": (audit.get("strategy_info") or {}).get("strategic_action_recommendation_name"),
-                "action_reason": (audit.get("strategy_info") or {}).get("strategic_action_reason"),
-                "action_expected_board_delta": (audit.get("strategy_info") or {}).get("strategic_action_expected_board_delta"),
-                "action_expected_hp_preservation": (audit.get("strategy_info") or {}).get("strategic_action_expected_hp_preservation"),
-                "action_expected_economy_cost": (audit.get("strategy_info") or {}).get("strategic_action_expected_economy_cost"),
-                "action_expected_direct_gold_cost": (audit.get("strategy_info") or {}).get("strategic_action_expected_direct_gold_cost"),
-                "action_expected_lost_interest_cost": (audit.get("strategy_info") or {}).get("strategic_action_expected_lost_interest_cost"),
-                "action_expected_opportunity_cost": (audit.get("strategy_info") or {}).get("strategic_action_expected_opportunity_cost"),
-                "action_recommended_champion_id": (audit.get("strategy_info") or {}).get("strategic_action_recommended_champion_id"),
-                "action_candidate_scores": (audit.get("strategy_info") or {}).get("strategic_action_candidate_scores"),
-                "action_expected_streak_value": (audit.get("strategy_info") or {}).get("strategic_action_expected_streak_value"),
-                "action_confidence": (audit.get("strategy_info") or {}).get("strategic_action_confidence"),
+                "strategic_decision_name": strategy_info.get("strategic_composition_decision_name"),
+                "strategic_target_direction": strategy_info.get("strategic_target_direction"),
+                "strategic_reason": strategy_info.get("strategic_reason"),
+                "strategic_anchor_champion_id": strategy_info.get("strategic_anchor_champion_id"),
+                "strategic_confidence": strategy_info.get("strategic_confidence"),
+                "strategic_transition_cost": strategy_info.get("strategic_transition_cost"),
+                "strategic_preserve_unit_ids": strategy_info.get("strategic_preserve_unit_ids"),
+                "strategic_replaceable_unit_ids": strategy_info.get("strategic_replaceable_unit_ids"),
+                "strategic_candidate_diagnostics": strategy_info.get("strategic_candidate_diagnostics"),
+                "decision_path_reason": strategy_info.get("strategic_decision_path_reason"),
+                "current_direction_score": strategy_info.get("strategic_current_direction_score"),
+                "best_anchor_score": strategy_info.get("strategic_best_anchor_score"),
+                "alternative_advantage": strategy_info.get("strategic_alternative_advantage"),
+                "minimum_adapt_advantage": strategy_info.get("strategic_minimum_adapt_advantage"),
+                "required_pivot_advantage": strategy_info.get("strategic_required_pivot_advantage"),
+                "anchor_confidence": strategy_info.get("strategic_anchor_confidence"),
+                "current_direction_confidence": strategy_info.get("strategic_current_direction_confidence"),
+                "current_direction_viable": strategy_info.get("strategic_current_direction_viable"),
+                "has_anchor_candidate": strategy_info.get("strategic_has_anchor_candidate"),
+                "candidate_generation_reason": strategy_info.get("strategic_candidate_generation_reason"),
+                "anchors_considered": strategy_info.get("strategic_anchors_considered"),
+                "rejected_cost_below_four": strategy_info.get("strategic_rejected_cost_below_four"),
+                "rejected_missing_champion_definition": strategy_info.get("strategic_rejected_missing_champion_definition"),
+                "rejected_empty_trait": strategy_info.get("strategic_rejected_empty_trait"),
+                "rejected_duplicate_direction": strategy_info.get("strategic_rejected_duplicate_direction"),
+                "rejected_direction_limit": strategy_info.get("strategic_rejected_direction_limit"),
+                "rejected_empty_plan": strategy_info.get("strategic_rejected_empty_plan"),
+                "rejected_anchor_not_in_plan": strategy_info.get("strategic_rejected_anchor_not_in_plan"),
+                "candidates_generated": strategy_info.get("strategic_candidates_generated"),
+                "strategic_shadow_only": strategy_info.get("strategic_shadow_only"),
+                "economic_posture_name": strategy_info.get("economic_posture_name"),
+                "economic_posture_reason": strategy_info.get("economic_posture_reason"),
+                "economic_posture_confidence": strategy_info.get("economic_posture_confidence"),
+                "economic_survival_pressure": strategy_info.get("economic_survival_pressure"),
+                "economic_board_pressure": strategy_info.get("economic_board_pressure"),
+                "economic_resource_pressure": strategy_info.get("economic_resource_pressure"),
+                "economic_shadow_only": strategy_info.get("economic_shadow_only"),
+                "action_recommendation_name": strategy_info.get("strategic_action_recommendation_name"),
+                "action_reason": strategy_info.get("strategic_action_reason"),
+                "action_expected_board_delta": strategy_info.get("strategic_action_expected_board_delta"),
+                "action_expected_hp_preservation": strategy_info.get("strategic_action_expected_hp_preservation"),
+                "action_expected_economy_cost": strategy_info.get("strategic_action_expected_economy_cost"),
+                "action_expected_direct_gold_cost": strategy_info.get("strategic_action_expected_direct_gold_cost"),
+                "action_expected_lost_interest_cost": strategy_info.get("strategic_action_expected_lost_interest_cost"),
+                "action_expected_opportunity_cost": strategy_info.get("strategic_action_expected_opportunity_cost"),
+                "action_recommended_champion_id": strategy_info.get("strategic_action_recommended_champion_id"),
+                "action_candidate_scores": strategy_info.get("strategic_action_candidate_scores"),
+                "action_expected_streak_value": strategy_info.get("strategic_action_expected_streak_value"),
+                "action_confidence": strategy_info.get("strategic_action_confidence"),
             },
-            "core_units": list((audit.get("strategy_info") or {}).get("core_units", []) or []),
-            "core_traits": list((audit.get("strategy_info") or {}).get("core_traits", []) or []),
+            "core_units": list(strategy_info.get("core_units", []) or []),
+            "core_traits": list(strategy_info.get("core_traits", []) or []),
             # Planner output is kept separate from current board/bench state:
             # planned_units are targets, not units the policy already owns.
-            "planned_units": list((audit.get("strategy_info") or {}).get("planned_units", []) or []),
-            "planned_unit_ids": list((audit.get("strategy_info") or {}).get("planned_unit_ids", []) or []),
-            "planned_traits": list((audit.get("strategy_info") or {}).get("planned_traits", []) or []),
+            "planned_units": list(strategy_info.get("planned_units", []) or []),
+            "planned_unit_ids": list(strategy_info.get("planned_unit_ids", []) or []),
+            "planned_traits": list(strategy_info.get("planned_traits", []) or []),
             "planned_main_carry_id": int(
-                (audit.get("strategy_info") or {}).get("planned_main_carry_id", -1)
-                if (audit.get("strategy_info") or {}).get("planned_main_carry_id") is not None else -1
+                strategy_info.get("planned_main_carry_id", -1)
+                if strategy_info.get("planned_main_carry_id") is not None else -1
             ),
-            "planned_composition_score": float((audit.get("strategy_info") or {}).get("planned_composition_score", 0.0) or 0.0),
-            "planned_acquisition_notes": list((audit.get("strategy_info") or {}).get("planned_acquisition_notes", []) or []),
+            "planned_composition_score": float(strategy_info.get("planned_composition_score", 0.0) or 0.0),
+            "planned_acquisition_notes": list(strategy_info.get("planned_acquisition_notes", []) or []),
             "composition_source": (
                 "OP.GG" if any(
                     str(note).startswith("OPGG_META_CANDIDATE:")
-                    for note in ((audit.get("strategy_info") or {}).get("planned_acquisition_notes", []) or [])
+                    for note in (strategy_info.get("planned_acquisition_notes", []) or [])
                 ) else "NATIVE"
             ),
             "composition_source_name": next((
                 str(note).split("OPGG_META_CANDIDATE:", 1)[1].split(" (score=", 1)[0].strip()
-                for note in ((audit.get("strategy_info") or {}).get("planned_acquisition_notes", []) or [])
+                for note in (strategy_info.get("planned_acquisition_notes", []) or [])
                 if str(note).startswith("OPGG_META_CANDIDATE:")
             ), ""),
             "planner_target_slots": (
@@ -461,12 +467,12 @@ class PlayerJsonLogWriter:
                 else min(10, int(public.get("level", audit.get("level", 1)) or 1))
             ),
             "planner_mode": (
-                "WAITING_FOR_DIRECTION" if not ((audit.get("strategy_info") or {}).get("planned_units", []) or [])
+                "WAITING_FOR_DIRECTION" if not (strategy_info.get("planned_units", []) or [])
                 else "LEVEL_8_CORE" if int(public.get("level", audit.get("level", 1)) or 1) <= 8
                 else f"DYNAMIC_LEVEL_{min(10, int(public.get('level', audit.get('level', 1)) or 1))}"
             ),
-            "active_traits": dict((audit.get("strategy_info") or {}).get("active_traits", {}) or {}),
-            "strategy_scores": dict((audit.get("strategy_info") or {}).get("strategy_scores", {}) or {}),
+            "active_traits": dict(strategy_info.get("active_traits", {}) or {}),
+            "strategy_scores": dict(strategy_info.get("strategy_scores", {}) or {}),
             "board": [self._unit_info(u, i, "board") for i, u in enumerate(audit.get("board", []))],
             "bench": [self._unit_info(u, i, "bench") for i, u in enumerate(audit.get("bench", []))],
             "shop": [self._unit_info(u, i, "shop") for i, u in enumerate(audit.get("shop", []))],
