@@ -19,7 +19,7 @@ CompositionCandidate comp(std::string id, std::initializer_list<int> ids) {
     return c;
 }
 CandidateEvidence evidence(std::string id, double board, double items = 0.7,
-    double availability = 0.8, double economy = 0.8, double cost = 0.0) {
+    double availability = 0.8, double economy = 0.8, double cost = -1.0) {
     CandidateEvidence e;
     e.composition_id = std::move(id);
     e.board_fit = board;

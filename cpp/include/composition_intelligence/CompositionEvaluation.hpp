@@ -45,7 +45,7 @@ struct CandidateEvidence {
     double item_fit{0.5};
     double availability{0.5};
     double economy_feasibility{0.5};
-    double estimated_gold_cost{0.0};
+    double estimated_gold_cost{-1.0};
     double evidence_confidence{0.5};
     CompositionEvidenceSource source{CompositionEvidenceSource::Heuristic};
 };
