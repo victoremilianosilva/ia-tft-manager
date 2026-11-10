@@ -3259,12 +3259,24 @@ struct TFTEngine::Impl {
                                              bool on_board,
                                              bool shop_available,
                                              double item_fit) {
-                if (definition.cost < 4) return;
+                ++strategic_context.candidate_generation.anchors_considered;
+                if (definition.cost < 4) {
+                    ++strategic_context.candidate_generation.rejected_cost_below_four;
+                    return;
+                }
                 for (const auto& trait : definition.traits) {
-                    if (evaluated_anchor_directions.size() >= 2) break;
-                    if (trait.empty() ||
-                        !evaluated_anchor_directions.insert(trait).second)
+                    if (evaluated_anchor_directions.size() >= 2) {
+                        ++strategic_context.candidate_generation.rejected_direction_limit;
+                        break;
+                    }
+                    if (trait.empty()) {
+                        ++strategic_context.candidate_generation.rejected_empty_trait;
                         continue;
+                    }
+                    if (!evaluated_anchor_directions.insert(trait).second) {
+                        ++strategic_context.candidate_generation.rejected_duplicate_direction;
+                        continue;
+                    }
                     const auto alternative = strategy::CompositionPlanner::build(
                         catalog->all(), trait_milestones, trait, strategic_focus,
                         strategic_owned_copies,
@@ -3272,11 +3284,17 @@ struct TFTEngine::Impl {
                             economy.level),
                         economy.level, strategic_available, strategic_offered,
                         &strategic_live_context, definition.internal_id);
-                    if (alternative.unit_ids.empty() ||
-                        std::find(alternative.unit_ids.begin(),
+                    if (alternative.unit_ids.empty()) {
+                        ++strategic_context.candidate_generation.rejected_empty_plan;
+                        continue;
+                    }
+                    if (std::find(alternative.unit_ids.begin(),
                                   alternative.unit_ids.end(),
                                   definition.internal_id) ==
-                            alternative.unit_ids.end()) continue;
+                            alternative.unit_ids.end()) {
+                        ++strategic_context.candidate_generation.rejected_anchor_not_in_plan;
+                        continue;
+                    }
 
                     std::unordered_set<std::int32_t> current_ids(
                         info.planned_unit_ids.begin(), info.planned_unit_ids.end());
@@ -3337,6 +3355,7 @@ struct TFTEngine::Impl {
                     anchor.shop_available = shop_available;
                     strategic_context.anchor_candidates.push_back(
                         std::move(anchor));
+                    ++strategic_context.candidate_generation.candidates_generated;
                 }
             };
 
@@ -3376,6 +3395,27 @@ struct TFTEngine::Impl {
                                    0.0, 1.0));
             }
 
+            auto& generation = strategic_context.candidate_generation;
+            if (generation.candidates_generated > 0) {
+                generation.no_candidate_reason = "candidate_generated";
+            } else if (generation.anchors_considered == 0) {
+                generation.no_candidate_reason = "no_high_cost_anchor_units_seen";
+            } else if (generation.rejected_empty_plan > 0) {
+                generation.no_candidate_reason = "composition_planner_returned_empty_plan";
+            } else if (generation.rejected_anchor_not_in_plan > 0) {
+                generation.no_candidate_reason = "anchor_not_in_generated_plan";
+            } else if (generation.rejected_cost_below_four > 0 &&
+                       generation.rejected_cost_below_four == generation.anchors_considered) {
+                generation.no_candidate_reason = "no_cost_four_or_five_anchor";
+            } else if (generation.rejected_direction_limit > 0) {
+                generation.no_candidate_reason = "two_direction_evaluation_limit_reached";
+            } else if (generation.rejected_empty_trait > 0 ||
+                       generation.rejected_duplicate_direction > 0) {
+                generation.no_candidate_reason = "no_new_eligible_anchor_trait";
+            } else {
+                generation.no_candidate_reason = "no_candidate_passed_generation_filters";
+            }
+
             strategy::StrategicCommitment strategic_commitment;
             strategic_commitment.composition_direction =
                 info.strategic_committed_direction.empty()
@@ -3395,6 +3435,42 @@ struct TFTEngine::Impl {
             static const strategy::StrategicPlanner strategic_planner{};
             const auto shadow_decision = strategic_planner.evaluate(
                 strategic_context, strategic_commitment);
+            info.strategic_decision_path_reason =
+                shadow_decision.decision_path_reason;
+            info.strategic_current_direction_score =
+                shadow_decision.current_direction_score;
+            info.strategic_best_anchor_score = shadow_decision.best_anchor_score;
+            info.strategic_alternative_advantage =
+                shadow_decision.alternative_advantage;
+            info.strategic_minimum_adapt_advantage =
+                shadow_decision.minimum_adapt_advantage;
+            info.strategic_required_pivot_advantage =
+                shadow_decision.required_pivot_advantage;
+            info.strategic_anchor_confidence = shadow_decision.anchor_confidence;
+            info.strategic_current_direction_confidence =
+                shadow_decision.current_direction_confidence;
+            info.strategic_current_direction_viable =
+                shadow_decision.current_direction_viable;
+            info.strategic_has_anchor_candidate =
+                shadow_decision.has_anchor_candidate;
+            info.strategic_candidate_generation_reason =
+                shadow_decision.candidate_generation.no_candidate_reason;
+            info.strategic_anchors_considered =
+                shadow_decision.candidate_generation.anchors_considered;
+            info.strategic_rejected_cost_below_four =
+                shadow_decision.candidate_generation.rejected_cost_below_four;
+            info.strategic_rejected_empty_trait =
+                shadow_decision.candidate_generation.rejected_empty_trait;
+            info.strategic_rejected_duplicate_direction =
+                shadow_decision.candidate_generation.rejected_duplicate_direction;
+            info.strategic_rejected_direction_limit =
+                shadow_decision.candidate_generation.rejected_direction_limit;
+            info.strategic_rejected_empty_plan =
+                shadow_decision.candidate_generation.rejected_empty_plan;
+            info.strategic_rejected_anchor_not_in_plan =
+                shadow_decision.candidate_generation.rejected_anchor_not_in_plan;
+            info.strategic_candidates_generated =
+                shadow_decision.candidate_generation.candidates_generated;
 
             // Economic posture and marginal action are independent shadow
             // evaluations. Neither is allowed to alter the policy action path.
