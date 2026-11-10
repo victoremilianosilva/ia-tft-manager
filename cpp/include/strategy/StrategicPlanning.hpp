@@ -152,7 +152,8 @@ struct StrategicSharedContext {
     std::string current_composition_focus;
     std::vector<std::string> current_core_traits;
     std::vector<StrategicUnitCandidate> owned_units;
-    std::vector<StrategicAnchorCandidate> anchor_candidates;\n    StrategicCandidateGenerationDiagnostics candidate_generation;
+    std::vector<StrategicAnchorCandidate> anchor_candidates;
+    StrategicCandidateGenerationDiagnostics candidate_generation;
     bool composition_locked{false};
     bool alive{true};
     // Candidate actions are diagnostic estimates assembled from native state.
