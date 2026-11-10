@@ -778,7 +778,8 @@ def audit_strategic_planner_diagnostics(entries: list[dict], player: str, report
         generation_reason = str(shadow.get("candidate_generation_reason") or "unavailable")
         generation_reasons[generation_reason] += 1
         for key in (
-            "anchors_considered", "rejected_cost_below_four", "rejected_empty_trait",
+            "anchors_considered", "rejected_cost_below_four",
+            "rejected_missing_champion_definition", "rejected_empty_trait",
             "rejected_duplicate_direction", "rejected_direction_limit",
             "rejected_empty_plan", "rejected_anchor_not_in_plan", "candidates_generated",
         ):
