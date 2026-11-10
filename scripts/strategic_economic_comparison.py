@@ -364,16 +364,23 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
         str(shadow.get("candidate_generation_reason") or "unavailable")
         for _, shadow in insufficient_rows
     )
+    current_viability = Counter(
+        "viable" if shadow.get("current_direction_viable") is True
+        else "not_viable" if shadow.get("current_direction_viable") is False
+        else "unavailable"
+        for _, shadow in insufficient_rows
+    )
     strategy += [
         "", "### Auditoria de INSUFFICIENT_EVIDENCE", "",
-        "| Jogador | Round | Step | Motivo específico | Geração de candidatos | Direção atual | Score atual | Score âncora | Vantagem | Mín. ADAPT | Limite PIVOT | Conf. âncora | Conf. direção atual | Âncora disponível | Filtros (considerados/gerados/catálogo ausente/planos vazios/âncora ausente) |",
-        "|---|---|---:|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|",
+        "| Jogador | Round | Step | Motivo específico | Geração de candidatos | Direção atual | Viável atual | Score atual | Score âncora | Vantagem | Mín. ADAPT | Limite PIVOT | Conf. âncora | Conf. direção atual | Âncora disponível | Filtros (considerados/gerados/catálogo ausente/planos vazios/âncora ausente) |",
+        "|---|---|---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|",
     ]
     for d, shadow in insufficient_rows:
         strategy.append("| " + " | ".join(_cell(x) for x in (
             d.get("player"), d.get("round"), d.get("step"),
             shadow.get("decision_path_reason"), shadow.get("candidate_generation_reason"),
             (d.get("state_before") or {}).get("comp_direction"),
+            shadow.get("current_direction_viable"),
             shadow.get("current_direction_score"), shadow.get("best_anchor_score"),
             shadow.get("alternative_advantage"), shadow.get("minimum_adapt_advantage"),
             shadow.get("required_pivot_advantage"), shadow.get("anchor_confidence"),
@@ -383,10 +390,11 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
             f"{shadow.get('rejected_empty_plan')} / {shadow.get('rejected_anchor_not_in_plan')}",
         )) + " |")
     if not insufficient_rows:
-        strategy.append("| — | — | — | Dados INSUFFICIENT_EVIDENCE indisponíveis | — | — | — | — | — | — | — | — | — | — | — |")
+        strategy.append("| — | — | — | Dados INSUFFICIENT_EVIDENCE indisponíveis | — | — | — | — | — | — | — | — | — | — | — | — |")
     strategy += [
         "", "**Motivos agregados:** " + _cell(dict(insufficient_reasons)),
         "**Motivos de geração agregados:** " + _cell(dict(generation_reasons)),
+        "**Viabilidade da direção atual:** " + _cell(dict(current_viability)),
         "",
         "Confiança da âncora e confiança da direção atual são derivadas de score e não são probabilidades calibradas. "
         "Snapshots por ação podem repetir a mesma revisão; não devem ser contados como revisões independentes.",
