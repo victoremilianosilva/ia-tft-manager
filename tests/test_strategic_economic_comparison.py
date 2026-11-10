@@ -18,9 +18,16 @@ def _decision(action="BUY", recommendation="BUY_UNIT", with_shadow=True):
         "action_expected_lost_interest_cost": 0.5,
         "action_expected_opportunity_cost": 0.25,
         "action_candidate_scores": [
-            {"action": "BUY_UNIT", "champion_id": 90, "direct_gold_cost": 3.0,
-             "lost_interest_cost": 0.5, "opportunity_cost": 0.35,
-             "board_component": 0.5, "total_score": 0.8, "selected": True}
+            {"action": "BUY_UNIT", "champion_id": 90, "available": True,
+             "direct_gold_cost": 3.0, "lost_interest_cost": 0.5, "opportunity_cost": 0.35,
+             "board_component": 0.5, "survival_component": 0.1,
+             "streak_component": 0.05, "composition_component": 0.1,
+             "upgrade_component": 0.1, "posture_component": 0.05,
+             "direct_cost_component": -0.1, "lost_interest_component": -0.05,
+             "opportunity_cost_component": -0.02, "total_score": 0.8, "selected": True},
+            {"action": "BUY_UNIT", "champion_id": 91, "available": False,
+             "direct_gold_cost": 4.0, "lost_interest_cost": 1.0, "opportunity_cost": 0.5,
+             "board_component": 0.2, "total_score": 0.1, "selected": False}
         ],
         "action_reason": "high marginal value",
         "action_expected_board_delta": 2.5,
