@@ -366,7 +366,7 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
     )
     strategy += [
         "", "### Auditoria de INSUFFICIENT_EVIDENCE", "",
-        "| Jogador | Round | Step | Motivo específico | Geração de candidatos | Direção atual | Score atual | Score âncora | Vantagem | Mín. ADAPT | Limite PIVOT | Conf. âncora | Conf. direção atual | Âncora disponível | Filtros (considerados/gerados/planos vazios/âncora ausente) |",
+        "| Jogador | Round | Step | Motivo específico | Geração de candidatos | Direção atual | Score atual | Score âncora | Vantagem | Mín. ADAPT | Limite PIVOT | Conf. âncora | Conf. direção atual | Âncora disponível | Filtros (considerados/gerados/catálogo ausente/planos vazios/âncora ausente) |",
         "|---|---|---:|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|",
     ]
     for d, shadow in insufficient_rows:
@@ -379,6 +379,7 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
             shadow.get("required_pivot_advantage"), shadow.get("anchor_confidence"),
             shadow.get("current_direction_confidence"), shadow.get("has_anchor_candidate"),
             f"{shadow.get('anchors_considered')} / {shadow.get('candidates_generated')} / "
+            f"{shadow.get('rejected_missing_champion_definition')} / "
             f"{shadow.get('rejected_empty_plan')} / {shadow.get('rejected_anchor_not_in_plan')}",
         )) + " |")
     if not insufficient_rows:
