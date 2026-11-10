@@ -42,10 +42,11 @@ public:
             config_.minimum_absolute_advantage,
             std::abs(context.current_direction_score) *
                 config_.minimum_relative_advantage);
-        out.current_direction_confidence = std::clamp(
-            0.5 + context.current_direction_score /
-                (2.0 * (1.0 + std::abs(context.current_direction_score))),
-            0.5, 0.95);
+        out.current_direction_confidence =
+            context.current_composition_direction.empty() ? 0.0 : std::clamp(
+                0.5 + context.current_direction_score /
+                    (2.0 * (1.0 + std::abs(context.current_direction_score))),
+                0.5, 0.95);
 
         if (!context.alive) {
             out.decision_path_reason = "player_not_alive";
@@ -92,6 +93,7 @@ public:
                 out.target_composition_direction.clear();
                 commitment.selection_reason = out.reason;
                 clear_candidate(commitment);
+                out.decision_path_reason = "current_direction_unviable_without_alternative";
             } else {
                 clear_candidate(commitment);
                 out.decision_path_reason = context.anchor_candidates.empty()
