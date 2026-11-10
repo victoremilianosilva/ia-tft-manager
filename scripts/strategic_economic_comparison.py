@@ -266,7 +266,13 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
     available = [(d, s) for d, s in shadow_rows if s]
     strategy_rows = [(d, s) for d, s in available if s.get("strategic_decision_name") is not None]
     economy_rows = [(d, s) for d, s in available if s.get("economic_posture_name") is not None]
-    action_rows = [\n        (d, s) for d, s in available\n        if any(s.get(key) is not None for key in (\n            "action_recommendation_name", "action_candidate_scores",\n            "action_reason", "action_confidence",\n        ))\n    ]
+    action_rows = [
+        (d, s) for d, s in available
+        if any(s.get(key) is not None for key in (
+            "action_recommendation_name", "action_candidate_scores",
+            "action_reason", "action_confidence",
+        ))
+    ]
 
     actual = Counter()
     recommended = Counter()
@@ -466,7 +472,33 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
                 candidate.get("opportunity_cost_component"), candidate.get("total_score"),
                 candidate.get("selected"),
             )) + " |")
-    selected_candidate_checks = []\n    for d, shadow in action_rows:\n        candidates = shadow.get("action_candidate_scores") or []\n        selected = [candidate for candidate in candidates if candidate.get("selected") is True]\n        recommended_id = shadow.get("action_recommended_champion_id")\n        selected_ids = [candidate.get("champion_id") for candidate in selected]\n        selected_candidate_checks.append({\n            "player": d.get("player"), "round": d.get("round"), "step": d.get("step"),\n            "selected_count": len(selected),\n            "recommended_champion_id": recommended_id,\n            "selected_champion_ids": selected_ids,\n            "champion_matches": (\n                selected_ids == [recommended_id] if recommended_id is not None\n                else len(selected) <= 1\n            ),\n        })\n    actions += ["", "### Integridade da seleção", ""]\n    actions += ["| Jogador | Round | Step | Candidatos | Selecionados | Campeão recomendado | Campeão selecionado | Consistente |",\n                "|---|---|---:|---:|---:|---:|---|---|"]\n    for check, (d, shadow) in zip(selected_candidate_checks, action_rows):\n        actions.append("| " + " | ".join(_cell(value) for value in (\n            check["player"], check["round"], check["step"],\n            len(shadow.get("action_candidate_scores") or []), check["selected_count"],\n            check["recommended_champion_id"], check["selected_champion_ids"],\n            check["champion_matches"],\n        )) + " |")\n    actions += ["", "Board delta, HP e streak são proxies heurísticos, não previsões calibradas. Custo direto, juros perdidos e custo de oportunidade são exibidos separadamente. A integridade verifica a correspondência entre o candidato marcado como selecionado e o campeão recomendado; não recalcula nem altera o score nativo.", ""]
+    selected_candidate_checks = []
+    for d, shadow in action_rows:
+        candidates = shadow.get("action_candidate_scores") or []
+        selected = [candidate for candidate in candidates if candidate.get("selected") is True]
+        recommended_id = shadow.get("action_recommended_champion_id")
+        selected_ids = [candidate.get("champion_id") for candidate in selected]
+        selected_candidate_checks.append({
+            "player": d.get("player"), "round": d.get("round"), "step": d.get("step"),
+            "selected_count": len(selected),
+            "recommended_champion_id": recommended_id,
+            "selected_champion_ids": selected_ids,
+            "champion_matches": (
+                selected_ids == [recommended_id] if recommended_id is not None
+                else len(selected) <= 1
+            ),
+        })
+    actions += ["", "### Integridade da seleção", ""]
+    actions += ["| Jogador | Round | Step | Candidatos | Selecionados | Campeão recomendado | Campeão selecionado | Consistente |",
+                "|---|---|---:|---:|---:|---:|---|---|"]
+    for check, (d, shadow) in zip(selected_candidate_checks, action_rows):
+        actions.append("| " + " | ".join(_cell(value) for value in (
+            check["player"], check["round"], check["step"],
+            len(shadow.get("action_candidate_scores") or []), check["selected_count"],
+            check["recommended_champion_id"], check["selected_champion_ids"],
+            check["champion_matches"],
+        )) + " |")
+    actions += ["", "Board delta, HP e streak são proxies heurísticos, não previsões calibradas. Custo direto, juros perdidos e custo de oportunidade são exibidos separadamente. A integridade verifica a correspondência entre o candidato marcado como selecionado e o campeão recomendado; não recalcula nem altera o score nativo.", ""]
 
     divergence = header(
         "Divergências — PPO versus Action Evaluator",
