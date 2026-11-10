@@ -16,6 +16,17 @@ StrategicActionCandidate deploy_candidate(std::int32_t champion_id) {
     return candidate;
 }
 
+StrategicActionCandidate buy_candidate(std::int32_t champion_id) {
+    StrategicActionCandidate candidate;
+    candidate.kind = StrategicActionKind::BuyUnit;
+    candidate.champion_id = champion_id;
+    candidate.gold_cost = 3;
+    candidate.direct_gold_cost = 3.0;
+    candidate.expected_board_delta = 0.50;
+    candidate.available = true;
+    return candidate;
+}
+
 std::size_t selected_count(const ActionEvaluation& result) {
     std::size_t count = 0;
     for (const auto& candidate : result.candidate_scores)
@@ -37,6 +48,27 @@ void equivalent_candidates_select_one_occurrence() {
     const auto result = ActionEvaluator{}.evaluate(context, posture);
     assert(result.recommended_action == StrategicActionKind::DeployOrMove);
     assert(result.recommended_champion_id == 18);
+    assert(result.candidate_scores.size() == 2);
+    assert(selected_count(result) == 1);
+    assert(result.candidate_scores[0].selected);
+    assert(!result.candidate_scores[1].selected);
+}
+
+void equivalent_shop_offers_select_one_occurrence() {
+    StrategicSharedContext context;
+    context.alive = true;
+    context.gold = 50;
+    context.action_candidates = {
+        buy_candidate(39),
+        buy_candidate(39),
+    };
+
+    EconomicControlDecision posture;
+    posture.posture = EconomicPosture::StabilizeBoard;
+    const auto result = ActionEvaluator{}.evaluate(context, posture);
+
+    assert(result.recommended_action == StrategicActionKind::BuyUnit);
+    assert(result.recommended_champion_id == 39);
     assert(result.candidate_scores.size() == 2);
     assert(selected_count(result) == 1);
     assert(result.candidate_scores[0].selected);
@@ -108,10 +140,11 @@ void dead_player_skips_candidate_evaluation() {
 
 int main() {
     equivalent_candidates_select_one_occurrence();
+    equivalent_shop_offers_select_one_occurrence();
     tied_candidates_select_first_occurrence_only();
     no_candidates_means_no_selected_candidate();
     unavailable_candidates_are_not_selected();
     dead_player_skips_candidate_evaluation();
-    std::cout << "ActionEvaluator selection tests passed\\n";
+    std::cout << "ActionEvaluator selection tests passed\n";
     return 0;
 }
