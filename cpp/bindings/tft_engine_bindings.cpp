@@ -335,6 +335,7 @@ py::list strategies_to_list(
             item["strategic_candidate_generation_reason"] = "not_available";
             item["strategic_anchors_considered"] = 0;
             item["strategic_rejected_cost_below_four"] = 0;
+            item["strategic_rejected_missing_champion_definition"] = 0;
             item["strategic_rejected_empty_trait"] = 0;
             item["strategic_rejected_duplicate_direction"] = 0;
             item["strategic_rejected_direction_limit"] = 0;
@@ -469,6 +470,7 @@ py::list strategies_to_list(
             item["strategic_candidate_generation_reason"] = strategy.strategic_candidate_generation_reason;
             item["strategic_anchors_considered"] = strategy.strategic_anchors_considered;
             item["strategic_rejected_cost_below_four"] = strategy.strategic_rejected_cost_below_four;
+            item["strategic_rejected_missing_champion_definition"] = strategy.strategic_rejected_missing_champion_definition;
             item["strategic_rejected_empty_trait"] = strategy.strategic_rejected_empty_trait;
             item["strategic_rejected_duplicate_direction"] = strategy.strategic_rejected_duplicate_direction;
             item["strategic_rejected_direction_limit"] = strategy.strategic_rejected_direction_limit;
