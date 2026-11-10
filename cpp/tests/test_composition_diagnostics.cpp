@@ -18,7 +18,7 @@ int main() {
     auto first = recorder.capture(3, active, proposal, priorities, lineup, evidence, actions);
     assert(first.sequence == 1 && first.stale);
     auto json = first.to_json();
-    assert(json["classification"]["inferred"].size() == 4);
+    assert(json["classification"]["inferred"].size() == 5);
     assert(json["diagnostics"]["action_recommendation"]["shadow_only"] == false);
     std::ostringstream stream;
     first.write_jsonl(stream);
