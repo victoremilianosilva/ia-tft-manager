@@ -117,6 +117,7 @@ struct ActionCandidateScore {
 struct StrategicCandidateGenerationDiagnostics {
     std::uint32_t anchors_considered{0};
     std::uint32_t rejected_cost_below_four{0};
+    std::uint32_t rejected_missing_champion_definition{0};
     std::uint32_t rejected_empty_trait{0};
     std::uint32_t rejected_duplicate_direction{0};
     std::uint32_t rejected_direction_limit{0};
