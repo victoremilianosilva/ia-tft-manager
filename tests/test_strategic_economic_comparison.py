@@ -1,4 +1,5 @@
-from scripts.strategic_economic_comparison import OutcomeEvaluator, build_shadow_markdown_reports\nfrom viewer.player_logs import PlayerJsonLogWriter
+from scripts.strategic_economic_comparison import OutcomeEvaluator, build_shadow_markdown_reports
+from viewer.player_logs import PlayerJsonLogWriter
 
 
 def _decision(action="BUY", recommendation="BUY_UNIT", with_shadow=True):
