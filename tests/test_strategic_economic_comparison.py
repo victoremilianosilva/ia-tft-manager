@@ -258,9 +258,10 @@ def test_keep_unit_audit_separates_alignment_from_investment_proxies():
         "board": [
             {"occupied": True, "champion_id": "90", "name": "Core Mage", "star": 2,
              "traits": ["Invoker"], "items": [], "impact": 8.0},
+        ], "bench": [
             {"occupied": True, "champion_id": "91", "name": "Item Holder", "star": 1,
              "traits": ["Bruiser"], "items": ["item_a"], "impact": 4.0},
-        ], "bench": [],
+        ],
     })
     report = build_shadow_markdown_reports({"players_seen": ["1"], "decision_timeline": [decision]})
     strategy = report["audit_estrategia.md"]
