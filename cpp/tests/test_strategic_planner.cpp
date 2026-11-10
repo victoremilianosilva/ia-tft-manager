@@ -92,6 +92,17 @@ int main() {
     assert(decision.composition_decision == CompositionDecision::Keep);
     assert(decision.target_composition_direction == "Bruiser");
 
+    // A candidate above the ADAPT floor but below the absolute/relative
+    // pivot threshold must report the exact limiting threshold.
+    context = base_context();
+    commitment = {};
+    context.anchor_candidates.push_back(anchor(87, "Invoker", 4.3, 0.2, 2));
+    decision = planner.evaluate(context, commitment);
+    assert(decision.composition_decision == CompositionDecision::Adapt);
+    assert(decision.alternative_advantage >= decision.minimum_adapt_advantage);
+    assert(decision.alternative_advantage < decision.required_pivot_advantage);
+    assert(decision.decision_path_reason == "alternative_below_required_advantage");
+
     // A strong anchor cannot trigger a pivot on a single review while locked.
     context.anchor_candidates.clear();
     context.current_direction_score = 1.0;
