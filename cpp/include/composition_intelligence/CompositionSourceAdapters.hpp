@@ -125,7 +125,7 @@ public:
       c.units.push_back({selected.champion_id,adapter_detail::role(*it),selected.core,std::max(0,selected.priority)});
     }
     if(c.units.empty()){out.diagnostics.emplace_back("Native composition has no mapped units");return out;}
-    if(c.main_carry_id<0)c.main_carry_id=adapter_detail::main_carry(c.units,pool);
+    if(c.main_carry_id<0)c.main_carry_id=adapter_detail::main_carry(c.units);
     const auto error=ActiveCompositionManager::validate(c);
     if(!error.empty()){out.diagnostics.emplace_back("Native composition rejected: "+error);return out;}
     out.candidates.push_back(std::move(c));return out;
