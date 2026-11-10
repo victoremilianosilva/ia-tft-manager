@@ -311,6 +311,17 @@ if(BUILD_TESTING)
         COMMAND test_composition_source_adapters
     )
 
+    add_executable(
+        test_composition_evaluation
+        tests/test_composition_evaluation.cpp
+    )
+    configure_tft_module(test_composition_evaluation)
+    enable_tft_test_assertions(test_composition_evaluation)
+    add_test(
+        NAME composition_evaluation
+        COMMAND test_composition_evaluation
+    )
+
     add_executable(test_combat_engine
         tests/test_combat_engine.cpp
         src/combat/CombatEngine.cpp
