@@ -60,11 +60,11 @@ int main() {
     // Existing pieces are preserved; a poor pivot candidate is ignored.
     context.anchor_candidates.push_back(anchor(90, "Invoker", 1.0, 4.0, 0));
     auto decision = planner.evaluate(context, commitment);
-    assert(decision.composition_decision == CompositionDecision::InsufficientEvidence);
+    assert(decision.composition_decision == CompositionDecision::Keep);
     assert(!decision.candidate_diagnostics.empty());
     assert(!decision.candidate_diagnostics.front().accepted);
     assert(decision.target_composition_direction == "Bruiser");
-    assert(decision.decision_path_reason == "all_anchor_candidates_rejected");
+    assert(decision.decision_path_reason == "current_direction_viable_without_alternative");
     assert(decision.anchor_confidence == 0.0);
     assert(decision.current_direction_confidence > 0.0);
     assert(std::find(decision.preserve_unit_ids.begin(),
@@ -76,13 +76,23 @@ int main() {
     context.current_direction_score = 5.0;
     context.anchor_candidates.push_back(anchor(88, "Invoker", 3.9, 0.2, 2));
     decision = planner.evaluate(context, commitment);
-    assert(decision.composition_decision == CompositionDecision::InsufficientEvidence);
+    assert(decision.composition_decision == CompositionDecision::Keep);
+    assert(decision.target_composition_direction == "Bruiser");
     assert(decision.decision_path_reason == "alternative_below_minimum_adapt_advantage");
     assert(decision.alternative_advantage < decision.minimum_adapt_advantage);
     assert(decision.required_pivot_advantage == 1.0);
     assert(decision.anchor_confidence > 0.0);
     assert(decision.current_direction_confidence > 0.0);
     assert(decision.anchor_confidence != decision.current_direction_confidence);
+
+    // With no generated anchor candidates, a viable current direction is
+    // still a valid plan and must remain KEEP rather than insufficient.
+    context.anchor_candidates.clear();
+    context.candidate_generation.no_candidate_reason = "no_cost_four_or_five_anchor";
+    decision = planner.evaluate(context, commitment);
+    assert(decision.composition_decision == CompositionDecision::Keep);
+    assert(decision.target_composition_direction == "Bruiser");
+    assert(decision.decision_path_reason == "current_direction_viable_without_alternative");
 
     // A candidate direction can be refined without pivoting away from the
     // current composition.
@@ -143,7 +153,8 @@ int main() {
     commitment = {};
     context.anchor_candidates.push_back(anchor(92, "Mage", 0.5, 10.0, 0));
     decision = planner.evaluate(context, commitment);
-    assert(decision.composition_decision == CompositionDecision::InsufficientEvidence);
+    assert(decision.composition_decision == CompositionDecision::Keep);
+    assert(decision.decision_path_reason == "current_direction_viable_without_alternative");
 
     // If the old direction is no longer viable, a supported alternative can
     // be selected immediately; it does not wait for the locked-plan timer.
