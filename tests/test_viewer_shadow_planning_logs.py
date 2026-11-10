@@ -30,6 +30,7 @@ def test_player_snapshot_captures_shadow_planning_recommendations():
                 "strategic_candidate_generation_reason": "candidate_generated",
                 "strategic_anchors_considered": 4,
                 "strategic_rejected_cost_below_four": 1,
+                "strategic_rejected_missing_champion_definition": 2,
                 "strategic_rejected_empty_trait": 0,
                 "strategic_rejected_duplicate_direction": 1,
                 "strategic_rejected_direction_limit": 0,
@@ -71,6 +72,7 @@ def test_player_snapshot_captures_shadow_planning_recommendations():
     assert shadow["current_direction_confidence"] == 0.84
     assert shadow["current_direction_viable"] is True
     assert shadow["candidate_generation_reason"] == "candidate_generated"
+    assert shadow["rejected_missing_champion_definition"] == 2
     assert shadow["candidates_generated"] == 1
     assert shadow["economic_posture_name"] == "STABILIZE_BOARD"
     assert shadow["action_recommendation_name"] == "BUY_UNIT"
