@@ -64,8 +64,25 @@ int main() {
     assert(!decision.candidate_diagnostics.empty());
     assert(!decision.candidate_diagnostics.front().accepted);
     assert(decision.target_composition_direction == "Bruiser");
+    assert(decision.decision_path_reason == "all_anchor_candidates_rejected");
+    assert(decision.anchor_confidence == 0.0);
+    assert(decision.current_direction_confidence > 0.0);
     assert(std::find(decision.preserve_unit_ids.begin(),
                      decision.preserve_unit_ids.end(), 10) != decision.preserve_unit_ids.end());
+
+    // An alternative with less than the minimum ADAPT advantage is explicitly
+    // classified, with current and anchor confidence kept separate.
+    context.anchor_candidates.clear();
+    context.current_direction_score = 5.0;
+    context.anchor_candidates.push_back(anchor(88, "Invoker", 4.0, 0.2, 2));
+    decision = planner.evaluate(context, commitment);
+    assert(decision.composition_decision == CompositionDecision::InsufficientEvidence);
+    assert(decision.decision_path_reason == "alternative_below_minimum_adapt_advantage");
+    assert(decision.alternative_advantage < decision.minimum_adapt_advantage);
+    assert(decision.required_pivot_advantage == 1.0);
+    assert(decision.anchor_confidence > 0.0);
+    assert(decision.current_direction_confidence > 0.0);
+    assert(decision.anchor_confidence != decision.current_direction_confidence);
 
     // A candidate direction can be refined without pivoting away from the
     // current composition.
@@ -128,8 +145,10 @@ int main() {
     // If the current direction is unviable and no alternative exists, abandon
     // the old direction without inventing a replacement.
     context.anchor_candidates.clear();
+    context.candidate_generation.no_candidate_reason = "no_high_cost_anchor_units_seen";
     decision = planner.evaluate(context, commitment);
     assert(decision.composition_decision == CompositionDecision::Abandon);
+    assert(decision.decision_path_reason == "current_direction_unviable_without_alternative");
     assert(decision.target_composition_direction.empty());
 
     // An empty initial direction can be initialized from a viable anchor.
