@@ -1,4 +1,5 @@
 from scripts.strategic_economic_comparison import OutcomeEvaluator, build_shadow_markdown_reports
+from viewer.player_logs import PlayerJsonLogWriter
 
 
 def _decision(action="BUY", recommendation="BUY_UNIT", with_shadow=True):
@@ -18,9 +19,16 @@ def _decision(action="BUY", recommendation="BUY_UNIT", with_shadow=True):
         "action_expected_lost_interest_cost": 0.5,
         "action_expected_opportunity_cost": 0.25,
         "action_candidate_scores": [
-            {"action": "BUY_UNIT", "champion_id": 90, "direct_gold_cost": 3.0,
-             "lost_interest_cost": 0.5, "opportunity_cost": 0.35,
-             "board_component": 0.5, "total_score": 0.8, "selected": True}
+            {"action": "BUY_UNIT", "champion_id": 90, "available": True,
+             "direct_gold_cost": 3.0, "lost_interest_cost": 0.5, "opportunity_cost": 0.35,
+             "board_component": 0.5, "survival_component": 0.1,
+             "streak_component": 0.05, "composition_component": 0.1,
+             "upgrade_component": 0.1, "posture_component": 0.05,
+             "direct_cost_component": -0.1, "lost_interest_component": -0.05,
+             "opportunity_cost_component": -0.02, "total_score": 0.8, "selected": True},
+            {"action": "BUY_UNIT", "champion_id": 91, "available": False,
+             "direct_gold_cost": 4.0, "lost_interest_cost": 1.0, "opportunity_cost": 0.5,
+             "board_component": 0.2, "total_score": 0.1, "selected": False}
         ],
         "action_reason": "high marginal value",
         "action_expected_board_delta": 2.5,
@@ -166,3 +174,51 @@ def test_outcome_evaluator_correlates_recommendations_with_next_one_and_two_roun
     })
     assert "Evolução posterior das recomendações" in reports["audit_resultados.md"]
     assert reports["audit_resultados.md"].count("-0.200") <= 1
+
+
+
+def test_native_flat_audit_fields_are_persisted_in_shadow_snapshot():
+    writer = PlayerJsonLogWriter.__new__(PlayerJsonLogWriter)
+    native_audit = {
+        "player_id": 0,
+        "strategic_action_recommendation_name": "BUY_UNIT",
+        "strategic_action_recommended_champion_id": 90,
+        "strategic_action_candidate_scores": [
+            {"action": "BUY_UNIT", "champion_id": 90, "total_score": 0.8, "selected": True}
+        ],
+        "strategic_action_expected_direct_gold_cost": 3.0,
+        "strategic_action_expected_lost_interest_cost": 0.5,
+        "strategic_action_expected_opportunity_cost": 0.25,
+        "economic_posture_name": "STABILIZE_BOARD",
+    }
+
+    snapshot = writer._player_snapshot(native_audit, {"player_id": 0})
+    shadow = snapshot["shadow_planning"]
+
+    assert shadow["action_recommendation_name"] == "BUY_UNIT"
+    assert shadow["action_recommended_champion_id"] == 90
+    assert shadow["action_candidate_scores"][0]["total_score"] == 0.8
+    assert shadow["action_expected_direct_gold_cost"] == 3.0
+    assert shadow["action_expected_lost_interest_cost"] == 0.5
+    assert shadow["action_expected_opportunity_cost"] == 0.25
+    assert shadow["economic_posture_name"] == "STABILIZE_BOARD"
+
+
+def test_action_audit_exports_every_candidate_and_selection_integrity():
+    reports = build_shadow_markdown_reports({
+        "players_seen": ["1"], "decision_timeline": [_decision()]
+    })
+    actions = reports["audit_acoes.md"]
+
+    assert "Candidatos" in actions
+    assert "Disponível" in actions
+    assert "BUY_UNIT" in actions
+    assert "91" in actions
+    assert "False" in actions
+    assert "Score custo direto" in actions
+    assert "Integridade da seleção" in actions
+    assert "Consistente" in actions
+    assert "0.500" in actions
+    assert "0.350" in actions
+    assert "0.250" in actions
+    assert len(actions.strip()) > 500
