@@ -352,6 +352,47 @@ def build_shadow_markdown_reports(report: dict) -> dict[str, str]:
         "",
     ]
 
+    insufficient_rows = [
+        (d, shadow) for d, shadow in strategy_rows
+        if shadow.get("strategic_decision_name") == "INSUFFICIENT_EVIDENCE"
+    ]
+    insufficient_reasons = Counter(
+        str(shadow.get("decision_path_reason") or "unavailable")
+        for _, shadow in insufficient_rows
+    )
+    generation_reasons = Counter(
+        str(shadow.get("candidate_generation_reason") or "unavailable")
+        for _, shadow in insufficient_rows
+    )
+    strategy += [
+        "", "### Auditoria de INSUFFICIENT_EVIDENCE", "",
+        "| Jogador | Round | Step | Motivo específico | Geração de candidatos | Direção atual | Score atual | Score âncora | Vantagem | Mín. ADAPT | Limite PIVOT | Conf. âncora | Conf. direção atual | Âncora disponível | Filtros (considerados/gerados/catálogo ausente/planos vazios/âncora ausente) |",
+        "|---|---|---:|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|",
+    ]
+    for d, shadow in insufficient_rows:
+        strategy.append("| " + " | ".join(_cell(x) for x in (
+            d.get("player"), d.get("round"), d.get("step"),
+            shadow.get("decision_path_reason"), shadow.get("candidate_generation_reason"),
+            (d.get("state_before") or {}).get("comp_direction"),
+            shadow.get("current_direction_score"), shadow.get("best_anchor_score"),
+            shadow.get("alternative_advantage"), shadow.get("minimum_adapt_advantage"),
+            shadow.get("required_pivot_advantage"), shadow.get("anchor_confidence"),
+            shadow.get("current_direction_confidence"), shadow.get("has_anchor_candidate"),
+            f"{shadow.get('anchors_considered')} / {shadow.get('candidates_generated')} / "
+            f"{shadow.get('rejected_missing_champion_definition')} / "
+            f"{shadow.get('rejected_empty_plan')} / {shadow.get('rejected_anchor_not_in_plan')}",
+        )) + " |")
+    if not insufficient_rows:
+        strategy.append("| — | — | — | Dados INSUFFICIENT_EVIDENCE indisponíveis | — | — | — | — | — | — | — | — | — | — | — |")
+    strategy += [
+        "", "**Motivos agregados:** " + _cell(dict(insufficient_reasons)),
+        "**Motivos de geração agregados:** " + _cell(dict(generation_reasons)),
+        "",
+        "Confiança da âncora e confiança da direção atual são derivadas de score e não são probabilidades calibradas. "
+        "Snapshots por ação podem repetir a mesma revisão; não devem ser contados como revisões independentes.",
+        "",
+    ]
+
     economy = header(
         "Economic Controller — posturas recomendadas",
         "A postura descreve a orientação econômica sugerida no instante anterior à ação do PPO."

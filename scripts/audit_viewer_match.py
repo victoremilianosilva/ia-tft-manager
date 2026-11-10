@@ -741,6 +741,80 @@ def audit_xp_stabilization_opportunities(entries: list[dict], player: str, repor
     }
 
 
+def audit_strategic_planner_diagnostics(entries: list[dict], player: str, report: dict) -> None:
+    """Summarize shadow Planner decisions and explain INSUFFICIENT_EVIDENCE paths."""
+    metrics = {
+        "records": 0,
+        "decision_counts": {},
+        "insufficient_reason_counts": {},
+        "candidate_generation_reason_counts": {},
+        "candidate_generation_rejections": {},
+        "insufficient_with_anchor": 0,
+        "insufficient_without_anchor": 0,
+        "samples": [],
+        "interpretation": (
+            "Anchor/current confidence are score-derived, uncalibrated diagnostics; "
+            "they are not probabilities. Repeated action snapshots are observations, "
+            "not independent strategic reviews."
+        ),
+    }
+    decision_counts = Counter()
+    reason_counts = Counter()
+    generation_reasons = Counter()
+    rejection_totals = Counter()
+    for entry in sorted(entries, key=lambda e: (e.get("sequence_id", 0), e.get("step", 0))):
+        if not isinstance(entry, dict) or entry.get("event_type") not in (
+            "match_started", "action", "round_finished"
+        ):
+            continue
+        payload = entry.get("payload") or {}
+        state = payload.get("state_after") or payload.get("state") or payload.get("state_before") or {}
+        shadow = state.get("shadow_planning") if isinstance(state, dict) else None
+        if not isinstance(shadow, dict) or shadow.get("strategic_decision_name") is None:
+            continue
+        metrics["records"] += 1
+        decision = str(shadow.get("strategic_decision_name") or "UNKNOWN")
+        decision_counts[decision] += 1
+        generation_reason = str(shadow.get("candidate_generation_reason") or "unavailable")
+        generation_reasons[generation_reason] += 1
+        for key in (
+            "anchors_considered", "rejected_cost_below_four",
+            "rejected_missing_champion_definition", "rejected_empty_trait",
+            "rejected_duplicate_direction", "rejected_direction_limit",
+            "rejected_empty_plan", "rejected_anchor_not_in_plan", "candidates_generated",
+        ):
+            try:
+                rejection_totals[key] += int(shadow.get(key) or 0)
+            except (TypeError, ValueError):
+                pass
+        if decision != "INSUFFICIENT_EVIDENCE":
+            continue
+        path_reason = str(shadow.get("decision_path_reason") or "unavailable")
+        reason_counts[path_reason] += 1
+        has_anchor = bool(shadow.get("has_anchor_candidate"))
+        metrics["insufficient_with_anchor" if has_anchor else "insufficient_without_anchor"] += 1
+        if len(metrics["samples"]) < 30:
+            metrics["samples"].append({
+                "round": get_round(entry), "step": entry.get("step"),
+                "decision_path_reason": path_reason,
+                "candidate_generation_reason": generation_reason,
+                "current_direction": state.get("comp_direction"),
+                "current_direction_score": shadow.get("current_direction_score"),
+                "best_anchor_score": shadow.get("best_anchor_score"),
+                "alternative_advantage": shadow.get("alternative_advantage"),
+                "minimum_adapt_advantage": shadow.get("minimum_adapt_advantage"),
+                "required_pivot_advantage": shadow.get("required_pivot_advantage"),
+                "anchor_confidence": shadow.get("anchor_confidence"),
+                "current_direction_confidence": shadow.get("current_direction_confidence"),
+                "has_anchor_candidate": has_anchor,
+            })
+    metrics["decision_counts"] = dict(decision_counts)
+    metrics["insufficient_reason_counts"] = dict(reason_counts)
+    metrics["candidate_generation_reason_counts"] = dict(generation_reasons)
+    metrics["candidate_generation_rejections"] = dict(rejection_totals)
+    report.setdefault("strategic_planner_metrics", {})[player] = metrics
+
+
 def audit_composition_direction_changes(entries: list[dict], player: str, report: dict) -> None:
     """Measure direction transitions with observable strength/synergy/board/fit gains."""
     metrics = {
@@ -1668,6 +1742,7 @@ def audit_json(path: Path, doc: dict, report: dict, loop_window: int, comp_windo
     audit_economic_actions(entries, player, report)
     audit_xp_stabilization_opportunities(entries, player, report)
     audit_composition_direction_changes(entries, player, report)
+    audit_strategic_planner_diagnostics(entries, player, report)
     audit_board_quality(entries, player, report)
     audit_item_state(entries, player, report)
     audit_positioning_and_composition(entries, player, report)
@@ -2607,6 +2682,7 @@ def main() -> int:
     report = {"source": str(source), "log_files": [], "players_seen": set(),
               "purchase_sequence_metrics": {}, "economic_action_metrics": {},
               "composition_direction_metrics": {},
+              "strategic_planner_metrics": {},
               "board_quality_metrics": {},
               "team_progression_metrics": {},
               "decision_audit_metrics": {}, "decision_timeline": [], "round_outcome_timeline": [],

@@ -33,11 +33,30 @@ public:
         out.composition_decision = CompositionDecision::InsufficientEvidence;
         out.reason = StrategicReason::InsufficientEvidence;
         out.target_composition_direction = context.current_composition_direction;
+        out.current_direction_score = context.current_direction_score;
+        out.current_direction_viable = context.current_direction_viable;
+        out.candidate_generation = context.candidate_generation;
+        out.minimum_adapt_advantage = config_.minimum_adapt_advantage;
+        out.required_pivot_advantage = std::max(
+            config_.minimum_absolute_advantage,
+            std::abs(context.current_direction_score) *
+                config_.minimum_relative_advantage);
+        out.current_direction_confidence =
+            context.current_composition_direction.empty() ? 0.0 : std::clamp(
+                0.5 + context.current_direction_score /
+                    (2.0 * (1.0 + std::abs(context.current_direction_score))),
+                0.5, 0.95);
 
-        if (!context.alive) return out;
+        if (!context.alive) {
+            out.decision_path_reason = "player_not_alive";
+            return out;
+        }
 
         const auto best = best_anchor(context, out.candidate_diagnostics);
         const bool has_current = !context.current_composition_direction.empty();
+        out.has_anchor_candidate = best.valid;
+        out.best_anchor_score = best.valid ? best.score : 0.0;
+        out.anchor_confidence = best.valid ? best.confidence : 0.0;
 
         if (has_current &&
             commitment.composition_direction != context.current_composition_direction) {
@@ -59,6 +78,8 @@ public:
                 commitment.selection_reason = out.reason;
                 clear_candidate(commitment);
             }
+            out.decision_path_reason = best.valid
+                ? "initial_direction_selected" : "no_initial_anchor_available";
             classify_owned_units(context, out, out.target_composition_direction);
             return out;
         }
@@ -72,8 +93,12 @@ public:
                 out.target_composition_direction.clear();
                 commitment.selection_reason = out.reason;
                 clear_candidate(commitment);
+                out.decision_path_reason = "current_direction_unviable_without_alternative";
             } else {
                 clear_candidate(commitment);
+                out.decision_path_reason = context.anchor_candidates.empty()
+                    ? context.candidate_generation.no_candidate_reason
+                    : "all_anchor_candidates_rejected";
             }
             classify_owned_units(context, out, out.target_composition_direction);
             return out;
@@ -87,21 +112,21 @@ public:
             out.composition_decision = CompositionDecision::Keep;
             out.reason = StrategicReason::BoardAdvantage;
             out.target_composition_direction = context.current_composition_direction;
+            out.decision_path_reason = "best_anchor_matches_current_direction";
             clear_candidate(commitment);
             classify_owned_units(context, out, out.target_composition_direction);
             return out;
         }
 
-        const double required_advantage = std::max(
-            config_.minimum_absolute_advantage,
-            std::abs(context.current_direction_score) *
-                config_.minimum_relative_advantage);
+        const double required_advantage = out.required_pivot_advantage;
         const double advantage = best.score - context.current_direction_score;
+        out.alternative_advantage = advantage;
 
         if (!context.current_direction_viable) {
             out.composition_decision = CompositionDecision::Pivot;
             out.reason = StrategicReason::BoardDeficit;
             out.target_composition_direction = best.direction;
+            out.decision_path_reason = "current_direction_not_viable";
             commitment.selection_reason = out.reason;
             commitment.confidence = best.confidence;
             clear_candidate(commitment);
@@ -111,6 +136,7 @@ public:
 
         if (advantage < config_.minimum_adapt_advantage) {
             out.reason = StrategicReason::InsufficientEvidence;
+            out.decision_path_reason = "alternative_below_minimum_adapt_advantage";
             clear_candidate(commitment);
             classify_owned_units(context, out, out.target_composition_direction);
             return out;
@@ -140,6 +166,9 @@ public:
                 : StrategicReason::AnchorOpportunity;
             out.target_composition_direction = best.direction;
             out.confidence = std::min(best.confidence, 0.65);
+            out.decision_path_reason = advantage < required_advantage
+                ? "alternative_below_required_advantage"
+                : "alternative_waiting_for_persistence";
             classify_owned_units(context, out, out.target_composition_direction);
             return out;
         }
@@ -147,6 +176,7 @@ public:
         out.composition_decision = CompositionDecision::Pivot;
         out.reason = StrategicReason::AnchorOpportunity;
         out.target_composition_direction = best.direction;
+        out.decision_path_reason = "pivot_thresholds_and_persistence_satisfied";
         commitment.selection_reason = out.reason;
         commitment.confidence = best.confidence;
         classify_owned_units(context, out, out.target_composition_direction);
