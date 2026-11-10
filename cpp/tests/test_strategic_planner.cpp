@@ -74,7 +74,7 @@ int main() {
     // classified, with current and anchor confidence kept separate.
     context.anchor_candidates.clear();
     context.current_direction_score = 5.0;
-    context.anchor_candidates.push_back(anchor(88, "Invoker", 4.0, 0.2, 2));
+    context.anchor_candidates.push_back(anchor(88, "Invoker", 3.9, 0.2, 2));
     decision = planner.evaluate(context, commitment);
     assert(decision.composition_decision == CompositionDecision::InsufficientEvidence);
     assert(decision.decision_path_reason == "alternative_below_minimum_adapt_advantage");
