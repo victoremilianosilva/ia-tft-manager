@@ -195,6 +195,19 @@ struct StrategicPlanDecision {
     double confidence{0.0};
     double estimated_transition_cost{0.0};
     std::vector<StrategicCandidateDiagnostic> candidate_diagnostics;
+    // Shadow audit values. Confidence fields are score-derived diagnostics,
+    // not calibrated probabilities.
+    std::string decision_path_reason{"not_evaluated"};
+    double current_direction_score{0.0};
+    double best_anchor_score{0.0};
+    double alternative_advantage{0.0};
+    double minimum_adapt_advantage{0.0};
+    double required_pivot_advantage{0.0};
+    double anchor_confidence{0.0};
+    double current_direction_confidence{0.0};
+    bool current_direction_viable{false};
+    bool has_anchor_candidate{false};
+    StrategicCandidateGenerationDiagnostics candidate_generation;
     bool shadow_only{true};
 };
 
