@@ -339,6 +339,27 @@ struct StrategyInfo {
     std::vector<std::int32_t> strategic_preserve_unit_ids;
     std::vector<std::int32_t> strategic_replaceable_unit_ids;
     std::vector<StrategicCandidateDiagnosticInfo> strategic_candidate_diagnostics;
+    // Explain why INSUFFICIENT_EVIDENCE was emitted and expose both sides
+    // of the comparison. Confidence values are score-derived, uncalibrated.
+    std::string strategic_decision_path_reason;
+    double strategic_current_direction_score{0.0};
+    double strategic_best_anchor_score{0.0};
+    double strategic_alternative_advantage{0.0};
+    double strategic_minimum_adapt_advantage{0.0};
+    double strategic_required_pivot_advantage{0.0};
+    double strategic_anchor_confidence{0.0};
+    double strategic_current_direction_confidence{0.0};
+    bool strategic_current_direction_viable{false};
+    bool strategic_has_anchor_candidate{false};
+    std::string strategic_candidate_generation_reason;
+    std::uint32_t strategic_anchors_considered{0};
+    std::uint32_t strategic_rejected_cost_below_four{0};
+    std::uint32_t strategic_rejected_empty_trait{0};
+    std::uint32_t strategic_rejected_duplicate_direction{0};
+    std::uint32_t strategic_rejected_direction_limit{0};
+    std::uint32_t strategic_rejected_empty_plan{0};
+    std::uint32_t strategic_rejected_anchor_not_in_plan{0};
+    std::uint32_t strategic_candidates_generated{0};
     std::string strategic_candidate_direction;
     std::int32_t strategic_candidate_anchor_id{-1};
     double strategic_candidate_score{0.0};
