@@ -283,6 +283,22 @@ endif()
 include(CTest)
 
 if(BUILD_TESTING)
+
+    # -----------------------------------------------------
+    # Composition Intelligence (isolated shadow foundation)
+    # -----------------------------------------------------
+
+    add_executable(
+        test_active_composition_manager
+        tests/test_active_composition_manager.cpp
+    )
+    configure_tft_module(test_active_composition_manager)
+    enable_tft_test_assertions(test_active_composition_manager)
+    add_test(
+        NAME active_composition_manager
+        COMMAND test_active_composition_manager
+    )
+
     add_executable(test_combat_engine
         tests/test_combat_engine.cpp
         src/combat/CombatEngine.cpp
